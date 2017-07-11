@@ -41,7 +41,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         else:
             raise Exception("Unknown rate in recv results")
 
-        self.result_message = "Sender rate = %si MBits/sec, Receiver rate = %s Mbits/sec\n", (s_rate, r_rate)
+        self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec\n" % (s_rate, r_rate)
         self.logged['s_rate'] = s_rate
         self.logged['r_rate'] = r_rate
 
