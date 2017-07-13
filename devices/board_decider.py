@@ -13,6 +13,7 @@ import qcom_dakota_nand
 import qcom_mips
 import marvell
 import rpi
+import cougarpark
 
 def board(model, **kwargs):
     '''
@@ -43,6 +44,9 @@ def board(model, **kwargs):
 
     if model in ("rpi3"):
         return rpi.RPI(model, **kwargs)
+
+    if model in ("cougarpark"):
+        return cougarpark.CougarPark(model, **kwargs)
 
     # Default for all other models
     print("\nWARNING: Unknown board model '%s'." % model)
