@@ -30,7 +30,7 @@ class Nmap_WAN(rootfs_boot.RootFSBootTest):
     def recover(self):
         wan.sendcontrol('c')
     def runTest(self):
-        wan_ip_addr = board.get_interface_ipaddr('eth0')
+        wan_ip_addr = board.get_interface_ipaddr(board.wan_iface)
         wan.sendline('\nnmap -sS -A -v %s' % wan_ip_addr)
         wan.expect('Starting Nmap', timeout=5)
         wan.expect('Nmap scan report', timeout=120)
