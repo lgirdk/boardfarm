@@ -43,7 +43,8 @@ class LanDevPingRouter(rootfs_boot.RootFSBootTest):
             msg = 'No LAN Device defined, skipping ping test from LAN.'
             lib.common.test_msg(msg)
             self.skipTest(msg)
-        lan.sendline('\nping -i 0.2 -c 5 192.168.1.1')
+        router_ip = board.get_ip_addr(board.lan_iface)
+        lan.sendline('\nping -i 0.2 -c 5 %s' % router_ip)
         lan.expect('PING ')
         lan.expect('5 received', timeout=15)
         lan.expect(prompt)
