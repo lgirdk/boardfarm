@@ -388,7 +388,7 @@ class OpenWrtRouter(base.BaseDevice):
 
     def wait_for_linux(self):
         '''Verify Linux starts up.'''
-        i = self.expect(['Reset Button Push down', 'Booting Linux', 'Starting kernel ...'], timeout=45)
+        i = self.expect(['Reset Button Push down', 'Booting Linux', 'Starting kernel ...', 'Kernel command line specified:'], timeout=45)
         if i == 0:
             self.expect('httpd')
             self.sendcontrol('c')
