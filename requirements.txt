@@ -8,3 +8,4 @@ termcolor
 selenium
 future
 dlipower
+cdrouter
