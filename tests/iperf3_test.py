@@ -12,6 +12,10 @@ from devices import board, wan, lan, wlan, prompt
 
 class iPerf3Test(rootfs_boot.RootFSBootTest):
     '''iPerf3 generic performance tests'''
+
+    opts= ""
+    time = 60
+
     def runTest(self):
         installers.install_iperf3(wan)
         installers.install_iperf3(lan)
@@ -20,10 +24,9 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         wan.expect('-----------------------------------------------------------')
         wan.expect('-----------------------------------------------------------')
 
-        time = 60
 
-        lan.sendline('iperf3 -c 192.168.0.1 -P5 -t %s -i 0' % time)
-        lan.expect(prompt, timeout=time+5)
+        lan.sendline('iperf3 %s -c 192.168.0.1 -P5 -t %s -i 0' % (self.opts, self.time))
+        lan.expect(prompt, timeout=self.time+5)
 
         sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', lan.before)[-1]
         if 'Mbits' in sender:
@@ -52,3 +55,8 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
             d.sendcontrol('c')
             d.sendcontrol('c')
             d.expect(prompt)
+
+class iPerf3RTest(iPerf3Test):
+    '''iPerf3 reverse generic performance tests'''
+
+    opts = "-R"
