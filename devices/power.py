@@ -97,7 +97,7 @@ class SentrySwitchedCDU(PowerDevice):
 
     def __connect(self):
         pcon = pexpect.spawn('telnet %s' % self.ip_address)
-        pcon.expect('Sentry Switched CDU Version 7', timeout=15)
+        pcon.expect('Sentry Switched CDU Version', timeout=15)
         pcon.expect('Username:')
         pcon.sendline(self.username)
         pcon.expect('Password:')
