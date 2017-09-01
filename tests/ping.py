@@ -17,7 +17,7 @@ class RouterPingWanDev(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
         board.sendline('\nping -c5 192.168.0.1')
-        board.expect('5 packets received', timeout=10)
+        board.expect('5 (packets )?received', timeout=15)
         board.expect(prompt)
     def recover(self):
         board.sendcontrol('c')
@@ -26,14 +26,14 @@ class RouterPingInternet(rootfs_boot.RootFSBootTest):
     '''Router can ping internet address by IP.'''
     def runTest(self):
         board.sendline('\nping -c2 8.8.8.8')
-        board.expect('2 packets received', timeout=10)
+        board.expect('2 (packets )?received', timeout=15)
         board.expect(prompt)
 
 class RouterPingInternetName(rootfs_boot.RootFSBootTest):
     '''Router can ping internet address by name.'''
     def runTest(self):
         board.sendline('\nping -c2 www.google.com')
-        board.expect('2 packets received', timeout=10)
+        board.expect('2 (packets )?received', timeout=15)
         board.expect(prompt)
 
 class LanDevPingRouter(rootfs_boot.RootFSBootTest):
@@ -46,7 +46,7 @@ class LanDevPingRouter(rootfs_boot.RootFSBootTest):
         router_ip = board.get_ip_addr(board.lan_iface)
         lan.sendline('\nping -i 0.2 -c 5 %s' % router_ip)
         lan.expect('PING ')
-        lan.expect('5 received', timeout=15)
+        lan.expect('5 (packets )?received', timeout=15)
         lan.expect(prompt)
 
 class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
@@ -62,7 +62,7 @@ class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
             self.skipTest(msg)
         lan.sendline('\nping -i 0.2 -c 5 192.168.0.1')
         lan.expect('PING ')
-        lan.expect('5 received', timeout=15)
+        lan.expect('5 (packets )?received', timeout=15)
         lan.expect(prompt)
     def recover(self):
         lan.sendcontrol('c')
@@ -75,7 +75,7 @@ class LanDevPingInternet(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
         lan.sendline('\nping -c2 8.8.8.8')
-        lan.expect('2 received', timeout=10)
+        lan.expect('2 (packets )?received', timeout=10)
         lan.expect(prompt)
     def recover(self):
         lan.sendcontrol('c')
