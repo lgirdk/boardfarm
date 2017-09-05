@@ -9,6 +9,10 @@ def apt_install(device, name, timeout=120):
     device.sendline('apt-get install -q -y %s' % name)
     device.expect('Reading package')
     device.expect(device.prompt, timeout=timeout)
+    device.sendline('dpkg -l %s' % name)
+    device.expect_exact('dpkg -l %s' % name)
+    i = device.expect(['dpkg-query: no packages found' ] + device.prompt)
+    assert (i != 0)
 
 def apt_update(device, timeout=120):
     device.sendline('apt-get update')
