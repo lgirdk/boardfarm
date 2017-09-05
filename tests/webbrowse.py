@@ -8,10 +8,13 @@
 import random
 import rootfs_boot
 from devices import board, wan, lan, wlan, prompt
+from lib import installers
 
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):
     '''Created light web traffic.'''
     def runTest(self):
+        installers.apt_install(lan, "wget")
+
         urls = ['www.amazon.com',
                 'www.apple.com',
                 'www.baidu.com',
