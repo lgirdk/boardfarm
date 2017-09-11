@@ -79,7 +79,7 @@ class SentrySwitchedCDU(PowerDevice):
                  ip_address,
                  outlet,
                  username='admn',
-                 password='bigfoot1'):
+                 password='admn'):
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
         # Verify connection
