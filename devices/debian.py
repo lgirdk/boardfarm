@@ -46,11 +46,11 @@ class DebianBox(base.BaseDevice):
         else:
             name = None
             if pre_cmd_host is not None:
-                sys.stdout.write("\tRunning pre_host_cmd.... ")
+                sys.stdout.write("\tRunning pre_cmd_host.... ")
                 sys.stdout.flush()
                 phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host])
                 phc.expect(pexpect.EOF, timeout=120)
-                print("\tpre_host_cmd done")
+                print("\tpre_cmd_host done")
 
             if cleanup_cmd is not None:
                 self.cleanup_cmd = cleanup_cmd
