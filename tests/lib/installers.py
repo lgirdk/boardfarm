@@ -92,3 +92,13 @@ def install_hping3(device):
     except:
         device.expect(device.prompt)
         apt_install(device, 'hping3')
+def install_python(device):
+    '''Install python if not present.'''
+    device.sendline('\npython --version')
+    try:
+        device.expect('Python 2', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb')
+        device.expect(device.prompt, timeout=60)
