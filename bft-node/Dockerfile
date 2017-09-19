@@ -21,7 +21,9 @@ RUN apt-get update && \
 	tcpdump \
 	iperf \
 	iperf3 \
-	netcat
+	netcat \
+	python-pip \
+	python-mysqldb
 
 RUN mkdir /var/run/sshd
 RUN sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
