@@ -73,7 +73,7 @@ def scp_to_tftp_server(fname, server, username, password, port):
         print_bold("File passed as parameter does not exist! Failing!\n")
         sys.exit(10)
 
-    cmd = "cat %s | ssh -p %s -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (fname, port, username, server)
+    cmd = "cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (fname, port, username, server)
     return copy_file_to_server(cmd, password)
 
 def print_bold(msg):
