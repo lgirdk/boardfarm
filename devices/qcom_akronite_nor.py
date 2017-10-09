@@ -36,7 +36,7 @@ class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
         self.spi_flash_bin("0x0062b0000", size, self.uboot_ddr_addr, "0x400000")
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
         self.reset()
         self.wait_for_boot()

@@ -30,5 +30,5 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     #def flash_linux(self, KERNEL):
     #    common.print_bold("\n===== Flashing linux =====\n")
 
-    #def boot_linux(self, rootfs=None):
+    #def boot_linux(self, rootfs=None, bootargs=""):
     #    common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))

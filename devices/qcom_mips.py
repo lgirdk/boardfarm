@@ -90,7 +90,7 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
         self.expect('Total of .* bytes were the same')
         self.expect(self.uprompt)
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
         if self.model == "ap135-nand":
             self.sendline('setenv bootcmd nboot 0x81000000 0 0x100000')

@@ -53,7 +53,7 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
 
         raise Exception("Kernel is in UBI rootfs, not separate")
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
         self.reset()
         self.wait_for_boot()

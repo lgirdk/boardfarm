@@ -67,7 +67,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             if self.config.KERNEL:
                 board.flash_linux(self.config.KERNEL)
             # Boot from U-Boot to Linux
-            board.boot_linux(rootfs=rootfs)
+            board.boot_linux(rootfs=rootfs, bootargs=self.config.bootargs)
         if hasattr(board, "pre_boot_linux"):
             board.pre_boot_linux(wan=wan, lan=lan)
         board.linux_booted = True

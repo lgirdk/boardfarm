@@ -382,7 +382,7 @@ class OpenWrtRouter(base.BaseDevice):
             self.sendline('saveenv')
         self.expect(self.uprompt)
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         print("\nWARNING: We don't know how to boot this board to linux "
               "please write the code to do so.")
 

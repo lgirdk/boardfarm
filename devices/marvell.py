@@ -55,5 +55,5 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         self.sendline('run update_both_images')
         self.expect(self.uprompt, timeout=90)
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         self.sendline('boot')

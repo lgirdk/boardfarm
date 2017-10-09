@@ -104,7 +104,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.sendline('fatwrite mmc 0 %s uImage $filesize' % self.uboot_ddr_addr)
         self.expect(self.uprompt)
 
-    def boot_linux(self, rootfs=None):
+    def boot_linux(self, rootfs=None, bootargs=""):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
 
         #self.sendline('setenv bootargs "8250.nr_uarts=1 bcm2708_fb.fbwidth=1824 bcm2708_fb.fbheight=984 bcm2708_fb.fbswap=1 dma.dmachans=0x7f35 bcm2709.boardrev=0xa02082 bcm2709.serial=0xc07187c2 bcm2709.uart_clock=48000000 smsc95xx.macaddr=B8:27:EB:71:87:C2 vc_mem.mem_base=0x3dc00000 vc_mem.mem_size=0x3f000000  dwc_otg.lpm_enable=0 console=ttyAMA0,115200 root=mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait"')
