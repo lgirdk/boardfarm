@@ -56,15 +56,7 @@ def copy_file_to_server(cmd, password):
         raise Exception("Unable to copy file to server")
 
 def download_from_web(url, server, username, password, port):
-    try:
-        urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
-        print_bold("HTTP url %s returned %s, exiting" % (url, e.code))
-        sys.exit(10)
-    except urllib2.URLError as e:
-        print_bold("HTTP url %s returned %s, exiting" % (url, e.args))
-        sys.exit(11)
-    cmd = "curl -L -k '%s' 2>/dev/null | ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (url, port, username, server)
+    cmd = "curl -n -L -k '%s' 2>/dev/null | ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (url, port, username, server)
     return copy_file_to_server(cmd, password)
 
 def scp_to_tftp_server(fname, server, username, password, port):
