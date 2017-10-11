@@ -156,13 +156,15 @@ def parse():
                 import ssl
                 context = ssl._create_unverified_context()
 
-		import netrc, urlparse
-                n = netrc.netrc()
-                login, unused, password = n.authenticators(urlparse.urlparse(x).hostname)
-
 		req = urllib.Request(x)
 
-		add_basic_auth("%s:%s" % (login, password), req)
+                try:
+                    import netrc, urlparse
+                    n = netrc.netrc()
+                    login, unused, password = n.authenticators(urlparse.urlparse(x).hostname)
+		    add_basic_auth("%s:%s" % (login, password), req)
+                except (TypeError, ImportError, IOError, netrc.NetrcParseError):
+                    pass
 
                 # If url returns 404 or similar, raise exception
                 urlopen(req, timeout=20, context=context)
