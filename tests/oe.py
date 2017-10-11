@@ -13,18 +13,33 @@ class OEVersion(rootfs_boot.RootFSBootTest):
     def runTest(self):
         board.sendline('cat /etc/os-release')
         # PRETTY_NAME=RDK (A Yocto Project 1.6 based Distro) 2.0 (krogoth)
-        board.expect('PRETTY_NAME=([^\s]*) \(A Yocto Project ([^\s]*) based Distro\) ([^\s]*) \(([^\)]*)\)')
+        board.expect('PRETTY_NAME=([^\s]*) \(A Yocto Project (?:[^\s]*?)\s?based Distro\) ([^\s]*) \(([^\)]*)\)')
+
+        index = 1
+        bsp_type = board.match.group(index)
+        index += 1
+        if len(board.match.groups()) == 4:
+            oe_version = board.match.group(index)
+            index += 1
+        else:
+            oe_version = "Unknown"
+        bsp_version = board.match.group(index)
+        index += 1
+        oe_version_string = board.match.group(index)
+        index += 1
+
+        board.expect(prompt)
+
         print("#########################################")
-        print("bsp-type = %s" % board.match.group(1))
-        print("oe-version = %s" % board.match.group(2))
-        print("bsp-version = %s" % board.match.group(3))
-        print("oe-version-string = %s" % board.match.group(4))
+        print("bsp-type = %s" % bsp_type)
+        print("oe-version = %s" % oe_version)
+        print("bsp-version = %s" % bsp_version)
+        print("oe-version-string = %s" % oe_version_string)
         print("#########################################")
 
         self.result_message="BSP = %s, BSP version = %s, OE version = %s, OE version string = %s" % \
-                (board.match.group(1), board.match.group(3), board.match.group(2), board.match.group(4))
-        self.logged['bsp-type'] = board.match.group(1)
-        self.logged['oe-version'] = board.match.group(2)
-        self.logged['bsp-version'] = board.match.group(3)
-        self.logged['oe-version-string'] = board.match.group(4)
-        board.expect(prompt)
+                (bsp_type, bsp_version, oe_version, oe_version_string)
+        self.logged['bsp-type'] = bsp_type
+        self.logged['oe-version'] =  oe_version
+        self.logged['bsp-version'] =  bsp_version
+        self.logged['oe-version-string'] = oe_version_string
