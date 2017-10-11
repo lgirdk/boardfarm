@@ -18,7 +18,8 @@ class Webserver_Running(rootfs_boot.RootFSBootTest):
 class WebGUI_Access(rootfs_boot.RootFSBootTest):
     '''Router webpage available to LAN-device at http://192.168.1.1/.'''
     def runTest(self):
-        url = 'http://192.168.1.1/'
+        ip = "192.168.1.1"
+        url = 'http://%s/' % ip
         lan.sendline('\ncurl -v %s' % url)
         lan.expect('<html')
         lan.expect('<body')
@@ -37,10 +38,11 @@ class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
 class Webserver_Download(rootfs_boot.RootFSBootTest):
     '''Downloaded small file from router webserver in reasonable time.'''
     def runTest(self):
+        ip = "192.168.1.1"
         board.sendline('\nhead -c 1000000 /dev/urandom > /www/deleteme.txt')
         board.expect('head ', timeout=5)
         board.expect(prompt)
-        lan.sendline('\ncurl -m 25 http://192.168.1.1/deleteme.txt > /dev/null')
+        lan.sendline('\ncurl -m 25 http://%s/deleteme.txt > /dev/null' % ip)
         lan.expect('Total', timeout=5)
         lan.expect('100 ', timeout=10)
         lan.expect(prompt, timeout=10)

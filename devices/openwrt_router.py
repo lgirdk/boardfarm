@@ -141,14 +141,14 @@ class OpenWrtRouter(base.BaseDevice):
         self.expect(self.prompt)
         return int(memFree)
 
-    def get_file(self, fname):
+    def get_file(self, fname, lan_ip="192.168.1.1"):
         '''
         OpenWrt routers have a webserver, so we use that to download
         the file via a webproxy (e.g. a device on the board's LAN).
         '''
         if not self.web_proxy:
             raise Exception('No web proxy defined to access board.')
-        url = 'http://192.168.1.1/TEMP'
+        url = 'http://%s/TEMP' % lan_ip
         self.sendline("\nchmod a+r %s" % fname)
         self.expect('chmod ')
         self.expect(self.prompt)
@@ -427,12 +427,12 @@ class OpenWrtRouter(base.BaseDevice):
                 self.network_restart()
                 self.expect(pexpect.TIMEOUT, timeout=10)
 
-    def uci_allow_wan_http(self):
+    def uci_allow_wan_http(self, lan_ip="192.168.1.1"):
         '''Allow access to webgui from devices on WAN interface.'''
-        self.uci_forward_traffic_redirect("tcp", "80", "192.168.1.1")
+        self.uci_forward_traffic_redirect("tcp", "80", lan_ip)
 
-    def uci_allow_wan_ssh(self):
-        self.uci_forward_traffic_redirect("tcp", "22", "192.168.1.1")
+    def uci_allow_wan_ssh(self, lan_ip="192.168.1.1"):
+        self.uci_forward_traffic_redirect("tcp", "22", lan_ip)
 
     def uci_forward_traffic_redirect(self, tcp_udp, port_wan, ip_lan):
         self.sendline('uci add firewall redirect')

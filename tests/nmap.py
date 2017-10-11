@@ -16,7 +16,7 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
     def recover(self):
         lan.sendcontrol('c')
     def runTest(self):
-        lan.sendline('nmap -sS -A -v -p 1-10000 192.168.1.1')
+        lan.sendline('nmap -sS -A -v -p 1-10000 %s' % board.get_interface_ipaddr(board.lan_iface))
         lan.expect('Starting Nmap')
         lan.expect('Nmap scan report', timeout=660)
         lan.expect(prompt, timeout=60)

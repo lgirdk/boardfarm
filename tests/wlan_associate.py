@@ -128,15 +128,15 @@ class WlanAssociate(wlan_set_ssid.WlanSetSSID):
         wlan_ip = wlan.get_interface_ipaddr("wlan0")
 
         # add route to wan
-        wlan.sendline('ip route add 192.168.0.0/24 via 192.168.1.1')
+        wlan.sendline('ip route add 192.168.0.0/24 via %s' % board.get_interface_ipaddr(board.lan_iface))
         wlan.expect(prompt)
         wlan.sendline('ip route show')
         wlan.expect(prompt)
 
-        wlan.sendline('ping 192.168.1.1 -c3')
+        wlan.sendline('ping %s -c3' % board.get_interface_ipaddr(board.lan_iface))
         wlan.expect('3 packets transmitted')
         wlan.expect(prompt)
-        wlan.sendline('curl 192.168.1.1 --connect-timeout 5 > /dev/null 2>&1; echo $?')
+        wlan.sendline('curl %s --connect-timeout 5 > /dev/null 2>&1; echo $?' % board.get_interface_ipaddr(board.lan_iface))
         wlan.expect('(\d+)\r\n')
         curl_success = int(wlan.match.group(1))
 

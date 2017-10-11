@@ -164,7 +164,7 @@ class iPerfUDPNonRoutedTest(iPerfUDPTest):
     '''iPerf from LAN to Router'''
 
     def forward_ip(self):
-        return "192.168.1.1"
+        return board.get_interface_ipaddr(board.lan_iface)
 
     def runTest(self):
         super(iPerfUDPNonRoutedTest, self).runTest(client=lan, server=board)

@@ -14,6 +14,8 @@ from selenium.webdriver import ActionChains
 class WebTest(rootfs_boot.RootFSBootTest):
     '''Login to LuCI'''
     def setUp(self):
+        ip = "192.168.1.1"
+
         super(WebTest, self).setUp()
         if not lan:
             msg = 'No LAN Device defined, skipping web test.'
@@ -30,8 +32,8 @@ class WebTest(rootfs_boot.RootFSBootTest):
 
         # Create a driver
         self.driver = lib.common.phantom_webproxy_driver('http://' + lan.name + ':8080')
-        self.driver.get("http://192.168.1.1/cgi-bin/luci")
-        self.assertIn('192.168.1.1', self.driver.current_url)
+        self.driver.get("http://%s/cgi-bin/luci" % ip)
+        self.assertIn(ip, self.driver.current_url)
         self.assertIn('LuCI', self.driver.title)
         self.driver.find_element_by_name('luci_password').send_keys('password')
         self.driver.find_element_by_class_name('cbi-button-apply').submit()
