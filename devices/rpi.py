@@ -28,6 +28,9 @@ class RPI(openwrt_router.OpenWrtRouter):
     # can't get u-boot to work without a delay
     delaybetweenchar = 0.05
 
+    # allowed open ports (starting point)
+    wan_open_ports = ['22', '8080', '8087', '8088', '8090']
+
     def flash_uboot(self, uboot):
         '''In this case it's flashing the vfat partition of the bootload.
            Need to have that image u-boot and serial turned on via dtoverlay
