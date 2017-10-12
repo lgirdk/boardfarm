@@ -38,6 +38,10 @@ class Nmap_WAN(rootfs_boot.RootFSBootTest):
         open_ports = re.findall("(\d+)/tcp\s+open", wan.before)
         msg = "Found %s open TCP ports on WAN interface." % len(open_ports)
         self.result_message = msg
+        print("open ports = %s" % open_ports)
+        if hasattr(board, 'wan_open_ports'):
+            print ("allowing open ports %s" % board.wan_open_ports)
+            open_ports = set(open_ports) - set(board.wan_open_ports)
         assert len(open_ports) == 0
 
 class UDP_Stress(rootfs_boot.RootFSBootTest):
