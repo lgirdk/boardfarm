@@ -359,7 +359,7 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline("sed -i 's/^Port 8888/Port 8080/' /etc/tinyproxy.conf")
         self.expect(self.prompt)
-        self.sendline("sed -i 's/^#Allow 10.0.0.0/Allow 10.0.0.0/' /etc/tinyproxy.conf")
+        self.sendline("sed 's/#Allow/Allow/g' -i /etc/tinyproxy.conf")
         self.expect(self.prompt)
         self.sendline('/etc/init.d/tinyproxy restart')
         self.expect('Restarting')
