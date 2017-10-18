@@ -107,11 +107,14 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.sendline('fatwrite mmc 0 %s uImage $filesize' % self.uboot_ddr_addr)
         self.expect(self.uprompt)
 
-    def pre_boot_linux(self, wan=None, lan=None):
-        self.wait_for_linux()
+    def wait_for_linux(self):
+        super(RPI, self).wait_for_linux()
         self.sendline('dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable bool false')
-        self.expect(self.prompt)
-        self.sendline('reboot')
+        if 0 == self.expect(['dmcli: not found'] + self.prompt):
+            self.expect(self.prompt)
+        else:
+            self.sendline('reboot')
+            super(RPI, self).wait_for_linux()
 
     def boot_linux(self, rootfs=None, bootargs=""):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
