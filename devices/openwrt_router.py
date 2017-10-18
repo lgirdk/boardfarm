@@ -49,6 +49,8 @@ class OpenWrtRouter(base.BaseDevice):
     delaybetweenchar = None
     uboot_net_delay = 30
 
+    routing = True
+
     def __init__(self,
                  model,
                  conn_cmd,
@@ -283,6 +285,14 @@ class OpenWrtRouter(base.BaseDevice):
 
     def wait_for_network(self):
         '''Wait until network interfaces have IP Addresses.'''
+
+        self.sendline('sysctl net.ipv4.ip_forward net.ipv4.ip_forward')
+        self.expect_exact('sysctl net.ipv4.ip_forward net.ipv4.ip_forward')
+        if 0 != self.expect(['net.ipv4.ip_forward = 1', 'net.ipv4.ip_forward = 0']):
+            self.routing = False
+            return
+        self.expect(self.prompt)
+
         for interface in [self.wan_iface, self.lan_iface]:
             for i in range(5):
                 try:
