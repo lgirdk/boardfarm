@@ -293,7 +293,7 @@ class OpenWrtRouter(base.BaseDevice):
                     self.expect(interface)
                     self.expect(self.prompt)
                 except pexpect.TIMEOUT:
-                    print("waiting for wan ipaddr")
+                    print("waiting for wan/lan ipaddr")
                 else:
                     break
 
