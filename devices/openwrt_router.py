@@ -409,6 +409,9 @@ class OpenWrtRouter(base.BaseDevice):
             raise Exception('U-Boot came back when booting kernel')
         elif i == 1:
             self.sendline('root')
+            if 0 == self.expect(['assword:'] + self.prompt):
+                self.sendline('password')
+                self.expect(self.prompt)
 
         # Give things time to start or crash on their own.
         # Some things, like wifi, take a while.
