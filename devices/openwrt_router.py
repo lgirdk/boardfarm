@@ -49,6 +49,8 @@ class OpenWrtRouter(base.BaseDevice):
     delaybetweenchar = None
     uboot_net_delay = 30
 
+    routing = True
+
     def __init__(self,
                  model,
                  conn_cmd,
