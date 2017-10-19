@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 def apt_install(device, name, timeout=120):
+    apt_update(device)
     device.sendline('apt-get install -q -y %s' % name)
     device.expect('Reading package')
     device.expect(device.prompt, timeout=timeout)
