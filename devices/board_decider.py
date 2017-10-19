@@ -14,6 +14,7 @@ import qcom_mips
 import marvell
 import rpi
 import cougarpark
+import qemu
 
 def board(model, **kwargs):
     '''
@@ -47,6 +48,9 @@ def board(model, **kwargs):
 
     if model in ("cougarpark"):
         return cougarpark.CougarPark(model, **kwargs)
+
+    if model in ("qemux86"):
+        return qemu.Qemu(model, **kwargs)
 
     # Default for all other models
     print("\nWARNING: Unknown board model '%s'." % model)
