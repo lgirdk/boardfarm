@@ -144,7 +144,8 @@ def main():
                                                  connection_type=config.board.get('connection_type', None),
                                                  ssh_password=config.board.get('ssh_password', None),
                                                  power_username=config.board.get('power_username', None),
-                                                 power_password=config.board.get('power_password', None))
+                                                 power_password=config.board.get('power_password', None),
+                                                 rootfs=config.ROOTFS)
             print_bold("dut device console = %s" % colored("black", 'grey'))
 
             setup_legacy_devices(config)
