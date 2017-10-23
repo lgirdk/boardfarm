@@ -9,6 +9,7 @@ import common
 import openwrt_router
 import sys
 import pexpect
+import atexit
 
 class Qemu(openwrt_router.OpenWrtRouter):
     '''
@@ -39,6 +40,22 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  rootfs=None,
                  **kwargs):
 
+        self.dl_console = None
+        if rootfs.startswith("http://") or rootfs.startswith("https://"):
+            self.dl_console = pexpect.spawn("bash --noprofile --norc")
+            self.dl_console.sendline('export PS1="prompt>>"')
+            self.dl_console.expect_exact("prompt>>")
+            self.dl_console.sendline('mktemp')
+            self.dl_console.expect('/tmp/tmp.*')
+            self.fname = self.dl_console.match.group(0).strip()
+            self.dl_console.expect_exact("prompt>>")
+            atexit.register(self.run_cleanup_cmd)
+            self.dl_console.logfile_read = sys.stdout
+            print("Temp downloaded rootfs = %s" % rootfs)
+            self.dl_console.sendline("curl -n -L -k '%s' > %s" % (rootfs, self.fname))
+            self.dl_console.expect_exact("prompt>>", timeout=500)
+            rootfs = self.fname
+
         cmd = "%s %s" % (conn_cmd, rootfs)
 
         # spawn a simple bash shell for now, will launch qemu later
@@ -46,6 +63,14 @@ class Qemu(openwrt_router.OpenWrtRouter):
                         args=["-c", cmd])
         self.logfile_read = output
         self.expect("SYSLINUX")
+
+        # we can delete the downloaded rootfs now
+        if self.dl_console is not None:
+            self.dl_console.sendline('rm %s' % self.fname)
+
+    def run_cleanup_cmd(self):
+        if self.dl_console is not None:
+            self.dl_console.sendline('rm %s' % self.fname)
 
     def wait_for_boot(self):
         pass
