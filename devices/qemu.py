@@ -19,8 +19,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
     wan_iface = "eth0"
     lan_iface = "brlan0"
 
-    # allowed open ports (starting point)
-    wan_open_ports = ['22', '8080', '8087', '8088', '8090']
+    # allowed open ports (starting point, dns is on wan?)
+    wan_open_ports = ['22', '53']
 
     def __init__(self,
                  model,
