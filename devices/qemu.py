@@ -16,7 +16,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     Emulated QEMU board
     '''
 
-    wan_iface = "erouter0"
+    wan_iface = "eth0"
     lan_iface = "brlan0"
 
     # allowed open ports (starting point)
