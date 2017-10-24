@@ -28,6 +28,8 @@ def install_iperf(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
+        device.sendline('apt-get update')
+        device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf')
         device.expect(device.prompt, timeout=60)
 
@@ -38,6 +40,8 @@ def install_iperf3(device):
         device.expect('iperf 3', timeout=5)
         device.expect(device.prompt)
     except:
+        device.expect(device.prompt)
+        device.sendline('apt-get update')
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
         device.expect(device.prompt, timeout=60)
@@ -59,6 +63,8 @@ def install_netperf(device):
         device.expect('Netperf version 2.4', timeout=10)
         device.expect(device.prompt)
     except:
+        device.expect(device.prompt)
+        device.sendline('apt-get update')
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install netperf')
         device.expect(device.prompt, timeout=60)
@@ -92,6 +98,8 @@ def install_hping3(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
+        device.sendline('apt-get update')
+        device.expect(device.prompt)
         apt_install(device, 'hping3')
 def install_python(device):
     '''Install python if not present.'''
@@ -100,6 +108,8 @@ def install_python(device):
         device.expect('Python 2', timeout=5)
         device.expect(device.prompt)
     except:
+        device.expect(device.prompt)
+        device.sendline('apt-get update')
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb')
         device.expect(device.prompt, timeout=60)
