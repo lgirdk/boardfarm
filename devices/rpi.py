@@ -109,10 +109,10 @@ class RPI(openwrt_router.OpenWrtRouter):
 
     def wait_for_linux(self):
         super(RPI, self).wait_for_linux()
-        self.sendline('dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable bool false')
-        if 0 == self.expect(['dmcli: not found'] + self.prompt):
+        self.sendline('dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable')
+        if self.expect(['               type:       bool,    value: false', 'dmcli: not found'] + self.prompt) > 1:
+            self.sendline('dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable bool false')
             self.expect(self.prompt)
-        else:
             self.sendline('reboot')
             super(RPI, self).wait_for_linux()
 
