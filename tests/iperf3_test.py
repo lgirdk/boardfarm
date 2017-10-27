@@ -32,7 +32,9 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         if 'Mbits' in sender:
             s_rate = float(sender.split()[0])
         elif 'Kbits' in sender:
-            s_rate = float(sender.split()[0]/1024)
+            s_rate = float(sender.split()[0])/1024
+        elif 'Gbits' in sender:
+            s_rate = float(sender.split()[0])*1024
         else:
             raise Exception("Unknown rate in sender results")
 
