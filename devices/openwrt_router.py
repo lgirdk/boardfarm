@@ -123,6 +123,8 @@ class OpenWrtRouter(base.BaseDevice):
 
     def get_seconds_uptime(self):
         '''Return seconds since last reboot. Stored in /proc/uptime'''
+        self.sendcontrol('c')
+        self.expect(self.prompt)
         self.sendline('\ncat /proc/uptime')
         self.expect('(\d+).(\d+).*\r\n')
         seconds_up = int(self.match.group(1))
