@@ -217,6 +217,14 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def configure(self, kind):
+        # start openssh server if not running:
+        self.sendline('/etc/init.d/ssh start')
+        self.expect(self.prompt)
+        self.sendline('sed "s/PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/ssh reload')
+        self.expect(self.prompt)
+
         if kind == "wan_device":
             self.setup_as_wan_gateway()
         elif kind == "lan_device":
@@ -243,14 +251,6 @@ class DebianBox(base.BaseDevice):
         self.sendline('ifconfig eth1 192.168.0.1')
         self.expect(self.prompt)
         self.sendline('ifconfig eth1 up')
-        self.expect(self.prompt)
-
-        # start openssh server if not running:
-        self.sendline('/etc/init.d/ssh start')
-        self.expect(self.prompt)
-        self.sendline('sed "s/PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
-        self.expect(self.prompt)
-        self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
 
         # configure DHCP server
