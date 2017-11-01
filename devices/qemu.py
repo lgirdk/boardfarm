@@ -38,6 +38,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  power_username=None,
                  power_password=None,
                  rootfs=None,
+                 env=None,
                  **kwargs):
 
         self.dl_console = None
@@ -60,7 +61,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
         # spawn a simple bash shell for now, will launch qemu later
         pexpect.spawn.__init__(self, command='/bin/bash',
-                        args=["-c", cmd])
+                        args=["-c", cmd], env=env)
         self.logfile_read = output
         self.expect("SYSLINUX")
 

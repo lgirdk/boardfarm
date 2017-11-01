@@ -30,16 +30,16 @@
     },
     "qemux86-1": {
         "board_type": "qemux86",
-        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=wan,ifname=bft-qemu-wan -device e1000,netdev=wan -netdev tap,id=lan,ifname=bft-qemu-lan -device e1000,netdev=lan",
+        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=wan,ifname=${wan_iface} -device e1000,netdev=wan -netdev tap,id=lan,ifname=${lan_iface} -device e1000,netdev=lan",
         "devices": [
                 {
                         "type": "debian",
                         "name": "wan",
                         "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev bft-qemu-wan",
-                        "post_cmd": "ip link set bft-qemu-wan name eth1",
-                        "cleanup_cmd": "docker stop wan; docker rm wan",
+                        "cmd": "docker run --name wan-${uniq_id} --privileged -it bft:node /bin/bash",
+                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan-${uniq_id}) dev ${wan_iface}",
+                        "post_cmd": "ip link set ${wan_iface} name eth1",
+                        "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
                         "color": "cyan",
                         "options": "tftpd-server"
                 },
@@ -47,10 +47,10 @@
                         "type": "debian",
                         "name": "lan",
                         "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev bft-qemu-lan",
-                        "post_cmd": "ip link set bft-qemu-lan name eth1",
-                        "cleanup_cmd": "docker stop lan; docker rm lan",
+                        "cmd": "docker run --name lan-${uniq_id} --privileged -it bft:node /bin/bash",
+                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
+                        "post_cmd": "ip link set ${lan_iface} name eth1",
+                        "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
                         "color": "blue"
                 }
         ],

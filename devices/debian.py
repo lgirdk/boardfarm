@@ -34,7 +34,8 @@ class DebianBox(base.BaseDevice):
                  cmd=None,
                  post_cmd_host=None,
                  post_cmd=None,
-                 cleanup_cmd=None):
+                 cleanup_cmd=None,
+                 env=None):
         if name is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
@@ -48,7 +49,7 @@ class DebianBox(base.BaseDevice):
             if pre_cmd_host is not None:
                 sys.stdout.write("\tRunning pre_cmd_host.... ")
                 sys.stdout.flush()
-                phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host])
+                phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
                 phc.expect(pexpect.EOF, timeout=120)
                 print("\tpre_cmd_host done")
 
@@ -56,7 +57,7 @@ class DebianBox(base.BaseDevice):
                 self.cleanup_cmd = cleanup_cmd
                 atexit.register(self.run_cleanup_cmd)
 
-            pexpect.spawn.__init__(self, command="bash", args=['-c', cmd])
+            pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
 
         self.color = color
         self.output = output
@@ -64,6 +65,8 @@ class DebianBox(base.BaseDevice):
         self.password = password
         self.port = port
         self.location = location
+        self.env=env
+
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
         except pexpect.TIMEOUT as e:
@@ -94,7 +97,7 @@ class DebianBox(base.BaseDevice):
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
             sys.stdout.flush()
-            phc = pexpect.spawn(command='bash', args=['-c', post_cmd_host])
+            phc = pexpect.spawn(command='bash', args=['-c', post_cmd_host], env=env)
             i = phc.expect([pexpect.EOF, pexpect.TIMEOUT, 'password'])
             if i > 0:
                 print("\tpost_cmd_host did not complete, it likely failed\n")
@@ -102,7 +105,11 @@ class DebianBox(base.BaseDevice):
                 print("\tpost_cmd_host done")
 
         if post_cmd is not None:
-            self.sendline(post_cmd)
+            env_prefix=""
+            for k, v in env.iteritems():
+                env_prefix += "export %s=%s; " % (k, v)
+
+            self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
 
         if reboot:
@@ -113,7 +120,7 @@ class DebianBox(base.BaseDevice):
     def run_cleanup_cmd(self):
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
         sys.stdout.flush()
-        cc = pexpect.spawn(command='bash', args=['-c', self.cleanup_cmd])
+        cc = pexpect.spawn(command='bash', args=['-c', self.cleanup_cmd], env=self.env)
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 

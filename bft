@@ -15,6 +15,8 @@ import sys
 import unittest2
 import junitxml
 import json
+import hashlib
+import time
 
 # Put this directory into the python path, so
 # that devices may be imported.
@@ -61,8 +63,9 @@ def setup_legacy_devices(config):
                                         port=config.board.get('2g_port', "22"))
 
 
-def setup_dynamic_devices(config):
+def setup_dynamic_devices(config, env=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
+
     config.devices = []
     for device in config.board['devices']:
         if device['type'] == 'debian':
@@ -76,7 +79,8 @@ def setup_dynamic_devices(config):
                 cmd=device.get('cmd', None),
                 post_cmd_host=device.get('post_cmd_host', None),
                 post_cmd=device.get('post_cmd', None),
-                cleanup_cmd=device.get('cleanup_cmd', None))
+                cleanup_cmd=device.get('cleanup_cmd', None),
+                env=env)
             setattr(config, device['name'], d)
             config.devices.append(device['name'])
         else:
@@ -131,6 +135,12 @@ def main():
                 # if not by ipaddr let's connect to the lan device later and update
                 pass
 
+
+            uniqid = hashlib.md5("%0.100f" % time.time()).hexdigest()[:15]
+            env = {"wan_iface": "wan%s" % uniqid[:12],
+                    "lan_iface": "lan%s" % uniqid[:12],
+                    "uniq_id": uniqid}
+
             # Connect to board
             config.console = board_decider.board(config.board['board_type'],
                                                  conn_cmd=config.board['conn_cmd'],
@@ -145,13 +155,14 @@ def main():
                                                  ssh_password=config.board.get('ssh_password', None),
                                                  power_username=config.board.get('power_username', None),
                                                  power_password=config.board.get('power_password', None),
-                                                 rootfs=config.ROOTFS)
+                                                 rootfs=config.ROOTFS,
+                                                 env=env)
             print_bold("dut device console = %s" % colored("black", 'grey'))
 
             setup_legacy_devices(config)
 
             if 'devices' in config.board:
-                setup_dynamic_devices(config)
+                setup_dynamic_devices(config, env=env)
 
             # legacy wan device
             if tftp_server is None and hasattr(config, 'wan'):
