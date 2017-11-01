@@ -42,7 +42,9 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         if 'Mbits' in recv:
             r_rate = float(recv.split()[0])
         elif 'Kbits' in recv:
-            r_rate = float(recv.split()[0]/1024)
+            r_rate = float(recv.split()[0])/1024
+        elif 'Gbits' in recv:
+            r_rate = float(recv.split()[0])*1024
         else:
             raise Exception("Unknown rate in recv results")
 
