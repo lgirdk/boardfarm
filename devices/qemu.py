@@ -62,8 +62,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
         # spawn a simple bash shell for now, will launch qemu later
         pexpect.spawn.__init__(self, command='/bin/bash',
                         args=["-c", cmd], env=env)
-        self.logfile_read = output
         self.expect("SYSLINUX")
+        self.logfile_read = output
 
         # we can delete the downloaded rootfs now
         if self.dl_console is not None:
@@ -83,7 +83,9 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def wait_for_linux(self):
-        self.expect("login:")
+        if 0 != self.expect(["login:", "Automatic boot in"]):
+            self.sendline()
+            self.expect('login:')
 
     def boot_linux(self, rootfs=None, bootargs=None):
         pass
