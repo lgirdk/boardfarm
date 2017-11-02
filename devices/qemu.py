@@ -40,6 +40,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  rootfs=None,
                  env=None,
                  **kwargs):
+        if rootfs is None:
+            raise Exception("The QEMU device type requires specifying a rootfs")
 
         self.dl_console = None
         if rootfs.startswith("http://") or rootfs.startswith("https://"):
