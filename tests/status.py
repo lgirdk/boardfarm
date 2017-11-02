@@ -7,6 +7,7 @@
 
 import re
 import rootfs_boot
+import pexpect
 from devices import board, wan, lan, wlan, prompt
 
 class Logread(rootfs_boot.RootFSBootTest):
@@ -30,7 +31,7 @@ class TopCheck(rootfs_boot.RootFSBootTest):
     '''Ran "top" to see current processes.'''
     def runTest(self):
         board.sendline('\ntop -b -n 1')
-        board.expect('Mem:', timeout=5)
+        board.expect(pexpect.TIMEOUT, timeout=2)
         try:
             board.expect(prompt, timeout=2)
         except:
