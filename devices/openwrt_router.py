@@ -290,12 +290,13 @@ class OpenWrtRouter(base.BaseDevice):
         for interface in [self.wan_iface, self.lan_iface]:
             for i in range(5):
                 try:
-                    ipaddr = self.get_interface_ipaddr(interface).strip()
-                    if not ipaddr:
-                        continue
-                    self.sendline("route -n")
-                    self.expect(interface)
-                    self.expect(self.prompt)
+                    if interface is not None:
+                        ipaddr = self.get_interface_ipaddr(interface).strip()
+                        if not ipaddr:
+                            continue
+                        self.sendline("route -n")
+                        self.expect(interface)
+                        self.expect(self.prompt)
                 except pexpect.TIMEOUT:
                     print("waiting for wan/lan ipaddr")
                 else:
