@@ -154,7 +154,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
     def recover(self):
         if self.__class__.__name__ == "RootFSBootTest":
-            board.sendline('ps auxfw')
+            board.sendline('ps auxfw || ps w')
             board.expect(prompt)
             board.sendline('iptables -S')
             board.expect(prompt)
