@@ -109,6 +109,14 @@ class RPI(openwrt_router.OpenWrtRouter):
 
     def wait_for_linux(self):
         super(RPI, self).wait_for_linux()
+
+        self.sendline('cat /etc/issue')
+        if 0 == self.expect(['OpenEmbedded'] + self.prompt):
+            self.routing = False
+            self.wan_iface = "eth0"
+            self.lan_iface = None
+            self.expect(self.prompt)
+
         self.sendline('dmcli eRT getv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable')
         if self.expect(['               type:       bool,    value: false', 'dmcli: not found'] + self.prompt) > 1:
             self.sendline('dmcli eRT setv Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable bool false')
