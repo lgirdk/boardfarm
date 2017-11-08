@@ -147,14 +147,22 @@ def install_java(device):
             device.expect(device.prompt, timeout=60)
 
 def install_telnet_server(device):
-    '''Install telnet server if not present.'''
+    '''Install xinetd/telnetd if not present.'''
     device.sendline('\nxinetd -version')
     try:
         device.expect('xinetd Version 2.3', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install xinetd telnetd -y')
+        device.sendline('apt-get install xinetd -y')
+        device.expect(device.prompt)
+    device.sendline('\ndpkg -l | grep telnetd')
+    try:
+        device.expect('The telnet server', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install telnetd -y')
         device.expect(device.prompt)
         device.sendline('echo \"service telnet\" > /etc/xinetd.d/telnet')
         device.sendline('echo "{" >> /etc/xinetd.d/telnet')
@@ -166,8 +174,6 @@ def install_telnet_server(device):
         device.sendline('echo \"server = /usr/sbin/in.telnetd\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"log_on_failure += USERID\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"}\" >> /etc/xinetd.d/telnet')
-        device.expect(device.prompt)
-        device.sendline('/etc/init.d/xinetd restart')
         device.expect(device.prompt, timeout=60)
 
 def install_tcl(device):

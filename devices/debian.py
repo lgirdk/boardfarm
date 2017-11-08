@@ -400,6 +400,35 @@ class DebianBox(base.BaseDevice):
                     pass
                 self.expect(self.prompt)
 
+    def add_new_user(self, id, pwd):
+        '''Create new login ID. But check if already exists'''
+        self.sendline('\nadduser %s' % id)
+        try:
+            self.expect_exact("Enter new UNIX password", timeout=5)
+            self.sendline('%s' % pwd)
+            self.expect_exact("Retype new UNIX password")
+            self.sendline('%s' % pwd)
+            self.expect_exact("Full Name []")
+            self.sendline('%s' % id)
+            self.expect_exact("Room Number []")
+            self.sendline('1')
+            self.expect_exact("Work Phone []")
+            self.sendline('4081234567')
+            self.expect_exact("Home Phone []")
+            self.sendline('4081234567')
+            self.expect_exact("Other []")
+            self.sendline('4081234567')
+            self.expect_exact("Is the information correct?")
+            self.sendline('y')
+            self.expect(self.prompt)
+            self.sendline('usermod -aG sudo %s' % id)
+            self.expect(self.prompt)
+            # Remove "$" in the login prompt and replace it with "#"
+            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
+            self.expect(self.prompt, timeout=30)
+        except:
+            self.expect(self.prompt, timeout=30)
+
 if __name__ == '__main__':
     # Example use
     dev = DebianBox('10.0.0.173',
