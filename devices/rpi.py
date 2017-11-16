@@ -96,7 +96,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt)
         self.sendline('mmc write %s %s %s' % (self.uboot_ddr_addr, start, count))
         self.expect_exact('mmc write %s %s %s' % (self.uboot_ddr_addr, start, count))
-        self.expect(self.uprompt, timeout=120)
+        self.expect(self.uprompt, timeout=480)
 
     def flash_linux(self, KERNEL):
         common.print_bold("\n===== Flashing linux =====\n")
