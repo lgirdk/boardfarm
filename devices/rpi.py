@@ -7,7 +7,7 @@
 
 import common
 import openwrt_router
-
+import os
 
 class RPI(openwrt_router.OpenWrtRouter):
     '''
@@ -104,7 +104,8 @@ class RPI(openwrt_router.OpenWrtRouter):
         filename = self.prepare_file(KERNEL)
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
 
-        self.sendline('fatwrite mmc 0 %s uImage $filesize' % self.uboot_ddr_addr)
+        self.kernel_file = os.path.basename(KERNEL)
+        self.sendline('fatwrite mmc 0 %s %s $filesize' % (self.kernel_file, self.uboot_ddr_addr))
         self.expect(self.uprompt)
 
     def wait_for_linux(self):
@@ -135,7 +136,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.sendline('setenv bootargs "$bcm_bootargs %s"' % bootargs)
         self.expect(self.uprompt)
 
-        self.sendline("setenv bootcmd 'fatload mmc 0 ${kernel_addr_r} uImage; bootm ${kernel_addr_r} - ${fdt_addr}'")
+        self.sendline("setenv bootcmd 'fatload mmc 0 ${kernel_addr_r} %s; bootm ${kernel_addr_r} - ${fdt_addr}; booti ${kernel_addr_r} - ${fdt_addr}'" % self.kernel_file)
         self.expect(self.uprompt)
         self.sendline('saveenv')
         self.expect(self.uprompt)
