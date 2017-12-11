@@ -26,3 +26,7 @@ elasticsearch_server = os.environ.get('BFT_ELASTICSERVER', None)
 # Code change server like gerrit, github, etc... Used only in display
 # of the results html file to list links to code changes tested.
 code_change_server = None
+
+cdrouter_server = os.environ.get('BFT_CDROUTERSERVER', None)
+cdrouter_wan_iface = os.environ.get('BFT_CDROUTERWANIFACE', "eth1")
+cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
