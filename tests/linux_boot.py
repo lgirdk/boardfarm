@@ -21,6 +21,7 @@ class LinuxBootTest(unittest2.TestCase):
         self.reset_after_fail = True
         self.dont_retry = False
         self.logged = dict()
+        self.subtests = []
 
     def id(self):
         return self.__class__.__name__

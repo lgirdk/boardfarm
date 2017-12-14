@@ -117,3 +117,9 @@ def firefox_webproxy_driver(ipport):
 
 def test_msg(msg):
     cprint(msg, None, attrs=['bold'])
+
+class TestResult:
+    def __init__(self, name, grade, message):
+        self.name = name
+        self.result_grade = grade
+        self.result_message = message
