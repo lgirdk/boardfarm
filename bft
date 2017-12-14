@@ -13,7 +13,6 @@ import os
 import random
 import sys
 import unittest2
-import junitxml
 import json
 import hashlib
 import time
@@ -199,12 +198,7 @@ def main():
 
     # Run tests
     os.environ['TEST_START_TIME'] = datetime.datetime.now().strftime("%s")
-    result_name = os.path.join(config.output_dir + "test_results.xml")
-    result_file = open(result_name, "w")
-    result = junitxml.JUnitXmlResult(result_file)
-    result.startTestRun()
     tests_to_run = []
-    suite = unittest2.TestSuite()
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
     import tests
@@ -230,15 +224,24 @@ def main():
             print_bold("Unable to find specified extra tests, aborting...")
             sys.exit(1)
 
-    for x in tests_to_run:
-        suite.addTest(x)
-
     print_bold('==========')
     try:
-        print_bold(suite.run(result))
+        tests_pass = tests_fail = tests_skip = 0
+        for test in tests_to_run:
+            test.run()
+            grade = getattr(test, "result_grade", None)
+            if grade == "OK" or grade == "Unexp OK":
+                tests_pass += 1
+            elif grade == "FAIL" or grade == "Exp FAIL":
+                tests_fail += 1
+            elif grade == "SKIP" or grade is None:
+                tests_skip += 1
+
     except KeyboardInterrupt:
         print_bold("Run interrupted. Wrapping up...")
-    result.stopTestRun()
+
+    print_bold("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
+
     try:
         config.console.close()
         config.lan.close()
@@ -246,9 +249,7 @@ def main():
     except Exception as e:
         print(e)
         print_bold("For some reason, could not close a connection.")
-    print_bold("Wrote %s" % result_name)
     library.print_board_info(config.board)
-    result_file.close()
 
     with open(os.path.join(config.output_dir, 'console.log'), 'w') as clog:
         clog.write(config.console.log)

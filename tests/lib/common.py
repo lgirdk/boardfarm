@@ -7,7 +7,6 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import json
-import junitxml
 import pexpect
 import sys
 import subprocess
