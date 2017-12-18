@@ -10,7 +10,7 @@
 			"cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
 			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
 			"post_cmd": "ip link set enx00249b14dc6e name eth1",
-			"cleanup_cmd": "docker stop wan; docker rm wan",
+			"cleanup_cmd": "docker stop wan; docker rm wan; sudo ip link set dev enx00249b14dc6e down",
 			"color": "cyan",
 			"options": "tftpd-server"
 		},
@@ -21,7 +21,7 @@
 			"cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
 			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
 			"post_cmd": "ip link set enxc05627904e8c name eth1",
-			"cleanup_cmd": "docker stop lan; docker rm lan",
+			"cleanup_cmd": "docker stop lan; docker rm lan; sudo ip link set dev enxc05627904e8c down",
 			"color": "blue"
 		}
 	],
@@ -68,7 +68,7 @@
 			"cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
 			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
 			"post_cmd": "ip link set enx00249b14dc6e name eth1",
-			"cleanup_cmd": "docker stop wan; docker rm wan",
+			"cleanup_cmd": "docker stop wan; docker rm wan; sudo ip link set dev enx00249b14dc6e down",
 			"color": "cyan",
 			"options": "tftpd-server"
 		},
@@ -79,7 +79,7 @@
 			"cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
 			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
 			"post_cmd": "ip link set enxc05627904e8c name eth1",
-			"cleanup_cmd": "docker stop lan; docker rm lan",
+			"cleanup_cmd": "docker stop lan; docker rm lan; sudo ip link set dev enxc05627904e8c down",
 			"color": "blue"
 		}
 	],
