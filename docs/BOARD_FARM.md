@@ -257,3 +257,114 @@ If running openSUSE, you would run:
 ```
 zypper in uucp
 ```
+
+Starting with an Unknown board
+----------------------
+
+In a perfect world, the device you are using is already supported but that's
+not always the case. This section will highlight some examples for running on
+a new unsupported board.
+
+We've added a board called 'new_device' to the boardfarm example configuration,
+with this configuration you can get started easily. This example also makes use of
+docker containers for the LAN and WAN virtual devices - so it's also an example of
+how that works
+
+To run this test, you need to have docker install and the user that us running the
+boardfarm scripts needs to have sudo permission (or you could add the user to the
+docker group as well, but sudo is required for some of the other networking steps).
+Also, the user should be configured for password-less sudo.
+
+The default configuration also assumes that you have no device to power cycle the,
+so you need to watch for messages:
+
+User power-cycle the device now!
+
+And that would be when you manually go and power cycle the board. After that if
+everything works properly, the device will come up and it will run an example test.
+Since you are using an unknown board type, you will possibly see some messages
+where the tool is probing network interfaces but you can ignore those for the
+most part
+
+To get started run you need to update the boardfarm config with the actual ethernet
+devices you have connected to the WAN and LAN ports of the device under test. In the
+example it uses enxc05627904e8 and enx0050b61bfde4 - these devices can be any device
+as long as the packets arrive at the device on the right ports (e.g. you can use VLAN
+devices here as well). Also, you need to update the conn_cmd attribute to be a command
+that connects to the serial console of your device. This can be telnet, cu, etc as
+long as it's a normal console.
+
+After that is done you can start a basic shell that just connects to all your devices:
+
+$ ./bft -n new_device -x connect
+[ .. snip .. ]
+==================== Begin Interact ====================
+Press Ctrl-] to stop interaction and return to menu
+
+If you got here, a lot went right. The scripts spawned the docker containers and
+connected to the console. Go ahead and enter the menu by following the instructions:
+
+Current station
+  Board console: cu -l /dev/ttyUSB1 -s 115200
+  wan device:    ssh root@29ea56ffcf76
+  lan device:    ssh root@64386c00d161
+Pro-tip: Increase kernel message verbosity with
+    echo "7 7 7 7" > /proc/sys/kernel/printk
+Menu
+  1: Enter console
+  2: List all tests
+  3: Run test
+  4: Reset board
+  5: Enter interactive python shell
+  Type a device name to connect: [u'wan', u'lan']
+  x: Exit
+Please select:
+
+From here you can type lan, and press enter.. or wan and press enter. This will
+change the shell from the device under test to the WAN and LAN docker containers.
+You should verfiy that the eth0 and eth1 devices are present in each containter.
+eth1 is the interface name of the device you specified in the boardfarm config.
+If something went wrong you will need each command one-by-one outside of the
+boardfarm scripts and see if there are errors present.
+
+Assuming no errors, you can exit the menu and try to run another test but this
+time we will let the boardfarm scripts do more than connect, they will bring up
+the WAN and LAN containers where the WAN container is hosting DHCP and routing
+traffic (like an ISP would) and the LAN container is grabbing an IP via DHCP from
+the device under test. Also, after that basic configuration is done, it will then
+run a simple test (note: you can run tests from the Interact menu as well).
+
+$ ./bft -n new_device -e iPerf3Test
+[ .. snip .. ]
+Test suite "flash" has been specified, will attempt to run tests:
+  1 RootFSBootTest from /home/mattsm/git/boardfarm/tests/rootfs_boot.pyc
+Extra tests specified on command line:
+  <class 'tests.iperf3_test.iPerf3Test'>
+  <class 'tests.interact.Interact'>
+
+[ .. snip .. ]
+==================== Begin RootFSBootTest ====================
+[ .. snip .. ]
+==================== End RootFSBootTest ======================
+
+==================== Begin iPerf3Test ====================
+[ .. snip .. ]
+==================== End iPerf3Test ======================
+
+==================== Begin Interact ====================
+
+The above output is severely truncated to save space, but in each section see
+the output from the device under test, WAN, and LAN containers. During the run,
+you should see the output from the iperf3 command showing the results of the
+test, something like this:
+
+[SUM]   0.00-60.05  sec   498 MBytes  69.6 Mbits/sec  322             sender
+[SUM]   0.00-60.05  sec   498 MBytes  69.5 Mbits/sec                  receiver
+
+NOTE: since we are running new containers each time keep in mind that the WAN
+and LAN devices will be completely reset each time you start the scripts. You
+could actual modify the startup and make the containers persistant across
+invocations of the script. Each way has it's pros and cons
+
+Next step is to add proper support for your new board so you can take advantage of
+automated flashing and remote power and reset to completly automate your CI flow

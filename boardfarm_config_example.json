@@ -1,7 +1,7 @@
 {
     "rpi3-1": {
         "board_type": "rpi3",
-        "conn_cmd": "cu -l /dev/ttyUSB4 -s 115200",
+        "conn_cmd": "cu -l /dev/ttyUSB1 -s 115200",
 	"devices": [
 		{
 			"type": "debian",
@@ -19,8 +19,8 @@
 			"name": "lan",
 			"pre_cmd_host": "docker build -t bft:node bft-node",
 			"cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
-			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enx0050b61bfde4",
-			"post_cmd": "ip link set enx0050b61bfde4 name eth1",
+			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
+			"post_cmd": "ip link set enxc05627904e8c name eth1",
 			"cleanup_cmd": "docker stop lan; docker rm lan",
 			"color": "blue"
 		}
@@ -56,5 +56,34 @@
         ],
         "connection_type": "local_serial",
         "notes": "QEMU emulated devices"
+    },
+    "new_device": {
+        "board_type": "Unknown",
+        "conn_cmd": "cu -l /dev/ttyUSB1 -s 115200",
+	"devices": [
+		{
+			"type": "debian",
+			"name": "wan",
+			"pre_cmd_host": "docker build -t bft:node bft-node",
+			"cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
+			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
+			"post_cmd": "ip link set enx00249b14dc6e name eth1",
+			"cleanup_cmd": "docker stop wan; docker rm wan",
+			"color": "cyan",
+			"options": "tftpd-server"
+		},
+		{
+			"type": "debian",
+			"name": "lan",
+			"pre_cmd_host": "docker build -t bft:node bft-node",
+			"cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
+			"post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
+			"post_cmd": "ip link set enxc05627904e8c name eth1",
+			"cleanup_cmd": "docker stop lan; docker rm lan",
+			"color": "blue"
+		}
+	],
+	"connection_type": "local_serial",
+        "notes": "Unknown device with docker containers attached to WAN/LAN"
     }
 }
