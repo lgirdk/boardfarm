@@ -141,8 +141,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         self.logged['boot_time'] = end_seconds_up
 
         if board.routing and lan and self.config.setup_device_networking:
-            lan_ip = board.get_interface_ipaddr(board.lan_iface)
-            lan.start_lan_client(gw=lan_ip)
+            lan.start_lan_client()
 
     reflash = False
     reboot = False

@@ -298,6 +298,11 @@ class DebianBox(base.BaseDevice):
 
         self.turn_off_pppoe()
 
+    def get_gw_from_dhclient_leases(self):
+        self.sendline("cat /var/lib/dhcp/dhclient.leases")
+        self.expect('option routers (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})', timeout=5)
+        return self.match.group(1)
+
     def setup_as_lan_device(self, gw="192.168.1.1"):
         # potential cleanup so this wan device works
         self.sendline('killall iperf ab hping3')
@@ -324,7 +329,7 @@ class DebianBox(base.BaseDevice):
         self.sendline('pkill --signal 9 -f dhclient.*eth1')
         self.expect(self.prompt)
 
-    def start_lan_client(self, gw="192.168.1.1"):
+    def start_lan_client(self):
         self.sendline('\nifconfig eth1 up')
         self.expect('ifconfig eth1 up')
         self.expect(self.prompt)
@@ -346,6 +351,7 @@ class DebianBox(base.BaseDevice):
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
         self.sendline('ifconfig eth1')
         self.expect(self.prompt)
+        gw = self.get_gw_from_dhclient_leases()
         self.sendline('route del default')
         self.expect(self.prompt)
         self.sendline('route del default')
