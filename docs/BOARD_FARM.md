@@ -270,10 +270,9 @@ with this configuration you can get started easily. This example also makes use 
 docker containers for the LAN and WAN virtual devices - so it's also an example of
 how that works
 
-To run this test, you need to have docker install and the user that us running the
-boardfarm scripts needs to have sudo permission (or you could add the user to the
-docker group as well, but sudo is required for some of the other networking steps).
-Also, the user should be configured for password-less sudo.
+You need to add the user to the docker group as well so the boardfarm scripts can
+run docker commands. Also for the time being you need to have password-less sudo
+so we can run certain networking related commands
 
 The default configuration also assumes that you have no device to power cycle the,
 so you need to watch for messages:
