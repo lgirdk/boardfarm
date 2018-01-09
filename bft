@@ -289,14 +289,26 @@ def main():
     info_for_remote_log.pop('test_results', None)
     # but we will add back specific test results data
     for t in tests_to_run:
-        if hasattr(t, 'override_kibana_name'):
-            n = t.override_kibana_name
-        else:
-            n = t.__class__.__name__
-        for k, v in t.logged.items():
-            info_for_remote_log[n + '-' + k] = v
-        if hasattr(t, 'result_grade'):
-            info_for_remote_log[n + "-result"] = t.result_grade
+        def prepare_results_for_kibana(test, prefix=""):
+            if hasattr(test, 'override_kibana_name'):
+                n = test.override_kibana_name
+            elif hasattr(test, 'name'):
+                n = test.name
+            else:
+                n = test.__class__.__name__
+
+            n = prefix + n
+
+            for k, v in test.logged.items():
+                info_for_remote_log[n + '-' + k] = v
+            if hasattr(test, 'result_grade'):
+                info_for_remote_log[n + "-result"] = test.result_grade
+
+            return n
+
+        prefix = prepare_results_for_kibana(t) + "-"
+        for subtest in t.subtests:
+            prepare_results_for_kibana(subtest, prefix=prefix)
 
     try:
         if config.logging_server is not None:
