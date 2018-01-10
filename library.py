@@ -16,7 +16,7 @@ def print_board_info(x):
     for key in sorted(x):
         print_bold("  %s: %s" % (key, x[key]))
 
-def process_test_results(raw_test_results):
+def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],
                     'tests_pass': 0,
                     'tests_fail': 0,
@@ -27,6 +27,11 @@ def process_test_results(raw_test_results):
         def parse_and_add_results(cls, prefix=""):
             name = prefix + getattr(cls, 'name', cls.__class__.__name__)
             grade = getattr(cls, 'result_grade', None)
+
+            if '_source' in golden:
+                if name + "-result" in golden['_source']:
+                    if golden['_source'][name + "-result"] != grade:
+                        name = name + "*"
 
             if grade == "OK" or grade == "Unexp OK":
                 full_results['tests_pass'] += 1

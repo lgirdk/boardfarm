@@ -256,8 +256,19 @@ def main():
 
     os.environ['TEST_END_TIME'] = datetime.datetime.now().strftime("%s")
 
+    # grab golden master results
+    try:
+        if config.golden is not None:
+            import requests
+            golden = requests.get(config.golden).json()
+        else:
+            golden = {}
+    except:
+        print_bold("Failed to fetch golden master results, skipping...")
+        golden = {}
+
     # Write test result messages to a file
-    full_results = library.process_test_results(tests_to_run)
+    full_results = library.process_test_results(tests_to_run, golden)
     json.dump(full_results,
               open(os.path.join(config.output_dir + 'test_results.json'), 'w'),
               indent=4,
