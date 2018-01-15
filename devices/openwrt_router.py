@@ -179,7 +179,7 @@ class OpenWrtRouter(base.BaseDevice):
         self.expect(self.prompt)
         return new_fname
 
-    def tftp_get_file_uboot(self, loadaddr, filename, timeout=30):
+    def tftp_get_file_uboot(self, loadaddr, filename, timeout=60):
         '''Within u-boot, download file from tftp server.'''
         for attempt in range(3):
             try:
