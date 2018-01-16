@@ -204,3 +204,4 @@ for k, v in cdrouter_test_matrix.iteritems():
 
 class CDrouterCustom(CDrouterStub):
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
+    extra_config = os.environ.get("BFT_CDROUTER_CUSTOM_CONFIG", "")
