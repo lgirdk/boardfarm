@@ -30,13 +30,16 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     '''
 
     if ip_address is None:
-        if outlet is not None and "wemo://" in outlet:
-            if WemoEnv is None:
-                print("Please install ouimeaux: pip install ouimeaux")
-            else:
-                return WemoPowerSwitch(outlet=outlet)
-        else:
-            return HumanButtonPusher()
+        if outlet is not None:
+            if "wemo://" in outlet:
+                if WemoEnv is None:
+                    print("Please install ouimeaux: pip install ouimeaux")
+                else:
+                    return WemoPowerSwitch(outlet=outlet)
+            if "serial://" in outlet:
+                return SimpleSerialPower(outlet=outlet)
+
+        return HumanButtonPusher()
 
     try:
         data = urlopen("http://" + ip_address).read().decode()
@@ -192,6 +195,36 @@ class WemoPowerSwitch(PowerDevice):
         self.switch.off()
         time.sleep(5)
         self.switch.on()
+
+class SimpleSerialPower(PowerDevice):
+    '''
+    Simple serial based relay or power on off. Has an on and off string to send
+    over serial
+    '''
+    serial_dev = '/dev/ttyACM0'
+    baud = 2400
+    off_cmd = b'relay on 0'
+    delay = 5
+    on_cmd = b'relay off 0'
+
+    def __init__(self, outlet):
+        parsed = outlet.replace("serial://", '').split(';')
+        self.serial_dev = "/dev/" + parsed[0]
+        for param in parsed[1:]:
+            for attr in ['on_cmd', 'off_cmd']:
+                if attr + '=' in param:
+                    setattr(self, attr, param.replace(attr + '=', '').encode())
+
+    def reset(self):
+        import serial
+        with serial.Serial(self.serial_dev, self.baud) as ser:
+            if self.off_cmd is not None:
+                ser.write(self.off_cmd + '\r')
+                time.sleep(5)
+
+            ser.write(self.on_cmd + '\r')
+
+            ser.close()
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")

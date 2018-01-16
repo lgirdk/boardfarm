@@ -9,3 +9,4 @@ selenium
 future
 dlipower
 cdrouter
+serial
