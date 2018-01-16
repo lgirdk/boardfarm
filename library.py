@@ -22,20 +22,29 @@ def process_test_results(raw_test_results, golden={}):
                     'tests_fail': 0,
                     'tests_skip': 0,
                     'tests_total': 0,
+                    'unexpected_fail': 0,
+                    'unexpected_pass': 0,
                     }
     for i, x in enumerate(raw_test_results):
         def parse_and_add_results(cls, prefix=""):
             name = prefix + getattr(cls, 'name', cls.__class__.__name__)
             grade = getattr(cls, 'result_grade', None)
 
+            unexpected = False
             if '_source' in golden:
                 if name + "-result" in golden['_source']:
                     if golden['_source'][name + "-result"] != grade:
-                        name = name + "*"
+                        unexpected = True
 
-            if grade == "OK" or grade == "Unexp OK":
+            if grade == "Unexp OK" or (grade == "OK" and unexpected):
+                grade = "Unexp OK"
+                full_results['unexpected_pass'] += 1
+            elif grade == "Exp FAIL" or (grade == "FAIL" and unexpected):
+                grade = "Exp FAIL"
+                full_results['unexpected_fail'] += 1
+            elif grade == "OK":
                 full_results['tests_pass'] += 1
-            elif grade == "FAIL" or grade == "Exp FAIL":
+            elif grade == "FAIL":
                 full_results['tests_fail'] += 1
             elif grade == "SKIP" or grade is None:
                 full_results['tests_skip'] += 1
