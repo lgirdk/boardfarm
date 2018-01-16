@@ -181,7 +181,8 @@ testvar lanVlanId """ + lan.vlan
             d.expect(prompt)
 
 cdrouter_test_matrix = {
-        "Basic": { "tests": [ "cdrouter_basic_{0}".format(i) for i in [1, 2, 10, 20] ] },
+        "Basic": { "tests": [ "cdrouter_basic_{0}".format(i) for i in [1, 2, 10, 20] ],
+                    "extra_config": "testvar dhcpClientStart 10.0.0.2,testvar dhcpClientEnd 10.0.0.253,testvar lanIp 10.0.0.1" },
         "DHCP": { "tests": [ "cdrouter_dhcp_{0}".format(i) for i in [1, 2, 3, 4, 5, 10, 11, 20 ] ] },
         "DHCPServer": { "tests": [ "cdrouter_dhcp_server_{0}".format(i) for i in [1, 2] \
                                     + range(4, 11) \
