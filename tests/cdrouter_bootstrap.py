@@ -97,6 +97,9 @@ testvar lanInterface """ + self.config.cdrouter_lan_iface
             contents=contents + """
 testvar lanVlanId """ + lan.vlan
 
+        if self.config.cdrouter_config is not None:
+            contents=contents + "\n" + "".join(open(self.config.cdrouter_config, 'r').readlines())
+
         if self.extra_config:
             contents=contents + "\n" + self.extra_config.replace(',', '\n')
 
@@ -181,14 +184,11 @@ testvar lanVlanId """ + lan.vlan
             d.expect(prompt)
 
 cdrouter_test_matrix = {
-        "Basic": { "tests": [ "cdrouter_basic_{0}".format(i) for i in [1, 2, 10, 20] ],
-                    "extra_config": "testvar dhcpClientStart 10.0.0.2,testvar dhcpClientEnd 10.0.0.253,testvar lanIp 10.0.0.1" },
+        "Basic": { "tests": [ "cdrouter_basic_{0}".format(i) for i in [1, 10] ] },
         "DHCP": { "tests": [ "cdrouter_dhcp_{0}".format(i) for i in [1, 2, 3, 4, 5, 10, 11, 20 ] ] },
         "DHCPServer": { "tests": [ "cdrouter_dhcp_server_{0}".format(i) for i in [1, 2] \
                                     + range(4, 11) \
-                                    + [30, 31, 100, 200, 300, 301, 401, 501, 520, 540, 600, 610, 620, 630, 700, 710, 720, 800, 801] ],
-                        "extra_config": "testvar dhcpClientStart 10.0.0.2,testvar dhcpClientEnd 10.0.0.253,testvar lanIp 10.0.0.1",
-                        },
+                                    + [30, 31, 100, 200, 300, 301, 401, 501, 520, 540, 600, 610, 620, 630, 700, 710, 720, 800, 801] ] },
         "NAT": { "tests": [ "cdrouter_nat_{0}".format(i) for i in [1, 2, 100, 101, 120, 130, 150, 200, 201, 300, 320, 330, 340, 350, 360, 361, 400, 401, 410, 500, 501, 510, 511, 520, 530, 600, 610] ] },
         "NATTimeout": { "tests": [ "cdrouter_nat_timeout_{0}".format(i) for i in [1, 2, 10, 11, 20, 25, 30, 40] ] },
 }

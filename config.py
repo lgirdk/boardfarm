@@ -28,5 +28,6 @@ elasticsearch_server = os.environ.get('BFT_ELASTICSERVER', None)
 code_change_server = None
 
 cdrouter_server = os.environ.get('BFT_CDROUTERSERVER', None)
+cdrouter_config = os.environ.get('BFT_CDROUTERCONFIG', None)
 cdrouter_wan_iface = os.environ.get('BFT_CDROUTERWANIFACE', "eth1")
 cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
