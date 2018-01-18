@@ -15,6 +15,7 @@ import time
 import rootfs_boot
 from devices import board, wan, lan, wlan, prompt
 import os
+import pexpect
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -122,7 +123,7 @@ testvar lanVlanId """ + lan.vlan
         j = c.jobs.launch(Job(package_id=p.id))
 
         while j.result_id is None:
-            time.sleep(1)
+            board.expect(pexpect.TIMEOUT, timeout=1)
             j = c.jobs.get(j.id)
 
         print('Job Result-ID: {0}'.format(j.result_id))
@@ -134,13 +135,13 @@ testvar lanVlanId """ + lan.vlan
             # we are ready to go from boardfarm reset above
             if r.status == "paused":
                 c.results.unpause(j.result_id)
-                time.sleep(5)
+                board.expect(pexpect.TIMEOUT, timeout=5)
                 continue
 
             if r.status != "running":
                 break
 
-            time.sleep(5)
+            board.expect(pexpect.TIMEOUT, timeout=5)
 
         print(r.result)
         self.result_message = r.result.encode('ascii','ignore')
