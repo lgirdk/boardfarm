@@ -162,9 +162,12 @@ testvar lanVlanId """ + lan.vlan
 
             if str(test.name) not in ["start", "final"]:
                 from lib.common import TestResult
-                grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[test.result]
-                tr = TestResult(test.name, grade_map, test.description)
-                self.subtests.append(tr)
+                try:
+                    grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[test.result]
+                    tr = TestResult(test.name, grade_map, test.description)
+                    self.subtests.append(tr)
+                except:
+                    continue
 
             # TODO: handle skipped tests
 
