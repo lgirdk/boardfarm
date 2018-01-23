@@ -202,6 +202,7 @@ def main():
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
     import tests
+    tests.init(config)
     import testsuites
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):

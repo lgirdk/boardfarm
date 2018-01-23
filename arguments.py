@@ -83,6 +83,7 @@ def parse():
 
     if args.list_tests:
         import tests
+        tests.init(config)
         # Print all classes that are a subclass of TestCase
         for e in dir(tests):
             thing = getattr(tests, e)
