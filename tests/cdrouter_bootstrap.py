@@ -129,6 +129,8 @@ testvar lanVlanId """ + lan.vlan
 
         print('Job Result-ID: {0}'.format(j.result_id))
 
+        self.job_id = j.result_id
+        self.results = c.results
         while True:
             r = c.results.get(j.result_id)
             print(r.status)
@@ -180,6 +182,11 @@ testvar lanVlanId """ + lan.vlan
         self.recover()
 
     def recover(self):
+        if hasattr(self, 'results'):
+            r = self.results.get(self.job_id)
+
+            if r.status == "running":
+                self.results.stop(self.job_id)
         # TODO: full recovery...
         for d in [wan,lan]:
             d.sendline('ifconfig eth1 up')
