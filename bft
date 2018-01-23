@@ -228,8 +228,11 @@ def main():
     print_bold('==========')
     try:
         tests_pass = tests_fail = tests_skip = 0
+        curr_test = None
         for test in tests_to_run:
+            curr_test = test
             test.run()
+            curr_test = None
             grade = getattr(test, "result_grade", None)
             if grade == "OK" or grade == "Unexp OK":
                 tests_pass += 1
@@ -240,6 +243,8 @@ def main():
 
     except KeyboardInterrupt:
         print_bold("Run interrupted. Wrapping up...")
+        if curr_test is not None:
+            curr_test.recover()
 
     print_bold("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
 
