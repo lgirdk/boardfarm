@@ -16,6 +16,7 @@ import rootfs_boot
 from devices import board, wan, lan, wlan, prompt
 import os
 import pexpect
+import lib
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -184,24 +185,22 @@ testvar lanVlanId """ + lan.vlan
             d.sendline('ifconfig eth1 up')
             d.expect(prompt)
 
-cdrouter_test_matrix = {
-        "Basic": { "tests": [ "cdrouter_basic_{0}".format(i) for i in [1, 10] ] },
-        "DHCP": { "tests": [ "cdrouter_dhcp_{0}".format(i) for i in [1, 2, 3, 4, 5, 10, 11, 20 ] ] },
-        "DHCPServer": { "tests": [ "cdrouter_dhcp_server_{0}".format(i) for i in [1, 2] \
-                                    + range(4, 11) \
-                                    + [30, 31, 100, 200, 300, 301, 401, 501, 520, 540, 600, 610, 620, 630, 700, 710, 720, 800, 801] ] },
-        "NAT": { "tests": [ "cdrouter_nat_{0}".format(i) for i in [1, 2, 100, 101, 120, 130, 150, 200, 201, 300, 320, 330, 340, 350, 360, 361, 400, 401, 410, 500, 501, 510, 511, 520, 530, 600, 610] ] },
-        "NATTimeout": { "tests": [ "cdrouter_nat_timeout_{0}".format(i) for i in [1, 2, 10, 11, 20, 25, 30, 40] ] },
-}
+    @staticmethod
+    @lib.common.run_once
+    def parse(config):
+        c = CDRouter(config.cdrouter_server)
+        cdrouter_test_matrix = {}
+        new_tests = []
+        for mod in c.testsuites.list_modules():
+            name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
+            list_of_tests = [ x.encode('ascii','ignore') for x in mod.tests ]
+            globals()[name] = type(name.encode('ascii','ignore') , (CDrouterStub, ),
+                                    {
+                                        'tests': list_of_tests
+                                    })
+            new_tests.append(name)
 
-for k, v in cdrouter_test_matrix.iteritems():
-    name = "CDrouter" + k
-
-    globals()[name] = type(name, (CDrouterStub, ),
-                            {
-                                'tests': v['tests'],
-                                'extra_config': v.get('extra_config', False),
-                            })
+        return new_tests
 
 class CDrouterCustom(CDrouterStub):
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
