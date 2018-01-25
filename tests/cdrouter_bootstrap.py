@@ -39,12 +39,6 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         board.sendcontrol('c')
         board.expect(prompt)
-        try:
-            board.sendline('reboot')
-            board.wait_for_linux()
-        except:
-            board.reset()
-            board.wait_for_linux()
 
         # TODO: make host configurable in bft config?
         c = CDRouter(self.config.cdrouter_server)
@@ -121,6 +115,13 @@ testvar lanVlanId """ + lan.vlan
         p = c.packages.create(Package(name="bft-automated-job",
                                       testlist=self.tests,
                                       config_id=cfg.id))
+
+        try:
+            board.sendline('reboot')
+            board.expect('reboot: Restarting system')
+        except:
+            board.reset()
+
         j = c.jobs.launch(Job(package_id=p.id))
 
         while j.result_id is None:
@@ -131,17 +132,30 @@ testvar lanVlanId """ + lan.vlan
 
         self.job_id = j.result_id
         self.results = c.results
+        unpaused = False
+        end_of_start = False
         while True:
             r = c.results.get(j.result_id)
             print(r.status)
 
             # we are ready to go from boardfarm reset above
-            if r.status == "paused":
+            if r.status == "paused" and unpaused == False:
                 c.results.unpause(j.result_id)
-                board.expect(pexpect.TIMEOUT, timeout=5)
+                unpaused = True
+                board.expect(pexpect.TIMEOUT, timeout=1)
+                c.results.pause(j.result_id, when="end-of-test")
+                end_of_start = True
                 continue
 
-            if r.status != "running":
+
+            if r.status == "paused" and end_of_start == True:
+                end_of_start = False
+                # TODO: make this board specific?
+                board.expect(pexpect.TIMEOUT, timeout=60)
+                c.results.unpause(j.result_id)
+                continue
+
+            if r.status != "running" and r.status != "paused":
                 break
 
             board.expect(pexpect.TIMEOUT, timeout=5)
@@ -194,6 +208,13 @@ testvar lanVlanId """ + lan.vlan
         for d in [wan,lan]:
             d.sendline('ifconfig eth1 up')
             d.expect(prompt)
+
+        # make sure board is back in a sane state
+        board.sendcontrol('c')
+        board.sendline()
+        if 0 != board.expect([pexpect.TIMEOUT] + board.uprompt, timeout=5):
+            board.reset()
+            board.wait_for_linux()
 
     @staticmethod
     @lib.common.run_once
