@@ -27,11 +27,11 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         Break into Shell.
         '''
         # Try to break into uboot
-        self.expect('Remaining timeout:',timeout=30)
+        self.expect('Remaining timeout:', timeout=30)
         self.send('\x1B')
         self.expect('startup.nsh',timeout=30)
         self.send('\x1B')
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
 
     def setup_uboot_network(self):
         # line sep for UEFI
@@ -40,14 +40,14 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect(pexpect.TIMEOUT, timeout=15)
         self.sendline('ifconfig -c %s' % self.uboot_eth)
         self.sendline('ifconfig -s %s dhcp' % self.uboot_eth)
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
         self.sendline('ifconfig -l')
         self.expect_exact('IP address: 192.168.0.')
         self.expect_exact('Gateway: 192.168.0.1')
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
         self.sendline('ping 192.168.0.1')
         self.sendline('10 packets transmitted, 10 received, 0% packet loss, time 0ms')
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
 
     def flash_linux(self, KERNEL):
         print("\n===== Updating kernel and rootfs =====\n")
@@ -55,11 +55,11 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
         self.sendline('tftp -p %s -d 192.168.0.1 %s' % (self.uboot_ddr_addr, filename))
         self.expect_exact('TFTP  general status Success')
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
 
         self.sendline('update -a A -s %s' % self.uboot_ddr_addr)
         self.expect_exact('Congrats! Looks like everything went as planned! Your flash has been updated! Have a good day!')
-        self.expect_exact('Shell>',timeout=30)
+        self.expect_exact(self.uprompt, timeout=30)
 
     def boot_linux(self, rootfs=None, bootargs=None):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
