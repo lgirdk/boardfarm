@@ -17,6 +17,7 @@ import pexpect
 import base
 from datetime import datetime
 import time
+import ipaddress
 
 import error_detect
 import power
@@ -45,11 +46,14 @@ class OpenWrtRouter(base.BaseDevice):
     lan_gmac_iface = "eth1"
     lan_iface = "br-lan"
     wan_iface = "eth0"
+    tftp_server_int = None
 
     delaybetweenchar = None
     uboot_net_delay = 30
 
     routing = True
+    lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
+    lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
 
     def __init__(self,
                  model,
@@ -338,7 +342,11 @@ class OpenWrtRouter(base.BaseDevice):
         self.expect("wan.proto='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
         return self.match.group(1)
 
-    def setup_uboot_network(self, TFTP_SERVER="192.168.0.1"):
+    def setup_uboot_network(self, tftp_server=None):
+        if self.tftp_server_int is None:
+            if tftp_server is None:
+                raise Exception("Error in TFTP server configuration")
+            self.tftp_server_int = tftp_server
         '''Within U-boot, request IP Address,
         set server IP, and other networking tasks.'''
         # Use standard eth1 address of wan-side computer
@@ -353,9 +361,9 @@ class OpenWrtRouter(base.BaseDevice):
         if i == 0:
             self.sendline('setenv ipaddr 192.168.0.2')
             self.expect(self.uprompt)
-        self.sendline('setenv serverip %s' % TFTP_SERVER)
+        self.sendline('setenv serverip %s' % self.tftp_server_int)
         self.expect(self.uprompt)
-        if TFTP_SERVER:
+        if self.tftp_server_int:
             #interfaces=['eth1','eth0']
             passed = False
             for attempt in range(5):
@@ -364,7 +372,7 @@ class OpenWrtRouter(base.BaseDevice):
                     self.expect('<INTERRUPT>')
                     self.expect(self.uprompt)
                     self.sendline("ping $serverip")
-                    self.expect("host %s is alive" % TFTP_SERVER)
+                    self.expect("host %s is alive" % self.tftp_server_int)
                     self.expect(self.uprompt)
                     passed = True
                     break
