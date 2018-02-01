@@ -25,7 +25,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         wan.expect('-----------------------------------------------------------')
 
 
-        lan.sendline('iperf3 %s -c 192.168.0.1 -P5 -t %s -i 0' % (self.opts, self.time))
+        lan.sendline('iperf3 %s -c %s -P5 -t %s -i 0' % (self.opts, wan.gw, self.time))
         lan.expect(prompt, timeout=self.time+5)
 
         sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', lan.before)[-1]
