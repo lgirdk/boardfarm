@@ -31,6 +31,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             # start all tftp servers for now
             for tftp_server in tftp_servers:
                 tftp_device = getattr(self.config, tftp_server)
+                # TODO: this means wan.gw != tftp_server
                 tftp_device.start_tftp_server()
 
 
@@ -43,7 +44,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                             self.config.KERNEL or self.config.UBOOT):
             # Break into U-Boot, set environment variables
             board.wait_for_boot()
-            board.setup_uboot_network()
+            board.setup_uboot_network(wan.gw)
             if self.config.META_BUILD:
                 for attempt in range(3):
                     try:
@@ -53,7 +54,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                         print(e)
                         wan.restart_tftp_server()
                         board.reset(break_into_uboot=True)
-                        board.setup_uboot_network()
+                        board.setup_uboot_network(wan.gw)
                 else:
                     raise Exception('Error during flashing...')
             if self.config.UBOOT:

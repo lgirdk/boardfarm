@@ -10,6 +10,7 @@ import time
 import pexpect
 import base
 import atexit
+import ipaddress
 
 from termcolor import colored, cprint
 
@@ -35,7 +36,9 @@ class DebianBox(base.BaseDevice):
                  post_cmd_host=None,
                  post_cmd=None,
                  cleanup_cmd=None,
-                 env=None):
+                 env=None,
+                 lan_network=None,
+                 lan_gateway=None):
         if name is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
@@ -66,6 +69,18 @@ class DebianBox(base.BaseDevice):
         self.port = port
         self.location = location
         self.env=env
+        self.lan_network = lan_network
+        self.lan_gateway = lan_gateway
+
+        # we need to pick a non-conflicting private network here
+        # also we want it to be consistant and not random for a particular
+        # board
+        if (lan_gateway - lan_network.num_addresses).is_private:
+            self.gw = lan_gateway - lan_network.num_addresses
+        else:
+            self.gw = lan_gateway + lan_network.num_addresses
+
+        self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -184,7 +199,8 @@ class DebianBox(base.BaseDevice):
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install tftpd-hpa')
 
         # set WAN ip address, for now this will always be this address for the device side
-        self.sendline('ifconfig eth1 192.168.0.1')
+        # TODO: fix gateway for non-WAN tftp_server
+        self.sendline('ifconfig eth1 %s' % getattr(self, 'gw', '192.168.0.1'))
         self.expect(self.prompt)
 
         #configure tftp server
@@ -255,7 +271,7 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
         # set WAN ip address
-        self.sendline('ifconfig eth1 192.168.0.1')
+        self.sendline('ifconfig eth1 %s' % self.gw)
         self.expect(self.prompt)
         self.sendline('ifconfig eth1 up')
         self.expect(self.prompt)
@@ -271,9 +287,10 @@ class DebianBox(base.BaseDevice):
         self.sendline('option domain-name-servers 8.8.8.8, 8.8.4.4;')
         self.sendline('default-lease-time 600;')
         self.sendline('max-lease-time 7200;')
-        self.sendline('subnet 192.168.0.0 netmask 255.255.255.0 {')
-        self.sendline('          range 192.168.0.10 192.168.0.100;')
-        self.sendline('          option routers 192.168.0.1;')
+        # use the same netmask as the lan device
+        self.sendline('subnet %s netmask %s {' % (self.nw.network_address, self.nw.netmask))
+        self.sendline('          range %s %s;' % (self.nw.network_address + 10, self.nw.network_address + 100))
+        self.sendline('          option routers %s;' % self.gw)
         self.sendline('}')
         self.sendline('EOF')
         self.expect(self.prompt)
@@ -298,12 +315,7 @@ class DebianBox(base.BaseDevice):
 
         self.turn_off_pppoe()
 
-    def get_gw_from_dhclient_leases(self):
-        self.sendline("cat /var/lib/dhcp/dhclient.leases")
-        self.expect('option routers (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})', timeout=5)
-        return self.match.group(1)
-
-    def setup_as_lan_device(self, gw="192.168.1.1"):
+    def setup_as_lan_device(self):
         # potential cleanup so this wan device works
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
@@ -318,7 +330,7 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline('iptables -F; iptables -X')
         self.expect(self.prompt)
-        self.sendline('iptables -t nat -A PREROUTING -p tcp --dport 222 -j DNAT --to-destination %s:22' % gw)
+        self.sendline('iptables -t nat -A PREROUTING -p tcp --dport 222 -j DNAT --to-destination %s:22' % self.lan_gateway)
         self.expect(self.prompt)
         self.sendline('iptables -t nat -A POSTROUTING -o eth1 -p tcp --dport 22 -j MASQUERADE')
         self.expect(self.prompt)
@@ -351,14 +363,13 @@ class DebianBox(base.BaseDevice):
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
         self.sendline('ifconfig eth1')
         self.expect(self.prompt)
-        gw = self.get_gw_from_dhclient_leases()
         self.sendline('route del default')
         self.expect(self.prompt)
         self.sendline('route del default')
         self.expect(self.prompt)
         self.sendline('route del default')
         self.expect(self.prompt)
-        self.sendline('route add default gw %s' % gw)
+        self.sendline('route add default gw %s' % self.lan_gateway)
         self.expect(self.prompt)
         # Setup HTTP proxy, so board webserver is accessible via this device
         self.sendline('apt-get -qy install tinyproxy curl apache2-utils nmap')
@@ -380,27 +391,27 @@ class DebianBox(base.BaseDevice):
         # Write a useful ssh config for routers
         self.sendline('mkdir -p ~/.ssh')
         self.sendline('cat > ~/.ssh/config << EOF')
-        self.sendline('Host %s' % gw)
+        self.sendline('Host %s' % self.lan_gateway)
         self.sendline('StrictHostKeyChecking no')
         self.sendline('UserKnownHostsFile=/dev/null')
         self.sendline('')
         self.sendline('Host krouter')
-        self.sendline('Hostname %s' % gw)
+        self.sendline('Hostname %s' % self.lan_gateway)
         self.sendline('StrictHostKeyChecking no')
         self.sendline('UserKnownHostsFile=/dev/null')
         self.sendline('EOF')
         self.expect(self.prompt)
         # Copy an id to the router so people don't have to type a password to ssh or scp
-        self.sendline('nc %s 22 -w 1' % gw)
-        self.expect_exact('nc %s 22 -w 1' % gw)
+        self.sendline('nc %s 22 -w 1' % self.lan_gateway)
+        self.expect_exact('nc %s 22 -w 1' % self.lan_gateway)
         if 0 == self.expect(['SSH'] + self.prompt, timeout=5):
             self.sendline('[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa')
             if 0 != self.expect(['Protocol mismatch.'] + self.prompt):
-                self.sendline('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % gw)
-                self.expect_exact('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % gw)
+                self.sendline('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
+                self.expect_exact('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
                 try:
                     # When resetting, no need for password
-                    self.expect("root@%s's password:" % gw, timeout=5)
+                    self.expect("root@%s's password:" % self.lan_gateway, timeout=5)
                     self.sendline('password')
                 except:
                     pass
