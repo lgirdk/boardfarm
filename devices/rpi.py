@@ -8,6 +8,7 @@
 import common
 import openwrt_router
 import os
+import ipaddress
 
 class RPI(openwrt_router.OpenWrtRouter):
     '''
@@ -16,6 +17,9 @@ class RPI(openwrt_router.OpenWrtRouter):
 
     wan_iface = "erouter0"
     lan_iface = "brlan0"
+
+    lan_network = ipaddress.IPv4Network(u"10.0.0.0/24")
+    lan_gateway = ipaddress.IPv4Address(u"10.0.0.1")
 
     uprompt = ["U-Boot>"]
     uboot_eth = "sms0"
