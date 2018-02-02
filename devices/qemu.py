@@ -78,7 +78,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     def wait_for_boot(self):
         pass
 
-    def setup_uboot_network(self):
+    def setup_uboot_network(self, tftp_server=None):
         pass
 
     def flash_rootfs(self, ROOTFS):
