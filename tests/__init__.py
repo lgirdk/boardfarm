@@ -11,8 +11,17 @@ import os
 import glob
 import unittest2
 import inspect
+import sys
 
 test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+if 'BFT_OVERLAY' in os.environ:
+    for overlay in os.environ['BFT_OVERLAY'].split(' '):
+        overlay = os.path.abspath(overlay)
+        sys.path.insert(0, overlay + '/tests')
+        test_files += glob.glob(overlay + '/tests/*.py')
+
+    sys.path.insert(0, os.getcwd() + '/tests')
+
 test_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
     try:
