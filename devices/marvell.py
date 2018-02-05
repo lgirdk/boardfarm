@@ -14,6 +14,7 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
     '''
     Marvell board
     '''
+    model = ("wrt3200acm")
 
     prompt = ['root\\@.*:.*#', ]
     uprompt = ['Venom>>']

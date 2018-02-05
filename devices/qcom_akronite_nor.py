@@ -12,6 +12,7 @@ class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
     '''
     Board with an Akronite processor.
     '''
+    model = ("ap148-nor")
 
     def __init__(self, *args, **kwargs):
         super(QcomAkroniteRouterNOR, self).__init__(*args, **kwargs)

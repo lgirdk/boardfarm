@@ -13,6 +13,8 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
     '''
     Board with a MIPS processor.
     '''
+    model = ("db120", "ap135", "ap143", "ap147", "ap152", "ap151",
+             "ap151-16M", "ap143", "ap152-8M", "tew-823dru")
 
     prompt = ['root\\@.*:.*#', ]
     uprompt = ['ath>', 'ar7240>']

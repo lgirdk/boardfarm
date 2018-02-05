@@ -15,6 +15,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     '''
     Emulated QEMU board
     '''
+    model = ("qemux86")
 
     wan_iface = "eth0"
     lan_iface = "brlan0"

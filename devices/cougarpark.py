@@ -14,6 +14,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     '''
     Intel Cougar Park board
     '''
+    model = ("cougarpark")
 
     wan_iface = "erouter0"
     lan_iface = "brlan0"

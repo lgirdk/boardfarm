@@ -14,6 +14,7 @@ class RPI(openwrt_router.OpenWrtRouter):
     '''
     Raspberry pi board
     '''
+    model = ("rpi3")
 
     wan_iface = "erouter0"
     lan_iface = "brlan0"

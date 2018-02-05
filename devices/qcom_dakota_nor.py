@@ -12,6 +12,7 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
     '''
     Board with an Dakota processor.
     '''
+    model = ("dk01-nor", "dk04-nor")
 
     uboot_ddr_addr = "0x88000000"
     machid_table = {"dk01-nor": "8010000", "dk04-nor": "8010001"}
