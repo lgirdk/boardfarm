@@ -39,9 +39,18 @@ def initialize_devices(configuration):
 
 def board_decider(model, **kwargs):
     import os
+    import sys
     import glob
     import inspect
     device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+    if 'BFT_OVERLAY' in os.environ:
+        for overlay in os.environ['BFT_OVERLAY'].split(' '):
+            overlay = os.path.abspath(overlay)
+            sys.path.insert(0, overlay + '/devices')
+            device_files += glob.glob(overlay + '/devices/*.py')
+
+        sys.path.insert(0, os.getcwd() + '/devices')
+
     device_mappings = { }
     for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
         try:
