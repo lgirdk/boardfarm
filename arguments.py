@@ -101,6 +101,17 @@ def parse():
         else:
             data = open(args.config_file, 'r').read()
         config.boardfarm_config = json.loads(data)
+
+        if 'locations' in config.boardfarm_config:
+            location = config.boardfarm_config['locations']
+            del config.boardfarm_config['locations']
+
+            for board in config.boardfarm_config:
+                if 'location' in config.boardfarm_config[board]:
+                    board_location = config.boardfarm_config[board]['location']
+                    if board_location in location:
+                        config.boardfarm_config[board].update(location[board_location])
+
     except Exception as e:
         print(e)
         print('Unable to access/read Board Farm configuration\n%s' % boardfarm_config_location)
