@@ -1,4 +1,4 @@
-FROM debian:8
+FROM debian:9
 
 RUN echo "root:bigfoot1" | chpasswd
 
