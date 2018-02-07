@@ -25,12 +25,18 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
     # To be overriden by children class
     tests = None
     extra_config = False
+    cdrouter_server = None
 
     def runTest(self):
+        if 'cdrouter_server' in self.config.board:
+            self.cdrouter_server = self.config.board['cdrouter_server']
+        elif self.config.cdrouter_server is not None:
+            self.cdrouter_server = self.config.cdrouter_server
+
         if self.tests is None:
             self.skipTest("No tests defined!")
 
-        if self.config.cdrouter_server is None:
+        if self.cdrouter_server is None:
             self.skipTest("No cdrouter server specified")
 
         for d in [wan, lan]:
@@ -41,7 +47,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
         # TODO: make host configurable in bft config?
-        c = CDRouter(self.config.cdrouter_server)
+        c = CDRouter(self.cdrouter_server)
 
         # TODO: more clean edit of a config, and use a special name per config?
         try:
@@ -219,7 +225,12 @@ testvar lanVlanId """ + lan.vlan
     @staticmethod
     @lib.common.run_once
     def parse(config):
-        c = CDRouter(config.cdrouter_server)
+        if 'cdrouter_server' in config.board:
+            cdrouter_server = config.board['cdrouter_server']
+        elif config.cdrouter_server is not None:
+            cdrouter_server = config.cdrouter_server
+
+        c = CDRouter(cdrouter_server)
         cdrouter_test_matrix = {}
         new_tests = []
         for mod in c.testsuites.list_modules():
