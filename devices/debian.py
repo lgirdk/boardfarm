@@ -163,7 +163,9 @@ class DebianBox(base.BaseDevice):
 
     def get_ip_addr(self, interface):
         self.sendline("\nifconfig %s" % interface)
-        self.expect('addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):', timeout=5)
+        regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
+                 'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)']
+        self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
         self.expect(self.prompt)
         return ipaddr
@@ -295,7 +297,7 @@ class DebianBox(base.BaseDevice):
         self.sendline('EOF')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server start')
-        self.expect(['Starting ISC DHCP server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
         # configure routing
