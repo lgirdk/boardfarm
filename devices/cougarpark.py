@@ -9,6 +9,7 @@ import common
 import openwrt_router
 import pexpect
 import ipaddress
+import connection_decider
 
 class CougarPark(openwrt_router.OpenWrtRouter):
     '''
@@ -26,6 +27,16 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     delaybetweenchar = 0.2
     uboot_ddr_addr = "0x10000000"
     uboot_eth = "eth0"
+
+    arm = None
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+
+        del kwargs['conn_cmd']
+        self.arm = pexpect.spawn.__new__(pexpect.spawn)
+        arm_conn = connection_decider.connection(kwargs['connection_type'], device=self.arm, conn_cmd=self.conn_list[1], **kwargs)
+        arm_conn.connect()
 
     def wait_for_boot(self):
         '''
