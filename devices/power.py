@@ -54,6 +54,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return SentrySwitchedCDU(ip_address, outlet=outlet)
     if '<title>APC ' in data:
         return APCPower(ip_address, outlet=outlet)
+    if '<b>IP9258 Log In</b>' in data:
+        return Ip9258(ip_address, outlet, username=username, password=password)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
@@ -225,6 +227,55 @@ class SimpleSerialPower(PowerDevice):
             ser.write(self.on_cmd + '\r')
 
             ser.close()
+
+#
+# IP Power 9258 networked power switch class
+#
+# This work is released under the Creative Commons Zero (CC0) license.
+# See http://creativecommons.org/publicdomain/zero/1.0/
+
+# Example use:
+#
+# import time
+# from ip9258 import Ip9258
+#
+# ip9258 = Ip9258('192.168.1.10', 'admin', 'password')
+#
+# for i in range(4):
+#     ip9258.on(i)
+#     time.delay(1)
+#
+#     ip9258.off(i)
+#     time.delay(1)
+
+import urllib2
+
+class Ip9258(PowerDevice):
+    def __init__(self, ip_address, port, username="admin", password="12345678"):
+        PowerDevice.__init__(self, ip_address, username, password)
+        self._ip_address = ip_address
+        self.port = port
+
+        # create a password manager
+        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr.add_password(None, 'http://' + ip_address, username, password)
+        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib2.build_opener(handler)
+        # Now all calls to urllib2.urlopen use our opener.
+        urllib2.install_opener(opener)
+
+    def on(self):
+        print("Power On Port(%s)\n" % self.port)
+        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+
+    def off(self):
+        print("Power Off Port(%s)\n" % self.port)
+        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+
+    def reset(self):
+	self.off()
+	time.sleep(5)
+	self.on()
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
