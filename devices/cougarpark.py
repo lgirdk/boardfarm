@@ -10,6 +10,7 @@ import openwrt_router
 import pexpect
 import ipaddress
 import connection_decider
+import signal
 
 class CougarPark(openwrt_router.OpenWrtRouter):
     '''
@@ -37,6 +38,10 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.arm = pexpect.spawn.__new__(pexpect.spawn)
         arm_conn = connection_decider.connection(kwargs['connection_type'], device=self.arm, conn_cmd=self.conn_list[1], **kwargs)
         arm_conn.connect()
+
+    def kill_console_at_exit(self):
+        self.kill(signal.SIGKILL)
+        self.arm.kill(signal.SIGKILL)
 
     def wait_for_boot(self):
         '''
