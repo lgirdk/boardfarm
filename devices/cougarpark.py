@@ -61,12 +61,9 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         # required delay for networking to work...
         self.expect(pexpect.TIMEOUT, timeout=15)
         self.sendline('ifconfig -c %s' % self.uboot_eth)
-        self.sendline('ifconfig -s %s dhcp' % self.uboot_eth)
         self.expect_exact(self.uprompt, timeout=30)
-        self.sendline('ifconfig -l')
-        ip_c = str(tftp_server).split('.')
-        self.expect_exact('IP address: %s.%s.%s' % (ip_c[0], ip_c[1], ip_c[2]))
-        self.expect_exact('Gateway: %s' % tftp_server)
+        # this does tftp from a USB in the bios, so it's staticly configured
+        self.sendline('ifconfig -s %s static %s 255.255.255.0 %s' % (self.uboot_eth, tftp_server+1, tftp_server))
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline('ping %s' % tftp_server)
         self.sendline('10 packets transmitted, 10 received, 0% packet loss, time 0ms')
