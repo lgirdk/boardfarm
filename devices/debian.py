@@ -107,7 +107,10 @@ class DebianBox(base.BaseDevice):
             self.expect(self.prompt)
             name = self.name = self.before.strip()
 
-        cprint("%s device console = %s" % (name, colored(color, color)), None, attrs=['bold'])
+        if self.port != 22:
+            cprint("%s port %s device console = %s" % (name, port, colored(color, color)), None, attrs=['bold'])
+        else:
+            cprint("%s device console = %s" % (name, colored(color, color)), None, attrs=['bold'])
 
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
