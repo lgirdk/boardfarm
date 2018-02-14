@@ -14,26 +14,29 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
     '''Flashed image and booted successfully.'''
 
     def boot(self, reflash=True):
-        if not wan:
-            msg = 'No WAN Device defined, skipping flash.'
+        # start tftpd server on appropriate device
+        tftp_servers = [ x['name'] for x in self.config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
+        tftp_device = None
+        # start all tftp servers for now
+        for tftp_server in tftp_servers:
+            tftp_device = getattr(self.config, tftp_server)
+            # TODO: this means wan.gw != tftp_server
+            tftp_device.start_tftp_server()
+
+        if not wan and len(tftp_servers) == 0:
+            msg = 'No WAN Device or tftp_server defined, skipping flash.'
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
-        wan.configure(kind="wan_device")
-        if lan:
-            lan.configure(kind="lan_device")
-
-        # start tftpd server on appropriate device
+        # This still needs some clean up, the fall back is to assuming the
+        # WAN provides the tftpd server, but it's not always the case
         if self.config.board.get('wan_device', None) is not None:
             wan.start_tftp_server()
-        else:
-            tftp_servers = [ x['name'] for x in self.config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
-            # start all tftp servers for now
-            for tftp_server in tftp_servers:
-                tftp_device = getattr(self.config, tftp_server)
-                # TODO: this means wan.gw != tftp_server
-                tftp_device.start_tftp_server()
+            tftp_device = wan
+            wan.configure(kind="wan_device")
 
+        if lan:
+            lan.configure(kind="lan_device")
 
         board.reset()
         rootfs = None
@@ -44,7 +47,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                             self.config.KERNEL or self.config.UBOOT):
             # Break into U-Boot, set environment variables
             board.wait_for_boot()
-            board.setup_uboot_network(wan.gw)
+            board.setup_uboot_network(tftp_device.gw)
             if self.config.META_BUILD:
                 for attempt in range(3):
                     try:
@@ -52,9 +55,9 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                         break
                     except Exception as e:
                         print(e)
-                        wan.restart_tftp_server()
+                        tftp_device.restart_tftp_server()
                         board.reset(break_into_uboot=True)
-                        board.setup_uboot_network(wan.gw)
+                        board.setup_uboot_network(tftp_device.gw)
                 else:
                     raise Exception('Error during flashing...')
             if self.config.UBOOT:
@@ -93,14 +96,16 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             # Router mac addresses are likely to change, so flush arp
             if lan:
                 lan.ip_neigh_flush()
-            wan.ip_neigh_flush()
+            if wan:
+                wan.ip_neigh_flush()
 
             # Clear default routes perhaps left over from prior use
             if lan:
                 lan.sendline('\nip -6 route del default')
                 lan.expect(prompt)
-            wan.sendline('\nip -6 route del default')
-            wan.expect(prompt)
+            if wan:
+                wan.sendline('\nip -6 route del default')
+                wan.expect(prompt)
 
         # Give other daemons time to boot and settle
         if self.config.setup_device_networking:
