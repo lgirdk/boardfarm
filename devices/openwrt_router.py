@@ -16,18 +16,11 @@ import urllib2
 import pexpect
 import base
 from datetime import datetime
-import time
 import ipaddress
 
-import error_detect
 import power
 import common
 import connection_decider
-
-
-# To Do: maybe make this config variable
-BFT_DEBUG = "BFT_DEBUG" in os.environ
-
 
 class OpenWrtRouter(base.BaseDevice):
     '''
@@ -49,7 +42,6 @@ class OpenWrtRouter(base.BaseDevice):
     wan_iface = "eth0"
     tftp_server_int = None
 
-    delaybetweenchar = None
     uboot_net_delay = 30
 
     routing = True
@@ -486,56 +478,6 @@ class OpenWrtRouter(base.BaseDevice):
 	else:
 		print("WARN: Overlay still not mounted")
 
-    # Optional send and expect functions to try and be fancy at catching errors
-    def send(self, s):
-        if BFT_DEBUG:
-            common.print_bold("%s = sending: %s" %
-                              (error_detect.caller_file_line(3), repr(s)))
-
-        if self.delaybetweenchar is not None:
-            ret = 0
-            for char in s:
-                ret += super(OpenWrtRouter, self).send(char)
-                time.sleep(self.delaybetweenchar)
-            return ret
-
-        return super(OpenWrtRouter, self).send(s)
-
-    def expect_helper(self, pattern, wrapper, *args, **kwargs):
-        if not BFT_DEBUG:
-            return wrapper(pattern, *args, **kwargs)
-
-        common.print_bold("%s = expecting: %s" %
-                              (error_detect.caller_file_line(2), repr(pattern)))
-        try:
-            ret = wrapper(pattern, *args, **kwargs)
-            if hasattr(self.match, "group"):
-                common.print_bold("%s = matched: %s" %
-                                  (error_detect.caller_file_line(2), repr(self.match.group())))
-            else:
-                common.print_bold("%s = matched: %s" %
-                                  (error_detect.caller_file_line(2), repr(pattern)))
-            return ret
-        except:
-            common.print_bold("expired")
-            raise
-
-    def expect(self, pattern, *args, **kwargs):
-        wrapper = super(OpenWrtRouter, self).expect
-
-        return self.expect_helper(pattern, wrapper, *args, **kwargs)
-
-    def expect_exact(self, pattern, *args, **kwargs):
-        wrapper = super(OpenWrtRouter, self).expect_exact
-
-        return self.expect_helper(pattern, wrapper, *args, **kwargs)
-
-    def sendcontrol(self, char):
-        if BFT_DEBUG:
-            common.print_bold("%s = sending: control-%s" %
-                              (error_detect.caller_file_line(3), repr(char)))
-
-        return super(OpenWrtRouter, self).sendcontrol(char)
 
 if __name__ == '__main__':
     # Example use
