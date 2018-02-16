@@ -31,6 +31,7 @@ class OpenWrtRouter(base.BaseDevice):
       power_outlet: Outlet # this device is connected
     '''
     conn_list = None
+    consoles = []
 
     prompt = ['root\\@.*:.*#', '/ # ', '@R7500:/# ']
     uprompt = ['ath>', '\(IPQ\) #', 'ar7240>', '\(IPQ40xx\)']
@@ -64,6 +65,9 @@ class OpenWrtRouter(base.BaseDevice):
                  power_username=None,
                  power_password=None,
                  **kwargs):
+
+        self.consoles.append(self)
+
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
             conn_cmd = self.conn_list[0]

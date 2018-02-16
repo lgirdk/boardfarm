@@ -38,6 +38,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.arm = pexpect.spawn.__new__(pexpect.spawn)
         arm_conn = connection_decider.connection(kwargs['connection_type'], device=self.arm, conn_cmd=self.conn_list[1], **kwargs)
         arm_conn.connect()
+        self.consoles.append(self.arm)
 
     def kill_console_at_exit(self):
         self.kill(signal.SIGKILL)
