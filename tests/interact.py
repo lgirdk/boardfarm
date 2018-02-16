@@ -48,13 +48,22 @@ class Interact(rootfs_boot.RootFSBootTest):
             print('Pro-tip: Increase kernel message verbosity with\n'
                   '    echo "7 7 7 7" > /proc/sys/kernel/printk')
             print("Menu")
-            print("  1: Enter console")
             i = 2
+            if board.consoles is None:
+                print("  1: Enter console")
+                i += 1
+            else:
+                i = 1
+                for c in board.consoles:
+                    print("  %s: Enter console" % i)
+                    i += 1
             if legacy: 
-                print("  2: Enter wan console")
-                print("  3: Enter lan console")
-                print("  4: Enter wlan console")
-                i = 5
+                print("  %s: Enter wan console" % i)
+                i += 1
+                print("  %s: Enter lan console" % i)
+                i += 1
+                print("  %s: Enter wlan console" % i)
+                i += 1
 
             print("  %s: List all tests" % i)
             i += 1
@@ -73,15 +82,29 @@ class Interact(rootfs_boot.RootFSBootTest):
                 d = getattr(self.config, key)
                 d.interact()
 
-            if key == "1":
-                board.interact()
-            elif legacy and key == "2":
-                wan.interact()
-            elif legacy and key == "3":
-                lan.interact()
-            elif legacy and key == "4":
-                wlan.interact()
-            elif (legacy and key == "5") or key == "2":
+            i = 1
+            for c in board.consoles:
+                if key == str(i):
+                    c.interact()
+                i += 1
+
+            if legacy:
+                if key == str(i):
+                    wan.interact()
+                    continue
+                i += 1
+
+                if key == str(i):
+                    lan.interact()
+                    continue
+                i += 1
+
+                if key == str(i):
+                    wlan.interact()
+                    continue
+                i += 1
+
+            if key == str(i):
                 try:
                     # re import the tests
                     test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
@@ -94,7 +117,10 @@ class Interact(rootfs_boot.RootFSBootTest):
                     rfs_boot = rootfs_boot.RootFSBootTest
                     print("Available tests:")
                     print_subclasses(rfs_boot)
-            elif (legacy and key == "6") or key == "3":
+                continue
+            i += 1
+
+            if key == str(i):
                 try:
                     # re import the tests
                     test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
@@ -107,24 +133,30 @@ class Interact(rootfs_boot.RootFSBootTest):
                     print("Type test to run: ")
                     test = sys.stdin.readline()
 
-                    try:
-                        board.sendline()
-                        board.sendline('echo \"1 1 1 7\" > /proc/sys/kernel/printk')
-                        board.expect(prompt)
-                        t = eval(test)
-                        cls = t(self.config)
-                        lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
-                        cls.testWrapper()
-                        lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
-                        board.sendline()
-                    except:
-                        print("Unable to (re-)run specified test")
+                    #try:
+                    board.sendline()
+                    board.sendline('echo \"1 1 1 7\" > /proc/sys/kernel/printk')
+                    board.expect(prompt)
+                    t = eval(test)
+                    cls = t(self.config)
+                    lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
+                    cls.testWrapper()
+                    lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
+                    board.sendline()
+                    #except:
+                    #    print("Unable to (re-)run specified test")
 
-            elif (legacy and key == "7") or key == "4":
+                continue
+            i += 1
+
+            if key == str(i):
                 board.reset()
                 print("Press Ctrl-] to stop interaction and return to menu")
                 board.interact()
-            elif (legacy and key == "8") or key == "5":
+                continue
+            i += 1
+
+            if key == str(i):
                 print "Enter python shell, press Ctrl-D to exit"
                 try:
                     from IPython import embed
@@ -139,5 +171,8 @@ class Interact(rootfs_boot.RootFSBootTest):
                         shell.interact()
                     except:
                         print "Unable to spawn interactive shell!"
-            elif key == "x":
+                continue
+            i += 1
+
+            if key == "x":
                 break
