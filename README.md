@@ -230,4 +230,37 @@ The best automated tests share a few qualities:
 
 The goal is to catch bugs in the software being tested. It is an annoying distraction when tests themselves crash. Keep your tests simple so that others can easily figure them out.
 
+Boarfarm overlays
+-----------------
+
+Recently support for having overlays in a separate directory (e.g. a separat
+git repository was added. This allows your own private tests, boards, and
+testsuites, templates that you want to keep separate for whatever reason.
+It's expected that if this is not private you can create a git repo and share
+your layer with others.
+
+The layout of the overlay will look exactly the same as the boardfarm repo:
+
+my_overlay/
+├── devices
+│   ├── my_device.py
+├── html
+│   └── template_results.html
+├── tests
+│   ├── this.py
+│   ├── that.py
+│   └── foobar.py
+└── testsuites.cfg
+
+Tests, devices, and testsuites in your overlay are added to the available
+tests, devices, testsuites. The email templates replace the ones from the main
+boardfarm repo
+
+To specify an over lay you simply need to the space separated overlays to the
+BFT_OVERLAY environment variable:
+
+export BFT_OVERLAY="../boardfarm-foo/ ../boardfarm-bar"
+
+Then after running bft you should have access to your new tests, device types, etc
+
 Good luck and thanks for reading!
