@@ -58,7 +58,7 @@ def board_decider(model, **kwargs):
             device_mappings[device_file] = []
             for obj in dir(device_file):
                 ref = getattr(device_file, obj)
-                if inspect.isclass(ref) and issubclass(ref, base.BaseDevice):
+                if inspect.isclass(ref) and hasattr(ref, "model"):
                     device_mappings[device_file].append(ref)
                     exec("from %s import %s" % (x, obj))
         except Exception as e:
