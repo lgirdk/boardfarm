@@ -10,6 +10,7 @@ import openwrt_router
 import sys
 import pexpect
 import atexit
+import os
 
 class Qemu(openwrt_router.OpenWrtRouter):
     '''
@@ -22,6 +23,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
     # allowed open ports (starting point, dns is on wan?)
     wan_open_ports = ['22', '53']
+
+    cleanup_files = []
 
     def __init__(self,
                  model,
@@ -39,42 +42,55 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  power_username=None,
                  power_password=None,
                  rootfs=None,
+                 kernel=None,
                  env=None,
                  **kwargs):
+        self.consoles.append(self)
+
         if rootfs is None:
             raise Exception("The QEMU device type requires specifying a rootfs")
 
-        self.dl_console = None
-        if rootfs.startswith("http://") or rootfs.startswith("https://"):
-            self.dl_console = pexpect.spawn("bash --noprofile --norc")
-            self.dl_console.sendline('export PS1="prompt>>"')
-            self.dl_console.expect_exact("prompt>>")
-            self.dl_console.sendline('mktemp')
-            self.dl_console.expect('/tmp/tmp.*')
-            self.fname = self.dl_console.match.group(0).strip()
-            self.dl_console.expect_exact("prompt>>")
+        def temp_download(url):
+            dl_console = pexpect.spawn("bash --noprofile --norc")
+            dl_console.sendline('export PS1="prompt>>"')
+            dl_console.expect_exact("prompt>>")
+            dl_console.sendline('mktemp')
+            dl_console.expect('/tmp/tmp.*')
+            fname = dl_console.match.group(0).strip()
+            dl_console.expect_exact("prompt>>")
+            self.cleanup_files.append(fname)
             atexit.register(self.run_cleanup_cmd)
-            self.dl_console.logfile_read = sys.stdout
-            print("Temp downloaded rootfs = %s" % rootfs)
-            self.dl_console.sendline("curl -n -L -k '%s' > %s" % (rootfs, self.fname))
-            self.dl_console.expect_exact("prompt>>", timeout=500)
-            rootfs = self.fname
+            dl_console.logfile_read = sys.stdout
+            print("Temp downloaded file = %s" % url)
+            dl_console.sendline("curl -n -L -k '%s' > %s" % (url, fname))
+            dl_console.expect_exact("prompt>>", timeout=500)
+            dl_console.logfile_read = None
+            dl_console.sendline('exit')
+            dl_console.expect(pexpect.EOF)
+            return fname
+
+        if rootfs.startswith("http://") or rootfs.startswith("https://"):
+            rootfs = temp_download(rootfs)
 
         cmd = "%s %s" % (conn_cmd, rootfs)
 
+        if kernel is not None:
+            if kernel.startswith("http://") or kernel.startswith("https://"):
+                kernel = temp_download(kernel)
+            cmd += " -kernel %s --append root=/dev/hda2" % kernel
+
         # spawn a simple bash shell for now, will launch qemu later
+        self.cmd = cmd
         pexpect.spawn.__init__(self, command='/bin/bash',
                         args=["-c", cmd], env=env)
-        self.expect("SYSLINUX")
+        if kernel is None:
+            self.expect("SYSLINUX")
         self.logfile_read = output
 
-        # we can delete the downloaded rootfs now
-        if self.dl_console is not None:
-            self.dl_console.sendline('rm %s' % self.fname)
-
     def run_cleanup_cmd(self):
-        if self.dl_console is not None:
-            self.dl_console.sendline('rm %s' % self.fname)
+        for f in self.cleanup_files:
+            if os.path.isfile(f):
+                os.remove(f)
 
     def wait_for_boot(self):
         pass
@@ -85,10 +101,12 @@ class Qemu(openwrt_router.OpenWrtRouter):
     def flash_rootfs(self, ROOTFS):
         pass
 
+    def flash_linux(self, KERNEL):
+        pass
+
     def wait_for_linux(self):
-        if 0 != self.expect(["login:", "Automatic boot in"]):
-            self.sendline()
-            self.expect('login:')
+        self.expect('login:')
+        self.sendline('root')
 
     def boot_linux(self, rootfs=None, bootargs=None):
         pass
@@ -97,6 +115,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
         self.sendcontrol('a')
         self.send('c')
         self.sendline('system_reset')
-        self.expect('SYSLINUX')
+        self.expect_exact('system_reset')
+        if '-kernel' not in self.cmd:
+            self.expect('SYSLINUX')
         self.sendcontrol('a')
         self.send('c')
