@@ -1,6 +1,19 @@
+sudo: required
 language: python
 python:
         - "2.7"
+before_install:
+        - sudo apt-get -qq update
+        - sudo apt-get remove docker docker-engine docker.io
+        - sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+        - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        - sudo apt-get -qq update
+        - sudo apt-get install -y qemu-system-x86 docker-ce
 script:
         - ./bft -l
         - ./bft -i
+        - yes | ./bft -b qemux86 -r http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/core-image-minimal-dev-qemux86.wic -k http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/bzImage-qemux86.bin -z -y
+        - grep tests_fail...0, results/test_results.json
+after_failure:
+        - yes | BFT_DEBUG=y ./bft -b qemux86 -r http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/core-image-minimal-dev-qemux86.wic -k http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/bzImage-qemux86.bin -z -y
