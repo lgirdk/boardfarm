@@ -171,10 +171,10 @@ class BaseDevice(pexpect.spawn):
             ret = wrapper(pattern, *args, **kwargs)
             if hasattr(self.match, "group"):
                 common.print_bold("%s = matched: %s" %
-                                  (error_detect.caller_file_line(2), repr(self.match.group())))
+                                  (error_detect.caller_file_line(1), repr(self.match.group())))
             else:
                 common.print_bold("%s = matched: %s" %
-                                  (error_detect.caller_file_line(2), repr(pattern)))
+                                  (error_detect.caller_file_line(1), repr(pattern)))
             return ret
         except:
             common.print_bold("expired")
