@@ -157,6 +157,7 @@ def main():
                                                  power_username=config.board.get('power_username', None),
                                                  power_password=config.board.get('power_password', None),
                                                  rootfs=config.ROOTFS,
+                                                 kernel=config.KERNEL,
                                                  env=env)
             print_bold("dut device console = %s" % colored("black", 'grey'))
 
