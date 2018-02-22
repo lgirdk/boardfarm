@@ -79,6 +79,11 @@ class Qemu(openwrt_router.OpenWrtRouter):
                 kernel = temp_download(kernel)
             cmd += " -kernel %s --append root=/dev/hda2" % kernel
 
+        # check if we can run kvm
+        kvm_chk = pexpect.spawn('sudo kvm-ok')
+        if 0 != kvm_chk.expect(['KVM acceleration can be used', pexpect.EOF]):
+            cmd = cmd.replace('--enable-kvm ', '')
+
         # spawn a simple bash shell for now, will launch qemu later
         self.cmd = cmd
         pexpect.spawn.__init__(self, command='/bin/bash',
