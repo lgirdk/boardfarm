@@ -241,6 +241,7 @@ your layer with others.
 
 The layout of the overlay will look exactly the same as the boardfarm repo:
 
+```
 my_overlay/
 ├── devices
 │   ├── my_device.py
@@ -251,6 +252,7 @@ my_overlay/
 │   ├── that.py
 │   └── foobar.py
 └── testsuites.cfg
+```
 
 Tests, devices, and testsuites in your overlay are added to the available
 tests, devices, testsuites. The email templates replace the ones from the main
