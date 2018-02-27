@@ -13,7 +13,7 @@ before_install:
 script:
         - ./bft -l
         - ./bft -i
-        - yes | ./bft -b qemux86 -r http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/core-image-minimal-dev-qemux86.wic -k http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/bzImage-qemux86.bin -z -y
+        - yes | ./bft -b qemux86 -r https://autobuilder.yocto.io/pub/releases/yocto-2.4.2/machines/genericx86/core-image-minimal-genericx86.wic -k https://autobuilder.yocto.io/pub/releases/yocto-2.4.2/machines/genericx86/bzImage-genericx86.bin -z -y
         - grep tests_fail...0, results/test_results.json
 after_failure:
-        - yes | BFT_DEBUG=y ./bft -b qemux86 -r http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/core-image-minimal-dev-qemux86.wic -k http://autobuilder.yoctoproject.org/pub/releases/yocto-2.3.2/machines/qemu/qemux86/bzImage-qemux86.bin -z -y
+        - yes | BFT_DEBUG=y ./bft -b qemux86 -r https://autobuilder.yocto.io/pub/releases/yocto-2.4.2/machines/genericx86/core-image-minimal-genericx86.wic -k https://autobuilder.yocto.io/pub/releases/yocto-2.4.2/machines/genericx86/bzImage-genericx86.bin -z -y
