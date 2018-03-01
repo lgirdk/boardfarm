@@ -230,7 +230,7 @@ The best automated tests share a few qualities:
 
 The goal is to catch bugs in the software being tested. It is an annoying distraction when tests themselves crash. Keep your tests simple so that others can easily figure them out.
 
-Boarfarm overlays
+Boardfarm overlays
 -----------------
 
 Recently support for having overlays in a separate directory (e.g. a separat
