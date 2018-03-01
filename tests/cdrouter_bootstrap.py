@@ -140,6 +140,7 @@ testvar lanVlanId """ + lan.vlan
         self.results = c.results
         unpaused = False
         end_of_start = False
+        no_more_pausing = False
         while True:
             r = c.results.get(j.result_id)
             print(r.status)
@@ -159,7 +160,14 @@ testvar lanVlanId """ + lan.vlan
                 # TODO: make this board specific?
                 board.expect(pexpect.TIMEOUT, timeout=60)
                 c.results.unpause(j.result_id)
+                board.expect(pexpect.TIMEOUT, timeout=1)
+                no_more_pausing = True
                 continue
+
+            if no_more_pausing and r.status == "paused":
+                print("Error: test is still paused")
+                c.results.stop(j.result_id)
+                break
 
             if r.status != "running" and r.status != "paused":
                 break
