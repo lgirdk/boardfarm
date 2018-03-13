@@ -248,7 +248,7 @@ class DebianBox(base.BaseDevice):
         # start openssh server if not running:
         self.sendline('/etc/init.d/ssh start')
         self.expect(self.prompt)
-        self.sendline('sed "s/PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
+        self.sendline('sed "s/.*PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
