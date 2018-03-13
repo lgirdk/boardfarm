@@ -34,6 +34,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             wan.start_tftp_server()
             tftp_device = wan
             wan.configure(kind="wan_device")
+        elif wan:
+            wan.configure(kind="wan_device")
 
         if lan:
             lan.configure(kind="lan_device")
