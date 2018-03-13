@@ -123,7 +123,7 @@ def main():
                     if len(tftp_dev) == 1:
                         tftp_server = tftp_dev[0]['ipaddr']
                         tftp_port = tftp_dev[0].get('port', '22')
-                    else:
+                    elif len(tftp_dev) > 1:
                         print("WARN: more than one TFTP server is configured, please pick one")
                 elif tftp_server is None:
                     if len(tftp_dev) == 1:
