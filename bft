@@ -166,15 +166,28 @@ def main():
             if 'devices' in config.board:
                 setup_dynamic_devices(config, env=env)
 
-            # legacy wan device
-            if tftp_server is None and hasattr(config, 'wan'):
+            def get_tftp_config(dev):
                 saved = config.console.logfile_read
                 config.console.logfile_read = None
-                config.console.tftp_server = config.wan.get_ip_addr("eth0")
+                config.console.tftp_server = dev.get_ip_addr("eth0")
                 config.console.tftp_username = "root"
                 config.console.tftp_password = "bigfoot1"
                 config.console.tftp_port = "22"
                 config.console.logfile_read = saved
+
+            # check devices after they start for tftpd-server option if
+            # if we still have not configured a tftp server
+            if tftp_server is None:
+                for x in config.board['devices']:
+                    if 'tftpd-server' in x.get('options', ""):
+                        get_tftp_config(getattr(config, x['name']))
+                        # TODO: how do we handle multiple tftp servers, break for now
+                        break
+
+            # legacy wan device
+            if tftp_server is None and getattr(config, 'wan') is not None:
+                get_tftp_config(config.wan)
+
 
         except Exception as e:
             print(e)
