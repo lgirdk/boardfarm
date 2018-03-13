@@ -26,6 +26,6 @@ RUN apt-get update && \
 	python-mysqldb
 
 RUN mkdir /var/run/sshd
-RUN sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 EXPOSE 22
