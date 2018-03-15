@@ -121,14 +121,20 @@ def main():
                 if 'devices' in config.board:
                     tftp_dev = [ x for x in config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
                     if len(tftp_dev) == 1:
-                        tftp_server = tftp_dev[0]['ipaddr']
+                        if 'ipaddr' in tftp_dev[0]:
+                            tftp_server = tftp_dev[0]['ipaddr']
+                        else:
+                            tftp_server = tftp_dev[0]['name']
                         tftp_port = tftp_dev[0].get('port', '22')
                     elif len(tftp_dev) > 1:
                         print("WARN: more than one TFTP server is configured, please pick one")
                 elif tftp_server is None:
                     if len(tftp_dev) == 1:
                         tftp_dev = [ x for x in config.board['devices'] if x['name'] == 'wan' ]
-                        tftp_server = tftp_dev[0]['ipaddr']
+                        if 'ipaddr' in tftp_dev[0]:
+                            tftp_server = tftp_dev[0]['ipaddr']
+                        else:
+                            tftp_server = tftp_dev[0]['name']
                         tftp_port = tftp_dev[0].get('port', '22')
                     else:
                         print("WARN: more than one TFTP server is configured, please pick one")
@@ -183,6 +189,11 @@ def main():
                         get_tftp_config(getattr(config, x['name']))
                         # TODO: how do we handle multiple tftp servers, break for now
                         break
+            else:
+                # check if the tftp_server is an unresolved name and resolve the ip
+                for x in config.board['devices']:
+                    if tftp_server == x.get('name', ""):
+                        get_tftp_config(getattr(config, tftp_server))
 
             # legacy wan device
             if tftp_server is None and getattr(config, 'wan') is not None:
