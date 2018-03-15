@@ -140,9 +140,13 @@ testvar lanVlanId """ + lan.vlan
         except:
             board.reset()
 
+        self.start_time = time.time()
         j = c.jobs.launch(Job(package_id=p.id))
 
         while j.result_id is None:
+            if time.time() - self.start_time > 60:
+                raise Exception("Failed to start CDrouter job")
+
             board.expect(pexpect.TIMEOUT, timeout=1)
             j = c.jobs.get(j.id)
 
@@ -189,6 +193,8 @@ testvar lanVlanId """ + lan.vlan
         print(r.result)
         self.result_message = r.result.encode('ascii','ignore')
         # TODO: results URL?
+        elapsed_time = time.time() - self.start_time
+        print("Test took %s" % time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
         summary = c.results.summary_stats(j.result_id)
 
