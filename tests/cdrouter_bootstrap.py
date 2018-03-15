@@ -49,13 +49,6 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         # TODO: make host configurable in bft config?
         c = CDRouter(self.cdrouter_server)
 
-        # TODO: more clean edit of a config, and use a special name per config?
-        try:
-            c.configs.delete(c.configs.get_by_name("bft-automated-job").id)
-        except CDRouterError as e:
-            if e == "no such config":
-                pass
-
         # If alt mac addr is specified in config, use that..
         # This is used when a CMTS for example is placed between
         # the device under test and the WAN
@@ -121,16 +114,10 @@ testvar lanVlanId """ + lan.vlan
         print(contents)
         print("#######################")
 
-        cfg = c.configs.create(Config(name='bft-automated-job', contents=contents))
+        config_name="bft-automated-job-%s" % str(time.time()).replace('.', '')
+        cfg = c.configs.create(Config(name=config_name, contents=contents))
 
-        # TODO: more clean edit of a config, and use a special name per config?
-        try:
-            c.packages.delete(c.packages.get_by_name("bft-automated-job").id)
-        except CDRouterError as e:
-            if e == "no such package":
-                pass
-
-        p = c.packages.create(Package(name="bft-automated-job",
+        p = c.packages.create(Package(name=config_name,
                                       testlist=self.tests,
                                       config_id=cfg.id))
 
