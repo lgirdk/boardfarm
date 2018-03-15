@@ -56,10 +56,22 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             if e == "no such config":
                 pass
 
-        board.sendline('ifconfig %s' % board.wan_iface)
-        board.expect('([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')
-        wandutmac = board.match.group()
-        board.expect(prompt)
+        # If alt mac addr is specified in config, use that..
+        # This is used when a CMTS for example is placed between
+        # the device under test and the WAN
+        wandutmac = None
+        for device in self.config.board['devices']:
+            if device['name'] == 'wan':
+                if 'alt_macaddr' in device:
+                    wandutmac = device['alt_macaddr']
+                break
+
+        # Otherwise grab this from the device interface
+        if wandutmac is None:
+            board.sendline('ifconfig %s' % board.wan_iface)
+            board.expect('([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')
+            wandutmac = board.match.group()
+            board.expect(prompt)
 
         print ("Using %s for WAN mac address" % wandutmac)
 
