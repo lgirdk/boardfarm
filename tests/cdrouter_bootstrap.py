@@ -131,7 +131,9 @@ testvar lanVlanId """ + lan.vlan
         j = c.jobs.launch(Job(package_id=p.id))
 
         while j.result_id is None:
-            if time.time() - self.start_time > 60:
+            if (time.time() - self.start_time) > 300:
+                # delete job if it fails to start
+                c.jobs.delete(j.id)
                 raise Exception("Failed to start CDrouter job")
 
             board.expect(pexpect.TIMEOUT, timeout=1)
