@@ -84,13 +84,16 @@ class OpenWrtRouter(base.BaseDevice):
         self.model = model
         self.web_proxy = web_proxy
         if tftp_server:
-            self.tftp_server = socket.gethostbyname(tftp_server)
-            if tftp_username:
-                self.tftp_username = tftp_username
-            if tftp_password:
-                self.tftp_password = tftp_password
-            if tftp_port:
-                self.tftp_port = tftp_port
+            try:
+                self.tftp_server = socket.gethostbyname(tftp_server)
+                if tftp_username:
+                    self.tftp_username = tftp_username
+                if tftp_password:
+                    self.tftp_password = tftp_password
+                if tftp_port:
+                    self.tftp_port = tftp_port
+            except:
+                pass
         else:
             self.tftp_server = None
         atexit.register(self.kill_console_at_exit)
