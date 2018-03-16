@@ -196,6 +196,10 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def start_tftp_server(self):
+        # the entire reason to start tftp is to copy files to devices
+        # which we do via ssh so let's start that as well
+        self.start_sshd_server()
+
         # set WAN ip address, for now this will always be this address for the device side
         self.sendline('ifconfig eth1 down')
         self.expect(self.prompt)
