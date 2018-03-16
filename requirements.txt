@@ -8,5 +8,5 @@ selenium
 future
 dlipower
 cdrouter
-serial
+pyserial
 ipaddress
