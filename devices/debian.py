@@ -258,6 +258,29 @@ class DebianBox(base.BaseDevice):
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
+    def setup_dhcp_server(self):
+        # configure DHCP server
+        self.sendline('/etc/init.d/isc-dhcp-server stop')
+        self.expect(self.prompt)
+        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.expect(self.prompt)
+        self.sendline('cat > /etc/dhcp/dhcpd.conf << EOF')
+        self.sendline('ddns-update-style none;')
+        self.sendline('option domain-name "bigfoot-test";')
+        self.sendline('option domain-name-servers 8.8.8.8, 8.8.4.4;')
+        self.sendline('default-lease-time 600;')
+        self.sendline('max-lease-time 7200;')
+        # use the same netmask as the lan device
+        self.sendline('subnet %s netmask %s {' % (self.nw.network_address, self.nw.netmask))
+        self.sendline('          range %s %s;' % (self.nw.network_address + 10, self.nw.network_address + 100))
+        self.sendline('          option routers %s;' % self.gw)
+        self.sendline('}')
+        self.sendline('EOF')
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/isc-dhcp-server start')
+        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(self.prompt)
+
     def setup_as_wan_gateway(self):
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
@@ -281,27 +304,7 @@ class DebianBox(base.BaseDevice):
         self.sendline('ifconfig eth1 up')
         self.expect(self.prompt)
 
-        # configure DHCP server
-        self.sendline('/etc/init.d/isc-dhcp-server stop')
-        self.expect(self.prompt)
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
-        self.expect(self.prompt)
-        self.sendline('cat > /etc/dhcp/dhcpd.conf << EOF')
-        self.sendline('ddns-update-style none;')
-        self.sendline('option domain-name "bigfoot-test";')
-        self.sendline('option domain-name-servers 8.8.8.8, 8.8.4.4;')
-        self.sendline('default-lease-time 600;')
-        self.sendline('max-lease-time 7200;')
-        # use the same netmask as the lan device
-        self.sendline('subnet %s netmask %s {' % (self.nw.network_address, self.nw.netmask))
-        self.sendline('          range %s %s;' % (self.nw.network_address + 10, self.nw.network_address + 100))
-        self.sendline('          option routers %s;' % self.gw)
-        self.sendline('}')
-        self.sendline('EOF')
-        self.expect(self.prompt)
-        self.sendline('/etc/init.d/isc-dhcp-server start')
-        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
-        self.expect(self.prompt)
+        self.setup_dhcp_server(self)
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
