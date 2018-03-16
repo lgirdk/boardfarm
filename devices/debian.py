@@ -304,7 +304,7 @@ class DebianBox(base.BaseDevice):
         self.sendline('ifconfig eth1 up')
         self.expect(self.prompt)
 
-        self.setup_dhcp_server(self)
+        self.setup_dhcp_server()
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')

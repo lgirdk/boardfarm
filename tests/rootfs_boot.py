@@ -23,6 +23,11 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             # TODO: this means wan.gw != tftp_server
             tftp_device.start_tftp_server()
 
+        # start dhcp servers
+        for device in self.config.board['devices']:
+            if 'options' in device and 'dhcp-server' in device['options']:
+                getattr(self.config, device['name']).setup_dhcp_server()
+
         if not wan and len(tftp_servers) == 0:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
             lib.common.test_msg(msg)
