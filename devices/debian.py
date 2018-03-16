@@ -244,14 +244,17 @@ class DebianBox(base.BaseDevice):
         self.expect('Restarting')
         self.expect(self.prompt)
 
-    def configure(self, kind):
-        # start openssh server if not running:
+    def start_sshd_server(self):
         self.sendline('/etc/init.d/ssh start')
         self.expect(self.prompt)
         self.sendline('sed "s/.*PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
+
+    def configure(self, kind):
+        # start openssh server if not running:
+        self.start_sshd_server()
 
         if kind == "wan_device":
             self.setup_as_wan_gateway()
