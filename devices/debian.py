@@ -38,7 +38,8 @@ class DebianBox(base.BaseDevice):
                  cleanup_cmd=None,
                  env=None,
                  lan_network=None,
-                 lan_gateway=None):
+                 lan_gateway=None,
+                 config=None):
         if name is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
@@ -71,6 +72,7 @@ class DebianBox(base.BaseDevice):
         self.env=env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
+        self.config = config
 
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
