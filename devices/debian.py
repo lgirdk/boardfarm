@@ -21,6 +21,7 @@ class DebianBox(base.BaseDevice):
     '''
 
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
+    static_route = None
 
     def __init__(self,
                  name,
@@ -83,6 +84,14 @@ class DebianBox(base.BaseDevice):
             self.gw = lan_gateway + lan_network.num_addresses
 
         self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
+
+        # override above values if set in wan options
+        options = [x.strip() for x in self.config['options'].split(',')]
+        for opt in options:
+            if opt.startswith('wan-static-ip:'):
+                self.gw = opt.replace('wan-static-ip:', '')
+            if opt.startswith('wan-static-route:'):
+                self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -331,6 +340,11 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
         self.turn_off_pppoe()
+
+        if self.static_route is not None:
+            # TODO: add some ppint handle this more robustly
+            self.sendline('ip route add %s' % self.static_route)
+            self.expect(self.prompt)
 
     def setup_as_lan_device(self):
         # potential cleanup so this wan device works
