@@ -11,6 +11,8 @@ import pexpect
 import base
 import atexit
 import ipaddress
+import os
+import binascii
 
 from termcolor import colored, cprint
 
@@ -267,6 +269,20 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
+
+    def copy_file_to_server(self, src, dst=None):
+        with open(src, mode='rb') as file:
+            bin_file = binascii.hexlify(file.read())
+        if dst is None:
+            dst = '/tftpboot/' + os.path.basename(src)
+        print ("Copying %s to %s" % (src, dst))
+        saved_logfile_read = self.logfile_read
+        self.logfile_read = None
+        self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p > %s
+%s
+EOFEOFEOFEOF''' % (dst, bin_file))
+        self.expect(self.prompt)
+        self.logfile_read = saved_logfile_read
 
     def configure(self, kind):
         # start openssh server if not running:
