@@ -480,15 +480,15 @@ class DebianBox(base.BaseDevice):
 
 if __name__ == '__main__':
     # Example use
-    dev = DebianBox('10.0.0.173',
+    try:
+        ipaddr, port = sys.argv[1].split(':')
+    except:
+        raise Exception("First argument should be in form of ipaddr:port")
+    dev = DebianBox(ipaddr,
                     'blue',
                     username="root",
                     password="bigfoot1",
-                    port="22")
-    dev.sendline('echo Hello')
-    dev.expect('Hello', timeout=4)
-    dev.expect(dev.prompt)
-    dev.reset()
+                    port=port)
     dev.sendline('echo Hello')
     dev.expect('Hello', timeout=4)
     dev.expect(dev.prompt)
