@@ -13,6 +13,7 @@ import atexit
 import ipaddress
 import os
 import binascii
+import glob
 
 from termcolor import colored, cprint
 
@@ -292,6 +293,80 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.setup_as_wan_gateway()
         elif kind == "lan_device":
             self.setup_as_lan_device()
+        elif kind == "cmts_provisioner":
+            self.setup_as_cmts_provisioner()
+
+    def setup_as_cmts_provisioner(self):
+        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/isc-dhcp-server stop')
+        self.expect(self.prompt)
+        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.expect(self.prompt)
+        self.sendline('ifconfig eth1 192.168.100.2')
+        self.expect(self.prompt)
+        self.sendline('ip route add 192.168.201.0/24 via 192.168.100.1')
+        self.expect(self.prompt)
+        self.sendline('ip route add 192.168.200.0/24 via 192.168.100.1')
+        self.expect(self.prompt)
+        self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
+log-facility local7;
+option log-servers 192.168.100.2;
+option time-servers 192.168.100.2;
+next-server 192.168.100.2;
+default-lease-time 604800;
+max-lease-time 604800;
+allow leasequery;
+option time-servers 192.168.100.1;
+subnet 192.168.100.0 netmask 255.255.255.0 {
+  interface eth1;
+}
+subnet 192.168.200.0 netmask 255.255.255.0
+{
+  interface eth1;
+  range 192.168.200.10 192.168.200.250;
+  option routers 192.168.200.1;
+  option broadcast-address 192.168.200.255;
+  option dhcp-parameter-request-list 43;
+  option domain-name "local";
+  option time-offset 1;
+  option tftp-server-name "192.168.100.2";
+  filename "UNLIMITCASA.cfg";
+  allow unknown-clients;
+}
+subnet 192.168.201.0 netmask 255.255.255.0
+{
+  interface eth1;
+  range 192.168.201.10 192.168.201.250;
+  option routers 192.168.201.1;
+  option broadcast-address 192.168.201.255;
+  option time-offset 1;
+  option domain-name-servers 8.8.4.4;
+  allow unknown-clients;
+}
+EOF''')
+	self.expect(self.prompt)
+        self.sendline('/etc/init.d/isc-dhcp-server start')
+        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(self.prompt)
+
+        self.start_tftp_server()
+
+        # Look in all overlays as well, and PATH as a workaround for standalone
+        cfg_list = []
+        for path in os.environ['PATH'].split(os.pathsep):
+            for cfg in glob.glob(path + 'devices/cm-cfg/*.cfg'):
+                cfg_list.append(cfg)
+        cfg_set = set(cfg_list)
+
+        # Copy binary files to tftp server
+        for cfg in cfg_set:
+            self.copy_file_to_server(cfg)
+
+        self.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/xinetd restart')
+        self.expect(self.prompt)
 
     def setup_dhcp_server(self):
         # configure DHCP server
@@ -513,6 +588,8 @@ if __name__ == '__main__':
         dev.configure("lan_device")
     if sys.argv[2] == "setup_as_wan_gateway":
         dev.configure("wan_device")
+    if sys.argv[2] == "setup_as_cmts_provisioner":
+        dev.configure("cmts_provisioner")
 
     print
 
