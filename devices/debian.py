@@ -38,9 +38,9 @@ class DebianBox(base.BaseDevice):
                  post_cmd=None,
                  cleanup_cmd=None,
                  env=None,
-                 lan_network=None,
-                 lan_gateway=None,
-                 config=None):
+                 lan_network=ipaddress.IPv4Network(u"192.168.1.0/24"),
+                 lan_gateway=ipaddress.IPv4Address(u"192.168.1.1"),
+                 config=[]):
         if name is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
