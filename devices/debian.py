@@ -492,3 +492,11 @@ if __name__ == '__main__':
     dev.sendline('echo Hello')
     dev.expect('Hello', timeout=4)
     dev.expect(dev.prompt)
+
+    if sys.argv[2] == "setup_as_lan_device":
+        dev.configure("lan_device")
+    if sys.argv[2] == "setup_as_wan_gateway":
+        dev.configure("wan_device")
+
+    print
+
