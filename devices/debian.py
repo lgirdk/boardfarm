@@ -446,6 +446,7 @@ EOF''')
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
+            self.send('ip route del %s; ' % self.static_route.split(' via ')[0])
             self.sendline('ip route add %s' % self.static_route)
             self.expect(self.prompt)
 
