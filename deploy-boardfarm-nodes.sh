@@ -10,6 +10,13 @@ random_private_mac () {
 	echo $1$1$1$1$1$1 | od -An -N6 -tx1 | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
 }
 
+local_route () {
+	# TODO: This is a problem if the router network matches the host network
+	host_dev=$(ip route list | grep ^default |  awk '{print $5}' )
+	local_route=$(ip route | grep "dev $host_dev" | grep -v ^default | grep -v via | awk '{print $1}' | head -n1)
+	docker exec $cname ip route add $local_route dev eth0 via 172.17.0.1
+}
+
 for vlan in $(seq $START_VLAN $END_VLAN); do
 	echo "Creating node on vlan $vlan"
 
@@ -28,10 +35,7 @@ for vlan in $(seq $START_VLAN $END_VLAN); do
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
 
-	# TODO: This is a problem if the router network matches the host network
-	host_dev=$(ip route list | grep ^default | awk '{print $5}')
-	local_route=$(ip route | grep "dev $host_dev" | grep -v ^default | grep -v via | awk '{print $1}' | head -n1)
-	docker exec $cname ip route add $local_route dev eth0 via 172.17.0.1
+	local_route
 done
 
 echo "Running the command below will stop all containers and clean up everything:"
