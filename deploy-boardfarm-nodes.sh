@@ -3,6 +3,7 @@
 IFACE=${1:-bond0}
 START_VLAN=${2:-101}
 END_VLAN=${3:-144}
+LOCAL_ROUTE=${4:-"both"} # both, odd, even
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
@@ -35,7 +36,12 @@ for vlan in $(seq $START_VLAN $END_VLAN); do
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
 
-	local_route
+	[ "$LOCAL_ROUTE" = "both" ] && { local_route; continue; }
+	if [ $((vlan%2)) -eq 0 ]; then
+		[ "$LOCAL_ROUTE" = "even" ] && local_route
+	elif [ "$LOCAL_ROUTE" = "odd" ]; then
+		local_route
+	fi
 done
 
 echo "Running the command below will stop all containers and clean up everything:"
