@@ -487,7 +487,7 @@ EOF''')
         self.sendline('pkill --signal 9 -f dhclient.*eth1')
         self.expect(self.prompt)
 
-    def start_lan_client(self):
+    def start_lan_client(self, wan_gw=None):
         self.sendline('\nifconfig eth1 up')
         self.expect('ifconfig eth1 up')
         self.expect(self.prompt)
@@ -561,6 +561,15 @@ EOF''')
                     self.sendline('password')
                 except:
                     pass
+                self.expect(self.prompt)
+
+        if wan_gw is not None and 'options' in self.config and \
+            'lan-fixed-route-to-wan' in self.config['options']:
+                self.sendline("ip route list 0/0 | awk '{print $3}'")
+                self.expect_exact("ip route list 0/0 | awk '{print $3}'")
+                self.expect(self.prompt)
+                default_route=self.before.strip()
+                self.sendline('ip route add %s via %s' % (wan_gw, default_route))
                 self.expect(self.prompt)
 
     def add_new_user(self, id, pwd):
