@@ -25,6 +25,7 @@ class DebianBox(base.BaseDevice):
 
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
     static_route = None
+    wan_dhcp = False
 
     def __init__(self,
                  name,
@@ -96,6 +97,8 @@ class DebianBox(base.BaseDevice):
                     self.gw = opt.replace('wan-static-ip:', '')
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
+                if opt.startswith('wan-dhcp-client'):
+                    self.wan_dhcp = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -420,12 +423,20 @@ EOF''')
         self.expect(self.prompt)
 
         # set WAN ip address
-        self.sendline('ifconfig eth1 %s' % self.gw)
-        self.expect(self.prompt)
-        self.sendline('ifconfig eth1 up')
-        self.expect(self.prompt)
-
-        self.setup_dhcp_server()
+        if self.wan_dhcp:
+            self.sendline('/etc/init.d/isc-dhcp-server stop')
+            self.expect(self.prompt)
+            self.sendline('dhclient -r eth1')
+            self.expect(self.prompt)
+            self.sendline('dhclient eth1')
+            self.expect(self.prompt)
+            self.gw = self.get_ip_addr("eth1")
+        else:
+            self.sendline('ifconfig eth1 %s' % self.gw)
+            self.expect(self.prompt)
+            self.sendline('ifconfig eth1 up')
+            self.expect(self.prompt)
+            self.setup_dhcp_server()
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
