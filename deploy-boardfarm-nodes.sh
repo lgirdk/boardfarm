@@ -30,7 +30,7 @@ for vlan in $(seq $START_VLAN $END_VLAN); do
 
 	# TODO: This is a problem if the router network matches the host network
 	host_dev=$(ip route list | grep ^default | awk '{print $5}')
-	local_route=$(ip route | grep "dev $host_dev" | grep -v ^default | awk '{print $1}')
+	local_route=$(ip route | grep "dev $host_dev" | grep -v ^default | grep -v via | awk '{print $1}' | head -n1)
 	docker exec $cname ip route add $local_route dev eth0 via 172.17.0.1
 done
 
