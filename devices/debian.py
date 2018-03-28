@@ -215,17 +215,24 @@ class DebianBox(base.BaseDevice):
         # which we do via ssh so let's start that as well
         self.start_sshd_server()
 
+        try:
+            eth1_addr = self.get_ip_addr('eth1')
+        except:
+            eth1_addr = None
+
         # set WAN ip address, for now this will always be this address for the device side
-        self.sendline('ifconfig eth1 down')
-        self.expect(self.prompt)
+        if self.gw != eth1_addr:
+            self.sendline('ifconfig eth1 down')
+            self.expect(self.prompt)
 
         # install packages required
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install tftpd-hpa')
 
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
-        self.sendline('ifconfig eth1 %s' % getattr(self, 'gw', '192.168.0.1'))
-        self.expect(self.prompt)
+        if self.gw != eth1_addr:
+            self.sendline('ifconfig eth1 %s' % getattr(self, 'gw', '192.168.0.1'))
+            self.expect(self.prompt)
 
         #configure tftp server
         self.sendline('/etc/init.d/tftpd-hpa stop')
