@@ -11,7 +11,7 @@ class Ser2NetConnection():
                                args=['-c', self.conn_cmd])
 
         try:
-            result = self.device.expect(["assword:", "ser2net.*\r\n", "OpenGear Serial Server"])
+            result = self.device.expect(["assword:", "ser2net.*\r\n", "OpenGear Serial Server", "to access the port escape menu"])
         except pexpect.EOF as e:
             raise Exception("Board is in use (connection refused).")
         if result == 0:
