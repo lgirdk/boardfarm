@@ -304,6 +304,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
         self.expect(self.prompt)
         self.sendline('ifconfig eth1 192.168.100.2')
+        self.gw = "192.168.100.2"
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.201.0/24 via 192.168.100.1')
         self.expect(self.prompt)
