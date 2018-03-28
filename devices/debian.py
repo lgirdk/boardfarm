@@ -290,6 +290,9 @@ class DebianBox(base.BaseDevice):
 %s
 EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
+        self.sendline('ls %s' % dst)
+        self.expect_exact('ls %s' % dst)
+        self.expect('%s' % dst)
         self.logfile_read = saved_logfile_read
 
     def configure(self, kind):
