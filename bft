@@ -176,7 +176,7 @@ def main():
             def get_tftp_config(dev):
                 saved = config.console.logfile_read
                 config.console.logfile_read = None
-                config.console.tftp_server = dev.get_ip_addr("eth0")
+                config.console.tftp_server = dev.get_interface_ipaddr("eth0")
                 config.console.tftp_username = "root"
                 config.console.tftp_password = "bigfoot1"
                 config.console.tftp_port = "22"
