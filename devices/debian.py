@@ -182,7 +182,7 @@ class DebianBox(base.BaseDevice):
                       self.password, self.port,
                       reboot=False)
 
-    def get_ip_addr(self, interface):
+    def get_interface_ipaddr(self, interface):
         self.sendline("\nifconfig %s" % interface)
         regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
                  'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)']
@@ -219,7 +219,7 @@ class DebianBox(base.BaseDevice):
         self.start_sshd_server()
 
         try:
-            eth1_addr = self.get_ip_addr('eth1')
+            eth1_addr = self.get_interface_ipaddr('eth1')
         except:
             eth1_addr = None
 
@@ -430,7 +430,7 @@ EOF''')
             self.expect(self.prompt)
             self.sendline('dhclient eth1')
             self.expect(self.prompt)
-            self.gw = self.get_ip_addr("eth1")
+            self.gw = self.get_interface_ipaddr("eth1")
         else:
             self.sendline('ifconfig eth1 %s' % self.gw)
             self.expect(self.prompt)
@@ -441,7 +441,7 @@ EOF''')
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
-        wan_ip_uplink = self.get_ip_addr("eth0")
+        wan_ip_uplink = self.get_interface_ipaddr("eth0")
         self.sendline('iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source %s' % wan_ip_uplink)
         self.expect(self.prompt)
 

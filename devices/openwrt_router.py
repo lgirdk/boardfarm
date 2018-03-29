@@ -121,14 +121,6 @@ class OpenWrtRouter(base.BaseDevice):
                 print(e)
                 print("\nWe appeared to have failed to break into U-Boot...")
 
-    def get_ip_addr(self, interface):
-        '''Return IP Address for given interface.'''
-        self.sendline("\nifconfig %s" % interface)
-        self.expect('addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):', timeout=5)
-        ipaddr = self.match.group(1)
-        self.expect(self.prompt)
-        return ipaddr
-
     def get_seconds_uptime(self):
         '''Return seconds since last reboot. Stored in /proc/uptime'''
         self.sendcontrol('c')
