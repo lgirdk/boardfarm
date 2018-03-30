@@ -4,6 +4,7 @@ IFACE=${1:-bond0}
 START_VLAN=${2:-101}
 END_VLAN=${3:-144}
 OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
+BRINT=br-bft
 
 random_private_mac () {
 	echo $1$1$1$1$1$1 | od -An -N6 -tx1 | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
@@ -34,6 +35,34 @@ create_container_eth1_vlan () {
 	sudo ip link set netns $cspace dev $IFACE.$vlan
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
+}
+
+# eth0/eth1 are both dhcp on the main network
+create_container_eth1_dhcp () {
+	local vlan=$1
+
+	# Need to add the following to DHCP over primary bridge interface
+	# mattsm@chippy3:~$ cat /etc/sysctl.d/10-bridge-settings.conf
+	sudo sysctl -w net.bridge.bridge-nf-call-ip6tables=0
+	sudo sysctl -w net.bridge.bridge-nf-call-iptables=0
+	sudo sysctl -w net.bridge.bridge-nf-call-arptables=0
+
+        cname=bft-node-$IFACE-$vlan
+        docker stop $cname && docker rm $cname
+        docker run --name $cname --privileged -h $cname --restart=always \
+                -d --network=none bft:node /usr/sbin/sshd -D
+
+        cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+
+        # create lab network access port
+        sudo ip link add extveth$vlan type veth peer name intveth$vlan
+        sudo ip link set dev extveth$vlan up
+	sudo brctl addbr $BRINT
+	sudo brctl addif $BRINT $IFACE
+        sudo brctl addif $BRINT extveth$vlan
+        sudo ip link set netns $cspace dev intveth$vlan
+        docker exec $cname ip link set intveth$vlan name eth1
+        docker exec $cname dhclient eth1
 }
 
 [[ $_ != $0 ]] && return
