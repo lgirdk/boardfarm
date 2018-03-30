@@ -3,7 +3,7 @@
 IFACE=${1:-bond0}
 START_VLAN=${2:-101}
 END_VLAN=${3:-144}
-LOCAL_ROUTE=${4:-"both"} # both, odd, even
+OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
@@ -43,10 +43,10 @@ for vlan in $(seq $START_VLAN $END_VLAN); do
 
 	create_container_eth1_vlan $vlan
 
-	[ "$LOCAL_ROUTE" = "both" ] && { local_route; continue; }
+	[ "$OPTS" = "both" ] && { local_route; continue; }
 	if [ $((vlan%2)) -eq 0 ]; then
-		[ "$LOCAL_ROUTE" = "even" ] && local_route
-	elif [ "$LOCAL_ROUTE" = "odd" ]; then
+		[ "$OPTS" = "even" ] && local_route
+	elif [ "$OPTS" = "odd" ]; then
 		local_route
 	fi
 done
