@@ -426,9 +426,7 @@ EOF''')
         if self.wan_dhcp:
             self.sendline('/etc/init.d/isc-dhcp-server stop')
             self.expect(self.prompt)
-            self.sendline('dhclient -r eth1')
-            self.expect(self.prompt)
-            self.sendline('dhclient eth1')
+            self.sendline('dhclient -r eth1; dhclient eth1')
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr("eth1")
         else:
@@ -441,8 +439,13 @@ EOF''')
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
-        wan_ip_uplink = self.get_interface_ipaddr("eth0")
-        self.sendline('iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source %s' % wan_ip_uplink)
+        if not self.wan_dhcp:
+            wan_uplink_iface = "eth0"
+        else:
+            wan_uplink_iface = "eth1"
+
+        wan_ip_uplink = self.get_interface_ipaddr(wan_uplink_iface)
+        self.sendline('iptables -t nat -A POSTROUTING -o %s -j SNAT --to-source %s' % (wan_uplink_iface, wan_ip_uplink))
         self.expect(self.prompt)
 
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_timestamps')
