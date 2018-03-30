@@ -4,6 +4,7 @@ IFACE=${1:-bond0}
 START_VLAN=${2:-101}
 END_VLAN=${3:-144}
 OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
+BRINT=br-bft
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
@@ -36,6 +37,26 @@ create_container_eth1_vlan () {
 	sudo ip link set netns $cspace dev $IFACE.$vlan
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
+}
+
+# eth0/eth1 are both dhcp on the main network
+create_container_eth1_dhcp () {
+	local vlan=$1
+
+        cname=bft-node-$IFACE-$vlan
+        docker stop $cname && docker rm $cname
+        docker run --name $cname --privileged -h $cname --restart=always \
+                -d --network=none bft:node /usr/sbin/sshd -D
+
+        cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+
+        # create lab network access port
+	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
+        sudo ip link set dev tempfoo up
+        sudo ip link set netns $cspace dev tempfoo
+        docker exec $cname ip link set tempfoo name eth1
+        docker exec $cname ifconfig eth1 up
+        docker exec $cname dhclient eth1
 }
 
 for vlan in $(seq $START_VLAN $END_VLAN); do
