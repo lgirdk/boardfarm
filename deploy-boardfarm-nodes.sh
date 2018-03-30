@@ -1,12 +1,10 @@
 #!/bin/bash -xe
 
-IFACE=${1:-bond0}
+IFACE=${1:-undefined}
 START_VLAN=${2:-101}
 END_VLAN=${3:-144}
 OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
 BRINT=br-bft
-
-echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
 random_private_mac () {
 	echo $1$1$1$1$1$1 | od -An -N6 -tx1 | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
@@ -58,6 +56,10 @@ create_container_eth1_dhcp () {
         docker exec $cname ifconfig eth1 up
         docker exec $cname dhclient eth1
 }
+
+[ "$IFACE" = "undefined" ] && return
+
+echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
 for vlan in $(seq $START_VLAN $END_VLAN); do
 	echo "Creating node on vlan $vlan"
