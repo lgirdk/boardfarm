@@ -5,8 +5,6 @@ START_VLAN=${2:-101}
 END_VLAN=${3:-144}
 OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
 
-echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
-
 random_private_mac () {
 	echo $1$1$1$1$1$1 | od -An -N6 -tx1 | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
 }
@@ -37,6 +35,10 @@ create_container_eth1_vlan () {
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
 }
+
+[[ $_ != $0 ]] && return
+
+echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
 
 for vlan in $(seq $START_VLAN $END_VLAN); do
 	echo "Creating node on vlan $vlan"
