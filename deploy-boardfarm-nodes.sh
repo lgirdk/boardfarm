@@ -18,8 +18,9 @@ local_route () {
 	docker exec $cname ip route add $local_route dev eth0 via 172.17.0.1
 }
 
-for vlan in $(seq $START_VLAN $END_VLAN); do
-	echo "Creating node on vlan $vlan"
+# eth0 is docker private network, eth1 is vlan on specific interface
+create_container_eth1_vlan () {
+	local vlan=$1
 
 	cname=bft-node-$IFACE-$vlan
 	docker stop $cname && docker rm $cname
@@ -35,6 +36,12 @@ for vlan in $(seq $START_VLAN $END_VLAN); do
 	sudo ip link set netns $cspace dev $IFACE.$vlan
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
+}
+
+for vlan in $(seq $START_VLAN $END_VLAN); do
+	echo "Creating node on vlan $vlan"
+
+	create_container_eth1_vlan $vlan
 
 	[ "$LOCAL_ROUTE" = "both" ] && { local_route; continue; }
 	if [ $((vlan%2)) -eq 0 ]; then
