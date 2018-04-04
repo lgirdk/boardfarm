@@ -71,6 +71,8 @@ class DebianBox(base.BaseDevice):
         self.color = color
         self.output = output
         self.username = username
+        if username != "root":
+            self.prompt.append('%s\\@.*:.*$' % username)
         self.password = password
         self.port = port
         self.location = location
