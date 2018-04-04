@@ -100,6 +100,8 @@ def main():
     from termcolor import colored
     from library import print_bold
 
+    os.environ["TERM"] = "dumb"
+
     # Connect to any board in list
     connected_to_board = False
     random.shuffle(config.BOARD_NAMES)
