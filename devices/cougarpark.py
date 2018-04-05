@@ -12,6 +12,8 @@ import ipaddress
 import connection_decider
 import signal
 
+KEY_ESCAPE = '\x1B'
+
 class CougarPark(openwrt_router.OpenWrtRouter):
     '''
     Intel Cougar Park board
@@ -50,9 +52,9 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         '''
         # Try to break into uboot
         self.expect('Remaining timeout:', timeout=30)
-        self.send('\x1B')
+        self.send(KEY_ESCAPE)
         self.expect('startup.nsh',timeout=30)
-        self.send('\x1B')
+        self.send(KEY_ESCAPE)
         self.expect_exact(self.uprompt, timeout=30)
 
     def setup_uboot_network(self, tftp_server):
