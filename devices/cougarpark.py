@@ -63,13 +63,18 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.linesep = '\x0D'
         # required delay for networking to work...
         self.expect(pexpect.TIMEOUT, timeout=15)
+        self.sendline('ifconfig -l')
+        self.expect_exact(self.uprompt)
         self.sendline('ifconfig -c %s' % self.uboot_eth)
         self.expect_exact(self.uprompt, timeout=30)
         # this does tftp from a USB in the bios, so it's staticly configured
         self.sendline('ifconfig -s %s static %s 255.255.255.0 %s' % (self.uboot_eth, tftp_server+1, tftp_server))
         self.expect_exact(self.uprompt, timeout=30)
+        self.sendline('ifconfig -l')
+        self.expect_exact(self.uprompt)
         self.sendline('ping %s' % tftp_server)
-        self.sendline('10 packets transmitted, 10 received, 0% packet loss, time 0ms')
+        if 0 == self.expect(['Echo request sequence 1 timeout', '10 packets transmitted, 10 received, 0% packet loss, time 0ms']):
+            raise Exception("Failing to ping tftp server, aborting")
         self.expect_exact(self.uprompt, timeout=30)
 
     def flash_linux(self, KERNEL):
