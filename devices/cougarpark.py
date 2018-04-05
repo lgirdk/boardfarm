@@ -13,6 +13,13 @@ import connection_decider
 import signal
 
 KEY_ESCAPE = '\x1B'
+KEY_UP = '\x1b[A'
+KEY_DOWN = '\x1b[B'
+KEY_F4 = '\x1b[OS'
+
+MODE_DISABLED = 0
+MODE_NSGMII1 = 2
+MODE_NSGMII2 = 3
 
 class CougarPark(openwrt_router.OpenWrtRouter):
     '''
@@ -57,17 +64,49 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.send(KEY_ESCAPE)
         self.expect_exact(self.uprompt, timeout=30)
 
+    def switch_to_mode(self, index):
+        self.sendline('exit')
+        self.expect_exact('Device Manager')
+        self.send(KEY_DOWN)
+        self.send(KEY_DOWN)
+        self.sendline(KEY_DOWN)
+        self.expect_exact('System  Setup')
+        self.sendline()
+        self.expect_exact('Puma7 Configuration')
+        self.sendline(KEY_DOWN)
+        self.expect_exact('BIOS Network Configuration')
+        self.send(KEY_DOWN)
+        self.send(KEY_DOWN)
+        self.sendline(KEY_DOWN)
+        self.expect_exact('Disabled')
+        self.send(KEY_UP)
+        self.send(KEY_UP)
+        self.send(KEY_UP)
+        self.send(KEY_UP)
+        for i in range(1,index):
+            self.send(KEY_DOWN)
+        self.sendline()
+        self.send(KEY_F4)
+        self.send(KEY_F4)
+        self.send('Y')
+        self.send(KEY_ESCAPE)
+        self.send(KEY_UP)
+        self.send(KEY_UP)
+        self.sendline(KEY_UP)
+        self.sendline()
+        self.wait_for_boot()
+
     def setup_uboot_network(self, tftp_server):
         self.tftp_server_int = tftp_server
         # line sep for UEFI
         self.linesep = '\x0D'
-        # required delay for networking to work...
-        self.expect(pexpect.TIMEOUT, timeout=15)
+
+        self.switch_to_mode(MODE_NSGMII2)
+
         self.sendline('ifconfig -l')
         self.expect_exact(self.uprompt)
         self.sendline('ifconfig -c %s' % self.uboot_eth)
         self.expect_exact(self.uprompt, timeout=30)
-        # this does tftp from a USB in the bios, so it's staticly configured
         self.sendline('ifconfig -s %s static %s 255.255.255.0 %s' % (self.uboot_eth, tftp_server+1, tftp_server))
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline('ifconfig -l')
@@ -93,6 +132,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
     def boot_linux(self, rootfs=None, bootargs=None):
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
+        self.switch_to_mode(MODE_DISABLED)
         self.sendline('npcpu start')
         self.sendline('bootkernel -c %kernel_cmd_line%')
         self.delaybetweenchar = None
