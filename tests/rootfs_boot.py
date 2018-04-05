@@ -20,8 +20,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         # start all tftp servers for now
         for tftp_server in tftp_servers:
             tftp_device = getattr(self.config, tftp_server)
-            # TODO: this means wan.gw != tftp_server
-            tftp_device.start_tftp_server()
 
         # start dhcp servers
         for device in self.config.board['devices']:
@@ -41,6 +39,10 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             wan.configure(kind="wan_device")
         elif wan:
             wan.configure(kind="wan_device")
+            if tftp_device is None:
+                tftp_device = wan
+
+        tftp_device.start_tftp_server()
 
         if lan:
             lan.configure(kind="lan_device")
