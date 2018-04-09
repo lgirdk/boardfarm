@@ -38,6 +38,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
                     return WemoPowerSwitch(outlet=outlet)
             if "serial://" in outlet:
                 return SimpleSerialPower(outlet=outlet)
+            if "cmd://" in outlet:
+                return SimpleCommandPower(outlet=outlet)
 
         return HumanButtonPusher()
 
@@ -197,6 +199,26 @@ class WemoPowerSwitch(PowerDevice):
         self.switch.off()
         time.sleep(5)
         self.switch.on()
+
+class SimpleCommandPower(PowerDevice):
+    '''
+    Runs a simple command to turn power on/off
+    '''
+
+    on_cmd = "true"
+    off_cmd = "false"
+
+    def __init__(self, outlet):
+        parsed = outlet.replace("cmd://", '').split(';')
+        for param in parsed:
+            for attr in ['on_cmd', 'off_cmd']:
+                if attr + '=' in param:
+                    setattr(self, attr, param.replace(attr + '=', '').encode())
+
+    def reset(self):
+        pexpect.spawn(self.off_cmd).expect(pexpect.EOF)
+        time.sleep(5)
+        pexpect.spawn(self.on_cmd).expect(pexpect.EOF)
 
 class SimpleSerialPower(PowerDevice):
     '''
