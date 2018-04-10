@@ -162,6 +162,11 @@ class DebianBox(base.BaseDevice):
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
+    def sudo_sendline(self, s):
+        if self.username != "root":
+            s = "sudo " + s
+        return super(type(self), self).sendline(s)
+
     def reset(self):
         self.sendline('reboot')
         self.expect(['going down','disconnected'])
