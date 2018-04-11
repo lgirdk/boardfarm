@@ -10,3 +10,6 @@ dlipower
 cdrouter
 pyserial
 ipaddress
+pysnmp
+selenium
+pyasn1
