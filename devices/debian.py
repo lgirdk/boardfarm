@@ -292,6 +292,8 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def copy_file_to_server(self, src, dst=None):
+        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install vim-common')
+        self.expect(self.prompt)
         with open(src, mode='rb') as file:
             bin_file = binascii.hexlify(file.read())
         if dst is None:
@@ -305,7 +307,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline('ls %s' % dst)
         self.expect_exact('ls %s' % dst)
-        self.expect('%s' % dst)
+        i = self.expect(['ls: cannot access %s: No such file or directory' % dst] + self.prompt)
+        if i == 0:
+            raise Exception("Failed to copy file")
         self.logfile_read = saved_logfile_read
 
     def configure(self, kind):
