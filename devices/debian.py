@@ -26,6 +26,7 @@ class DebianBox(base.BaseDevice):
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
     static_route = None
     wan_dhcp = False
+    wan_cmts_provisioner = False
 
     def __init__(self,
                  name,
@@ -101,6 +102,8 @@ class DebianBox(base.BaseDevice):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 if opt.startswith('wan-dhcp-client'):
                     self.wan_dhcp = True
+                if opt.startswith('wan-cmts-provisioner'):
+                    self.wan_cmts_provisioner = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -311,10 +314,11 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
         if kind == "wan_device":
             self.setup_as_wan_gateway()
+            if self.wan_cmts_provisioner:
+                self.setup_as_cmts_provisioner()
         elif kind == "lan_device":
             self.setup_as_lan_device()
-        elif kind == "cmts_provisioner":
-            self.setup_as_cmts_provisioner()
+
 
     def setup_as_cmts_provisioner(self):
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
@@ -323,23 +327,23 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
         self.expect(self.prompt)
-        self.sendline('ifconfig eth1 192.168.100.2')
-        self.gw = "192.168.100.2"
+        self.sendline('ifconfig eth1 %s' % self.gw)
         self.expect(self.prompt)
-        self.sendline('ip route add 192.168.201.0/24 via 192.168.100.1')
+        # TODO: specify these via config
+        self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
         self.expect(self.prompt)
-        self.sendline('ip route add 192.168.200.0/24 via 192.168.100.1')
+        self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
-option log-servers 192.168.100.2;
-option time-servers 192.168.100.2;
-next-server 192.168.100.2;
+option log-servers 192.168.3.1;
+option time-servers 192.168.3.1;
+next-server 192.168.3.1;
 default-lease-time 604800;
 max-lease-time 604800;
 allow leasequery;
-option time-servers 192.168.100.1;
-subnet 192.168.100.0 netmask 255.255.255.0 {
+option time-servers 192.168.3.222;
+subnet 192.168.3.0 netmask 255.255.255.0 {
   interface eth1;
 }
 subnet 192.168.200.0 netmask 255.255.255.0
@@ -351,7 +355,7 @@ subnet 192.168.200.0 netmask 255.255.255.0
   option dhcp-parameter-request-list 43;
   option domain-name "local";
   option time-offset 1;
-  option tftp-server-name "192.168.100.2";
+  option tftp-server-name "192.168.3.1";
   filename "UNLIMITCASA.cfg";
   allow unknown-clients;
 }
@@ -371,6 +375,8 @@ EOF''')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
+        # this might be redundant, but since might not have a tftpd server running
+        # here we have to start one for the CM configs
         self.start_tftp_server()
 
         # Look in all overlays as well, and PATH as a workaround for standalone
@@ -441,7 +447,8 @@ EOF''')
             self.expect(self.prompt)
             self.sendline('ifconfig eth1 up')
             self.expect(self.prompt)
-            self.setup_dhcp_server()
+            if not self.wan_cmts_provisioner:
+                self.setup_dhcp_server()
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
