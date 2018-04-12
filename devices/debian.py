@@ -380,9 +380,11 @@ EOF''')
         self.start_tftp_server()
 
         # Look in all overlays as well, and PATH as a workaround for standalone
+        paths = os.environ['PATH'].split(os.pathsep)
+        paths += os.environ['BFT_OVERLAY'].split(' ')
         cfg_list = []
-        for path in os.environ['PATH'].split(os.pathsep):
-            for cfg in glob.glob(path + 'devices/cm-cfg/*.cfg'):
+        for path in paths:
+            for cfg in glob.glob(path + '/devices/cm-cfg/*.cfg'):
                 cfg_list.append(cfg)
         cfg_set = set(cfg_list)
 
