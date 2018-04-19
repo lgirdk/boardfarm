@@ -36,9 +36,9 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         if self.config.board.get('wan_device', None) is not None:
             wan.start_tftp_server()
             tftp_device = wan
-            wan.configure(kind="wan_device")
+            wan.configure(kind="wan_device", config=self.config.board)
         elif wan:
-            wan.configure(kind="wan_device")
+            wan.configure(kind="wan_device", config=self.config.board)
             if tftp_device is None:
                 tftp_device = wan
 

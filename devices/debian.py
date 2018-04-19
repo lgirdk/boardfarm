@@ -321,19 +321,19 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             raise Exception("Failed to copy file")
         self.logfile_read = saved_logfile_read
 
-    def configure(self, kind):
+    def configure(self, kind, config=[]):
         # start openssh server if not running:
         self.start_sshd_server()
 
         if kind == "wan_device":
             self.setup_as_wan_gateway()
             if self.wan_cmts_provisioner:
-                self.setup_as_cmts_provisioner()
+                self.setup_as_cmts_provisioner(config)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
 
-    def setup_as_cmts_provisioner(self):
+    def setup_as_cmts_provisioner(self, board_config):
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server stop')
