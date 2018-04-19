@@ -294,14 +294,23 @@ class DebianBox(base.BaseDevice):
     def copy_file_to_server(self, src, dst=None):
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install vim-common')
         self.expect(self.prompt)
+
+        def gzip_str(string_):
+	    import gzip
+	    import io
+	    out = io.BytesIO()
+	    with gzip.GzipFile(fileobj=out, mode='w') as fo:
+		fo.write(string_)
+	    return out.getvalue()
+
         with open(src, mode='rb') as file:
-            bin_file = binascii.hexlify(file.read())
+            bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
             dst = '/tftpboot/' + os.path.basename(src)
         print ("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
-        self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p > %s
+        self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
 %s
 EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
