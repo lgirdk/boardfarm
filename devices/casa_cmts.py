@@ -1,0 +1,273 @@
+# Copyright (c) 2018
+#
+# All rights reserved.
+#
+# This file is distributed under the Clear BSD license.
+# The full text can be found in LICENSE in the root directory.
+#!/usr/bin/env python
+
+import pexpect
+import sys
+import base
+import re
+
+class CasaCMTS(base.BaseDevice):
+    '''
+    Connects to and configures a CASA CMTS
+    '''
+
+    prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#']
+
+    def __init__(self,
+                 conn_cmd,
+                 password='casa'):
+        pexpect.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
+        self.logfile_read = sys.stdout
+        self.password = password
+
+    def connect(self):
+        for i in range(10):
+            self.sendline('exit')
+            if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5):
+                self.sendline('enable')
+                if 0 == self.expect(['Password:'] + self.prompt):
+                    self.sendline(self.password)
+                    self.expect(self.prompt)
+                self.sendline('config')
+                self.expect(self.prompt)
+                self.sendline('page-off')
+                self.expect(self.prompt)
+                return
+
+        raise Exception("Unable to get prompt on CASA device")
+
+    def reset(self):
+        self.sendline('exit')
+        self.expect(self.prompt)
+        self.sendline('del startup-config')
+        self.expect('Please type YES to confirm deleting startup-config:')
+        self.sendline('YES')
+        self.expect(self.prompt)
+        self.sendline('system reboot')
+        if 0 == self.expect(['Proceed with reload\? please type YES to confirm :', 'starting up console shell ...'], timeout=150):
+            self.sendline('YES')
+            self.expect('starting up console shell ...', timeout=150)
+        self.sendline()
+        self.expect(self.prompt)
+        self.sendline('page-off')
+        self.expect(self.prompt)
+        self.sendline('enable')
+        self.expect('Password:')
+        self.sendline(self.password)
+        self.expect(self.prompt)
+        self.sendline('config')
+        self.expect(self.prompt)
+
+    def wait_for_ready(self):
+        self.sendline('show system')
+        while 0 == self.expect(['NotReady'] + self.prompt):
+            self.expect(self.prompt)
+            self.expect(pexpect.TIMEOUT, timeout=5)
+            self.sendline('show system')
+
+    def save_running_to_startup_config(self):
+        self.sendline('exit')
+        self.expect(self.prompt)
+        self.sendline('copy running-config startup-config')
+        self.expect(self.prompt)
+        self.sendline('config')
+        self.expect(self.prompt)
+
+    def save_running_config_to_local(self, filename):
+        self.sendline('show running-config')
+        self.expect('show running-config')
+        self.expect(self.prompt)
+
+        f = open(filename, "w")
+        f.write(self.before)
+        f.close()
+
+    def set_iface_ipaddr(self, iface, ipaddr):
+        self.sendline('interface %s' % iface)
+        self.expect(self.prompt)
+        self.sendline('ip address %s' % ipaddr)
+        self.expect(self.prompt)
+        self.sendline('no shutdown')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def add_ip_bundle(self, index, ip1, ip2, helper_ip):
+        self.sendline('interface ip-bundle %s' % index)
+        self.expect(self.prompt)
+        self.sendline('ip address %s 255.255.255.0' % ip1)
+        self.expect(self.prompt)
+        self.sendline('ip address %s 255.255.255.0 secondary' % ip2)
+        self.expect(self.prompt)
+        self.sendline('cable helper-address %s cable-modem' % helper_ip)
+        self.expect(self.prompt)
+        self.sendline('cable helper-address %s mta' % helper_ip)
+        self.expect(self.prompt)
+        self.sendline('cable helper-address %s host' % helper_ip)
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def add_route(self, net, mask, gw):
+        self.sendline('route net %s %s gw %s' % (net, mask, gw))
+        self.expect(self.prompt)
+
+    def get_qam_module(self):
+        self.sendline('show system')
+        self.expect(self.prompt)
+        return re.findall('Module (\d+) QAM', self.before)[0]
+
+    def get_ups_module(self):
+        self.sendline('show system')
+        self.expect(self.prompt)
+        return re.findall('Module (\d+) UPS', self.before)[0]
+
+    def set_iface_qam(self, index, sub, annex, interleave, power):
+        self.sendline('interface qam %s/%s' % (index, sub))
+        self.expect(self.prompt)
+        self.sendline('annex %s' % annex)
+        self.expect(self.prompt)
+        self.sendline('interleave %s' % interleave)
+        self.expect(self.prompt)
+        self.sendline('power %s' % power)
+        self.expect(self.prompt)
+        self.sendline('no shutdown')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def set_iface_qam_freq(self, index, sub, channel, freq):
+        self.sendline('interface qam %s/%s' % (index, sub))
+        self.expect(self.prompt)
+        self.sendline('channel %s freq %s' % (channel, freq))
+        self.expect(self.prompt)
+        self.sendline('no channel %s shutdown' % channel)
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def set_iface_upstream(self, ups_idx, ups_ch, freq, width, power):
+        self.sendline('interface upstream %s/%s' % (ups_idx, ups_ch))
+        self.expect(self.prompt)
+        self.sendline('frequency %s' % freq)
+        self.expect(self.prompt)
+        self.sendline('channel-width %s' % width)
+        self.expect(self.prompt)
+        self.sendline('power-level %s' % power)
+        self.expect(self.prompt)
+        self.sendline('ingress-cancellation')
+        self.expect(self.prompt)
+        self.sendline('logical-channel 0 profile 3')
+        self.expect(self.prompt)
+        self.sendline('logical-channel 0 minislot 1')
+        self.expect(self.prompt)
+        self.sendline('no logical-channel 0 shutdown')
+        self.expect(self.prompt)
+        self.sendline('logical-channel 1 shutdown')
+        self.expect(self.prompt)
+        self.sendline('no shutdown')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def add_iface_docsis_mac(self, index, ip_bundle, qam_idx, qam_sub, qam_ch, ups_idx, ups_ch):
+        self.sendline('interface docsis-mac %s' % index)
+        self.expect(self.prompt)
+        self.sendline('no shutdown')
+        self.expect(self.prompt)
+        self.sendline('no dhcp-authorization')
+        self.expect(self.prompt)
+        self.sendline('no multicast-dsid-forward')
+        self.expect(self.prompt)
+        self.sendline('no tftp-enforce')
+        self.expect(self.prompt)
+        self.sendline('tftp-proxy')
+        self.expect(self.prompt)
+        self.sendline('ip bundle %s' % ip_bundle)
+        self.expect(self.prompt)
+        count = 1;
+        for ch in qam_ch:
+            self.sendline('downstream %s interface qam %s/%s/%s' % (count, qam_idx, qam_sub, ch))
+            self.expect(self.prompt)
+            count += 1
+        count = 1;
+        for ch in ups_ch:
+            self.sendline('upstream %s interface upstream %s/%s/0' % (count, ups_idx, ch))
+            self.expect(self.prompt)
+            count += 1
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def add_service_class(self, index, name, max_rate, max_burst, downstream=False):
+        self.sendline('cable service-class %s' % index)
+        self.expect(self.prompt)
+        self.sendline('name %s' % name)
+        self.expect(self.prompt)
+        self.sendline('max-traffic-rate %s' % max_rate)
+        self.expect(self.prompt)
+        self.sendline('max-traffic-burst %s' % max_burst)
+        self.expect(self.prompt)
+        self.sendline('max-concat-burst 0')
+        self.expect(self.prompt)
+        if downstream:
+            self.sendline('downstream')
+            self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def add_service_group(self, index, qam_idx, qam_sub, qam_channels, ups_idx, ups_channels):
+        self.sendline('service group %s' % index)
+        self.expect(self.prompt)
+        for ch in qam_channels:
+            self.sendline('qam %s/%s/%s' % (qam_idx, qam_sub, ch))
+            self.expect(self.prompt)
+        for ch in ups_channels:
+            self.sendline('upstream %s/%s' % (ups_idx, ch))
+            self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+if __name__ == '__main__':
+    import time
+
+    cmts = CasaCMTS(sys.argv[1])
+    cmts.connect()
+    cmts.save_running_to_startup_config()
+    cmts.save_running_config_to_local("saved-casa-config-" + time.strftime("%Y%m%d-%H%M%S") + ".cfg")
+    cmts.reset()
+    cmts.wait_for_ready()
+
+    cmts.set_iface_ipaddr('eth 0', 'dhcp')
+    cmts.set_iface_ipaddr('gige 0', '192.168.3.222 255.255.255.0')
+    cmts.add_ip_bundle(1, "192.168.200.1", "192.168.201.1", "192.168.3.1")
+
+    cmts.add_route("0.0.0.0", "0", "192.168.3.1")
+
+    qam_idx = cmts.get_qam_module()
+    ups_idx = cmts.get_ups_module()
+
+    cmts.set_iface_qam(qam_idx, 0, 'A', 12, 550)
+    cmts.set_iface_qam_freq(qam_idx, 0, 0, 235000000)
+    cmts.set_iface_qam_freq(qam_idx, 0, 1, 243000000)
+    cmts.set_iface_qam_freq(qam_idx, 0, 2, 251000000)
+    cmts.set_iface_qam_freq(qam_idx, 0, 3, 259000000)
+
+    cmts.add_service_class(1, 'UNLIMITED_down', 100000, 10000, downstream=True)
+    cmts.add_service_class(2, 'UNLIMITED_up', 100000, 16320)
+
+    cmts.add_service_group(1, qam_idx, 0, range(4), ups_idx, [0.0, 1.0])
+
+    cmts.add_iface_docsis_mac(1, 1, qam_idx, 0, range(4), ups_idx, [0.0, 1.0])
+
+    cmts.set_iface_upstream(ups_idx, 0.0, 47000000, 6400000, 6)
+
+    print
+    print("Press Control-] to exit interact mode")
+    print("=====================================")
+    cmts.interact()
+    print
