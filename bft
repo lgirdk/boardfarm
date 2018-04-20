@@ -223,6 +223,11 @@ def main():
 
     # Write board info to json file and stdout
     config.board['station'] = name
+
+    # Update config from board info
+    if hasattr(config.console, "update_config"):
+        config.console.update_config(config.board)
+
     print_bold('\n==========')
     library.print_board_info(config.board)
 
