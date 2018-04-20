@@ -15,6 +15,7 @@ import pexpect
 import dlipower
 import time
 
+
 try:
     from ouimeaux.environment import Environment as WemoEnv
     from ouimeaux.device.switch import Switch as WemoSwitch
@@ -50,6 +51,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     except Exception as e:
         print(e)
         raise Exception("\nError connecting to %s" % ip_address)
+        
+    print("data = %s" % data)
     if '<title>Power Controller' in data:
         return DLIPowerSwitch(ip_address, outlet=outlet, username=username, password=password)
     if 'Sentry Switched CDU' in data:
@@ -58,6 +61,10 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return APCPower(ip_address, outlet=outlet)
     if '<b>IP9258 Log In</b>' in data:
         return Ip9258(ip_address, outlet, username=username, password=password)
+    if 'Access Error: Unauthorized' in data:
+        print("ip_address = %s" % ip_address)
+        print("outlet = %s" % outlet)
+        return Ip9820(ip_address, outlet)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
@@ -271,6 +278,12 @@ class SimpleSerialPower(PowerDevice):
 #     time.delay(1)
 
 import urllib2
+from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
+from pysnmp.carrier.asyncore.dgram import udp
+from pyasn1.codec.ber import encoder, decoder
+from pysnmp.proto.api import v2c
+from pysnmp.entity.rfc3413.oneliner import cmdgen
+from pysnmp.proto import rfc1902
 
 class Ip9258(PowerDevice):
     def __init__(self, ip_address, port, username="admin", password="12345678"):
@@ -298,6 +311,123 @@ class Ip9258(PowerDevice):
 	self.off()
 	time.sleep(5)
 	self.on()
+
+class Ip9820(PowerDevice):
+    def __init__(self, ip_address, port):
+        self.ip_address = ip_address
+        self.port = port
+        self.oid_Outlet = '1.3.6.1.4.1.38107.1.3'
+        
+    def on(self):
+       oid = self.oid_Outlet + '.' + str(self.port) + '.0'
+       print("set Ip9820 port on")
+       Snmp("set",self.ip_address,"private",oid ,'i',1)
+       result = Snmp("get",self.ip_address,"private",oid)
+       print("result = %s" % result)
+       return result
+    
+    def off(self):
+        oid = self.oid_Outlet + '.' + str(self.port) + '.0'
+        print("set Ip9820 port off")
+        Snmp("set",self.ip_address,"private",oid ,'i',0)
+        result = Snmp("get",self.ip_address,"private",oid)
+        print("result = %s" % result)
+        return result
+    
+    def reset(self):
+	self.off()
+	time.sleep(5)
+	self.on()
+    
+    def getPowerStatus(self):
+        oid = self.oid_Outlet + '.' + str(self.port) + '.0'
+        result = Snmp("get",self.wan_ip,"private",oid)
+        return result
+    
+    def getPowerStatusAll(self):
+        oid = self.oid_Outlet
+        result = Snmp("walk",self.wan_ip,"private",oid)
+        return result
+
+def Snmp(action=None, target_IP=None, community='public', oid=None, stype=None, value=None, walk_timeout=120):
+    """
+    Name:Snmp
+    Purpose: Do snmp set,get and walk function for DUT control.
+    Input:1.action
+    	    2.target_IP
+         3.community
+         4.oid
+         5.stype
+         6.value
+         7.walk_timeout
+    Output:Snmp get or walk result
+    """
+
+    # Create command generator
+    cmdGen = cmdgen.CommandGenerator()
+
+    if action == "get":
+        errorIndication, errorStatus, errorIndex, varBinds = cmdGen.getCmd(
+            cmdgen.CommunityData(community),
+            cmdgen.UdpTransportTarget((target_IP, 161), timeout=1, retries=3),
+            oid
+        )
+        for name, val in varBinds:
+            if val.prettyPrint() != "":
+                return val.prettyPrint()
+            else:
+                return "null"
+    elif action == "set":
+        for case in switch(stype):
+            if case('i'): 
+                value = rfc1902.Integer(value)
+                break
+            elif case('s'): 
+                value = rfc1902.OctetString(value)
+                break 
+            elif case('x'): 
+                value = rfc1902.OctetString(hexValue=value)
+                break 
+            elif case('p'): 
+                value = rfc1902.IpAddress(value)
+            elif case('u'): 
+                value = rfc1902.Unsigned32(value)
+                break 
+            elif case(): # default
+                value = ""
+        
+        cmdGen.setCmd(
+            cmdgen.CommunityData(community),
+            cmdgen.UdpTransportTarget((target_IP, 161), timeout=1, retries=3),
+            (oid, value)
+        )
+
+class switch(object):
+    """
+    Name:switch
+    Purpose: def switch/case library for Snmp set used.
+    Input:object ex.stype
+    Output:True or False
+    """
+    
+    def __init__(self, value):
+        self.value = value
+        self.fall = False
+ 
+    def __iter__(self):
+        """Return the match method once, then stop"""
+        yield self.match
+     
+    def match(self, *args):
+        """Indicate whether or not to enter a case suite"""
+        if self.fall or not args:
+            return True
+        elif self.value in args: 
+            self.fall = True
+            return True
+        else:
+            return False
+            
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
