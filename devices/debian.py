@@ -356,6 +356,14 @@ default-lease-time 604800;
 max-lease-time 604800;
 allow leasequery;
 option time-servers 192.168.3.222;
+
+option space docsis-mta;
+option docsis-mta.dhcp-server-1 code 1 = ip-address;
+option docsis-mta.dhcp-server-2 code 2 = ip-address;
+option docsis-mta.provision-server code 3 = { integer 8, string };
+option docsis-mta-encap code 122 = encapsulate docsis-mta;
+option docsis-mta.kerberos-realm code 6 = string;
+
 subnet 192.168.3.0 netmask 255.255.255.0 {
   interface eth1;
 }
@@ -384,6 +392,14 @@ subnet 192.168.201.0 netmask 255.255.255.0
 }
 EOF''')
 	self.expect(self.prompt)
+
+        if 'extra_isc_dhcp_config' in board_config:
+            self.sendline('''cat > /etc/dhcp/dhcpd.conf.''' + board_config['station'] + ''' << EOF
+''' + board_config['extra_isc_dhcp_config'] + '''
+EOF''')
+            self.expect(self.prompt)
+        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
+        self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server start')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
@@ -396,9 +412,14 @@ EOF''')
         paths = os.environ['PATH'].split(os.pathsep)
         paths += os.environ['BFT_OVERLAY'].split(' ')
         cfg_list = []
-        for path in paths:
-            for cfg in glob.glob(path + '/devices/cm-cfg/*.cfg'):
-                cfg_list.append(cfg)
+
+        if 'tftp_cfg_files' in board_config:
+            for path in paths:
+                for cfg in board_config['tftp_cfg_files']:
+                    cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
+        else:
+            for path in paths:
+                cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
         cfg_set = set(cfg_list)
 
         # Copy binary files to tftp server
