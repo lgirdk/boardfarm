@@ -359,10 +359,14 @@ option time-servers 192.168.3.222;
 
 option space docsis-mta;
 option docsis-mta.dhcp-server-1 code 1 = ip-address;
+option docsis-mta.dhcp-server-1 192.168.3.1;
 option docsis-mta.dhcp-server-2 code 2 = ip-address;
+option docsis-mta.dhcp-server-2 192.168.3.1;
 option docsis-mta.provision-server code 3 = { integer 8, string };
+option docsis-mta.provision-server 0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00  ;
 option docsis-mta-encap code 122 = encapsulate docsis-mta;
 option docsis-mta.kerberos-realm code 6 = string;
+option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
 
 subnet 192.168.3.0 netmask 255.255.255.0 {
   interface eth1;
