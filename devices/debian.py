@@ -397,6 +397,9 @@ subnet 192.168.201.0 netmask 255.255.255.0
 EOF''')
 	self.expect(self.prompt)
 
+        self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
+        self.expect(self.prompt)
+
         if 'extra_isc_dhcp_config' in board_config:
             self.sendline('''cat > /etc/dhcp/dhcpd.conf.''' + board_config['station'] + ''' << EOF
 ''' + board_config['extra_isc_dhcp_config'] + '''
