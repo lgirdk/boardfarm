@@ -29,6 +29,13 @@ class BaseDevice(pexpect.spawn):
         self.expect(self.prompt)
         return ipaddr
 
+    def get_interface_ip6addr(self, interface):
+        self.sendline("\nifconfig %s" % interface)
+        self.expect('inet6 addr: (200(.+)) Scope:Global', timeout=5)
+        ipaddr = self.match.group(1)
+        self.expect(self.prompt)
+        return ipaddr
+
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
             return self._logfile_read
