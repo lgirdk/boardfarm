@@ -28,7 +28,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     at a given IP address. Return a class that can correctly
     interact with that type of switch.
     '''
-
+    device_name = 'none'
     if ip_address is None:
         if outlet is not None:
             if "wemo://" in outlet:
@@ -58,6 +58,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return APCPower(ip_address, outlet=outlet)
     if '<b>IP9258 Log In</b>' in data:
         return Ip9258(ip_address, outlet, username=username, password=password)
+    if 'Cyber Power Systems' in data:
+        return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
@@ -295,9 +297,97 @@ class Ip9258(PowerDevice):
         return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
     def reset(self):
-	self.off()
-	time.sleep(5)
-	self.on()
+        self.off()
+        time.sleep(5)
+        self.on()
+
+class CyberPowerPdu(PowerDevice):
+    def __init__(self,
+                 ip_address,
+                 outlet,
+                 username='cyber',
+                 password='cyber'):
+        PowerDevice.__init__(self, ip_address, username, password)
+        self.outlet = outlet
+        
+    def on(self):
+        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon.expect("Login Name:")
+
+        pcon.send(self.username + "\r\n")
+        pcon.expect("Login_Pass:")
+
+        pcon.send(self.password + "\r\n")
+        pcon.expect("> ")
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('%s\r\n' % self.outlet)
+        pcon.expect(">")
+
+        # ON
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('yes' + "\r\n")
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send('4' + "\r\n")
+        pcon.expect("Goodbye")
+
+    def off(self):
+        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon.expect("Login Name:")
+        
+        pcon.send(self.username + "\r\n")
+        pcon.expect("Login_Pass:")
+
+        pcon.send(self.password + "\r\n")
+        pcon.expect("> ")
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('%s\r\n' % self.outlet)
+        pcon.expect(">")
+
+        # OFF
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('yes' + "\r\n")
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send('4' + "\r\n")
+        pcon.expect("Goodbye")
+
+    def reset(self):
+        self.off()
+        time.sleep(5)
+        self.on()
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
