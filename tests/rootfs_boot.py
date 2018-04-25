@@ -60,7 +60,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             if self.config.META_BUILD:
                 for attempt in range(3):
                     try:
-                        board.flash_meta(self.config.META_BUILD)
+                        board.flash_meta(self.config.META_BUILD, wan, lan)
                         break
                     except Exception as e:
                         print(e)

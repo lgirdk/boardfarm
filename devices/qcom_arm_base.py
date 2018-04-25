@@ -47,7 +47,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.sendline('setenv ethaddr %s' % self.randomMAC())
         self.expect(self.uprompt)
 
-    def flash_meta(self, META_BUILD):
+    def flash_meta(self, META_BUILD, wan, lan):
         '''
         A meta image contains several components wrapped up into one file.
         Here we flash a meta image onto the board.
