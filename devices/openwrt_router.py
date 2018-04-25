@@ -195,13 +195,22 @@ class OpenWrtRouter(base.BaseDevice):
                 self.expect(self.uprompt)
         raise Exception("TFTP failed, try rebooting the board.")
 
-    def prepare_file(self, fname):
+    def prepare_file(self, fname, tserver=None, tusername=None, tpassword=None, tport=None):
         '''Copy file to tftp server, so that it it available to tftp
         to the board itself.'''
+        if tserver is None:
+            tserver = self.tftp_server
+        if tusername is None:
+            tusername = self.tftp_username
+        if tpassword is None:
+            tpassword = self.tftp_password
+        if tport is None:
+            tport = self.tftp_port
+
         if fname.startswith("http://") or fname.startswith("https://"):
-            return common.download_from_web(fname, self.tftp_server, self.tftp_username, self.tftp_password, self.tftp_port)
+            return common.download_from_web(fname, tserver, tusername, tpassword, tport)
         else:
-            return common.scp_to_tftp_server(os.path.abspath(fname), self.tftp_server, self.tftp_username, self.tftp_password, self.tftp_port)
+            return common.scp_to_tftp_server(os.path.abspath(fname), tserver, tusername, tpassword, tport)
 
     def install_package(self, fname):
         '''Install OpenWrt package (opkg).'''
