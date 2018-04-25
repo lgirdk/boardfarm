@@ -182,6 +182,7 @@ def main():
                 config.console.tftp_username = "root"
                 config.console.tftp_password = "bigfoot1"
                 config.console.tftp_port = "22"
+                config.console.tftp_dev = dev
                 config.console.logfile_read = saved
 
             # check devices after they start for tftpd-server option if
@@ -197,6 +198,9 @@ def main():
                 for x in config.board['devices']:
                     if tftp_server == x.get('name', ""):
                         get_tftp_config(getattr(config, tftp_server))
+                    # call for ip addr too since we want to fields populated
+                    if tftp_server == x.get('ipaddr', ""):
+                        config.console.tftp_dev = getattr(config, x.get('name'))
 
             # legacy wan device
             if tftp_server is None and getattr(config, 'wan') is not None:
