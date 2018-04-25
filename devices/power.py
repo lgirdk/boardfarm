@@ -58,6 +58,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return APCPower(ip_address, outlet=outlet)
     if '<b>IP9258 Log In</b>' in data:
         return Ip9258(ip_address, outlet, username=username, password=password)
+    if 'Cyber Power Systems' in data:
+        return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
