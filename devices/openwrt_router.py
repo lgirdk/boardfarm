@@ -237,7 +237,7 @@ class OpenWrtRouter(base.BaseDevice):
     def flash_linux(self, KERNEL):
         raise Exception('Code not written for flash_linux for this board type, %s.' % self.model)
 
-    def flash_meta(self, META_BUILD):
+    def flash_meta(self, META_BUILD, wan, lan):
         raise Exception('Code not written for flash_meta for this board type, %s.' % self.model)
 
     def prepare_nfsroot(self, NFSROOT):
