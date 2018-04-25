@@ -296,10 +296,93 @@ class Ip9258(PowerDevice):
         print("Power Off Port(%s)\n" % self.port)
         return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
+class CyberPowerPdu(PowerDevice):
+    def __init__(self,
+                 ip_address,
+                 outlet,
+                 username='cyber',
+                 password='cyber'):
+        PowerDevice.__init__(self, ip_address, username, password)
+        self.outlet = outlet
+        
+    def on(self):
+        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon.expect("Login Name:")
+
+        pcon.send(self.username + "\r\n")
+        pcon.expect("Login_Pass:")
+
+        pcon.send(self.password + "\r\n")
+        pcon.expect("> ")
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('%s\r\n' % self.outlet)
+        pcon.expect(">")
+
+        # ON
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('yes' + "\r\n")
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send('4' + "\r\n")
+        pcon.expect("Goodbye")
+
+    def off(self):
+        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon.expect("Login Name:")
+        
+        pcon.send(self.username + "\r\n")
+        pcon.expect("Login_Pass:")
+
+        pcon.send(self.password + "\r\n")
+        pcon.expect("> ")
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send("1" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('%s\r\n' % self.outlet)
+        pcon.expect(">")
+
+        # OFF
+        pcon.send("2" + "\r\n")
+        pcon.expect(">")
+
+        pcon.send('yes' + "\r\n")
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send(b'\x1b')
+        pcon.expect(">")
+
+        pcon.send('4' + "\r\n")
+        pcon.expect("Goodbye")
+
     def reset(self):
-	self.off()
-	time.sleep(5)
-	self.on()
+        self.off()
+        time.sleep(5)
+        self.on()
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
