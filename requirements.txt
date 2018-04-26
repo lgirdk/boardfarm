@@ -10,3 +10,5 @@ dlipower
 cdrouter
 pyserial
 ipaddress
+jira
+simplejson
