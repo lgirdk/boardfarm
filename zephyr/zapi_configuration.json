@@ -1,0 +1,13 @@
+{
+"report": "output.xml", 
+"metafile": "zephyr/boardfarm_tc_meta_file.csv",
+"project": "RDKB",
+"release": "7.6.1",
+"environment": "Lab 5C",
+"cycle": "Demo",
+"build": "DemoBuild",
+"jira_url": "https://jira.lgi.io/",
+"user": "JIRAUSER",
+"passwd": "JIRAPASSWORD",
+"updateautomationstatus": ""
+}
