@@ -45,6 +45,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
     try:
         data = urlopen("http://" + ip_address).read().decode()
+    except UnicodeDecodeError as e:
+        data = urlopen("http://" + ip_address).read()
     except HTTPError as e:
         data = e.read().decode()
     except Exception as e:
