@@ -11,3 +11,5 @@ cdrouter
 pyserial
 ipaddress
 easysnmp
+jira
+simplejson
