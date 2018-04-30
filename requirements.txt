@@ -10,3 +10,4 @@ dlipower
 cdrouter
 pyserial
 ipaddress
+easysnmp

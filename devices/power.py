@@ -15,6 +15,8 @@ import pexpect
 import dlipower
 import time
 
+from easysnmp import Session
+
 try:
     from ouimeaux.environment import Environment as WemoEnv
     from ouimeaux.device.switch import Switch as WemoSwitch
@@ -310,81 +312,18 @@ class CyberPowerPdu(PowerDevice):
                  username='cyber',
                  password='cyber'):
         PowerDevice.__init__(self, ip_address, username, password)
-        self.outlet = outlet
+        self.port = outlet
+        self.ip_address = ip_address
+        self.oid_Outlet = '1.3.6.1.4.1.3808.1.1.3.3.3.1.1.4'
+        self.session = Session(hostname=self.ip_address, community="private", version=2)
 
     def on(self):
-        pcon = pexpect.spawn('telnet %s' % self.ip_address)
-        pcon.expect("Login Name:")
-
-        pcon.send(self.username + "\r\n")
-        pcon.expect("Login_Pass:")
-
-        pcon.send(self.password + "\r\n")
-        pcon.expect("> ")
-        pcon.send("1" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send("2" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send("1" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send('%s\r\n' % self.outlet)
-        pcon.expect(">")
-
-        # ON
-        pcon.send("1" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send('yes' + "\r\n")
-        pcon.expect(">")
-
-        pcon.send(b'\x1b')
-        pcon.expect(">")
-
-        pcon.send(b'\x1b')
-        pcon.expect(">")
-
-        pcon.send('4' + "\r\n")
-        pcon.expect("Goodbye")
+        oid = self.oid_Outlet + '.' + str(self.port)
+        self.session.set(oid, 1, 'i')
 
     def off(self):
-        pcon = pexpect.spawn('telnet %s' % self.ip_address)
-        pcon.expect("Login Name:")
-
-        pcon.send(self.username + "\r\n")
-        pcon.expect("Login_Pass:")
-
-        pcon.send(self.password + "\r\n")
-        pcon.expect("> ")
-        pcon.send("1" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send("2" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send("1" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send('%s\r\n' % self.outlet)
-        pcon.expect(">")
-
-        # OFF
-        pcon.send("2" + "\r\n")
-        pcon.expect(">")
-
-        pcon.send('yes' + "\r\n")
-        pcon.expect(">")
-
-        pcon.send(b'\x1b')
-        pcon.expect(">")
-
-        pcon.send(b'\x1b')
-        pcon.expect(">")
-
-        pcon.send('4' + "\r\n")
-        pcon.expect("Goodbye")
+        oid = self.oid_Outlet + '.' + str(self.port)
+        self.session.set(oid, 2, 'i')
 
     def reset(self):
         self.off()
