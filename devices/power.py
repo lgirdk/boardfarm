@@ -87,10 +87,10 @@ class SentrySwitchedCDU(PowerDevice):
     Power Unit from Server Technology.
     '''
     def __init__(self,
-                 ip_address,
-                 outlet,
-                 username='admn',
-                 password='admn'):
+            ip_address,
+            outlet,
+            username='admn',
+            password='admn'):
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
         # Verify connection
@@ -146,10 +146,10 @@ class HumanButtonPusher(PowerDevice):
 class APCPower(PowerDevice):
     '''Resets an APC style power control port'''
     def __init__(self,
-                 ip_address,
-                 outlet,
-                 username='apc',
-                 password='apc'):
+            ip_address,
+            outlet,
+            username='apc',
+            password='apc'):
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
     def reset(self):
@@ -177,10 +177,10 @@ class APCPower(PowerDevice):
 class DLIPowerSwitch(PowerDevice):
     '''Resets a DLI based power switch'''
     def __init__(self,
-                 ip_address,
-                 outlet,
-                 username,
-                 password):
+            ip_address,
+            outlet,
+            username,
+            password):
         PowerDevice.__init__(self, ip_address, username, password)
         self.switch = dlipower.PowerSwitch(hostname=ip_address, userid=username, password=password)
         self.outlet = outlet
@@ -299,9 +299,9 @@ class Ip9258(PowerDevice):
         return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
     def reset(self):
-	self.off()
-	time.sleep(5)
-	self.on()
+        self.off()
+        time.sleep(5)
+        self.on()
 
 class CyberPowerPdu(PowerDevice):
     def __init__(self,
