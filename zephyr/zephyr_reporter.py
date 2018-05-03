@@ -8,52 +8,6 @@ import datetime
 import json
 from pprint import pprint
 from time import gmtime, strftime
-
-try:
-    from lxml import etree
-    print "running with lxml.etree"
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-        print "running with cElementTree on Python 2.5+"
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-            print "running with ElementTree on Python 2.5+"
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-                print "running with cElementTree"
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                    print "running with ElementTree"
-                except ImportError:
-                    print "Failed to import ElementTree from any known place"
-
-"""
-Settings file to interact with LG's Jira
-Key parameters are USR and PWD
-"""
-
-"""./zephyr_reporter.py -mf currently_published.csv -b "DemoBuild" -a -u username -p password
-    1) "--report", "-rf" : The TDK Framework output file.Default: output.xml.
-    2) "--metafile", "-mf" : The csv file containing TDK tests and test case IDs. Default: tdktests.csv.
-    3) "--project", "-pr" : The Jira project where to update the results. Default: ARRISEOS.
-    4) "--release", "-r" : The release version in Jira. Default="9.9.99".
-    5) "--environment", "-e" : A string that identifies the environment. Default="Lab 5C"
-    6) "--cycle", "-c" : The name of the test cycle. When not given, the cycle gets the name of the build. Default=None
-    7) "--build", "-b" : The build (software version) under test. A cycle with this name is created if not otherwise specified.
-    8) sunglasses: "--user", "-u" : The Jira user that is publishing the results.
-    9) "--passwd", "-p" : The Jira password of the given user.
-    10) "--updateautomationstatus, -a" : When True it marks the test automation status in Jira.
-
-"""			
-					
 from jira import JIRA
 import zapi
 from jira import JIRA
