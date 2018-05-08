@@ -57,6 +57,29 @@ create_container_eth1_dhcp () {
         docker exec $cname dhclient eth1
 }
 
+# eth1 is on main network and static
+create_container_eth1_static () {
+	local name=$1
+	local ip=$2
+	local default_route=$3
+
+	cname=bft-node-$IFACE-$name
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-d --network=none bft:node /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+
+	# create lab network access port
+	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
+	sudo ip link set dev tempfoo up
+	sudo ip link set netns $cspace dev tempfoo
+	docker exec $cname ip link set tempfoo name eth1
+	docker exec $cname ip link set eth1 up
+	docker exec $cname ip addr add $ip dev eth1
+	docker exec $cname ip route add default via $default_route dev eth1
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
