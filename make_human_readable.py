@@ -106,7 +106,7 @@ def xmlresults_to_html(test_results,
         grade_counter[t['grade']] += 1
         if 'FAIL' == t['grade']:
             results_fail_table_lines.append('<tr class="%(row_style)s"><td>%(num)s</td><td class="%(style)s">%(grade)s</td><td>%(name)s</td></tr>' % t)
-        results_table_lines.append('<tr class="%(row_style)s"><td>%(num)s</td><td class="%(style)s">%(grade)s</td><td>%(name)s</td><td>%(message)s</td></tr>' % t)
+        results_table_lines.append('<tr class="%(row_style)s"><td>%(num)s</td><td class="%(style)s">%(grade)s</td><td>%(name)s</td><td>%(message)s</td><td>%(elapsed_time).2fs</td></tr>' % t)
         if t['long_message'] != "":
             results_table_lines.append('<tr class="%(row_style)s"><td colspan=4><pre align="left">' % t)
             results_table_lines.append("%(long_message)s" % t)
