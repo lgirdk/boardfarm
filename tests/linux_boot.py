@@ -10,6 +10,7 @@ import unittest2
 import lib
 import sys
 import traceback
+import time
 
 from devices import board, wan, lan, wlan, prompt
 
@@ -50,6 +51,8 @@ class LinuxBootTest(unittest2.TestCase):
         None
 
     def testWrapper(self):
+        self.start_time = time.time()
+
         if not board.isalive():
             self.result_grade = "SKIP"
             self.skipTest("Board is not alive")
@@ -92,11 +95,15 @@ class LinuxBootTest(unittest2.TestCase):
                 self.result_grade = "Unexp OK"
             else:
                 self.result_grade = "OK"
+
+            self.stop_time = time.time()
         except unittest2.case.SkipTest:
+            self.stop_time = time.time()
             self.result_grade = "SKIP"
             print("\n\n=========== Test skipped! Moving on... =============")
             raise
         except Exception as e:
+            self.stop_time = time.time()
             if hasattr(self, 'expected_failure') and self.expected_failure:
                 self.result_grade = "Exp FAIL"
             else:

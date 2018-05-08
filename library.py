@@ -29,6 +29,12 @@ def process_test_results(raw_test_results, golden={}):
         def parse_and_add_results(cls, prefix=""):
             name = prefix + getattr(cls, 'name', cls.__class__.__name__)
             grade = getattr(cls, 'result_grade', None)
+            if hasattr(cls, 'elapsed_time'):
+                elapsed_time = getattr(cls, 'elapsed_time')
+            else:
+                start_time = getattr(cls, 'start_time')
+                stop_time = getattr(cls, 'stop_time')
+                elapsed_time = stop_time - start_time
 
             unexpected = False
             if '_source' in golden:
@@ -61,7 +67,7 @@ def process_test_results(raw_test_results, golden={}):
 
             long_message = getattr(cls, 'long_result_message', "")
 
-            full_results['test_results'].append({"name": name, "message": message, "long_message": long_message, "grade": grade})
+            full_results['test_results'].append({"name": name, "message": message, "long_message": long_message, "grade": grade, "elapsed_time": elapsed_time})
 
         try:
             parse_and_add_results(x)

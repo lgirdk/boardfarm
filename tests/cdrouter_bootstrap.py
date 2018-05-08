@@ -200,6 +200,11 @@ testvar lanVlanId """ + lan.vlan
                 try:
                     grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[test.result]
                     tr = TestResult(test.name, grade_map, test.description)
+                    if test.started is not None:
+                        tr.start_time = test.started
+                        tr.stop_time = test.started + test.duration
+                    else:
+                        tr.elapsed_time = test.duration
                     self.subtests.append(tr)
                 except:
                     continue
