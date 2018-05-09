@@ -6,7 +6,7 @@
 "environment": "Lab 5C",
 "cycle": "Demo",
 "build": "DemoBuild",
-"jira_url": "https://jira.lgi.io/",
+"jira_url": "JIRA_URL",
 "user": "JIRAUSER",
 "passwd": "JIRAPASSWORD",
 "updateautomationstatus": ""
