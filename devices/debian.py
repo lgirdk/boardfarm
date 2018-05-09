@@ -26,6 +26,7 @@ class DebianBox(base.BaseDevice):
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
     static_route = None
     wan_dhcp = False
+    wan_no_eth0 = False
     wan_cmts_provisioner = False
 
     def __init__(self,
@@ -104,6 +105,8 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcp = True
                 if opt.startswith('wan-cmts-provisioner'):
                     self.wan_cmts_provisioner = True
+                if opt.startswith('wan-no-eth0'):
+                    self.wan_no_eth0 = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -496,10 +499,10 @@ EOF''')
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
-        if not self.wan_dhcp:
-            wan_uplink_iface = "eth0"
-        else:
+        if self.wan_no_eth0 or self.wan_dhcp:
             wan_uplink_iface = "eth1"
+        else:
+            wan_uplink_iface = "eth0"
 
         wan_ip_uplink = self.get_interface_ipaddr(wan_uplink_iface)
         self.sendline('iptables -t nat -A POSTROUTING -o %s -j SNAT --to-source %s' % (wan_uplink_iface, wan_ip_uplink))
