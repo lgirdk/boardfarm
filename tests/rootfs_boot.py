@@ -52,7 +52,10 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         # Reflash only if at least one or more of these
         # variables are set, or else there is nothing to do in u-boot
-        if reflash and (self.config.META_BUILD or self.config.ROOTFS or\
+        meta_interrupt = False
+        if self.config.META_BUILD and not board.flash_meta_booted:
+            meta_interrupt = True
+        if reflash and (meta_interrupt or self.config.ROOTFS or\
                             self.config.KERNEL or self.config.UBOOT):
             # Break into U-Boot, set environment variables
             board.wait_for_boot()
@@ -85,6 +88,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             board.pre_boot_linux(wan=wan, lan=lan)
         board.linux_booted = True
         board.wait_for_linux()
+        if self.config.META_BUILD and board.flash_meta_booted:
+            board.flash_meta(self.config.META_BUILD, wan, lan)
         linux_booted_seconds_up = board.get_seconds_uptime()
         # Retry setting up wan protocol
         if self.config.setup_device_networking:
