@@ -42,6 +42,7 @@ class OpenWrtRouter(base.BaseDevice):
     lan_iface = "br-lan"
     wan_iface = "eth0"
     tftp_server_int = None
+    flash_meta_booted = False
 
     uboot_net_delay = 30
 
