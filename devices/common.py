@@ -56,7 +56,7 @@ def copy_file_to_server(cmd, password):
         raise Exception("Unable to copy file to server")
 
 def download_from_web(url, server, username, password, port):
-    cmd = "curl -n -L -k '%s' 2>/dev/null | ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (url, port, username, server)
+    cmd = "curl -n -L -k '%s' 2>/dev/null | ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (url, port, username, server)
     return copy_file_to_server(cmd, password)
 
 def scp_to_tftp_server(fname, server, username, password, port):
@@ -65,7 +65,7 @@ def scp_to_tftp_server(fname, server, username, password, port):
         print_bold("File passed as parameter does not exist! Failing!\n")
         sys.exit(10)
 
-    cmd = "cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (fname, port, username, server)
+    cmd = "cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (fname, port, username, server)
     return copy_file_to_server(cmd, password)
 
 def print_bold(msg):
