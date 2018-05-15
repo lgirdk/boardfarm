@@ -67,6 +67,12 @@ def detect_fatal_error(console):
     #detect_kernel_panic(console, s)
 
 def caller_file_line(i):
+    #line = 0
+    #print "##################### %s" % i
+    #for s in inspect.stack():
+    #    print "%s: %s" % (line, s)
+    #    line = line + 1
+    #print "##################### %s" % i
     caller = inspect.stack()[i] # caller of spawn or pexpect
     frame = caller[0]
     info = inspect.getframeinfo(frame)
