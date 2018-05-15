@@ -97,6 +97,10 @@ def parse_zapi_config():
 def update_zephyr(test_cases_list):
     args=parse_zapi_config()
 
+    if "JIRA_URL" == args['jira_url']:
+        print("Zephyr is not configured, skipping...")
+        return
+
     """"Main routine"""
 
     jira = JIRA(basic_auth=(args["user"], args["passwd"]),
