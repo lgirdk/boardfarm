@@ -32,7 +32,7 @@ def copy_file_to_server(cmd, password):
     for attempt in range(5):
         try:
             print_bold(cmd)
-            p = pexpect.spawn(command='/bin/bash', args=['-c', cmd], timeout=120)
+            p = pexpect.spawn(command='/bin/bash', args=['-c', cmd], timeout=240)
             p.logfile_read = sys.stdout
 
             i = p.expect(["yes/no", "password:", "/tftpboot/.*"])
