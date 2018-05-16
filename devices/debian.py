@@ -291,6 +291,8 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def start_sshd_server(self):
+        self.sendline('/etc/init.d/rsyslog start')
+        self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh start')
         self.expect(self.prompt)
         self.sendline('sed "s/.*PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
