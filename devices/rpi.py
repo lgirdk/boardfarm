@@ -9,6 +9,7 @@ import common
 import openwrt_router
 import os
 import ipaddress
+import pexpect
 
 class RPI(openwrt_router.OpenWrtRouter):
     '''
@@ -35,6 +36,8 @@ class RPI(openwrt_router.OpenWrtRouter):
 
     # allowed open ports (starting point)
     wan_open_ports = ['22', '8080', '8087', '8088', '8090']
+
+    flash_meta_booted = True
 
     def flash_uboot(self, uboot):
         '''In this case it's flashing the vfat partition of the bootload.
@@ -112,6 +115,42 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.kernel_file = os.path.basename(KERNEL)
         self.sendline('fatwrite mmc 0 %s %s $filesize' % (self.kernel_file, self.uboot_ddr_addr))
         self.expect(self.uprompt)
+
+    def flash_meta(self, META, wan, lan):
+        '''Flashes a combine signed image over TFTP'''
+        print("\n===== Updating entire SD card image =====\n")
+        # must start before we copy as it erases files
+        wan.start_tftp_server()
+
+        filename = self.prepare_file(META, tserver=wan.config['ipaddr'], tport=wan.config.get('port', '22'))
+
+        wan_ip = wan.get_interface_ipaddr('eth1')
+        self.sendline('ping -c1 %s' % wan_ip)
+        self.expect_exact('1 packets transmitted, 1 packets received, 0% packet loss')
+        self.expect(self.prompt)
+
+        self.sendline('cd /tmp')
+        self.expect(self.prompt)
+        self.sendline(' tftp -g -r %s 10.0.1.1' % filename)
+        self.expect(self.prompt, timeout=240)
+
+        self.sendline('systemctl isolate rescue.target')
+        if 0 == self.expect(['Give root password for maintenance', 'Welcome Press Enter for maintenance', 'Press Enter for maintenance']):
+            self.sendline('password')
+        else:
+            self.sendline()
+        self.expect_exact('sh-3.2# ')
+        self.sendline('cd /tmp')
+        self.expect_exact('sh-3.2# ')
+        self.sendline('mount -no remount,ro /')
+        self.expect_exact('sh-3.2# ')
+        self.sendline('dd if=$(basename %s) of=/dev/mmcblk0 && sync' % filename)
+        self.expect(pexpect.TIMEOUT, timeout=120)
+        self.reset()
+        self.wait_for_boot()
+        # we need to update bootargs, should be doing this at build time
+        self.boot_linux()
+        self.wait_for_linux()
 
     def wait_for_linux(self):
         super(RPI, self).wait_for_linux()
