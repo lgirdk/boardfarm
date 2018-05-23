@@ -232,6 +232,28 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
+    def mirror_traffic(self, macaddr=""):
+        self.sendline('diag')
+        self.expect('Password:')
+        self.sendline('casadiag')
+        self.expect(self.prompt)
+        self.sendline('mirror cm traffic 127.1.0.7 %s' % macaddr)
+        if 0 == self.expect(['Please type YES to confirm you want to mirror all CM traffic:'] + self.prompt):
+            self.sendline("YES")
+            self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def unmirror_traffic(self):
+        self.sendline('diag')
+        self.expect('Password:')
+        self.sendline('casadiag')
+        self.expect(self.prompt)
+        self.sendline('mirror cm traffic 0')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
 if __name__ == '__main__':
     import time
 
