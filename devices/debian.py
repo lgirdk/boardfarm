@@ -402,6 +402,25 @@ EOF''')
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
+    def copy_cmts_provisioning_files(self, board_config):
+        # Look in all overlays as well, and PATH as a workaround for standalone
+        paths = os.environ['PATH'].split(os.pathsep)
+        paths += os.environ['BFT_OVERLAY'].split(' ')
+        cfg_list = []
+
+        if 'tftp_cfg_files' in board_config:
+            for path in paths:
+                for cfg in board_config['tftp_cfg_files']:
+                    cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
+        else:
+            for path in paths:
+                cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
+        cfg_set = set(cfg_list)
+
+        # Copy binary files to tftp server
+        for cfg in cfg_set:
+            self.copy_file_to_server(cfg)
+
     def setup_as_cmts_provisioner(self, board_config):
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
         self.expect(self.prompt)
@@ -425,23 +444,7 @@ EOF''')
         # here we have to start one for the CM configs
         self.start_tftp_server()
 
-        # Look in all overlays as well, and PATH as a workaround for standalone
-        paths = os.environ['PATH'].split(os.pathsep)
-        paths += os.environ['BFT_OVERLAY'].split(' ')
-        cfg_list = []
-
-        if 'tftp_cfg_files' in board_config:
-            for path in paths:
-                for cfg in board_config['tftp_cfg_files']:
-                    cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
-        else:
-            for path in paths:
-                cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
-        cfg_set = set(cfg_list)
-
-        # Copy binary files to tftp server
-        for cfg in cfg_set:
-            self.copy_file_to_server(cfg)
+        self.copy_cmts_provisioning_files(board_config)
 
         self.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
         self.expect(self.prompt)
