@@ -180,7 +180,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.sendline('setenv bootargs "$bcm_bootargs %s"' % bootargs)
         self.expect(self.uprompt)
 
-        self.sendline("setenv bootcmd 'fatload mmc 0 ${kernel_addr_r} %s; bootm ${kernel_addr_r} - ${fdt_addr}; booti ${kernel_addr_r} - ${fdt_addr}'" % self.kernel_file)
+        self.sendline("setenv bootcmd 'fatload mmc 0 ${kernel_addr_r} %s; bootm ${kernel_addr_r} - ${fdt_addr}; booti ${kernel_addr_r} - ${fdt_addr}'" % getattr(self, 'kernel_file', 'uImage'))
         self.expect(self.uprompt)
         self.sendline('saveenv')
         self.expect(self.uprompt)
