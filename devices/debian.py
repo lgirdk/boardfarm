@@ -341,21 +341,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
-
-    def setup_as_cmts_provisioner(self, board_config):
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
-        self.expect(self.prompt)
-        self.sendline('/etc/init.d/isc-dhcp-server stop')
-        self.expect(self.prompt)
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
-        self.expect(self.prompt)
-        self.sendline('ifconfig eth1 %s' % self.gw)
-        self.expect(self.prompt)
-        # TODO: specify these via config
-        self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
-        self.expect(self.prompt)
-        self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
-        self.expect(self.prompt)
+    def update_cmts_isc_dhcp_config(self, board_config):
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
 option log-servers 192.168.3.1;
@@ -415,6 +401,22 @@ EOF''')
             self.expect(self.prompt)
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
+
+    def setup_as_cmts_provisioner(self, board_config):
+        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/isc-dhcp-server stop')
+        self.expect(self.prompt)
+        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.expect(self.prompt)
+        self.sendline('ifconfig eth1 %s' % self.gw)
+        self.expect(self.prompt)
+        # TODO: specify these via config
+        self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
+        self.expect(self.prompt)
+        self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
+        self.expect(self.prompt)
+        self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('/etc/init.d/isc-dhcp-server start')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
