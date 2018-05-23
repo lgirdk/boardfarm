@@ -4,6 +4,11 @@
     devices over a network.
 
 '''
+import os
+import sys
+import glob
+import inspect
+
 board = None
 lan = None
 wan = None
@@ -11,6 +16,30 @@ wlan = None
 wlan2g = None
 wlan5g = None
 prompt = None
+
+device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+if 'BFT_OVERLAY' in os.environ:
+    for overlay in os.environ['BFT_OVERLAY'].split(' '):
+        overlay = os.path.abspath(overlay)
+        sys.path.insert(0, overlay + '/devices')
+        device_files += glob.glob(overlay + '/devices/*.py')
+
+    sys.path.insert(0, os.getcwd() + '/devices')
+
+device_mappings = { }
+for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
+    try:
+        exec("import %s as device_file" % x)
+        device_mappings[device_file] = []
+        for obj in dir(device_file):
+            ref = getattr(device_file, obj)
+            if inspect.isclass(ref) and hasattr(ref, "model"):
+                device_mappings[device_file].append(ref)
+                exec("from %s import %s" % (x, obj))
+    except Exception as e:
+        print(e)
+        print("Warning: could not import from file %s." % x)
+
 def initialize_devices(configuration):
     # Init random global variables. To Do: clean these.
     global power_ip, power_outlet
@@ -38,33 +67,6 @@ def initialize_devices(configuration):
     prompt = list(set(prompt))
 
 def board_decider(model, **kwargs):
-    import os
-    import sys
-    import glob
-    import inspect
-    device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
-    if 'BFT_OVERLAY' in os.environ:
-        for overlay in os.environ['BFT_OVERLAY'].split(' '):
-            overlay = os.path.abspath(overlay)
-            sys.path.insert(0, overlay + '/devices')
-            device_files += glob.glob(overlay + '/devices/*.py')
-
-        sys.path.insert(0, os.getcwd() + '/devices')
-
-    device_mappings = { }
-    for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
-        try:
-            exec("import %s as device_file" % x)
-            device_mappings[device_file] = []
-            for obj in dir(device_file):
-                ref = getattr(device_file, obj)
-                if inspect.isclass(ref) and hasattr(ref, "model"):
-                    device_mappings[device_file].append(ref)
-                    exec("from %s import %s" % (x, obj))
-        except Exception as e:
-            print(e)
-            print("Warning: could not import from file %s." % x)
-
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__ and model in dev.__dict__['model']:
