@@ -137,12 +137,17 @@ class Interact(rootfs_boot.RootFSBootTest):
                     board.sendline()
                     board.sendline('echo \"1 1 1 7\" > /proc/sys/kernel/printk')
                     board.expect(prompt)
-                    t = eval(test)
-                    cls = t(self.config)
-                    lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
-                    cls.testWrapper()
-                    lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
-                    board.sendline()
+                    try:
+                        t = eval(test)
+                        reload(sys.modules[t.__module__])
+                        cls = t(self.config)
+                        lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
+                        cls.testWrapper()
+                        lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
+                        board.sendline()
+                    except:
+                        lib.common.test_msg("Failed to find and/or run test, continuing..")
+                        continue
                     #except:
                     #    print("Unable to (re-)run specified test")
 
