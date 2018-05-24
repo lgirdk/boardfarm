@@ -11,6 +11,7 @@ import sys
 import pexpect
 import atexit
 import os
+import ipaddress
 
 class Qemu(openwrt_router.OpenWrtRouter):
     '''
@@ -20,6 +21,9 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
     wan_iface = "eth0"
     lan_iface = "brlan0"
+
+    lan_network = ipaddress.IPv4Network(u"10.0.0.0/24")
+    lan_gateway = ipaddress.IPv4Address(u"10.0.0.1")
 
     # allowed open ports (starting point, dns is on wan?)
     wan_open_ports = ['22', '53']
