@@ -364,7 +364,6 @@ next-server 192.168.3.1;
 default-lease-time 604800;
 max-lease-time 604800;
 allow leasequery;
-option time-servers 192.168.3.222;
 
 option space docsis-mta;
 option docsis-mta.dhcp-server-1 code 1 = ip-address;
