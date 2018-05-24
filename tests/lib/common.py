@@ -97,22 +97,23 @@ def firefox_webproxy_driver(ipport):
     '''
     Use this if you started web proxy on a machine connected to router's LAN.
     '''
-    proxy = Proxy({
-            'proxyType': 'MANUAL',
-            'httpProxy': ipport,
-            'ftpProxy': ipport,
-            'sslProxy': ipport,
-            'noProxy': ''
-            })
-    print("Attempting to open firefox via proxy %s" % ipport)
+
+    ip, port = ipport.split(':')
+
     profile = webdriver.FirefoxProfile()
-    profile.set_preference('network.http.phishy-userpass-length', 255)
-    driver = webdriver.Firefox(proxy=proxy, firefox_profile=profile)
-    caps = webdriver.DesiredCapabilities.FIREFOX
-    proxy.add_to_capabilities(caps)
-    #driver = webdriver.Remote(desired_capabilities=caps)
+    profile.set_preference("network.proxy.type", 1)
+    profile.set_preference("network.proxy.http", ip)
+    profile.set_preference("network.proxy.http_port", int(port))
+    profile.set_preference("network.proxy.ftp", ip)
+    profile.set_preference("network.proxy.ftp_port", int(port))
+    profile.set_preference("network.proxy.socks", ip)
+    profile.set_preference("network.proxy.socks_port", int(port))
+    profile.set_preference("network.proxy.socks_remote_dns", True)
+    profile.update_preferences()
+    driver = webdriver.Firefox(firefox_profile=profile)
     driver.implicitly_wait(30)
     driver.set_page_load_timeout(30)
+
     return driver
 
 def test_msg(msg):
