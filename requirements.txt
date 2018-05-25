@@ -13,3 +13,4 @@ ipaddress
 easysnmp
 jira
 simplejson
+pyvirtualdisplay
