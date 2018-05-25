@@ -254,11 +254,37 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
+    def run_tcpdump(self, time, opts=""):
+        self.sendline('diag')
+        self.expect('Password:')
+        self.sendline('casadiag')
+        self.expect(self.prompt)
+        self.sendline('tcpdump "-i any %s"' % opts)
+        self.expect(pexpect.TIMEOUT, timeout=time)
+        self.sendcontrol('c')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def del_file(self, f):
+        self.sendline('del %s' % f)
+        self.expect(self.prompt)
+
 if __name__ == '__main__':
     import time
 
     cmts = CasaCMTS(sys.argv[1])
     cmts.connect()
+
+    # TODO: example for now, need to parse args
+    if False:
+        cmts.mirror_traffic()
+        cmts.run_tcpdump(15, opts="-w dump.pcap")
+        # TODO: extract pcap from CMTS
+        cmts.del_file("dump.pcap")
+        cmts.unmirror_traffic()
+        sys.exit(0)
+
     cmts.save_running_to_startup_config()
     cmts.save_running_config_to_local("saved-casa-config-" + time.strftime("%Y%m%d-%H%M%S") + ".cfg")
     cmts.reset()
