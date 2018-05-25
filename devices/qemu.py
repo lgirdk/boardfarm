@@ -96,10 +96,25 @@ class Qemu(openwrt_router.OpenWrtRouter):
             self.expect("SYSLINUX")
         self.logfile_read = output
 
+        atexit.register(self.kill_console_at_exit)
+
     def run_cleanup_cmd(self):
         for f in self.cleanup_files:
             if os.path.isfile(f):
                 os.remove(f)
+
+    def close(self, *args, **kwargs):
+        self.kill_console_at_exit()
+        return super(type(self), self).close(*args, **kwargs)
+
+    def kill_console_at_exit(self):
+        try:
+            self.sendcontrol('a')
+            self.send('c')
+            self.sendline('q')
+            self.kill(signal.SIGKILL)
+        except:
+            pass
 
     def wait_for_boot(self):
         pass
