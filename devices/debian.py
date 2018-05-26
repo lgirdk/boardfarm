@@ -389,6 +389,56 @@ subnet 192.168.201.0 netmask 255.255.255.0
 EOF''')
 	self.expect(self.prompt)
 
+        # The board will ignore this unless the docsis-mac is set to ipv6
+        # That needs to be done manually as well as copying any CM cfg files
+        # to the provisioner (e.g. still not fully automated)
+        self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
+preferred-lifetime 7500;
+option dhcp-renewal-time 3600;
+option dhcp-rebinding-time 5400;
+allow leasequery;
+option dhcp6.name-servers 2001:4860:4860::8888;
+option dhcp6.domain-search "test.example.com","example.com";
+option dhcp6.info-refresh-time 21600;
+option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
+option dhcp6.gateway code 32003 = ip6-address;
+option space docsis code width 2 length width 2 hash size 100;
+option docsis.tftp-servers code 32 = array of ip6-address;
+option docsis.configuration-file code 33 = text;
+option docsis.syslog-servers code 34 = array of ip6-address;
+#option docsis.device-id code 36 = string;
+option docsis.time-servers code 37 = array of ip6-address;
+option docsis.time-offset code 38 = signed integer 32;
+option vsio.docsis code 4491 = encapsulate docsis;
+
+subnet6 2001:ed8:77b5:3::/64 {
+    range6 2001:ed8:77b5:3::10 2001:ed8:77b5:3::100;
+    interface eth1;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+    option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
+    option docsis.time-offset 5000;
+}
+subnet6 2001:ed8:77b5:2000::/64 {
+    range6 2001:ed8:77b5:2000::10 2001:ed8:77b5:2000::100;
+    interface eth1;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+    option docsis.syslog-servers 2001:ed8:77b5:3::101;
+    option docsis.time-offset 5000;
+}
+subnet6 2001:ed8:77b5:2001::/64 {
+    range6 2001:ed8:77b5:2001::10 2001:ed8:77b5:2001::100;
+    interface eth1;
+    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
+    option dhcp6.solmax-rt   240;
+    option dhcp6.inf-max-rt  360;
+}
+EOF''')
+        self.expect(self.prompt)
+
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
 
@@ -411,6 +461,8 @@ EOF''')
                         self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
                         self.expect(self.prompt)
                 self.sendline("echo '}' >> %s" % cfg_file)
+
+            # TODO: extra per board dhcp6 provisioning
 
         # combine all configs into one
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
@@ -445,14 +497,25 @@ EOF''')
         self.expect(self.prompt)
         self.sendline('ifconfig eth1 %s' % self.gw)
         self.expect(self.prompt)
+        self.sendline('ifconfig eth1 inet6 add 2001:ed8:77b5:3::101/64')
+        self.expect(self.prompt)
         # TODO: specify these via config
         self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
+        self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.expect(self.prompt)
+        self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.expect(self.prompt)
+        self.sendline('ip addr show eth1')
+        if 0 == self.expect(['dadfailed'] + self.prompt):
+            raise Exception("ipv6 duplicate address detection triggered!")
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('/etc/init.d/isc-dhcp-server start')
-        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        # We expect both, so we need debian 9 or greater for this device
+        self.expect('Starting ISC DHCPv4 server.*dhcpd.')
+        self.expect('Starting ISC DHCPv6 server.*dhcpd.')
         self.expect(self.prompt)
 
         # this might be redundant, but since might not have a tftpd server running
