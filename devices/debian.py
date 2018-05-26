@@ -351,11 +351,21 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline('ifconfig eth1 %s' % self.gw)
         self.expect(self.prompt)
+        self.sendline('ifconfig eth1 inet6 add 2001:ed8:77b5:3::101/64')
+        self.expect(self.prompt)
         # TODO: specify these via config
         self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
+        self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.expect(self.prompt)
+        self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.expect(self.prompt)
+        #check if 'dadfailed' happen  
+        self.sendline('ip addr show eth1')
+        self.expect(self.prompt)
+
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
 option log-servers 192.168.3.1;
@@ -405,6 +415,89 @@ subnet 192.168.201.0 netmask 255.255.255.0
 EOF''')
 	self.expect(self.prompt)
 
+        self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
+#default lease-time 2592000;
+preferred-lifetime 7500;
+option dhcp-renewal-time 3600;
+option dhcp-rebinding-time 5400;
+
+# Enable RFC 5007 support (same than for DHCPv4)
+allow leasequery;
+
+# Global definitions for name server address(es) and domain search list
+#
+# 
+option dhcp6.name-servers 2001:4860:4860::8888;
+#?
+option dhcp6.domain-search "test.example.com","example.com";
+
+option dhcp6.info-refresh-time 21600;
+
+option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
+
+#?
+option dhcp6.gateway code 32003 = ip6-address;
+
+
+# declare the option space where the CableLabs options live
+option space docsis code width 2 length width 2 hash size 100;
+# CL_OPTION_TFTP_SERVERS
+option docsis.tftp-servers code 32 = array of ip6-address;
+# CL_OPTION_CONFIG_FILE_NAME
+option docsis.configuration-file code 33 = text;
+# CL_OPTION_SYSLOG_SERVERS
+option docsis.syslog-servers code 34 = array of ip6-address;
+
+#Quy
+#option docsis.device-id code 36 = string;
+
+# CL_OPTION_TIME_SERVERS
+option docsis.time-servers code 37 = array of ip6-address;
+# CL_OPTION_TIME_OFFSET
+option docsis.time-offset code 38 = signed integer 32;
+
+# declare the option space docsis from above are suboptions of 
+# the vsio option (17)
+option vsio.docsis code 4491 = encapsulate docsis;
+
+
+
+#Now the DHCP server knows the CableLabs specific options, we can configure a subnet:
+
+subnet6 2001:ed8:77b5:3::/64 {
+    range6 2001:ed8:77b5:3::10 2001:ed8:77b5:3::100;
+    interface eth1;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+
+    option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
+    option docsis.time-offset 5000;
+}
+
+
+subnet6 2001:ed8:77b5:2000::/64 {
+    range6 2001:ed8:77b5:2000::10 2001:ed8:77b5:2000::100;
+    interface eth1;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+
+    option docsis.syslog-servers 2001:ed8:77b5:3::101;
+    option docsis.time-offset 5000;
+
+}
+
+subnet6 2001:ed8:77b5:2001::/64 {
+    range6 2001:ed8:77b5:2001::10 2001:ed8:77b5:2001::100;
+    interface eth1;
+    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::  ;    
+    option dhcp6.solmax-rt   240;
+    option dhcp6.inf-max-rt  360;
+}
+EOF''')
+	self.expect(self.prompt)
+
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
 
@@ -417,6 +510,10 @@ EOF''')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server start')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(self.prompt)
+        self.sendline('touch /var/lib/dhcp/dhcpd6.leases')
+        self.expect(self.prompt)
+        self.sendline('/usr/sbin/dhcpd -f -6 -cf /etc/dhcp/dhcpd6.conf -pf /var/run/dhcpd6.pid &')
         self.expect(self.prompt)
 
         # this might be redundant, but since might not have a tftpd server running
