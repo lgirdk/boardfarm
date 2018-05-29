@@ -8,7 +8,7 @@
 import time
 import linux_boot
 import lib
-from devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
     '''Flashed image and booted successfully.'''
@@ -41,6 +41,10 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             wan.configure(kind="wan_device", config=self.config.board)
             if tftp_device is None:
                 tftp_device = wan
+
+        prov = getattr(self.config, 'provisioner', None)
+        if prov is not None:
+            prov.provision_board(self.config.board)
 
         tftp_device.start_tftp_server()
 
