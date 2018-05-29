@@ -394,11 +394,27 @@ EOF''')
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
 
-        if 'extra_isc_dhcp_config' in board_config:
-            self.sendline('''cat > /etc/dhcp/dhcpd.conf.''' + board_config['station'] + ''' << EOF
-''' + board_config['extra_isc_dhcp_config'] + '''
-EOF''')
+        if 'extra_provisioning' in board_config:
+            cfg_file = "/etc/dhcp/dhcpd.conf." + board_config['station']
+
+            # zero out old config
+            self.sendline('cp /dev/null %s' % cfg_file)
             self.expect(self.prompt)
+
+            # there is probably a better way to construct this file...
+            for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
+                self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+                for key, value in cfg_sec.iteritems():
+                    if key == "options":
+                        for k2, v2 in value.iteritems():
+                            self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
+                            self.expect(self.prompt)
+                    else:
+                        self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                        self.expect(self.prompt)
+                self.sendline("echo '}' >> %s" % cfg_file)
+
+        # combine all configs into one
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
