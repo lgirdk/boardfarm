@@ -337,7 +337,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         if kind == "wan_device":
             self.setup_as_wan_gateway()
             if self.wan_cmts_provisioner:
-                self.setup_as_cmts_provisioner(config)
+                self.provision_board(config)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
@@ -437,7 +437,8 @@ EOF''')
         for cfg in cfg_set:
             self.copy_file_to_server(cfg)
 
-    def setup_as_cmts_provisioner(self, board_config):
+    def provision_board(self, board_config):
+        ''' Setup DHCP and time server etc for CM provisioning'''
         self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server stop')
@@ -465,6 +466,14 @@ EOF''')
         self.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
         self.expect(self.prompt)
         self.sendline('/etc/init.d/xinetd restart')
+        self.expect(self.prompt)
+
+    def reprovision_board(self, board_config):
+        '''New DHCP, cfg files etc for board after it's been provisioned once'''
+        self.copy_cmts_provisioning_files(board_config)
+        self.update_cmts_isc_dhcp_config(board_config)
+        self.sendline('/etc/init.d/isc-dhcp-server restart')
+        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
     def setup_dhcp_server(self):
@@ -709,8 +718,6 @@ if __name__ == '__main__':
         dev.configure("lan_device")
     if sys.argv[2] == "setup_as_wan_gateway":
         dev.configure("wan_device")
-    if sys.argv[2] == "setup_as_cmts_provisioner":
-        dev.configure("cmts_provisioner")
 
     print
 
