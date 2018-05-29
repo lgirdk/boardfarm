@@ -336,8 +336,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
         if kind == "wan_device":
             self.setup_as_wan_gateway()
-            if self.wan_cmts_provisioner:
-                self.provision_board(config)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
