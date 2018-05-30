@@ -28,7 +28,11 @@ class Interact(rootfs_boot.RootFSBootTest):
     def print_dynamic_devices(self):
         for device in self.config.devices:
             d = getattr(self.config, device)
-            print("  %s device:    ssh %s@%s" % (device, d.username, d.name))
+            # TODO: should move all classes to use string repr
+            if hasattr(d, 'username'):
+                print("  %s device:    ssh %s@%s" % (device, d.username, d.name))
+            else:
+                print("  %s device:    %s" % (d.name, d))
 
     def runTest(self):
         legacy = hasattr(self.config, "wan_device")
