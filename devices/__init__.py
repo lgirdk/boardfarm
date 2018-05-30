@@ -28,17 +28,13 @@ if 'BFT_OVERLAY' in os.environ:
 
 device_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
-    try:
-        exec("import %s as device_file" % x)
-        device_mappings[device_file] = []
-        for obj in dir(device_file):
-            ref = getattr(device_file, obj)
-            if inspect.isclass(ref) and hasattr(ref, "model"):
-                device_mappings[device_file].append(ref)
-                exec("from %s import %s" % (x, obj))
-    except Exception as e:
-        print(e)
-        print("Warning: could not import from file %s." % x)
+    exec("import %s as device_file" % x)
+    device_mappings[device_file] = []
+    for obj in dir(device_file):
+        ref = getattr(device_file, obj)
+        if inspect.isclass(ref) and hasattr(ref, "model"):
+            device_mappings[device_file].append(ref)
+            exec("from %s import %s" % (x, obj))
 
 def initialize_devices(configuration):
     # Init random global variables. To Do: clean these.
