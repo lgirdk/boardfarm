@@ -189,6 +189,7 @@ def main():
                                                  power_password=config.board.get('power_password', None),
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
+                                                 config=config.board,
                                                  env=env)
             print_bold("dut device console = %s" % colored("black", 'grey'))
 
@@ -252,7 +253,7 @@ def main():
 
     # Update config from board info
     if hasattr(config.console, "update_config"):
-        config.console.update_config(config.board)
+        config.console.update_config()
 
     print_bold('\n==========')
     library.print_board_info(config.board)
