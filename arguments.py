@@ -110,7 +110,11 @@ def parse():
                 if 'location' in config.boardfarm_config[board]:
                     board_location = config.boardfarm_config[board]['location']
                     if board_location in location:
-                        config.boardfarm_config[board].update(location[board_location])
+                        for key, value in location[board_location].iteritems():
+                            if type(value) == list:
+                                config.boardfarm_config[board][key].extend(value)
+                            else:
+                                config.boardfarm_config[board][key] = value
 
     except Exception as e:
         print(e)
