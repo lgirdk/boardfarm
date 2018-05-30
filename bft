@@ -29,7 +29,7 @@ import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
-from devices import debian, logstash, elasticlogger
+from devices import debian, logstash, elasticlogger, get_device
 
 def setup_legacy_devices(config):
     '''This will setup legacy hard coded devices to into the config'''
@@ -75,6 +75,7 @@ def setup_dynamic_devices(config, env=None):
     config.devices = []
     for device in config.board['devices']:
         if device['type'] == 'debian':
+            # old static name lookup, now we use model but this lingers
             d = debian.DebianBox(name=device.get('ipaddr', None),
                 color=device.get('color', 'black'),
                 reboot=config.reboot_vms,
@@ -98,8 +99,16 @@ def setup_dynamic_devices(config, env=None):
                 setattr(config, 'provisioner', d)
                 config.devices.append('provisioner')
 
-        else:
-            print("Unknown device type for %d", device)
+            # done with wan/lan devices
+            continue
+
+        dyn_dev = get_device(device['type'], **device)
+        if dyn_dev is not None:
+            setattr(config, device['name'], dyn_dev)
+            config.devices.append(device['name'])
+            continue
+
+        print("Unknown device type for %s" % device)
 
 def main():
     '''Connect to devices, run tests, record results.'''
