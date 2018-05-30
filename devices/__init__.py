@@ -62,11 +62,18 @@ def initialize_devices(configuration):
         prompt += getattr(d, "prompt", [])
     prompt = list(set(prompt))
 
-def board_decider(model, **kwargs):
+def get_device(model, **kwargs):
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__ and model in dev.__dict__['model']:
                 return dev(model, **kwargs)
+
+    return None
+
+def board_decider(model, **kwargs):
+    dynamic_dev = get_device(model, **kwargs)
+    if dynamic_dev is not None:
+        return dynamic_dev
 
     # Default for all other models
     print("\nWARNING: Unknown board model '%s'." % model)
