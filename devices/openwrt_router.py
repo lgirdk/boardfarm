@@ -65,8 +65,10 @@ class OpenWrtRouter(base.BaseDevice):
                  connection_type=None,
                  power_username=None,
                  power_password=None,
+                 config=None,
                  **kwargs):
 
+        self.config = config
         self.consoles.append(self)
 
         if type(conn_cmd) is list:
