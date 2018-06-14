@@ -10,6 +10,7 @@ import pexpect
 import sys
 import base
 import re
+import connection_decider
 
 class CasaCMTS(base.BaseDevice):
     '''
@@ -20,26 +21,29 @@ class CasaCMTS(base.BaseDevice):
 
     def __init__(self,
                  conn_cmd,
+                 connection_type="local_serial",
                  password='casa'):
-        pexpect.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
+        self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd)
+        self.connection.connect()
         self.logfile_read = sys.stdout
         self.password = password
 
     def connect(self):
-        for i in range(10):
+        try:
+            self.sendline('q')
             self.sendline('exit')
-            if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5):
-                self.sendline('enable')
-                if 0 == self.expect(['Password:'] + self.prompt):
-                    self.sendline(self.password)
-                    self.expect(self.prompt)
-                self.sendline('config')
+            self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5)
+            self.sendline('enable')
+            if 0 == self.expect(['Password:'] + self.prompt):
+                self.sendline(self.password)
                 self.expect(self.prompt)
-                self.sendline('page-off')
-                self.expect(self.prompt)
-                return
-
-        raise Exception("Unable to get prompt on CASA device")
+            self.sendline('config')
+            self.expect(self.prompt)
+            self.sendline('page-off')
+            self.expect(self.prompt)
+            return
+        except:
+            raise Exception("Unable to get prompt on CASA device")
 
     def reset(self):
         self.sendline('exit')
@@ -273,7 +277,12 @@ class CasaCMTS(base.BaseDevice):
 if __name__ == '__main__':
     import time
 
-    cmts = CasaCMTS(sys.argv[1])
+    if 'telnet' in sys.argv[1]:
+        connection_type = "ser2net"
+    else:
+        connection_type = "local_serial"
+
+    cmts = CasaCMTS(sys.argv[1], connection_type=connection_type)
     cmts.connect()
 
     # TODO: example for now, need to parse args
