@@ -452,6 +452,14 @@ def main():
         print(e)
         print("Unable to log results to mysql database.")
 
+    for t in tests_to_run:
+        if hasattr(t, 'log_to_file'):
+            filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
+            testtime = t.stop_time - t.start_time
+            with open(os.path.join(config.output_dir, filename), 'w') as log:
+                log.write(t.log_to_file)
+                log.write('\n%s test result: %s' % (type(t).__name__, t.result_grade))
+                log.write('\nTotal test time: %s seconds\n' % testtime)
 
 if __name__ == '__main__':
     main()
