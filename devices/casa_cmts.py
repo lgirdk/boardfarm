@@ -25,22 +25,30 @@ class CasaCMTS(base.BaseDevice):
                  **kwargs):
         conn_cmd = kwargs.get('conn_cmd', None)
         connection_type = kwargs.get('connection_type', 'local_serial')
-        password = kwargs.get('password', 'casa')
+        self.username = kwargs.get('username', 'root')
+        self.password = kwargs.get('password', 'casa')
 
         if conn_cmd is None:
             # TODO: try to parse from ipaddr, etc
             raise Exception("No command specified to connect to Casa CMTS")
 
         self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd)
-        self.connection.connect()
         self.logfile_read = sys.stdout
-        self.password = password
+        self.connection.connect()
 
     def connect(self):
         try:
-            self.sendline('q')
-            self.sendline('exit')
-            self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5)
+            if 0 == self.expect(['login:', pexpect.TIMEOUT], timeout=3):
+                self.sendline(self.username)
+                self.expect('assword:')
+                self.sendline(self.password)
+                self.expect(self.prompt)
+            else:
+                # Over telnet we come in at the right prompt
+                # over serial it could be stale so we try to recover
+                self.sendline('q')
+                self.sendline('exit')
+                self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5)
             self.sendline('enable')
             if 0 == self.expect(['Password:'] + self.prompt):
                 self.sendline(self.password)
@@ -285,11 +293,7 @@ class CasaCMTS(base.BaseDevice):
 if __name__ == '__main__':
     import time
 
-    if 'telnet' in sys.argv[1]:
-        connection_type = "ser2net"
-    else:
-        connection_type = "local_serial"
-
+    connection_type = "local_cmd"
     cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
     cmts.connect()
 
