@@ -104,6 +104,8 @@ def setup_dynamic_devices(config, env=None):
 
         dyn_dev = get_device(device['type'], **device)
         if dyn_dev is not None:
+            if 'name' not in device:
+                raise Exception("Device in config is not named! This is required")
             setattr(config, device['name'], dyn_dev)
             config.devices.append(device['name'])
             continue
