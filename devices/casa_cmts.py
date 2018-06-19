@@ -18,11 +18,19 @@ class CasaCMTS(base.BaseDevice):
     '''
 
     prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#']
+    model = "casa_cmts"
 
     def __init__(self,
-                 conn_cmd,
-                 connection_type="local_serial",
-                 password='casa'):
+                 *args,
+                 **kwargs):
+        conn_cmd = kwargs.get('conn_cmd', None)
+        connection_type = kwargs.get('connection_type', 'local_serial')
+        password = kwargs.get('password', 'casa')
+
+        if conn_cmd is None:
+            # TODO: try to parse from ipaddr, etc
+            raise Exception("No command specified to connect to Casa CMTS")
+
         self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd)
         self.connection.connect()
         self.logfile_read = sys.stdout
@@ -282,7 +290,7 @@ if __name__ == '__main__':
     else:
         connection_type = "local_serial"
 
-    cmts = CasaCMTS(sys.argv[1], connection_type=connection_type)
+    cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
     cmts.connect()
 
     # TODO: example for now, need to parse args
