@@ -489,7 +489,7 @@ EOF''')
 
     def provision_board(self, board_config):
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
+        self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
