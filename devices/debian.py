@@ -373,7 +373,7 @@ subnet 192.168.200.0 netmask 255.255.255.0
   option domain-name "local";
   option time-offset 1;
   option tftp-server-name "192.168.3.1";
-  filename "UNLIMITCASA.cfg";
+  filename "9_EU_CBN_Dual-Stack_LG.cfg";
   allow unknown-clients;
 }
 subnet 192.168.201.0 netmask 255.255.255.0
@@ -393,49 +393,96 @@ EOF''')
         # That needs to be done manually as well as copying any CM cfg files
         # to the provisioner (e.g. still not fully automated)
         self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
-preferred-lifetime 7500;
+#SYSLOG 6/20
+log-facility local7;
+preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
+
+# Enable RFC 5007 support (same than for DHCPv4)
 allow leasequery;
-option dhcp6.name-servers 2001:4860:4860::8888;
-option dhcp6.domain-search "test.example.com","example.com";
+
+# Global definitions for name server address(es) and domain search list
+#23 
+#google dns
+#option dhcp6.name-servers 2001:4860:4860::8888;
+#QMxxx test
+option dhcp6.name-servers 2001:ed8:77b5:3::101;
+#24
+#option dhcp6.domain-search "google.com";
+#QMxxx test
+option dhcp6.domain-search "qqqq.com";
+#31 
+option dhcp6.sntp-servers 2001:ed8:77b5:3::101;
+#32
 option dhcp6.info-refresh-time 21600;
+#41
+option dhcp6.new-posix-timezone "EST5EDT4,M3.2.0/02:00,M11.1.0/02:00" ;
+#64 RFC6334
+option dhcp6.aftr-name  code 64 = string ;
+#25 RFC3633
 option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
+#?
 option dhcp6.gateway code 32003 = ip6-address;
+# declare the option space where the CableLabs options live
+#CL-SP-CANN-DHCP-Reg-I11-150515
+#vendor specific 17
 option space docsis code width 2 length width 2 hash size 100;
+# CL_OPTION_TFTP_SERVERS
 option docsis.tftp-servers code 32 = array of ip6-address;
+# CL_OPTION_CONFIG_FILE_NAME
 option docsis.configuration-file code 33 = text;
+# CL_OPTION_SYSLOG_SERVERS
 option docsis.syslog-servers code 34 = array of ip6-address;
-#option docsis.device-id code 36 = string;
+# CL_OPTION_TIME_SERVERS
 option docsis.time-servers code 37 = array of ip6-address;
+# CL_OPTION_TIME_OFFSET
 option docsis.time-offset code 38 = signed integer 32;
+#2170
+option docsis.PKTCBL-CCCV4 code 2170 = { integer 16, integer 16, ip-address , integer 16, integer 16, ip-address};
+#2171
+#iprimary dhcp6 server = 1  provisioning server = 3  Kerberos Realm Name = 6
+option docsis.PKTCBL-CCCV6 code 2171 = { integer 16, integer 16, ip6-address, integer 16, integer 16, integer 8, ip6-address,  integer 16, integer 16, string }; 
+#1027
+option docsis.EROUTER-CONTAINER  code 1027 = {integer 16, integer 16, ip6-address};
+#CL_OPTION_IP_PREF
+option docsis.ip-prefer code 39 = signed integer 8;
+# declare the option space docsis from above are suboptions of 
+# the vsio option (17)
 option vsio.docsis code 4491 = encapsulate docsis;
 
+#Now the DHCP server knows the CableLabs specific options, we can configure a subnet:
 subnet6 2001:ed8:77b5:3::/64 {
-    range6 2001:ed8:77b5:3::10 2001:ed8:77b5:3::100;
+    range6 2001:ed8:77b5:3::faca 2001:ed8:77b5:3::face;
     interface eth1;
-    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-    option docsis.time-servers 2001:ed8:77b5:3::101;
-    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+}
+
+subnet6 2001:ed8:77b5:2000::/64 {
+    range6 2001:ed8:77b5:2000::100 2001:ed8:77b5:2000::500;
+    interface eth1;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101 ;
+    option docsis.time-servers 2001:ed8:77b5:3::101 ;
+    option docsis.configuration-file "9_EU_CBN_Dual-Stack_LG.cfg";
     option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
     option docsis.time-offset 5000;
+    #prefer ipv6
+    option  docsis.ip-prefer 2;
 }
-subnet6 2001:ed8:77b5:2000::/64 {
-    range6 2001:ed8:77b5:2000::10 2001:ed8:77b5:2000::100;
-    interface eth1;
-    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-    option docsis.time-servers 2001:ed8:77b5:3::101;
-    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-    option docsis.syslog-servers 2001:ed8:77b5:3::101;
-    option docsis.time-offset 5000;
-}
+
 subnet6 2001:ed8:77b5:2001::/64 {
-    range6 2001:ed8:77b5:2001::10 2001:ed8:77b5:2001::100;
+    range6 2001:ed8:77b5:2001::100 2001:ed8:77b5:2001::500;
     interface eth1;
-    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
+    prefix6 2001:67c:abcd:a000:: 2001:67c:abcd:af00::/59;
+    #prefer ipv6
+    option  docsis.ip-prefer 2;
+    option  docsis.EROUTER-CONTAINER 17 16 2001:ed8:77b5:3::101 ; 
+    option dhcp6.aftr-name    04:71:71:71:71:03:63:6F:6D:00  ;
+    option dhcp6.gateway      2001:ed8:77b5:2001::1; 
+    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 48 2001:67c:abcd::  ;
     option dhcp6.solmax-rt   240;
     option dhcp6.inf-max-rt  360;
 }
+
 EOF''')
         self.expect(self.prompt)
 
@@ -510,6 +557,8 @@ EOF''')
         self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
         self.expect(self.prompt)
         self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.expect(self.prompt)
+        self.sendline('ip -6 route add 2001:67c:abcd::/48 via 2001:ed8:77b5:3::222 dev eth1 metric 1024')
         self.expect(self.prompt)
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('/etc/init.d/isc-dhcp-server start')
