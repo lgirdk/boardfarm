@@ -52,6 +52,14 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         # TODO: make host configurable in bft config?
         c = CDRouter(self.cdrouter_server)
 
+        try:
+            board.sendline('reboot')
+            board.expect('reboot: Restarting system')
+        except:
+            board.reset()
+        board.wait_for_linux()
+        board.wait_for_network()
+
         # If alt mac addr is specified in config, use that..
         # CMTS = we route so no wan mac is used
         wandutmac = None
@@ -108,18 +116,6 @@ testvar lanInterface """ + self.config.cdrouter_lan_iface
             contents=contents + """
 testvar lanVlanId """ + lan.vlan
 
-        if board.has_cmts:
-            wan_ip = board.get_interface_ipaddr(board.erouter_iface)
-            contents=contents + """
-testvar wanMode static
-testvar wanIspIp 192.168.3.2
-testvar wanIspGateway 192.168.3.1
-testvar wanIspMask 255.255.255.0
-testvar wanIspAssignIp %s
-testvar wanNatIp %s
-testvar IPv4HopCount 2
-testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
-
         def add_cdrouter_config(config):
             cdr_conf = None
 
@@ -146,6 +142,28 @@ testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
         if self.extra_config:
             contents=contents + "\n" + self.extra_config.replace(',', '\n')
 
+        if board.has_cmts:
+            for i in range(5):
+                try:
+                    wan_ip = board.get_interface_ipaddr(board.erouter_iface)
+                except:
+                    board.expect(pexpect.TIMEOUT, timeout=15)
+                    continue
+                else:
+                    if i == 4:
+                        raise Exception("Failed to get erouter ip address")
+                    break
+
+            contents=contents + """
+testvar wanMode static
+testvar wanIspIp 192.168.3.2
+testvar wanIspGateway 192.168.3.1
+testvar wanIspMask 255.255.255.0
+testvar wanIspAssignIp %s
+testvar wanNatIp %s
+testvar IPv4HopCount 2
+testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
+
         print("Using below for config:")
         print(contents)
         print("#######################")
@@ -156,14 +174,6 @@ testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
         p = c.packages.create(Package(name=config_name,
                                       testlist=self.tests,
                                       config_id=cfg.id))
-
-        try:
-            board.sendline('reboot')
-            board.expect('reboot: Restarting system')
-        except:
-            board.reset()
-        board.wait_for_linux()
-        board.wait_for_network()
 
         self.start_time = time.time()
         j = c.jobs.launch(Job(package_id=p.id))
