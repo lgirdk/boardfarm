@@ -104,8 +104,28 @@ testvar lanInterface """ + self.config.cdrouter_lan_iface
             contents=contents + """
 testvar lanVlanId """ + lan.vlan
 
+        def add_cdrouter_config(config):
+            cdr_conf = None
+
+            # TODO: make a generic helper to search path and overlays
+            if os.path.isfile(config):
+                cdr_conf = open(config, 'r').readlines()
+            elif 'BFT_OVERLAY' in os.environ:
+                for p in os.environ['BFT_OVERLAY'].split(' '):
+                    try:
+                        cdr_conf = open(os.path.join(p, config), 'r').readlines()
+                    except:
+                        continue
+                    else:
+                        break
+
+            return "\n" + "".join(cdr_conf)
+
+        # Take config from overall config, but fallback to board config
         if self.config.cdrouter_config is not None:
-            contents=contents + "\n" + "".join(open(self.config.cdrouter_config, 'r').readlines())
+            contents = contents + add_cdrouter_config(self.config.cdrouter_config)
+        elif board.cdrouter_config is not None:
+            contents = contents + add_cdrouter_config(board.cdrouter_config)
 
         if self.extra_config:
             contents=contents + "\n" + self.extra_config.replace(',', '\n')

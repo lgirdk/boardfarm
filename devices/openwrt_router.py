@@ -44,6 +44,7 @@ class OpenWrtRouter(base.BaseDevice):
     tftp_server_int = None
     flash_meta_booted = False
     has_cmts = False
+    cdrouter_config = None
 
     uboot_net_delay = 30
 
