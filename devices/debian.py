@@ -530,7 +530,7 @@ EOF''')
 
         self.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
         self.expect(self.prompt)
-        self.sendline("grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a \\tflags\t\t= IPv6' -i /etc/xinetd.d/time")
+        self.sendline("grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a\\\\tflags\\t\\t= IPv6' -i /etc/xinetd.d/time")
         self.expect(self.prompt)
         self.sendline('/etc/init.d/xinetd restart')
         self.expect('Starting internet superserver: xinetd.')
