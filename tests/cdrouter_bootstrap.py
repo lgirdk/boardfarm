@@ -162,6 +162,8 @@ testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
             board.expect('reboot: Restarting system')
         except:
             board.reset()
+        board.wait_for_linux()
+        board.wait_for_network()
 
         self.start_time = time.time()
         j = c.jobs.launch(Job(package_id=p.id))
