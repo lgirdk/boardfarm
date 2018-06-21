@@ -62,8 +62,13 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         # If alt mac addr is specified in config, use that..
         # CMTS = we route so no wan mac is used
+        # if we route, we need to add routes
         wandutmac = None
-        if not board.has_cmts:
+        if board.has_cmts:
+            # TODO: there are more missing ones
+            wan.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            wan.expect(prompt)
+        else:
             for device in self.config.board['devices']:
                 if device['name'] == 'wan':
                     if 'alt_macaddr' in device:
@@ -273,6 +278,11 @@ testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
         self.recover()
 
     def recover(self):
+        if board.has_cmts:
+            # TODO: there are more missing ones (see above)
+            wan.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
+            wan.expect(prompt)
+
         if hasattr(self, 'results'):
             r = self.results.get(self.job_id)
 
