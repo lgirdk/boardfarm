@@ -43,6 +43,7 @@ class OpenWrtRouter(base.BaseDevice):
     wan_iface = "eth0"
     tftp_server_int = None
     flash_meta_booted = False
+    has_cmts = False
 
     uboot_net_delay = 30
 
