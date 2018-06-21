@@ -39,9 +39,12 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         if self.cdrouter_server is None:
             self.skipTest("No cdrouter server specified")
 
-        for d in [wan, lan]:
-            d.sendline('ifconfig eth1 down')
-            d.expect(prompt)
+        lan.sendline('ifconfig eth1 down')
+        lan.expect(prompt)
+
+        if not board.has_cmts:
+            wan.sendline('ifconfig eth1 down')
+            wan.expect(prompt)
 
         board.sendcontrol('c')
         board.expect(prompt)
