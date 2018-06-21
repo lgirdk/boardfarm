@@ -53,23 +53,23 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         c = CDRouter(self.cdrouter_server)
 
         # If alt mac addr is specified in config, use that..
-        # This is used when a CMTS for example is placed between
-        # the device under test and the WAN
+        # CMTS = we route so no wan mac is used
         wandutmac = None
-        for device in self.config.board['devices']:
-            if device['name'] == 'wan':
-                if 'alt_macaddr' in device:
-                    wandutmac = device['alt_macaddr']
-                break
+        if not board.has_cmts:
+            for device in self.config.board['devices']:
+                if device['name'] == 'wan':
+                    if 'alt_macaddr' in device:
+                        wandutmac = device['alt_macaddr']
+                    break
 
-        # Otherwise grab this from the device interface
-        if wandutmac is None:
-            board.sendline('ifconfig %s' % board.wan_iface)
-            board.expect('([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')
-            wandutmac = board.match.group()
-            board.expect(prompt)
+            # Otherwise grab this from the device interface
+            if wandutmac is None:
+                board.sendline('ifconfig %s' % board.wan_iface)
+                board.expect('([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')
+                wandutmac = board.match.group()
+                board.expect(prompt)
 
-        print ("Using %s for WAN mac address" % wandutmac)
+            print ("Using %s for WAN mac address" % wandutmac)
 
         lan.vlan = wan.vlan = 0
         for device in self.config.board['devices']:
@@ -93,7 +93,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         # TODO: move wan and lan interface to bft config?
         contents="""
 testvar wanInterface """ + self.config.cdrouter_wan_iface
-        contents=contents +"""
+        if wandutmac is not None:
+            contents=contents +"""
 testvar wanDutMac """ + wandutmac
 
         if wan.vlan != 0:
@@ -106,6 +107,18 @@ testvar lanInterface """ + self.config.cdrouter_lan_iface
         if lan.vlan != 0:
             contents=contents + """
 testvar lanVlanId """ + lan.vlan
+
+        if board.has_cmts:
+            wan_ip = board.get_interface_ipaddr(board.erouter_iface)
+            contents=contents + """
+testvar wanMode static
+testvar wanIspIp 192.168.3.2
+testvar wanIspGateway 192.168.3.1
+testvar wanIspMask 255.255.255.0
+testvar wanIspAssignIp %s
+testvar wanNatIp %s
+testvar IPv4HopCount 2
+testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
 
         def add_cdrouter_config(config):
             cdr_conf = None
