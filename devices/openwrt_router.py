@@ -489,6 +489,9 @@ class OpenWrtRouter(base.BaseDevice):
 	else:
 		print("WARN: Overlay still not mounted")
 
+    def get_dns_server(self):
+        return "%s" % lan_gateway
+
 
 if __name__ == '__main__':
     # Example use
