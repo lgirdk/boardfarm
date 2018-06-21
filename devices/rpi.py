@@ -39,6 +39,8 @@ class RPI(openwrt_router.OpenWrtRouter):
 
     flash_meta_booted = True
 
+    cdrouter_config = "configs/cdrouter-rdkb.conf"
+
     def flash_uboot(self, uboot):
         '''In this case it's flashing the vfat partition of the bootload.
            Need to have that image u-boot and serial turned on via dtoverlay
