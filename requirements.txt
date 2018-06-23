@@ -14,3 +14,4 @@ easysnmp
 jira
 simplejson
 pyvirtualdisplay
+Faker
