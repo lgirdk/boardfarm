@@ -710,6 +710,8 @@ EOF''')
         self.sendline('nc %s 22 -w 1' % self.lan_gateway)
         self.expect_exact('nc %s 22 -w 1' % self.lan_gateway)
         if 0 == self.expect(['SSH'] + self.prompt, timeout=5):
+            self.sendcontrol('c')
+            self.expect(self.prompt)
             self.sendline('[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa')
             if 0 != self.expect(['Protocol mismatch.'] + self.prompt):
                 self.sendline('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
@@ -721,6 +723,9 @@ EOF''')
                 except:
                     pass
                 self.expect(self.prompt)
+        else:
+            self.sendcontrol('c')
+            self.expect(self.prompt)
 
         if wan_gw is not None and 'options' in self.config and \
             'lan-fixed-route-to-wan' in self.config['options']:
