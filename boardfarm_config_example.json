@@ -47,12 +47,12 @@
                         "type": "debian",
                         "name": "lan",
                         "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name lan-${uniq_id} --privileged -p 8080:8080 -it bft:node /bin/bash",
+                        "cmd": "docker run --name lan-${uniq_id} --privileged -p 9909:9909 -it bft:node /bin/bash",
                         "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
                         "post_cmd": "ip link set ${lan_iface} name eth1",
                         "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
                         "color": "blue",
-			"http_proxy": "localhost:8080"
+			"http_proxy": "localhost:9909"
                 }
         ],
         "connection_type": "local_serial",
