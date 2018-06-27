@@ -572,6 +572,10 @@ EOF''')
         self.expect(self.prompt)
 
     def setup_as_wan_gateway(self):
+        # install packages required
+        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server procps iptables lighttpd psmisc')
+        self.expect(self.prompt)
+
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
         self.sendline('\nsysctl net.ipv6.conf.all.disable_ipv6=0')
@@ -582,10 +586,6 @@ EOF''')
         self.sendline('iptables -t nat -X')
         self.expect(self.prompt)
         self.sendline('iptables -t nat -F')
-        self.expect(self.prompt)
-
-        # install packages required
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server procps iptables lighttpd')
         self.expect(self.prompt)
 
         # set WAN ip address
@@ -632,6 +632,9 @@ EOF''')
             self.expect(self.prompt)
 
     def setup_as_lan_device(self):
+        self.sendline('apt-get update && apt-get -qy install tinyproxy curl apache2-utils nmap psmisc')
+        self.expect('Reading package')
+        self.expect(self.prompt, timeout=150)
         # potential cleanup so this wan device works
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
@@ -688,9 +691,6 @@ EOF''')
         self.sendline('route add default gw %s' % self.lan_gateway)
         self.expect(self.prompt)
         # Setup HTTP proxy, so board webserver is accessible via this device
-        self.sendline('apt-get -qy install tinyproxy curl apache2-utils nmap')
-        self.expect('Reading package')
-        self.expect(self.prompt, timeout=150)
         self.sendline('curl --version')
         self.expect(self.prompt)
         self.sendline('ab -V')
