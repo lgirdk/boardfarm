@@ -63,7 +63,7 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
             wan.sendline('ip addr del %s/32 dev eth1' % ip)
             wan.expect(prompt)
 
-        wan.sendline('killall nc')
+        wan.sendline('killall -9 nc')
         wan.expect(prompt)
-        lan.sendline('killall nc')
+        lan.sendline('killall -9 nc')
         lan.expect(prompt)
