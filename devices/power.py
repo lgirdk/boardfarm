@@ -64,6 +64,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return Ip9258(ip_address, outlet, username=username, password=password)
     if 'Cyber Power Systems' in data:
         return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
+    if 'Unauthorized' in data:
+        return Ip9820(ip_address, outlet)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
@@ -329,6 +331,45 @@ class CyberPowerPdu(PowerDevice):
         self.off()
         time.sleep(5)
         self.on()
+
+class Ip9820(PowerDevice):
+    def __init__(self, ip_address, port, username="admin", password="12345678"):
+        PowerDevice.__init__(self, ip_address, username, password)
+        self._ip_address = ip_address
+        self.port = port
+
+        # create a password manager
+        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr.add_password(None, 'http://' + ip_address, username, password)
+        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib2.build_opener(handler)
+        # Now all calls to urllib2.urlopen use our opener.
+        urllib2.install_opener(opener)
+
+    def on(self):
+        print("Power On Port(%s)\n" % self.port)
+        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+
+    def off(self):
+        print("Power Off Port(%s)\n" % self.port)
+        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+
+    def reset(self):
+        self.off()
+        time.sleep(5)
+        self.on()
+
+    def getPowerStatus(self):
+
+        oid = self.oid_Outlet + '.' + str(self.port) + '.0'
+        result = Snmp("get",self.wan_ip,"private",oid)
+        return result
+
+    def getPowerStatusAll(self):
+
+        oid = self.oid_Outlet
+        result = Snmp("walk",self.wan_ip,"private",oid)
+        return result
 
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
