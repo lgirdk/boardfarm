@@ -257,3 +257,14 @@ def install_xampp(device):
         device.expect(device.prompt)
         device.sendline('touch /opt/lampp/htdocs/test.txt')
         device.expect(device.prompt, timeout=120)
+
+def install_snmp(device):
+    '''Install snmp if not present.'''
+    device.sendline('\nsnmpget --version')
+    try:
+        device.expect('NET-SNMP version:', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install snmp -y')
+        device.expect(device.prompt, timeout=60)
