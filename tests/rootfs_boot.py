@@ -160,7 +160,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         print("\nThe router has been up %s seconds." % end_seconds_up)
         if self.config.setup_device_networking:
             assert end_seconds_up > linux_booted_seconds_up
-            assert end_seconds_up > 30
 
         self.logged['boot_time'] = end_seconds_up
 
