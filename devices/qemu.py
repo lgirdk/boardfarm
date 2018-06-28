@@ -29,6 +29,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     wan_open_ports = ['22', '53']
 
     cleanup_files = []
+    kvm = False
 
     def __init__(self,
                  model,
@@ -87,6 +88,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         kvm_chk = pexpect.spawn('sudo kvm-ok')
         if 0 != kvm_chk.expect(['KVM acceleration can be used', pexpect.EOF]):
             cmd = cmd.replace('--enable-kvm ', '')
+            self.kvm = True
 
         # spawn a simple bash shell for now, will launch qemu later
         self.cmd = cmd
@@ -129,9 +131,16 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def wait_for_linux(self):
-        self.expect('login:')
+        if self.kvm:
+            self.expect('login:', timeout=60)
+        else:
+            self.expect('login:')
         self.sendline('root')
-        self.expect(self.prompt, timeout=60) # long for non-kvm qemu
+        if self.kvm:
+            tout = 60
+        else:
+            tout = 180
+        self.expect(self.prompt, timeout=tout)
 
     def boot_linux(self, rootfs=None, bootargs=None):
         pass
