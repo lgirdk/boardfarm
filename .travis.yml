@@ -14,7 +14,7 @@ before_install:
 script:
         - ./bft -l
         - ./bft -i
-        - yes | ./bft -b qemux86 -r https://www.dropbox.com/s/ydgqcjz3wy5v0pm/X86EMLTRBB_default_20180627181048.vmdk?dl=0 -y
+        - yes | ./bft -b qemux86 -r https://www.dropbox.com/s/ydgqcjz3wy5v0pm/X86EMLTRBB_default_20180627181048.vmdk?dl=0 -y -x travisci
         - grep tests_fail...0, results/test_results.json
 after_failure:
-        - yes | BFT_DEBUG=y ./bft -b qemux86 -r https://www.dropbox.com/s/ydgqcjz3wy5v0pm/X86EMLTRBB_default_20180627181048.vmdk?dl=0 -y
+        - yes | BFT_DEBUG=y ./bft -b qemux86 -r https://www.dropbox.com/s/ydgqcjz3wy5v0pm/X86EMLTRBB_default_20180627181048.vmdk?dl=0 -y -x travisci
