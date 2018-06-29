@@ -81,6 +81,18 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('clear cable modem %s offline' % cmmac)
         self.expect(self.prompt)
 
+    def check_PartialService(self, cmmac):
+        self.sendline('show cable modem %s' % cmmac)
+        self.expect('(\d+/\d+\.\d+/\d+(\*|\#)\s+\d+/\d+/\d+(\*|\#))\s+online')
+        result = self.match.group(1)
+        match = re.search('\#', result)
+        if match != None:
+            output = 1
+        else:
+            output = 0
+        self.expect(self.prompt)
+        return output
+
     def reset(self):
         self.sendline('exit')
         self.expect(self.prompt)
