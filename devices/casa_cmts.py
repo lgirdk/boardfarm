@@ -61,6 +61,13 @@ class CasaCMTS(base.BaseDevice):
         except:
             raise Exception("Unable to get prompt on CASA device")
 
+    def logout(self):
+        self.sendline('exit')
+
+    def clear_offline(self, cmmac):
+        self.sendline('clear cable modem %s offline' % cmmac)
+        self.expect(self.prompt)
+
     def reset(self):
         self.sendline('exit')
         self.expect(self.prompt)
