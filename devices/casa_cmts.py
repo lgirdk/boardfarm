@@ -64,6 +64,19 @@ class CasaCMTS(base.BaseDevice):
     def logout(self):
         self.sendline('exit')
 
+    def check_online(self, cmmac):
+        output = "offline"
+        self.sendline('show cable modem %s' % cmmac)
+        self.expect('.+ranging cm \d+')
+        result = self.match.group()
+        match = re.search('\d+/\d+/\d+\**\s+([^\s]+)', result)
+        if match != None:
+            output = match.group(1)
+        else:
+            output = "offline"
+        self.expect(self.prompt)
+        return output
+
     def clear_offline(self, cmmac):
         self.sendline('clear cable modem %s offline' % cmmac)
         self.expect(self.prompt)
