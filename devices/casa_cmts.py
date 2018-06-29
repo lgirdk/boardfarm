@@ -93,6 +93,28 @@ class CasaCMTS(base.BaseDevice):
         self.expect(self.prompt)
         return output
 
+    def get_cmip(self, cmmac):
+        self.sendline('show cable modem %s' % cmmac)
+        self.expect(cmmac + '\s+([\d\.]+)')
+        result = self.match.group(1)
+        if self.match != None:
+            output = result
+        else:
+            output = "None"
+        self.expect(self.prompt)
+        return output
+
+    def get_mtaip(self, cmmac, mtamac):
+        self.sendline('show cable modem %s cpe' % cmmac)
+        self.expect('([\d\.]+)\s+dhcp\s+' + mtamac)
+        result = self.match.group(1)
+        if self.match != None:
+            output = result
+        else:
+            output = "None"
+        self.expect(self.prompt)
+        return output
+
     def reset(self):
         self.sendline('exit')
         self.expect(self.prompt)
