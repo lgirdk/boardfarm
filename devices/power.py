@@ -23,6 +23,7 @@ try:
 except:
     WemoEnv = None
     WemoSwitch = None
+from selenium import webdriver
 
 def get_power_device(ip_address, username=None, password=None, outlet=None):
     '''
@@ -50,7 +51,18 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     except UnicodeDecodeError as e:
         data = urlopen("http://" + ip_address).read()
     except HTTPError as e:
-        data = e.read().decode()
+        """check firefox installed on platform"""
+        detectFirefox(dirpath='/usr/bin')
+        """ Firefox """
+        options = webdriver.FirefoxOptions()
+        options.set_headless()
+        options.add_argument('--disable-gpu')
+        driver = webdriver.Firefox(firefox_options=options)
+        driver.get("http://" + username + ':' + password + '@' + ip_address)
+        data = driver.page_source
+        driver.find_element_by_id('memLogout').click()
+        time.sleep(1)
+        driver.quit()
     except Exception as e:
         print(e)
         raise Exception("\nError connecting to %s" % ip_address)
@@ -64,6 +76,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return Ip9258(ip_address, outlet, username=username, password=password)
     if 'Cyber Power Systems' in data:
         return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
+    if 'IP POWER 9820' in data:
+        return Ip9820(ip_address, outlet)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
