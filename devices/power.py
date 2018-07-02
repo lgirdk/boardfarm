@@ -81,6 +81,31 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
+def detectFirefox(dirpath='/usr/bin'):
+
+    """
+    Name: detectFirefox
+    Purpose: detect firefox on platform before run test
+    Input: firefox dirpath on linux
+    Output: nul
+    """
+
+    driver_url_linux32='https://github.com/mozilla/geckodriver/releases/download/v0.20.1/geckodriver-v0.20.1-linux32.tar.gz'
+    OS=platform.system()
+
+    # detect firefox existed on Linux
+    if OS=='Linux':
+        firefox_isexist=os.popen('which firefox').read().strip('\n')
+        pattern = re.compile(r'Mozilla Firefox (\d+)..*')
+        match = pattern.match(os.popen('firefox -v').read())
+        firefox_v=match.group(1)
+        assert (firefox_isexist!='' and int(firefox_v)>=60), 'not found: please install firefox 60+'
+
+        driver_path=File_findPath('geckodriver', path=dirpath)
+        if driver_path is '':
+            os.system('sudo rm %s/geckodriver*.tar.gz' % dirpath)
+            os.system('sudo wget -P %s/ %s' %(dirpath, driver_url_linux32))
+            os.system('sudo tar zxvf %s/geckodriver*.tar.gz -C %s/' %(dirpath, dirpath))
 
 class PowerDevice():
     '''
