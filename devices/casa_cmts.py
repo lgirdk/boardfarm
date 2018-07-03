@@ -63,6 +63,7 @@ class CasaCMTS(base.BaseDevice):
 
     def logout(self):
         self.sendline('exit')
+        self.sendline('exit')
 
     def check_online(self, cmmac):
         output = "offline"
