@@ -17,7 +17,6 @@ import glob
 
 from termcolor import colored, cprint
 
-
 class DebianBox(base.BaseDevice):
     '''
     A linux machine running an ssh server.
@@ -28,6 +27,7 @@ class DebianBox(base.BaseDevice):
     wan_dhcp = False
     wan_no_eth0 = False
     wan_cmts_provisioner = False
+    pkgs_installed = False
 
     def __init__(self,
                  name,
@@ -204,14 +204,46 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
         return ipaddr
 
+    def install_pkgs(self):
+        if self.pkgs_installed == True:
+            return
+
+        if not self.wan_no_eth0 and not self.wan_dhcp:
+            self.sendline('ifconfig eth1 down')
+            self.expect(self.prompt)
+
+        # TODO: use netns for all this?
+        undo_default_route = None
+        self.sendline('ping -c1 deb.debian.org')
+        if 0 == self.expect(['ping: unknown host'] + self.prompt):
+            # TODO: don't reference eth0, but the uplink iface
+            self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
+            self.expect_exact("SYNC\r\n")
+            if 0 == self.expect(['\r\n(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
+                possible_default_gw = self.match.group(1)
+                self.sendline("ip route add default via %s" % possible_default_gw)
+                self.expect(self.prompt)
+                self.sendline('ping -c1 deb.debian.org')
+                self.expect(self.prompt)
+                undo_default_route = possible_default_gw
+
+        self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc')
+        self.expect('Reading package')
+        self.expect(self.prompt, timeout=150)
+
+        if undo_default_route is not None:
+            self.sendline("ip route del default via %s" % undo_default_route)
+            self.expect(self.prompt)
+
+        self.pkgs_installed = True
+
+
     def ip_neigh_flush(self):
         self.sendline('\nip -s neigh flush all')
         self.expect('flush all')
         self.expect(self.prompt)
 
     def turn_on_pppoe(self):
-        self.sendline('apt-get -o Dpkg::Options::="--force-confnew" -y install pppoe')
-        self.expect(self.prompt)
         self.sendline('cat > /etc/ppp/pppoe-server-options << EOF')
         self.sendline('noauth')
         self.sendline('ms-dns 8.8.8.8')
@@ -227,6 +259,9 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def start_tftp_server(self):
+        # we can call this first, before configure so we need to do this here
+        # as well
+        self.install_pkgs()
         # the entire reason to start tftp is to copy files to devices
         # which we do via ssh so let's start that as well
         self.start_sshd_server()
@@ -240,9 +275,6 @@ class DebianBox(base.BaseDevice):
         if self.gw != eth1_addr:
             self.sendline('ifconfig eth1 down')
             self.expect(self.prompt)
-
-        # install packages required
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install tftpd-hpa')
 
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
@@ -301,9 +333,6 @@ class DebianBox(base.BaseDevice):
         self.expect(self.prompt)
 
     def copy_file_to_server(self, src, dst=None):
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install vim-common')
-        self.expect(self.prompt)
-
         def gzip_str(string_):
 	    import gzip
 	    import io
@@ -331,9 +360,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.logfile_read = saved_logfile_read
 
     def configure(self, kind, config=[]):
-        # start openssh server if not running:
+        self.install_pkgs()
         self.start_sshd_server()
-
         if kind == "wan_device":
             self.setup_as_wan_gateway()
         elif kind == "lan_device":
@@ -489,8 +517,6 @@ EOF''')
 
     def provision_board(self, board_config):
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd')
-        self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
         self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
@@ -572,10 +598,6 @@ EOF''')
         self.expect(self.prompt)
 
     def setup_as_wan_gateway(self):
-        # install packages required
-        self.sendline('apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server procps iptables lighttpd psmisc')
-        self.expect(self.prompt)
-
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
         self.sendline('\nsysctl net.ipv6.conf.all.disable_ipv6=0')
@@ -632,9 +654,6 @@ EOF''')
             self.expect(self.prompt)
 
     def setup_as_lan_device(self):
-        self.sendline('apt-get update && apt-get -qy install tinyproxy curl apache2-utils nmap psmisc')
-        self.expect('Reading package')
-        self.expect(self.prompt, timeout=150)
         # potential cleanup so this wan device works
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
