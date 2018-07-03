@@ -17,7 +17,7 @@ class CasaCMTS(base.BaseDevice):
     Connects to and configures a CASA CMTS
     '''
 
-    prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#']
+    prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#', 'CASA-C10G>', 'CASA-C10G#', 'CASA-C10G\(.*\)#']
     model = "casa_cmts"
 
     def __init__(self,
