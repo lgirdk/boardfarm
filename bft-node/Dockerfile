@@ -4,26 +4,31 @@ RUN echo "root:bigfoot1" | chpasswd
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-	iproute \
-	net-tools \
-	openssh-server \
-	isc-dhcp-server \
-	isc-dhcp-client \
-	procps \
-	iptables \
-	lighttpd \
-	tinyproxy \
-	curl \
 	apache2-utils \
-	nmap \
-	pppoe \
-	tftpd-hpa \
-	tcpdump \
+	curl \
+	dnsutils \
 	iperf \
 	iperf3 \
+	iproute \
+	iptables \
+	isc-dhcp-server \
+	isc-dhcp-client \
+	lighttpd \
+	net-tools \
 	netcat \
+	nmap \
+	openssh-server \
+	pppoe \
+	psmisc \
+	procps \
 	python-pip \
-	python-mysqldb
+	python-mysqldb \
+	tinyproxy \
+	traceroute \
+	tftpd-hpa \
+	tcpdump \
+	vim-common \
+	xinetd
 
 RUN mkdir /var/run/sshd
 RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
