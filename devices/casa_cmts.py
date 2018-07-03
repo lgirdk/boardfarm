@@ -278,6 +278,12 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
+    def modify_docsis_mac_ip_provisioning_mode(self, index, ip_pvmode='dual-stack'):
+        self.sendline('interface docsis-mac %s' % index)
+        self.expect(self.prompt)
+        self.sendline('ip-provisioning-mode %s' % ip_pvmode)
+        self.expect(self.prompt)
+
     def add_service_class(self, index, name, max_rate, max_burst, downstream=False):
         self.sendline('cable service-class %s' % index)
         self.expect(self.prompt)
