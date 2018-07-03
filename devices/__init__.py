@@ -66,7 +66,11 @@ def get_device(model, **kwargs):
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__ and model in dev.__dict__['model']:
-                return dev(model, **kwargs)
+                try:
+                    return dev(model, **kwargs)
+                except:
+                    print("Failed to create a %s, device likely missing or invalid config" % model)
+                    raise Exception("Failed to create a %s, device likely missing or invalid config" % model)
 
     return None
 
