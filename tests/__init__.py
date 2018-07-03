@@ -37,15 +37,15 @@ for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f])
         print("Warning: could not import from file %s." % x)
 
 def init(config):
-    try:
         for test_file, tests in test_mappings.iteritems():
             for test in tests:
                 #print('checking %s in %s' % (test, test_file))
                 if hasattr(test, "parse"):
-                    #print("calling parse on %s" % test)
-                    new_tests = test.parse(config) or []
-                    for new_test in new_tests:
-                        globals()[new_test] = getattr(test_file, new_test)
-    except:
-        print("Failed to run all tests parse function!")
-        pass
+                    try:
+                        #print("calling parse on %s" % test)
+                        new_tests = test.parse(config) or []
+                        for new_test in new_tests:
+                            globals()[new_test] = getattr(test_file, new_test)
+                    except:
+                        print("Failed to run %s parse function!" % test)
+                        pass
