@@ -14,6 +14,7 @@ except:
 import pexpect
 import dlipower
 import time
+import re
 
 from easysnmp import Session
 
@@ -50,7 +51,32 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     except UnicodeDecodeError as e:
         data = urlopen("http://" + ip_address).read()
     except HTTPError as e:
-        data = e.read().decode()
+        # create a password manager
+        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr.add_password(None, 'http://' + ip_address, username, password)
+        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib2.build_opener(handler)
+        opener.open('http://' + ip_address)
+        urllib2.install_opener(opener)
+
+        request = urllib2.Request('http://' + ip_address)
+        response = opener.open(request)
+        data = response.read()
+        match = re.search('var device = (\d)', data)
+        if match:
+            if match.group(1) == '1':
+                data = "/IP9255.asp"
+            elif match.group(1) == '2':
+                data = "/IPPower.asp"
+            elif match.group(1) == '3':
+                data = "/IP9820.asp"
+            elif match.group(1) == '4':
+                data = "/IP9219.asp"
+            elif match.group(1) == '5':
+                data = "/IPPower.asp"
+            elif match.group(1) == '6':
+                data = "/IP9820.asp"
+        print('data = %s' % data)
     except Exception as e:
         print(e)
         raise Exception("\nError connecting to %s" % ip_address)
@@ -64,6 +90,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         return Ip9258(ip_address, outlet, username=username, password=password)
     if 'Cyber Power Systems' in data:
         return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
+    if 'IP9820' in data:
+        return Ip9820(ip_address, outlet)
     else:
         raise Exception("No code written to handle power device found at %s" % ip_address)
 
