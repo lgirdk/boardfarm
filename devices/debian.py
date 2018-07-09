@@ -212,10 +212,13 @@ class DebianBox(base.BaseDevice):
             self.sendline('ifconfig eth1 down')
             self.expect(self.prompt)
 
+        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc"
+
         # TODO: use netns for all this?
         undo_default_route = None
         self.sendline('ping -c1 deb.debian.org')
-        if 0 == self.expect(['ping: unknown host'] + self.prompt):
+        i = self.expect(['ping: unknown host', pexpect.TIMEOUT] + self.prompt, timeout=10)
+        if 0 == i:
             # TODO: don't reference eth0, but the uplink iface
             self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
             self.expect_exact("SYNC\r\n")
@@ -226,10 +229,20 @@ class DebianBox(base.BaseDevice):
                 self.sendline('ping -c1 deb.debian.org')
                 self.expect(self.prompt)
                 undo_default_route = possible_default_gw
-
-        self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc')
-        self.expect('Reading package')
-        self.expect(self.prompt, timeout=150)
+                self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
+                if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=10):
+                    self.expect(self.prompt, timeout=150)
+                else:
+                    print("Failed to download packages, things might not work")
+                    self.sendcontrol('c')
+                    self.expect(self.prompt)
+        elif 1 == i:
+            self.sendcontrol('c')
+            self.expect(self.prompt)
+        else:
+            self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
+            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=10):
+                self.expect(self.prompt, timeout=150)
 
         if undo_default_route is not None:
             self.sendline("ip route del default via %s" % undo_default_route)
