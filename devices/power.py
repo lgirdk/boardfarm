@@ -391,6 +391,33 @@ class CyberPowerPdu(PowerDevice):
         time.sleep(5)
         self.on()
 
+class Ip9820(PowerDevice):
+    def __init__(self, ip_address, port, username="admin", password="12345678"):
+        PowerDevice.__init__(self, ip_address, username, password)
+        self._ip_address = ip_address
+        self.port = port
+
+        # create a password manager
+        password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr.add_password(None, 'http://' + ip_address, username, password)
+        handler = _urllib.HTTPBasicAuthHandler(password_mgr)
+        opener = _urllib.build_opener(handler)
+        # Now all calls to _urllib.urlopen use our opener.
+        _urllib.install_opener(opener)
+
+    def on(self):
+        print("Power On Port(%s)\n" % self.port)
+        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+
+    def off(self):
+        print("Power Off Port(%s)\n" % self.port)
+        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+
+    def reset(self):
+        self.off()
+        time.sleep(5)
+        self.on()
+
 if __name__ == "__main__":
     print("Gathering info about power outlets...")
 
