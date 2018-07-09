@@ -233,6 +233,9 @@ def main():
                 get_tftp_config(config.wan)
 
 
+        except KeyboardInterrupt:
+            print_bold("Keyboard interrupt")
+            sys.exit(2)
         except Exception as e:
             print(e)
             traceback.print_exc(file=sys.stdout)

@@ -68,6 +68,10 @@ def get_device(model, **kwargs):
             if 'model' in dev.__dict__ and model in dev.__dict__['model']:
                 try:
                     return dev(model, **kwargs)
+                except KeyboardInterrupt:
+                    raise
+                except Exception as e:
+                    raise
                 except:
                     msg = "Failed to create a %s, unable to connect (in use) or possibly misconfigured" % model
                     raise Exception(msg)
