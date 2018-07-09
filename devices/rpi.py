@@ -134,7 +134,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.sendline('cd /tmp')
         self.expect(self.prompt)
         self.sendline(' tftp -g -r %s 10.0.1.1' % filename)
-        self.expect(self.prompt, timeout=240)
+        self.expect(self.prompt, timeout=500)
 
         self.sendline('systemctl isolate rescue.target')
         if 0 == self.expect(['Give root password for maintenance', 'Welcome Press Enter for maintenance', 'Press Enter for maintenance']):
