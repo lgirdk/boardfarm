@@ -69,8 +69,8 @@ def get_device(model, **kwargs):
                 try:
                     return dev(model, **kwargs)
                 except:
-                    print("Failed to create a %s, device likely missing or invalid config" % model)
-                    raise Exception("Failed to create a %s, device likely missing or invalid config" % model)
+                    msg = "Failed to create a %s, unable to connect (in use) or possibly misconfigured" % model
+                    raise Exception(msg)
 
     return None
 
