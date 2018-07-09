@@ -746,13 +746,10 @@ EOF''')
             if 0 != self.expect(['Protocol mismatch.'] + self.prompt):
                 self.sendline('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
                 self.expect_exact('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
-                try:
-                    # When resetting, no need for password
-                    self.expect("root@%s's password:" % self.lan_gateway, timeout=5)
+                if 0 == self.expect(['assword:'] + self.prompt):
                     self.sendline('password')
-                except:
-                    pass
-                self.expect(self.prompt)
+                    self.expect(self.prompt)
+
         else:
             self.sendcontrol('c')
             self.expect(self.prompt)
