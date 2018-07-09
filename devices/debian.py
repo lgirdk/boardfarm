@@ -219,7 +219,7 @@ class DebianBox(base.BaseDevice):
             # TODO: don't reference eth0, but the uplink iface
             self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
             self.expect_exact("SYNC\r\n")
-            if 0 == self.expect(['\r\n(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
+            if 0 == self.expect(['(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
                 possible_default_gw = self.match.group(1)
                 self.sendline("ip route add default via %s" % possible_default_gw)
                 self.expect(self.prompt)
