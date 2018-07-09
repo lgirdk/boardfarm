@@ -276,8 +276,6 @@ class SimpleSerialPower(PowerDevice):
 #     ip9258.off(i)
 #     time.delay(1)
 
-import urllib2
-
 class Ip9258(PowerDevice):
     def __init__(self, ip_address, port, username="admin", password="12345678"):
         PowerDevice.__init__(self, ip_address, username, password)
@@ -285,20 +283,20 @@ class Ip9258(PowerDevice):
         self.port = port
 
         # create a password manager
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
         password_mgr.add_password(None, 'http://' + ip_address, username, password)
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(handler)
+        handler = _urllib.HTTPBasicAuthHandler(password_mgr)
+        opener = _urllib.build_opener(handler)
         # Now all calls to urllib2.urlopen use our opener.
-        urllib2.install_opener(opener)
+        _urllib.install_opener(opener)
 
     def on(self):
         print("Power On Port(%s)\n" % self.port)
-        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
 
     def off(self):
         print("Power Off Port(%s)\n" % self.port)
-        return urllib2.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
     def reset(self):
         self.off()
