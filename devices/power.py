@@ -8,12 +8,21 @@
 try:
     from urllib.request import urlopen
     from urllib.error import HTTPError
+    import urllib as _urllib
 except:
     from urllib2 import urlopen, HTTPError
+    import urllib2 as _urllib
 
 import pexpect
 import dlipower
 import time
+import re
+
+import inspect
+
+def get_default_for_arg(function, arg):
+    args, varargs, keywords, defaults = inspect.getargspec(function)
+    return defaults
 
 from easysnmp import Session
 
@@ -30,6 +39,14 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     at a given IP address. Return a class that can correctly
     interact with that type of switch.
     '''
+
+    login_failed = False
+    all_login_defaults = []
+    for name, obj in globals().iteritems():
+        if inspect.isclass(obj) and issubclass(obj, PowerDevice):
+            defaults = get_default_for_arg(obj.__init__, "username")
+            if defaults is not None and len(defaults) == 2:
+                all_login_defaults.append((defaults[0], defaults[1]))
 
     if ip_address is None:
         if outlet is not None:
@@ -50,23 +67,69 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     except UnicodeDecodeError as e:
         data = urlopen("http://" + ip_address).read()
     except HTTPError as e:
+        if str(e) == 'HTTP Error 401: Unauthorized':
+            login_failed = True
+
+        # still try to read data
         data = e.read().decode()
     except Exception as e:
         print(e)
         raise Exception("\nError connecting to %s" % ip_address)
-    if '<title>Power Controller' in data:
-        return DLIPowerSwitch(ip_address, outlet=outlet, username=username, password=password)
-    if 'Sentry Switched CDU' in data:
-        return SentrySwitchedCDU(ip_address, outlet=outlet)
-    if '<title>APC ' in data:
-        return APCPower(ip_address, outlet=outlet)
-    if '<b>IP9258 Log In</b>' in data:
-        return Ip9258(ip_address, outlet, username=username, password=password)
-    if 'Cyber Power Systems' in data:
-        return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
-    else:
-        raise Exception("No code written to handle power device found at %s" % ip_address)
 
+    def check_data(data):
+        if '<title>Power Controller' in data:
+            return DLIPowerSwitch(ip_address, outlet=outlet, username=username, password=password)
+        if 'Sentry Switched CDU' in data:
+            return SentrySwitchedCDU(ip_address, outlet=outlet)
+        if '<title>APC ' in data:
+            return APCPower(ip_address, outlet=outlet)
+        if '<b>IP9258 Log In</b>' in data:
+            return Ip9258(ip_address, outlet, username=username, password=password)
+        if 'Cyber Power Systems' in data:
+            return CyberPowerPdu(ip_address, outlet=outlet, username=username, password=password)
+        if 'IP9820' in data:
+            return Ip9820(ip_address, outlet)
+
+        return None
+
+    ret = check_data(data)
+    if ret is not None:
+        return ret
+
+    if login_failed:
+        # TODO: prioritize Ip9820 since it requires login?
+        def get_with_username_password(username, password):
+            # create a password manager
+            password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(None, 'http://' + ip_address, username, password)
+            handler = _urllib.HTTPBasicAuthHandler(password_mgr)
+            opener = _urllib.build_opener(handler)
+            opener.open('http://' + ip_address)
+            _urllib.install_opener(opener)
+
+            request = _urllib.Request('http://' + ip_address)
+            response = opener.open(request)
+            data = response.read()
+            return data
+
+        # try with passed in info first
+        ret = check_data(get_with_username_password(username, password))
+        if ret is not None:
+            return ret
+
+        for username, password in all_login_defaults:
+            try:
+                ret = check_data(get_with_username_password(username, password))
+            except:
+                continue
+            else:
+                break
+
+        ret = check_data(data)
+        if ret is not None:
+            return ret
+
+    raise Exception("No code written to handle power device found at %s" % ip_address)
 
 class PowerDevice():
     '''
