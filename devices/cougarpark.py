@@ -41,7 +41,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     arm = None
 
     def __init__(self, *args, **kwargs):
-        super(type(self), self).__init__(*args, **kwargs)
+        super(CougarPark, self).__init__(*args, **kwargs)
 
         del kwargs['conn_cmd']
         self.arm = pexpect.spawn.__new__(pexpect.spawn)
@@ -154,4 +154,4 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect(self.prompt)
         self.sendline('dhclient %s' % self.wan_iface)
         self.expect(self.prompt)
-        super(type(self), self).wait_for_network()
+        super(CougarPark, self).wait_for_network()
