@@ -48,7 +48,7 @@ class ElasticsearchLogger(object):
         self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
         result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
-        if result and 'created' in result and result['created'] == True:
+        if result and u'result' in result and result[u'result'] == u'created':
             doc_url = "%s%s/%s/%s" % (self.server, self.index, self.doc_type, result['_id'])
             print("Elasticsearch: Data stored at %s" % (doc_url))
         else:
