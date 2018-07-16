@@ -33,8 +33,9 @@ class CasaCMTS(base.BaseDevice):
             raise Exception("No command specified to connect to Casa CMTS")
 
         self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd)
-        self.logfile_read = sys.stdout
         self.connection.connect()
+        self.connect()
+        self.logfile_read = sys.stdout
 
     def connect(self):
         try:
