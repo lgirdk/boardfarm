@@ -230,8 +230,8 @@ class DebianBox(base.BaseDevice):
                 self.expect(self.prompt)
                 undo_default_route = possible_default_gw
                 self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
-                if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=10):
-                    self.expect(self.prompt, timeout=150)
+                if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+                    self.expect(self.prompt, timeout=300)
                 else:
                     print("Failed to download packages, things might not work")
                     self.sendcontrol('c')
@@ -241,8 +241,12 @@ class DebianBox(base.BaseDevice):
             self.expect(self.prompt)
         else:
             self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
-            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=10):
-                self.expect(self.prompt, timeout=150)
+            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+                self.expect(self.prompt, timeout=300)
+            else:
+                print("Failed to download packages, things might not work")
+                self.sendcontrol('c')
+                self.expect(self.prompt)
 
         if undo_default_route is not None:
             self.sendline("ip route del default via %s" % undo_default_route)
