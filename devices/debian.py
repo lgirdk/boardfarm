@@ -809,6 +809,10 @@ EOF''')
         except:
             self.expect(self.prompt, timeout=30)
 
+    def tftp_server_ip_int(self):
+        '''Returns the DUT facing side tftp server ip'''
+        return self.gw
+
 if __name__ == '__main__':
     # Example use
     try:
