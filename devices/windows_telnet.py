@@ -21,7 +21,6 @@ class WindowsTelnet(base.BaseDevice):
 
         self.connection = connection_decider.connection("local_cmd", device=self, conn_cmd=conn_cmd)
         self.connection.connect()
-        self.logfile_read = sys.stdout
         self.linesep = '\r'
 
         self.expect('login: ')
@@ -31,6 +30,7 @@ class WindowsTelnet(base.BaseDevice):
         self.expect(self.prompt)
 
         # Hide login prints, resume after that's done
+        self.logfile_read = sys.stdout
 
     def get_ip(self, wifi_interface):
 
