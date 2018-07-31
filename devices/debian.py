@@ -24,6 +24,7 @@ class DebianBox(base.BaseDevice):
 
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
     static_route = None
+    static_ip = False
     wan_dhcp = False
     wan_no_eth0 = False
     wan_cmts_provisioner = False
@@ -104,6 +105,7 @@ class DebianBox(base.BaseDevice):
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
                     self.gw = opt.replace('wan-static-ip:', '')
+                    self.static_ip = True
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 if opt.startswith('wan-dhcp-client'):
