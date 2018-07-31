@@ -65,6 +65,6 @@ class WindowsTelnet(base.BaseDevice):
         self.sendline('netsh interface ip set address '+wifi_interface+" dhcp")
         self.expect(self.prompt)
 
-    def set_fixip(self , wifi_interface, fix_ip, fix_mark, fix_gateway):
+    def set_static_ip(self , wifi_interface, fix_ip, fix_mark, fix_gateway):
         self.sendline('netsh interface ip set address '+wifi_interface+" static "+fix_ip+" "+fix_mark+" "+fix_gateway+" 1")
         self.expect(self.prompt)
