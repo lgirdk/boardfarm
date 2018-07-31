@@ -91,13 +91,18 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                 d = wan
             elif device['name'] == 'lan':
                 d = lan
+            else:
+                continue
 
             if d is not None:
                 d.vlan = getattr(device, 'vlan', 0)
             if d.vlan == 0:
                 d.sendline('cat /proc/net/vlan/config')
-                d.expect('eth1.*\|\s([0-9]+).*\|')
-                d.vlan = d.match.group(1)
+                d.expect_exact('cat /proc/net/vlan/config')
+                if 0 == d.expect([pexpect.TIMEOUT, 'eth1.*\|\s([0-9]+).*\|'], timeout=5):
+                    d.vlan = 0
+                else:
+                    d.vlan = d.match.group(1)
                 d.expect(prompt)
 
         print ("Using %s for WAN vlan" % wan.vlan)
