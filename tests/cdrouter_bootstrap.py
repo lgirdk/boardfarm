@@ -70,6 +70,9 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         board.wait_for_linux()
         board.wait_for_network()
 
+        # Add extra board specific delay
+        board.expect(pexpect.TIMEOUT, timeout=getattr(board, 'cdrouter_bootdelay', 0))
+
         # If alt mac addr is specified in config, use that..
         # CMTS = we route so no wan mac is used
         # if we route, we need to add routes
@@ -235,7 +238,7 @@ testvar lanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
 
             if r.status == "paused" and end_of_start == True:
                 end_of_start = False
-                # TODO: make this board specific?
+                # TODO: do we need this anymore? we have board specific cdrouter_bootdelay
                 board.expect(pexpect.TIMEOUT, timeout=60)
                 c.results.unpause(j.result_id)
                 board.expect(pexpect.TIMEOUT, timeout=1)
