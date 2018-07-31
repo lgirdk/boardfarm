@@ -174,15 +174,20 @@ testvar lanVlanId """ + lan.vlan
                         raise Exception("Failed to get erouter ip address")
                     break
 
+            # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
             contents=contents + """
 testvar wanMode static
-testvar wanIspIp 192.168.3.2
-testvar wanIspGateway 192.168.3.1
+testvar wanIspIp %s
+testvar wanIspGateway %s
 testvar wanIspMask 255.255.255.0
 testvar wanIspAssignIp %s
 testvar wanNatIp %s
-testvar IPv4HopCount 2
-testvar lanDnsServer %s""" % (wan_ip, wan_ip,  board.get_dns_server())
+testvar IPv4HopCount %s
+testvar lanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
+                              self.config.board['cdrouter_wanispgateway'], \
+                              wan_ip, wan_ip, \
+                              self.config.board['cdrouter_ipv4hopcount'], \
+                              board.get_dns_server())
 
         print("Using below for config:")
         print(contents)
