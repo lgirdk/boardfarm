@@ -33,6 +33,16 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         elif self.config.cdrouter_server is not None:
             self.cdrouter_server = self.config.cdrouter_server
 
+        if 'cdrouter_wan_iface' in self.config.board:
+            self.cdrouter_wan_iface = self.config.board['cdrouter_wan_iface']
+        else:
+            self.cdrouter_wan_iface = self.config.cdrouter_wan_iface
+
+        if 'cdrouter_lan_iface' in self.config.board:
+            self.cdrouter_lan_iface = self.config.board['cdrouter_lan_iface']
+        else:
+            self.cdrouter_lan_iface = self.config.cdrouter_lan_iface
+
         if self.tests is None:
             self.skipTest("No tests defined!")
 
@@ -110,7 +120,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         # TODO: move wan and lan interface to bft config?
         contents="""
-testvar wanInterface """ + self.config.cdrouter_wan_iface
+testvar wanInterface """ + self.cdrouter_wan_iface
         if wandutmac is not None:
             contents=contents +"""
 testvar wanDutMac """ + wandutmac
@@ -120,7 +130,7 @@ testvar wanDutMac """ + wandutmac
 testvar wanVlanId """ + wan.vlan
 
         contents=contents + """
-testvar lanInterface """ + self.config.cdrouter_lan_iface
+testvar lanInterface """ + self.cdrouter_lan_iface
 
         if lan.vlan != 0:
             contents=contents + """
