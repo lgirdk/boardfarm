@@ -56,13 +56,11 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             wan.sendline('ifconfig eth1 down')
             wan.expect(prompt)
 
-        board.sendcontrol('c')
-        board.expect(prompt)
-
-        # TODO: make host configurable in bft config?
         c = CDRouter(self.cdrouter_server)
 
         try:
+            board.sendcontrol('c')
+            board.expect(prompt)
             board.sendline('reboot')
             board.expect('reboot: Restarting system')
         except:
