@@ -15,3 +15,5 @@ jira
 simplejson
 pyvirtualdisplay
 Faker
+tftpy
+shutil
