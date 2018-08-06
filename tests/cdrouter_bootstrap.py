@@ -184,11 +184,13 @@ testvar wanIspMask 255.255.255.0
 testvar wanIspAssignIp %s
 testvar wanNatIp %s
 testvar IPv4HopCount %s
-testvar lanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
+testvar lanDnsServer %s
+testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
                               self.config.board['cdrouter_wanispgateway'], \
                               wan_ip, wan_ip, \
                               self.config.board['cdrouter_ipv4hopcount'], \
-                              board.get_dns_server())
+                              board.get_dns_server(), \
+                              board.get_dns_server_upstream())
 
         print("Using below for config:")
         print(contents)
