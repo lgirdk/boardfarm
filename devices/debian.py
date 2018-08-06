@@ -59,7 +59,9 @@ class DebianBox(base.BaseDevice):
                                    args=['%s@%s' % (username, name),
                                          '-p', port,
                                          '-o', 'StrictHostKeyChecking=no',
-                                         '-o', 'UserKnownHostsFile=/dev/null'])
+                                         '-o', 'UserKnownHostsFile=/dev/null',
+                                         '-o', 'ServerAliveInterval=60',
+                                         '-o', 'ServerAliveCountMax=5'])
             self.name = name
         else:
             name = None
