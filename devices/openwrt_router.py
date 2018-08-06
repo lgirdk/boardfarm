@@ -494,6 +494,13 @@ class OpenWrtRouter(base.BaseDevice):
     def get_dns_server(self):
         return "%s" % lan_gateway
 
+    def get_dns_server_upstream(self):
+        self.sendline('cat /etc/resolv.conf')
+        self.expect('nameserver (.*)\r\n', timeout=5)
+        ret = self.match.group(1)
+        self.expect(self.prompt)
+        return ret
+
 
 if __name__ == '__main__':
     # Example use
