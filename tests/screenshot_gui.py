@@ -16,8 +16,18 @@ import os
 class ScreenshotGUI(rootfs_boot.RootFSBootTest):
     '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
     def runTest(self):
-        display = Display(visible=0, size=(1366, 768))
-        display.start()
+        try:
+            # try to start vnc server
+            self.display = Display(backend='xvnc', rfbport='5904', visible=0, size=(1366, 768))
+            self.display.start()
+
+            if "BFT_DEBUG" in os.environ:
+                print("Connect to VNC display running on localhost:5904")
+                raw_input("Press any key after connecting to display....")
+        except:
+            # fallback xvfb
+            display = Display(visible=0, size=(1366, 768))
+            display.start()
 
         try:
             if 'http_proxy' in lan.config:
@@ -51,3 +61,8 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
         driver.save_screenshot(self.config.output_dir + os.sep + 'lan_portal.png')
 
         driver.close()
+
+        self.recover()
+
+    def recover(self):
+        self.display.stop()
