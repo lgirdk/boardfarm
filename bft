@@ -275,6 +275,9 @@ def main():
     import testsuites
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
+            if not hasattr(tests, name):
+                print_bold("\tTest %s skipped, not found..." % name)
+                continue
             test = getattr(tests, name)
         else:
             test = name
