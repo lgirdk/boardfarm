@@ -11,6 +11,7 @@ import json
 import os
 import re
 import sys
+import time
 
 from string import Template
 try:
@@ -136,7 +137,11 @@ def xmlresults_to_html(test_results,
     template_filename = pick_template_filename()
     f = open(template_filename, "r").read()
     s = Template(f)
-    f = open(output_name, "w")
+
+    if not os.path.isdir(output_name):
+        os.makedirs(output_name)
+
+    f = open(output_name+ time.strftime("%Y%m%d-%H%M%S") +"_results.html", "w")
     f.write(s.substitute(parameters))
     f.close()
     print("Created %s" % output_name)

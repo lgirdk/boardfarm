@@ -443,11 +443,13 @@ def main():
 
     # Create Pretty HTML output
     import make_human_readable
+    output_name=config.output_dir+config.BOARD_NAMES[0]+"/"+time.strftime("%Y%m%d")+"/"
     try:
         title_str = make_human_readable.get_title()
         make_human_readable.xmlresults_to_html(full_results['test_results'], title=title_str,
-                                output_name=os.path.join(config.output_dir, "results.html"),
+                                output_name=output_name,
                                 board_info=config.board)
+
     except Exception as e:
         print(e)
         print("Unable to create HTML results")
@@ -463,7 +465,7 @@ def main():
         if hasattr(t, 'log_to_file'):
             filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
             testtime = t.stop_time - t.start_time
-            with open(os.path.join(config.output_dir, filename), 'w') as log:
+            with open(os.path.join(output_name, filename), 'w') as log:
                 log.write(t.log_to_file)
                 log.write('\n%s test result: %s' % (type(t).__name__, t.result_grade))
                 log.write('\nTotal test time: %s seconds\n' % testtime)
