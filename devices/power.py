@@ -59,6 +59,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
                 return SimpleSerialPower(outlet=outlet)
             if "cmd://" in outlet:
                 return SimpleCommandPower(outlet=outlet)
+            if "px2://" in outlet:
+                return PX2(outlet=outlet)
 
         return HumanButtonPusher()
 
@@ -198,6 +200,33 @@ class SentrySwitchedCDU(PowerDevice):
                 print(e)
                 continue
         raise Exception("\nProblem resetting outlet %s." % self.outlet)
+
+class PX2(PowerDevice):
+    '''
+    Power Unit from Raritan.
+    '''
+    def __init__(self,
+            outlet,
+            username='admin',
+            password='scripter99'):
+        ip_address, self.outlet = outlet.replace("px2://", '').split(';')
+        PowerDevice.__init__(self, ip_address, username, password)
+
+        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon.expect('Login for PX2 CLI')
+        pcon.expect('Username:')
+        pcon.sendline(self.username)
+        pcon.expect('Password:')
+        pcon.sendline(self.password)
+        pcon.expect('Welcome to PX2 CLI!')
+        pcon.expect('# ')
+
+        self.pcon = pcon
+
+    def reset(self):
+        self.pcon.sendline('power outlets %s cycle /y' % self.outlet)
+        self.pcon.expect('# ')
+
 
 class HumanButtonPusher(PowerDevice):
     '''
