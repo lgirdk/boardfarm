@@ -186,8 +186,15 @@ class OpenWrtRouter(base.BaseDevice):
         '''Within u-boot, download file from tftp server.'''
         for attempt in range(3):
             try:
-                self.sendline("tftpboot %s %s" % (loadaddr, filename))
-                self.expect_exact("tftpboot %s %s" % (loadaddr, filename))
+                self.sendline('help')
+                self.expect_exact('help')
+                self.expect(self.uprompt)
+                if 'tftpboot' in self.before:
+                    cmd = 'tftpboot'
+                else:
+                    cmd = 'tftp'
+                self.sendline("%s %s %s" % (cmd, loadaddr, filename))
+                self.expect_exact("%s %s %s" % (cmd, loadaddr, filename))
                 i = self.expect(['Bytes transferred = (\d+) (.* hex)'] + self.uprompt, timeout=timeout)
                 if i != 0:
                     continue
