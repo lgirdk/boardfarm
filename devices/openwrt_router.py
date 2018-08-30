@@ -471,22 +471,38 @@ class OpenWrtRouter(base.BaseDevice):
 
     def uci_forward_traffic_redirect(self, tcp_udp, port_wan, ip_lan):
         self.sendline('uci add firewall redirect')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@redirect[-1].src=wan')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@redirect[-1].src_dport=%s' % port_wan)
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@redirect[-1].proto=%s' % tcp_udp)
+        self.expect(self.prompt)
+        self.sendline('uci set firewall.@redirect[-1].dest=lan')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@redirect[-1].dest_ip=%s' % ip_lan)
+        self.expect(self.prompt)
         self.sendline('uci commit firewall')
+        self.expect(self.prompt)
         self.firewall_restart()
 
     def uci_forward_traffic_rule(self, tcp_udp, port, ip, target="ACCEPT"):
         self.sendline('uci add firewall rule')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].src=wan')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].proto=%s' % tcp_udp)
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].dest=lan')
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].dest_ip=%s' % ip)
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].dest_port=%s' % port)
+        self.expect(self.prompt)
         self.sendline('uci set firewall.@rule[-1].target=%s' % target)
+        self.expect(self.prompt)
         self.sendline('uci commit firewall')
+        self.expect(self.prompt)
         self.firewall_restart()
 
     def wait_for_mounts(self):
