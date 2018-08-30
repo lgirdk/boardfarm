@@ -81,6 +81,9 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         # make sure we round writes up to the next sector size
         hsize = hex((((int(size, 0) - 1) / self.flash_block_size) + 1) * self.flash_block_size)
 
+        if addr == None or addr == "0x0":
+            raise Exception("Refusing to flash 0x0 or None values for addr")
+
         self.sendline("nand erase %s %s" % (addr, size))
         self.expect("OK", timeout=90)
         self.expect(self.uprompt)
@@ -97,6 +100,9 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt)
 
     def spi_flash_bin(self, addr, size, src, esize=None):
+        if addr == None or addr == "0x0":
+            raise Exception("Refusing to flash 0x0 or None values for addr")
+
         if esize == None:
             esize = size
 
