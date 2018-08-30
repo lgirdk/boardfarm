@@ -109,11 +109,3 @@ class UBusTestSystemReboot(rootfs_boot.RootFSBootTest):
 
             ubus_system_reboot(session_id)
             board.wait_for_linux()
-
-class UBusTestKrouter(rootfs_boot.RootFSBootTest):
-    '''Krouter UBus tests'''
-    def runTest(self):
-        ubus_call("00000000000000000000000000000000", "krouter", "add_krouter_endpoint", { "macaddr": "00:11:22:33:44:55" })
-        session_id = ubus_login_session()
-        ret = ubus_call(session_id, "krouter", "is_krouter_endpoint", { "macaddr": "00:11:22:33:44:55" })
-        print ret
