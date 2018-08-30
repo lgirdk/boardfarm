@@ -465,6 +465,10 @@ class OpenWrtRouter(base.BaseDevice):
     def uci_allow_wan_ssh(self, lan_ip="192.168.1.1"):
         self.uci_forward_traffic_redirect("tcp", "22", lan_ip)
 
+    def uci_allow_wan_https(self):
+        '''Allow access to webgui from devices on WAN interface.'''
+        self.uci_forward_traffic_redirect("tcp", "443", "192.168.1.1")
+
     def uci_forward_traffic_redirect(self, tcp_udp, port_wan, ip_lan):
         self.sendline('uci add firewall redirect')
         self.sendline('uci set firewall.@redirect[-1].src=wan')
