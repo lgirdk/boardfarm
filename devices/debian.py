@@ -29,6 +29,7 @@ class DebianBox(base.BaseDevice):
     wan_no_eth0 = False
     wan_cmts_provisioner = False
     pkgs_installed = False
+    install_pkgs_after_dhcp = False
 
     def __init__(self,
                  name,
@@ -217,16 +218,27 @@ class DebianBox(base.BaseDevice):
         if self.pkgs_installed == True:
             return
 
-        if not self.wan_no_eth0 and not self.wan_dhcp:
+        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp:
             self.sendline('ifconfig eth1 down')
             self.expect(self.prompt)
 
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc"
 
+        def _install_pkgs():
+            self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
+            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+                self.expect(self.prompt, timeout=300)
+            else:
+                print("Failed to download packages, things might not work")
+                self.sendcontrol('c')
+                self.expect(self.prompt)
+
+            self.pkgs_installed = True
+
         # TODO: use netns for all this?
         undo_default_route = None
         self.sendline('ping -c1 deb.debian.org')
-        i = self.expect(['ping: unknown host', pexpect.TIMEOUT] + self.prompt, timeout=10)
+        i = self.expect(['ping: unknown host', 'connect: Network is unreachable', pexpect.TIMEOUT] + self.prompt, timeout=10)
         if 0 == i:
             # TODO: don't reference eth0, but the uplink iface
             self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
@@ -246,23 +258,20 @@ class DebianBox(base.BaseDevice):
                     self.sendcontrol('c')
                     self.expect(self.prompt)
         elif 1 == i:
+            if self.install_pkgs_after_dhcp:
+                _install_pkgs()
+            else:
+                self.install_pkgs_after_dhcp = True
+            return
+        elif 2 == i:
             self.sendcontrol('c')
             self.expect(self.prompt)
         else:
-            self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
-            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
-                self.expect(self.prompt, timeout=300)
-            else:
-                print("Failed to download packages, things might not work")
-                self.sendcontrol('c')
-                self.expect(self.prompt)
+            _install_pkgs()
 
         if undo_default_route is not None:
             self.sendline("ip route del default via %s" % undo_default_route)
             self.expect(self.prompt)
-
-        self.pkgs_installed = True
-
 
     def ip_neigh_flush(self):
         self.sendline('\nip -s neigh flush all')
@@ -774,10 +783,12 @@ EOF''')
                 if 0 == self.expect(['assword:'] + self.prompt):
                     self.sendline('password')
                     self.expect(self.prompt)
-
         else:
             self.sendcontrol('c')
             self.expect(self.prompt)
+
+        if self.install_pkgs_after_dhcp:
+            self.install_pkgs()
 
         if wan_gw is not None and 'options' in self.config and \
             'lan-fixed-route-to-wan' in self.config['options']:
