@@ -65,7 +65,15 @@ def initialize_devices(configuration):
 def get_device(model, **kwargs):
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
-            if 'model' in dev.__dict__ and model in dev.__dict__['model']:
+            if 'model' in dev.__dict__:
+
+                attr = dev.__dict__['model']
+
+                if type(attr) is str and model != attr:
+                    continue
+                elif type(attr) is tuple and model not in attr:
+                    continue
+
                 try:
                     return dev(model, **kwargs)
                 except KeyboardInterrupt:
