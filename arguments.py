@@ -78,6 +78,7 @@ def parse():
     parser.add_argument('-c', '--config_file', metavar='', type=str, default=boardfarm_config_location, help='JSON config file for boardfarm')
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('-g', '--golden', metavar='', type=str, default=None, help='Path to JSON results to compare against (golden master)')
+    parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
 
     args = parser.parse_args()
 
@@ -239,6 +240,14 @@ def parse():
                config.boardfarm_config[b]['available_for_autotests'] == False:
                 # Skip this board
                 continue
+            if args.feature != [] :
+                if 'feature' not in config.boardfarm_config[b]:
+                    continue
+                features = config.boardfarm_config[b]['feature']
+                if type(features) is str or type(features) is unicode:
+                    features = [features]
+                if set(args.feature) != set(args.feature) & set(features):
+                    continue
             for t in args.board_type:
                 if config.boardfarm_config[b]['board_type'].lower() == t.lower():
                     if args.filter:
@@ -265,6 +274,7 @@ def parse():
     config.setup_device_networking = not args.no_network
     config.bootargs = args.bootargs
     config.golden = args.golden
+    config.features = args.feature
 
     return config
 
