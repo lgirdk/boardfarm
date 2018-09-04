@@ -130,6 +130,9 @@ def main():
     # Connect to any board in list
     connected_to_board = False
     random.shuffle(config.BOARD_NAMES)
+    if config.features == []:
+        # move boards with a feature to end of the list
+        config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=lambda x: 'feature' in config.boardfarm_config[x])
     for name in config.BOARD_NAMES:
         try:
             config.board = config.boardfarm_config[name]
