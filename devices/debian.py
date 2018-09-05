@@ -111,6 +111,9 @@ class DebianBox(base.BaseDevice):
                     self.static_ip = True
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
+                # TODO: remove wan-static-route at some point above
+                if opt.startswith('static-route:'):
+                    self.static_route = opt.replace('static-route:', '').replace('-', ' via ')
                 if opt.startswith('wan-dhcp-client'):
                     self.wan_dhcp = True
                 if opt.startswith('wan-cmts-provisioner'):
@@ -402,6 +405,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
+        if self.static_route is not None:
+            # TODO: add some ppint handle this more robustly
+            self.send('ip route del %s; ' % self.static_route.split(' via ')[0])
+            self.sendline('ip route add %s' % self.static_route)
+            self.expect(self.prompt)
+
     def update_cmts_isc_dhcp_config(self, board_config):
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
@@ -681,12 +690,6 @@ EOF''')
         self.expect(self.prompt)
 
         self.turn_off_pppoe()
-
-        if self.static_route is not None:
-            # TODO: add some ppint handle this more robustly
-            self.send('ip route del %s; ' % self.static_route.split(' via ')[0])
-            self.sendline('ip route add %s' % self.static_route)
-            self.expect(self.prompt)
 
     def setup_as_lan_device(self):
         # potential cleanup so this wan device works
