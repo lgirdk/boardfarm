@@ -9,9 +9,13 @@ class LocalCmd():
         self.conn_cmd = conn_cmd
 
     def connect(self):
-        pexpect.spawn.__init__(self.device,
-                           command='/bin/bash',
-                           args=['-c', self.conn_cmd])
+        try:
+            pexpect.spawn.__init__(self.device,
+                               command='/bin/bash',
+                               args=['-c', self.conn_cmd])
+            self.device.expect(pexpect.TIMEOUT, timeout=5)
+        except pexpect.EOF as e:
+            raise Exception("Board is in use (connection refused).")
 
     def close():
         self.device.sendcontrol('c')
