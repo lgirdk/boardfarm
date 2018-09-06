@@ -63,10 +63,10 @@ def get_jira_release_id(rel_name, jira, proj):
     """Return the ID of the release in a given project"""
     versions = jira.project_versions(proj)
     for version in reversed(versions):
-        #if version.name == rel_name:
-            version.id = "32880"
+        if version.name == rel_name:
             return version.id
-    #return ''
+
+    raise Exception("Failed to get version id for release %s" % rel_name)
 
 
 def update_automation_status(issue):
@@ -107,8 +107,7 @@ def update_zephyr(test_cases_list):
                 options={'server': args["jira_url"]})
 
     proj = jira.project(args["project"])
-    #verid = get_jira_release_id(args.release, jira, proj)
-    verid = "32880"
+    verid = get_jira_release_id(args['release'], jira, proj)
     cycleName = args["cycle"]
     cycleName = cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
 
