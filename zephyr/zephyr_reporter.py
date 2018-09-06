@@ -11,6 +11,7 @@ from time import gmtime, strftime
 from jira import JIRA
 import zapi
 from jira import JIRA
+import requests
 
 COLUMN_SCRIPT_NAME="TestScript Name"
 COLUMN_JIRA_TEST_ID="Jira ID"
@@ -153,9 +154,12 @@ def update_zephyr(test_cases_list):
         if result == 'Exp FAIL':
             result = 'FAIL'
 
-        reporter.set_execution(result,
+        ret = reporter.set_execution(result,
          exec_id,
          log_data)
+
+        if ret.status_code != requests.codes.ok:
+            raise Exception("Error = %s, when trying to set execution status" % ret)
 
 if __name__ == "__main__":
     ARGS = parse_arguments()
