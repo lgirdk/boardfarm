@@ -14,7 +14,7 @@ local_route () {
 	# TODO: This is a problem if the router network matches the host network
 	host_dev=$(ip route list | grep ^default |  awk '{print $5}' )
 	local_route=$(ip route | grep "dev $host_dev" | grep src | awk '{print $1}' | head -n1)
-	docker exec $cname ip route add $local_route dev eth0 via 172.17.0.1
+	docker exec $cname ip route add $local_route dev eth0 via 192.168.101.1
 }
 
 # eth0 is docker private network, eth1 is vlan on specific interface
@@ -78,6 +78,7 @@ create_container_eth1_static () {
 	docker exec $cname ip link set eth1 up
 	docker exec $cname ip addr add $ip dev eth1
 	docker exec $cname ip route add default via $default_route dev eth1
+	docker exec $cname ping $default_route -c3
 }
 
 [ "$IFACE" = "undefined" ] && return
