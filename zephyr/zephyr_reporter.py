@@ -85,14 +85,16 @@ def get_test_id_from_meta_file(meta_file, test_name):
     return test_id
 
 def parse_zapi_config():
-	data = json.load(open('zephyr/zapi_configuration.json'))
+        if 'BFT_OVERLAY' in os.environ:
+            for overlay in os.environ['BFT_OVERLAY'].split(' '):
+                zdir = os.path.join(os.path.abspath(overlay), 'zephyr')
+                if os.path.exists(zdir):
+                    data = json.load(open(os.path.join(zdir, 'zapi_configuration.json')))
+                    data['metafile'] = os.path.join(zdir, 'boardfarm_tc_meta_file.csv')
+                    return data
+
+        data = json.load(open('zephyr/zapi_configuration.json'))
 	return data
-
-	length = len(data["test_results"])
-
-	for len in range(0, length):
-
-		test_case = data["test_results"][len]["name"]
 
 def update_zephyr(test_cases_list):
     args=parse_zapi_config()
