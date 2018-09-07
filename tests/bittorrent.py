@@ -29,7 +29,7 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
                list(ipaddress.ip_network(u"192.168.1.0/24")) + \
                list(ipaddress.ip_network(u"10.200.150.0/24"))
 
-    def startSingleUDP(self, maxtime=60):
+    def startSingleUDP(self, mintime=1, maxtime=60):
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
@@ -47,7 +47,7 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
 
         random_rate = randint(1,1024)
-        random_size = randint(64, int(1024*random_rate*maxtime))
+        random_size = randint(int(1*random_rate*mintime), int(1024*random_rate*maxtime))
 
         wan.sendline("nohup socat UDP4-RECVFROM:%s,bind=%s system:'(echo -n d1:ad2:id20:;  head /dev/zero) | pv -L %sk' &" % (random_port, random_ip, random_rate))
         wan.expect(prompt)
