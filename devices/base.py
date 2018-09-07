@@ -36,6 +36,12 @@ class BaseDevice(pexpect.spawn):
         self.expect(self.prompt)
         return ipaddr
 
+    def get_interface_macaddr(self, interface):
+        self.sendline('cat /sys/class/net/%s/address' % interface)
+        self.expect_exact('cat /sys/class/net/%s/address' % interface)
+        self.expect(self.prompt)
+        return self.before.strip()
+
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
             return self._logfile_read
