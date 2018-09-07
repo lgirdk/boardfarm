@@ -88,12 +88,23 @@ class Qemu(openwrt_router.OpenWrtRouter):
         kvm_chk = pexpect.spawn('sudo kvm-ok')
         if 0 != kvm_chk.expect(['KVM acceleration can be used', pexpect.EOF]):
             cmd = cmd.replace('--enable-kvm ', '')
-            self.kvm = True
+            self.kvm = False
 
-        # spawn a simple bash shell for now, will launch qemu later
+        try:
+            pexpect.spawn.__init__(self, command='/bin/bash',
+                            args=["-c", cmd], env=env)
+            self.expect(pexpect.TIMEOUT, timeout=1)
+        except pexpect.EOF as e:
+            if 'failed to initialize KVM: Device or resource busy' in self.before or \
+                    'failed to initialize KVM: Cannot allocate memory' in self.before:
+                cmd = cmd.replace('--enable-kvm ', '')
+                self.kvm = False
+                pexpect.spawn.__init__(self, command='/bin/bash',
+                            args=["-c", cmd], env=env)
+            else:
+                raise
+
         self.cmd = cmd
-        pexpect.spawn.__init__(self, command='/bin/bash',
-                        args=["-c", cmd], env=env)
         if kernel is None:
             self.expect("SYSLINUX")
         self.logfile_read = output
@@ -134,7 +145,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         if self.kvm:
             self.expect('login:', timeout=60)
         else:
-            self.expect('login:')
+            self.expect('login:', timeout=120)
         self.sendline('root')
         if self.kvm:
             tout = 60
