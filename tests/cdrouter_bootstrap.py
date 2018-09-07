@@ -330,6 +330,8 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
             cdrouter_server = config.board['cdrouter_server']
         elif config.cdrouter_server is not None:
             cdrouter_server = config.cdrouter_server
+        else:
+            return []
 
         c = CDRouter(cdrouter_server)
         cdrouter_test_matrix = {}
