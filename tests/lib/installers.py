@@ -268,3 +268,20 @@ def install_snmp(device):
         device.expect(device.prompt)
         device.sendline('apt-get install snmp -y')
         device.expect(device.prompt, timeout=60)
+
+def install_vsftpd(device):
+    '''Install vsftpd if not present.'''
+    device.sendline('\nvsftpd -v')
+    try:
+        device.expect('vsftpd: version', timeout=10)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install vsftpd -y')
+        device.expect(device.prompt, timeout=60)
+    device.sendline('sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf')
+    device.expect(device.prompt, timeout=5)
+    device.sendline('sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
+    device.expect(device.prompt, timeout=5)
+    device.sendline('service vsftpd restart')
+    device.expect(device.prompt, timeout=60)
