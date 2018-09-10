@@ -86,89 +86,96 @@ def get_test_id_from_meta_file(meta_file, test_name):
     return test_id
 
 def parse_zapi_config():
-        if 'BFT_OVERLAY' in os.environ:
-            for overlay in os.environ['BFT_OVERLAY'].split(' '):
-                zdir = os.path.join(os.path.abspath(overlay), 'zephyr')
-                if os.path.exists(zdir):
-                    data = json.load(open(os.path.join(zdir, 'zapi_configuration.json')))
-                    data['metafile'] = os.path.join(zdir, 'boardfarm_tc_meta_file.csv')
-                    return data
+    data = []
+    if 'BFT_OVERLAY' in os.environ:
+        for overlay in os.environ['BFT_OVERLAY'].split(' '):
+            zdir = os.path.join(os.path.abspath(overlay), 'zephyr')
+            if os.path.exists(zdir):
+                data.append(json.load(open(os.path.join(zdir, 'zapi_configuration.json'))))
+                data[-1]['metafile'] = os.path.join(zdir, 'boardfarm_tc_meta_file.csv')
 
-        data = json.load(open('zephyr/zapi_configuration.json'))
-	return data
+    # TODO: opensource zephyr for boardfarm tests?
+    if os.path.exists('zephyr/zapi_configuration.json'):
+        data.append(json.load(open('zephyr/zapi_configuration.json')))
+
+    return data
 
 def update_zephyr(test_cases_list):
     args=parse_zapi_config()
-
-    if "JIRA_URL" == args['jira_url']:
+    if len(args) == 0:
         print("Zephyr is not configured, skipping...")
         return
 
-    """"Main routine"""
-
-    jira = JIRA(basic_auth=(args["user"], args["passwd"]),
-                options={'server': args["jira_url"]})
-
-    proj = jira.project(args["project"])
-    verid = get_jira_release_id(args['release'], jira, proj)
-    cycleName = args["cycle"]
-    cycleName = cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
-
-
-    reporter = zapi.Zapi(project_id=proj.id,
-                         version_id=verid,
-                         environment=str(args["environment"]),
-                         build=args["build"],
-                         jira_url=args["jira_url"],
-                         usr=args["user"],
-                         pwd=args["passwd"])
-    if args["cycle"] is None:
-        args["cycle"] = args["build"]
-    reporter.get_or_create_cycle(str(cycleName))
-
-    result = ""
-
-    for i in range(len(test_cases_list)):
-        test_name = test_cases_list[i][0]
-        print "Test_name :" + test_name
-        test_id = get_test_id_from_meta_file(args["metafile"], test_name)
-
-        if test_id:
-            print "Found Test ID in Meta file : " + test_id
-            issue = jira.issue(test_id)
-        else:
+    for z in args:
+        if "JIRA_URL" == z['jira_url'] or "JIRAPASSWORD" == z['passwd']:
+            # This is not configure, skip to next
             continue
 
-        if args["updateautomationstatus"]:
-             update_automation_status(issue)
+        """"Main routine"""
 
-        exec_id = reporter.create_execution(str(issue.id))
-        result = test_cases_list[i][1]
-        print "Test case Result: " + result
-        log_data = "sample log data"
-        if result == 'FAIL':
-            result = 'FAIL'
-        if result == 'OK':
-            result = 'PASS'
-        if result == 'None':
-            result = 'FAIL'
-        if result == 'SKIP':
-            result = 'NOT TESTED'
-        if result == 'Exp FAIL':
-            result = 'FAIL'
+        jira = JIRA(basic_auth=(z["user"], z["passwd"]),
+                    options={'server': z["jira_url"]})
 
-        if 'status_codes' in args:
-            ret = reporter.set_execution(result,
-             exec_id,
-             log_data,
-             status_code_dict=args['status_codes'])
-        else:
-            ret = reporter.set_execution(result,
-             exec_id,
-             log_data)
+        proj = jira.project(z["project"])
+        verid = get_jira_release_id(z['release'], jira, proj)
+        cycleName = z["cycle"]
+        cycleName = cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
 
-        if ret.status_code != requests.codes.ok:
-            raise Exception("Error = %s, when trying to set execution status" % ret)
+
+        reporter = zapi.Zapi(project_id=proj.id,
+                             version_id=verid,
+                             environment=str(z["environment"]),
+                             build=z["build"],
+                             jira_url=z["jira_url"],
+                             usr=z["user"],
+                             pwd=z["passwd"])
+        if z["cycle"] is None:
+            z["cycle"] = z["build"]
+        reporter.get_or_create_cycle(str(cycleName))
+
+        result = ""
+
+        for i in range(len(test_cases_list)):
+            test_name = test_cases_list[i][0]
+            print "Test_name :" + test_name
+            test_id = get_test_id_from_meta_file(z["metafile"], test_name)
+
+            if test_id:
+                print "Found Test ID in Meta file : " + test_id
+                issue = jira.issue(test_id)
+            else:
+                continue
+
+            if z["updateautomationstatus"]:
+                 update_automation_status(issue)
+
+            exec_id = reporter.create_execution(str(issue.id))
+            result = test_cases_list[i][1]
+            print "Test case Result: " + result
+            log_data = "sample log data"
+            if result == 'FAIL':
+                result = 'FAIL'
+            if result == 'OK':
+                result = 'PASS'
+            if result == 'None':
+                result = 'FAIL'
+            if result == 'SKIP':
+                result = 'NOT TESTED'
+            if result == 'Exp FAIL':
+                result = 'FAIL'
+
+            if 'status_codes' in z:
+                ret = reporter.set_execution(result,
+                 exec_id,
+                 log_data,
+                 status_code_dict=z['status_codes'])
+            else:
+                ret = reporter.set_execution(result,
+                 exec_id,
+                 log_data)
+
+            if ret.status_code != requests.codes.ok:
+                raise Exception("Error = %s, when trying to set execution status" % ret)
 
 if __name__ == "__main__":
     ARGS = parse_arguments()
