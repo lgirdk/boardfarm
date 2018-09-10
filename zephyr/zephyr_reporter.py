@@ -154,9 +154,15 @@ def update_zephyr(test_cases_list):
         if result == 'Exp FAIL':
             result = 'FAIL'
 
-        ret = reporter.set_execution(result,
-         exec_id,
-         log_data)
+        if 'status_codes' in args:
+            ret = reporter.set_execution(result,
+             exec_id,
+             log_data,
+             status_code_dict=args['status_codes'])
+        else:
+            ret = reporter.set_execution(result,
+             exec_id,
+             log_data)
 
         if ret.status_code != requests.codes.ok:
             raise Exception("Error = %s, when trying to set execution status" % ret)
