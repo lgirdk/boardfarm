@@ -31,10 +31,13 @@ def pick_template_filename():
     basic = owrt_tests_dir+"/html/template_results_basic.html"
     full = owrt_tests_dir+"/html/template_results.html"
     if 'BFT_OVERLAY' in os.environ:
-        if os.path.isfile(os.environ['BFT_OVERLAY'] + "/html/template_results_basic.html"):
-            basic = os.environ['BFT_OVERLAY'] + "/html/template_results_basic.html"
-        if os.path.isfile(os.environ['BFT_OVERLAY'] + "/html/template_results.html"):
-            full = os.environ['BFT_OVERLAY'] + "/html/template_results.html"
+        for overlay in os.environ['BFT_OVERLAY'].split(' '):
+            if os.path.isfile(overlay + "/html/template_results_basic.html"):
+                basic = overlay + "/html/template_results_basic.html"
+                break
+            if os.path.isfile(overlay + "/html/template_results.html"):
+                full = overlay + "/html/template_results.html"
+                break
 
     templates = {'basic': basic,
                  'full': full}
