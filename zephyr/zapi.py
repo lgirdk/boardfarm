@@ -143,4 +143,8 @@ class Zapi(object):
                        json=data,
                        headers=self._zapi_hdr,
                        auth=(self._usr, self._pwd))
+        if response.status_code <> 200:
+            print ("WARNING: " + response.text)
+            print (req_url)
+            print (data)
         return response
