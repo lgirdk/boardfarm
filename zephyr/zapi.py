@@ -134,9 +134,9 @@ class Zapi(object):
             print (data)
         return response
 
-    def set_execution(self, exec_status, execution_id, comment=""):
+    def set_execution(self, exec_status, execution_id, comment="", status_code_dict=STATUS_CODE_DICT):
         """Set the execution status of a given test's executionid"""
-        data = {"status": STATUS_CODE_DICT[exec_status],
+        data = {"status": status_code_dict[exec_status],
                 "comment": comment}
         req_url = self._zapi_url + 'execution/' + execution_id + '/execute'
         response = put(req_url,
