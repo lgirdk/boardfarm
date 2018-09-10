@@ -136,6 +136,9 @@ def update_zephyr(test_cases_list):
         if test_id:
             print "Found Test ID in Meta file : " + test_id
             issue = jira.issue(test_id)
+        else:
+            continue
+
         if args["updateautomationstatus"]:
              update_automation_status(issue)
 
