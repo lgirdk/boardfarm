@@ -143,14 +143,12 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
     def wait_for_linux(self):
         if self.kvm:
-            self.expect('login:', timeout=60)
-        else:
-            self.expect('login:', timeout=120)
-        self.sendline('root')
-        if self.kvm:
             tout = 60
         else:
             tout = 180
+
+        self.expect('login:', timeout=tout)
+        self.sendline('root')
         self.expect(self.prompt, timeout=tout)
 
     def boot_linux(self, rootfs=None, bootargs=None):
