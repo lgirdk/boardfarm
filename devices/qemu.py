@@ -106,7 +106,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
         self.cmd = cmd
         if kernel is None:
-            self.expect("SYSLINUX")
+            self.expect(["SYSLINUX", "GNU GRUB"])
         self.logfile_read = output
 
         atexit.register(self.kill_console_at_exit)
@@ -162,6 +162,6 @@ class Qemu(openwrt_router.OpenWrtRouter):
         self.sendline('system_reset')
         self.expect_exact('system_reset')
         if '-kernel' not in self.cmd:
-            self.expect('SYSLINUX')
+            self.expect(['SYSLINUX', 'GNU GRUB'])
         self.sendcontrol('a')
         self.send('c')
