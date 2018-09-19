@@ -118,7 +118,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
     def close(self, *args, **kwargs):
         self.kill_console_at_exit()
-        return super(type(self), self).close(*args, **kwargs)
+        return super(Qemu, self).close(*args, **kwargs)
 
     def kill_console_at_exit(self):
         try:
