@@ -14,7 +14,8 @@ local_route () {
 	# TODO: This is a problem if the router network matches the host network
 	host_dev=$(ip route list | grep ^default |  awk '{print $5}' )
 	local_route=$(ip route | grep "dev $host_dev" | grep src | awk '{print $1}' | head -n1)
-	docker exec $cname ip route add $local_route dev eth0 via 192.168.101.1
+	docker0=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+	docker exec $cname ip route add $local_route dev eth0 via $docker0
 }
 
 # eth0 is docker private network, eth1 is vlan on specific interface
