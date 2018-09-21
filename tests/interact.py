@@ -114,6 +114,12 @@ class Interact(rootfs_boot.RootFSBootTest):
                     test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
                     for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
                         exec("from %s import *" % x)
+
+                    if 'BFT_OVERLAY' in os.environ:
+                        for o in os.environ['BFT_OVERLAY'].split(' ' ):
+                            test_files = glob.glob(o + "/tests/*.py")
+                            for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
+                                exec("from %s import *" % x)
                 except:
                     print("Unable to re-import tests!")
                 else:
@@ -130,6 +136,12 @@ class Interact(rootfs_boot.RootFSBootTest):
                     test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
                     for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
                         exec("from %s import *" % x)
+
+                    if 'BFT_OVERLAY' in os.environ:
+                        for o in os.environ['BFT_OVERLAY'].split(' ' ):
+                            test_files = glob.glob(o + "/tests/*.py")
+                            for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
+                                exec("from %s import *" % x)
                 except:
                     print("Unable to re-import tests!")
                 else:
