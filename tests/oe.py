@@ -13,7 +13,8 @@ class OEVersion(rootfs_boot.RootFSBootTest):
     def runTest(self):
         board.sendline('cat /etc/os-release')
         # PRETTY_NAME=RDK (A Yocto Project 1.6 based Distro) 2.0 (krogoth)
-        board.expect('PRETTY_NAME=([^\s]*) \(A Yocto Project (?:[^\s]*?)\s?based Distro\) ([^\s]*) \(([^\)]*)\)')
+        if 0 == board.expect(["cat: can't open '/etc/os-release': No such file or directory", 'PRETTY_NAME=([^\s]*) \(A Yocto Project (?:[^\s]*?)\s?based Distro\) ([^\s]*) \(([^\)]*)\)']):
+            self.skipTest("Skipping, not not an OE based distro")
 
         index = 1
         bsp_type = board.match.group(index)
