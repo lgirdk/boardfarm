@@ -32,76 +32,15 @@ site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
 from devices import debian, logstash, elasticlogger, get_device
 
-def setup_legacy_devices(config):
-    '''This will setup legacy hard coded devices to into the config'''
-
-    config.wan = None
-    config.lan = None
-    config.wlan = None
-    config.wlan5g = None
-    config.wlan2g = None
-
-    if config.board.get('wan_device'):
-        config.wan = debian.DebianBox(config.board.get('wan_device'),
-                                      color='cyan', reboot=config.reboot_vms,
-                                      location=config.board.get('location'),
-                                      username=config.board.get('wan_username', "root"),
-                                      password=config.board.get('wan_password', "bigfoot1"),
-                                      port=config.board.get('wan_port', "22"))
-    if config.board.get('lan_device'):
-        config.lan = debian.DebianBox(config.board.get('lan_device'), color='blue', reboot=config.reboot_vms,
-                                    username=config.board.get('lan_username', "root"),
-                                    password=config.board.get('lan_password', "bigfoot1"),
-                                    port=config.board.get('lan_port', "22"))
-    if config.board.get('wlan_device'):
-        config.wlan = debian.DebianBox(config.board.get('wlan_device'), color='green', reboot=config.reboot_vms,
-                                    username=config.board.get('wlan_username', "root"),
-                                    password=config.board.get('wlan_password', "bigfoot1"),
-                                    port=config.board.get('wlan_port', "22"))
-    if config.board.get('5g_device'):
-        config.wlan5g = debian.DebianBox(config.board.get('5g_device'), color='grey', reboot=config.reboot_vms,
-                                        username=config.board.get('5g_username', "root"),
-                                        password=config.board.get('5g_password', "bigfoot1"),
-                                        port=config.board.get('5g_port', "22"))
-    if config.board.get('2g_device'):
-        config.wlan2g = debian.DebianBox(config.board.get('2g_device'), color='magenta', reboot=config.reboot_vms,
-                                        username=config.board.get('2g_username', "root"),
-                                        password=config.board.get('2g_password', "bigfoot1"),
-                                        port=config.board.get('2g_port', "22"))
-
-
 def setup_dynamic_devices(config, env=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
     for device in config.board['devices']:
-        if device['type'] == 'debian':
-            # old static name lookup, now we use model but this lingers
-            d = debian.DebianBox(name=device.get('ipaddr', None),
-                color=device.get('color', 'black'),
-                reboot=config.reboot_vms,
-                username=device.get('username', "root"),
-                password=device.get('password', "bigfoot1"),
-                port=device.get('port', "22"),
-                pre_cmd_host=device.get('pre_cmd_host', None),
-                cmd=device.get('cmd', None),
-                post_cmd_host=device.get('post_cmd_host', None),
-                post_cmd=device.get('post_cmd', None),
-                cleanup_cmd=device.get('cleanup_cmd', None),
-                env=env,
-                lan_network=config.console.lan_network,
-                lan_gateway=config.console.lan_gateway,
-                config=device)
-            setattr(config, device['name'], d)
-            config.devices.append(device['name'])
-
-            # if this device is a wan cmts provisioner, we set the device name
-            if d.wan_cmts_provisioner:
-                setattr(config, 'provisioner', d)
-                config.devices.append('provisioner')
-
-            # done with wan/lan devices
-            continue
+        device['reboot'] = config.reboot_vms
+        device['env'] = env
+        device['lan_network'] = config.console.lan_network
+        device['lan_gateway'] = config.console.lan_gateway
 
         dyn_dev = get_device(device['type'], **device)
         if dyn_dev is not None:
@@ -109,6 +48,20 @@ def setup_dynamic_devices(config, env=None):
                 raise Exception("Device in config is not named! This is required")
             setattr(config, device['name'], dyn_dev)
             config.devices.append(device['name'])
+
+            # TODO: set the following:
+            #    reboot=config.reboot_vms,
+            #    env=env,
+            #    lan_network=config.console.lan_network,
+            #    lan_gateway=config.console.lan_gateway,
+            #    config=device)
+
+            # if this device is a wan cmts provisioner, we set the device name
+            # TODO: this should be generic
+            if dyn_dev.wan_cmts_provisioner:
+                setattr(config, 'provisioner', d)
+                config.devices.append('provisioner')
+
             continue
 
         print("Unknown device type for %s" % device)
@@ -199,8 +152,6 @@ def main():
                                                  env=env)
             print_bold("dut device console = %s" % colored("black", 'grey'))
 
-            setup_legacy_devices(config)
-
             if 'devices' in config.board:
                 setup_dynamic_devices(config, env=env)
 
@@ -230,11 +181,6 @@ def main():
                     # call for ip addr too since we want to fields populated
                     if tftp_server == x.get('ipaddr', ""):
                         config.console.tftp_dev = getattr(config, x.get('name'))
-
-            # legacy wan device
-            if tftp_server is None and getattr(config, 'wan') is not None:
-                get_tftp_config(config.wan)
-
 
         except KeyboardInterrupt:
             print_bold("Keyboard interrupt")

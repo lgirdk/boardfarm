@@ -22,6 +22,7 @@ class DebianBox(base.BaseDevice):
     A linux machine running an ssh server.
     '''
 
+    model = ('debian')
     prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
     static_route = None
     static_ip = False
@@ -32,40 +33,39 @@ class DebianBox(base.BaseDevice):
     install_pkgs_after_dhcp = False
 
     def __init__(self,
-                 name,
-                 color,
-                 username,
-                 password,
-                 port,
-                 output=sys.stdout,
-                 reboot=False,
-                 location=None,
-                 pre_cmd_host=None,
-                 cmd=None,
-                 post_cmd_host=None,
-                 post_cmd=None,
-                 cleanup_cmd=None,
-                 env=None,
-                 lan_network=ipaddress.IPv4Network(u"192.168.1.0/24"),
-                 lan_gateway=ipaddress.IPv4Address(u"192.168.1.1"),
-                 config=[],
                  *args,
                  **kwargs):
         self.args = args
         self.kwargs = kwargs
+        name = kwargs.pop('name', None)
+        ipaddr = kwargs.pop('ipaddr', None)
+        color = kwargs.pop('color', 'black')
+        username = kwargs.pop('username', 'root')
+        password = kwargs.pop('password', 'bigfoot1')
+        port = kwargs.pop('port', '22')
+        output = kwargs.pop('output', sys.stdout)
+        reboot = kwargs.pop('reboot', False)
+        location = kwargs.pop('location', None)
+        pre_cmd_host = kwargs.pop('pre_cmd_host', None)
+        cmd = kwargs.pop('cmd', None)
+        post_cmd_host = kwargs.pop('post_cmd_host', None)
+        post_cmd = kwargs.pop('post_cmd', None)
+        cleanup_cmd = kwargs.pop('cleanup_cmd', None)
+        env = kwargs.pop('env', None)
+        lan_network = kwargs.pop('lan_network', ipaddress.IPv4Network(u"192.168.1.0/24"))
+        lan_gateway = kwargs.pop('lan_gateway', ipaddress.IPv4Address(u"192.168.1.1"))
 
-        if name is not None:
+        self.name = name
+        if ipaddr is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
-                                   args=['%s@%s' % (username, name),
+                                   args=['%s@%s' % (username, ipaddr),
                                          '-p', port,
                                          '-o', 'StrictHostKeyChecking=no',
                                          '-o', 'UserKnownHostsFile=/dev/null',
                                          '-o', 'ServerAliveInterval=60',
                                          '-o', 'ServerAliveCountMax=5'])
-            self.name = name
         else:
-            name = None
             if pre_cmd_host is not None:
                 sys.stdout.write("\tRunning pre_cmd_host.... ")
                 sys.stdout.flush()
@@ -90,7 +90,6 @@ class DebianBox(base.BaseDevice):
         self.env=env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
-        self.config = config
 
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
@@ -103,8 +102,8 @@ class DebianBox(base.BaseDevice):
         self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
 
         # override above values if set in wan options
-        if 'options' in self.config:
-            options = [x.strip() for x in self.config['options'].split(',')]
+        if 'options' in kwargs:
+            options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
                     self.gw = opt.replace('wan-static-ip:', '')
@@ -140,16 +139,16 @@ class DebianBox(base.BaseDevice):
         if i < 3:
             self.expect(self.prompt)
 
-        if name is None:
+        if ipaddr is None:
             self.sendline('hostname')
             self.expect('hostname')
             self.expect(self.prompt)
-            name = self.name = self.before.strip()
+            ipaddr = self.ipaddr = self.before.strip()
 
         if self.port != 22:
-            cprint("%s port %s device console = %s" % (name, port, colored(color, color)), None, attrs=['bold'])
+            cprint("%s port %s device console = %s" % (ipaddr, port, colored(color, color)), None, attrs=['bold'])
         else:
-            cprint("%s device console = %s" % (name, colored(color, color)), None, attrs=['bold'])
+            cprint("%s device console = %s" % (ipaddr, colored(color, color)), None, attrs=['bold'])
 
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
@@ -793,8 +792,8 @@ EOF''')
         if self.install_pkgs_after_dhcp:
             self.install_pkgs()
 
-        if wan_gw is not None and 'options' in self.config and \
-            'lan-fixed-route-to-wan' in self.config['options']:
+        if wan_gw is not None and 'options' in self.kwargs and \
+            'lan-fixed-route-to-wan' in self.kwargs['options']:
                 self.sendline("ip route list 0/0 | awk '{print $3}'")
                 self.expect_exact("ip route list 0/0 | awk '{print $3}'")
                 self.expect(self.prompt)

@@ -45,11 +45,11 @@ def initialize_devices(configuration):
     # Init devices
     global board, lan, wan, wlan, wlan2g, wlan5g, prompt
     board = configuration.console
-    lan = configuration.lan
-    wan = configuration.wan
-    wlan = configuration.wlan
-    wlan2g = configuration.wlan2g
-    wlan5g = configuration.wlan5g
+    lan = None
+    wan = None
+    wlan = None
+    wlan2g = None
+    wlan5g = None
 
     for device in configuration.devices:
         globals()[device] = getattr(configuration, device)
