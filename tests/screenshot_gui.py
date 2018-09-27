@@ -30,16 +30,20 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
             display.start()
 
         try:
-            if 'http_proxy' in lan.config:
-                proxy = lan.config['http_proxy']
-            else:
-                ip = lan.config['ipaddr']
+            if lan.http_proxy is not None:
+                proxy = lan.http_proxy
+            elif lan.ipaddr is not None:
+                ip = lan.ipaddr
                 lan.sendline('cat /proc/net/vlan/config')
                 lan.expect('eth1.*\|\s([0-9]+).*\|')
                 port = 8000 + int(lan.match.group(1))
                 lan.expect(prompt)
                 proxy = "%s:%s" % (ip, port)
-        except:
+            else:
+                # no proxy, use message below
+                assert False
+        except Exception as e:
+            print e
             raise Exception("No reasonable http proxy found, please add one to the board config")
 
         print("Using proxy %s" % proxy)
