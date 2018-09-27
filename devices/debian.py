@@ -56,6 +56,8 @@ class DebianBox(base.BaseDevice):
         lan_gateway = kwargs.pop('lan_gateway', ipaddress.IPv4Address(u"192.168.1.1"))
 
         self.name = name
+        self.http_proxy = kwargs.pop('http_proxy', None)
+
         if ipaddr is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
@@ -65,6 +67,8 @@ class DebianBox(base.BaseDevice):
                                          '-o', 'UserKnownHostsFile=/dev/null',
                                          '-o', 'ServerAliveInterval=60',
                                          '-o', 'ServerAliveCountMax=5'])
+
+            self.ipaddr = ipaddr
         else:
             if pre_cmd_host is not None:
                 sys.stdout.write("\tRunning pre_cmd_host.... ")
@@ -78,6 +82,7 @@ class DebianBox(base.BaseDevice):
                 atexit.register(self.run_cleanup_cmd)
 
             pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
+            self.ipaddr = None
 
         self.color = color
         self.output = output
