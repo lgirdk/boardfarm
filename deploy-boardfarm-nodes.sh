@@ -21,12 +21,13 @@ local_route () {
 # eth0 is docker private network, eth1 is vlan on specific interface
 create_container_eth1_vlan () {
 	local vlan=$1
+	local offset=${2:-0}
 
-	cname=bft-node-$IFACE-$vlan
+	cname=bft-node-$IFACE-$vlan-$offset
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $vlan )):22 \
-		-p $(( 8000 + $vlan )):8080 \
+		-p $(( 5000 + $offset + $vlan )):22 \
+		-p $(( 8000 + $offset + $vlan )):8080 \
 		-d bft:node /usr/sbin/sshd -D
 
 	sudo ip link del $IFACE.$vlan || true
