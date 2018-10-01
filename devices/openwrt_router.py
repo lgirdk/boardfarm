@@ -528,6 +528,9 @@ class OpenWrtRouter(base.BaseDevice):
         self.expect(self.prompt)
         return ret
 
+    def touch(self):
+        '''Keeps consoles active, so they don't disconnect for long running activities'''
+        self.sendline()
 
 if __name__ == '__main__':
     # Example use
