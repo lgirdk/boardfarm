@@ -559,7 +559,17 @@ EOF''')
 
         # Copy binary files to tftp server
         for cfg in cfg_set:
-            self.copy_file_to_server(cfg)
+            # TODO: use common cmd_exists
+            cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
+            assert cmd_exists('docsis')
+
+            # TODO: much better error checking
+            os.system("docsis -e %s /dev/null %s" % (cfg, cfg.replace('.txt', '.bin')))
+
+            self.copy_file_to_server(cfg.replace('.txt', '.bin'))
+            os.remove(cfg.replace('.txt', '.bin'))
+
+
 
     def provision_board(self, board_config):
         ''' Setup DHCP and time server etc for CM provisioning'''
