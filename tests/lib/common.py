@@ -125,3 +125,5 @@ class TestResult:
         self.name = name
         self.result_grade = grade
         self.result_message = message
+
+cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
