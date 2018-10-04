@@ -314,15 +314,13 @@ class DebianBox(base.BaseDevice):
             eth1_addr = None
 
         # set WAN ip address, for now this will always be this address for the device side
-        if self.gw != eth1_addr:
-            self.sendline('ifconfig eth1 down')
-            self.expect(self.prompt)
-
-        # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
         if self.gw != eth1_addr:
             self.sendline('ifconfig eth1 %s' % getattr(self, 'gw', '192.168.0.1'))
             self.expect(self.prompt)
+
+        self.sendline('ifconfig eth1 up')
+        self.expect(self.prompt)
 
         #configure tftp server
         self.sendline('/etc/init.d/tftpd-hpa stop')

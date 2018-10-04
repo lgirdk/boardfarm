@@ -46,10 +46,10 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         if prov is not None:
             prov.provision_board(self.config.board)
 
-        tftp_device.start_tftp_server()
-
         if lan:
             lan.configure(kind="lan_device")
+
+        tftp_device.start_tftp_server()
 
         board.reset()
         rootfs = None
