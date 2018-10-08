@@ -13,11 +13,21 @@ import sys
 
 try:
     import elasticsearch
+    from elasticsearch.serializer import JSONSerializer
 except Exception as e:
     print(e)
     print("Please install needed module:\n"
           "  sudo pip install -U elasticsearch")
     sys.exit(1)
+
+class Serializer(JSONSerializer):
+    def default(self, obj):
+        try:
+            return JSONSerializer.default(self, obj)
+        except TypeError as e:
+            return str(obj)
+        except:
+            return "Unable to serialize"
 
 class ElasticsearchLogger(object):
     '''
@@ -29,7 +39,7 @@ class ElasticsearchLogger(object):
         self.index = index + "-" + datetime.datetime.utcnow().strftime("%Y.%m.%d")
         self.doc_type = doc_type
         # Connect to server
-        self.es = elasticsearch.Elasticsearch([server])
+        self.es = elasticsearch.Elasticsearch([server], serializer=Serializer())
         # Set default data
         username = os.environ.get('BUILD_USER_ID', None)
         if username is None:
