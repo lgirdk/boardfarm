@@ -77,7 +77,7 @@ def parse():
     parser.add_argument('-z', '--no-network', action='store_true', help='Skip basic network tests when booting')
     parser.add_argument('-c', '--config_file', metavar='', type=str, default=boardfarm_config_location, help='JSON config file for boardfarm')
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
-    parser.add_argument('-g', '--golden', metavar='', type=str, default=None, help='Path to JSON results to compare against (golden master)')
+    parser.add_argument('-g', '--golden', metavar='', type=str, default=[], nargs='+', help='Path to JSON results to compare against (golden master)')
     parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
 
     args = parser.parse_args()
