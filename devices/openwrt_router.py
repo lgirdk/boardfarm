@@ -532,6 +532,10 @@ class OpenWrtRouter(base.BaseDevice):
         '''Keeps consoles active, so they don't disconnect for long running activities'''
         self.sendline()
 
+    def get_user_id(self, user_id):
+        self.sendline('cat /etc/passwd | grep -w ' + user_id)
+        return 0 == self.expect([user_id] + self.prompt)
+
 if __name__ == '__main__':
     # Example use
     board = OpenWrtRouter('ap148-beeliner',
