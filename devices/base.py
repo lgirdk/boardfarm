@@ -80,13 +80,12 @@ class BaseDevice(pexpect.spawn):
                 else:
                     self.out.write(string)
                 td = datetime.now()-self.start
-                ts = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
                 # check for the split case
                 if len(self.log) > 1 and self.log[-1] == '\r' and string[0] == '\n':
-                    tmp = '\n [%s]' % ts
+                    tmp = '\n [%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.log += re.sub('\r\n', '\r\n[%s] ' % ts, string)
+                self.log += re.sub('\r\n', '\r\n[%s] ' % td.total_seconds(), string)
             def flush(self):
                 self.out.flush()
 
