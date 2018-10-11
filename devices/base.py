@@ -31,7 +31,7 @@ class BaseDevice(pexpect.spawn):
 
     def get_interface_ip6addr(self, interface):
         self.sendline("\nifconfig %s" % interface)
-        self.expect('inet6 addr: (200(.+))/\d+ Scope:Global', timeout=5)
+        self.expect('\s((200([0-9a-f]){1,1}:)([0-9a-f]{1,4}:){1,6}([0-9a-f]{1,4}))([\/\s])', timeout=5)
         ipaddr = self.match.group(1)
         self.expect(self.prompt)
         return ipaddr
