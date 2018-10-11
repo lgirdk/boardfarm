@@ -93,6 +93,17 @@ def board_decider(model, **kwargs):
 
     # Default for all other models
     print("\nWARNING: Unknown board model '%s'." % model)
-    print("Please check spelling, or write an appropriate class "
+    print("Please check spelling, your environment setup, or write an appropriate class "
           "to handle that kind of board.")
+
+    if 'BFT_OVERLAY' in os.environ:
+        print("\nIs this correct? BFT_OVERLAY=%s\n" % os.environ['BFT_OVERLAY'])
+    else:
+        print("No BFT_OVERLAY is set, do you need one?")
+
+    if 'BFT_CONFIG' in os.environ:
+        print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ['BFT_CONFIG'])
+    else:
+        print("No BFT_CONFIG is set, do you need one?")
+
     return openwrt_router.OpenWrtRouter(model, **kwargs)
