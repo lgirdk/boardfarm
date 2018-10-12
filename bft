@@ -292,7 +292,9 @@ def main():
 
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
-            clog.write(getattr(config, device).log)
+            d = getattr(config, device)
+            if hasattr(d, 'log'):
+                clog.write(d.log)
 
     os.environ['TEST_END_TIME'] = datetime.datetime.now().strftime("%s")
 
