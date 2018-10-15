@@ -8,6 +8,7 @@ import os
 import sys
 import glob
 import inspect
+import pexpect
 
 board = None
 lan = None
@@ -76,12 +77,8 @@ def get_device(model, **kwargs):
 
                 try:
                     return dev(model, **kwargs)
-                except KeyboardInterrupt:
-                    raise
-                except Exception as e:
-                    raise
-                except:
-                    msg = "Failed to create a %s, unable to connect (in use) or possibly misconfigured" % model
+                except pexpect.EOF:
+                    msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
                     raise Exception(msg)
 
     return None
