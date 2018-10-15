@@ -50,7 +50,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  kernel=None,
                  env=None,
                  **kwargs):
-        self.consoles.append(self)
+        self.consoles = [self]
 
         if rootfs is None:
             raise Exception("The QEMU device type requires specifying a rootfs")

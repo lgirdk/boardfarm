@@ -71,7 +71,7 @@ class OpenWrtRouter(base.BaseDevice):
                  **kwargs):
 
         self.config = config
-        self.consoles.append(self)
+        self.consoles = [self]
 
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
