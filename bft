@@ -22,8 +22,11 @@ import re
 import csv
 import traceback
 
-sys.path.insert(0, './zephyr/')
-import zephyr_reporter
+try:
+    sys.path.insert(0, './zephyr/')
+    import zephyr_reporter
+except:
+    pass
 
 # Put this directory into the python path, so
 # that devices may be imported.
