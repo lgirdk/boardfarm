@@ -1,3 +1,4 @@
+urllib3==1.23
 argparse
 elasticsearch>=1.0.0
 unittest2
