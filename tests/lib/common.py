@@ -19,6 +19,7 @@ from termcolor import cprint
 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import *
+from selenium.webdriver import FirefoxOptions
 
 ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
@@ -97,6 +98,8 @@ def firefox_webproxy_driver(ipport):
     '''
     Use this if you started web proxy on a machine connected to router's LAN.
     '''
+    opts=FirefoxOptions()
+    opts.add_argument("--headless")
 
     ip, port = ipport.split(':')
 
@@ -110,7 +113,7 @@ def firefox_webproxy_driver(ipport):
     profile.set_preference("network.proxy.socks_port", int(port))
     profile.set_preference("network.proxy.socks_remote_dns", True)
     profile.update_preferences()
-    driver = webdriver.Firefox(firefox_profile=profile)
+    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=opts)
     driver.implicitly_wait(30)
     driver.set_page_load_timeout(30)
 
