@@ -7,6 +7,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import os
+from common import cmd_exists
 
 class docsis:
     """
@@ -23,18 +24,23 @@ class docsis:
         self.file_path=file_path
         self.dir_path=os.path.split(file_path)[0]
         self.file=os.path.split(file_path)[1]
+        assert cmd_exists('docsis')
 
     def decode(self):
         if '.cfg' in self.file:
             os.system("docsis -d %s > %s" %(self.file_path, self.file_path.replace('.cfg', '.txt')))
+            assert os.path.exists(self.file.replace('.cfg', '.txt'))
+
             return  self.file.replace('.cfg', '.txt')
+
     def encode(self, output_type='cm_cfg'):
-        """docsis need a not emtpy of key file for encode"""
-        if not os.path.exists("%s/key" %self.dir_path):
-            os.system("echo key > %s/key" %self.dir_path)
         if '.txt' in self.file and output_type=='cm_cfg':
-            os.system("docsis -e %s %s %s" % (self.file_path, self.dir_path+'/key', self.file_path.replace('.txt', '.cfg')))
+            os.system("docsis -e %s /dev/null %s" % (self.file_path, self.file_path.replace('.txt', '.cfg')))
+            assert os.path.exists(self.file_path.replace('.txt', '.cfg'))
+
             return  self.file.replace('.txt', '.cfg')
         elif '.txt' in self.file and output_type=='mta_cfg':
             os.system("docsis -p %s %s" % (self.file_path, self.file_path.replace('.txt', '.bin')))
+            assert os.path.exists(self.file_path.replace('.txt', '.bin'))
+
             return  self.file.replace('.txt', '.bin')
