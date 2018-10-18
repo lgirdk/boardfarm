@@ -26,8 +26,8 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
                 raw_input("Press any key after connecting to display....")
         except:
             # fallback xvfb
-            display = Display(visible=0, size=(1366, 768))
-            display.start()
+            self.display = Display(visible=0, size=(1366, 768))
+            self.display.start()
 
         try:
             if lan.http_proxy is not None:
