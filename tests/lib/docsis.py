@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-import os
+import os, config
 from common import cmd_exists
 
 class docsis:
@@ -35,12 +35,16 @@ class docsis:
 
     def encode(self, output_type='cm_cfg'):
         if '.txt' in self.file and output_type=='cm_cfg':
-            os.system("docsis -e %s /dev/null %s" % (self.file_path, self.file_path.replace('.txt', '.cfg')))
-            assert os.path.exists(self.file_path.replace('.txt', '.cfg'))
+            cmcfg_name=config.board['station']+"-cm.cfg"
+            cmcfg_path=os.path.join(self.dir_path, cmcfg_name)
+            os.system("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
+            assert os.path.exists(cmcfg_path)
 
-            return  self.file.replace('.txt', '.cfg')
+            return  os.path.join(config.board['station'], cmcfg_name)
         elif '.txt' in self.file and output_type=='mta_cfg':
-            os.system("docsis -p %s %s" % (self.file_path, self.file_path.replace('.txt', '.bin')))
-            assert os.path.exists(self.file_path.replace('.txt', '.bin'))
+            mtacfg_name=config.board['station']+"-mta.bin"
+            mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
+            os.system("docsis -p %s %s" % (self.file_path, mtacfg_path))
+            assert os.path.exists(mtacfg_path)
 
-            return  self.file.replace('.txt', '.bin')
+            return  os.path.join(config.board['station'], mtacfg_name)
