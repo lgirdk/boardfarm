@@ -116,6 +116,22 @@ def firefox_webproxy_driver(ipport):
 
     return driver
 
+def chrome_webproxy_driver(ipport):
+    '''
+    Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver above
+    '''
+
+    chrome_options = webdriver.ChromeOptions()
+    #chrome_options.add_argument('--proxy-server=%s' % ipport)
+    chrome_options.add_argument("--proxy-server=socks5://" + ipport);
+    chrome_options.add_argument("--start-maximized")
+    driver = webdriver.Chrome(options=chrome_options)
+
+    driver.implicitly_wait(30)
+    driver.set_page_load_timeout(30)
+
+    return driver
+
 def test_msg(msg):
     cprint(msg, None, attrs=['bold'])
 

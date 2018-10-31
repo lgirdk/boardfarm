@@ -47,8 +47,11 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
             raise Exception("No reasonable http proxy found, please add one to the board config")
 
         print("Using proxy %s" % proxy)
-        driver = lib.common.firefox_webproxy_driver(proxy)
-        driver.maximize_window()
+        #print("Using FirefoxDriver")
+        #driver = lib.common.firefox_webproxy_driver(proxy)
+        #driver.maximize_window()
+        print("Using ChromeDriver")
+        driver = lib.common.chrome_webproxy_driver(proxy)
         print ("taking ss of http://%s" % board.lan_gateway)
         driver.get("http://%s" % board.lan_gateway)
 
