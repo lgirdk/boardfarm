@@ -58,3 +58,5 @@ class RandomWebBrowse(rootfs_boot.RootFSBootTest):
             lan.expect(prompt)
             lan.sendline("rm -rf /tmp/webbrowse-test")
             lan.expect(prompt)
+
+            board.touch()

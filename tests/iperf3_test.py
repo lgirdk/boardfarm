@@ -10,26 +10,32 @@ import rootfs_boot
 from lib import installers
 from devices import board, wan, lan, wlan, prompt
 
+try:
+    from devices import winwsl
+except:
+    winwsl = None
+
 class iPerf3Test(rootfs_boot.RootFSBootTest):
     '''iPerf3 generic performance tests'''
 
     opts= ""
     time = 60
     server_port = "5201"
+    client = lan
 
     def runTest(self):
         installers.install_iperf3(wan)
-        installers.install_iperf3(lan)
+        installers.install_iperf3(self.client)
 
         wan.sendline('iperf3 -s -p %s' % self.server_port)
         wan.expect('-----------------------------------------------------------')
         wan.expect('-----------------------------------------------------------')
 
 
-        lan.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, wan.gw, self.time, self.server_port))
-        lan.expect(prompt, timeout=self.time+10)
+        self.client.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, wan.gw, self.time, self.server_port))
+        self.client.expect(prompt, timeout=self.time+10)
 
-        sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', lan.before)[-1]
+        sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', self.client.before)[-1]
         if 'Mbits' in sender:
             s_rate = float(sender.split()[0])
         elif 'Kbits' in sender:
@@ -39,7 +45,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         else:
             raise Exception("Unknown rate in sender results")
 
-        recv = re.findall('SUM.*Bytes\s*(.*/sec).*receiver', lan.before)[-1]
+        recv = re.findall('SUM.*Bytes\s*(.*/sec).*receiver', self.client.before)[-1]
         if 'Mbits' in recv:
             r_rate = float(recv.split()[0])
         elif 'Kbits' in recv:
@@ -56,7 +62,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         self.recovery()
 
     def recovery(self):
-        for d in [wan, lan]:
+        for d in [wan, self.client]:
             d.sendcontrol('c')
             d.sendcontrol('c')
             d.expect(prompt)
@@ -70,3 +76,8 @@ class iPerf3RTest(iPerf3Test):
 class iPerf3Test2nd(iPerf3Test):
     '''iPerf3 on second server port'''
     server_port = "5202"
+
+class iPerf3TestWSL(iPerf3Test):
+    '''iPerf3 with windows WSL client'''
+
+    client = winwsl

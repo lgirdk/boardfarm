@@ -71,7 +71,7 @@ class OpenWrtRouter(base.BaseDevice):
                  **kwargs):
 
         self.config = config
-        self.consoles.append(self)
+        self.consoles = [self]
 
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
@@ -531,6 +531,10 @@ class OpenWrtRouter(base.BaseDevice):
     def touch(self):
         '''Keeps consoles active, so they don't disconnect for long running activities'''
         self.sendline()
+
+    def get_user_id(self, user_id):
+        self.sendline('cat /etc/passwd | grep -w ' + user_id)
+        return 0 == self.expect([user_id] + self.prompt)
 
 if __name__ == '__main__':
     # Example use

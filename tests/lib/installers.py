@@ -285,3 +285,14 @@ def install_vsftpd(device):
     device.expect(device.prompt, timeout=5)
     device.sendline('service vsftpd restart')
     device.expect(device.prompt, timeout=60)
+
+def install_pysnmp(device):
+    '''Install pysnmp if not present.'''
+    device.sendline('\npip freeze | grep pysnmp')
+    try:
+        device.expect('pysnmp==', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('pip install pysnmp')
+        device.expect(device.prompt, timeout=90)

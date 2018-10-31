@@ -31,7 +31,7 @@ class BaseDevice(pexpect.spawn):
 
     def get_interface_ip6addr(self, interface):
         self.sendline("\nifconfig %s" % interface)
-        self.expect('inet6 addr: (200(.+))/\d+ Scope:Global', timeout=5)
+        self.expect('\s((200([0-9a-f]){1,1}:)([0-9a-f]{1,4}:){1,6}([0-9a-f]{1,4}))([\/\s])', timeout=5)
         ipaddr = self.match.group(1)
         self.expect(self.prompt)
         return ipaddr
@@ -80,13 +80,12 @@ class BaseDevice(pexpect.spawn):
                 else:
                     self.out.write(string)
                 td = datetime.now()-self.start
-                ts = (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
                 # check for the split case
                 if len(self.log) > 1 and self.log[-1] == '\r' and string[0] == '\n':
-                    tmp = '\n [%s]' % ts
+                    tmp = '\n [%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.log += re.sub('\r\n', '\r\n[%s] ' % ts, string)
+                self.log += re.sub('\r\n', '\r\n[%s] ' % td.total_seconds(), string)
             def flush(self):
                 self.out.flush()
 

@@ -39,7 +39,7 @@ class CasaCMTS(base.BaseDevice):
 
     def connect(self):
         try:
-            if 0 == self.expect(['login:', pexpect.TIMEOUT], timeout=3):
+            if 0 == self.expect(['login:', pexpect.TIMEOUT], timeout=10):
                 self.sendline(self.username)
                 self.expect('assword:')
                 self.sendline(self.password)
@@ -49,7 +49,7 @@ class CasaCMTS(base.BaseDevice):
                 # over serial it could be stale so we try to recover
                 self.sendline('q')
                 self.sendline('exit')
-                self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5)
+                self.expect([pexpect.TIMEOUT] + self.prompt, timeout=20)
             self.sendline('enable')
             if 0 == self.expect(['Password:'] + self.prompt):
                 self.sendline(self.password)
