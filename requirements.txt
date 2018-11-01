@@ -16,3 +16,4 @@ jira
 simplejson
 pyvirtualdisplay
 Faker
+zeep
