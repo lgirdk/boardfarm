@@ -118,13 +118,21 @@ def firefox_webproxy_driver(ipport):
 
 def chrome_webproxy_driver(ipport):
     '''
-    Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver above
+    Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
+    above, although ChromeWebDriver seems to be more stable.
     '''
 
     chrome_options = webdriver.ChromeOptions()
     #chrome_options.add_argument('--proxy-server=%s' % ipport)
     chrome_options.add_argument("--proxy-server=socks5://" + ipport);
     chrome_options.add_argument("--start-maximized")
+
+    if "BFT_DEBUG" in os.environ:
+        print("chrome can be connected to Xvnc")
+    else:
+        print("chrome running headless")
+        chrome_options.add_argument("--headless")
+
     driver = webdriver.Chrome(options=chrome_options)
 
     driver.implicitly_wait(30)
