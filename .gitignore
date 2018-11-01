@@ -75,3 +75,14 @@ TAGS
 
 # Alternate config files
 *.json
+
+# Apple foo
+.AppleDouble
+.DS_Store
+
+# Patch foo
+*.rej
+*.orig
+
+# geckodriver log
+geckodriver.log
