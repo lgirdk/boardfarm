@@ -48,12 +48,15 @@ class AxirosACS():
         self.ipaddr = self.kwargs['ipaddr']
         self.port = self.kwargs.get('port', None)
 
+        print kwargs
+
         if self.port is not None:
             target = self.ipaddr + ":" + self.port
         else:
             target = self.ipaddr
 
         self.wsdl = "http://" + target + "/live/CPEManager/DMInterfaces/soap/getWSDL"
+        print self.wsdl
 
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
@@ -157,7 +160,8 @@ if __name__ == '__main__':
     import sys
 
     if ':' in sys.argv[1]:
-        port, ip = set(sys.argv[1].split(':'))
+        ip = sys.argv[1].split(':')[0]
+        port = sys.argv[1].split(':')[1]
     else:
         ip = sys.argv[1]
         port = 80
@@ -166,8 +170,8 @@ if __name__ == '__main__':
 
     acs.Axiros_GetListOfCPEs ()
 
-    ret = acs.get('DDAP6287091A', 'Device.DeviceInfo.SoftwareVersion')
+    ret = acs.get('DEAP805811D5', 'Device.DeviceInfo.SoftwareVersion')
     print ret
 
-    ret = acs.get ('DDAP6287091A', 'Device.WiFi.SSID.1.SSID')
+    ret = acs.get ('DEAP805811D5', 'Device.WiFi.SSID.1.SSID')
     print ret
