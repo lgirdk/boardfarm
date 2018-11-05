@@ -256,6 +256,8 @@ class CasaCMTS(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline('no shutdown')
         self.expect(self.prompt)
+        self.sendline('early-authentication-encryption ranging')
+        self.expect(self.prompt)
         self.sendline('no dhcp-authorization')
         self.expect(self.prompt)
         self.sendline('no multicast-dsid-forward')
