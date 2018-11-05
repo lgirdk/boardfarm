@@ -352,6 +352,21 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('del %s' % f)
         self.expect(self.prompt)
 
+    # Parameters: cm_mac        (CM mac address)
+    # This function assumes the CM is online
+    # returns:
+    #   True      if the cmts does NOT see the CM eRouter
+    #             (i.e. theCM mode is in bridge mode)
+    #   False     if the cmts sees the CM eRouter
+    #             (i.e. theCM mode is in gateway mode)
+    def is_cm_bridged(self, cm_mac):
+        self.sendline("scm "+cm_mac+" cpe")
+        if 0==self.expect(['eRouter']+self.prompt):
+            self.expect(self.prompt)
+            return False
+        else:
+            return True
+
 if __name__ == '__main__':
     import time
 
