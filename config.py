@@ -35,3 +35,31 @@ cdrouter_server = os.environ.get('BFT_CDROUTERSERVER', None)
 cdrouter_config = os.environ.get('BFT_CDROUTERCONFIG', None)
 cdrouter_wan_iface = os.environ.get('BFT_CDROUTERWANIFACE', "eth1")
 cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
+
+
+# creates a small dictionary of all the options
+# this  will probably grow as options are added
+option_dict = {
+        "proxy":["nornal","sock5"],
+        "webdriver":["chrome","ffox"]
+        }
+
+# the syntax is
+# BFT_OPTIONS="proxy=normal webdriver=chrome"
+default_proxy_type = "normal"
+default_web_driver = "ffox"
+
+if 'BFT_OPTIONS' in os.environ:
+    for option in os.environ['BFT_OPTIONS'].split(' '):
+        k,v = option.split(':')
+        if option_dict.get(k) and (v in option_dict[k]):
+            if k == "proxy":
+                default_proxy_type = v
+            if k == "webdriver":
+                default_web_driver  = v
+        else:
+            print("Warning: Ignoring option: %s (misspelled?)" % option)
+
+if 'BFT_DEBUG' in os.environ:
+    print("Using default_proxy_type="+default_proxy_type)
+    print("Using default_web_driver="+default_web_driver)
