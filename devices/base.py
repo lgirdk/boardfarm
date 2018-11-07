@@ -61,7 +61,7 @@ class BaseDevice(pexpect.spawn):
         except Exception as e:
             self.sendcontrol('c')
             raise Exception("Command did not complete within %s seconds. Prompt was not seen." % timeout)
-        return self.before
+        return self.before.strip()
 
     def write(self, string):
         self._logfile_read.write(string)
