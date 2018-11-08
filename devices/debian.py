@@ -229,7 +229,7 @@ class DebianBox(base.BaseDevice):
             self.sendline('ifconfig eth1 down')
             self.expect(self.prompt)
 
-        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc"
+        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq"
 
         def _install_pkgs():
             self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
@@ -457,10 +457,10 @@ subnet 192.168.201.0 netmask 255.255.255.0
   option routers 192.168.201.1;
   option broadcast-address 192.168.201.255;
   option time-offset 1;
-  option domain-name-servers 8.8.4.4;
+  option domain-name-servers %s;
   allow unknown-clients;
 }
-EOF''')
+EOF''' % self.gw)
 	self.expect(self.prompt)
 
         # The board will ignore this unless the docsis-mac is set to ipv6
@@ -639,7 +639,7 @@ EOF''')
         self.sendline('cat > /etc/dhcp/dhcpd.conf << EOF')
         self.sendline('ddns-update-style none;')
         self.sendline('option domain-name "bigfoot-test";')
-        self.sendline('option domain-name-servers 8.8.8.8, 8.8.4.4;')
+        self.sendline('option domain-name-servers %s;' % self.gw)
         self.sendline('default-lease-time 600;')
         self.sendline('max-lease-time 7200;')
         # use the same netmask as the lan device
@@ -653,7 +653,20 @@ EOF''')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
+    def setup_dnsmasq(self):
+        self.sendline('cat > /etc/dnsmasq.conf << EOF')
+        self.sendline('server=8.8.4.4')
+        self.sendline('listen-address=127.0.0.1')
+        self.sendline('listen-address=%s' % self.gw)
+        self.sendline('EOF')
+
+        self.sendline('/etc/init.d/dnsmasq restart')
+        self.expect(self.prompt)
+
     def setup_as_wan_gateway(self):
+
+        self.setup_dnsmasq()
+
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
         self.sendline('\nsysctl net.ipv6.conf.all.disable_ipv6=0')
