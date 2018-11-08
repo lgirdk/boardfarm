@@ -369,6 +369,13 @@ class CasaCMTS(base.BaseDevice):
         else:
             return True
 
+    def check_docsis_mac_ip_provisioning_mode(self, index):
+        self.sendline('show interface docsis-mac %s' % index)
+        self.expect('ip-provisioning-mode (\w+\-\w+)')
+        result = self.match.group(1)
+        if self.match != None:
+            return result
+
 if __name__ == '__main__':
     import time
 
