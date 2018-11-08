@@ -2,6 +2,8 @@
 import sys, re
 import base
 import connection_decider
+import time
+import threading
 
 class WindowsTelnet(base.BaseDevice):
 
@@ -29,8 +31,17 @@ class WindowsTelnet(base.BaseDevice):
         self.sendline(self.password)
         self.expect(self.prompt)
 
+        self.keepalive()
+
         # Hide login prints, resume after that's done
         self.logfile_read = sys.stdout
+
+    def keepalive(self):
+        self.sendcontrol('s')
+        self.sendcontrol('q')
+
+        if self.isalive():
+            threading.Timer(10, self.keepalive).start()
 
     def get_ip(self, wifi_interface):
 
