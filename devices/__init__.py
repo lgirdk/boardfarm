@@ -76,9 +76,17 @@ def get_device(model, **kwargs):
                     continue
 
                 try:
-                    return dev(model, **kwargs)
+                    ret = dev(model, **kwargs)
+                    return ret
                 except pexpect.EOF:
                     msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
+
+                    # try to close cleanup child process if it started
+                    try:
+                        ret.close()
+                    except:
+                        pass
+
                     raise Exception(msg)
 
     return None
