@@ -48,15 +48,12 @@ class AxirosACS():
         self.ipaddr = self.kwargs['ipaddr']
         self.port = self.kwargs.get('port', None)
 
-        print kwargs
-
         if self.port is not None:
             target = self.ipaddr + ":" + self.port
         else:
             target = self.ipaddr
 
         self.wsdl = "http://" + target + "/live/CPEManager/DMInterfaces/soap/getWSDL"
-        print self.wsdl
 
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
