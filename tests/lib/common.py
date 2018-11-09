@@ -15,6 +15,7 @@ import unittest2
 import urllib2
 import os
 import signal
+import config
 from termcolor import cprint
 
 from selenium import webdriver
@@ -104,6 +105,7 @@ def firefox_webproxy_driver(ipport):
     profile.set_preference("network.proxy.type", 1)
     profile.set_preference("network.proxy.http", ip)
     profile.set_preference("network.proxy.http_port", int(port))
+    # missing the ssl proxy, should we add it?
     profile.set_preference("network.proxy.ftp", ip)
     profile.set_preference("network.proxy.ftp_port", int(port))
     profile.set_preference("network.proxy.socks", ip)
@@ -119,12 +121,15 @@ def firefox_webproxy_driver(ipport):
 def chrome_webproxy_driver(ipport):
     '''
     Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
-    above, although ChromeWebDriver seems to be more stable.
+    above, although ChromeWebDriver seems to be slower in loading pages.
     '''
 
     chrome_options = webdriver.ChromeOptions()
-    #chrome_options.add_argument('--proxy-server=%s' % ipport)
-    chrome_options.add_argument("--proxy-server=socks5://" + ipport);
+    if config.default_proxy_type ==  'sock5':
+        chrome_options.add_argument("--proxy-server=socks5://" + ipport);
+    else:
+        chrome_options.add_argument('--proxy-server=' + ipport)
+
     chrome_options.add_argument("--start-maximized")
 
     if "BFT_DEBUG" in os.environ:
@@ -139,6 +144,26 @@ def chrome_webproxy_driver(ipport):
     driver.set_page_load_timeout(30)
 
     return driver
+
+def get_webproxy_driver(ipport):
+    if config.default_web_driver == "ffox":
+        d = firefox_webproxy_driver(ipport)
+        d.maximize_window()
+        return d
+    elif config.default_web_driver == "chrome":
+        return chrome_webproxy_driver(ipport)
+        # the win maximise is done in the chrome options
+    else:
+        # something has gone wrong, make the error message as self explanatory as possible
+        msg = "No usable web_driver specified, please add one to the board config"
+        if config.default_web_driver is not None:
+            msg = msg + " (value in config: '"+config.default_web_driver+"' not recognised)"
+        else:
+            # this should never happen
+            msg = msg + "(no default value set, please check boardfarm/config.py)"
+        raise Exception(msg)
+
+    print("Using proxy %s, webdriver: %s" % (proxy, config.default_web_driver))
 
 def test_msg(msg):
     cprint(msg, None, attrs=['bold'])
