@@ -122,6 +122,33 @@ create_container_eth1_static () {
 	docker exec $cname ping $default_route -c3
 }
 
+# eth0 is docker private network, eth1 is static ip
+create_container_eth1_static_linked () {
+	local name=$1
+	local ip=$2
+	local default_route=$3
+	local offset=$4
+
+	cname=bft-node-$IFACE-$name
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-p $(( 5000 + $offset )):22 \
+		-p $(( 8000 + $offset )):8080 \
+		-d $BF_IMG /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+
+	# create lab network access port
+	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
+	sudo ip link set dev tempfoo up
+	sudo ip link set netns $cspace dev tempfoo
+	docker exec $cname ip link set tempfoo name eth1
+	docker exec $cname ip link set eth1 up
+	docker exec $cname ip addr add $ip dev eth1
+	docker exec $cname ip route add default via $default_route dev eth1
+	docker exec $cname ping $default_route -c3
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
