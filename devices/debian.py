@@ -31,6 +31,7 @@ class DebianBox(base.BaseDevice):
     wan_cmts_provisioner = False
     pkgs_installed = False
     install_pkgs_after_dhcp = False
+    is_bridged = False
 
     def __init__(self,
                  *args,
@@ -764,14 +765,25 @@ EOF''')
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
         self.sendline('ifconfig eth1')
         self.expect(self.prompt)
-        self.sendline('route del default')
-        self.expect(self.prompt)
-        self.sendline('route del default')
-        self.expect(self.prompt)
-        self.sendline('route del default')
-        self.expect(self.prompt)
-        self.sendline('route add default gw %s' % self.lan_gateway)
-        self.expect(self.prompt)
+        self.sendline('ip route')
+        # TODO: we should verify this so other way, because the they could be the same subnets
+        # in theory
+        i = self.expect(['default via %s dev eth1' % self.lan_gateway, pexpect.TIMEOUT], timeout=5)
+        if i == 1:
+            # bridged mode
+            self.is_bridged = True
+            # update gw
+            self.sendline("ip route list 0/0 | awk '{print $3}'")
+            self.expect_exact("ip route list 0/0 | awk '{print $3}'")
+            self.expect(self.prompt)
+            self.lan_gateway = ipaddress.IPv4Address(self.before.strip().decode())
+
+            ip_addr = self.get_interface_ipaddr('eth1')
+            self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
+            self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
+            self.expect(self.prompt)
+            self.lan_network = ipaddress.IPv4Network(self.before.strip().decode())
+
         # Setup HTTP proxy, so board webserver is accessible via this device
         self.sendline('curl --version')
         self.expect(self.prompt)
@@ -802,7 +814,7 @@ EOF''')
         # Copy an id to the router so people don't have to type a password to ssh or scp
         self.sendline('nc %s 22 -w 1 | cut -c1-3' % self.lan_gateway)
         self.expect_exact('nc %s 22 -w 1 | cut -c1-3' % self.lan_gateway)
-        if 0 == self.expect(['SSH'] + self.prompt, timeout=5):
+        if 0 == self.expect(['SSH'] + self.prompt, timeout=5) and not self.is_bridged:
             self.sendcontrol('c')
             self.expect(self.prompt)
             self.sendline('[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa')
@@ -820,11 +832,7 @@ EOF''')
 
         if wan_gw is not None and 'options' in self.kwargs and \
             'lan-fixed-route-to-wan' in self.kwargs['options']:
-                self.sendline("ip route list 0/0 | awk '{print $3}'")
-                self.expect_exact("ip route list 0/0 | awk '{print $3}'")
-                self.expect(self.prompt)
-                default_route=self.before.strip()
-                self.sendline('ip route add %s via %s' % (wan_gw, default_route))
+                self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
                 self.expect(self.prompt)
 
     def add_new_user(self, id, pwd):
