@@ -8,7 +8,18 @@ BRINT=br-bft
 BF_IMG=${BF_IMG:-"bft:node"}
 
 random_private_mac () {
-	echo $1$1$1$1$1$1 | od -An -N6 -tx1 | sed -e 's/^  *//' -e 's/  */:/g' -e 's/:$//' -e 's/^\(.\)[13579bdf]/\10/'
+	python - <<END
+import random
+#
+def randomMAC():
+	mac = [ 0x00, 0x16, 0x3e,
+		random.randint(0x00, 0x7f),
+		random.randint(0x00, 0xff),
+		random.randint(0x00, 0xff) ]
+	return ':'.join(map(lambda x: "%02x" % x, mac))
+#
+print randomMAC()
+END
 }
 
 local_route () {
