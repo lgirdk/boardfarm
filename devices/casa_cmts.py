@@ -117,6 +117,47 @@ class CasaCMTS(base.BaseDevice):
         self.expect(self.prompt)
         return output
 
+    def DUT_chnl_lock(self,cm_mac):
+        """Check the CM channel locks with 24*8 """
+        self.sendline("scm %s bonding" % cm_mac)
+        index = self.expect(["256\(8\*24\)"]+ self.prompt)
+        chnl_lock = self.match.group()
+        if 0 == index:
+            self.expect(self.prompt)
+            return True
+        else:
+            return False
+
+    def get_cm_bundle(self,mac_domain):
+        """Get the bundle id from mac-domain """
+        self.sendline('show interface docsis-mac '+mac_domain+' | i "ip bundle"')
+        index = self.expect(['(ip bundle)[ ]{1,}([0-9]|[0-9][0-9])'] + self.prompt)
+        if index !=0:
+            assert 0, "ERROR:Failed to get the CM bundle id from CMTS"
+        bundle = self.match.group(2)
+        self.expect(self.prompt)
+        return bundle
+
+    def get_cm_mac_domain(self,cm_mac):
+        """Get the Mac-domain of Cable modem """
+        self.sendline('scm '+cm_mac+' verbose | i "MAC Domain"')
+        idx = self.expect(['(MAC Domain)[ ]{2,}\:([0-9]|[0-9][0-9])'] + self.prompt)
+        if idx != 0:
+            assert 0,"ERROR: Failed to get the CM Mac Domain from the CMTS"
+        mac_domain = self.match.group(2)
+        self.expect(self.prompt)
+        return mac_domain
+    
+    def get_cmts_ip_bundle(self,bundle):
+        """get the CMTS bundle IP"""
+        self.sendline('show interface ip-bundle %s | i "secondary"' % bundle)
+        index = self.expect(['ip address ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) secondary'] + self.prompt)
+        if index != 0:
+            assert 0,"ERROR: Failed to get the CMTS bundle IP"
+        cmts_ip = self.match.group(1)
+        self.expect(self.prompt)
+        return cmts_ip
+
     def reset(self):
         self.sendline('exit')
         self.expect(self.prompt)
