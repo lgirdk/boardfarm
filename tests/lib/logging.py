@@ -20,6 +20,6 @@ def now_short():
 def logfile_assert_message(s, condition, message):
 	if not condition:
 	   s.log_to_file += now_short()+message+": FAIL\r\n"
-	   assert 0, message
+	   assert 0, message+": FAIL\r\n"
 	else:
 	   s.log_to_file += now_short()+message+": PASS\r\n"
