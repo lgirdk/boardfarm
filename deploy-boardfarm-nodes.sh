@@ -149,6 +149,46 @@ create_container_eth1_static_linked () {
 	docker exec $cname ping $default_route -c3
 }
 
+# eth0 is docker private network, eth1 physical device
+create_container_eth1_phys () {
+	local dev=$1
+	local offset=$2
+
+	cname=bft-node-$dev
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-p $(( 5000 + $offset )):22 \
+		-p $(( 8000 + $offset )):8080 \
+		-d $BF_IMG /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+
+	# create lab network access port
+	sudo ip link set netns $cspace dev $dev
+	docker exec $cname ip link set $dev name wlan1
+	docker exec $cname ip link set wlan1 up
+}
+
+# eth0 is docker private network, eth1 with device
+create_container_eth1_wifi () {
+	local dev=$1
+	local offset=$2
+
+	cname=bft-node-$dev
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-p $(( 5000 + $offset )):22 \
+		-p $(( 8000 + $offset )):8080 \
+		-d $BF_IMG /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+
+	# create lab network access port
+	sudo iw phy $(cat /sys/class/net/"$dev"/phy80211/name) set netns $cspace
+	docker exec $cname ip link set $dev name wlan1
+	docker exec $cname ip link set wlan1 up
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
