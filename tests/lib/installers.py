@@ -158,7 +158,7 @@ def install_telnet_server(device):
         device.expect(device.prompt)
     device.sendline('\ndpkg -l | grep telnetd')
     try:
-        device.expect('The telnet server', timeout=5)
+        device.expect('telnet server', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
@@ -167,7 +167,7 @@ def install_telnet_server(device):
         device.sendline('echo \"service telnet\" > /etc/xinetd.d/telnet')
         device.sendline('echo "{" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"disable = no\" >> /etc/xinetd.d/telnet')
-        device.sendline('echo \"flags = REUSE\" >> /etc/xinetd.d/telnet')
+        device.sendline('echo \"flags = REUSE IPv6\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"socket_type = stream\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"wait = no\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"user = root\" >> /etc/xinetd.d/telnet')
@@ -191,7 +191,7 @@ def install_telnet_client(device):
     '''Install telnet client if not present.'''
     device.sendline('\ndpkg -l | grep telnet')
     try:
-        device.expect('The telnet client', timeout=5)
+        device.expect('telnet client', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
