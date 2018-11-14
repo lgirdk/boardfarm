@@ -866,8 +866,8 @@ if __name__ == '__main__':
         ipaddr, port = sys.argv[1].split(':')
     except:
         raise Exception("First argument should be in form of ipaddr:port")
-    dev = DebianBox(ipaddr,
-                    'blue',
+    dev = DebianBox(ipaddr=ipaddr,
+                    color='blue',
                     username="root",
                     password="bigfoot1",
                     port=port)
