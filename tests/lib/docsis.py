@@ -14,10 +14,10 @@ class docsis:
     Name: docsis module
     Purpose: docsis operating.
     Input: Absolute path of text file
-    Fuction: 
+    Fuction:
         decode():
             return output file name(.txt)
-        encode(output_type='cm_cfg') 
+        encode(output_type='cm_cfg')
             return output file name(.cfg or .bin)
     """
     def __init__(self, file_path):
@@ -35,14 +35,14 @@ class docsis:
 
     def encode(self, output_type='cm_cfg'):
         if '.txt' in self.file and output_type=='cm_cfg':
-            cmcfg_name=config.board['station']+"-cm.cfg"
+            cmcfg_name=self.file.strip('.txt')+"-cm.cfg"
             cmcfg_path=os.path.join(self.dir_path, cmcfg_name)
             os.system("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
             assert os.path.exists(cmcfg_path)
 
             return  os.path.join(config.board['station'], cmcfg_name)
         elif '.txt' in self.file and output_type=='mta_cfg':
-            mtacfg_name=config.board['station']+"-mta.bin"
+            mtacfg_name=self.file.strip('.txt')+"-mta.bin"
             mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
             os.system("docsis -p %s %s" % (self.file_path, mtacfg_path))
             assert os.path.exists(mtacfg_path)
