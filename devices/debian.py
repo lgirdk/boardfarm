@@ -879,6 +879,13 @@ if __name__ == '__main__':
         dev.configure("lan_device")
     if sys.argv[2] == "setup_as_wan_gateway":
         dev.configure("wan_device")
+    if sys.argv[2] == "test_voip":
+        sys.path.insert(0, os.getcwd())
+        sys.path.insert(0, os.getcwd() + '/tests')
+        from lib import installers
+
+        installers.install_asterisk(dev)
+
 
     print
 
