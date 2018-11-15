@@ -35,16 +35,16 @@ class docsis:
 
     def encode(self, output_type='cm_cfg'):
         if '.txt' in self.file and output_type=='cm_cfg':
-            cmcfg_name=self.file.strip('.txt')+"-cm.cfg"
+            cmcfg_name=self.file.replace('.txt', '.cfg')
             cmcfg_path=os.path.join(self.dir_path, cmcfg_name)
             os.system("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
             assert os.path.exists(cmcfg_path)
 
             return  os.path.join(config.board['station'], cmcfg_name)
         elif '.txt' in self.file and output_type=='mta_cfg':
-            mtacfg_name=self.file.strip('.txt')+"-mta.bin"
+            mtacfg_name=self.file.replace('.txt', '.bin')
             mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
-            os.system("docsis -p %s %s" % (self.file_path, mtacfg_path))
+            os.system("tclsh ../boardfarm/tests/lib/mta_conf.tcl %s -e -hash eu -out %s" % (self.file_path, mtacfg_path))
             assert os.path.exists(mtacfg_path)
 
             return  os.path.join(config.board['station'], mtacfg_name)
