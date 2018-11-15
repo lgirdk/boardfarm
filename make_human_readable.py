@@ -55,9 +55,19 @@ def changes_to_html(changes):
     '''
     if not changes:
         return None
-    if not config.code_change_server:
-        return changes
+
+    # TODO: compare server to GERRIT_HOST and pick the right server...
+    # but for now take the first one we find
     base_url = config.code_change_server
+    if not base_url:
+        for ovrly_name, ovrly in config.layerconfs:
+            if hasattr(ovrly, 'code_change_server'):
+                base_url = ovrly.code_change_server
+                break
+
+        if not base_url:
+            return changes
+
     list_changes = re.findall('\d+,\d+', changes)
     if not list_changes:
         return None
