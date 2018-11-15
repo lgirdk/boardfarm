@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import os
+import sys
 
 # Boardfarm configuration describes test stations - see boardfarm doc.
 # Can be local or remote file.
@@ -13,10 +14,17 @@ boardfarm_config_location = os.environ.get('BFT_CONFIG', 'boardfarm_config_examp
 
 # Test Suite config files. Standard python config file format.
 testsuite_config_files = [os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testsuites.cfg'), ]
+
+layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
         if os.path.isfile(overlay + '/testsuites.cfg'):
             testsuite_config_files.append(overlay + '/testsuites.cfg')
+        if os.path.isfile(overlay + os.sep + "layerconf.py"):
+            sys.path.insert(0, overlay)
+            import layerconf as tmp
+            layerconfs.append((overlay, tmp))
+            sys.path.pop(0)
 
 # Logstash server - a place to send JSON-format results to
 # when finished. Set to None or name:port, e.g. 'logstash.mysite.com:1300'
