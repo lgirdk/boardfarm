@@ -96,8 +96,21 @@ class CasaCMTS(base.BaseDevice):
         return output
 
     def get_cmip(self, cmmac):
+	tmp = cmmac.replace(":", "").lower()
+	cmmac_cmts = tmp[:4]+"."+ tmp[4:8]+"."+tmp[8:]
         self.sendline('show cable modem %s' % cmmac)
-        self.expect(cmmac + '\s+([\d\.]+)')
+        self.expect(cmmac_cmts + '\s+([\d\.]+)')
+        result = self.match.group(1)
+        if self.match != None:
+            output = result
+        else:
+            output = "None"
+        self.expect(self.prompt)
+        return output
+
+    def get_cmipv6(self, cmmac):
+        self.sendline('show cable modem %s' % cmmac)
+        self.expect('\s((200([0-9a-f]){1,1}:)([0-9a-f]{1,4}:){1,6}([0-9a-f]{1,4}))([\/\s])')
         result = self.match.group(1)
         if self.match != None:
             output = result
