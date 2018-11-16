@@ -124,7 +124,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         # must start before we copy as it erases files
         wan.start_tftp_server()
 
-        filename = self.prepare_file(META, tserver=wan.config['ipaddr'], tport=wan.config.get('port', '22'))
+        filename = self.prepare_file(META, tserver=wan.ipaddr, tport=wan.port)
 
         wan_ip = wan.get_interface_ipaddr('eth1')
         self.sendline('ping -c1 %s' % wan_ip)
