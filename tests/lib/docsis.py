@@ -45,7 +45,7 @@ class docsis:
             mtacfg_name=self.file.replace('.txt', '.bin')
             mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
             cmd = "tclsh %s/mta_conf.tcl" % os.path.dirname(__file__)
-            os.system("cmd %s -e -hash eu -out %s" % (cmd, self.file_path, mtacfg_path))
+            os.system("%s %s -e -hash eu -out %s" % (cmd, self.file_path, mtacfg_path))
             assert os.path.exists(mtacfg_path)
 
             return  os.path.join(config.board['station'], mtacfg_name)
