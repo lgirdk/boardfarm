@@ -753,6 +753,10 @@ EOF''')
         self.expect(self.prompt)
         self.sendline('rm /var/lib/dhcp/dhclient.leases')
         self.expect(self.prompt)
+        self.sendline("sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i sbin/dhclient-script")
+        self.expect(self.prompt)
+        self.sendline('ip route del default dev eth0')
+        self.expect(self.prompt)
         for attempt in range(3):
             try:
                 self.sendline('dhclient -v eth1')
