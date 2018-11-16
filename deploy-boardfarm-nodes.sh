@@ -67,7 +67,7 @@ create_container_eth1_bridged_vlan () {
 	docker run --name $cname --privileged -h $cname --restart=always \
 		-p $(( 5000 + $offset + $vlan )):22 \
 		-p $(( 8000 + $offset + $vlan )):8080 \
-		-d $BFT_IMG /usr/sbin/sshd -D
+		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
 
