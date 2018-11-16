@@ -45,6 +45,30 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
         device.expect(device.prompt, timeout=60)
+        
+def install_tcpick(device):
+    '''Install tcpick if not present.'''
+    device.sendline('\ntcpick --version')
+    try:
+        device.expect('tcpick 0.2', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install tcpick -y')
+        assert 0 == device.expect(['Setting up tcpick']+ device.prompt, timeout=60),"tcpick installation failed"
+        device.expect(device.prompt)
+
+def install_upnp(device):
+    '''Install miniupnpc  if not present.'''
+    device.sendline('\nupnpc --version')
+    try:
+        device.expect('upnpc : miniupnpc', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install miniupnpc -y')
+        assert 0 == device.expect(['Setting up miniupnpc.*']+ device.prompt, timeout=60),"upnp installation failed"
+        device.expect(device.prompt)
 
 def install_lighttpd(device):
     '''Install lighttpd web server if not present.'''
