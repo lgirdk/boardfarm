@@ -33,6 +33,8 @@ class DebianBox(base.BaseDevice):
     install_pkgs_after_dhcp = False
     is_bridged = False
 
+    iface_dut = "eth1"
+
     def __init__(self,
                  *args,
                  **kwargs):
@@ -227,7 +229,7 @@ class DebianBox(base.BaseDevice):
             return
 
         if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp:
-            self.sendline('ifconfig eth1 down')
+            self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
 
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq"
@@ -293,7 +295,7 @@ class DebianBox(base.BaseDevice):
         self.sendline('ms-dns 8.8.4.4')
         self.sendline('EOF')
         self.expect(self.prompt)
-        self.sendline('pppoe-server -k -I eth1 -L 192.168.2.1 -R 192.168.2.10 -N 4')
+        self.sendline('pppoe-server -k -I %s -L 192.168.2.1 -R 192.168.2.10 -N 4' % self.iface_dut)
         self.expect(self.prompt)
 
     def turn_off_pppoe(self):
@@ -310,17 +312,17 @@ class DebianBox(base.BaseDevice):
         self.start_sshd_server()
 
         try:
-            eth1_addr = self.get_interface_ipaddr('eth1')
+            eth1_addr = self.get_interface_ipaddr(self.iface_dut)
         except:
             eth1_addr = None
 
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
         if self.gw != eth1_addr:
-            self.sendline('ifconfig eth1 %s' % getattr(self, 'gw', '192.168.0.1'))
+            self.sendline('ifconfig %s %s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1')))
             self.expect(self.prompt)
 
-        self.sendline('ifconfig eth1 up')
+        self.sendline('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
 
         #configure tftp server
@@ -436,11 +438,11 @@ option docsis-mta.kerberos-realm code 6 = string;
 option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
 
 subnet 192.168.3.0 netmask 255.255.255.0 {
-  interface eth1;
+  interface %s;
 }
 subnet 192.168.200.0 netmask 255.255.255.0
 {
-  interface eth1;
+  interface %s;
   range 192.168.200.10 192.168.200.250;
   option routers 192.168.200.1;
   option broadcast-address 192.168.200.255;
@@ -453,7 +455,7 @@ subnet 192.168.200.0 netmask 255.255.255.0
 }
 subnet 192.168.201.0 netmask 255.255.255.0
 {
-  interface eth1;
+  interface %s;
   range 192.168.201.10 192.168.201.250;
   option routers 192.168.201.1;
   option broadcast-address 192.168.201.255;
@@ -461,7 +463,7 @@ subnet 192.168.201.0 netmask 255.255.255.0
   option domain-name-servers %s;
   allow unknown-clients;
 }
-EOF''' % self.gw)
+EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw))
 	self.expect(self.prompt)
 
         # The board will ignore this unless the docsis-mac is set to ipv6
@@ -488,7 +490,7 @@ option vsio.docsis code 4491 = encapsulate docsis;
 
 subnet6 2001:ed8:77b5:3::/64 {
     range6 2001:ed8:77b5:3::10 2001:ed8:77b5:3::100;
-    interface eth1;
+    interface %s;
     option docsis.tftp-servers 2001:ed8:77b5:3::101;
     option docsis.time-servers 2001:ed8:77b5:3::101;
     option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
@@ -497,7 +499,7 @@ subnet6 2001:ed8:77b5:3::/64 {
 }
 subnet6 2001:ed8:77b5:2000::/64 {
     range6 2001:ed8:77b5:2000::10 2001:ed8:77b5:2000::100;
-    interface eth1;
+    interface %s;
     option docsis.tftp-servers 2001:ed8:77b5:3::101;
     option docsis.time-servers 2001:ed8:77b5:3::101;
     option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
@@ -506,12 +508,12 @@ subnet6 2001:ed8:77b5:2000::/64 {
 }
 subnet6 2001:ed8:77b5:2001::/64 {
     range6 2001:ed8:77b5:2001::10 2001:ed8:77b5:2001::100;
-    interface eth1;
+    interface %s;
     option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
     option dhcp6.solmax-rt   240;
     option dhcp6.inf-max-rt  360;
 }
-EOF''')
+EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.expect(self.prompt)
 
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
@@ -576,27 +578,27 @@ EOF''')
         ''' Setup DHCP and time server etc for CM provisioning'''
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
         # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-        self.sendline('sysctl -w net.ipv6.conf.eth1.accept_dad=0')
+        self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('ifconfig eth1 %s' % self.gw)
+        self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
         self.expect(self.prompt)
-        self.sendline('ifconfig eth1 inet6 add 2001:ed8:77b5:3::101/64')
+        self.sendline('ifconfig %s inet6 add 2001:ed8:77b5:3::101/64' % self.iface_dut)
         self.expect(self.prompt)
         # TODO: specify these via config
         self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222')
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
-        self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev eth1  metric 1024')
+        self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('/etc/init.d/isc-dhcp-server start')
@@ -631,11 +633,11 @@ EOF''')
         # configure DHCP server
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"eth1\\"/g -i /etc/default/isc-dhcp-server')
+        self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('cat > /etc/dhcp/dhcpd.conf << EOF')
         self.sendline('ddns-update-style none;')
@@ -684,13 +686,13 @@ EOF''')
         if self.wan_dhcp:
             self.sendline('/etc/init.d/isc-dhcp-server stop')
             self.expect(self.prompt)
-            self.sendline('dhclient -r eth1; dhclient eth1')
+            self.sendline('dhclient -r %s; dhclient %s' % (self.iface_dut, self.iface_dut))
             self.expect(self.prompt)
-            self.gw = self.get_interface_ipaddr("eth1")
+            self.gw = self.get_interface_ipaddr(self.iface_dut)
         else:
-            self.sendline('ifconfig eth1 %s' % self.gw)
+            self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
             self.expect(self.prompt)
-            self.sendline('ifconfig eth1 up')
+            self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
             if not self.wan_cmts_provisioner:
                 self.setup_dhcp_server()
@@ -699,7 +701,7 @@ EOF''')
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
         if self.wan_no_eth0 or self.wan_dhcp:
-            wan_uplink_iface = "eth1"
+            wan_uplink_iface = self.iface_dut
         else:
             wan_uplink_iface = "eth0"
 
@@ -712,7 +714,7 @@ EOF''')
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_sack')
         self.expect(self.prompt)
 
-        self.sendline('ifconfig eth1')
+        self.sendline('ifconfig %s' % self.iface_dut)
         self.expect(self.prompt)
 
         self.turn_off_pppoe()
@@ -734,22 +736,22 @@ EOF''')
         self.expect(self.prompt)
         self.sendline('iptables -t nat -A PREROUTING -p tcp --dport 222 -j DNAT --to-destination %s:22' % self.lan_gateway)
         self.expect(self.prompt)
-        self.sendline('iptables -t nat -A POSTROUTING -o eth1 -p tcp --dport 22 -j MASQUERADE')
+        self.sendline('iptables -t nat -A POSTROUTING -o %s -p tcp --dport 22 -j MASQUERADE' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_timestamps')
         self.expect(self.prompt)
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_sack')
         self.expect(self.prompt)
-        self.sendline('pkill --signal 9 -f dhclient.*eth1')
+        self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
         self.expect(self.prompt)
 
     def start_lan_client(self, wan_gw=None):
-        self.sendline('\nifconfig eth1 up')
-        self.expect('ifconfig eth1 up')
+        self.sendline('\nifconfig %s up' % self.iface_dut)
+        self.expect('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
-	self.sendline("dhclient -r eth1")
+	self.sendline("dhclient -r %s" % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('\nifconfig eth1 0.0.0.0')
+        self.sendline('\nifconfig %s 0.0.0.0' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('rm /var/lib/dhcp/dhclient.leases')
         self.expect(self.prompt)
@@ -759,7 +761,7 @@ EOF''')
         self.expect(self.prompt)
         for attempt in range(3):
             try:
-                self.sendline('dhclient -v eth1')
+                self.sendline('dhclient -v %s' % self.iface_dut)
                 self.expect('DHCPOFFER', timeout=30)
                 self.expect(self.prompt)
                 break
@@ -767,12 +769,12 @@ EOF''')
                 self.sendcontrol('c')
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
-        self.sendline('ifconfig eth1')
+        self.sendline('ifconfig %s' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('ip route')
         # TODO: we should verify this so other way, because the they could be the same subnets
         # in theory
-        i = self.expect(['default via %s dev eth1' % self.lan_gateway, pexpect.TIMEOUT], timeout=5)
+        i = self.expect(['default via %s dev %s' % (self.lan_gateway, self.iface_dut), pexpect.TIMEOUT], timeout=5)
         if i == 1:
             # bridged mode
             self.is_bridged = True
@@ -782,7 +784,7 @@ EOF''')
             self.expect(self.prompt)
             self.lan_gateway = ipaddress.IPv4Address(self.before.strip().decode())
 
-            ip_addr = self.get_interface_ipaddr('eth1')
+            ip_addr = self.get_interface_ipaddr(self.iface_dut)
             self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
