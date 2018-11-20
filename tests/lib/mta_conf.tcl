@@ -1,4 +1,4 @@
-set VERSION "1.0.1"
+set VERSION "1.0.2"
 if { $argc == 0 } {
 	puts "MTA configure file Encode/Decode rev.$VERSION"
 	puts "Usage:tclsh mta_conf.tcl input_file \[option\]"
@@ -48,6 +48,7 @@ if { [lsearch $options "-hash"] != -1 } {
 		exit
 	}
 }
+set sig_type "sha1"
 if { [lsearch $options "-e"] != -1 && $hash_type != "non" } {
 	if { [lsearch $options "-m"] != -1 } {
 		set sig_type "md5"
@@ -162,11 +163,30 @@ proc add_tlv11 { oid value type } {
 		}
 	}
 	set vl [format "%02X" [expr [string length $evalue]/2]]
+	if { [string length $vl]%2 != 0 } {
+		set vl "0$vl"
+	}
+	if { [string length $vl] != 2 } {
+		set vl "82$vl"
+	}
 	set tmp "06$ol$eoid$vt$vl$evalue"
 	set tl [format "%02X" [expr [string length $tmp]/2]]
+	if { [string length $tl]%2 != 0 } {
+		set tl "0$tl"
+	}
+	if { [string length $tl] != 2 } {
+		set tl "82$tl"
+	}
 	set tmp "30$tl$tmp"
 	set tl [format "%02X" [expr [string length $tmp]/2]]
-	return "0B$tl$tmp"
+	if { [string length $tl]%2 != 0 } {
+		set tl "0$tl"
+	}
+	if { [string length $tl] != 2 } {
+		return "40$tl$tmp"
+	} else {
+		return "0B$tl$tmp"
+	}
 }
 proc tobyte { str } {
 	set tmp [list]
@@ -205,12 +225,28 @@ proc dec_conf { src {dst "" } } {
 	set fd [open $dst w]
 	while { $raw!= "" } {
 		set tlvtmp [list ""]
+		set tag [string range $raw 0 1]
 		set i 2
-		set tl [format "%d" 0x[string range $raw $i 3]]
-		incr i 2
+		switch -- $tag {
+			"0B" {
+				set tlb 1
+			}
+			"40" {
+				set tlb 2
+			}
+		}
+		set tl [format "%d" 0x[string range $raw $i [expr $i+2*$tlb-1]]]
+		incr i [expr 2*$tlb]
 		set tmp [string range $raw $i [expr $i+2*$tl-1]]
 		incr i [expr 2*$tl]
-		set tmp [string range $tmp 4 end]
+		switch -- $tlb {
+			1 {
+				set tmp [string range $tmp 4 end]
+			}
+			2 {
+				set tmp [string range $tmp 8 end]
+			}
+		}
 		set ol [format "%d" 0x[string range $tmp 2 3]]
 		set ind 4
 		set eoid [string range $tmp $ind [expr $ind+2*$ol-1]]
@@ -219,8 +255,13 @@ proc dec_conf { src {dst "" } } {
 		lappend tlvtmp $oid
 		set vt [string range $tmp $ind [expr $ind+1]]
 		incr ind 2
-		set vl [format "%d" 0x[string range $tmp $ind [expr $ind+1]]]
+		set vlx [string range $tmp $ind [expr $ind+1]]
 		incr ind 2
+		if { $vlx == "82" } {
+			set vlx [string range $tmp $ind [expr $ind+3]]
+			incr ind 4
+		}
+		set vl [format "%d" 0x$vlx]
 		set ev [string range $tmp $ind [expr $ind+$vl*2-1]]
 		incr ind [expr 2*$vl]
 		switch -- $vt {
@@ -263,7 +304,8 @@ proc dec_conf { src {dst "" } } {
 			}
 			default {
 				set v [binary format H* $ev]
-				if { [regexp "\[\[:print:\]\]\{$vl\}" $v] } {
+				regexp "\[\[:print:\]\]+" $v match
+				if { [string length $match] == $vl } {
 					set type "string"
 					set value $v
 				} else {
@@ -309,19 +351,21 @@ if { [lsearch $options "-e"] != -1 } {
 	set before_hash $hexstring
 	append hexstring "FE01FF"
 	set BStr [binary format H* $hexstring]
-	if { $sig_type == "sha1" } {
-		package require sha1
-		set hash [string toupper [::sha1::sha1 -hex $BStr]]
-	} else {
-		package require md5
-		set hash [string toupper [::md5::md5 -hex $BStr]]
-	}
-	switch -- $hash_type {
-		"na" {
-			append before_hash [add_tlv11 ".1.3.6.1.4.1.4491.2.2.1.1.2.7.0" $hash "octetstring"]
+	if { $hash_type != "non" } {
+		if { $sig_type == "sha1" } {
+			package require sha1
+			set hash [string toupper [::sha1::sha1 -hex $BStr]]
+		} else {
+			package require md5
+			set hash [string toupper [::md5::md5 -hex $BStr]]
 		}
-		"eu" {
-			append before_hash [add_tlv11 ".1.3.6.1.4.1.7432.1.1.2.9.0" $hash "octetstring"]
+		switch -- $hash_type {
+			"na" {
+				append before_hash [add_tlv11 ".1.3.6.1.4.1.4491.2.2.1.1.2.7.0" $hash "octetstring"]
+			}
+			"eu" {
+				append before_hash [add_tlv11 ".1.3.6.1.4.1.7432.1.1.2.9.0" $hash "octetstring"]
+			}
 		}
 	}
 	append before_hash "FE01FF"
