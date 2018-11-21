@@ -8,6 +8,7 @@
 import common
 import openwrt_router
 
+from lib.randomMAC import randomMAC
 
 class QcomArmBase(openwrt_router.OpenWrtRouter):
 
@@ -44,7 +45,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.sendline('env default -f')
         self.expect('Resetting to default environment')
         self.expect(self.uprompt)
-        self.sendline('setenv ethaddr %s' % self.randomMAC())
+        self.sendline('setenv ethaddr %s' % randomMAC())
         self.expect(self.uprompt)
 
     def flash_meta(self, META_BUILD, wan, lan):
