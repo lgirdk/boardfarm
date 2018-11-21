@@ -238,13 +238,6 @@ class OpenWrtRouter(base.BaseDevice):
         self.sendline("rm -f /%s" % target_file)
         self.expect(self.prompt)
 
-    def randomMAC(self):
-        mac = [0x00, 0x16, 0x3e,
-               random.randint(0x00, 0x7f),
-               random.randint(0x00, 0xff),
-               random.randint(0x00, 0xff)]
-        return ':'.join(map(lambda x: "%02x" % x, mac))
-
     def check_memory_addresses(self):
         '''Check/set memory addresses and size for proper flashing.'''
         pass
