@@ -10,6 +10,9 @@ import glob
 import inspect
 import pexpect
 
+# insert tests lib so devices and tests can share the same libraries
+sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
+
 board = None
 lan = None
 wan = None
@@ -24,6 +27,8 @@ if 'BFT_OVERLAY' in os.environ:
         overlay = os.path.abspath(overlay)
         sys.path.insert(0, overlay + '/devices')
         device_files += glob.glob(overlay + '/devices/*.py')
+
+        sys.path.insert(0, overlay + '/tests')
 
     sys.path.insert(0, os.getcwd() + '/devices')
 
