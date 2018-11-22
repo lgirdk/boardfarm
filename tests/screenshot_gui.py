@@ -8,6 +8,7 @@
 import rootfs_boot
 import lib
 from devices import board, wan, lan, prompt
+import config
 
 from pyvirtualdisplay import Display
 import pexpect
@@ -17,12 +18,13 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
     '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
     def runTest(self):
         try:
+            x,y=config.get_display_backend_size()
             # try to start vnc server
-            self.display = Display(backend='xvnc', rfbport='5904', visible=0, size=(1366, 768))
+            self.display = Display(backend=config.default_display_backend, rfbport=config.default_display_backend_port, visible=0, size=(x, y))
             self.display.start()
 
             if "BFT_DEBUG" in os.environ:
-                print("Connect to VNC display running on localhost:5904")
+                print("Connect to VNC display running on localhost:"+config.default_display_backend_port)
                 raw_input("Press any key after connecting to display....")
         except:
             # fallback xvfb

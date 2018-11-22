@@ -49,13 +49,19 @@ cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
 # this  will probably grow as options are added
 option_dict = {
         "proxy":["normal","sock5"],
-        "webdriver":["chrome","ffox"]
+        "webdriver":["chrome","ffox"],
+        "disp":["xvfb", "xephyr", "xvnc"],
+        "disp_port":["5904"],
+        "disp_size":["1366x768"]
         }
 
 # the syntax is
 # BFT_OPTIONS="proxy=normal webdriver=chrome"
 default_proxy_type = "normal"
 default_web_driver = "ffox"
+default_display_backend = "xvnc"
+default_display_backend_port = "5904"
+default_display_backend_size = "1366x768"
 
 if 'BFT_OPTIONS' in os.environ:
     for option in os.environ['BFT_OPTIONS'].split(' '):
@@ -65,9 +71,29 @@ if 'BFT_OPTIONS' in os.environ:
                 default_proxy_type = v
             if k == "webdriver":
                 default_web_driver  = v
+            if k == "disp":
+                default_display_backend = v
+        elif k == "disp_port":
+            # quick validation
+            i = int(v) # if not a valid num python will throw and exception
+            if not 1024 <= i <= 65535:
+                print("Warning: display backend port: %i not in range (1024-65535)" % i)
+                exit(1)
+            default_display_backend_port = v
+        elif k == "disp_size":
+            default_display_backend_size = v
         else:
             print("Warning: Ignoring option: %s (misspelled?)" % option)
 
+def get_display_backend_size():
+    xc,yc = default_display_backend_size.split('x')
+    x = int(xc)
+    y = int(yc)
+    return x,y
+
 if 'BFT_DEBUG' in os.environ:
-    print("Using default_proxy_type="+default_proxy_type)
-    print("Using default_web_driver="+default_web_driver)
+    print("Using proxy:"+default_proxy_type)
+    print("Using webdriver:"+default_web_driver)
+    print("Using disp:"+default_display_backend)
+    print("Using disp_port:"+default_display_backend_port)
+    print("Using disp_size:"+default_display_backend_size)
