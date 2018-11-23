@@ -79,7 +79,7 @@ def parse():
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('-g', '--golden', metavar='', type=str, default=[], nargs='+', help='Path to JSON results to compare against (golden master)')
     parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
-
+    parser.add_argument('-pswd', '--password', metavar='', type=str, action="append", default=None, help='password for wifi')
     args = parser.parse_args()
 
     if args.list_tests:
@@ -194,7 +194,8 @@ def parse():
             if not os.path.isfile(x):
                 print("File not found: %s" % x)
                 sys.exit(1)
-
+    if args.password:
+        config.wifi_password = args.password
     if args.sysupgrade:
         config.SYSUPGRADE_NEW = args.sysupgrade
     if args.testsuite:
