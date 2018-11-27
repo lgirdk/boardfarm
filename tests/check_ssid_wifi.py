@@ -36,41 +36,72 @@ class scan_ssid_wifi(rootfs_boot.RootFSBootTest):
             self.link_up()
             
             '''Generate WPA supplicant file and execute it'''
-            wlan.sendline("rm /etc/"+ssid_name+".conf")
-            wlan.expect(prompt)
-            wlan.sendline("wpa_passphrase "+ssid_name+ " >> /etc/"+ssid_name+".conf")
-            wlan.expect("")
-            wlan.sendline(pass_word)
-            wlan.expect(prompt)
-            wlan.sendline("cat /etc/"+ssid_name+".conf")
-            wlan.expect(prompt)
-            wlan.sendline("wpa_supplicant  -B -Dnl80211 -iwlan1 -c/etc/"+ssid_name+".conf")
-            wlan.expect(prompt)
+            self.wpa_connect(ssid_name,pass_word)
 
-            '''Ping test'''
-            self.ping_hostname(ssid_name)
+            '''Check wlan connectivity'''
+            self.wlan_connect(ssid_name)
+
+            '''Ping gateway test'''
+            self.ping_gateway()
+
+            '''Ping hostname test'''
+            self.ping_hostname()
 
             wlan.sendline("killall wpa_supplicant")
             wlan.expect(prompt)
+           
+    def wpa_connect(self,ssid_name,pass_word):
+         '''Generate WPA supplicant file and execute it'''
+         wlan.sendline("rm /etc/"+ssid_name+".conf")
+         wlan.expect(prompt)
+         wlan.sendline("wpa_passphrase "+ssid_name+ " >> /etc/"+ssid_name+".conf")
+         wlan.expect("")
+         wlan.sendline(pass_word)
+         wlan.expect(prompt)
+         wlan.sendline("cat /etc/"+ssid_name+".conf")
+         wlan.expect(prompt)
+         wlan.sendline("wpa_supplicant  -B -Dnl80211 -iwlan1 -c/etc/"+ssid_name+".conf")
+         wlan.expect(prompt)
             
-    def ping_hostname(self,ssid_val):
-            board.expect(pexpect.TIMEOUT, timeout=25)
-            '''Connection state verify'''
-            wlan.sendline("iw wlan1 link")
-            wlan.expect(prompt)
-            conn_state = wlan.before
-            match = re.search('Connected',conn_state)
-            logfile_assert_message(self, match!=None,'Connection establishment in WIFI')
-            match = re.search(ssid_val,conn_state)
-            logfile_assert_message(self, match!=None,'Connection establishment - SSID verify')
-            '''Ping test'''
-            hostname = "google.com"
-            wlan.sendline("ping -c 1 " + hostname)
-            wlan.expect(prompt)
-            ping_result = wlan.before
-            match = re.search("1 packets transmitted, 1 received, 0% packet loss",ping_result)
-            logfile_assert_message(self, match!=None,'Ping status')
-            
+    def wlan_connect(self,ssid_val):
+        board.expect(pexpect.TIMEOUT, timeout=25)
+        '''Connection state verify'''
+        wlan.sendline("iw wlan1 link")
+        wlan.expect(prompt)
+        conn_state = wlan.before
+        match = re.search('Connected',conn_state)
+        logfile_assert_message(self, match!=None,'Connection establishment in WIFI')
+        match = re.search(ssid_val,conn_state)
+        logfile_assert_message(self, match!=None,'Connection establishment - SSID verify')
+        wlan.sendline("dhclient -v wlan1")
+        wlan.expect(prompt,timeout=40)
+        
+    def ping_hostname(self):
+        '''Ping test'''
+        hostname = "google.com"
+        wlan.sendline("ping -c 1 " + hostname)
+        wlan.expect(prompt)
+        ping_result = wlan.before
+        match = re.search("1 packets transmitted, 1 received, 0% packet loss",ping_result)
+        logfile_assert_message(self, match!=None,'Host Ping status')
+    
+     def ping_gateway(self):
+        wlan.sendline("ifconfig wlan1")
+        wlan.expect(prompt)
+        ifconfig_res = wlan.before
+        match = re.search(r'inet ([0-9]+\.[0-9]+\.[0-9]+)\.([0-9]+).*',ifconfig_res)
+        logfile_assert_message(self, match!=None,'Ifconfig wlan IP fetch')
+        gateway_ip = match.group(1) + ".1"
+        ip = match.group(2)
+        value = range(2,255)
+        match = re.search(ip,str(value))
+        logfile_assert_message(self, match!=None,'Ifconfig wlan IP verify')
+        wlan.sendline("ping -c 1 " + gateway_ip)
+        wlan.expect(prompt)
+        ping_res = wlan.before
+        match = re.search("1 packets transmitted, 1 received, 0% packet loss",ping_res)
+        logfile_assert_message(self, match!=None,'Gateway Ping status')
+        
     def link_up(self):
         wlan.sendline("ip link show wlan1")
         wlan.expect(prompt)
