@@ -13,21 +13,19 @@ from cbnlib import now_short
 from wifi import WifiScan
 from ssid_set_snmp import SSIDSetSnmp
 from lib.logging import logfile_assert_message
+
 class scan_ssid_wifi(rootfs_boot.RootFSBootTest):
     log_to_file = ""
 
     def WifiTest(self):
-        wan_ip = board.get_interface_ipaddr(board.wan_iface)
         board.expect(pexpect.TIMEOUT, timeout=60)
-        pass_word = config.wifi_password[0]
-
+        
         """"Checking wifi connectivity"""
         wifi_name = ['wifi_2G','wifi_5G']
         for wifi_device in wifi_name:
             '''Scanning for SSID'''
             output = WifiScan(self).runTest()
-            ssid_name = config.board['station']+'SSID'+wifi_device
-
+            
             '''Matching the unique SSID'''
             match = re.search(ssid_name,output)
             logfile_assert_message(self, match!=None,'SSID value check in WLAN container')
@@ -114,9 +112,4 @@ class scan_ssid_wifi(rootfs_boot.RootFSBootTest):
             wlan.expect(prompt)
             self.log_to_file += now_short()+"Interface is set UP\r\n"
 
-    def runTest(self):
-        self.WifiTest()
-
-    def recover(self):
-       wlan.sendline("killall wpa_supplicant")
-       wlan.expect(prompt)            
+           
