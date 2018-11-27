@@ -8,6 +8,7 @@
 
 import os, config
 from common import cmd_exists
+import Tkinter
 
 class docsis:
     """
@@ -42,6 +43,9 @@ class docsis:
                 raise
 
         assert cmd_exists('docsis')
+        assert cmd_exists('tclsh')
+        tclsh = Tkinter.Tcl()
+        assert tclsh.eval("package require sha1"), "please run apt-get install tcllib first"
 
     def decode(self):
         if '.cfg' in self.file:
@@ -56,8 +60,9 @@ class docsis:
         def encode_mta():
             mtacfg_name=self.file.replace('.txt', '.bin')
             mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
-            cmd = "tclsh %s/mta_conf.tcl" % os.path.dirname(__file__)
-            os.system("%s %s -e -hash eu -out %s" % (cmd, self.file_path, mtacfg_path))
+            tclsh = Tkinter.Tcl()
+            tclsh.eval("source %s/mta_conf_Proc.tcl" % os.path.dirname(__file__))
+            tclsh.eval("run [list %s -e -hash eu -out %s]" % (self.file_path, mtacfg_path))
             assert os.path.exists(mtacfg_path)
 
             return mtacfg_path
