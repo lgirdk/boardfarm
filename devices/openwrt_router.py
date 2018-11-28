@@ -534,7 +534,9 @@ class OpenWrtRouter(base.BaseDevice):
 
     def get_user_id(self, user_id):
         self.sendline('cat /etc/passwd | grep -w ' + user_id)
-        return 0 == self.expect([user_id] + self.prompt)
+        idx = self.expect([user_id] + self.prompt)
+        if idx == 0: self.expect(self.prompt)
+        return 0 == idx
 
 if __name__ == '__main__':
     # Example use
