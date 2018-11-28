@@ -12,12 +12,12 @@ from lib.installers import install_snmp
 from cbnlib import now_short
 from lib.logging import logfile_assert_message
 
-class SSIDSetSnmp1(rootfs_boot.RootFSBootTest):
+class SSIDSetSnmp(rootfs_boot.RootFSBootTest):
     '''Setting unique SSID'''
     log_to_file = ""
     set_ssid_name = None
     index = None
-    def ssid_pswd_value1(self,ssid_name,wifi_pass):
+    def ssid_pswd_value(self,ssid_name,wifi_pass):
         install_snmp(wan)
         wan_ip = board.get_interface_ipaddr(board.wan_iface)
         """"setting ssid for wifi"""
