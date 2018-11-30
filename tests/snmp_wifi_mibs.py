@@ -43,7 +43,7 @@ class snmp_mibs(rootfs_boot.RootFSBootTest):
                     idx = re.search('(?=\S{10})(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])',str(set_value))
                     logfile_assert_message(self, idx!=None,'Setting the mib %s'% mib_name)
                 else:
-                    match = re.search(r'([0-9])',str(set_value))
+                    idx = re.search(r'([0-9])',str(set_value))
                     logfile_assert_message(self, idx==None,'Setting the mib %s'% mib_name)
         if set_arg == "set":
             get_arg = "get"
