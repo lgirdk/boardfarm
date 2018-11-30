@@ -17,6 +17,8 @@ import glob
 
 from termcolor import colored, cprint
 
+from lib.docsis import docsis
+
 class DebianBox(base.BaseDevice):
     '''
     A linux machine running an ssh server.
@@ -562,17 +564,10 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
 
         # Copy binary files to tftp server
         for cfg in cfg_set:
-            # TODO: use common cmd_exists
-            cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
-            assert cmd_exists('docsis')
-
-            # TODO: much better error checking
-            os.system("docsis -e %s /dev/null %s" % (cfg, cfg.replace('.txt', '.bin')))
-
-            self.copy_file_to_server(cfg.replace('.txt', '.bin'))
-            os.remove(cfg.replace('.txt', '.bin'))
-
-
+            # TODO: copy to tmpdir at some point
+            d = docsis(cfg)
+            ret = d.encode()
+            self.copy_file_to_server(ret)
 
     def provision_board(self, board_config):
         ''' Setup DHCP and time server etc for CM provisioning'''
