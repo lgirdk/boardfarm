@@ -132,7 +132,7 @@ class CasaCMTS(base.BaseDevice):
 
     def DUT_chnl_lock(self,cm_mac):
         """Check the CM channel locks with 24*8 """
-        self.sendline("scm %s bonding" % cm_mac)
+        self.sendline("show cable modem %s bonding" % cm_mac)
         index = self.expect(["256\(8\*24\)"]+ self.prompt)
         chnl_lock = self.match.group()
         if 0 == index:
@@ -153,7 +153,7 @@ class CasaCMTS(base.BaseDevice):
 
     def get_cm_mac_domain(self,cm_mac):
         """Get the Mac-domain of Cable modem """
-        self.sendline('scm '+cm_mac+' verbose | i "MAC Domain"')
+        self.sendline('show cable modem '+cm_mac+' verbose | i "MAC Domain"')
         idx = self.expect(['(MAC Domain)[ ]{2,}\:([0-9]|[0-9][0-9])'] + self.prompt)
         if idx != 0:
             assert 0,"ERROR: Failed to get the CM Mac Domain from the CMTS"
@@ -416,7 +416,7 @@ class CasaCMTS(base.BaseDevice):
     #   False     if the cmts sees the CM eRouter
     #             (i.e. theCM mode is in gateway mode)
     def is_cm_bridged(self, cm_mac):
-        self.sendline("scm "+cm_mac+" cpe")
+        self.sendline("show cable modem "+cm_mac+" cpe")
         if 0==self.expect(['eRouter']+self.prompt):
             self.expect(self.prompt)
             return False
