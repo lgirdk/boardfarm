@@ -9,7 +9,6 @@ import os, datetime, pexpect, config, re
 import rootfs_boot
 from devices import board, wan, lan, prompt
 from lib.installers import install_snmp
-from cbnlib import now_short
 from lib.logging import logfile_assert_message
 
 class snmp_mibs(rootfs_boot.RootFSBootTest):
@@ -28,7 +27,8 @@ class snmp_mibs(rootfs_boot.RootFSBootTest):
         if mib_name == "wifiMgmtBssSecurityMode" \
            or mib_name == "wifiMgmtWpsMethod" or mib_name == "wifiMgmtBssNetMode" \
            or mib_name == "wifiMgmtBssEnable" or mib_name == "wifiMgmtBandWidth" \
-           or mib_name == "wifiMgmtBssAccessMode":
+           or mib_name == "wifiMgmtBssAccessMode" or mib_name == "wifiMgmtApplySettings" \
+           or mib_name == "wifiMgmtConnectedClients":
             set_type = "i"
         elif mib_name == "wifiMgmtBssSsid" or mib_name == "wifiMgmtBssWpaPreSharedKey":
             set_type = "s"
@@ -41,6 +41,9 @@ class snmp_mibs(rootfs_boot.RootFSBootTest):
             if set_arg == "set":
                 if mib_name == "wifiMgmtBssWpaPreSharedKey":
                     idx = re.search('(?=\S{10})(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9])',str(set_value))
+                    logfile_assert_message(self, idx!=None,'Setting the mib %s'% mib_name)
+                elif mib_name == "wifiMgmtBssSsid":
+                    idx = re.search(r'(.*)',str(set_value))
                     logfile_assert_message(self, idx!=None,'Setting the mib %s'% mib_name)
                 else:
                     idx = re.search(r'([0-9])',str(set_value))
@@ -56,4 +59,6 @@ class snmp_mibs(rootfs_boot.RootFSBootTest):
             wan.sendline("snmpget -v 2c -c public -t 30 -r 3 "+wan_ip+" "+board.mib[mib_name]+index)
             idx = wan.expect(['Timeout: No Response from'] + [set_var+': (.*)\r\n'])
             logfile_assert_message(self, idx!=0,'Getting the mib %s'% mib_name)
+            snmp_out = wan.match.group(1)
             wan.expect(prompt)
+            return snmp_out
