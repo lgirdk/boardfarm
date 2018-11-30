@@ -10,7 +10,13 @@
 import config
 import devices.configreader
 tmp = devices.configreader.TestsuiteConfigReader()
-tmp.read(config.testsuite_config_files)
+
+config_files = config.testsuite_config_files
+for ovrly_name, ovrly in config.layerconfs:
+    config_files += ovrly.testsuite_config_files
+
+tmp.read(config_files)
+
 list_tests = tmp.section
 
 # Create long or complicated test suites at run time.
