@@ -9,7 +9,6 @@ import os, datetime, pexpect, config
 import rootfs_boot
 from devices import board, wan, lan, prompt
 from lib.installers import install_snmp
-from cbnlib import now_short
 from lib.logging import logfile_assert_message
 
 class SSIDSetSnmp(rootfs_boot.RootFSBootTest):
@@ -42,7 +41,6 @@ class SSIDSetSnmp(rootfs_boot.RootFSBootTest):
             idx = wan.expect(['Timeout: No Response from'] + [ssid_name])
             logfile_assert_message(self, idx!=0,'Getting the SSID using mib wifiMgmtBssSsid')
             wan.expect(prompt)
-            self.log_to_file += now_short()+"Ssid = %s\r\n" %ssid_name
             """Get Password via SNMP"""
             wan.sendline("snmpget -v 2c -c public -t 30 -r 3 "+wan_ip+" "+board.mib["wifiMgmtBssWpaPreSharedKey"]+self.index)
             idx = wan.expect(['Timeout: No Response from'] + [wifi_pass],timeout=120)
