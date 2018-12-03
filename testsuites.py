@@ -13,7 +13,8 @@ tmp = devices.configreader.TestsuiteConfigReader()
 
 config_files = config.testsuite_config_files
 for ovrly_name, ovrly in config.layerconfs:
-    config_files += ovrly.testsuite_config_files
+    if hasattr(ovrly, 'testsuite_config_files'):
+        config_files += ovrly.testsuite_config_files
 
 tmp.read(config_files)
 
