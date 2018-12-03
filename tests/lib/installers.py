@@ -320,3 +320,14 @@ def install_pysnmp(device):
         device.expect(device.prompt)
         device.sendline('pip install pysnmp')
         device.expect(device.prompt, timeout=90)
+
+def install_iw(device):
+    '''Install iw if not present.'''
+    device.sendline('iw --version')
+    try:
+        device.expect('iw version', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install iw -y')
+        device.expect(device.prompt, timeout=90)
