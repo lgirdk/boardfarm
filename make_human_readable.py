@@ -82,6 +82,15 @@ def changes_to_html(changes):
             continue
     return ", ".join(result)
 
+def build_station_info(board_info):
+    ret = ""
+
+    for device in board_info[u'devices']:
+        print device
+        ret += "    <li>%s %s</li>\n" % (device[u'name'], device[u'type'])
+
+    return ret
+
 def xmlresults_to_html(test_results,
                        output_name=owrt_tests_dir+"/results/results.html",
                        title=None,
@@ -91,11 +100,10 @@ def xmlresults_to_html(test_results,
                   'summary_title' : title,
                   'changes': changes_to_html(os.environ.get('change_list')),
                   "board_type": "unknown",
-                  "lan_device": "unknown",
-                  "wan_device": "unknown",
-                  "conn_cmd"  : "unknown"}
+                  "location": "unknown"}
     try:
         parameters.update(board_info)
+        parameters['misc'] = build_station_info(board_info)
     except Exception as e:
         print(e)
 
