@@ -163,7 +163,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         self.sendcontrol('a')
         self.send('c')
         self.sendline('system_reset')
-        self.expect_exact('system_reset')
+        self.expect_exact(['system_reset', 'Linux version'])
         if '-kernel' not in self.cmd:
             self.expect(['SYSLINUX', 'GNU GRUB'])
         self.sendcontrol('a')
