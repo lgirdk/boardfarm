@@ -86,7 +86,6 @@ def build_station_info(board_info):
     ret = ""
 
     for device in board_info[u'devices']:
-        print device
         ret += "    <li>%s %s</li>\n" % (device[u'name'], device[u'type'])
 
     return ret
