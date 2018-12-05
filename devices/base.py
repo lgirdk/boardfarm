@@ -14,6 +14,8 @@ import time
 import common
 import error_detect
 
+#from tests.lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
+
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
