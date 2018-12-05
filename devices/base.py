@@ -69,17 +69,17 @@ class BaseDevice(pexpect.spawn):
 
     def set_logfile_read(self, value):
         class o_helper():
-            def __init__(self, out, color):
+            def __init__(self, parent, out, color):
                 self.color = color
                 self.out = out
                 self.log = ""
-                self.start = datetime.now()
+                self.parent = parent
             def write(self, string):
                 if self.color is not None:
                     self.out.write(colored(string, self.color))
                 else:
                     self.out.write(string)
-                td = datetime.now()-self.start
+                td = datetime.now()-self.parent.start
                 # check for the split case
                 if len(self.log) > 1 and self.log[-1] == '\r' and string[0] == '\n':
                     tmp = '\n [%s]' % td.total_seconds()
@@ -90,7 +90,7 @@ class BaseDevice(pexpect.spawn):
                 self.out.flush()
 
         if value is not None:
-            self._logfile_read = o_helper(value, getattr(self, "color", None))
+            self._logfile_read = o_helper(self, value, getattr(self, "color", None))
 
     def get_log(self):
         return self._logfile_read.log
