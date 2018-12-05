@@ -292,17 +292,37 @@ def main():
         print_bold("For some reason, could not close a connection.")
     library.print_board_info(config.board)
 
+    combined_list = []
+    def add_to_combined_list(log):
+        for line in log.split('\r\n'):
+            try:
+                ts, text = line.split(' ', 1)
+                combined_list.append({"time": float(ts[1:-1]), "text": text})
+            except:
+                print("Failed to parse log line = %s" % line)
+                pass
+
     idx = 1
     for console in config.console.consoles:
         with open(os.path.join(config.output_dir, 'console-%s.log' % idx), 'w') as clog:
             clog.write(console.log)
+            add_to_combined_list(console.log)
         idx = idx + 1
 
+    combined_list = []
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
             d = getattr(config, device)
             if hasattr(d, 'log'):
                 clog.write(d.log)
+                add_to_combined_list(d.log)
+
+    import operator
+    combined_list.sort(key=operator.itemgetter('time'))
+
+    with open(os.path.join(config.output_dir, "all.log"), 'w') as clog:
+        for e in combined_list:
+            clog.write('[%s] %s\n' % (e['time'], e['text']))
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
 
