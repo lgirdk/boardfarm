@@ -7,7 +7,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import datetime
 import inspect
 import os
 import random
@@ -21,6 +20,7 @@ import argparse
 import re
 import csv
 import traceback
+from datetime import datetime
 
 sys.path.insert(0, './zephyr/')
 import zephyr_reporter
@@ -32,7 +32,7 @@ site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
 from devices import debian, logstash, elasticlogger, get_device
 
-def setup_dynamic_devices(config, env=None):
+def setup_dynamic_devices(config, env=None, start=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
@@ -41,6 +41,7 @@ def setup_dynamic_devices(config, env=None):
         device['env'] = env
         device['lan_network'] = config.console.lan_network
         device['lan_gateway'] = config.console.lan_gateway
+        device['start'] = start
 
         dyn_dev = get_device(device['type'], **device)
         if dyn_dev is not None:
@@ -48,6 +49,9 @@ def setup_dynamic_devices(config, env=None):
                 raise Exception("Device in config is not named! This is required")
             setattr(config, device['name'], dyn_dev)
             config.devices.append(device['name'])
+
+            # TODO: should this be here for should each device type set it?
+            dyn_dev.start = start
 
             # TODO: set the following:
             #    reboot=config.reboot_vms,
@@ -132,6 +136,8 @@ def main():
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
 
+            start = datetime.now()
+
             # Connect to board
             config.console = devices.board_decider(config.board['board_type'],
                                                  conn_cmd=config.board['conn_cmd'],
@@ -149,11 +155,13 @@ def main():
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
                                                  config=config.board,
-                                                 env=env)
+                                                 env=env,
+                                                 start=start)
             print_bold("dut device console = %s" % colored("black", 'grey'))
+            config.console.start = start
 
             if 'devices' in config.board:
-                setup_dynamic_devices(config, env=env)
+                setup_dynamic_devices(config, env=env, start=start)
 
             def get_tftp_config(dev):
                 saved = config.console.logfile_read
@@ -215,7 +223,7 @@ def main():
     library.print_board_info(config.board)
 
     # Run tests
-    os.environ['TEST_START_TIME'] = datetime.datetime.now().strftime("%s")
+    os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
@@ -296,7 +304,7 @@ def main():
             if hasattr(d, 'log'):
                 clog.write(d.log)
 
-    os.environ['TEST_END_TIME'] = datetime.datetime.now().strftime("%s")
+    os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
 
     # grab golden master results
     golden = {}
