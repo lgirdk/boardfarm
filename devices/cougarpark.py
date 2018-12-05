@@ -51,6 +51,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         arm_conn.connect()
         self.consoles.append(self.arm)
         self.arm.logfile_read = sys.stdout
+        self.arm.start = self.start
 
     def kill_console_at_exit(self):
         self.kill(signal.SIGKILL)
