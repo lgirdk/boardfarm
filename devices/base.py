@@ -74,7 +74,11 @@ class BaseDevice(pexpect.spawn):
                 self.out = out
                 self.log = ""
                 self.parent = parent
+                self.first_write = True
             def write(self, string):
+                if self.first_write:
+                    self.first_write = False
+                    string = "\r\n" + string
                 if self.color is not None:
                     self.out.write(colored(string, self.color))
                 else:
