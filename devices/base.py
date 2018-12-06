@@ -14,12 +14,16 @@ import time
 import common
 import error_detect
 
-#from tests.lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
+#from lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
+
+from lib.logging import LoggerMeta
 
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 class BaseDevice(pexpect.spawn):
+    __metaclass__ = LoggerMeta
+    log = ""
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None

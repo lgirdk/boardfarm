@@ -6,6 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 import time
+import types
+from datetime import datetime
 
 def now_short():
     """
@@ -23,3 +25,28 @@ def logfile_assert_message(s, condition, message):
 	   assert 0, message+": FAIL\r\n"
 	else:
 	   s.log_to_file += now_short()+message+": PASS\r\n"
+
+class LoggerMeta(type):
+    def __new__(cls, name, bases, attrs):
+        for attr_name, attr_value in attrs.iteritems():
+            if isinstance(attr_value, types.FunctionType):
+                attrs[attr_name] = cls.deco(attr_value)
+
+        return super(LoggerMeta, cls).__new__(cls, name, bases, attrs)
+
+    @classmethod
+    def deco(cls, func):
+        def wrapper(*args, **kwargs):
+            func_args_str = "%s %s" % (args, kwargs)
+            to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
+
+            if hasattr(args[0], 'start'):
+                args[0].log += '[%s] calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
+
+            ret = func(*args, **kwargs)
+
+            if hasattr(args[0], 'start'):
+                args[0].log += "[%s] returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, ret)
+
+            return ret
+        return wrapper
