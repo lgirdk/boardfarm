@@ -84,6 +84,8 @@ def main():
 
     os.environ["TERM"] = "dumb"
 
+    start = datetime.now()
+
     # Connect to any board in list
     connected_to_board = False
     random.shuffle(config.BOARD_NAMES)
@@ -136,7 +138,6 @@ def main():
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
 
-            start = datetime.now()
 
             # Connect to board
             config.console = devices.board_decider(config.board['board_type'],
@@ -236,6 +237,7 @@ def main():
                 print_bold("\tTest %s skipped, not found..." % name)
                 continue
             test = getattr(tests, name)
+            test.start = start
         else:
             test = name
         print_bold("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
@@ -249,7 +251,9 @@ def main():
         try:
             for t in [getattr(tests, name) for name in config.EXTRA_TESTS]:
                 print_bold("  %s" % t)
-                tests_to_run.append(t(config))
+                test = t(config)
+                test.start = start
+                tests_to_run.append(test)
         except:
             print_bold("Unable to find specified extra tests, aborting...")
             sys.exit(1)
