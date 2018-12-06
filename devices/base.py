@@ -67,14 +67,12 @@ class BaseDevice(pexpect.spawn):
 
     def write(self, string):
         self._logfile_read.write(string)
-        self.log += string
 
     def set_logfile_read(self, value):
         class o_helper():
             def __init__(self, parent, out, color):
                 self.color = color
                 self.out = out
-                self.log = ""
                 self.parent = parent
                 self.first_write = True
             def write(self, string):
@@ -87,22 +85,18 @@ class BaseDevice(pexpect.spawn):
                     self.out.write(string)
                 td = datetime.now()-self.parent.start
                 # check for the split case
-                if len(self.log) > 1 and self.log[-1] == '\r' and string[0] == '\n':
+                if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
                     tmp = '\n [%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
+                self.parent.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
             def flush(self):
                 self.out.flush()
 
         if value is not None:
             self._logfile_read = o_helper(self, value, getattr(self, "color", None))
 
-    def get_log(self):
-        return self._logfile_read.log
-
     logfile_read = property(get_logfile_read, set_logfile_read)
-    log = property(get_log)
 
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
