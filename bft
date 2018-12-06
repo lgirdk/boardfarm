@@ -296,7 +296,11 @@ def main():
     def add_to_combined_list(log, name):
         for line in log.split('\r\n'):
             try:
-                ts, text = line.split(' ', 1)
+                if line is '':
+                    continue
+                if line.startswith(' ['):
+                    line = line[1:]
+                ts, text = line.split(']', 1)
                 combined_list.append({"time": float(ts[1:-1]), "text": text, "name": name})
             except:
                 print("Failed to parse log line = %s" % line)
@@ -309,7 +313,6 @@ def main():
             add_to_combined_list(console.log, "console-%s" % idx)
         idx = idx + 1
 
-    combined_list = []
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
             d = getattr(config, device)
@@ -322,7 +325,10 @@ def main():
 
     with open(os.path.join(config.output_dir, "all.log"), 'w') as clog:
         for e in combined_list:
-            clog.write('%s: [%s] %s\n' % (e['name'], e['time'], e['text']))
+            try:
+                clog.write('%s: [%s] %s\n' % (e['name'], e['time'], e['text']))
+            except:
+                print "failed to parse line: %s" % repr(e)
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
 
