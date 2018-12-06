@@ -302,12 +302,14 @@ def main():
             try:
                 if line is '':
                     continue
+                if line.startswith('\n'):
+                    line = line[1:]
                 if line.startswith(' ['):
                     line = line[1:]
                 ts, text = line.split(']', 1)
-                combined_list.append({"time": float(ts[1:-1]), "text": text, "name": name})
+                combined_list.append({"time": float(ts[1:-1]), "text": str(text), "name": name})
             except:
-                print("Failed to parse log line = %s" % line)
+                print("Failed to parse log line = %s" % repr(line))
                 pass
 
     idx = 1
