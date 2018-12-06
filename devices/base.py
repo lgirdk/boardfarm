@@ -91,7 +91,7 @@ class BaseDevice(pexpect.spawn):
                     tmp = '\n [%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.log += re.sub('\r\n', '\r\n[%s] ' % td.total_seconds(), string)
+                self.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
             def flush(self):
                 self.out.flush()
 
