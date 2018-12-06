@@ -10,10 +10,11 @@ import time
 import pexpect
 import base
 import atexit
-import ipaddress
 import os
 import binascii
 import glob
+import ipaddress
+import re
 
 from termcolor import colored, cprint
 
@@ -868,6 +869,17 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
     def tftp_server_ip_int(self):
         '''Returns the DUT facing side tftp server ip'''
         return self.gw
+
+    def link_up(self, interface):
+        '''Checking the interface status'''
+        self.sendline("ip link show %s" % interface)
+        self.expect(self.prompt)
+        link_state = self.before
+        match = re.search('NO-CARRIER,BROADCAST,MULTICAST,UP',link_state)
+        if match:
+            return match.group(0)
+        else:
+            return None
 
 if __name__ == '__main__':
     # Example use
