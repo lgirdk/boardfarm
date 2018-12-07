@@ -90,7 +90,7 @@ class BaseDevice(pexpect.spawn):
                 td = datetime.now()-self.parent.start
                 # check for the split case
                 if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
-                    tmp = '\n [%s]' % td.total_seconds()
+                    tmp = '\n[%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
                 self.parent.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
