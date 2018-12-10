@@ -24,6 +24,7 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 class BaseDevice(pexpect.spawn):
     __metaclass__ = LoggerMeta
     log = ""
+    log_calls = ""
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None

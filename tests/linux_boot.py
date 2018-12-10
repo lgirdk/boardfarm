@@ -15,6 +15,8 @@ import time
 from devices import board, wan, lan, wlan, prompt
 
 class LinuxBootTest(unittest2.TestCase):
+    log = ""
+    log_calls = ""
 
     def __init__(self, config):
         super(LinuxBootTest, self).__init__("testWrapper")
