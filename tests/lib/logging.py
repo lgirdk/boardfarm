@@ -41,12 +41,12 @@ class LoggerMeta(type):
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
             if hasattr(args[0], 'start'):
-                args[0].log += '[%s] calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
+                args[0].log_calls += '[%s]calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
 
             ret = func(*args, **kwargs)
 
             if hasattr(args[0], 'start'):
-                args[0].log += "[%s] returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, ret)
+                args[0].log_calls += "[%s]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, ret)
 
             return ret
         return wrapper
