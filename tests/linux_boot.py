@@ -13,8 +13,11 @@ import traceback
 import time
 
 from devices import board, wan, lan, wlan, prompt
+from lib.logging import LoggerMeta
 
 class LinuxBootTest(unittest2.TestCase):
+    _testMethodName = "UNDEFINED"
+    __metaclass__ = LoggerMeta
     log = ""
     log_calls = ""
 
