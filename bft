@@ -332,6 +332,7 @@ def main():
             if hasattr(test, 'log') and test.log != "":
                 clog.write(test.log)
                 add_to_combined_list(test.log, test.__class__.__name__)
+            if hasattr(test, 'log_calls'):
                 add_to_combined_list(test.log_calls, test.__class__.__name__)
 
     import operator
