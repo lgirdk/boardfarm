@@ -37,7 +37,7 @@ class LoggerMeta(type):
     @classmethod
     def deco(cls, func):
         def wrapper(*args, **kwargs):
-            func_args_str = "%s %s" % (args, kwargs)
+            func_args_str = "%s %s" % (repr(args), repr(kwargs))
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
             if hasattr(args[0], 'start'):
@@ -46,7 +46,7 @@ class LoggerMeta(type):
             ret = func(*args, **kwargs)
 
             if hasattr(args[0], 'start'):
-                args[0].log_calls += "[%s]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, ret)
+                args[0].log_calls += "[%s]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, repr(ret))
 
             return ret
         return wrapper
