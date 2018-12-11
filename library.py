@@ -8,13 +8,17 @@
 import os
 
 from termcolor import cprint
+from pprint import pformat
 
 def print_bold(msg):
     cprint(msg, None, attrs=['bold'])
 
 def print_board_info(x):
     for key in sorted(x):
-        print_bold("  %s: %s" % (key, x[key]))
+        if isinstance(x[key], list):
+            print_bold(" %s: \n%s" % (key, pformat(x[key], indent=5).replace("u'", "'")))
+        else:
+            print_bold(" %s: %s" % (key, pformat(x[key]).replace("u'", "'")))
 
 def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],
