@@ -326,6 +326,7 @@ def main():
             if hasattr(d, 'log'):
                 clog.write(d.log)
                 add_to_combined_list(d.log, device)
+                add_to_combined_list(d.log_calls, device)
 
     for test in tests_to_run:
         with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
