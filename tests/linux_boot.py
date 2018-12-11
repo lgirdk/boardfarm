@@ -128,3 +128,24 @@ class LinuxBootTest(unittest2.TestCase):
             sys.exit(1)
         print("ERROR: No default recovery!")
         raise "No default recovery!"
+
+
+    _log_to_file = None
+
+    def x_log_to_file(self, value):
+        pass
+
+    def get_log_to_file(self):
+        return self._log_to_file
+
+    def set_log_to_file(self, value):
+        # we have to call this because the property method calls are
+        # not calling the decorator.. work around for now
+        if self._log_to_file is not None:
+            self.x_log_to_file(value.replace(self._log_to_file, ''))
+        else:
+            self.x_log_to_file(value)
+
+        self._log_to_file = value
+
+    log_to_file = property(get_log_to_file, set_log_to_file)
