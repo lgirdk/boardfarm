@@ -13,35 +13,40 @@ import sys
 import time
 import os
 from devices import board, wan, lan, wlan, prompt
-
 def install_netperf(device):
     # Check version
     device.sendline('\nnetperf -V')
     try:
-        device.expect('Netperf version 2.4', timeout=10)
+        device.expect('Netperf version 2.6', timeout=10)
         device.expect(device.prompt)
     except:
         # Install Netperf
         device.sendline('apt-get update')
-        device.expect(device.prompt, timeout=60)
-        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install netperf')
-        device.expect(device.prompt, timeout=60)
-    device.sendline('/etc/init.d/netperf restart')
-    device.expect('Restarting')
-    device.expect(device.prompt)
+        device.expect(device.prompt, timeout=120)
+        device.sendline('apt-get  install netperf')
+        device.expect(device.prompt, timeout=120)
 
 class NetperfTest(rootfs_boot.RootFSBootTest):
-    '''Setup Netperf and Ran Throughput.'''
+    '''Setup Netperf and Run Throughput.'''
+    iface_dut = "eth1"
+
     @lib.common.run_once
     def lan_setup(self):
         super(NetperfTest, self).lan_setup()
         install_netperf(lan)
+
     @lib.common.run_once
     def wan_setup(self):
         super(NetperfTest, self).wan_setup()
         install_netperf(wan)
+        lib.common.test_msg("Starting netserver on wan...")
+        wan.sendline('/usr/bin/netserver')
+        wan.expect("Starting netserver with host")
+
     def recover(self):
         lan.sendcontrol('c')
+        lib.common.test_msg("Recover..kill netserver on wan")
+        kill_netserver(wan);
 
     # if you are spawning a lot of connections, sometimes it
     # takes too long to wait for the connection to be established
@@ -65,24 +70,37 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
     def run_netperf(self, device, ip, opts="", timeout=60):
         self.run_netperf_cmd(device, ip, opts=opts)
         return self.run_netperf_parse(device)
+   
+    def kill_netserver(self, device):
+        device.sendline("kill -9 `pidof netserver`")
+        device.expect(prompt)
 
     def runTest(self):
         super(NetperfTest, self).runTest()
 
         board.sendline('mpstat -P ALL 30 1')
-        speed = self.run_netperf(lan, "192.168.0.1 -c -C -l 30")
-        board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+        board.expect('Linux')
+
+	wan_eth1_addr = wan.get_interface_ipaddr(self.iface_dut)
+        speed = self.run_netperf(lan, "%s -c -C -l 30" % wan_eth1_addr)
+
+        board.sendcontrol('c')
+        board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n',timeout=60)
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
         lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
+        self.kill_netserver(wan)
 
         self.result_message = "Setup Netperf and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)" % (speed, avg_cpu)
 
 def run_netperf_tcp(device, run_time, pkt_size, direction="up"):
+    iface_dut = "eth1"
+    wan_eth1_addr = wan.get_interface_ipaddr(iface_dut)
+    
     if direction == "up":
-        cmd = "netperf -H 192.168.0.1 -c -C -l %s -- -m %s -M %s -D" % (run_time, pkt_size, pkt_size)
+        cmd = "netperf -H %s -c -C -l %s -- -m %s -M %s -D" % (wan_eth1_addr, run_time, pkt_size, pkt_size)
     else:
-        cmd = "netperf -H 192.168.0.1 -c -C -l %s -t TCP_MAERTS -- -m %s -M %s -D" % (run_time, pkt_size, pkt_size)
+        cmd = "netperf -H %s -c -C -l %s -t TCP_MAERTS -- -m %s -M %s -D" % (wan_eth1_addr, run_time, pkt_size, pkt_size)
     device.sendline(cmd)
     device.expect('TEST.*\r\n')
     device.expect(device.prompt, timeout=run_time+4)
