@@ -231,6 +231,9 @@ def main():
     import tests
     tests.init(config)
     import testsuites
+    if config.TEST_SUITE not in testsuites.list_tests:
+        print_bold("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
+        sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
             if not hasattr(tests, name):
