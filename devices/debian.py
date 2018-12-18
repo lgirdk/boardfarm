@@ -34,6 +34,7 @@ class DebianBox(base.BaseDevice):
     pkgs_installed = False
     install_pkgs_after_dhcp = False
     is_bridged = False
+    shared_tftp_server = False
 
     iface_dut = "eth1"
 
@@ -127,6 +128,7 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcp = True
                 if opt.startswith('wan-cmts-provisioner'):
                     self.wan_cmts_provisioner = True
+                    self.shared_tftp_server = True
                 if opt.startswith('wan-no-eth0'):
                     self.wan_no_eth0 = True
 
@@ -331,10 +333,11 @@ class DebianBox(base.BaseDevice):
         self.sendline('/etc/init.d/tftpd-hpa stop')
         self.expect('Stopping')
         self.expect(self.prompt)
-        self.sendline('rm -rf /tftpboot')
-        self.expect(self.prompt)
-        self.sendline('rm -rf /srv/tftp')
-        self.expect(self.prompt)
+        if not self.shared_tftp_server:
+            self.sendline('rm -rf /tftpboot')
+            self.expect(self.prompt)
+            self.sendline('rm -rf /srv/tftp')
+            self.expect(self.prompt)
         self.sendline('mkdir -p /srv/tftp')
         self.expect(self.prompt)
         self.sendline('ln -sf /srv/tftp/ /tftpboot')
