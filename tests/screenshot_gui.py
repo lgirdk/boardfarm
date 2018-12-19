@@ -14,9 +14,9 @@ from pyvirtualdisplay import Display
 import pexpect
 import os
 
-class ScreenshotGUI(rootfs_boot.RootFSBootTest):
-    '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
-    def runTest(self):
+class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
+    '''Bootstrap firefox running via localproxy'''
+    def start_browser(self):
         try:
             x,y=config.get_display_backend_size()
             # try to start vnc server
@@ -50,6 +50,26 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
 
         print("Using proxy %s" % proxy)
         driver = lib.common.get_webproxy_driver(proxy)
+
+        return driver
+
+    def runTest(self):
+        driver = self.start_browser()
+
+        print("Browser is running, connect and debug")
+        print("Press Control-] to exit interactive mode")
+        board.interact()
+
+        self.recover()
+
+    def recover(self):
+        self.display.stop()
+
+class ScreenshotGUI(RunBrowserViaProxy):
+    '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
+    def runTest(self):
+        driver = self.start_browser()
+
         print ("taking ss of http://%s" % board.lan_gateway)
         driver.get("http://%s" % board.lan_gateway)
 
@@ -68,6 +88,3 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
         driver.close()
 
         self.recover()
-
-    def recover(self):
-        self.display.stop()
