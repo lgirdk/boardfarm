@@ -63,7 +63,18 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
-        self.display.stop()
+        try:
+            self.display.stop()
+        except:
+            pass
+        try:
+            self.display.sendstop()
+        except:
+            pass
+        try:
+            self.display.popen.kill()
+        except:
+            pass
 
 class ScreenshotGUI(RunBrowserViaProxy):
     '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
