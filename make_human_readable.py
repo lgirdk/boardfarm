@@ -11,7 +11,7 @@ import json
 import os
 import re
 import sys
-
+import time
 from string import Template
 try:
     from collections import Counter
@@ -99,7 +99,8 @@ def xmlresults_to_html(test_results,
                   'summary_title' : title,
                   'changes': changes_to_html(os.environ.get('change_list')),
                   "board_type": "unknown",
-                  "location": "unknown"}
+                  "location": "unknown",
+                  "report_time" : "unknown"}
     try:
         parameters.update(board_info)
         parameters['misc'] = build_station_info(board_info)
@@ -152,6 +153,16 @@ def xmlresults_to_html(test_results,
         parameters['total_test_time'] = "%s minutes" % (test_seconds/60)
     except:
         pass
+
+    # Report completion time
+    try:
+        end_timestamp = int(os.environ.get('TEST_END_TIME'))
+        struct_time = time.localtime(end_timestamp)
+        format_time = time.strftime("%Y-%m-%d %H:%M:%S", struct_time)
+        parameters['report_time'] = "%s" % (format_time)
+    except:
+        pass
+
     # Substitute parameters into template html to create new html file
     template_filename = pick_template_filename()
     f = open(template_filename, "r").read()
