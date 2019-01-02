@@ -48,6 +48,8 @@ class ScreenshotGUI(rootfs_boot.RootFSBootTest):
             print e
             raise Exception("No reasonable http proxy found, please add one to the board config")
 
+        board.enable_mgmt_gui(board, wan)
+
         print("Using proxy %s" % proxy)
         driver = lib.common.get_webproxy_driver(proxy)
         print ("taking ss of http://%s" % board.lan_gateway)
