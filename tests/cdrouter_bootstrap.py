@@ -13,7 +13,7 @@ from cdrouter.packages import Package
 
 import time
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt, provisioner
 import os
 import pexpect
 import lib
@@ -57,6 +57,16 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             wan.expect(prompt)
 
         c = CDRouter(self.cdrouter_server)
+
+        """Go to cdrouter frequency and reboot to Dual-stack config"""
+        wan_ip = board.get_interface_ipaddr("wan0")
+        if self.config.board['cdrouter_location'] == 'CBN':
+            cm_freq = self.config.board['cdrouter_freq']
+        else:
+            cm_freq = self.config.board['common']['CM_online_freq']
+        wan.sendline("snmpset -v 2c -c public -t 30 -r 3 "+wan_ip+" "+board.mib["lastKnownFreq"]+".0 i "+cm_freq)
+        assert 0 != wan.expect(['Timeout: No Response from'] + prompt)
+        board.reprovision(provisioner, cm_cfg="9_EU_CBN_Dual-Stack_LG.txt", mta_cfg="AutoCA.txt")
 
         try:
             board.sendcontrol('c')
@@ -176,21 +186,22 @@ testvar lanVlanId """ + lan.vlan
                     break
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
-            contents=contents + """
-testvar wanMode static
-testvar wanIspIp %s
-testvar wanIspGateway %s
-testvar wanIspMask 255.255.255.0
-testvar wanIspAssignIp %s
-testvar wanNatIp %s
-testvar IPv4HopCount %s
-testvar lanDnsServer %s
-testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
-                              self.config.board['cdrouter_wanispgateway'], \
-                              wan_ip, wan_ip, \
-                              self.config.board['cdrouter_ipv4hopcount'], \
-                              board.get_dns_server(), \
-                              board.get_dns_server_upstream())
+            if self.config.board['cdrouter_location'] != 'CBN':
+                contents=contents + """
+    testvar wanMode static
+    testvar wanIspIp %s
+    testvar wanIspGateway %s
+    testvar wanIspMask 255.255.255.0
+    testvar wanIspAssignIp %s
+    testvar wanNatIp %s
+    testvar IPv4HopCount %s
+    testvar lanDnsServer %s
+    testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
+                                  self.config.board['cdrouter_wanispgateway'], \
+                                  wan_ip, wan_ip, \
+                                  self.config.board['cdrouter_ipv4hopcount'], \
+                                  board.get_dns_server(), \
+                                  board.get_dns_server_upstream())
 
         print("Using below for config:")
         print(contents)
@@ -322,6 +333,15 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
         if 0 != board.expect([pexpect.TIMEOUT] + board.uprompt, timeout=5):
             board.reset()
             board.wait_for_linux()
+
+        wan_ip = board.get_interface_ipaddr(board.wan_iface)
+        cm_freq = self.config.board['common']['CM_online_freq']
+        wan.sendline("snmpset -v 2c -c public -t 30 -r 3 "+wan_ip+" "+board.mib["lastKnownFreq"]+".0 i "+cm_freq)
+        assert 0 != wan.expect(['Timeout: No Response from'] + prompt)
+        board.enter_arm_shell()
+        board.arm.sendline('reboot')
+        board.wait_for_linux()
+        board.wait_for_network()
 
     @staticmethod
     @lib.common.run_once
