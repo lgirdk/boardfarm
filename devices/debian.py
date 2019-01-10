@@ -35,6 +35,7 @@ class DebianBox(base.BaseDevice):
     install_pkgs_after_dhcp = False
     is_bridged = False
     shared_tftp_server = False
+    wan_dhcp_server = True
 
     iface_dut = "eth1"
 
@@ -129,8 +130,14 @@ class DebianBox(base.BaseDevice):
                 if opt.startswith('wan-cmts-provisioner'):
                     self.wan_cmts_provisioner = True
                     self.shared_tftp_server = True
+                    # This does run one.. but it's handled via the provisioning code path
+                    self.wan_dhcp_server = False
                 if opt.startswith('wan-no-eth0'):
                     self.wan_no_eth0 = True
+                if opt.startswith('wan-no-dhcp-sever'):
+                    self.wan_dhcp_server = False
+                if opt.startswith('cmts-provisioner'):
+                    pass
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -692,7 +699,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             self.expect(self.prompt)
             self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
-            if not self.wan_cmts_provisioner:
+            if not self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
         # configure routing
