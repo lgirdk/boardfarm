@@ -10,14 +10,14 @@ import types
 from datetime import datetime
 from devices.common import print_bold
 
-def now_short():
+def now_short(_format = "%Y%m%d-%H%M%S"):
     """
     Name:now_short
     Purpose: Get current date and time string
     Input:None
     Output:String in "YYYYMMDD-hhmmss" format
     """
-    timeString = time.strftime("%Y%m%d-%H%M%S", time.localtime())+"\t"
+    timeString = time.strftime(_format, time.localtime())+"\t"
     return timeString
 
 def logfile_assert_message(s, condition, message):
