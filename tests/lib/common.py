@@ -176,3 +176,6 @@ class TestResult:
         self.result_message = message
 
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
+
+def newClass(newclsname, basecls=(object,), clsattrs={}):
+    globals()[newclsname] = type(newclsname, basecls, clsattrs)
