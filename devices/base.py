@@ -166,8 +166,12 @@ class BaseDevice(pexpect.spawn):
     # Optional send and expect functions to try and be fancy at catching errors
     def send(self, s):
         if BFT_DEBUG:
+            if 'pexpect/__init__.py: sendline():' in error_detect.caller_file_line(3):
+                idx = 4
+            else:
+                idx = 3
             common.print_bold("%s = sending: %s" %
-                              (error_detect.caller_file_line(3), repr(s)))
+                              (error_detect.caller_file_line(idx), repr(s)))
 
         if self.delaybetweenchar is not None:
             ret = 0
