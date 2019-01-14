@@ -14,6 +14,7 @@ import ipaddress
 import os
 import binascii
 import glob
+import ipaddress
 
 from termcolor import colored, cprint
 
@@ -38,6 +39,17 @@ class DebianBox(base.BaseDevice):
     wan_dhcp_server = True
 
     iface_dut = "eth1"
+
+    # provisioner settings
+    # TODO: import from provisioner boardfarm config
+    # TODO: move provisioner to it's own distinct class
+    cm_network = ipaddress.IPv4Network(u"192.168.200.0/24")
+    cm_gateway = ipaddress.IPv4Address(u"192.168.200.1")
+    mta_network = ipaddress.IPv4Network(u"192.168.201.0/24")
+    mta_gateway = ipaddress.IPv4Address(u"192.168.201.1")
+    prov_network = ipaddress.IPv4Network(u"192.168.3.0/24")
+    prov_gateway = ipaddress.IPv4Address(u"192.168.3.222")
+    prov_ip = ipaddress.IPv4Address(u"192.168.3.1")
 
     def __init__(self,
                  *args,
