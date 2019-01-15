@@ -130,7 +130,7 @@ class DebianBox(base.BaseDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    self.gw = opt.replace('wan-static-ip:', '')
+                    self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', ''))
                     self.static_ip = True
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
