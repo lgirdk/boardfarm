@@ -102,36 +102,9 @@ def main():
 
         print_bold("Connecting to board named = %s, type = %s ..." % (name, config.board['board_type']))
         try:
-            # If we find a dynamic device with the tftpd-server option let's use that for the server
-            # otherwise we use the device with the 'wan' name... finally if we don't find an ip address let's
-            # manually figure it out later
+            # None is legacy for tftp_server from before dynamic devices, leave it for now...
             tftp_server = None
             tftp_port = "22"
-            try:
-                if 'devices' in config.board:
-                    tftp_dev = [ x for x in config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
-                    if len(tftp_dev) == 1:
-                        if 'ipaddr' in tftp_dev[0]:
-                            tftp_server = tftp_dev[0]['ipaddr']
-                        else:
-                            tftp_server = tftp_dev[0]['name']
-                        tftp_port = tftp_dev[0].get('port', '22')
-                    elif len(tftp_dev) > 1:
-                        print("WARN: more than one TFTP server is configured, please pick one")
-                elif tftp_server is None:
-                    if len(tftp_dev) == 1:
-                        tftp_dev = [ x for x in config.board['devices'] if x['name'] == 'wan' ]
-                        if 'ipaddr' in tftp_dev[0]:
-                            tftp_server = tftp_dev[0]['ipaddr']
-                        else:
-                            tftp_server = tftp_dev[0]['name']
-                        tftp_port = tftp_dev[0].get('port', '22')
-                    else:
-                        print("WARN: more than one TFTP server is configured, please pick one")
-            except:
-                # if not by ipaddr let's connect to the lan device later and update
-                pass
-
 
             uniqid = hashlib.md5("%0.100f" % time.time()).hexdigest()[:15]
             env = {"wan_iface": "wan%s" % uniqid[:12],
