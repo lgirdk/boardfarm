@@ -101,7 +101,13 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.wait_for_boot()
 
     def setup_uboot_network(self, tftp_server):
-        self.tftp_server_int = tftp_server
+        from devices import lan
+
+        # we override to use LAN because that's the only way it works for this device
+        lan.start_tftp_server()
+        tftp_server_ip = lan.gw
+        self.tftp_server_int = lan.gw
+
         # line sep for UEFI
         self.linesep = '\x0D'
 
@@ -122,9 +128,10 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
     def flash_linux(self, KERNEL):
         print("\n===== Updating kernel and rootfs =====\n")
-        filename = self.prepare_file(KERNEL)
+        from devices import lan
+        filename = self.prepare_file(KERNEL, tserver=lan.ipaddr, tport=lan.port)
 
-        self.sendline('tftp -p %s -d %s %s' % (self.uboot_ddr_addr, self.tftp_server_int, filename))
+        self.sendline('tftp -p %s -d %s %s' % (self.uboot_ddr_addr, lan.tftp_server_ip_int(), filename))
         self.expect_exact('TFTP  general status Success')
         if 0 == self.expect_exact(['TFTP TFTP Read File status Time out'] + self.uprompt, timeout=60):
             raise Exception("TFTP timed out")
