@@ -149,7 +149,7 @@ class DebianBox(base.BaseDevice):
                 if opt.startswith('wan-no-dhcp-sever'):
                     self.wan_dhcp_server = False
                 if opt.startswith('cmts-provisioner'):
-                    pass
+                    self.gw = self.prov_ip
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
