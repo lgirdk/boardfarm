@@ -46,6 +46,16 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         if prov is not None:
             prov.provision_board(self.config.board)
 
+            if hasattr(prov, 'prov_gateway'):
+                gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
+
+                for nw in [prov.cm_network, prov.mta_network]:
+                    wan.sendline('ip route add %s via %s' % (nw, gw))
+                    wan.expect(prompt)
+
+            wan.sendline('ip route')
+            wan.expect(prompt)
+
         if lan:
             lan.configure(kind="lan_device")
 
