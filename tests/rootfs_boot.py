@@ -33,17 +33,16 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         # This still needs some clean up, the fall back is to assuming the
         # WAN provides the tftpd server, but it's not always the case
-        if self.config.board.get('wan_device', None) is not None:
-            wan.start_tftp_server()
-            tftp_device = wan
-            wan.configure(kind="wan_device", config=self.config.board)
-        elif wan:
+        if wan:
             wan.configure(kind="wan_device", config=self.config.board)
             if tftp_device is None:
                 tftp_device = wan
 
+        tftp_device.start_tftp_server()
+
         prov = getattr(self.config, 'provisioner', None)
         if prov is not None:
+            prov.tftp_device = tftp_device
             prov.provision_board(self.config.board)
 
             if hasattr(prov, 'prov_gateway'):
@@ -59,7 +58,13 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         if lan:
             lan.configure(kind="lan_device")
 
-        tftp_device.start_tftp_server()
+        # tftp_device is always None, so we can set it from config
+        board.tftp_server = tftp_device.ipaddr
+        # then these are just hard coded defaults
+        board.tftp_port = 22
+        # but are user/password used for tftp, they are likely legacy and just need to go away
+        board.tftp_username = "root"
+        board.tftp_password = "bigfoot1"
 
         board.reset()
         rootfs = None
