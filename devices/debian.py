@@ -37,6 +37,7 @@ class DebianBox(base.BaseDevice):
     is_bridged = False
     shared_tftp_server = False
     wan_dhcp_server = True
+    tftp_device = None
 
     iface_dut = "eth1"
 
@@ -114,6 +115,7 @@ class DebianBox(base.BaseDevice):
         self.env=env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
+        self.tftp_device = self
 
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
@@ -441,6 +443,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
 
     def update_cmts_isc_dhcp_config(self, board_config):
+        tftp_server = self.tftp_device.tftp_server_ip_int()
+
         # TODO: lots of hard coded values... all need to go away
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
@@ -576,6 +580,10 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.sendline('cp /dev/null %s' % cfg_file)
         self.expect(self.prompt)
 
+        # insert tftp server
+        board_config['extra_provisioning']['cm']['next-server'] = tftp_server
+        #board_config['extra_provisioning']['cm']['options']['tftp-server-name'] = '"' + tftp_server + '"'
+
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
@@ -615,7 +623,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             # TODO: copy to tmpdir at some point
             d = docsis(cfg)
             ret = d.encode()
-            self.copy_file_to_server(ret)
+            self.tftp_device.copy_file_to_server(ret)
 
     def provision_board(self, board_config):
         self.install_pkgs()
