@@ -446,7 +446,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         tftp_server = self.tftp_device.tftp_server_ip_int()
 
         # TODO: lots of hard coded values... all need to go away
-        self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
+        self.sendline('''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
 log-facility local7;
 option log-servers 192.168.3.1;
 option time-servers 192.168.3.1;
@@ -499,7 +499,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw))
         # That needs to be done manually as well as copying any CM cfg files
         # to the provisioner (e.g. still not fully automated)
         # TODO: fix hard coded tftp ipv6 addr
-        self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
+        self.sendline('''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
 preferred-lifetime 7500;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
@@ -574,7 +574,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             else:
                 board_config['extra_provisioning']["cm"] = {}
 
-        cfg_file = "/etc/dhcp/dhcpd.conf." + board_config['station']
+        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
 
         # zero out old config
         self.sendline('cp /dev/null %s' % cfg_file)
@@ -599,8 +599,13 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
 
         # TODO: extra per board dhcp6 provisioning
 
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
+        self.expect(self.prompt)
+
         # combine all configs into one
-        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
+        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
+        self.expect(self.prompt)
+        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
     def copy_cmts_provisioning_files(self, board_config):
@@ -633,8 +638,6 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             self.setup_as_wan_gateway()
 
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('/etc/init.d/isc-dhcp-server stop')
-        self.expect(self.prompt)
         self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
@@ -660,10 +663,14 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
         self.update_cmts_isc_dhcp_config(board_config)
-        self.sendline('/etc/init.d/isc-dhcp-server start')
+        self.sendline('cat /etc/dhcp/dhcpd.conf')
+        self.expect(self.prompt)
+        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         # We expect both, so we need debian 9 or greater for this device
         self.expect('Starting ISC DHCPv4 server.*dhcpd.')
         self.expect('Starting ISC DHCPv6 server.*dhcpd.')
+        self.expect(self.prompt)
+        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
         # only start tftp server if we are a full blown wan+provisioner
@@ -684,8 +691,10 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         '''New DHCP, cfg files etc for board after it's been provisioned once'''
         self.copy_cmts_provisioning_files(board_config)
         self.update_cmts_isc_dhcp_config(board_config)
-        self.sendline('/etc/init.d/isc-dhcp-server restart')
+        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(self.prompt)
+        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
     def setup_dhcp_server(self):
