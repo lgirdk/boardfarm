@@ -184,11 +184,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         self.logged['boot_time'] = end_seconds_up
 
-        print "#####"
-        print board.routing
-        print lan
-        print self.config.setup_device_networking
-        print "#####"
         if board.routing and lan and self.config.setup_device_networking:
             if wan is not None:
                 lan.start_lan_client(wan_gw=wan.gw)
