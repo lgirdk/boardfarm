@@ -618,6 +618,12 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             self.copy_file_to_server(ret)
 
     def provision_board(self, board_config):
+        self.install_pkgs()
+
+        # if we are not a full blown wan+provisoner then offer to route traffic
+        if not self.wan_cmts_provisioner:
+            self.setup_as_wan_gateway()
+
         ''' Setup DHCP and time server etc for CM provisioning'''
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
@@ -652,9 +658,9 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.expect('Starting ISC DHCPv6 server.*dhcpd.')
         self.expect(self.prompt)
 
-        # this might be redundant, but since might not have a tftpd server running
-        # here we have to start one for the CM configs
-        self.start_tftp_server()
+        # only start tftp server if we are a full blown wan+provisioner
+        if self.wan_cmts_provisioner:
+            self.start_tftp_server()
 
         self.copy_cmts_provisioning_files(board_config)
 
