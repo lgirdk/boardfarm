@@ -441,6 +441,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
 
     def update_cmts_isc_dhcp_config(self, board_config):
+        # TODO: lots of hard coded values... all need to go away
         self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
 log-facility local7;
 option log-servers 192.168.3.1;
@@ -493,6 +494,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw))
         # The board will ignore this unless the docsis-mac is set to ipv6
         # That needs to be done manually as well as copying any CM cfg files
         # to the provisioner (e.g. still not fully automated)
+        # TODO: fix hard coded tftp ipv6 addr
         self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
 preferred-lifetime 7500;
 option dhcp-renewal-time 3600;
@@ -637,6 +639,8 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
+        # TODO: iface_dut needs an ipv6 addr
+        # sysctl net.ipv6.conf.%s.disable_ipv6=0 % iface_dut
         self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
