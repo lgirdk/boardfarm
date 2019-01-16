@@ -10,9 +10,6 @@ import glob
 import inspect
 import pexpect
 
-# insert tests lib so devices and tests can share the same libraries
-sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
-
 board = None
 lan = None
 wan = None

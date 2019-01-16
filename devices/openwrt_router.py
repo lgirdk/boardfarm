@@ -14,7 +14,6 @@ import socket
 import sys
 import urllib2
 import pexpect
-import base
 from datetime import datetime
 import ipaddress
 

@@ -146,6 +146,7 @@ class DebianBox(base.BaseDevice):
                     self.shared_tftp_server = True
                     # This does run one.. but it's handled via the provisioning code path
                     self.wan_dhcp_server = False
+                    self.gw = self.prov_ip
                 if opt.startswith('wan-no-eth0'):
                     self.wan_no_eth0 = True
                 if opt.startswith('wan-no-dhcp-sever'):
@@ -606,7 +607,8 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
     def copy_cmts_provisioning_files(self, board_config):
         # Look in all overlays as well, and PATH as a workaround for standalone
         paths = os.environ['PATH'].split(os.pathsep)
-        paths += os.environ['BFT_OVERLAY'].split(' ')
+        if 'BFT_OVERLAY' in os.environ:
+            paths += os.environ['BFT_OVERLAY'].split(' ')
         cfg_list = []
 
         if 'tftp_cfg_files' in board_config:
@@ -946,11 +948,17 @@ if __name__ == '__main__':
         ipaddr, port = sys.argv[1].split(':')
     except:
         raise Exception("First argument should be in form of ipaddr:port")
+
+    kwargs = {}
+    if sys.argv[2] == "setup_as_cmts_provisioner":
+        kwargs = {"options": "wan-cmts-provisioner"}
+
     dev = DebianBox(ipaddr=ipaddr,
                     color='blue',
                     username="root",
                     password="bigfoot1",
-                    port=port)
+                    port=port,
+                    **kwargs)
     dev.sendline('echo Hello')
     dev.expect('Hello', timeout=4)
     dev.expect(dev.prompt)
@@ -965,7 +973,9 @@ if __name__ == '__main__':
         from lib import installers
 
         installers.install_asterisk(dev)
-
+    if sys.argv[2] == "setup_as_cmts_provisioner":
+        board_config = {"station": "fake_station"}
+        dev.provision_board(board_config)
 
     print
 

@@ -5,11 +5,17 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import sys
+import os
+
+# insert tests lib so devices and tests can share the same libraries
+sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
+sys.path.insert(0, os.path.dirname(__file__) + '/..')
+
 import pexpect
 from termcolor import colored
 from datetime import datetime
 import re
-import os
 import time
 import common
 import error_detect
@@ -28,6 +34,7 @@ class BaseDevice(pexpect.spawn):
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None
+    start = datetime.now()
 
     def get_interface_ipaddr(self, interface):
         self.sendline("\nifconfig %s" % interface)
