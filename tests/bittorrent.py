@@ -148,8 +148,8 @@ class BitTorrentSingle(BitTorrentBasic):
         lan.sendline('fg')
         lan.expect(prompt, timeout=time+10)
 
-        board.sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
-        board.expect(prompt)
+        board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+        board.get_pp_dev().expect(prompt)
 
         self.recover()
 
@@ -172,8 +172,8 @@ class BitTorrentB2B(BitTorrentBasic):
 	    lan.sendline('fg')
 	    lan.expect(prompt, timeout=5)
 
-	    board.sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
-	    board.expect(prompt)
+	    board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+	    board.get_pp_dev().expect(prompt)
 
         self.recover()
 

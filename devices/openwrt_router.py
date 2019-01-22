@@ -536,6 +536,9 @@ class OpenWrtRouter(base.BaseDevice):
     def enable_mgmt_gui(self):
         pass
 
+    def get_pp_dev(self):
+        return self
+
 if __name__ == '__main__':
     # Example use
     board = OpenWrtRouter('ap148-beeliner',
