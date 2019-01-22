@@ -25,15 +25,12 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
 
     all_ips = []
     all_conns = []
-    bad_nets = list(ipaddress.ip_network(u"192.168.0.0/24")) + \
-               list(ipaddress.ip_network(u"192.168.1.0/24")) + \
-               list(ipaddress.ip_network(u"10.200.150.0/24"))
 
     def startSingleUDP(self, mintime=1, maxtime=60):
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
-            if ipaddress.ip_address(random_ip.decode()) not in self.bad_nets:
+            if not ipaddress.ip_address(random_ip.decode()).is_private:
                 if (ipaddress.ip_address(random_ip.decode()), random_port) not in self.all_ips:
                     break
             else:
