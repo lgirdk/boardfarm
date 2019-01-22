@@ -58,9 +58,9 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         return args
 
     def runTest(self):
-        #for d in [wan, lan]:
-            #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
-            #d.expect(prompt)
+        for d in [wan, lan]:
+            d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
+            d.expect(prompt)
 
         max_time = 0
         single_max = 45
