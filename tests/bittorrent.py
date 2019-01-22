@@ -67,9 +67,8 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
 
         # TODO: query interfaces but this is OK for now
         for i in range(1000):
-            # keep long running test alive
-            board.sendline()
-            board.expect(prompt)
+            board.get_nf_conntrack_conn_count()
+            board.touch()
             print ("Starting connection %s" % i)
             sz, rate, ip, port = self.startSingleUDP(maxtime=single_max)
             print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
@@ -163,6 +162,8 @@ class BitTorrentB2B(BitTorrentBasic):
 
 	maxtime=5
 
+        board.get_nf_conntrack_conn_count()
+
 	for i in range(10000):
 	    sz, rate, ip, port = self.startSingleUDP(maxtime=maxtime)
 	    print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
@@ -174,6 +175,8 @@ class BitTorrentB2B(BitTorrentBasic):
 
 	    board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
 	    board.get_pp_dev().expect(prompt)
+
+        board.get_nf_conntrack_conn_count()
 
         self.recover()
 
