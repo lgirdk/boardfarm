@@ -80,6 +80,7 @@ class LinuxBootTest(unittest2.TestCase):
             while retry >= 0:
                 try:
                     self.runTest()
+                    board.touch()
                     retry = -1
                 except Exception as e:
                     retry = retry - 1
