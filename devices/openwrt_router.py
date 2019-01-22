@@ -539,6 +539,15 @@ class OpenWrtRouter(base.BaseDevice):
     def get_pp_dev(self):
         return self
 
+    def get_nf_conntrack_conn_count(self):
+        pp = self.get_pp_dev()
+
+        pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
+        pp.expect_exact('cat /proc/sys/net/netfilter/nf_conntrack_count')
+        pp.expect(pp.prompt)
+
+        return pp.before
+
 if __name__ == '__main__':
     # Example use
     board = OpenWrtRouter('ap148-beeliner',
