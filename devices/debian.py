@@ -38,6 +38,7 @@ class DebianBox(base.BaseDevice):
     shared_tftp_server = False
     wan_dhcp_server = True
     tftp_device = None
+    standalone_provisioner = False
 
     iface_dut = "eth1"
 
@@ -152,6 +153,7 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcp_server = False
                 if opt.startswith('cmts-provisioner'):
                     self.gw = self.prov_ip
+                    self.standalone_provisioner = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -253,7 +255,7 @@ class DebianBox(base.BaseDevice):
         if self.pkgs_installed == True:
             return
 
-        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp:
+        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp and not self.standalone_provisioner:
             self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
 
