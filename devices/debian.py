@@ -75,7 +75,6 @@ class DebianBox(base.BaseDevice):
         lan_network = kwargs.pop('lan_network', ipaddress.IPv4Network(u"192.168.1.0/24"))
         lan_gateway = kwargs.pop('lan_gateway', ipaddress.IPv4Address(u"192.168.1.1"))
 
-        self.name = name
         self.http_proxy = kwargs.pop('http_proxy', None)
 
         if ipaddr is not None:
@@ -104,6 +103,7 @@ class DebianBox(base.BaseDevice):
             pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
             self.ipaddr = None
 
+        self.name = name
         self.color = color
         self.output = output
         self.username = username
