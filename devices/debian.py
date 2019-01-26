@@ -15,6 +15,7 @@ import os
 import binascii
 import glob
 import ipaddress
+from lib.regexlib import ValidIpv4AddressRegex
 
 from termcolor import colored, cprint
 
@@ -243,7 +244,8 @@ class DebianBox(base.BaseDevice):
     def get_interface_ipaddr(self, interface):
         self.sendline("\nifconfig %s" % interface)
         regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-                 'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)']
+                 'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
+                 'inet ('+ValidIpv4AddressRegex+').*netmask ('+ValidIpv4AddressRegex+').*destination '+ValidIpv4AddressRegex]
         self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
         self.expect(self.prompt)
