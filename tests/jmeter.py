@@ -14,7 +14,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         install_jmeter(lan)
 
         if 'http' in self.jmx:
-            lan.sendline('curl %s > test.jmx')
+            lan.sendline('curl %s > test.jmx' % self.jmx)
             lan.expect(prompt)
         else:
             raise Exception("Don't know how to handle downloading %s")
@@ -23,7 +23,8 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         lan.sendline('mkdir -p output')
         lan.expect(prompt)
-        lan.sendline('jmeter -n -t AssertionTestPlan.jmx -l foo.log -e -o output')
+        lan.sendline('jmeter -n -t test.jmx -l foo.log -e -o output')
+        lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
         lan.expect(prompt)
 
         print "Copying files from lan to dir = %s" % self.config.output_dir
