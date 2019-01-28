@@ -358,7 +358,8 @@ def main():
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
-                c().analyze(config.console.log, config.output_dir)
+                with open(os.path.join(config.output_dir, "console-combined.log"), 'w') as clog:
+                    c().analyze(clog, config.output_dir)
     except Exception as e:
         if not issubclass(type(e), (StopIteration)):
             print("Failed to run anaylsis:")
