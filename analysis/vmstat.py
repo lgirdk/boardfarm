@@ -19,6 +19,9 @@ class VmStatAnalysis(analysis.Analysis):
             data[k].append(int(v))
             timestamps[k].append(float(t))
 
+        if len(data) == 0:
+            return
+
         sz = len(data.itervalues().next())
         for k in data:
             if len(data[k]) > 1:
