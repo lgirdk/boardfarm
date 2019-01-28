@@ -14,6 +14,7 @@ import os.path
 import sys
 import json
 import unittest2
+import traceback
 try:
     from urllib.request import urlopen
     import urllib
@@ -227,8 +228,9 @@ def parse():
                 try:
                     c().analyze(prepare_log(console_log), config.output_dir)
                     print("DONE!")
-                except:
+                except Exception as e:
                     print("FAILED!")
+                    traceback.print_exc(file=sys.stdout)
                     continue
         exit(0)
 
