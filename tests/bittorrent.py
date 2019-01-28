@@ -106,9 +106,11 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         seen_ips = re.findall('UDP4-SENDTO:([^:]*):', lan.before)
 
-        for done_ip in set(zip(*self.all_ips)[0]) - set(seen_ips):
-            self.cleanup_ip(done_ip)
-            self.all_ips = [e for e in self.all_ips if e[0] != done_ip ]
+        if len(self.all_ips) > 0:
+            ips_to_cleanup = set(zip(*self.all_ips)[0]) - set(seen_ips)
+            for done_ip in ips_to_cleanup:
+                self.cleanup_ip(done_ip)
+                self.all_ips = [e for e in self.all_ips if e[0] != done_ip ]
 
     def recover(self):
         wan.sendcontrol('c')
