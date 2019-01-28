@@ -52,6 +52,8 @@ class OpenWrtRouter(base.BaseDevice):
     lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
     lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
 
+    tmpdir = "/tmp"
+
     def __init__(self,
                  model,
                  conn_cmd,
