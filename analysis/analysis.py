@@ -35,23 +35,27 @@ class Analysis():
     def analyze(self, console_log, output_dir):
         pass
 
-    def make_graph(self, data, ylabel, fname, ts=None, xlabel="seconds since boot (probably)", output_dir=None):
+    def make_graph(self, data, ylabel, fname, ts=None, xlabel="seconds", output_dir=None):
         '''Helper function to make a PNG graph'''
         if not output_dir:
             return
 
-        import matplotlib as mpl
-        mpl.use('Agg')
+        # strings -> float for graphing
+        ts = [float(i) for i in ts]
+        try:
+            data = [float(i) for i in data]
+        except:
+            data = [int(i) for i in data]
+
         import matplotlib.pyplot as plt
 
-        plt.gca().yaxis.set_major_formatter(mpl.ticker.FormatStrFormatter('%d'))
-        plt.gca().xaxis.set_major_formatter(mpl.ticker.FormatStrFormatter('%d'))
         if ts is None:
             plt.plot(data)
         else:
-            plt.plot(ts, data)
+            plt.plot(ts, data, marker='o')
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
+        plt.gcf().set_size_inches(12, 8)
         plt.savefig(os.path.join(output_dir, "%s.png" % fname))
         plt.clf()
 
