@@ -12,13 +12,8 @@ from devices import board, wan, lan, wlan, prompt
 class ProcVmstat(rootfs_boot.RootFSBootTest):
     '''Check /proc/vmstat stats.'''
     def runTest(self):
-        # Log every field value found
-        board.sendline('\ncat /proc/vmstat')
-        board.expect('cat /proc/vmstat')
-        board.expect(prompt)
-        results = re.findall('(\w+) (\d+)', board.before)
-        for key, value in results:
-            self.logged[key] = int(value)
+        self.logged.update(board.get_proc_vmstat())
+
         # Display extra info
         board.sendline('cat /proc/slabinfo /proc/buddyinfo /proc/meminfo')
         board.expect('cat /proc/')

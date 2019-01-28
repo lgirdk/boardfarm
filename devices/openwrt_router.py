@@ -17,6 +17,7 @@ import pexpect
 import base
 from datetime import datetime
 import ipaddress
+import re
 
 import power
 import common
@@ -556,6 +557,28 @@ class OpenWrtRouter(base.BaseDevice):
                 continue
             else:
                 raise Exception("Unable to extract nf_conntrack_count!")
+
+    def get_proc_vmstat(self, pp=None):
+        # could be useful for both cores
+        if pp is None:
+            pp = self.get_pp_dev()
+
+        for not_used in range(5):
+            try:
+                pp.sendline('cat /proc/vmstat')
+                pp.expect_exact('cat /proc/vmstat')
+                pp.expect(pp.prompt)
+                results = re.findall('(\w+) (\d+)', pp.before)
+                ret = {}
+                for key, value in results:
+                    ret[key] = int(value)
+
+                return ret
+            except Exception as e:
+                print(e)
+                continue
+            else:
+                raise Exception("Unable to parse /proc/vmstat!")
 
     def collect_stats(self, stats=[]):
         pp = self.get_pp_dev()
