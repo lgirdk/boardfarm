@@ -9,11 +9,11 @@ import os
 import re
 
 # no repr
-newline = r"\r\n\[[^\]]+\] "
-newline_match = r"\r\n\[([^\]]+)\] "
+newline = r"\r\n\[[^\]]+\]"
+newline_match = r"\r\n\[([^\]]+)\]"
 # with repr
-newline_re = r"\\r\\n\[[^\]]+\] "
-newline_re_match = r"\\r\\n\[([^\]]+)\] "
+newline_re = r"\\r\\n\[[^\]]+\]"
+newline_re_match = r"\\r\\n\[([^\]]+)\]"
 
 def prepare_log(log):
     '''Strips some stuff from outside logs so we can parse'''
