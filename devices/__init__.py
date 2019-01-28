@@ -20,7 +20,7 @@ wlan = None
 wlan2g = None
 wlan5g = None
 prompt = None
-
+lan2 = None
 device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
@@ -49,14 +49,14 @@ def initialize_devices(configuration):
     power_ip = configuration.board.get('powerip', None)
     power_outlet = configuration.board.get('powerport', None)
     # Init devices
-    global board, lan, wan, wlan, wlan2g, wlan5g, prompt
+    global board, lan, wan, wlan, wlan2g, wlan5g, prompt, lan2
     board = configuration.console
     lan = None
     wan = None
     wlan = None
     wlan2g = None
     wlan5g = None
-
+    lan2 = None
     for device in configuration.devices:
         globals()[device] = getattr(configuration, device)
 
