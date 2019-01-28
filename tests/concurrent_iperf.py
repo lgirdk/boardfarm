@@ -13,6 +13,8 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         wan.sendline('iperf -s -l 1M -w 1M')
         wan.expect('Server listening on ')
 
+        board.collect_stats(stats=['mpstat'])
+
         time = 10
         cmd = "iperf -R -c %s -P %s -t 10 -N -w 1M -l 1M | grep SUM"
         # prime the pipes...
@@ -64,3 +66,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
             d.sendline('pkill -9 -f iperf')
             d.expect_exact('pkill -9 -f iperf')
             d.expect(prompt)
+
+        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+
+        self.result_message += ", cpu usage = %.2f" % self.logged['mpstat']
