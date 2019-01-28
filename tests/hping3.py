@@ -43,7 +43,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         wan.expect_exact('pkill -9 -f nc')
         wan.expect(prompt)
 
-        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+        board.parse_stats(dict_to_log=self.logged)
 
         args = (self.conn_rate, self.max_conns, self.logged['mpstat'])
         self.result_message = "hping3 udp firewall test, conn_rate = %s, max_conns = %s, cpu usage = %.2f" % args

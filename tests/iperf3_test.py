@@ -68,7 +68,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
             d.sendcontrol('c')
             d.expect(prompt)
 
-        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+        board.parse_stats(dict_to_log=self.logged)
 
         args = (self.logged['s_rate'], self.logged['r_rate'], self.logged['mpstat'])
         self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec, cpu = %.2f\n" % args

@@ -560,16 +560,23 @@ class OpenWrtRouter(base.BaseDevice):
     def collect_stats(self, stats=[]):
         pp = self.get_pp_dev()
         self.stats = []
+        self.failed_stats = {}
 
         for stat in stats:
             if 'mpstat' in stat:
                 pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
                 pp.expect(pp.prompt)
                 pp.sendline('mpstat -P ALL 5  > %s/mpstat &' % self.tmpdir)
+                if 0 == pp.expect(['mpstat: not found'] + pp.prompt):
+                    self.failed_stats['mpstat'] = float('nan')
+                    continue
+                elif 0 == pp.expect(['mpstat: not found', pexpect.TIMEOUT], timeout=4):
+                    self.failed_stats['mpstat'] = float('nan')
+                    continue
 
             self.stats.append(stat)
 
-    def parse_stats(self, stats=[], dict_to_log={}):
+    def parse_stats(self, dict_to_log={}):
         pp = self.get_pp_dev()
 
         idx = 0
@@ -597,6 +604,8 @@ class OpenWrtRouter(base.BaseDevice):
         # TODO: verify we got 'em all
         if idx != len(self.stats):
             print "WARN: did not match all stats collected!"
+
+        dict_to_log.update(self.failed_stats)
 
 if __name__ == '__main__':
     # Example use
