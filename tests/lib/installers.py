@@ -45,7 +45,7 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
         device.expect(device.prompt, timeout=60)
-        
+
 def install_tcpick(device):
     '''Install tcpick if not present.'''
     device.sendline('\ntcpick --version')
@@ -349,3 +349,15 @@ def install_jmeter(device):
         device.sendline('tar -C /opt -zxf apache-jmeter-5.0.tgz')
         device.expect(device.prompt, timeout=120)
         device.sendline('rm apache-jmeter-5.0.tgz')
+
+def install_IRCserver(device):
+    '''Install irc server if not present.'''
+    device.sendline('inspircd --version')
+    try:
+        device.expect('InspIRCd-', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install inspircd -y')
+        device.expect(['Setting up inspircd'], timeout=90)
+        device.expect(device.prompt)
