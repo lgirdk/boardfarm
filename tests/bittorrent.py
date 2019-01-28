@@ -67,6 +67,8 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         max_time = 0
         single_max = 45
 
+        board.collect_stats(stats=['mpstat'])
+
         # TODO: query interfaces but this is OK for now
         for i in range(self.conns):
             board.get_nf_conntrack_conn_count()
@@ -84,10 +86,12 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         while time.time() - start < max_time + 5:
             lan.sendline('wait')
             lan.expect_exact('wait')
-            if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=max_time + 5):
-                lan.sendcontrol('c')
-                lan.expect(prompt)
-                self.check_and_clean_ips()
+            lan.expect([pexpect.TIMEOUT] + prompt, timeout=5)
+            lan.sendcontrol('c')
+            lan.expect(prompt)
+            self.check_and_clean_ips()
+            board.get_nf_conntrack_conn_count()
+            board.touch()
 
         self.recover()
 
@@ -134,6 +138,11 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
 
         for ip, port in self.all_ips:
             self.cleanup_ip(ip)
+
+        # this needs to be here because we need to make sure mpstat is cleaned up
+        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+        print ("mpstat cpu usage = %s" % self.logged['mpstat'])
+        self.result_message = "BitTorrent test with %s connections, cpu usage = %s" % (self.conns, self.logged['mpstat'])
 
 class BitTorrentSingle(BitTorrentBasic):
     '''Single UDP/Bittorrent flow'''
