@@ -26,6 +26,8 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
     all_ips = []
     all_conns = []
 
+    conns = 100
+
     def startSingleUDP(self, mintime=1, maxtime=60):
         while True:
             random_ip = fake_generator.ipv4()
@@ -66,7 +68,7 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         single_max = 45
 
         # TODO: query interfaces but this is OK for now
-        for i in range(1000):
+        for i in range(self.conns):
             board.get_nf_conntrack_conn_count()
             board.touch()
             print ("Starting connection %s" % i)
