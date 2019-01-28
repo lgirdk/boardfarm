@@ -549,7 +549,7 @@ class OpenWrtRouter(base.BaseDevice):
                 pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
                 pp.expect_exact('cat /proc/sys/net/netfilter/nf_conntrack_count', timeout=2)
                 pp.expect(pp.prompt)
-                ret = pp.before.strip()
+                ret = int(pp.before.strip())
 
                 return ret
             except:
