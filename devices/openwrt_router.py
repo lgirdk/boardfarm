@@ -557,6 +557,47 @@ class OpenWrtRouter(base.BaseDevice):
             else:
                 raise Exception("Unable to extract nf_conntrack_count!")
 
+    def collect_stats(self, stats=[]):
+        pp = self.get_pp_dev()
+        self.stats = []
+
+        for stat in stats:
+            if 'mpstat' in stat:
+                pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
+                pp.expect(pp.prompt)
+                pp.sendline('mpstat -P ALL 5  > %s/mpstat &' % self.tmpdir)
+
+            self.stats.append(stat)
+
+    def parse_stats(self, stats=[], dict_to_log={}):
+        pp = self.get_pp_dev()
+
+        idx = 0
+        for not_used in range(len(self.stats)):
+            pp.sendline('fg')
+            pp.expect(self.stats)
+            if 'mpstat' in pp.match.group():
+                pp.sendcontrol('c')
+                pp.expect(pp.prompt)
+                pp.sendline('cat %s/mpstat' % self.tmpdir)
+                pp.expect_exact('cat %s/mpstat' % self.tmpdir)
+
+                idle_vals = []
+                while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n'] + pp.prompt):
+                    idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
+
+                avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
+                dict_to_log['mpstat'] = avg_cpu_usage
+
+                pp.sendline('rm %s/mpstat' % self.tmpdir)
+                pp.expect(pp.prompt)
+
+                idx += 1
+
+        # TODO: verify we got 'em all
+        if idx != len(self.stats):
+            print "WARN: did not match all stats collected!"
+
 if __name__ == '__main__':
     # Example use
     board = OpenWrtRouter('ap148-beeliner',
