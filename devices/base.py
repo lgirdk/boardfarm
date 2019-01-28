@@ -15,6 +15,7 @@ import common
 import error_detect
 
 #from lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
+from lib.regexlib import LinuxMacFormat
 
 from lib.logging import LoggerMeta
 
@@ -46,8 +47,10 @@ class BaseDevice(pexpect.spawn):
     def get_interface_macaddr(self, interface):
         self.sendline('cat /sys/class/net/%s/address' % interface)
         self.expect_exact('cat /sys/class/net/%s/address' % interface)
+        self.expect(LinuxMacFormat)
+        macaddr = self.match.group()
         self.expect(self.prompt)
-        return self.before.strip()
+        return macaddr
 
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):

@@ -22,6 +22,8 @@ ValidIpv6AddressRegex='([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
 # The CMTS mac-adderss format for e.g. 0025.2e34.4377
 CmtsMacFormat='([0-9a-f]{4}\.[0-9a-fA-F]{4}\.[0-9a-f]{4})'
 
+LinuxMacFormat='([0-9a-f]{2}(?::[0-9a-f]{2}){5})'
+
 
 # traceroute returns no route to ip address (i.e. '<num> * * *' 30 times)
 TracerouteNoRoute='((.[1-9]|[1-9][0-9])(\s\s\*\s\*\s\*)(\r\n|\r|\n)){30}'
