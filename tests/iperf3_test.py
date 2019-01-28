@@ -32,6 +32,8 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         wan.expect('-----------------------------------------------------------')
 
 
+        board.collect_stats(stats=['mpstat'])
+
         self.client.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, wan.gw, self.time, self.server_port))
         self.client.expect(prompt, timeout=self.time+10)
 
@@ -55,7 +57,6 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         else:
             raise Exception("Unknown rate in recv results")
 
-        self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec\n" % (s_rate, r_rate)
         self.logged['s_rate'] = s_rate
         self.logged['r_rate'] = r_rate
 
@@ -66,6 +67,11 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
             d.sendcontrol('c')
             d.sendcontrol('c')
             d.expect(prompt)
+
+        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+
+        args = (self.logged['s_rate'], self.logged['r_rate'], self.logged['mpstat'])
+        self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec, cpu = %.2f\n" % args
 
 class iPerf3RTest(iPerf3Test):
     '''iPerf3 reverse generic performance tests'''
