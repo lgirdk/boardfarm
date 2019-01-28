@@ -68,6 +68,6 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
             d.expect_exact('pkill -9 -f iperf')
             d.expect(prompt)
 
-        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+        board.parse_stats(dict_to_log=self.logged)
 
         self.result_message += ", cpu usage = %.2f" % self.logged['mpstat']

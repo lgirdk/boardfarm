@@ -140,7 +140,7 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
             self.cleanup_ip(ip)
 
         # this needs to be here because we need to make sure mpstat is cleaned up
-        board.parse_stats(stats=['mpstat'], dict_to_log=self.logged)
+        board.parse_stats(dict_to_log=self.logged)
         print ("mpstat cpu usage = %s" % self.logged['mpstat'])
         self.result_message = "BitTorrent test with %s connections, cpu usage = %s" % (self.conns, self.logged['mpstat'])
 
