@@ -27,6 +27,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 lan.sendline(cmd % (wan_ip, con_conn))
                 failed_cons = 0
                 while (datetime.now() - tstart).seconds < (time * 2):
+                    board.get_nf_conntrack_conn_count()
                     timeout=(time*2)-(datetime.now() - tstart).seconds
                     if 0 == lan.expect(['write failed: Connection reset by peer'] + prompt, timeout=timeout):
                         failed_cons += 1
