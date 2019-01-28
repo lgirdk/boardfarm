@@ -186,12 +186,17 @@ class BaseDevice(pexpect.spawn):
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
+        if 'base.py: expect():' in error_detect.caller_file_line(3) or \
+                'base.py: expect_exact():' in error_detect.caller_file_line(3):
+            idx = 5
+        else:
+            idx = 3
         common.print_bold("%s = expecting: %s" %
-                              (error_detect.caller_file_line(3), repr(pattern)))
+                              (error_detect.caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
-            frame = error_detect.caller_file_line(3)
+            frame = error_detect.caller_file_line(idx)
 
             if hasattr(self.match, "group"):
                 common.print_bold("%s = matched: %s" %
