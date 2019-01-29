@@ -39,7 +39,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
 
                 board.touch()
             except:
-                self.result_message = "iPerf Concurrent Connections failed entirely at %s" % con_conn
+                self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (con_conn, failed_cons)
                 break
 
         print self.result_message
