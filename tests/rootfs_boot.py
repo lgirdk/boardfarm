@@ -131,6 +131,32 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             board.wait_for_network()
         board.wait_for_mounts()
 
+        if prov is not None:
+            table = self.config.board['station']
+            idx = wan.port # TODO: how to do this right...?
+            ips = [board.get_interface_ipaddr(board.wan_iface)]
+            if hasattr(board, 'erouter_iface'):
+                ips += [board.get_interface_ipaddr(board.erouter_iface)]
+            if hasattr(board, 'mta_iface'):
+                ips += [board.get_interface_ipaddr(board.mta_iface)]
+
+            # TODO: don't hard code 300 or mv1-1
+            prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
+            prov.expect(prompt)
+            prov.sendline('echo "%s     %s" >> /etc/iproute2/rt_tables' % (idx, table))
+            prov.expect(prompt)
+
+            for ip in ips:
+                prov.sendline('ip rule del from %s' % ip)
+                prov.expect(prompt)
+                prov.sendline('ip rule add from %s lookup %s' % (ip, table))
+                prov.expect(prompt)
+
+            wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
+            prov.sendline('ip route add default via %s dev eth1 table %s' % (wan_ip, table))
+            prov.expect(prompt)
+
+
         if self.config.setup_device_networking:
             # Router mac addresses are likely to change, so flush arp
             if lan:
