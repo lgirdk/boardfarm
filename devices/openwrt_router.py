@@ -132,7 +132,7 @@ class OpenWrtRouter(base.BaseDevice):
         self.sendcontrol('c')
         self.expect(self.prompt)
         self.sendline('\ncat /proc/uptime')
-        self.expect('(\d+)\.(\d{2})(\s)(\d+)\.(\d{2})\r\n')
+        self.expect('((\d+)\.(\d+)(\s)?)((\d+)\.(\d+))?((\d+)\.(\d+))?\r\n')
         seconds_up = float(self.match.group(1))
         self.expect(self.prompt)
         return seconds_up
