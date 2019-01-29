@@ -21,13 +21,14 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         lan.sendline(cmd % (wan_ip, 4))
         lan.expect(prompt)
 
+        prev_con = 0
+        prev_failed = 0
         for con_conn in range(32, 513, 16):
             try:
                 tstart = datetime.now()
                 lan.sendline(cmd % (wan_ip, con_conn))
                 failed_cons = 0
                 while (datetime.now() - tstart).seconds < (time * 2):
-                    board.get_nf_conntrack_conn_count()
                     timeout=(time*2)-(datetime.now() - tstart).seconds
                     if 0 == lan.expect(['write failed: Connection reset by peer'] + prompt, timeout=timeout):
                         failed_cons += 1
@@ -38,8 +39,13 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 wan.expect('.*')
 
                 board.touch()
+                prev_conn = con_conn
+                prev_failed = failed_cons
+
+                if con_conn == 512:
+                    self.result_message = "iPerf Concurrent passed 512 connections (failed conns = %s)" % failed_cons
             except:
-                self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (con_conn, failed_cons)
+                self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (prev_conn, prev_failed)
                 break
 
         print self.result_message
