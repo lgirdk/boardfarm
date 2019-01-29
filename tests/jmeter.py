@@ -60,5 +60,8 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.sendcontrol('c')
         lan.expect(prompt)
 
+        # let board settle down
+        board.expect(pexpect.TIMEOUT, timeout=30)
+
         board.parse_stats(dict_to_log=self.logged)
         self.result_message = 'JMeter: DONE, cpu usage = %s' % self.logged['mpstat']

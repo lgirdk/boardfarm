@@ -134,11 +134,17 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         if prov is not None:
             table = self.config.board['station']
             idx = wan.port # TODO: how to do this right...?
-            ips = [board.get_interface_ipaddr(board.wan_iface)]
-            if hasattr(board, 'erouter_iface'):
-                ips += [board.get_interface_ipaddr(board.erouter_iface)]
-            if hasattr(board, 'mta_iface'):
-                ips += [board.get_interface_ipaddr(board.mta_iface)]
+
+            for not_used in range(5):
+                try:
+                    ips = [board.get_interface_ipaddr(board.wan_iface)]
+                    if hasattr(board, 'erouter_iface'):
+                        ips += [board.get_interface_ipaddr(board.erouter_iface)]
+                    if hasattr(board, 'mta_iface'):
+                        ips += [board.get_interface_ipaddr(board.mta_iface)]
+                    break
+                except:
+                    continue
 
             # TODO: don't hard code 300 or mv1-1
             prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
