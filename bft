@@ -7,7 +7,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import datetime
 import inspect
 import os
 import random
@@ -21,6 +20,7 @@ import argparse
 import re
 import csv
 import traceback
+from datetime import datetime
 
 sys.path.insert(0, './zephyr/')
 import zephyr_reporter
@@ -32,7 +32,7 @@ site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
 from devices import debian, logstash, elasticlogger, get_device
 
-def setup_dynamic_devices(config, env=None):
+def setup_dynamic_devices(config, env=None, start=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
@@ -41,6 +41,7 @@ def setup_dynamic_devices(config, env=None):
         device['env'] = env
         device['lan_network'] = config.console.lan_network
         device['lan_gateway'] = config.console.lan_gateway
+        device['start'] = start
 
         dyn_dev = get_device(device['type'], **device)
         if dyn_dev is not None:
@@ -48,6 +49,9 @@ def setup_dynamic_devices(config, env=None):
                 raise Exception("Device in config is not named! This is required")
             setattr(config, device['name'], dyn_dev)
             config.devices.append(device['name'])
+
+            # TODO: should this be here for should each device type set it?
+            dyn_dev.start = start
 
             # TODO: set the following:
             #    reboot=config.reboot_vms,
@@ -80,6 +84,8 @@ def main():
 
     os.environ["TERM"] = "dumb"
 
+    start = datetime.now()
+
     # Connect to any board in list
     connected_to_board = False
     random.shuffle(config.BOARD_NAMES)
@@ -96,41 +102,15 @@ def main():
 
         print_bold("Connecting to board named = %s, type = %s ..." % (name, config.board['board_type']))
         try:
-            # If we find a dynamic device with the tftpd-server option let's use that for the server
-            # otherwise we use the device with the 'wan' name... finally if we don't find an ip address let's
-            # manually figure it out later
+            # None is legacy for tftp_server from before dynamic devices, leave it for now...
             tftp_server = None
             tftp_port = "22"
-            try:
-                if 'devices' in config.board:
-                    tftp_dev = [ x for x in config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
-                    if len(tftp_dev) == 1:
-                        if 'ipaddr' in tftp_dev[0]:
-                            tftp_server = tftp_dev[0]['ipaddr']
-                        else:
-                            tftp_server = tftp_dev[0]['name']
-                        tftp_port = tftp_dev[0].get('port', '22')
-                    elif len(tftp_dev) > 1:
-                        print("WARN: more than one TFTP server is configured, please pick one")
-                elif tftp_server is None:
-                    if len(tftp_dev) == 1:
-                        tftp_dev = [ x for x in config.board['devices'] if x['name'] == 'wan' ]
-                        if 'ipaddr' in tftp_dev[0]:
-                            tftp_server = tftp_dev[0]['ipaddr']
-                        else:
-                            tftp_server = tftp_dev[0]['name']
-                        tftp_port = tftp_dev[0].get('port', '22')
-                    else:
-                        print("WARN: more than one TFTP server is configured, please pick one")
-            except:
-                # if not by ipaddr let's connect to the lan device later and update
-                pass
-
 
             uniqid = hashlib.md5("%0.100f" % time.time()).hexdigest()[:15]
             env = {"wan_iface": "wan%s" % uniqid[:12],
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
+
 
             # Connect to board
             config.console = devices.board_decider(config.board['board_type'],
@@ -149,11 +129,13 @@ def main():
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
                                                  config=config.board,
-                                                 env=env)
+                                                 env=env,
+                                                 start=start)
             print_bold("dut device console = %s" % colored("black", 'grey'))
+            config.console.start = start
 
             if 'devices' in config.board:
-                setup_dynamic_devices(config, env=env)
+                setup_dynamic_devices(config, env=env, start=start)
 
             def get_tftp_config(dev):
                 saved = config.console.logfile_read
@@ -215,19 +197,23 @@ def main():
     library.print_board_info(config.board)
 
     # Run tests
-    os.environ['TEST_START_TIME'] = datetime.datetime.now().strftime("%s")
+    os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
     import tests
     tests.init(config)
     import testsuites
+    if config.TEST_SUITE not in testsuites.list_tests:
+        print_bold("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
+        sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
             if not hasattr(tests, name):
                 print_bold("\tTest %s skipped, not found..." % name)
                 continue
             test = getattr(tests, name)
+            test.start = start
         else:
             test = name
         print_bold("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
@@ -241,7 +227,9 @@ def main():
         try:
             for t in [getattr(tests, name) for name in config.EXTRA_TESTS]:
                 print_bold("  %s" % t)
-                tests_to_run.append(t(config))
+                test = t(config)
+                test.start = start
+                tests_to_run.append(test)
         except:
             print_bold("Unable to find specified extra tests, aborting...")
             sys.exit(1)
@@ -284,19 +272,67 @@ def main():
         print_bold("For some reason, could not close a connection.")
     library.print_board_info(config.board)
 
+    combined_list = []
+    def add_to_combined_list(log, name, combined_list=combined_list):
+        for line in log.split('\r\n'):
+            try:
+                if line is '':
+                    continue
+                if line.startswith('\n'):
+                    line = line[1:]
+                if line.startswith(' ['):
+                    line = line[1:]
+                ts, text = line.split(']', 1)
+                combined_list.append({"time": float(ts[1:-1]), "text": str(text), "name": name})
+            except:
+                print("Failed to parse log line = %s" % repr(line))
+                pass
+
     idx = 1
+    console_combined = []
     for console in config.console.consoles:
         with open(os.path.join(config.output_dir, 'console-%s.log' % idx), 'w') as clog:
             clog.write(console.log)
+            add_to_combined_list(console.log, "console-%s" % idx)
+            add_to_combined_list(console.log_calls, "console-%s" % idx)
+            add_to_combined_list(console.log, "", console_combined)
         idx = idx + 1
+
+    def write_combined_log(combined_list, fname):
+        with open(os.path.join(config.output_dir, fname), 'w') as clog:
+            for e in combined_list:
+                try:
+                    if e['name'] == "":
+                        clog.write('[%s]%s\r\n' % (e['time'], e['text']))
+                    else:
+                        clog.write('%s: [%s] %s\n' % (e['name'], e['time'], e['text']))
+                except:
+                    print "failed to parse line: %s" % repr(e)
+
+    import operator
+    console_combined.sort(key=operator.itemgetter('time'))
+    write_combined_log(console_combined, "console-combined.log")
 
     for device in config.devices:
         with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
             d = getattr(config, device)
             if hasattr(d, 'log'):
                 clog.write(d.log)
+                add_to_combined_list(d.log, device)
+                add_to_combined_list(d.log_calls, device)
 
-    os.environ['TEST_END_TIME'] = datetime.datetime.now().strftime("%s")
+    for test in tests_to_run:
+        with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
+            if hasattr(test, 'log') and test.log != "":
+                clog.write(test.log)
+                add_to_combined_list(test.log, test.__class__.__name__)
+            if hasattr(test, 'log_calls'):
+                add_to_combined_list(test.log_calls, test.__class__.__name__)
+
+    combined_list.sort(key=operator.itemgetter('time'))
+    write_combined_log(combined_list, "all.log")
+
+    os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
 
     # grab golden master results
     golden = {}
@@ -322,7 +358,8 @@ def main():
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
-                c().analyze(config.console.log, config.output_dir)
+                with open(os.path.join(config.output_dir, "console-combined.log"), 'w') as clog:
+                    c().analyze(clog, config.output_dir)
     except Exception as e:
         if not issubclass(type(e), (StopIteration)):
             print("Failed to run anaylsis:")
@@ -420,13 +457,18 @@ def main():
         print("Unable to log results to mysql database.")
 
     for t in tests_to_run:
-        if hasattr(t, 'log_to_file'):
+        if t.log_to_file is not None and hasattr(t, 'stop_time'):
             filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
             testtime = t.stop_time - t.start_time
             with open(os.path.join(config.output_dir, filename), 'w') as log:
+                log.write('\t=======================================================')
+                log.write('\n\tTest case ID: %s' % (type(t).__name__))
+                log.write('\n\tTest case Description: %s' % (type(t).__doc__))
+                log.write('\n\t=======================================================\n')
                 log.write(t.log_to_file)
-                log.write('\n%s test result: %s' % (type(t).__name__, t.result_grade))
-                log.write('\nTotal test time: %s seconds\n' % testtime)
-
+                log.write('\n\t=======================================================')
+                log.write('\n\t%s test result: %s' % (type(t).__name__, t.result_grade))
+                log.write('\n\tTotal test time: %s seconds' % testtime)
+                log.write('\n\t=======================================================')
 if __name__ == '__main__':
     main()

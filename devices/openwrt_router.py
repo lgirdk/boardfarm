@@ -17,6 +17,7 @@ import pexpect
 import base
 from datetime import datetime
 import ipaddress
+import re
 
 import power
 import common
@@ -52,6 +53,8 @@ class OpenWrtRouter(base.BaseDevice):
     lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
     lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
 
+    tmpdir = "/tmp"
+
     def __init__(self,
                  model,
                  conn_cmd,
@@ -72,6 +75,7 @@ class OpenWrtRouter(base.BaseDevice):
 
         self.config = config
         self.consoles = [self]
+        self.start = kwargs['start']
 
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
@@ -131,7 +135,7 @@ class OpenWrtRouter(base.BaseDevice):
         self.sendcontrol('c')
         self.expect(self.prompt)
         self.sendline('\ncat /proc/uptime')
-        self.expect('((\d+)\.(\d+)(\s)?)((\d+)\.(\d+))?((\d+)\.(\d+))?\r\n')
+        self.expect('((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})')
         seconds_up = float(self.match.group(1))
         self.expect(self.prompt)
         return seconds_up
@@ -531,6 +535,100 @@ class OpenWrtRouter(base.BaseDevice):
         if idx == 0:
             self.expect(self.prompt)
         return 0 == idx
+
+    def enable_mgmt_gui(self):
+        pass
+
+    def get_pp_dev(self):
+        return self
+
+    def get_nf_conntrack_conn_count(self):
+        pp = self.get_pp_dev()
+
+        for not_used in range(5):
+            try:
+                pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
+                pp.expect_exact('cat /proc/sys/net/netfilter/nf_conntrack_count', timeout=2)
+                pp.expect(pp.prompt)
+                ret = int(pp.before.strip())
+
+                return ret
+            except:
+                continue
+            else:
+                raise Exception("Unable to extract nf_conntrack_count!")
+
+    def get_proc_vmstat(self, pp=None):
+        # could be useful for both cores
+        if pp is None:
+            pp = self.get_pp_dev()
+
+        for not_used in range(5):
+            try:
+                pp.sendline('cat /proc/vmstat')
+                pp.expect_exact('cat /proc/vmstat')
+                pp.expect(pp.prompt)
+                results = re.findall('(\w+) (\d+)', pp.before)
+                ret = {}
+                for key, value in results:
+                    ret[key] = int(value)
+
+                return ret
+            except Exception as e:
+                print(e)
+                continue
+            else:
+                raise Exception("Unable to parse /proc/vmstat!")
+
+    def collect_stats(self, stats=[]):
+        pp = self.get_pp_dev()
+        self.stats = []
+        self.failed_stats = {}
+
+        for stat in stats:
+            if 'mpstat' in stat:
+                pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
+                pp.expect(pp.prompt)
+                pp.sendline('mpstat -P ALL 5  > %s/mpstat &' % self.tmpdir)
+                if 0 == pp.expect(['mpstat: not found'] + pp.prompt):
+                    self.failed_stats['mpstat'] = float('nan')
+                    continue
+                elif 0 == pp.expect(['mpstat: not found', pexpect.TIMEOUT], timeout=4):
+                    self.failed_stats['mpstat'] = float('nan')
+                    continue
+
+            self.stats.append(stat)
+
+    def parse_stats(self, dict_to_log={}):
+        pp = self.get_pp_dev()
+
+        idx = 0
+        for not_used in range(len(self.stats)):
+            pp.sendline('fg')
+            pp.expect(self.stats)
+            if 'mpstat' in pp.match.group():
+                pp.sendcontrol('c')
+                pp.expect(pp.prompt)
+                pp.sendline('cat %s/mpstat' % self.tmpdir)
+                pp.expect_exact('cat %s/mpstat' % self.tmpdir)
+
+                idle_vals = []
+                while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n'] + pp.prompt):
+                    idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
+
+                avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
+                dict_to_log['mpstat'] = avg_cpu_usage
+
+                pp.sendline('rm %s/mpstat' % self.tmpdir)
+                pp.expect(pp.prompt)
+
+                idx += 1
+
+        # TODO: verify we got 'em all
+        if idx != len(self.stats):
+            print "WARN: did not match all stats collected!"
+
+        dict_to_log.update(self.failed_stats)
 
 if __name__ == '__main__':
     # Example use

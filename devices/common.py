@@ -26,7 +26,7 @@ def get_file_magic(fname, num_bytes=4):
         f.close()
     return binascii.hexlify(data)
 
-def copy_file_to_server(cmd, password):
+def copy_file_to_server(cmd, password, target="/tftpboot/"):
     '''Requires a command like ssh/scp to transfer a file, and a password.
     Run the command and enter the password if asked for one.'''
     for attempt in range(5):
@@ -35,14 +35,14 @@ def copy_file_to_server(cmd, password):
             p = pexpect.spawn(command='/bin/bash', args=['-c', cmd], timeout=240)
             p.logfile_read = sys.stdout
 
-            i = p.expect(["yes/no", "password:", "/tftpboot/.*"])
+            i = p.expect(["yes/no", "password:", "%s.*" % target])
             if i == 0:
                     p.sendline("yes")
-                    i = p.expect(["not used", "password:", "/tftpboot/.*"], timeout=45)
+                    i = p.expect(["not used", "password:", "%s.*" % target], timeout=45)
 
             if i == 1:
                     p.sendline("%s" % password)
-                    p.expect("/tftpboot/.*", timeout=120)
+                    p.expect("%s.*" % target, timeout=120)
 
             fname = p.match.group(0).strip()
             print_bold("\nfile: %s" % fname)
@@ -76,6 +76,10 @@ def scp_to_tftp_server(fname, server, username, password, port):
 
     cmd = "cat %s | %s ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (fname, pipe, port, username, server)
     return copy_file_to_server(cmd, password)
+
+def scp_from(fname, server, username, password, port, dest):
+    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
+    copy_file_to_server(cmd, password, target='DONE')
 
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])

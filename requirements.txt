@@ -17,3 +17,4 @@ simplejson
 pyvirtualdisplay
 Faker
 zeep
+matplotlib

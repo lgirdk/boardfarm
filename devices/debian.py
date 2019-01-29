@@ -35,8 +35,23 @@ class DebianBox(base.BaseDevice):
     pkgs_installed = False
     install_pkgs_after_dhcp = False
     is_bridged = False
+    shared_tftp_server = False
+    wan_dhcp_server = True
+    tftp_device = None
+    standalone_provisioner = False
 
     iface_dut = "eth1"
+
+    # provisioner settings
+    # TODO: import from provisioner boardfarm config
+    # TODO: move provisioner to it's own distinct class
+    cm_network = ipaddress.IPv4Network(u"192.168.200.0/24")
+    cm_gateway = ipaddress.IPv4Address(u"192.168.200.1")
+    mta_network = ipaddress.IPv4Network(u"192.168.201.0/24")
+    mta_gateway = ipaddress.IPv4Address(u"192.168.201.1")
+    prov_network = ipaddress.IPv4Network(u"192.168.3.0/24")
+    prov_gateway = ipaddress.IPv4Address(u"192.168.3.222")
+    prov_ip = ipaddress.IPv4Address(u"192.168.3.1")
 
     def __init__(self,
                  *args,
@@ -61,7 +76,6 @@ class DebianBox(base.BaseDevice):
         lan_network = kwargs.pop('lan_network', ipaddress.IPv4Network(u"192.168.1.0/24"))
         lan_gateway = kwargs.pop('lan_gateway', ipaddress.IPv4Address(u"192.168.1.1"))
 
-        self.name = name
         self.http_proxy = kwargs.pop('http_proxy', None)
 
         if ipaddr is not None:
@@ -90,6 +104,7 @@ class DebianBox(base.BaseDevice):
             pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
             self.ipaddr = None
 
+        self.name = name
         self.color = color
         self.output = output
         self.username = username
@@ -101,6 +116,7 @@ class DebianBox(base.BaseDevice):
         self.env=env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
+        self.tftp_device = self
 
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
@@ -117,7 +133,7 @@ class DebianBox(base.BaseDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    self.gw = opt.replace('wan-static-ip:', '')
+                    self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', ''))
                     self.static_ip = True
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
@@ -128,8 +144,16 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcp = True
                 if opt.startswith('wan-cmts-provisioner'):
                     self.wan_cmts_provisioner = True
+                    self.shared_tftp_server = True
+                    # This does run one.. but it's handled via the provisioning code path
+                    self.wan_dhcp_server = False
                 if opt.startswith('wan-no-eth0'):
                     self.wan_no_eth0 = True
+                if opt.startswith('wan-no-dhcp-sever'):
+                    self.wan_dhcp_server = False
+                if opt.startswith('cmts-provisioner'):
+                    self.gw = self.prov_ip
+                    self.standalone_provisioner = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -231,7 +255,7 @@ class DebianBox(base.BaseDevice):
         if self.pkgs_installed == True:
             return
 
-        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp:
+        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp and not self.standalone_provisioner:
             self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
 
@@ -332,10 +356,11 @@ class DebianBox(base.BaseDevice):
         self.sendline('/etc/init.d/tftpd-hpa stop')
         self.expect('Stopping')
         self.expect(self.prompt)
-        self.sendline('rm -rf /tftpboot')
-        self.expect(self.prompt)
-        self.sendline('rm -rf /srv/tftp')
-        self.expect(self.prompt)
+        if not self.shared_tftp_server:
+            self.sendline('rm -rf /tftpboot')
+            self.expect(self.prompt)
+            self.sendline('rm -rf /srv/tftp')
+            self.expect(self.prompt)
         self.sendline('mkdir -p /srv/tftp')
         self.expect(self.prompt)
         self.sendline('ln -sf /srv/tftp/ /tftpboot')
@@ -420,7 +445,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
 
     def update_cmts_isc_dhcp_config(self, board_config):
-        self.sendline('''cat > /etc/dhcp/dhcpd.conf << EOF
+        tftp_server = self.tftp_device.tftp_server_ip_int()
+
+        # TODO: lots of hard coded values... all need to go away
+        self.sendline('''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
 log-facility local7;
 option log-servers 192.168.3.1;
 option time-servers 192.168.3.1;
@@ -472,7 +500,8 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw))
         # The board will ignore this unless the docsis-mac is set to ipv6
         # That needs to be done manually as well as copying any CM cfg files
         # to the provisioner (e.g. still not fully automated)
-        self.sendline('''cat > /etc/dhcp/dhcpd6.conf << EOF
+        # TODO: fix hard coded tftp ipv6 addr
+        self.sendline('''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
 preferred-lifetime 7500;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
@@ -522,30 +551,63 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
 
-        if 'extra_provisioning' in board_config:
-            cfg_file = "/etc/dhcp/dhcpd.conf." + board_config['station']
+        if 'extra_provisioning' not in board_config:
+            # same defaults so we at least set tftp server to WAN
+            board_config['extra_provisioning'] = {}
+            if 'mta_mac' in board_config:
+                board_config['extra_provisioning']["mta"] = \
+                    { "hardware ethernet": board_config['mta_mac'],
+                     "options": { "domain-name": "\"sipcenter.com\"",
+                                  "domain-name-servers": "%s" % self.prov_ip,
+                                  "routers": "%s" % self.mta_gateway,
+                                  "log-servers": "%s" % self.prov_ip,
+                                  "host-name": "\"" + board_config['station'] + "\""
+                                }
+                    }
+            else:
+                board_config['extra_provisioning']["mta"] = {}
+            if 'mta_mac' in board_config:
+                board_config['extra_provisioning']["cm"] = \
+                    { "hardware ethernet": board_config['cm_mac'],
+                         "options": { "domain-name-servers": "%s" % self.prov_ip,
+                                      "time-offset": "-25200"
+                                    }
+                    }
+            else:
+                board_config['extra_provisioning']["cm"] = {}
 
-            # zero out old config
-            self.sendline('cp /dev/null %s' % cfg_file)
-            self.expect(self.prompt)
+        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
 
-            # there is probably a better way to construct this file...
-            for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
-                self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
-                for key, value in cfg_sec.iteritems():
-                    if key == "options":
-                        for k2, v2 in value.iteritems():
-                            self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
-                            self.expect(self.prompt)
-                    else:
-                        self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+        # zero out old config
+        self.sendline('cp /dev/null %s' % cfg_file)
+        self.expect(self.prompt)
+
+        # insert tftp server
+        board_config['extra_provisioning']['cm']['next-server'] = tftp_server
+        #board_config['extra_provisioning']['cm']['options']['tftp-server-name'] = '"' + tftp_server + '"'
+
+        # there is probably a better way to construct this file...
+        for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
+            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+            for key, value in cfg_sec.iteritems():
+                if key == "options":
+                    for k2, v2 in value.iteritems():
+                        self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
                         self.expect(self.prompt)
-                self.sendline("echo '}' >> %s" % cfg_file)
+                else:
+                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                    self.expect(self.prompt)
+            self.sendline("echo '}' >> %s" % cfg_file)
 
-            # TODO: extra per board dhcp6 provisioning
+        # TODO: extra per board dhcp6 provisioning
+
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
+        self.expect(self.prompt)
 
         # combine all configs into one
-        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf")
+        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
+        self.expect(self.prompt)
+        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
     def copy_cmts_provisioning_files(self, board_config):
@@ -568,12 +630,16 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             # TODO: copy to tmpdir at some point
             d = docsis(cfg)
             ret = d.encode()
-            self.copy_file_to_server(ret)
+            self.tftp_device.copy_file_to_server(ret)
 
     def provision_board(self, board_config):
+        self.install_pkgs()
+
+        # if we are not a full blown wan+provisoner then offer to route traffic
+        if not self.wan_cmts_provisioner:
+            self.setup_as_wan_gateway()
+
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('/etc/init.d/isc-dhcp-server stop')
-        self.expect(self.prompt)
         self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
@@ -592,20 +658,26 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         self.expect(self.prompt)
         self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222')
         self.expect(self.prompt)
+        # TODO: iface_dut needs an ipv6 addr
+        # sysctl net.ipv6.conf.%s.disable_ipv6=0 % iface_dut
         self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
         self.expect(self.prompt)
         self.update_cmts_isc_dhcp_config(board_config)
-        self.sendline('/etc/init.d/isc-dhcp-server start')
+        self.sendline('cat /etc/dhcp/dhcpd.conf')
+        self.expect(self.prompt)
+        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         # We expect both, so we need debian 9 or greater for this device
-        self.expect('Starting ISC DHCPv4 server.*dhcpd.')
-        self.expect('Starting ISC DHCPv6 server.*dhcpd.')
+        self.expect('Starting ISC DHCPv4 server: dhcpd.\r\n')
+        self.expect('Starting ISC DHCPv6 server: dhcpd6.\r\n')
+        self.expect(self.prompt)
+        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
-        # this might be redundant, but since might not have a tftpd server running
-        # here we have to start one for the CM configs
-        self.start_tftp_server()
+        # only start tftp server if we are a full blown wan+provisioner
+        if self.wan_cmts_provisioner:
+            self.start_tftp_server()
 
         self.copy_cmts_provisioning_files(board_config)
 
@@ -621,8 +693,10 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         '''New DHCP, cfg files etc for board after it's been provisioned once'''
         self.copy_cmts_provisioning_files(board_config)
         self.update_cmts_isc_dhcp_config(board_config)
-        self.sendline('/etc/init.d/isc-dhcp-server restart')
+        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect(self.prompt)
+        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
     def setup_dhcp_server(self):
@@ -690,7 +764,7 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
             self.expect(self.prompt)
             self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
-            if not self.wan_cmts_provisioner:
+            if not self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
         # configure routing
@@ -788,15 +862,22 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
 
         # Setup HTTP proxy, so board webserver is accessible via this device
         self.sendline('curl --version')
+        self.expect_exact('curl --version')
         self.expect(self.prompt)
         self.sendline('ab -V')
         self.expect(self.prompt)
         self.sendline('nmap --version')
         self.expect(self.prompt)
-        self.sendline("sed -i 's/^Port 8888/Port 8080/' /etc/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf")
-        self.expect(self.prompt)
-        self.sendline("sed 's/#Allow/Allow/g' -i /etc/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf")
-        self.expect(self.prompt)
+        # TODO: determine which config file is the correct one... but for now just modify both
+        for f in ['/etc/tinyproxy.conf', '/etc/tinyproxy/tinyproxy.conf']:
+            self.sendline("sed -i 's/^Port 8888/Port 8080/' %s" % f)
+            self.expect(self.prompt)
+            self.sendline("sed 's/#Allow/Allow/g' -i %s" % f)
+            self.expect(self.prompt)
+            self.sendline("sed '/Listen/d' -i %s" % f)
+            self.expect(self.prompt)
+            self.sendline('echo "Listen ::" >> %s' % f)
+            self.expect(self.prompt)
         self.sendline('/etc/init.d/tinyproxy restart')
         self.expect('Restarting')
         self.expect(self.prompt)

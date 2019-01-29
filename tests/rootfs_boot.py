@@ -21,10 +21,13 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         for tftp_server in tftp_servers:
             tftp_device = getattr(self.config, tftp_server)
 
+        dhcp_started = False
+
         # start dhcp servers
         for device in self.config.board['devices']:
             if 'options' in device and 'dhcp-server' in device['options']:
                 getattr(self.config, device['name']).setup_dhcp_server()
+                dhcp_started = True
 
         if not wan and len(tftp_servers) == 0:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
@@ -33,23 +36,41 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         # This still needs some clean up, the fall back is to assuming the
         # WAN provides the tftpd server, but it's not always the case
-        if self.config.board.get('wan_device', None) is not None:
-            wan.start_tftp_server()
-            tftp_device = wan
-            wan.configure(kind="wan_device", config=self.config.board)
-        elif wan:
+        if wan:
             wan.configure(kind="wan_device", config=self.config.board)
             if tftp_device is None:
                 tftp_device = wan
 
+        if wan and not dhcp_started:
+            wan.setup_dhcp_server()
+
+        tftp_device.start_tftp_server()
+
         prov = getattr(self.config, 'provisioner', None)
         if prov is not None:
+            prov.tftp_device = tftp_device
             prov.provision_board(self.config.board)
+
+            if hasattr(prov, 'prov_gateway'):
+                gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
+
+                for nw in [prov.cm_network, prov.mta_network]:
+                    wan.sendline('ip route add %s via %s' % (nw, gw))
+                    wan.expect(prompt)
+
+            wan.sendline('ip route')
+            wan.expect(prompt)
 
         if lan:
             lan.configure(kind="lan_device")
 
-        tftp_device.start_tftp_server()
+        # tftp_device is always None, so we can set it from config
+        board.tftp_server = tftp_device.ipaddr
+        # then these are just hard coded defaults
+        board.tftp_port = 22
+        # but are user/password used for tftp, they are likely legacy and just need to go away
+        board.tftp_username = "root"
+        board.tftp_password = "bigfoot1"
 
         board.reset()
         rootfs = None
@@ -110,6 +131,32 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             board.wait_for_network()
         board.wait_for_mounts()
 
+        if prov is not None:
+            table = self.config.board['station']
+            idx = wan.port # TODO: how to do this right...?
+            ips = [board.get_interface_ipaddr(board.wan_iface)]
+            if hasattr(board, 'erouter_iface'):
+                ips += [board.get_interface_ipaddr(board.erouter_iface)]
+            if hasattr(board, 'mta_iface'):
+                ips += [board.get_interface_ipaddr(board.mta_iface)]
+
+            # TODO: don't hard code 300 or mv1-1
+            prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
+            prov.expect(prompt)
+            prov.sendline('echo "%s     %s" >> /etc/iproute2/rt_tables' % (idx, table))
+            prov.expect(prompt)
+
+            for ip in ips:
+                prov.sendline('ip rule del from %s' % ip)
+                prov.expect(prompt)
+                prov.sendline('ip rule add from %s lookup %s' % (ip, table))
+                prov.expect(prompt)
+
+            wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
+            prov.sendline('ip route add default via %s dev eth1 table %s' % (wan_ip, table))
+            prov.expect(prompt)
+
+
         if self.config.setup_device_networking:
             # Router mac addresses are likely to change, so flush arp
             if lan:
@@ -163,11 +210,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         self.logged['boot_time'] = end_seconds_up
 
-        print "#####"
-        print board.routing
-        print lan
-        print self.config.setup_device_networking
-        print "#####"
         if board.routing and lan and self.config.setup_device_networking:
             if wan is not None:
                 lan.start_lan_client(wan_gw=wan.gw)

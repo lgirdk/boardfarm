@@ -45,7 +45,7 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
         device.expect(device.prompt, timeout=60)
-        
+
 def install_tcpick(device):
     '''Install tcpick if not present.'''
     device.sendline('\ntcpick --version')
@@ -331,3 +331,33 @@ def install_iw(device):
         device.expect(device.prompt)
         device.sendline('apt-get install iw -y')
         device.expect(device.prompt, timeout=90)
+
+def install_jmeter(device):
+    '''Install jmeter if not present.'''
+    device.sendline('export PATH=$PATH:/opt/apache-jmeter-5.0/bin/')
+    device.expect(device.prompt)
+    device.sendline('jmeter --version')
+    try:
+        device.expect_exact('Copyright (c) 1999-2018 The Apache Software Foundation', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install  openjdk-8-jre-headless -y')
+        device.expect(device.prompt, timeout=90)
+        device.sendline('wget https://www-eu.apache.org/dist//jmeter/binaries/apache-jmeter-5.0.tgz')
+        device.expect(device.prompt, timeout=90)
+        device.sendline('tar -C /opt -zxf apache-jmeter-5.0.tgz')
+        device.expect(device.prompt, timeout=120)
+        device.sendline('rm apache-jmeter-5.0.tgz')
+
+def install_IRCserver(device):
+    '''Install irc server if not present.'''
+    device.sendline('inspircd --version')
+    try:
+        device.expect('InspIRCd-', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install inspircd -y')
+        device.expect(['Setting up inspircd'], timeout=90)
+        device.expect(device.prompt)

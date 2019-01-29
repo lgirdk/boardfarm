@@ -13,8 +13,14 @@ import traceback
 import time
 
 from devices import board, wan, lan, wlan, prompt
+from lib.logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
+    _testMethodName = "UNDEFINED"
+    __metaclass__ = LoggerMeta
+    log = ""
+    log_calls = ""
+    _format = "%a %d %b %Y %H:%M:%S"
 
     def __init__(self, config):
         super(LinuxBootTest, self).__init__("testWrapper")
@@ -28,9 +34,9 @@ class LinuxBootTest(unittest2.TestCase):
         return self.__class__.__name__
 
     def setUp(self):
-        lib.common.test_msg("\n==================== Begin %s ====================" % self.__class__.__name__)
+        lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
     def tearDown(self):
-        lib.common.test_msg("\n==================== End %s ======================" % self.__class__.__name__)
+        lib.common.test_msg("\n==================== End %s      Time: %s ======================" % (self.__class__.__name__, now_short(self._format)))
 
     def wan_setup(self):
         None
@@ -74,6 +80,7 @@ class LinuxBootTest(unittest2.TestCase):
             while retry >= 0:
                 try:
                     self.runTest()
+                    board.touch()
                     retry = -1
                 except Exception as e:
                     retry = retry - 1
@@ -108,7 +115,7 @@ class LinuxBootTest(unittest2.TestCase):
                 self.result_grade = "Exp FAIL"
             else:
                 self.result_grade = "FAIL"
-            print("\n\n=========== Test failed! Running recovery ===========")
+            print("\n\n=========== Test failed! Running recovery Time: %s ===========" % now_short(self._format))
             if e.__class__.__name__ == "TIMEOUT":
                 print(e.get_trace())
             else:
@@ -123,3 +130,24 @@ class LinuxBootTest(unittest2.TestCase):
             sys.exit(1)
         print("ERROR: No default recovery!")
         raise "No default recovery!"
+
+
+    _log_to_file = None
+
+    def x_log_to_file(self, value):
+        pass
+
+    def get_log_to_file(self):
+        return self._log_to_file
+
+    def set_log_to_file(self, value):
+        # we have to call this because the property method calls are
+        # not calling the decorator.. work around for now
+        if self._log_to_file is not None:
+            self.x_log_to_file(value.replace(self._log_to_file, ''))
+        else:
+            self.x_log_to_file(value)
+
+        self._log_to_file = value
+
+    log_to_file = property(get_log_to_file, set_log_to_file)

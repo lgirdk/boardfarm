@@ -14,6 +14,7 @@ import os.path
 import sys
 import json
 import unittest2
+import traceback
 try:
     from urllib.request import urlopen
     import urllib
@@ -221,9 +222,16 @@ def parse():
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
+                sys.stdout.write("Running analysis class = %s... " % c)
                 console_log = open(args.analysis, 'r').read()
                 from analysis.analysis import prepare_log
-                c().analyze(prepare_log(console_log), config.output_dir)
+                try:
+                    c().analyze(prepare_log(console_log), config.output_dir)
+                    print("DONE!")
+                except Exception as e:
+                    print("FAILED!")
+                    traceback.print_exc(file=sys.stdout)
+                    continue
         exit(0)
 
     if args.board_type:

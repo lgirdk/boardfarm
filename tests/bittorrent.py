@@ -25,15 +25,14 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
 
     all_ips = []
     all_conns = []
-    bad_nets = list(ipaddress.ip_network(u"192.168.0.0/24")) + \
-               list(ipaddress.ip_network(u"192.168.1.0/24")) + \
-               list(ipaddress.ip_network(u"10.200.150.0/24"))
+
+    conns = 100
 
     def startSingleUDP(self, mintime=1, maxtime=60):
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
-            if ipaddress.ip_address(random_ip.decode()) not in self.bad_nets:
+            if not ipaddress.ip_address(random_ip.decode()).is_private:
                 if (ipaddress.ip_address(random_ip.decode()), random_port) not in self.all_ips:
                     break
             else:
@@ -61,18 +60,19 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         return args
 
     def runTest(self):
-        #for d in [wan, lan]:
-            #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
-            #d.expect(prompt)
+        for d in [wan, lan]:
+            d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
+            d.expect(prompt)
 
         max_time = 0
         single_max = 45
 
+        board.collect_stats(stats=['mpstat'])
+
         # TODO: query interfaces but this is OK for now
-        for i in range(1000):
-            # keep long running test alive
-            board.sendline()
-            board.expect(prompt)
+        for i in range(self.conns):
+            board.get_nf_conntrack_conn_count()
+            board.touch()
             print ("Starting connection %s" % i)
             sz, rate, ip, port = self.startSingleUDP(maxtime=single_max)
             print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
@@ -86,10 +86,12 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         while time.time() - start < max_time + 5:
             lan.sendline('wait')
             lan.expect_exact('wait')
-            if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=max_time + 5):
-                lan.sendcontrol('c')
-                lan.expect(prompt)
-                self.check_and_clean_ips()
+            lan.expect([pexpect.TIMEOUT] + prompt, timeout=5)
+            lan.sendcontrol('c')
+            lan.expect(prompt)
+            self.check_and_clean_ips()
+            board.get_nf_conntrack_conn_count()
+            board.touch()
 
         self.recover()
 
@@ -108,9 +110,11 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         seen_ips = re.findall('UDP4-SENDTO:([^:]*):', lan.before)
 
-        for done_ip in set(zip(*self.all_ips)[0]) - set(seen_ips):
-            self.cleanup_ip(done_ip)
-            self.all_ips = [e for e in self.all_ips if e[0] != done_ip ]
+        if len(self.all_ips) > 0:
+            ips_to_cleanup = set(zip(*self.all_ips)[0]) - set(seen_ips)
+            for done_ip in ips_to_cleanup:
+                self.cleanup_ip(done_ip)
+                self.all_ips = [e for e in self.all_ips if e[0] != done_ip ]
 
     def recover(self):
         wan.sendcontrol('c')
@@ -135,6 +139,11 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         for ip, port in self.all_ips:
             self.cleanup_ip(ip)
 
+        # this needs to be here because we need to make sure mpstat is cleaned up
+        board.parse_stats(dict_to_log=self.logged)
+        print ("mpstat cpu usage = %s" % self.logged['mpstat'])
+        self.result_message = "BitTorrent test with %s connections, cpu usage = %s" % (self.conns, self.logged['mpstat'])
+
 class BitTorrentSingle(BitTorrentBasic):
     '''Single UDP/Bittorrent flow'''
 
@@ -151,8 +160,8 @@ class BitTorrentSingle(BitTorrentBasic):
         lan.sendline('fg')
         lan.expect(prompt, timeout=time+10)
 
-        board.sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
-        board.expect(prompt)
+        board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+        board.get_pp_dev().expect(prompt)
 
         self.recover()
 
@@ -166,6 +175,8 @@ class BitTorrentB2B(BitTorrentBasic):
 
 	maxtime=5
 
+        board.get_nf_conntrack_conn_count()
+
 	for i in range(10000):
 	    sz, rate, ip, port = self.startSingleUDP(maxtime=maxtime)
 	    print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
@@ -175,8 +186,10 @@ class BitTorrentB2B(BitTorrentBasic):
 	    lan.sendline('fg')
 	    lan.expect(prompt, timeout=5)
 
-	    board.sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
-	    board.expect(prompt)
+	    board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+	    board.get_pp_dev().expect(prompt)
+
+        board.get_nf_conntrack_conn_count()
 
         self.recover()
 

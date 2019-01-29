@@ -14,10 +14,18 @@ import time
 import common
 import error_detect
 
+#from lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
+from lib.regexlib import LinuxMacFormat
+
+from lib.logging import LoggerMeta
+
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 class BaseDevice(pexpect.spawn):
+    __metaclass__ = LoggerMeta
+    log = ""
+    log_calls = ""
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None
@@ -39,8 +47,10 @@ class BaseDevice(pexpect.spawn):
     def get_interface_macaddr(self, interface):
         self.sendline('cat /sys/class/net/%s/address' % interface)
         self.expect_exact('cat /sys/class/net/%s/address' % interface)
+        self.expect(LinuxMacFormat)
+        macaddr = self.match.group()
         self.expect(self.prompt)
-        return self.before.strip()
+        return macaddr
 
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
@@ -65,38 +75,36 @@ class BaseDevice(pexpect.spawn):
 
     def write(self, string):
         self._logfile_read.write(string)
-        self.log += string
 
     def set_logfile_read(self, value):
         class o_helper():
-            def __init__(self, out, color):
+            def __init__(self, parent, out, color):
                 self.color = color
                 self.out = out
-                self.log = ""
-                self.start = datetime.now()
+                self.parent = parent
+                self.first_write = True
             def write(self, string):
+                if self.first_write:
+                    self.first_write = False
+                    string = "\r\n" + string
                 if self.color is not None:
                     self.out.write(colored(string, self.color))
                 else:
                     self.out.write(string)
-                td = datetime.now()-self.start
+                td = datetime.now()-self.parent.start
                 # check for the split case
-                if len(self.log) > 1 and self.log[-1] == '\r' and string[0] == '\n':
-                    tmp = '\n [%s]' % td.total_seconds()
+                if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
+                    tmp = '\n[%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.log += re.sub('\r\n', '\r\n[%s] ' % td.total_seconds(), string)
+                self.parent.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
             def flush(self):
                 self.out.flush()
 
         if value is not None:
-            self._logfile_read = o_helper(value, getattr(self, "color", None))
-
-    def get_log(self):
-        return self._logfile_read.log
+            self._logfile_read = o_helper(self, value, getattr(self, "color", None))
 
     logfile_read = property(get_logfile_read, set_logfile_read)
-    log = property(get_log)
 
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
@@ -161,8 +169,12 @@ class BaseDevice(pexpect.spawn):
     # Optional send and expect functions to try and be fancy at catching errors
     def send(self, s):
         if BFT_DEBUG:
+            if 'pexpect/__init__.py: sendline():' in error_detect.caller_file_line(3):
+                idx = 4
+            else:
+                idx = 3
             common.print_bold("%s = sending: %s" %
-                              (error_detect.caller_file_line(3), repr(s)))
+                              (error_detect.caller_file_line(idx), repr(s)))
 
         if self.delaybetweenchar is not None:
             ret = 0
@@ -177,12 +189,17 @@ class BaseDevice(pexpect.spawn):
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
+        if 'base.py: expect():' in error_detect.caller_file_line(3) or \
+                'base.py: expect_exact():' in error_detect.caller_file_line(3):
+            idx = 5
+        else:
+            idx = 3
         common.print_bold("%s = expecting: %s" %
-                              (error_detect.caller_file_line(3), repr(pattern)))
+                              (error_detect.caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
-            frame = error_detect.caller_file_line(3)
+            frame = error_detect.caller_file_line(idx)
 
             if hasattr(self.match, "group"):
                 common.print_bold("%s = matched: %s" %
