@@ -32,12 +32,15 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         lan.sendline('jmeter -n -t test.jmx -l foo.log -e -o output')
         lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
-        for not_used in range(100):
+        for i in range(300):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
             board.get_nf_conntrack_conn_count()
             board.get_proc_vmstat()
             board.touch()
+
+            if i == 299:
+                raise Exception("jmeter did not have enough time to complete")
 
         print "Copying files from lan to dir = %s" % self.config.output_dir
         lan.sendline('readlink -f output/')
