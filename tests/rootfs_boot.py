@@ -131,7 +131,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             board.wait_for_network()
         board.wait_for_mounts()
 
-        if prov is not None:
+        if prov is not None and 'debian' in prov.model:
             table = self.config.board['station']
             idx = wan.port # TODO: how to do this right...?
 
