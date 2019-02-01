@@ -9,6 +9,7 @@ import sys
 import glob
 import inspect
 import pexpect
+import termcolor
 
 # insert tests lib so devices and tests can share the same libraries
 sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
@@ -41,6 +42,20 @@ for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f
         if inspect.isclass(ref) and hasattr(ref, "model"):
             device_mappings[device_file].append(ref)
             exec("from %s import %s" % (x, obj))
+
+def check_for_cmd_on_host(cmd, msg=None):
+    '''Prints an error message with a suggestion on how to install the command'''
+    from lib.common import cmd_exists
+    if not cmd_exists(cmd):
+        termcolor.cprint("\nThe  command '"+cmd+"' is NOT installed on your system. Please install it.", None, attrs=['bold'])
+        if msg is not None: print(cmd+": "+msg)
+        import sys
+        if sys.platform == "linux2":
+            import platform
+            if "Ubuntu" in platform.dist() or "debian" in platform.dist():
+                print("To install run:\n\tsudo apt install <package with "+cmd+">")
+                exit(1)
+        print("To install refer to your system SW app installation instructions")
 
 def initialize_devices(configuration):
     # Init random global variables. To Do: clean these.
@@ -89,6 +104,12 @@ def get_device(model, **kwargs):
     return None
 
 def board_decider(model, **kwargs):
+    if any('conn_cmd' in s for s in kwargs):
+        if any(u'kermit' in s for s in kwargs['conn_cmd']):
+            check_for_cmd_on_host('kermit',"telnet equivalent command. It has lower CPU usage than telnet,\n\
+and works exactly the same way (e.g. kermit -J <ipaddr> [<port>])\n\
+You are seeing this message as your configuration is now using kermit instead of telnet.")
+
     dynamic_dev = get_device(model, **kwargs)
     if dynamic_dev is not None:
         return dynamic_dev
