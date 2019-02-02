@@ -168,6 +168,15 @@ def get_webproxy_driver(ipport):
 def test_msg(msg):
     cprint(msg, None, attrs=['bold'])
 
+def sha256_checksum(filename, block_size=65536):
+    '''Calculates the SHA256 on a file'''
+    import hashlib
+    sha256 = hashlib.sha256()
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(block_size), b''):
+            sha256.update(block)
+    return sha256.hexdigest()
+
 class TestResult:
     logged = {}
     def __init__(self, name, grade, message):
