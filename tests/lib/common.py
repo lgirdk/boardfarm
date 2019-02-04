@@ -17,6 +17,7 @@ import os
 import signal
 import config
 from termcolor import cprint
+from library import print_bold
 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import *
@@ -176,3 +177,95 @@ class TestResult:
         self.result_message = message
 
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
+
+def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
+    '''
+    Starts a simple web service on a specified port,
+    bound to a specified interface. (e.g. tun0)
+    Send ctrl-c to stop
+    '''
+    device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()'"%(ip, port))
+    if 0 ==device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+        if "BFT_DEBUG" in os.environ:
+            print_bold("Faield to start service on "+ip+":"+port)
+        return False
+    else:
+        if "BFT_DEBUG" in os.environ:
+            print_bold("Service started on "+ip+":"+port)
+        return True
+
+def start_ip6bound_httpservice(device, ip="::", port="9001"):
+    '''
+    Starts a simple web service on a specified port,
+    bound to a specified interface. (e.g. tun0)
+    Send ctrl-c to stop (twice? needs better signal handling)
+    '''
+    device.sendline('''cat > /root/SimpleHTTPServer6.py<<EOF
+import socket
+import BaseHTTPServer as bhs
+import SimpleHTTPServer as shs
+
+class HTTPServerV6(bhs.HTTPServer):
+    address_family = socket.AF_INET6
+HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
+EOF'''%(ip, port))
+
+    device.expect(device.prompt)
+    device.sendline ("python -m /root/SimpleHTTPServer6")
+    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+        if "BFT_DEBUG" in os.environ:
+            print_bold('Faield to start service on ['+ip+']:'+port)
+        return False
+    else:
+        if "BFT_DEBUG" in os.environ:
+            print_bold("Service started on ["+ip+"]:"+port)
+        return True
+
+def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/server.pem"):
+    '''
+    Starts a simple HTTPS web service on a specified port,
+    bound to a specified interface. (e.g. tun0)
+    Send ctrl-c to stop (twice? needs better signal handling)
+    '''
+    import re
+    # the https server needs a certificate, lets create a bogus one
+    device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
+    for i in range(10):
+        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
+            device.sendline()
+            break
+        device.sendline()
+    device.expect(device.prompt)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'"%cert)
+    if 1 == device.expect(["True", "False"]):
+        # no point in carrying on
+        print_bold("Failed to create certificate for HTTPs service")
+        return False
+    device.expect(device.prompt)
+    # create and run the "secure" server
+    device.sendline('''cat > /root/SimpleHTTPsServer.py<< EOF
+# taken from http://www.piware.de/2011/01/creating-an-https-server-in-python/
+# generate server.xml with the following command:
+#    openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+# run as follows:
+#    python simple-https-server.py
+# then in your browser, visit:
+#    https://<ip>:<port>
+
+import BaseHTTPServer, SimpleHTTPServer
+import ssl
+
+httpd = BaseHTTPServer.HTTPServer((\"%s\", %s), SimpleHTTPServer.SimpleHTTPRequestHandler)
+httpd.socket = ssl.wrap_socket (httpd.socket, certfile=\"%s\", server_side=True)
+httpd.serve_forever()
+EOF'''%(ip, port, cert))
+
+    device.expect(device.prompt)
+    device.sendline ("python -m /root/SimpleHTTPsServer")
+    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+        print_bold("Failed to start service on ["+ip+"]:"+port)
+        return False
+    else:
+        if "BFT_DEBUG" in os.environ:
+            print_bold("Service started on ["+ip+"]:"+port)
+        return True
