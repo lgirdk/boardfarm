@@ -613,8 +613,11 @@ class OpenWrtRouter(base.BaseDevice):
                 pp.expect_exact('cat %s/mpstat' % self.tmpdir)
 
                 idle_vals = []
+                start = datetime.now()
                 while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n'] + pp.prompt):
                     idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
+                    if (datetime.now() - start).seconds > 60:
+                        self.touch()
 
                 avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
                 dict_to_log['mpstat'] = avg_cpu_usage
