@@ -29,6 +29,10 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
 
     conns = 100
 
+    socat_recv = "UDP4-RECVFROM"
+    socat_send = "UDP4-SENDTO"
+    payload = "d1:ad2:id20:"
+
     def startSingleUDP(self, mintime=1, maxtime=60):
         while True:
             random_ip = fake_generator.ipv4()
@@ -49,16 +53,16 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         random_rate = randint(1,1024)
         random_size = randint(int(1*random_rate*mintime), int(1024*random_rate*maxtime))
 
-        wan.sendline("nohup socat UDP4-RECVFROM:%s,bind=%s system:'(echo -n d1:ad2:id20:;  head /dev/zero) | pv -L %sk' &" % (random_port, random_ip, random_rate))
+        args = (self.socat_recv, random_port, random_ip, self.payload, random_rate)
+        wan.sendline("nohup socat %s:%s,bind=%s system:'(echo -n %s;  head /dev/zero) | pv -L %sk' &" % args)
         wan.expect(prompt)
 
-        args = (random_size, random_rate, random_ip, random_port)
-        lan.sendline("nohup socat system:'(echo -n d1:ad2:id20:;  head -c %s /dev/zero) | pv -L %sk' UDP4-SENDTO:%s:%s &" % args)
+        args = (self.payload, random_size, random_rate, self.socat_send, random_ip, random_port)
+        lan.sendline("nohup socat system:'(echo -n %s;  head -c %s /dev/zero) | pv -L %sk' %s:%s:%s &" % args)
         lan.expect(prompt)
 
-        self.all_conns.append(args)
-        # size, rate, ip, port
-        return args
+        self.all_conns.append((random_size, random_rate, random_ip, random_port))
+        return (random_size, random_rate, random_ip, random_port)
 
     def runTest(self):
         random.seed(99)
@@ -104,14 +108,14 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
         wan.sendline('pkill -9 -f socat.*bind=%s' % ip)
         wan.expect(prompt)
-        lan.sendline('pkill -9 -f socat.*UDP4-SENDTO:%s' % ip)
+        lan.sendline('pkill -9 -f socat.*%s:%s' % (self.socat_send, ip))
         lan.expect(prompt)
 
     def check_and_clean_ips(self):
         lan.sendline("echo SYNC; ps aux | grep  socat | sed -e 's/.*UDP/UDP/g' | tr '\n' ' '")
         lan.expect_exact("SYNC\r\n")
         lan.expect(prompt)
-        seen_ips = re.findall('UDP4-SENDTO:([^:]*):', lan.before)
+        seen_ips = re.findall('%s:([^:]*):' % self.socat_send, lan.before)
 
         if len(self.all_ips) > 0:
             ips_to_cleanup = set(zip(*self.all_ips)[0]) - set(seen_ips)
