@@ -17,6 +17,7 @@ from faker import Factory
 import pexpect
 import re
 import time
+import random
 
 fake_generator = Factory.create()
 
@@ -60,6 +61,8 @@ class BitTorrentBasic(rootfs_boot.RootFSBootTest):
         return args
 
     def runTest(self):
+        random.seed(99)
+
         for d in [wan, lan]:
             d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
             d.expect(prompt)
