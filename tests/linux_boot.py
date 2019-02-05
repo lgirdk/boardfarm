@@ -61,6 +61,7 @@ class LinuxBootTest(unittest2.TestCase):
 
         if not board.isalive():
             self.result_grade = "SKIP"
+            print("\n\n=========== Test skipped! Board is not alive... =============")
             self.skipTest("Board is not alive")
             raise
 
