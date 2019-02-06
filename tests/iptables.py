@@ -18,3 +18,11 @@ class IPTablesFlushMangle(rootfs_boot.RootFSBootTest):
         pp = board.get_pp_dev()
         pp.sendline('iptables -t mangle -F; iptables -t mangle -X')
         pp.expect(pp.prompt)
+
+
+class IPTablesResetCounters(rootfs_boot.RootFSBootTest):
+    '''Reset iptables counters'''
+    def runTest(self):
+        pp = board.get_pp_dev()
+        pp.sendline('iptables -Z')
+        pp.expect(pp.prompt)
