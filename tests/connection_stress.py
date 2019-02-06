@@ -16,6 +16,8 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
 
     concurrency = 25
     num_conn = 5000
+
+    # for results
     reqs_per_sec = 0
 
     def runTest(self):
@@ -48,3 +50,9 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         avg_cpu = self.logged['mpstat']
         msg = "ApacheBench measured %s connections/second, CPU use = %s%%." % (self.reqs_per_sec, avg_cpu)
         self.result_message = msg
+
+class Connection_Stress_Lite(Connection_Stress):
+    '''Measured CPU use while creating thousands of connections.'''
+
+    concurrency = 5
+    num_conn = 500
