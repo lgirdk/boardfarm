@@ -11,14 +11,10 @@ import inspect
 import os
 import random
 import sys
-import unittest2
 import json
 import hashlib
 import time
 import json
-import argparse
-import re
-import csv
 import traceback
 from datetime import datetime
 
@@ -30,7 +26,7 @@ import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
-from devices import debian, logstash, elasticlogger, get_device
+from devices import logstash, elasticlogger, get_device
 
 import matplotlib
 matplotlib.use('Agg')
