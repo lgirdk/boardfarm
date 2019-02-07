@@ -278,3 +278,48 @@ EOF'''%(ip, port, cert))
         if "BFT_DEBUG" in os.environ:
             print_bold("Service started on ["+ip+"]:"+port)
         return True
+
+def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server.pem"):
+    '''
+    Starts a simple HTTPS web service on a specified port,
+    bound to a specified interface. (e.g. tun0)
+    Send ctrl-c to stop (twice? needs better signal handling)
+    '''
+    import re
+    # the https server needs a certificate, lets create a bogus one
+    device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
+    for i in range(10):
+        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
+            device.sendline()
+            break
+        device.sendline()
+    device.expect(device.prompt)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'"%cert)
+    if 1 == device.expect(["True", "False"]):
+        # no point in carrying on
+        print_bold("Failed to create certificate for HTTPs service")
+        return False
+    device.expect(device.prompt)
+    # create and run the "secure" server
+    device.sendline('''cat > /root/SimpleHTTPsServer.py<< EOF
+import socket
+import BaseHTTPServer as bhs
+import SimpleHTTPServer as shs
+import ssl
+
+class HTTPServerV6(bhs.HTTPServer):
+    address_family = socket.AF_INET6
+https=HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler)
+https.socket = ssl.wrap_socket (https.socket, certfile=\"%s\", server_side=True)
+https.serve_forever()
+EOF'''%(ip, port, cert))
+
+    device.expect(device.prompt)
+    device.sendline ("python -m /root/SimpleHTTPsServer")
+    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+        print_bold("Failed to start service on ["+ip+"]:"+port)
+        return False
+    else:
+        if "BFT_DEBUG" in os.environ:
+            print_bold("Service started on ["+ip+"]:"+port)
+        return True

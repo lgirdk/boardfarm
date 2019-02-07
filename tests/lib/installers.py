@@ -358,6 +358,22 @@ def install_IRCserver(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
+        device.sendline('apt-get install update-inetd -y') # Update inetd before installation
+        device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install inspircd -y')
         device.expect(['Setting up inspircd'], timeout=90)
+        device.expect(device.prompt)
+
+def install_dovecot(device):
+    '''Install dovecot server if not present.'''
+    device.sendline('dovecot --version')
+    try:
+        device.expect(' \(', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install update-inetd -y') # Update inetd before installation
+        device.expect(device.prompt, timeout=90)
+        device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
+        device.expect(['Processing triggers for dovecot-core'], timeout=90)
         device.expect(device.prompt)
