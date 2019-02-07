@@ -310,7 +310,7 @@ def main():
                     else:
                         clog.write('%s: [%s] %s\n' % (e['name'], e['time'], e['text']))
                 except:
-                    print "failed to parse line: %s" % repr(e)
+                    print("failed to parse line: %s" % repr(e))
 
     import operator
     console_combined.sort(key=operator.itemgetter('time'))
