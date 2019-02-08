@@ -30,13 +30,15 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         wan.sendline(cmd)
         wan.expect(prompt)
         # Lan Device: download small file a lot
+        # TODO: this is actually a 404 for lighthttpd config issues?
         url = 'http://%s/%s' % (wan.gw, fname)
         # Start CPU monitor
         board.collect_stats(stats=['mpstat'])
         # Lan Device: download small file a lot
         lan.sendline('\nab -dn %s -c %s %s' % (self.num_conn, self.concurrency, url))
         lan.expect('Benchmarking', timeout=5)
-        if 0 != lan.expect(['Requests per second:\s+(\d+)', 'apr_socket_recv: Connection reset by peer'], timeout=120):
+        timeout=0.05*self.num_conn
+        if 0 != lan.expect(['Requests per second:\s+(\d+)', 'apr_socket_recv: Connection reset by peer'], timeout=timeout):
             raise Exception("ab failed to run")
         self.reqs_per_sec = int(lan.match.group(1))
         lan.expect(prompt)
@@ -56,3 +58,9 @@ class Connection_Stress_Lite(Connection_Stress):
 
     concurrency = 5
     num_conn = 500
+
+class Connection_Stress_Intense(Connection_Stress):
+    '''Measured CPU use while creating thousands of connections.'''
+
+    concurrency = 25
+    num_conn = 20000
