@@ -377,3 +377,151 @@ def install_dovecot(device):
         device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
         device.expect(['Processing triggers for dovecot-core'], timeout=90)
         device.expect(device.prompt)
+
+def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
+    '''Un/Install the OpenVPN server via a handy script'''
+    device.sendline('cd')
+    device.expect_exact('cd')
+    device.expect(device.prompt)
+    device.sendline('ls -l /etc/init.d/openvpn')
+    index = device.expect(['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + device.prompt, timeout=90)
+
+    # do we want to remove it?
+    if remove:
+        if index == 0:
+            device.expect(device.prompt)
+            # be brutal, the server may not be responding to a stop
+            device.sendline('killall -9 openvpn')
+            device.expect(device.prompt, timeout=60)
+            device.sendline('./openvpn-install.sh')
+            device.expect('Select an option.*: ')
+            device.sendline('3')
+            device.expect_exact('Do you really want to remove OpenVPN? [y/n]: n')
+            device.sendcontrol('h')
+            device.sendline('y')
+            device.expect(device.prompt, timeout=90)
+        return
+
+    # do the install
+    if index != 0:
+        dev_ip = device.get_interface_ipaddr(device.iface_dut)
+        device.sendline('apt-get update')
+        device.expect(device.prompt)
+        device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
+        device.expect(device.prompt, timeout=90)
+        device.sendline('chmod +x openvpn-install.sh')
+        device.expect(device.prompt)
+        device.sendline('./openvpn-install.sh')
+        device.expect('IP address:.*', timeout=120)
+        for i in range(20):
+            device.sendcontrol('h')
+        device.sendline(str(dev_ip))
+        device.expect('Public IPv4 address or hostname:.*')
+        device.sendline(dev_ip)
+        device.expect('Do you want to enable IPv6 support.*:.*')
+        if _ip == "ipv4":
+            device.sendline()
+        elif _ip == "ipv6":
+            device.sendcontrol('h')
+            device.sendline('y')
+        device.expect('Port choice.*:.*')
+        device.sendline()
+        device.expect('Protocol.*:.*')
+        device.sendline()
+        device.expect('DNS.*:.*')
+        device.sendline()
+        device.expect('Enable compression.*:.*')
+        device.sendline()
+        device.expect('Customize encryption settings.*: n')
+        device.sendline()
+        device.expect('Press any key to continue...')
+        device.sendline()
+        device.expect('.*Client name: ', timeout=120)
+        device.sendline(_user)
+        device.expect('Select an option.*: 1')
+        device.sendline()
+        device.expect(device.prompt, timeout=90)
+        device.sendline('/etc/init.d/openvpn stop')
+        device.expect(device.prompt)
+        if _ip == "ipv4":
+            addr = dev_ip
+        elif _ip == "ipv6":
+            addr = device.get_interface_ip6addr(device.iface_dut)
+        device.sendline('echo "local '+addr+'" > /etc/openvpn/server.conf.tmp')
+        device.expect(device.prompt)
+        device.sendline('cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
+        device.expect(device.prompt)
+        device.sendline('mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf')
+        device.expect(device.prompt)
+
+    device.sendline('/etc/init.d/openvpn status')
+    index = device.expect(["VPN 'server' is running" ] + [ "VPN 'server' is not running ... failed"] +device.prompt, timeout=90)
+    if index != 0:
+        device.sendline('/etc/init.d/openvpn restart')
+        device.expect(["Starting virtual private network daemon: server" ])
+        # the following are for diagnositcs
+        device.sendline('/etc/init.d/openvpn status')
+        device.expect(device.prompt)
+        device.sendline('ip a')
+
+    device.expect(device.prompt)
+
+def install_ovpn_client(device, remove=False):
+    '''
+    Un/Install the OpenVPN client
+    To run the client as a daemon use:
+    openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
+    '''
+    if remove:
+            device.sendline('killall -9 openvpn')
+            device.expect(device.prompt)
+            device.sendline('apt remove openvpn -y')
+            device.expect(device.prompt, timeout=120)
+            return
+
+    device.sendline('apt-get install openvpn -y')
+    device.expect(device.prompt, timeout=90)
+
+def install_pptpd_server(device, remove=False):
+    '''
+    Un/Install the pptpd
+    '''
+    import pexpect
+    device.expect([pexpect.TIMEOUT]+device.prompt, timeout=5)
+    device.sendline('ls -l /usr/sbin/pptpd')
+    index = device.expect(['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + device.prompt, timeout=90)
+    if remove:
+        if index == 0:
+            device.sendline("/etc/init.d/pptpd stop")
+            device.expect(device.prompt, timeout=60)
+            device.sendline("apt-get remove pptpd -y")
+            device.expect(device.prompt, timeout=60)
+        return
+
+    if index != 0:
+        device.sendline("apt-get install pptpd -y")
+        device.expect(device.prompt, timeout=90)
+
+    device.sendline("/etc/init.d/pptpd restart")
+    device.expect(device.prompt, timeout=60)
+
+def install_pptp_client(device, remove=False):
+    '''
+    Un/Install the pptp-linux package
+    '''
+    device.sendline('pptp --version')
+    index = device.expect(['pptp version'] + device.prompt, timeout=90)
+
+    if remove:
+        if index == 0:
+            device.expect(device.prompt)
+            device.sendline("poff pptpserver")
+            device.expect(device.prompt)
+            device.sendline('apt-get remove pptp-linux -y')
+            device.expect(device.prompt, timeout=60)
+        return
+
+    if index != 0:
+        device.sendline('apt-get install pptp-linux -y')
+
+    device.expect(device.prompt, timeout=60)
