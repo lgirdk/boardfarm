@@ -28,6 +28,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
             board.get_proc_vmstat()
             lan.expect(pexpect.TIMEOUT, timeout=3)
             board.expect(pexpect.TIMEOUT, timeout=3)
+            board.touch()
 
         self.recover()
 
