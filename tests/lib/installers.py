@@ -525,3 +525,23 @@ def install_pptp_client(device, remove=False):
         device.sendline('apt-get install pptp-linux -y')
 
     device.expect(device.prompt, timeout=60)
+
+def install_postfix(device):
+    '''Install postfix server if not present.'''
+    device.sendline('postconf -d | grep mail_version')
+    try:
+        device.expect('mail_version =', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get update') # Update inetd before installation
+        device.expect(device.prompt, timeout=90)
+        device.sendline("apt-get install postfix -y")
+        assert 0 == device.expect(['General type of mail configuration:']+ device.prompt, timeout = 90), "Mail configuration type is note received. Installaion failed"
+        device.sendline("2")
+        assert 0 == device.expect(['System mail name:']+ device.prompt, timeout = 90), "System mail name option is note received. Installaion failed"
+        device.sendline("testingsmtp.com")
+        assert 0 != device.expect(['Errors were encountered']+ device.prompt, timeout = 90), "Errors Encountered. Installaion failed"
+
+        device.sendline("service postfix start")
+        assert 0 != device.expect(['failed']+ device.prompt, timeout = 90), "Unable to start Postfix service.Installaion failed"
