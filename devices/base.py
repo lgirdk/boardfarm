@@ -52,6 +52,16 @@ class BaseDevice(pexpect.spawn):
         self.expect(self.prompt)
         return macaddr
 
+    def get_seconds_uptime(self):
+        '''Return seconds since last reboot. Stored in /proc/uptime'''
+        self.sendcontrol('c')
+        self.expect(self.prompt)
+        self.sendline('\ncat /proc/uptime')
+        self.expect('((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})')
+        seconds_up = float(self.match.group(1))
+        self.expect(self.prompt)
+        return seconds_up
+
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
             return self._logfile_read
