@@ -10,8 +10,8 @@ from devices.common import scp_from
 class JMeter(rootfs_boot.RootFSBootTest):
     '''Runs JMeter jmx file from LAN device'''
 
-    #jmx = "https://jmeter.apache.org/demos/ForEachTest2.jmx"
-    jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq.jmx')
+    jmx = "https://jmeter.apache.org/demos/ForEachTest2.jmx"
+    name = "ForEachTest2"
 
     def runTest(self):
         install_jmeter(lan)
@@ -32,22 +32,16 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         lan.sendline('jmeter -n -t test.jmx -l foo.log -e -o output')
         lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
-        for i in range(300):
+        for i in range(600):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
             board.get_nf_conntrack_conn_count()
             board.get_proc_vmstat()
             board.touch()
 
-            if i == 299:
+            if i == 599:
                 raise Exception("jmeter did not have enough time to complete")
 
-        print "Copying files from lan to dir = %s" % self.config.output_dir
-        lan.sendline('readlink -f output/')
-        lan.expect('readlink -f output/')
-        lan.expect(prompt)
-        fname=lan.before.strip()
-        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter'))
 
         #lan.sendline('rm -rf output')
         #lan.expect(prompt)
@@ -60,8 +54,34 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.sendcontrol('c')
         lan.expect(prompt)
 
+        print "Copying files from lan to dir = %s" % self.config.output_dir
+        lan.sendline('readlink -f output/')
+        lan.expect('readlink -f output/')
+        lan.expect(prompt)
+        fname=lan.before.strip()
+        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.name))
+
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
 
         board.parse_stats(dict_to_log=self.logged)
-        self.result_message = 'JMeter: DONE, cpu usage = %s' % self.logged['mpstat']
+        self.result_message = 'JMeter: DONE, name = %s cpu usage = %s' % (self.name, self.logged['mpstat'])
+
+
+class JMeter_10x_10u_5t(JMeter):
+    '''Runs JMeter jmx 10x_10u_5t'''
+
+    jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_10x_10u_5t.jmx')
+    name = "httpreq_10x_10u_5t"
+
+class JMeter_1x_9u_5t(JMeter):
+    '''Runs JMeter jmx 1x_9u_5t'''
+
+    jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_1x_9u_5t.jmx')
+    name = "httpreq_1x_9u_5t"
+
+class JMeter_20x_9u_1t(JMeter):
+    '''Runs JMeter jmx 20x_9u_1t'''
+
+    jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t.jmx')
+    name = "httpreq_20x_9u_1t"
