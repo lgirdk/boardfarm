@@ -966,6 +966,11 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
         else:
             return None
 
+    def set_link_state(self, interface, state):
+        '''Setting the interface status'''
+        self.sendline("ip link set %s %s" % (interface,state))
+        self.expect(self.prompt)
+
 if __name__ == '__main__':
     # Example use
     try:
