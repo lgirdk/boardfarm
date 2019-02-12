@@ -11,7 +11,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
     '''Runs JMeter jmx file from LAN device'''
 
     jmx = "https://jmeter.apache.org/demos/ForEachTest2.jmx"
-    name = "ForEachTest2"
+    shortname = "ForEachTest2"
 
     def runTest(self):
         install_jmeter(lan)
@@ -59,13 +59,13 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect('readlink -f output/')
         lan.expect(prompt)
         fname=lan.before.strip()
-        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.name))
+        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
 
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
 
         board.parse_stats(dict_to_log=self.logged)
-        self.result_message = 'JMeter: DONE, name = %s cpu usage = %s' % (self.name, self.logged['mpstat'])
+        self.result_message = 'JMeter: DONE, name = %s cpu usage = %s' % (self.shortname, self.logged['mpstat'])
 
 
 class JMeter_10x_10u_5t(JMeter):
