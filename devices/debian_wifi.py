@@ -1,7 +1,6 @@
-
 import re
 import debian
-
+import pexpect
 
 class DebianWifi(debian.DebianBox):
     '''Extension of Debian class with wifi functions'''
@@ -53,3 +52,37 @@ class DebianWifi(debian.DebianBox):
     def disconnect_wpa(self):
         self.sendline("killall wpa_supplicant")
         self.expect(self.prompt)
+
+    def wlan_ssid_connect(self, ssid_name):
+        self.sendline("iwconfig %s essid %s" % (self.iface_wlan,ssid_name))
+        self.expect(self.prompt)
+
+    def wlan_ssid_disconnect(self):
+        self.sendline("iw dev %s disconnect" % self.iface_wlan)
+        self.expect(self.prompt)
+
+    def start_lan_client(self, wan_gw=None):
+        self.iface_dut = self.iface_wlan
+        super(DebianWifi, self).start_lan_client()
+
+    def linux_wifi_client(self, board, ssid_name, password=None):
+        '''Scan for SSID and verify connectivity'''
+        output = self.scan()
+        match = re.search("%s" % ssid_name,output)
+        assert match!=None,'SSID value check in WLAN container'
+
+        link = self.link_up(self.iface_wlan)
+        if link==None:
+            wlan.set_link_state(self.iface_wlan)
+
+        if password:
+            conn_wpa = self.wpa_connect(ssid_name,password)
+            assert conn_wpa!=None,'WPA supplicant initiation'
+        else:
+            self.wlan_ssid_connect(ssid_name)
+
+        board.expect(pexpect.TIMEOUT, timeout=20)
+        conn_wlan = self.wlan_connectivity()
+        assert conn_wlan!=None,'Connection establishment in WIFI'
+
+        self.start_lan_client()

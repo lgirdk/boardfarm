@@ -30,7 +30,7 @@ def wifi_interface(console):
     return wlan_iface
 
 def randomSSIDName():
-    return 'wifi-' + ''.join(random.sample(string.lowercase+string.digits,10))
+    return 'WIFI-' + ''.join(random.sample(string.lowercase+string.digits,10))
 
 def uciSetWifiSSID(console, ssid):
     console.sendline('uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi' % ssid)
@@ -177,3 +177,23 @@ def uciSetWifiSecurity(board, vap_iface, security):
         board.expect(prompt)
         board.sendline('uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz' % vap_iface)
         board.expect(prompt)
+
+class wifi_stub():
+    def enable_wifi_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_ssid_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_broadcast_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_security_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_password_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def enable_channel_util_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_operating_mode_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_bandwidth_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def set_channel_no_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
