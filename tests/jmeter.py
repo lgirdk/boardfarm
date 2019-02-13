@@ -35,9 +35,12 @@ class JMeter(rootfs_boot.RootFSBootTest):
         for i in range(600):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
-            board.get_nf_conntrack_conn_count()
+            conns = board.get_nf_conntrack_conn_count()
             board.get_proc_vmstat()
             board.touch()
+
+            if i > 100 and conns < 20:
+                raise Exception("jmeter is dead/stuck/broke, aborting the run")
 
             if i == 599:
                 raise Exception("jmeter did not have enough time to complete")
