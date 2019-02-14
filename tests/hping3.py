@@ -9,6 +9,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
     '''Floods hping3, creating lots of firewall entries in router'''
 
     conn_rate = "u2000"
+    conns = 20000
 
     def runTest(self):
         install_hping3(lan)
@@ -19,7 +20,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         board.collect_stats(stats=['mpstat'])
 
         # dest ip and port are fixed, random src port, fixed src ip, 100 us between
-        lan.sendline('hping3 -2 -c 20000 -d 120 -S -w 64 -p 445 -i %s %s' % (self.conn_rate, wan_ip))
+        lan.sendline('hping3 -2 -c %s -d 120 -S -w 64 -p 445 -i %s %s' % (self.conns, self.conn_rate, wan_ip))
         lan.expect('HPING', timeout=5)
 
         self.max_conns = 0
@@ -49,3 +50,10 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
 
         args = (self.conn_rate, self.max_conns, self.logged['mpstat'])
         self.result_message = "hping3 udp firewall test, conn_rate = %s, max_conns = %s, cpu usage = %.2f" % args
+
+
+class hping3_basic_udp_long(hping3_basic_udp):
+    '''Floods hping3, creating lots of firewall entries in router'''
+
+    conn_rate = "u2000"
+    conns = "60000"
