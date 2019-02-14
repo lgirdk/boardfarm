@@ -239,3 +239,6 @@ class BaseDevice(pexpect.spawn):
 
         return super(BaseDevice, self).sendcontrol(char)
 
+    def expect_exact_split(self, pattern, nsplit=1, *args, **kwargs):
+        pass
+
