@@ -75,40 +75,40 @@ class JMeter_10x_10u_5t(JMeter):
     '''Runs JMeter jmx 10x_10u_5t'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_10x_10u_5t.jmx')
-    name = "httpreq_10x_10u_5t"
+    shortname = "httpreq_10x_10u_5t"
 
 class JMeter_1x_9u_5t(JMeter):
     '''Runs JMeter jmx 1x_9u_5t'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_1x_9u_5t.jmx')
-    name = "httpreq_1x_9u_5t"
+    shortname = "httpreq_1x_9u_5t"
 
 class JMeter_20x_9u_1t(JMeter):
     '''Runs JMeter jmx 20x_9u_1t'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t.jmx')
-    name = "httpreq_20x_9u_1t"
+    shortname = "httpreq_20x_9u_1t"
 
 class JMeter_20x_9u_1t_300msdelay(JMeter):
     '''Runs JMeter jmx 20x_9u_1t_300msdelay'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t_300msdelay.jmx')
-    name = "httpreq_20x_9u_1t_300msdelay"
+    shortname = "httpreq_20x_9u_1t_300msdelay"
 
 class JMeter_20x_9u_1t_500msdelay(JMeter):
     '''Runs JMeter jmx 20x_9u_1t_500msdelay'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t_500msdelay.jmx')
-    name = "httpreq_20x_9u_1t_500msdelay"
+    shortname = "httpreq_20x_9u_1t_500msdelay"
 
 class JMeter_20x_9u_1t_1000msdelay(JMeter):
     '''Runs JMeter jmx 20x_9u_1t_1000msdelay'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t_1000msdelay.jmx')
-    name = "httpreq_20x_9u_1t_1000msdelay"
+    shortname = "httpreq_20x_9u_1t_1000msdelay"
 
 class JMeter_20x_9u_1t_1500msdelay(JMeter):
     '''Runs JMeter jmx 20x_9u_1t_1500msdelay'''
 
     jmx = os.path.join(os.path.dirname(__file__), 'jmeter/httpreq_20x_9u_1t_1500msdelay.jmx')
-    name = "httpreq_20x_9u_1t_1500msdelay"
+    shortname = "httpreq_20x_9u_1t_1500msdelay"
