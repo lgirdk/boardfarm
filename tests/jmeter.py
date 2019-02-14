@@ -20,7 +20,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
             lan.sendline('curl %s > test.jmx' % self.jmx)
             lan.expect(prompt)
         else:
-            print("Copying %s to lan device")
+            print("Copying %s to lan device" % self.jmx)
             lan.copy_file_to_server(self.jmx, dst='/root/test.jmx')
 
         lan.sendline('rm -rf output *.log')
