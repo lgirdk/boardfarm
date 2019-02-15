@@ -36,7 +36,7 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         board.collect_stats(stats=['mpstat'])
         # Lan Device: download small file a lot
         lan.sendline('\nab -dn %s -c %s %s' % (self.num_conn, self.concurrency, url))
-        lan.expect('Benchmarking', timeout=5)
+        lan.expect('Benchmarking')
         timeout=0.05*self.num_conn
         if 0 != lan.expect(['Requests per second:\s+(\d+)', 'apr_socket_recv: Connection reset by peer'], timeout=timeout):
             raise Exception("ab failed to run")
