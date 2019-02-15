@@ -21,7 +21,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
 
         # dest ip and port are fixed, random src port, fixed src ip, 100 us between
         lan.sendline('hping3 -2 -c %s -d 120 -S -w 64 -p 445 -i %s %s' % (self.conns, self.conn_rate, wan_ip))
-        lan.expect('HPING', timeout=5)
+        lan.expect('HPING')
 
         self.max_conns = 0
         for not_used in range(10):
