@@ -578,8 +578,19 @@ class OpenWrtRouter(base.BaseDevice):
 
         for stat in stats:
             if 'mpstat' in stat:
-                pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
-                pp.expect(pp.prompt)
+                for i in range(5):
+                    try:
+                        pp.sendcontrol('c')
+                        pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
+                        pp.expect_exact("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
+                        pp.expect(pp.prompt)
+                        break
+                    except:
+                        if i == 4:
+                            print_bold("FAILED TO KILL MPSTAT!")
+                            pp.sendcontrol('c')
+                        pass
+
                 pp.sendline('mpstat -P ALL 5  > %s/mpstat &' % self.tmpdir)
                 if 0 == pp.expect(['mpstat: not found'] + pp.prompt):
                     self.failed_stats['mpstat'] = float('nan')
