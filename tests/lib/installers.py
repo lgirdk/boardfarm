@@ -338,7 +338,7 @@ def install_jmeter(device):
     device.expect(device.prompt)
     device.sendline('jmeter --version')
     try:
-        device.expect_exact('Copyright (c) 1999-2018 The Apache Software Foundation', timeout=5)
+        device.expect_exact('The Apache Software Foundation', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
