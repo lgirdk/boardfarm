@@ -63,7 +63,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         fname=lan.before.strip()
         board.touch()
-        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
+        #scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
 
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
