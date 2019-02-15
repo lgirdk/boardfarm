@@ -1,0 +1,23 @@
+from netaddr import *
+import re
+import ipaddress
+def mac_to_snmp_format(mac_addr):
+    mac_tmp = re.sub("[\s\.\-]","",mac_addr)
+    mac = EUI(mac_tmp,dialect=mac_unix)
+    mac_final = str(mac).upper()
+    return mac_final
+
+
+def ipv4_to_snmp_format(ipv4_str):
+    ipv4_tmp = re.sub("[\s\.\-]","",ipv4_str)
+    ipv4_decimal = int(ipv4_tmp,16)
+    ipv4_format = ipaddress.IPv4Address(ipv4_decimal)
+    ipv4_address = ipaddress.ip_address(ipv4_format)
+    return ipv4_address
+
+def ipv6_to_snmp_format(ipv6_str):
+    ipv6_tmp = re.sub("[\s\.\-]","",ipv6_str)
+    pattern = re.compile('.{4}')
+    ipv6_tmp_ip = ':'.join(pattern.findall(ipv6_tmp))
+    ipv6_address = ipaddress.ip_address(ipv6_tmp_ip)
+    return ipv6_address
