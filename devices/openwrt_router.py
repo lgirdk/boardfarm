@@ -22,6 +22,7 @@ import re
 import power
 import common
 import connection_decider
+from common import print_bold
 
 class OpenWrtRouter(base.BaseDevice):
     '''
