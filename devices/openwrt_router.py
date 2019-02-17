@@ -614,20 +614,23 @@ class OpenWrtRouter(base.BaseDevice):
                 pp.sendcontrol('c')
                 pp.expect(pp.prompt)
                 pp.sendline('cat %s/mpstat' % self.tmpdir)
-                pp.expect_exact('cat %s/mpstat' % self.tmpdir)
+                pp.expect(['cat %s/mpstat' % self.tmpdir, pexpect.TIMEOUT])
 
                 idle_vals = []
                 start = datetime.now()
-                while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n'] + pp.prompt):
+                while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n', pexpect.TIMEOUT] + pp.prompt):
                     idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
                     if (datetime.now() - start).seconds > 60:
                         self.touch()
 
-                avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
-                dict_to_log['mpstat'] = avg_cpu_usage
+                if len(idle_vals) != 0:
+                    avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
+                    dict_to_log['mpstat'] = avg_cpu_usage
+                else:
+                    dict_to_log['mpstat'] = 0
 
                 pp.sendline('rm %s/mpstat' % self.tmpdir)
-                pp.expect(pp.prompt)
+                pp.expect([pexpect.TIMEOUT] + pp.prompt)
 
                 idx += 1
 
