@@ -123,6 +123,31 @@ create_container_eth1_static () {
 	docker exec $cname ping $default_route -c3
 }
 
+
+# eth1 is on main network and static
+create_container_eth1_static_ipvlan () {
+	local name=$1
+	local ip=$2
+	local default_route=$3
+
+	cname=bft-node-$IFACE-$name
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-d --network=none $BF_IMG /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+
+	# create lab network access port
+	sudo ip link add tempfoo link $IFACE type ipvlan mode l2
+	sudo ip link set dev tempfoo up
+	sudo ip link set netns $cspace dev tempfoo
+	docker exec $cname ip link set tempfoo name eth1
+	docker exec $cname ip link set eth1 up
+	docker exec $cname ip addr add $ip dev eth1
+	docker exec $cname ip route add default via $default_route dev eth1
+	docker exec $cname ping $default_route -c3
+}
+
 # eth0 is docker private network, eth1 is static ip
 create_container_eth1_static_linked () {
 	local name=$1
