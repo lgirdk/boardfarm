@@ -54,21 +54,27 @@ class JMeter(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board.touch()
         lan.sendcontrol('c')
         lan.expect(prompt)
+        board.touch()
 
         print "Copying files from lan to dir = %s" % self.config.output_dir
         lan.sendline('readlink -f output/')
         lan.expect('readlink -f output/')
+        board.touch()
         lan.expect(prompt)
+        board.touch()
         fname=lan.before.strip()
         board.touch()
         #scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
 
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
+        board.touch()
 
         board.parse_stats(dict_to_log=self.logged)
+        board.touch()
         self.result_message = 'JMeter: DONE, name = %s cpu usage = %s' % (self.shortname, self.logged['mpstat'])
 
 
