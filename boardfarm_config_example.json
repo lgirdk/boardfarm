@@ -71,7 +71,8 @@
                         "post_cmd": "ip link set ${wan_iface} name eth1",
                         "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
                         "color": "cyan",
-                        "options": "tftpd-server"
+                        "options": "tftpd-server",
+			"http_proxy": "localhost:9909"
                 },
                 {
                         "type": "debian",
@@ -81,8 +82,7 @@
                         "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
                         "post_cmd": "ip link set ${lan_iface} name eth1",
                         "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
-                        "color": "blue",
-			"http_proxy": "localhost:9910"
+                        "color": "blue"
                 }
         ],
         "connection_type": "local_serial",
