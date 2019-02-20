@@ -1,0 +1,62 @@
+{
+  "driver" : {
+    "firefox" : {
+      "path" : "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/drivers/geckodriver",
+      "proxy_flag" : "http",
+      "proxy" : {
+        "None" : "set proxy_flag as None for not configuring proxy",
+        "http" : {
+          "ip" : "172.16.1.227",
+          "port" : "8107"
+        }
+      }
+    },
+    "chrome" : {
+      "path" : "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/drivers/chromedriver",
+      "proxy_flag" : "http",
+      "proxy" : {
+        "None" : "set proxy_flag as None for not configuring proxy",
+        "http" : {
+          "ip" : "10.64.37.2",
+          "port" : "8103"
+        },
+        "socks" : {
+          "ip" : "localhost",
+          "port" : "9999"
+        }
+      }
+    },
+    "logger": "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/logs/driver.log",
+    "logger_format" : "%(name)s.%(funcName)s :: [%(asctime)s] : [%(levelname)s] %(message)s",
+    "html_filter" : [
+      {
+        "tag" : ["script"],
+        "continue" : "no"
+      },
+      {
+        "tag" : ["p","span","label","q","h1","h2","h3","h4","h5","h6","cite","marquee","blink"],
+        "text": "None",
+        "continue" : "yes"
+      },
+      {
+        "tag": ["a"],
+        "attr" : {"class":  "None", "href": "None"},
+        "continue" : "no"
+      },
+      {
+        "tag": ["all"],
+        "attr" : {"id": "None", "name": "None", "value": "None"},
+        "continue" : "no"
+      }
+    ],
+    "transifex" : "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/gui_conf/content.json"
+  },
+  "scrapper" : {
+    "browser" : "firefox",
+    "URL" : "http://192.168.0.1",
+    "logger" : "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/logs/scrapper.log",
+    "logger_format" : "%(name)s.%(funcName)s :: [%(asctime)s] : [%(levelname)s] %(message)s",
+    "page_list" : "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/gui_conf/CH7456_page_list",
+    "result_dir": "/home/kalpana/Downloads/boardfarm/boardfarm/web_ui/BF_webUI/results/"
+  }
+}
