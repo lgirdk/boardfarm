@@ -113,6 +113,8 @@ class BaseDevice(pexpect.spawn):
 
         if value is not None:
             self._logfile_read = o_helper(self, value, getattr(self, "color", None))
+        else:
+            self._logfile_read = None
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
