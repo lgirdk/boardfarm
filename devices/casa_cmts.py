@@ -40,10 +40,11 @@ class CasaCMTS(base.BaseDevice):
 
     def connect(self):
         try:
-            if 0 == self.expect(['\n(.*) login:', pexpect.TIMEOUT], timeout=10):
-                self.prompt.append(self.match.group(1) + '>')
-                self.prompt.append(self.match.group(1) + '#')
-                self.prompt.append(self.match.group(1) + '\(.*\)#')
+            if 0 == self.expect(['(.*) login:', pexpect.TIMEOUT], timeout=10):
+                hostname = self.match.group(1).replace('\n', '').replace('\r', '')
+                self.prompt.append(hostname + '>')
+                self.prompt.append(hostname + '#')
+                self.prompt.append(hostname + '\(.*\)#')
                 self.sendline(self.username)
                 self.expect('assword:')
                 self.sendline(self.password)
