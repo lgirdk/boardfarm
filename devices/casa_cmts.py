@@ -27,6 +27,7 @@ class CasaCMTS(base.BaseDevice):
         connection_type = kwargs.get('connection_type', 'local_serial')
         self.username = kwargs.get('username', 'root')
         self.password = kwargs.get('password', 'casa')
+        self.password_admin = kwargs.get('password_admin', 'casa')
 
         if conn_cmd is None:
             # TODO: try to parse from ipaddr, etc
@@ -39,7 +40,10 @@ class CasaCMTS(base.BaseDevice):
 
     def connect(self):
         try:
-            if 0 == self.expect(['login:', pexpect.TIMEOUT], timeout=10):
+            if 0 == self.expect(['\n(.*) login:', pexpect.TIMEOUT], timeout=10):
+                self.prompt.append(self.match.group(1) + '>')
+                self.prompt.append(self.match.group(1) + '#')
+                self.prompt.append(self.match.group(1) + '\(.*\)#')
                 self.sendline(self.username)
                 self.expect('assword:')
                 self.sendline(self.password)
@@ -52,7 +56,7 @@ class CasaCMTS(base.BaseDevice):
                 self.expect([pexpect.TIMEOUT] + self.prompt, timeout=20)
             self.sendline('enable')
             if 0 == self.expect(['Password:'] + self.prompt):
-                self.sendline(self.password)
+                self.sendline(self.password_admin)
                 self.expect(self.prompt)
             self.sendline('config')
             self.expect(self.prompt)
