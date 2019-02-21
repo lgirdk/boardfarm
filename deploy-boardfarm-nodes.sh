@@ -9,7 +9,23 @@ BF_IMG=${BF_IMG:-"bft:node"}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 random_private_mac () {
-	python $DIR/tests/lib/randomMAC.py
+	python - <<END
+import random
+
+def randomMAC():
+    mac = [ (random.randint(0x00,0xff) & 0xfe), # the lsb is 0, i.e. no multicat bit
+             random.randint(0x00, 0xff),
+             random.randint(0x00, 0xff),
+             random.randint(0x00, 0xff),
+             random.randint(0x00, 0xff),
+             random.randint(0x00, 0xff) ]
+    mac_to_be_decided = ':'.join(map(lambda x : hex(x)[2:].lstrip("0x").zfill(2),mac))
+
+    return (mac_to_be_decided)
+
+if __name__ == '__main__':
+    print randomMAC()
+END
 }
 
 local_route () {
@@ -66,10 +82,11 @@ create_container_eth1_bridged_vlan () {
 	sudo ip link set br-$IFACE.$vlan up
 
 	# create uplink vlan on IFACE
-	sudo ip link delete $IFACE.$vlan
+	sudo ip link delete $IFACE.$vlan || true
 	sudo ip link add link $IFACE name $IFACE.$vlan type vlan id $vlan
 	sudo ip link set dev $IFACE.$vlan address $(random_private_mac $vlan)
 	sudo ip link set $IFACE.$vlan master br-$IFACE.$vlan
+	sudo ip link set $IFACE up
 	sudo ip link set $IFACE.$vlan up
 
 	# add veth for new container (one per container vs. the two above are shared)
