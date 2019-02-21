@@ -62,10 +62,11 @@ create_container_eth1_bridged_vlan () {
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
 
 	# create bridge
-	sudo ip link add br-$IFACE.$vlan type bridge
+	sudo ip link add br-$IFACE.$vlan type bridge || true
 	sudo ip link set br-$IFACE.$vlan up
 
 	# create uplink vlan on IFACE
+	sudo ip link delete $IFACE.$vlan
 	sudo ip link add link $IFACE name $IFACE.$vlan type vlan id $vlan
 	sudo ip link set dev $IFACE.$vlan address $(random_private_mac $vlan)
 	sudo ip link set $IFACE.$vlan master br-$IFACE.$vlan
