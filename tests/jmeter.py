@@ -30,7 +30,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         board.collect_stats(stats=['mpstat'])
 
-        lan.sendline('jmeter -n -t test.jmx -l foo.log -e -o output')
+        lan.sendline('JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t test.jmx -l foo.log -e -o output')
         lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
         for i in range(600):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
@@ -59,14 +59,14 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         board.touch()
 
-        print "Copying files from lan to dir = %s" % self.config.output_dir
-        lan.sendline('readlink -f output/')
-        lan.expect('readlink -f output/')
-        board.touch()
-        lan.expect(prompt)
-        board.touch()
-        fname=lan.before.strip()
-        board.touch()
+        #print "Copying files from lan to dir = %s" % self.config.output_dir
+        #lan.sendline('readlink -f output/')
+        #lan.expect('readlink -f output/')
+        #board.touch()
+        #lan.expect(prompt)
+        #board.touch()
+        #fname=lan.before.strip()
+        #board.touch()
         #scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
 
         # let board settle down
