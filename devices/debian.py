@@ -402,6 +402,41 @@ class DebianBox(base.BaseDevice):
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
 
+    def get_tftp_cfg_dest_path(self, board=None):
+        return '/tftpboot' # can this change?
+
+    def get_conf_file_from_tftp(self, board, cfg):
+        """Retrieve a file from the tftp sever"""
+        if cfg is None:
+            return None
+
+        conf_file_path = self.get_tftp_cfg_dest_path()+'/'+cfg
+
+        # this is where the current (to be downloaded from the tftp)
+        # config is going to be placed
+        dest_fname = board.tmpdir+'/'+os.path.basename(conf_file_path)+".current"
+        try:
+            os.remove(dest_fname)
+        except:
+            pass
+
+        try:
+            print "Downloading "+conf_file_path+" to "+dest_fname
+            from devices.common import scp_from
+            scp_from(conf_file_path, self.ipaddr, self.username, self.password, self.port, dest_fname)
+
+            if not os.path.isfile(dest_fname):
+                # Something has gone wrong as the tftp client has not thrown an
+                # exception, but the file is not where it should be!!
+                print("Tftp completed but %s not found in destination dir: "% dest_fname)
+                return None
+
+            print "Downloaded: "+conf_file_path
+            return dest_fname
+        except:
+            print("Failed to download %s from %s"% (conf_file_path, self.ipaddr))
+            return None
+
     def copy_file_to_server(self, src, dst=None):
         def gzip_str(string_):
 	    import gzip
