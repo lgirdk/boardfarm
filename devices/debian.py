@@ -19,7 +19,7 @@ import re
 
 from termcolor import colored, cprint
 
-from lib.docsis import docsis
+from lib.docsis import docsis, cm_cfg
 
 class DebianBox(base.BaseDevice):
     '''
@@ -625,7 +625,6 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
 
         self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
         self.expect(self.prompt)
-
         # combine all configs into one
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
         self.expect(self.prompt)
@@ -639,9 +638,12 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
         cfg_list = []
 
         if 'tftp_cfg_files' in board_config:
-            for path in paths:
-                for cfg in board_config['tftp_cfg_files']:
-                    cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
+            for cfg in board_config['tftp_cfg_files']:
+                if isinstance(cfg, cm_cfg) or isinstance(cfg, mta_cfg):
+                    cfg_list.append(cfg)
+                else:
+                    for path in paths:
+                        cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
         else:
             for path in paths:
                 cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
@@ -649,7 +651,6 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
 
         # Copy binary files to tftp server
         for cfg in cfg_set:
-            # TODO: copy to tmpdir at some point
             d = docsis(cfg)
             ret = d.encode()
             self.tftp_device.copy_file_to_server(ret)
@@ -702,6 +703,13 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
         # only start tftp server if we are a full blown wan+provisioner
         if self.wan_cmts_provisioner:
             self.start_tftp_server()
+
+        # errr, this should not need to call into board object
+        try:
+            from devices import board
+            board.update_cfg_for_site()
+        except:
+            pass
 
         self.copy_cmts_provisioning_files(board_config)
 
