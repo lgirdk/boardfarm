@@ -7,7 +7,8 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 from selenium.webdriver.support.select import Select
-from time import sleep
+from selenium.common.exceptions import NoSuchElementException
+import time
 
 def enter_input(web_gui, input_path, input_value):
     try:
