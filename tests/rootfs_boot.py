@@ -19,6 +19,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         tftp_device = None
         # start all tftp servers for now
         for tftp_server in tftp_servers:
+            # This is a mess, just taking the last tftpd-server?
             tftp_device = getattr(self.config, tftp_server)
 
         dhcp_started = False
