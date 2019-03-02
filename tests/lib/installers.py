@@ -397,12 +397,12 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     device.expect(device.prompt)
 
     device.sendline('ls -l /etc/init.d/openvpn')
-    index = device.expect(['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + device.prompt, timeout=90)
+    index = device.expect(['(\\sroot\\sroot\\s{1,}\\d{4}(.*)\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + ['No such file or directory'])
+    device.expect(device.prompt)
 
     # do we want to remove it?
     if remove:
         if index == 0:
-            device.expect(device.prompt)
             # be brutal, the server may not be responding to a stop
             device.sendline('killall -9 openvpn')
             device.expect(device.prompt, timeout=60)
