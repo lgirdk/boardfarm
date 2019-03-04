@@ -216,7 +216,7 @@ class DebianBox(base.BaseDevice):
     def sudo_sendline(self, s):
         if self.username != "root":
             s = "sudo " + s
-        return super(type(self), self).sendline(s)
+        return super(DebianBox, self).sendline(s)
 
     def reset(self):
         self.sendline('reboot')
