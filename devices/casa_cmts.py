@@ -469,6 +469,7 @@ if __name__ == '__main__':
 
     cmts.set_iface_ipaddr('eth 0', '172.19.17.136 255.255.255.192')
     cmts.set_iface_ipaddr('gige 0', '192.168.3.222 255.255.255.0')
+    # TODO: add third network for open
     cmts.add_ip_bundle(1, "192.168.200.1", "192.168.201.1", "192.168.3.1")
 
     cmts.add_route("0.0.0.0", "0", "192.168.3.1")

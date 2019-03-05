@@ -21,11 +21,11 @@ class DebianISCProvisioner(DebianBox):
         self.cm_gateway = ipaddress.IPv4Address(kwargs.pop('cm_gateway', u"192.168.200.1"))
         self.mta_network = ipaddress.IPv4Network(kwargs.pop('mta_network', u"192.168.201.0/24"))
         self.mta_gateway = ipaddress.IPv4Address(kwargs.pop('mta_gateway', u"192.168.201.1"))
+        self.open_network = ipaddress.IPv4Network(kwargs.pop('open_network', u"192.168.202.0/24"))
+        self.open_gateway = ipaddress.IPv4Address(kwargs.pop('open_gateway', u"192.168.202.1"))
         self.prov_network = ipaddress.IPv4Network(kwargs.pop('prov_network', u"192.168.3.0/24"))
         self.prov_gateway = ipaddress.IPv4Address(kwargs.pop('prov_gateway', u"192.168.3.222"))
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
-
-        self.gw = self.prov_ip
 
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
@@ -38,6 +38,8 @@ class DebianISCProvisioner(DebianBox):
                     self.wan_dhcp_server = False
                     self.standalone_provisioner = False
 
+        self.gw = self.prov_ip
+        self.nw = self.prov_network
         return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
     def update_cmts_isc_dhcp_config(self, board_config):
@@ -53,6 +55,13 @@ default-lease-time 604800;
 max-lease-time 604800;
 allow leasequery;
 
+class "CM" {
+  match if substring (option vendor-class-identifier, 0, 6) = "docsis";
+}
+class "MTA" {
+  match if substring (option vendor-class-identifier, 0, 4) = "pktc";
+}
+
 option space docsis-mta;
 option docsis-mta.dhcp-server-1 code 1 = ip-address;
 option docsis-mta.dhcp-server-1 ###MTA_DHCP_SERVER1###;
@@ -65,38 +74,59 @@ option docsis-mta.kerberos-realm code 6 = string;
 option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
 
 subnet ###PROV_IP### netmask ###PROV_NETMASK### {
-  interface %s;
+  interface ###IFACE###;
+  ignore booting;
 }
-subnet ###CM_IP### netmask ###CM_NETMASK###
-{
-  interface %s;
-  range ###CM_START_RANGE### ###CM_END_RANGE###;
-  option routers ###CM_GATEWAY###;
-  option broadcast-address ###CM_BROADCAST###;
-  option dhcp-parameter-request-list 43;
-  option domain-name "local";
-  option time-offset 1;
-  option tftp-server-name "###DEFAULT_TFTP_SERVER###";
-  filename "UNLIMITCASA.cfg";
-  allow unknown-clients;
+
+shared-network boardfarm {
+  interface ###IFACE###;
+  subnet ###CM_IP### netmask ###CM_NETMASK###
+  {
+    option routers ###CM_GATEWAY###;
+    option broadcast-address ###CM_BROADCAST###;
+    option dhcp-parameter-request-list 43;
+    option domain-name "local";
+    option time-offset 1;
+    option tftp-server-name "###DEFAULT_TFTP_SERVER###";
+    filename "UNLIMITCASA.cfg";
+  }
+  subnet ###MTA_IP### netmask ###MTA_NETMASK###
+  {
+    option routers ###MTA_GATEWAY###;
+    option broadcast-address ###MTA_BROADCAST###;
+    option time-offset 1;
+    option domain-name-servers ###PROV###;
+  }
+  subnet ###OPEN_IP### netmask ###OPEN_NETMASK###
+  {
+    option routers ###OPEN_GATEWAY###;
+    option broadcast-address ###OPEN_BROADCAST###;
+    option domain-name "local";
+    option time-offset 1;
+    option domain-name-servers ###PROV###;
+  }
+  pool {
+    allow unknown-clients;
+    range ###OPEN_START_RANGE### ###OPEN_END_RANGE###;
+  }
+  pool {
+    range ###MTA_START_RANGE### ###MTA_END_RANGE###;
+    allow members of "MTA";
+  }
+  pool {
+    range ###CM_START_RANGE### ###CM_END_RANGE###;
+    allow members of "CM";
+  }
 }
-subnet ###MTA_IP### netmask ###MTA_NETMASK###
-{
-  interface %s;
-  range ###MTA_START_RANGE### ###MTA_END_RANGE###;
-  option routers ###MTA_GATEWAY###;
-  option broadcast-address ###MTA_BROADCAST###;
-  option time-offset 1;
-  option domain-name-servers %s;
-  allow unknown-clients;
-}
-EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
+EOF'''
 
         to_send = to_send.replace('###LOG_SERVER###', str(self.prov_ip))
         to_send = to_send.replace('###TIME_SERVER###', str(self.prov_ip))
         to_send = to_send.replace('###NEXT_SERVER###', str(self.prov_ip))
+        to_send = to_send.replace('###IFACE###', str(self.iface_dut))
         to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
         to_send = to_send.replace('###MTA_DHCP_SERVER2###', str(self.prov_ip))
+        to_send = to_send.replace('###PROV###', str(self.prov_ip))
         to_send = to_send.replace('###PROV_IP###', str(self.prov_network[0]))
         to_send = to_send.replace('###PROV_NETMASK###', str(self.prov_network.netmask))
         to_send = to_send.replace('###CM_IP###', str(self.cm_network[0]))
@@ -112,6 +142,12 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
         to_send = to_send.replace('###MTA_END_RANGE###', str(self.mta_network[60]))
         to_send = to_send.replace('###MTA_GATEWAY###', str(self.mta_gateway))
         to_send = to_send.replace('###MTA_BROADCAST###', str(self.mta_network[-1]))
+        to_send = to_send.replace('###OPEN_IP###', str(self.open_network[0]))
+        to_send = to_send.replace('###OPEN_NETMASK###', str(self.open_network.netmask))
+        to_send = to_send.replace('###OPEN_START_RANGE###', str(self.open_network[10]))
+        to_send = to_send.replace('###OPEN_END_RANGE###', str(self.open_network[60]))
+        to_send = to_send.replace('###OPEN_GATEWAY###', str(self.open_gateway))
+        to_send = to_send.replace('###OPEN_BROADCAST###', str(self.open_network[-1]))
 
         self.sendline(to_send)
 	self.expect(self.prompt)
@@ -201,9 +237,9 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
         self.sendline('cp /dev/null %s' % cfg_file)
         self.expect(self.prompt)
 
-        # insert tftp server
+        # insert tftp server, TODO: how to clean up?
         board_config['extra_provisioning']['cm']['next-server'] = tftp_server
-        #board_config['extra_provisioning']['cm']['options']['tftp-server-name'] = '"' + tftp_server + '"'
+        board_config['extra_provisioning']['mta']['next-server'] = tftp_server
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
@@ -276,10 +312,9 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut, self.gw)
         #self.sendline('ifconfig %s inet6 add 2001:ed8:77b5:3::101/64' % self.iface_dut)
         #self.expect(self.prompt)
         # TODO: specify these via config
-        #self.sendline('ip route add 192.168.201.0/24 via 192.168.3.222' % (self.mta_network, self.prov_gateway))
-        #self.expect(self.prompt)
-        #self.sendline('ip route add 192.168.200.0/24 via 192.168.3.222' % (self.cm_network, self.prov_gateway))
-        #self.expect(self.prompt)
+        for nw in [self.cm_network, self.mta_network, self.open_network]:
+            self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
+            self.expect(self.prompt)
         # TODO: iface_dut needs an ipv6 addr
         # sysctl net.ipv6.conf.%s.disable_ipv6=0 % iface_dut
         #self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
