@@ -42,6 +42,7 @@ class DebianBox(base.BaseDevice):
     standalone_provisioner = False
 
     iface_dut = "eth1"
+    gw = None
 
     def __init__(self,
                  *args,
@@ -119,12 +120,13 @@ class DebianBox(base.BaseDevice):
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
         # board
-        if (lan_gateway - lan_network.num_addresses).is_private:
-            self.gw = lan_gateway - lan_network.num_addresses
-        else:
-            self.gw = lan_gateway + lan_network.num_addresses
+        if self.gw is None:
+            if (lan_gateway - lan_network.num_addresses).is_private:
+                self.gw = lan_gateway - lan_network.num_addresses
+            else:
+                self.gw = lan_gateway + lan_network.num_addresses
 
-        self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
+            self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
 
         # override above values if set in wan options
         if 'options' in kwargs:
