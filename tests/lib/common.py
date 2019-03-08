@@ -446,11 +446,11 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     device.expect(device.prompt)
     return snmp_out
 
-def hex2ipv6(self, hexstr):
+def hex2ipv6(self,hexstr):
     """
     Can parse strings in this form:
     FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3
     """
     hexstr = hexstr.replace(' ', '').lower()
     blocks = (''.join(block) for block in zip(*[iter(hexstr)]*4))
-    return ':'.join(str(block) for block in blocks)
+    return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
