@@ -157,6 +157,14 @@ class cm_cfg(object):
         if saved_txt == self.txt:
             print("WARN: no regex sub was made for %s, to be replaced with %s" % (regex, sub))
 
+    def _is_bridged(self):
+        if 'eRouter' not in self.txt:
+            return True
+        else:
+            return False
+
+    is_bridged = property(_is_bridged)
+
 class mta_cfg(cm_cfg):
     '''MTA specific class for cfgs'''
 
