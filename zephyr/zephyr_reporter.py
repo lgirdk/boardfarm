@@ -100,7 +100,7 @@ def parse_zapi_config():
 
     return data
 
-def update_zephyr(test_cases_list):
+def update_zephyr(test_cases_list, result_data):
     args=parse_zapi_config()
     if len(args) == 0:
         print("Zephyr is not configured, skipping...")
@@ -117,10 +117,20 @@ def update_zephyr(test_cases_list):
                     options={'server': z["jira_url"]})
 
         proj = jira.project(z["project"])
-        verid = get_jira_release_id(z['release'], jira, proj)
-        cycleName = z["cycle"]
-        cycleName = cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
-
+        date = str((datetime.datetime.now()).strftime("%Y%m%d"))
+        try:
+            match = re.search('SW_REV: \w+\-\w+\-((\d+\.?)+(-\w+))-SH', str(result_data))
+            version = match.group(1).replace(match.group(3),'.0-PRE-CH7465LG')
+            if date in match.group(3):
+                cycleName = match.group(1)+'-SH-DailyBuild'
+            else:
+                cycleName = match.group(1)
+        except:
+            version = z["release"]
+            cycleName = z["cycle"]
+        print("version = %s" %version)
+        print("cycleName = %s" %cycleName)
+        verid = get_jira_release_id(version, jira, proj)
 
         reporter = zapi.Zapi(project_id=proj.id,
                              version_id=verid,
@@ -136,46 +146,47 @@ def update_zephyr(test_cases_list):
         result = ""
 
         for i in range(len(test_cases_list)):
-            test_name = test_cases_list[i][0]
-            print "Test_name :" + test_name
-            test_id = get_test_id_from_meta_file(z["metafile"], test_name)
+            if test_cases_list[i] != []:
+                test_name = test_cases_list[i][0]
+                print "Test_name :" + test_name
+                test_id = get_test_id_from_meta_file(z["metafile"], test_name)
 
-            if test_id:
-                print "Found Test ID in Meta file : " + test_id
-                issue = jira.issue(test_id)
-            else:
-                continue
+                if test_id:
+                    print "Found Test ID in Meta file : " + test_id
+                    issue = jira.issue(test_id)
+                else:
+                    continue
 
-            if z["updateautomationstatus"]:
-                 update_automation_status(issue)
+                if z["updateautomationstatus"]:
+                     update_automation_status(issue)
 
-            exec_id = reporter.create_execution(str(issue.id))
-            result = test_cases_list[i][1]
-            print "Test case Result: " + result
-            log_data = "sample log data"
-            if result == 'FAIL':
-                result = 'FAIL'
-            if result == 'OK':
-                result = 'PASS'
-            if result == 'None':
-                result = 'FAIL'
-            if result == 'SKIP':
-                result = 'NOT TESTED'
-            if result == 'Exp FAIL':
-                result = 'FAIL'
+                exec_id = reporter.create_execution(str(issue.id))
+                result = test_cases_list[i][1]
+                print "Test case Result: " + result
+                log_data = "sample log data"
+                if result == 'FAIL':
+                    result = 'FAIL'
+                if result == 'OK':
+                    result = 'PASS'
+                if result == 'None':
+                    result = 'FAIL'
+                if result == 'SKIP':
+                    result = 'NOT TESTED'
+                if result == 'Exp FAIL':
+                    result = 'FAIL'
 
-            if 'status_codes' in z:
-                ret = reporter.set_execution(result,
-                 exec_id,
-                 log_data,
-                 status_code_dict=z['status_codes'])
-            else:
-                ret = reporter.set_execution(result,
-                 exec_id,
-                 log_data)
+                if 'status_codes' in z:
+                    ret = reporter.set_execution(result,
+                     exec_id,
+                     log_data,
+                     status_code_dict=z['status_codes'])
+                else:
+                    ret = reporter.set_execution(result,
+                     exec_id,
+                     log_data)
 
-            if ret.status_code != requests.codes.ok:
-                raise Exception("Error = %s, when trying to set execution status" % ret)
+                if ret.status_code != requests.codes.ok:
+                    raise Exception("Error = %s, when trying to set execution status" % ret)
 
 if __name__ == "__main__":
     ARGS = parse_arguments()
