@@ -445,3 +445,10 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
+
+def linux_ipv6_enable_disable(device, interface, option):
+    """
+    option 1 = Disable, Option 0=Enable
+    """
+    device.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6="+option)
+    device.expect(device.prompt, timeout=60)
