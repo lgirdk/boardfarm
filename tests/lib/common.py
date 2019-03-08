@@ -415,13 +415,13 @@ def snmp_mib_set(device, board, iface_ip, mib_name, index, set_type, set_value, 
     time_out = (timeout*retry)+30
     device.sendline("snmpset -v 2c -c private -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+board.mib[mib_name]+"."+str(index)+" "+set_type+" "+str(set_value))
     if set_type == "i" or set_type == "a" or set_type == "u":
-        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\w+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
+        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
     elif set_type == "s":
-        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\w+\:\s+("%s")\r\n' % set_value] + device.prompt, timeout=time_out)
+        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+("%s")\r\n' % set_value] + device.prompt, timeout=time_out)
     elif set_type == "x":
         set_value_hex = set_value[2:].upper()
         set_value_output = ' '.join([set_value_hex[i:i+2] for i in range(0, len(set_value_hex), 2)])
-        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\w+\:\s+(%s)\r\n' % set_value_output] + device.prompt, timeout=40)
+        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value_output] + device.prompt, timeout=40)
     assert idx==1,"Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
@@ -440,8 +440,17 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     mib_oid = match.group(1)+'.'+index
     time_out = (timeout*retry)+30
     device.sendline("snmpget -v 2c -c private -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+board.mib[mib_name]+"."+str(index))
-    idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\w+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
+    idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
+
+def hex2ipv6(self, hexstr):
+    """
+    Can parse strings in this form:
+    FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3
+    """
+    hexstr = hexstr.replace(' ', '').lower()
+    blocks = (''.join(block) for block in zip(*[iter(hexstr)]*4))
+    return ':'.join(str(block) for block in blocks)
