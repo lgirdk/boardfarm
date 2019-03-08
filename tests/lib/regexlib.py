@@ -48,3 +48,7 @@ LinuxMacFormat='([0-9a-f]{2}(?::[0-9a-f]{2}){5})'
 
 # traceroute returns no route to ip address (i.e. '<num> * * *' 30 times)
 TracerouteNoRoute='((.[1-9]|[1-9][0-9])(\s\s\*\s\*\s\*)(\r\n|\r|\n)){30}'
+
+#Grep hex string format of Mac address in SNMP output
+#Matches eg:F4 6D 04 61 74 E0
+SNMPMacAddressRegex = '([0-9A-Z][0-9A-Z]\s){6}'
