@@ -230,12 +230,16 @@ def main():
 
         print_bold("Extra tests specified on command line:")
         try:
-            for t in [getattr(tests, name) for name in config.EXTRA_TESTS]:
+            for name in config.EXTRA_TESTS:
+                t = getattr(tests, name, None)
+                if t is None:
+                    raise Exception("Unable to load test from tests class!!!! Parsing of test selected via -e failed")
                 print_bold("  %s" % t)
                 test = t(config)
                 test.start = start
                 tests_to_run.append(test)
-        except:
+        except Exception as e:
+            print_bold(e)
             print_bold("Unable to find specified extra tests, aborting...")
             sys.exit(1)
 
