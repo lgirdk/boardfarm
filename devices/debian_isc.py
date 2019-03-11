@@ -68,9 +68,15 @@ option docsis-mta.dhcp-server-2 code 2 = ip-address;
 option docsis-mta.dhcp-server-2 ###MTA_DHCP_SERVER2###;
 option docsis-mta.provision-server code 3 = { integer 8, string };
 option docsis-mta.provision-server 0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00  ;
-option docsis-mta-encap code 122 = encapsulate docsis-mta;
 option docsis-mta.kerberos-realm code 6 = string;
 option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
+option docsis-mta.as-req-as-rep-1 code 4 = { integer 32, integer 32, integer 32 };
+option docsis-mta.as-req-as-rep-2 code 5 = { integer 32, integer 32, integer 32 };
+option docsis-mta.krb-realm-name code 6 = string;
+option docsis-mta.tgs-util code 7 = integer 8;
+option docsis-mta.timer code 8 = integer 8;
+option docsis-mta.ticket-ctrl-mask code 9 = integer 16;
+option docsis-mta-pkt code 122 = encapsulate docsis-mta;
 
 subnet ###PROV_IP### netmask ###PROV_NETMASK### {
   interface ###IFACE###;
