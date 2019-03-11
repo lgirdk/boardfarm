@@ -33,8 +33,10 @@ for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f])
                 test_mappings[test_file].append(ref)
                 exec("from %s import %s" % (x, obj))
     except Exception as e:
-        print(e)
-        print("Warning: could not import from file %s." % x)
+        if 'BFT_DEBUG' in os.environ:
+            import traceback
+            traceback.print_exc()
+        print("Warning: could not import from file %s. Run with BFT_DEBUG=y for more details" % x)
 
 def init(config):
         for test_file, tests in test_mappings.iteritems():
