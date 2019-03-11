@@ -177,7 +177,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 if len(pkg) > 0:
                     board.install_package(pkg)
 
-        if prov is not None and 'debian' in prov.model:
+        if prov is not None and 'debian-isc-provisioner' in prov.model:
             table = self.config.board['station']
             idx = wan.port # TODO: how to do this right...?
 
