@@ -50,7 +50,6 @@ class DebianISCProvisioner(DebianBox):
 log-facility local7;
 option log-servers ###LOG_SERVER###;
 option time-servers ###TIME_SERVER###;
-next-server ###NEXT_SERVER###;
 default-lease-time 604800;
 max-lease-time 604800;
 allow leasequery;
