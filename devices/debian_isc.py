@@ -66,13 +66,9 @@ class "HOST" {
 
 option space docsis-mta;
 option docsis-mta.dhcp-server-1 code 1 = ip-address;
-option docsis-mta.dhcp-server-1 ###MTA_DHCP_SERVER1###;
 option docsis-mta.dhcp-server-2 code 2 = ip-address;
-option docsis-mta.dhcp-server-2 ###MTA_DHCP_SERVER2###;
 option docsis-mta.provision-server code 3 = { integer 8, string };
-option docsis-mta.provision-server 0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00  ;
 option docsis-mta.kerberos-realm code 6 = string;
-option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
 option docsis-mta.as-req-as-rep-1 code 4 = { integer 32, integer 32, integer 32 };
 option docsis-mta.as-req-as-rep-2 code 5 = { integer 32, integer 32, integer 32 };
 option docsis-mta.krb-realm-name code 6 = string;
@@ -96,6 +92,8 @@ shared-network boardfarm {
     option domain-name "local";
     option time-offset 1;
     option tftp-server-name "###DEFAULT_TFTP_SERVER###";
+    option docsis-mta.dhcp-server-1 ###MTA_DHCP_SERVER1###;
+    option docsis-mta.dhcp-server-2 ###MTA_DHCP_SERVER2###;
     filename "UNLIMITCASA.cfg";
   }
   subnet ###MTA_IP### netmask ###MTA_NETMASK###
@@ -104,6 +102,8 @@ shared-network boardfarm {
     option broadcast-address ###MTA_BROADCAST###;
     option time-offset 1;
     option domain-name-servers ###PROV###;
+    option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
+    option docsis-mta.provision-server 0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00 ;
   }
   subnet ###OPEN_IP### netmask ###OPEN_NETMASK###
   {
