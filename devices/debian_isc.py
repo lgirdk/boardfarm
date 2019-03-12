@@ -60,6 +60,9 @@ class "CM" {
 class "MTA" {
   match if substring (option vendor-class-identifier, 0, 4) = "pktc";
 }
+class "HOST" {
+  match if ((substring(option vendor-class-identifier,0,6) != "docsis") and (substring(option vendor-class-identifier,0,4) != "pktc"));
+}
 
 option space docsis-mta;
 option docsis-mta.dhcp-server-1 code 1 = ip-address;
@@ -111,16 +114,16 @@ shared-network boardfarm {
     option domain-name-servers ###PROV###;
   }
   pool {
-    allow unknown-clients;
-    range ###OPEN_START_RANGE### ###OPEN_END_RANGE###;
-  }
-  pool {
     range ###MTA_START_RANGE### ###MTA_END_RANGE###;
     allow members of "MTA";
   }
   pool {
     range ###CM_START_RANGE### ###CM_END_RANGE###;
     allow members of "CM";
+  }
+  pool {
+    range ###OPEN_START_RANGE### ###OPEN_END_RANGE###;
+    allow members of "HOST";
   }
 }
 EOF'''
