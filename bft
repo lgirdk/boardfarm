@@ -433,10 +433,9 @@ def main():
         result_data = json.load(open('./results/test_results.json'))
         length = len(result_data["test_results"])
         test_cases_list = []
-        test_cases_list.append([])
-        test_cases_list.append([])
 
         for tc in range(0, length):
+            test_cases_list.append([])
             test_case = result_data["test_results"][tc]["name"]
             test_cases_list[tc].append(test_case)
             test_result = result_data["test_results"][tc]["grade"]
