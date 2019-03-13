@@ -8,6 +8,7 @@
 import time
 import linux_boot
 import lib
+import ipaddress
 from devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
@@ -177,17 +178,44 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 if len(pkg) > 0:
                     board.install_package(pkg)
 
-        if prov is not None and 'debian' in prov.model:
+        if prov is not None and 'debian-isc-provisioner' in prov.model:
             table = self.config.board['station']
             idx = wan.port # TODO: how to do this right...?
 
+
+            start_time = time.time()
+            time_for_provisioning = 60
+
             ips = []
-            for not_used in range(5):
-                ips = [board.get_interface_ipaddr(board.wan_iface)]
-                if hasattr(board, 'erouter_iface'):
-                    ips += [board.get_interface_ipaddr(board.erouter_iface)]
-                if hasattr(board, 'mta_iface'):
-                    ips += [board.get_interface_ipaddr(board.mta_iface)]
+            while (time.time() - start_time < time_for_provisioning):
+                try:
+                    try:
+                        ip = board.get_interface_ipaddr(board.wan_iface)
+                    except:
+                        assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.cm_network, \
+                            "Board failed to obtain WAN IP address"
+
+                    ips += [ip]
+
+                    if hasattr(board, 'erouter_iface'):
+                        try:
+                            ip = board.get_interface_ipaddr(board.erouter_iface)
+                        except:
+                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.open_network, \
+                                "Board failed to obtain erouter IP address"
+                        ips += [ip]
+                    if hasattr(board, 'mta_iface'):
+                        try:
+                            ip = board.get_interface_ipaddr(board.mta_iface)
+                        except:
+                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.mta_network, \
+                                "Board failed to obtain MTA IP address"
+                        ips += [ip]
+                        break
+                except:
+                    if time.time() - start_time < time_for_provisioning:
+                        raise
+                    pass
 
             # TODO: don't hard code 300 or mv1-1
             prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
