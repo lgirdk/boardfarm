@@ -146,6 +146,12 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             if wan:
                 wan.sendline('\nip -6 route del default')
                 wan.expect(prompt)
+                # Add eth1 ipv6 default gateway
+                default_gateway_ipv6 = self.config.board['common']['Default_gateway_ipv6']
+                wan.sendline('\nip -6 route add default via %s dev eth1' %default_gateway_ipv6)
+                wan.expect(prompt)
+                wan.sendline('\nip -6 route show')
+                wan.expect(prompt)
 
         # Give other daemons time to boot and settle
         if self.config.setup_device_networking:
