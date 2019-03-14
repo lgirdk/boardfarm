@@ -244,3 +244,10 @@ class BaseDevice(pexpect.spawn):
     def expect_exact_split(self, pattern, nsplit=1, *args, **kwargs):
         pass
 
+    def enable_ipv6(self, interface):
+        self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=0")
+        self.expect(self.prompt, timeout=30)
+
+    def disable_ipv6(self, interface):
+        self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=1")
+        self.expect(self.prompt, timeout=30)
