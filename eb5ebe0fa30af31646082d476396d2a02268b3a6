@@ -46,6 +46,30 @@
       "revId": "eb5ebe0fa30af31646082d476396d2a02268b3a6",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "575f6e0d_6c606eef",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-03-15T14:50:32Z",
+      "side": 1,
+      "message": "Yes good catch, we need to define it outside the scope of the while loop still.",
+      "parentUuid": "a5bf820e_78110637",
+      "range": {
+        "startLine": 204,
+        "startChar": 28,
+        "endLine": 204,
+        "endChar": 30
+      },
+      "revId": "eb5ebe0fa30af31646082d476396d2a02268b3a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
