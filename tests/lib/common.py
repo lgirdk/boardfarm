@@ -17,7 +17,7 @@ import os
 import signal
 import config
 from termcolor import cprint
-import re
+import re, ipaddress
 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import *
@@ -445,3 +445,12 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
+
+def hex2ipv6(hexstr):
+    """
+    Can parse strings in this form:
+    FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3
+    """
+    hexstr = hexstr.replace(' ', '').lower()
+    blocks = (''.join(block) for block in zip(*[iter(hexstr)]*4))
+    return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
