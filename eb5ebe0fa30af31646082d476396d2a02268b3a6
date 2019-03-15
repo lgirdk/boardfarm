@@ -22,6 +22,30 @@
       "revId": "eb5ebe0fa30af31646082d476396d2a02268b3a6",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a5bf820e_78110637",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-03-15T10:29:40Z",
+      "side": 1,
+      "message": "\u003e if the erouter was to take 3 attempts to get the IP, wouldn\u0027t the previous IP (board.wan_iface) be appended to ips 3 times?\n\u003e maybe the ips \u003d [] should be within the loop and not outside....\n\nFrom a test run:\nMIK  ips\u003d[\u0027192.168.200.10\u0027, \u0027192.168.202.12\u0027, \u0027192.168.200.10\u0027, \u0027192.168.202.12\u0027, \u0027192.168.200.10\u0027, \u0027192.168.202.12\u0027, \u0027192.168.200.10\u0027, \u0027192.168.202.12\u0027, \u0027192.168.200.10\u0027, \u0027192.168.202.12\u0027]",
+      "parentUuid": "c3f24aa0_dcb63ba4",
+      "range": {
+        "startLine": 204,
+        "startChar": 28,
+        "endLine": 204,
+        "endChar": 30
+      },
+      "revId": "eb5ebe0fa30af31646082d476396d2a02268b3a6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
