@@ -188,34 +188,45 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
             ips = []
             while (time.time() - start_time < time_for_provisioning):
+                # reset IPs incase we got part way through and failed
+                ips = []
                 try:
                     try:
                         ip = board.get_interface_ipaddr(board.wan_iface)
-                    except:
                         assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.cm_network, \
                             "Board failed to obtain WAN IP address"
+                    except:
+                        continue
 
                     ips += [ip]
 
                     if hasattr(board, 'erouter_iface'):
                         try:
                             ip = board.get_interface_ipaddr(board.erouter_iface)
-                        except:
                             assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.open_network, \
                                 "Board failed to obtain erouter IP address"
+                        except:
+                            continue
                         ips += [ip]
                     if hasattr(board, 'mta_iface'):
                         try:
                             ip = board.get_interface_ipaddr(board.mta_iface)
-                        except:
                             assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.mta_network, \
                                 "Board failed to obtain MTA IP address"
+                        except:
+                            continue
                         ips += [ip]
-                        break
+
+                    # if we get this far, we have all IPs and can exit while loop
+                    break
                 except:
                     if time.time() - start_time < time_for_provisioning:
                         raise
                     pass
+
+            check = [hasattr(board, 'erouter_iface'), hasattr(board, 'mta_iface')]
+            if len(ips) != 1 + sum(1 if True else 0 for x in check):
+                raise Exception("Failed to obtain ip address for all configured interfaces!")
 
             # TODO: don't hard code 300 or mv1-1
             prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
