@@ -188,15 +188,12 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
             ips = []
             while (time.time() - start_time < time_for_provisioning):
-                ips = []
                 try:
                     try:
                         ip = board.get_interface_ipaddr(board.wan_iface)
                     except:
-                        continue
-
-                    assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.cm_network, \
-                        "Board failed to obtain WAN IP address"
+                        assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.cm_network, \
+                            "Board failed to obtain WAN IP address"
 
                     ips += [ip]
 
@@ -204,22 +201,17 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                         try:
                             ip = board.get_interface_ipaddr(board.erouter_iface)
                         except:
-                            continue
-
-                        assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.open_network, \
-                            "Board failed to obtain erouter IP address"
+                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.open_network, \
+                                "Board failed to obtain erouter IP address"
                         ips += [ip]
                     if hasattr(board, 'mta_iface'):
                         try:
                             ip = board.get_interface_ipaddr(board.mta_iface)
                         except:
-                            continue
-
-                        assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.mta_network, \
-                            "Board failed to obtain MTA IP address"
+                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.mta_network, \
+                                "Board failed to obtain MTA IP address"
                         ips += [ip]
-
-                    break
+                        break
                 except:
                     if time.time() - start_time < time_for_provisioning:
                         raise
