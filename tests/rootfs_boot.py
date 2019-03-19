@@ -184,7 +184,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
 
             start_time = time.time()
-            time_for_provisioning = 60
+            time_for_provisioning = 120
 
             ips = []
             while (time.time() - start_time < time_for_provisioning):
