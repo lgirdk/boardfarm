@@ -245,6 +245,8 @@ class BaseDevice(pexpect.spawn):
         pass
 
     def enable_ipv6(self, interface):
+        self.sendline("sysctl net.ipv6.conf."+interface+".accept_ra=2")
+        self.expect(self.prompt, timeout=30)
         self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=0")
         self.expect(self.prompt, timeout=30)
 
