@@ -68,3 +68,15 @@ class WindowsTelnet(base.BaseDevice):
     def set_static_ip(self , wifi_interface, fix_ip, fix_mark, fix_gateway):
         self.sendline('netsh interface ip set address '+wifi_interface+" static "+fix_ip+" "+fix_mark+" "+fix_gateway+" 1")
         self.expect(self.prompt)
+
+    def get_default_gateway(self, wifi_interface):
+        self.sendline('netsh interface ip show config '+wifi_interface)
+
+        self.expect("(.+)>",timeout=30)
+        Wifi_log = self.match.group(1)
+
+        match = re.search('Default Gateway:\s+([\d.]+)' , str(Wifi_log))
+        if match:
+            return match.group(1)
+        else:
+            return None
