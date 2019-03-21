@@ -253,3 +253,10 @@ class BaseDevice(pexpect.spawn):
     def disable_ipv6(self, interface):
         self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=1")
         self.expect(self.prompt, timeout=30)
+
+    def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
+        self.sendline('echo "%d %d %d %d" > /proc/sys/kernel/printk'% (CUR, DEF, MIN, BTDEF))
+        self.expect(self.prompt)
+        if not BFT_DEBUG:
+            common.print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
+

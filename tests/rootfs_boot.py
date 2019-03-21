@@ -170,8 +170,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         board.expect(prompt)
 
         # we can't have random messsages messages
-        board.sendline("echo \"1 1 1 7\" > /proc/sys/kernel/printk")
-        board.expect(prompt)
+        board.set_printk()
 
         if hasattr(self.config, 'INSTALL_PKGS') and self.config.INSTALL_PKGS != "":
             for pkg in self.config.INSTALL_PKGS.split(' '):
