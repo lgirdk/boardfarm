@@ -151,7 +151,8 @@ class Interact(rootfs_boot.RootFSBootTest):
 
                     #try:
                     board.sendline()
-                    board.sendline('echo \"1 1 1 7\" > /proc/sys/kernel/printk')
+                    # default are 1 1 1 7
+                    board.set_printk()
                     board.expect(prompt)
                     try:
                         t = eval(test)
