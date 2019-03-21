@@ -48,6 +48,9 @@ def init(config):
                         new_tests = test.parse(config) or []
                         for new_test in new_tests:
                             globals()[new_test] = getattr(test_file, new_test)
-                    except:
+                    except Exception as e:
+                        if 'BFT_DEBUG' in os.environ:
+                            import traceback
+                            traceback.print_exc()
                         print("Failed to run %s parse function!" % test)
                         pass
