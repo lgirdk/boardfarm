@@ -1,7 +1,7 @@
 import rootfs_boot
 import pexpect
 
-from common import print_bold
+from devices.common import print_bold
 from datetime import datetime
 
 from devices import board, prompt, wan, lan
