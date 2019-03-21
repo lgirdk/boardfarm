@@ -59,11 +59,12 @@ class LinuxBootTest(unittest2.TestCase):
     def testWrapper(self):
         self.start_time = time.time()
 
-        if not board.isalive():
-            self.result_grade = "SKIP"
-            print("\n\n=========== Test skipped! Board is not alive... =============")
-            self.skipTest("Board is not alive")
-            raise
+        for c in board.consoles:
+            if not c.isalive():
+                self.result_grade = "SKIP"
+                print("\n\n=========== Test skipped! Board is not alive... =============")
+                self.skipTest("Board is not alive")
+                raise
 
         try:
             if wan and hasattr(self, 'wan_setup'):
