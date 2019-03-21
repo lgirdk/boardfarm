@@ -16,6 +16,10 @@ class DebianISCProvisioner(DebianBox):
     wan_cmts_provisioner = False
     standalone_provisioner = True
 
+    # default CM specific settings
+    default_lease_time = 604800
+    max_lease_time = 604800;
+
     def __init__(self, *args, **kwargs):
 
         self.cm_network = ipaddress.IPv4Network(kwargs.pop('cm_network', u"192.168.200.0/24"))
@@ -218,27 +222,32 @@ EOF'''
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
             board_config['extra_provisioning'] = {}
-            if 'mta_mac' in board_config:
-                board_config['extra_provisioning']["mta"] = \
-                    { "hardware ethernet": board_config['mta_mac'],
-                     "options": { "domain-name": "\"sipcenter.com\"",
-                                  "domain-name-servers": "%s" % self.prov_ip,
-                                  "routers": "%s" % self.mta_gateway,
-                                  "log-servers": "%s" % self.prov_ip,
-                                  "host-name": "\"" + board_config['station'] + "\""
+
+        if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning']:
+            board_config['extra_provisioning']["mta"] = \
+                { "hardware ethernet": board_config['mta_mac'],
+                 "options": { "domain-name": "\"sipcenter.com\"",
+                              "domain-name-servers": "%s" % self.prov_ip,
+                              "routers": "%s" % self.mta_gateway,
+                              "log-servers": "%s" % self.prov_ip,
+                              "host-name": "\"" + board_config['station'] + "\""
+                            }
+                }
+
+        if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning']:
+            board_config['extra_provisioning']["cm"] = \
+                { "hardware ethernet": board_config['cm_mac'],
+                     "options": { "domain-name-servers": "%s" % self.prov_ip,
+                                  "time-offset": "-25200"
                                 }
-                    }
-            else:
-                board_config['extra_provisioning']["mta"] = {}
-            if 'mta_mac' in board_config:
-                board_config['extra_provisioning']["cm"] = \
-                    { "hardware ethernet": board_config['cm_mac'],
-                         "options": { "domain-name-servers": "%s" % self.prov_ip,
-                                      "time-offset": "-25200"
-                                    }
-                    }
-            else:
-                board_config['extra_provisioning']["cm"] = {}
+                }
+
+        if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning']:
+            board_config['extra_provisioning']["erouter"] = \
+                { "hardware ethernet": board_config['erouter_mac'],
+                  "default-lease-time" : self.default_lease_time,
+                  "max-lease-time": self.max_lease_time
+                }
 
         cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
 
