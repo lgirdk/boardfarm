@@ -78,7 +78,7 @@
                         "type": "debian",
                         "name": "wan",
                         "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name lan-${uniq_id} --privileged -p 9910:9910 -it bft:node /bin/bash",
+                        "cmd": "docker run --name lan-${uniq_id} --privileged -it bft:node /bin/bash",
                         "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
                         "post_cmd": "ip link set ${lan_iface} name eth1",
                         "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
