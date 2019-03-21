@@ -265,7 +265,7 @@ def parse():
                         config.BOARD_NAMES.append(b)
         if not config.BOARD_NAMES:
             print("ERROR! No boards meet selection requirements and have available_for_autotests = True.")
-            sys.exit(1)
+            sys.exit(10)
     else:
         if not args.board_names:
             print("ERROR")
