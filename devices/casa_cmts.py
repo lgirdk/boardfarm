@@ -29,6 +29,7 @@ class CasaCMTS(base.BaseDevice):
         self.username = kwargs.get('username', 'root')
         self.password = kwargs.get('password', 'casa')
         self.password_admin = kwargs.get('password_admin', 'casa')
+        self.mac_domain = kwargs.get('mac_domain', None)
 
         if conn_cmd is None:
             # TODO: try to parse from ipaddr, etc
@@ -467,6 +468,30 @@ class CasaCMTS(base.BaseDevice):
             return ipv6
         else:
             return None
+
+    def get_center_freq(self, mac_domain=None):
+        return "512000000"
+
+        # TODO: fix below
+        if mac_domain is None:
+            mac_domain = self.mac_domain
+
+        assert mac_domain is not None, "get_center_freq() requires mac_domain to be set"
+
+        self.sendline('show interface docsis-mac %s | inc downstream\s1\s' % mac_domain)
+        self.expect_exact('show interface docsis-mac %s | inc downstream\s1\s' % mac_domain)
+        self.expect(self.prompt)
+        assert 'downstream 1 interface qam' in self.before
+
+        major, minor, sub = self.before.strip().split(' ')[-1].split('/')
+
+        self.sendline('show interface qam %s/%s | inc channel\s%s\sfreq' % (major, minor, sub))
+        self.expect_exact('show interface qam %s/%s | inc channel\s%s\sfreq' % (major, minor, sub))
+
+        self.expect(self.prompt)
+        assert 'channel %s frequency' % sub in self.before
+
+        return str(int(self.before.split(' ')[-1]))
 
 if __name__ == '__main__':
     import time
