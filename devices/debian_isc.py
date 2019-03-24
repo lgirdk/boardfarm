@@ -1,6 +1,7 @@
 import ipaddress
 import os
-
+import pexpect
+from lib.regexlib import ValidIpv4AddressRegex
 from lib.docsis import docsis, cm_cfg
 
 from devices import DebianBox
@@ -370,4 +371,69 @@ EOF'''
         self.expect(self.prompt)
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
+
+    def get_attr_from_dhcp(self, attr, exp_pattern, dev, station, match_group=4):
+        '''Try getting an attribute from the dhcpd.conf.<station> file'''
+        val = None
+        try:
+            self.sendline('cat  /etc/dhcp/dhcpd.conf.%s' % station)
+            idx = self.expect(['(%s-%s\s\{([^}]+)(%s\s(%s))\;)' % (dev, station, attr, exp_pattern) ] + ['No such file or directory'] + [pexpect.TIMEOUT], timeout=10)
+            if idx == 0:
+                # the value should be in group 4
+                val = self.match.group(match_group)
+        except:
+            pass
+        return val
+
+    def get_cfgs(self, board_config):
+        '''Tries to get the cfg out of the dhcpd.conf for the station in question'''
+        try:
+            mta_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'mta', board_config['station'])
+            mta_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'mta', board_config['station'])
+
+            cm_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'cm', board_config['station'])
+            cm_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'cm', board_config['station'])
+            if mta_cfg is None or mta_cfg_srv  is None or cm_cfg is None or cm_cfg_srv is None:
+                raise
+            return [[mta_cfg.replace('"', ''), mta_cfg_srv], [cm_cfg.replace('"',''), cm_cfg_srv]]
+        except:
+            pass
+
+        return None
+
+    def get_conf_file_from_tftp(self, _tmpdir, board_config):
+        '''Retrieve the files in the cfg_list from the tftp sever, puts them in localhost:/tmp/'''
+
+        cfg_list = self.get_cfgs(board_config)
+        if cfg_list is None:
+            return False
+
+        for elem in cfg_list:
+            conf_file = self.tftp_dir+'/'+elem[0]
+            server = elem[1]
+
+            # this is where the current (to be downloaded from the tftp)
+            # config is going to be placed
+            dest_fname = _tmpdir+'/'+os.path.basename(conf_file)+"."+board_config['station']+".current"
+            try:
+                os.remove(dest_fname)
+            except:
+                pass
+
+            try:
+                print 'Downloading '+server+':'+conf_file+' to '+dest_fname
+                from devices.common import scp_from
+                scp_from(conf_file, server, self.tftp_device.username, self.tftp_device.password, self.tftp_device.port, dest_fname)
+
+                if not os.path.isfile(dest_fname):
+                    # Something has gone wrong as the tftp client has not thrown an
+                    # exception, but the file is not where it should be!!
+                    print("Tftp completed but %s not found in destination dir: "% dest_fname)
+                    return False
+                print "Downloaded: "+conf_file
+            except:
+                print("Failed to download %s from %s"% (conf_file, self.ipaddr))
+                return False
+
+        return True
 
