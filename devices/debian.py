@@ -36,6 +36,7 @@ class DebianBox(base.BaseDevice):
     shared_tftp_server = False
     wan_dhcp_server = True
     tftp_device = None
+    tftp_dir = '/tftpboot'
 
     iface_dut = "eth1"
     gw = None
@@ -338,21 +339,21 @@ class DebianBox(base.BaseDevice):
         self.expect('Stopping')
         self.expect(self.prompt)
         if not self.shared_tftp_server:
-            self.sendline('rm -rf /tftpboot')
+            self.sendline('rm -rf '+self.tftp_dir)
             self.expect(self.prompt)
             self.sendline('rm -rf /srv/tftp')
             self.expect(self.prompt)
         self.sendline('mkdir -p /srv/tftp')
         self.expect(self.prompt)
-        self.sendline('ln -sf /srv/tftp/ /tftpboot')
+        self.sendline('ln -sf /srv/tftp/ '+self.tftp_dir)
         self.expect(self.prompt)
-        self.sendline('mkdir -p /tftpboot/tmp')
+        self.sendline('mkdir -p '+self.tftp_dir+'/tmp')
         self.expect(self.prompt)
-        self.sendline('chmod a+w /tftpboot/tmp')
+        self.sendline('chmod a+w '+self.tftp_dir+'/tmp')
         self.expect(self.prompt)
-        self.sendline('mkdir -p /tftpboot/crashdump')
+        self.sendline('mkdir -p '+self.tftp_dir+'/crashdump')
         self.expect(self.prompt)
-        self.sendline('chmod a+w /tftpboot/crashdump')
+        self.sendline('chmod a+w '+self.tftp_dir+'/crashdump')
         self.expect(self.prompt)
         self.sendline('sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa')
         self.expect(self.prompt)
@@ -396,7 +397,7 @@ class DebianBox(base.BaseDevice):
         with open(src, mode='rb') as file:
             bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
-            dst = '/tftpboot/' + os.path.basename(src)
+            dst = self.tftp_dir + '/' + os.path.basename(src)
         print ("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
