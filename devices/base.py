@@ -122,6 +122,17 @@ class BaseDevice(pexpect.spawn):
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
+    def interact(self, escape_character=chr(29),
+            input_filter=None, output_filter=None):
+
+        o = self._logfile_read
+        self.logfile_read = None
+        ret = super(BaseDevice, self).interact(escape_character,
+                                            input_filter, output_filter)
+        self.logfile_read = o
+
+        return ret
+
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
         self.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){6}\r\n')
