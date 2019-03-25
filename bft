@@ -137,9 +137,7 @@ def main():
                 setup_dynamic_devices(config, env=env, start=start)
 
             def get_tftp_config(dev):
-                saved = config.console.logfile_read
-                config.console.logfile_read = None
-                saved = dev.logfile_read
+                saved = dev.logfile_read.out
                 dev.logfile_read = None
                 if 'wan-no-eth0' in dev.kwargs.get('options', ""):
                     config.console.tftp_server = dev.get_interface_ipaddr("eth1")
@@ -150,7 +148,6 @@ def main():
                 config.console.tftp_password = "bigfoot1"
                 config.console.tftp_port = "22"
                 config.console.tftp_dev = dev
-                config.console.logfile_read = saved
 
             # check devices after they start for tftpd-server option if
             # if we still have not configured a tftp server
