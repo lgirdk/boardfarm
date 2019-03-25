@@ -40,7 +40,7 @@ class CasaCMTS(base.BaseDevice):
 
     def connect(self):
         try:
-            if 0 == self.expect(['(.*) login:', pexpect.TIMEOUT], timeout=10):
+            if 0 == self.expect(['\r\n(.*) login:', pexpect.TIMEOUT], timeout=10):
                 hostname = self.match.group(1).replace('\n', '').replace('\r', '')
                 self.prompt.append(hostname + '>')
                 self.prompt.append(hostname + '#')
