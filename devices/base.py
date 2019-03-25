@@ -87,7 +87,11 @@ class BaseDevice(pexpect.spawn):
         self._logfile_read.write(string)
 
     def set_logfile_read(self, value):
-        class o_helper():
+        if value == None:
+            self._logfile_read = None
+            return
+
+        class o_helper(object):
             def __init__(self, parent, out, color):
                 self.color = color
                 self.out = out
@@ -111,10 +115,10 @@ class BaseDevice(pexpect.spawn):
             def flush(self):
                 self.out.flush()
 
-        if value is not None:
+        if isinstance(value, o_helper):
+            self._logfile_read = value
+        elif value is not None:
             self._logfile_read = o_helper(self, value, getattr(self, "color", None))
-        else:
-            self._logfile_read = None
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
