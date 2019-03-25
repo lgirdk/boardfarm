@@ -417,6 +417,8 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
 
     # do the install
     if index != 0:
+        device.sendline('rm -f /etc/openvpn/server.conf')
+        device.expect(device.prompt)
         dev_ip = device.get_interface_ipaddr(device.iface_dut)
         device.sendline('apt-get update')
         device.expect(device.prompt)
@@ -453,15 +455,13 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
         device.sendline('/etc/init.d/openvpn stop')
         device.expect(device.prompt)
         if _ip == "ipv4":
-            addr = dev_ip
-        elif _ip == "ipv6":
-            addr = device.get_interface_ip6addr(device.iface_dut)
-        device.sendline('echo "local '+addr+'" > /etc/openvpn/server.conf.tmp')
-        device.expect(device.prompt)
-        device.sendline('cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
-        device.expect(device.prompt)
-        device.sendline('mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf')
-        device.expect(device.prompt)
+            # only add it in ipv4
+            device.sendline('echo "local '+dev_ip+'" > /etc/openvpn/server.conf.tmp')
+            device.expect(device.prompt)
+            device.sendline('cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
+            device.expect(device.prompt)
+            device.sendline('mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf')
+            device.expect(device.prompt)
 
     device.sendline('/etc/init.d/openvpn status')
     index = device.expect(["VPN 'server' is running" ] + [ "VPN 'server' is not running ... failed"] +device.prompt, timeout=90)
@@ -488,6 +488,8 @@ def install_ovpn_client(device, remove=False):
             device.expect(device.prompt, timeout=120)
             return
 
+    device.sendline('apt-get update')
+    device.expect(device.prompt)
     device.sendline('apt-get install openvpn -y')
     device.expect(device.prompt, timeout=90)
 
