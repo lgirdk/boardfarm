@@ -197,3 +197,25 @@ class wifi_stub():
         raise Exception("Not implemented!")
     def set_channel_number(self, *args, **kwargs):
         raise Exception("Not implemented!")
+    def get_wifi_enabled(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_ssid(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_security(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_password(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_channel_utilization(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_operating_mode(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_bandwidth(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_broadcast(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_channel_number(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def prepare():
+        pass
+    def cleanup():
+        pass
