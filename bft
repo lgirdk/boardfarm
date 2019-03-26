@@ -328,12 +328,12 @@ def main():
                 add_to_combined_list(d.log_calls, device)
 
     for test in tests_to_run:
-        with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
-            if hasattr(test, 'log') and test.log != "":
+        if hasattr(test, 'log') and test.log != "":
+            with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
                 clog.write(test.log)
-                add_to_combined_list(test.log, test.__class__.__name__)
-            if hasattr(test, 'log_calls'):
-                add_to_combined_list(test.log_calls, test.__class__.__name__)
+            add_to_combined_list(test.log, test.__class__.__name__)
+        if hasattr(test, 'log_calls'):
+            add_to_combined_list(test.log_calls, test.__class__.__name__)
 
     combined_list.sort(key=operator.itemgetter('time'))
     write_combined_log(combined_list, "all.log")
