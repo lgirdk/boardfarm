@@ -107,7 +107,10 @@ class BaseDevice(pexpect.spawn):
                     tmp = '\n[%s]' % td.total_seconds()
                     tmp += string[1:]
                     string = tmp
-                self.parent.log += re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
+                to_log = re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
+                self.parent.log += to_log
+                if hasattr(self, 'test_to_log'):
+                    self.test_to_log.log += "%s: " % re.sub('\r\n\[', '\r\n%s: [' % self.test_prefix, to_log)
             def flush(self):
                 self.out.flush()
 

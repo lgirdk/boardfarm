@@ -60,6 +60,9 @@ class LinuxBootTest(unittest2.TestCase):
         self.start_time = time.time()
 
         for c in board.consoles:
+            c.logfile_read.test_to_log = self
+            c.logfile_read.test_prefix = 'console-%s' % str(board.consoles.index(c) + 1)
+
             if not c.isalive():
                 self.result_grade = "SKIP"
                 print("\n\n=========== Test skipped! Board is not alive... =============")
