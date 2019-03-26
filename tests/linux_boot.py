@@ -59,7 +59,15 @@ class LinuxBootTest(unittest2.TestCase):
     def testWrapper(self):
         self.start_time = time.time()
 
+        for d in self.config.devices:
+            dev = getattr(self.config, d)
+            dev.test_to_log = self
+            dev.test_prefix = d.encode("utf8")
+
         for c in board.consoles:
+            c.test_to_log = self
+            c.test_prefix = 'console-%s' % str(board.consoles.index(c) + 1)
+
             if not c.isalive():
                 self.result_grade = "SKIP"
                 print("\n\n=========== Test skipped! Board is not alive... =============")
