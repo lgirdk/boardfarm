@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
-from termcolor import colored
 from datetime import datetime
 import re
 import os
@@ -17,7 +16,7 @@ import error_detect
 #from lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
 from lib.regexlib import LinuxMacFormat
 
-from lib.logging import LoggerMeta
+from lib.logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
@@ -90,33 +89,6 @@ class BaseDevice(pexpect.spawn):
         if value == None:
             self._logfile_read = None
             return
-
-        class o_helper(object):
-            def __init__(self, parent, out, color):
-                self.color = color
-                self.out = out
-                self.parent = parent
-                self.first_write = True
-            def write(self, string):
-                if self.first_write:
-                    self.first_write = False
-                    string = "\r\n" + string
-                if self.color is not None:
-                    self.out.write(colored(string, self.color))
-                else:
-                    self.out.write(string)
-                td = datetime.now()-self.parent.start
-                # check for the split case
-                if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
-                    tmp = '\n[%s]' % td.total_seconds()
-                    tmp += string[1:]
-                    string = tmp
-                to_log = re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
-                self.parent.log += to_log
-                if hasattr(self.parent, 'test_to_log'):
-                    self.parent.test_to_log.log += "%s: " % re.sub('\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
-            def flush(self):
-                self.out.flush()
 
         if isinstance(value, o_helper):
             self._logfile_read = value
