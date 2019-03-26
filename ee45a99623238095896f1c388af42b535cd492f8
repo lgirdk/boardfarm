@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "03880a60_931d4b22",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-03-26T17:20:49Z",
+      "side": 1,
+      "message": "It was suggest to use the cm\u0027s mac address to find the mac domain, however that might not be the right mac domain as it could connect to anything on the RF feed. The goal is to drive the CM to a specific mac domain.",
+      "revId": "ee45a99623238095896f1c388af42b535cd492f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4ae6d90_e1f0795e",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 464,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-03-26T17:20:49Z",
+      "side": 1,
+      "message": "It was suggest to use rcc to find the center freq",
+      "revId": "ee45a99623238095896f1c388af42b535cd492f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
