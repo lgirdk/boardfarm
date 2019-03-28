@@ -41,12 +41,12 @@ class CasaCMTS(base.BaseDevice):
 
     def connect(self):
         try:
-            self.expect([re.escape("Escape character is '^]'.'"), pexpect.TIMEOUT], timeout=10)
-            if 2 != self.expect(['\r\n(.*) login:', '(.*) login:', pexpect.TIMEOUT], timeout=10):
-                hostname = self.match.group(1).replace('\n', '').replace('\r', '').strip()
-                self.prompt.append(hostname + '>')
-                self.prompt.append(hostname + '#')
-                self.prompt.append(hostname + '\(.*\)#')
+            idx=self.expect(['(\r\n)?(.*) login:', pexpect.TIMEOUT], timeout=20)
+            if 0 == idx:
+                hostname = self.match.group(2).replace('\n', '').replace('\r', '')
+                if hostname + '>' not in self.prompt: self.prompt.append(hostname + '>')
+                if hostname + '#' not in self.prompt: self.prompt.append(hostname + '#')
+                if hostname + '\(.*\)#' not in self.prompt: self.prompt.append(hostname + '\(.*\)#')
                 self.sendline(self.username)
                 self.expect('assword:')
                 self.sendline(self.password)
