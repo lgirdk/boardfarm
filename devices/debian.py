@@ -240,7 +240,7 @@ class DebianBox(base.BaseDevice):
             self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
 
-        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq"
+        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd"
 
         def _install_pkgs():
             self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
