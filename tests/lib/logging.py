@@ -8,7 +8,6 @@
 import time
 import types
 from datetime import datetime
-from devices.common import print_bold
 from termcolor import colored
 import re
 
@@ -59,10 +58,10 @@ def log_message(s, msg, header = False):
     line_sep = ('=' * (len(msg)))
     full_msg = "\n\t\t"+line_sep+"\n\t\t"+msg+"\n\t\t"+line_sep+"\n"
     if header:
-        print_bold("\n\n\t\t\t***"+msg+"***\n\n")
+        print("\n\n\t\t\t***"+msg+"***\n\n")
         s.log_to_file += now_short()+full_msg+"\r\n"
     else:
-        print_bold(full_msg)
+        print(full_msg)
         s.log_to_file += now_short()+msg+"\r\n"
 
 class o_helper(object):
