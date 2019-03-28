@@ -95,6 +95,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                             args=["-c", cmd], env=env)
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF as e:
+            self.pid = None
             if 'failed to initialize KVM: Device or resource busy' in self.before or \
                     'failed to initialize KVM: Cannot allocate memory' in self.before:
                 cmd = cmd.replace('--enable-kvm ', '')
