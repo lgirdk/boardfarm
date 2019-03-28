@@ -189,7 +189,7 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('YES')
         self.expect(self.prompt)
         self.sendline('system reboot')
-        if 0 == self.expect(['Proceed with reload\? please type YES to confirm :', 'starting up console shell ...'], timeout=150):
+        if 0 == self.expect(['Proceed with reload\? please type YES to confirm :', 'starting up console shell ...'], timeout=180):
             self.sendline('YES')
             self.expect('starting up console shell ...', timeout=150)
         self.sendline()
