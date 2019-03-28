@@ -237,13 +237,14 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
-    def add_ip_bundle(self, index, ip1, ip2, helper_ip):
+    def add_ip_bundle(self, index, helper_ip, ip, secondary_ips=[]):
         self.sendline('interface ip-bundle %s' % index)
         self.expect(self.prompt)
-        self.sendline('ip address %s 255.255.255.0' % ip1)
+        self.sendline('ip address %s 255.255.255.0' % ip)
         self.expect(self.prompt)
-        self.sendline('ip address %s 255.255.255.0 secondary' % ip2)
-        self.expect(self.prompt)
+        for ip2 in secondary_ips:
+            self.sendline('ip address %s 255.255.255.0 secondary' % ip2)
+            self.expect(self.prompt)
         self.sendline('cable helper-address %s cable-modem' % helper_ip)
         self.expect(self.prompt)
         self.sendline('cable helper-address %s mta' % helper_ip)
@@ -503,7 +504,7 @@ if __name__ == '__main__':
     cmts.set_iface_ipaddr('eth 0', '172.19.17.136 255.255.255.192')
     cmts.set_iface_ipaddr('gige 0', '192.168.3.222 255.255.255.0')
     # TODO: add third network for open
-    cmts.add_ip_bundle(1, "192.168.200.1", "192.168.201.1", "192.168.3.1")
+    cmts.add_ip_bundle(1, "192.168.3.1", "192.168.200.1", secondary_ips=["192.168.201.1", "192.168.202.1"])
 
     cmts.add_route("0.0.0.0", "0", "192.168.3.1")
 
