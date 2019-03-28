@@ -78,6 +78,8 @@ class o_helper(object):
             self.out.write(colored(string, self.color))
         else:
             self.out.write(string)
+        if not hasattr(self.parent, 'start'):
+            return
         td = datetime.now()-self.parent.start
         # check for the split case
         if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
