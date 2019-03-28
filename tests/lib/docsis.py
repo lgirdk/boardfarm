@@ -157,6 +157,18 @@ class cm_cfg(object):
         if saved_txt == self.txt:
             print("WARN: no regex sub was made for %s, to be replaced with %s" % (regex, sub))
 
+    def _cm_configmode(self):
+        '''function to check config mode in CM'''
+        '''0-Disable/Bridge, 1-IPv4, 2-IPv6 (DSlite), 3-IPv4 and IPv6(Dual)'''
+        modeset = ['0x010100', '0x010101', '0x010102', '0x010103']
+        for mode in range(0, len(modeset)):
+            tlv_check = "GenericTLV TlvCode 202 TlvLength 3 TlvValue "+modeset[mode]
+            initmode_check = "InitializationMode "+str(mode)
+            if (tlv_check in self.txt) or (initmode_check in self.txt):
+                return mode
+
+    cm_configmode = property(_cm_configmode)
+
 class mta_cfg(cm_cfg):
     '''MTA specific class for cfgs'''
 
