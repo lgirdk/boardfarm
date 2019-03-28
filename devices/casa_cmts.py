@@ -501,7 +501,6 @@ if __name__ == '__main__':
 
     connection_type = "local_cmd"
     cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
-    cmts.connect()
 
     # TODO: example for now, need to parse args
     if False:
