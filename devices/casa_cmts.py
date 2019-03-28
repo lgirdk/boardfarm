@@ -259,6 +259,10 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('route net %s %s gw %s' % (net, mask, gw))
         self.expect(self.prompt)
 
+    def add_route6(self, net, gw):
+        self.sendline('route6 net %s gw %s' % (net, gw))
+        self.expect(self.prompt)
+
     def get_qam_module(self):
         self.sendline('show system')
         self.expect(self.prompt)
@@ -502,6 +506,11 @@ if __name__ == '__main__':
 
     connection_type = "local_cmd"
     cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
+
+    if len(sys.argv) > 2 and sys.argv[2] == "setup_ipv6":
+        print "Setting up IPv6 address, bundles, routes, etc"
+        cmts.add_route6('::/0', '2001:dead:beef:1::1')
+        sys.exit(0)
 
     # TODO: example for now, need to parse args
     if False:
