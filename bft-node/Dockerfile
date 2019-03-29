@@ -30,6 +30,10 @@ RUN apt-get update && \
 	vim-common \
 	xinetd
 
+# NOTE: apparmor will interfere with dhclient, disable on HOST by running:
+# sudo service apparmor stop
+# sudo service apparmor teardown
+
 RUN mkdir /var/run/sshd
 RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 
