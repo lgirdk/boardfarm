@@ -255,6 +255,19 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
+    def add_ipv6_bundle_addrs(self, index, helper_ip, ip, secondary_ips=[]):
+        self.sendline('interface ip-bundle %s' % index)
+        self.expect(self.prompt)
+        self.sendline('ipv6 address %s' % ip)
+        self.expect(self.prompt)
+        for ip2 in secondary_ips:
+            self.sendline('ipv6 address %s secondary' % ip2)
+            self.expect(self.prompt)
+        self.sendline('cable helper-ipv6-address %s' % helper_ip)
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
     def add_route(self, net, mask, gw):
         self.sendline('route net %s %s gw %s' % (net, mask, gw))
         self.expect(self.prompt)
@@ -510,6 +523,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 2 and sys.argv[2] == "setup_ipv6":
         print "Setting up IPv6 address, bundles, routes, etc"
         cmts.add_route6('::/0', '2001:dead:beef:1::1')
+        cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:2::cafe/64",
+                                  secondary_ips=["2001:dead:beef:3::cafe/64", "2001:dead:beef:4::cafe/64"])
         sys.exit(0)
 
     # TODO: example for now, need to parse args
