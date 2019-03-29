@@ -54,10 +54,95 @@ class DebianISCProvisioner(DebianBox):
         self.nw = self.prov_network
         return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
-    def update_cmts_isc_dhcp_config(self, board_config):
+    def setup_dhcp6_config(self, board_config):
+        to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
+preferred-lifetime 7500;
+option dhcp-renewal-time 3600;
+option dhcp-rebinding-time 5400;
+allow leasequery;
+option dhcp6.name-servers 2001:4860:4860::8888;
+option dhcp6.domain-search "test.example.com","example.com";
+option dhcp6.info-refresh-time 21600;
+option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
+option dhcp6.gateway code 32003 = ip6-address;
+option space docsis code width 2 length width 2 hash size 100;
+option docsis.tftp-servers code 32 = array of ip6-address;
+option docsis.configuration-file code 33 = text;
+option docsis.syslog-servers code 34 = array of ip6-address;
+#option docsis.device-id code 36 = string;
+option docsis.time-servers code 37 = array of ip6-address;
+option docsis.time-offset code 38 = signed integer 32;
+option vsio.docsis code 4491 = encapsulate docsis;
+
+subnet6 2001:dead:beef:2::cafe::/64 {
+    range6 2001:dead:beef:2::10 2001:dead:beef:2::100;
+    interface %s;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+    option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
+    option docsis.time-offset 5000;
+}
+subnet6 2001:dead:beef:3::cafe::/64 {
+    range6 2001:dead:beef:3::10 2001:dead:beef:3::100;
+    interface %s;
+    option docsis.tftp-servers 2001:ed8:77b5:3::101;
+    option docsis.time-servers 2001:ed8:77b5:3::101;
+    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+    option docsis.syslog-servers 2001:ed8:77b5:3::101;
+    option docsis.time-offset 5000;
+}
+subnet6 2001:dead:beef:4::cafe::/64 {
+    range6 2001:dead:beef:4::10 2001:dead:beef:4::cafe::100;
+    interface %s;
+    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
+    option dhcp6.solmax-rt   240;
+    option dhcp6.inf-max-rt  360;
+}
+EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut)
+
+        self.sendline(to_send)
+        self.expect(self.prompt)
+
+        self.sendline('rm /etc/dhcp/dhcpd6.conf.''' + board_config['station'])
+        self.expect(self.prompt)
+
+        cfg_file = "/etc/dhcp/dhcpd6.conf-" + board_config['station']
+
+        # zero out old config
+        self.sendline('cp /dev/null %s' % cfg_file)
+        self.expect(self.prompt)
+
+        # TODO: make ipv6 specific
+        # insert tftp server, TODO: how to clean up?
+        #board_config['extra_provisioning']['cm']['next-server'] = tftp_server
+        #board_config['extra_provisioning']['mta']['next-server'] = tftp_server
+
+        # there is probably a better way to construct this file...
+        #for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
+        #    self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+        #    for key, value in cfg_sec.iteritems():
+        #        if key == "options":
+        #            for k2, v2 in value.iteritems():
+        #                self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
+        #                self.expect(self.prompt)
+        #        else:
+        #            self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+        #            self.expect(self.prompt)
+        #    self.sendline("echo '}' >> %s" % cfg_file)
+
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd6.conf.' + board_config['station'])
+        self.expect(self.prompt)
+        # combine all configs into one
+        self.sendline("cat /etc/dhcp/dhcpd6.conf.* >> /etc/dhcp/dhcpd6.conf-" + board_config['station'] + ".master")
+        self.expect(self.prompt)
+        self.sendline("mv /etc/dhcp/dhcpd6.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd6.conf")
+        self.expect(self.prompt)
+
+
+    def setup_dhcp_config(self, board_config):
         tftp_server = self.tftp_device.tftp_server_ip_int()
 
-        # TODO: lots of hard coded values... all need to go away
         to_send = '''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
 log-facility local7;
 option log-servers ###LOG_SERVER###;
@@ -172,64 +257,47 @@ EOF'''
         self.sendline(to_send)
 	self.expect(self.prompt)
 
-        # The board will ignore this unless the docsis-mac is set to ipv6
-        # That needs to be done manually as well as copying any CM cfg files
-        # to the provisioner (e.g. still not fully automated)
-        # TODO: fix hard coded tftp ipv6 addr
-#        self.sendline('''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
-#preferred-lifetime 7500;
-#option dhcp-renewal-time 3600;
-#option dhcp-rebinding-time 5400;
-#allow leasequery;
-#option dhcp6.name-servers 2001:4860:4860::8888;
-#option dhcp6.domain-search "test.example.com","example.com";
-#option dhcp6.info-refresh-time 21600;
-#option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
-#option dhcp6.gateway code 32003 = ip6-address;
-#option space docsis code width 2 length width 2 hash size 100;
-#option docsis.tftp-servers code 32 = array of ip6-address;
-#option docsis.configuration-file code 33 = text;
-#option docsis.syslog-servers code 34 = array of ip6-address;
-##option docsis.device-id code 36 = string;
-#option docsis.time-servers code 37 = array of ip6-address;
-#option docsis.time-offset code 38 = signed integer 32;
-#option vsio.docsis code 4491 = encapsulate docsis;
-#
-#subnet6 2001:ed8:77b5:3::/64 {
-#    range6 2001:ed8:77b5:3::10 2001:ed8:77b5:3::100;
-#    interface %s;
-#    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-#    option docsis.time-servers 2001:ed8:77b5:3::101;
-#    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-#    option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
-#    option docsis.time-offset 5000;
-#}
-#subnet6 2001:ed8:77b5:2000::/64 {
-#    range6 2001:ed8:77b5:2000::10 2001:ed8:77b5:2000::100;
-#    interface %s;
-#    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-#    option docsis.time-servers 2001:ed8:77b5:3::101;
-#    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-#    option docsis.syslog-servers 2001:ed8:77b5:3::101;
-#    option docsis.time-offset 5000;
-#}
-#subnet6 2001:ed8:77b5:2001::/64 {
-#    range6 2001:ed8:77b5:2001::10 2001:ed8:77b5:2001::100;
-#    interface %s;
-#    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
-#    option dhcp6.solmax-rt   240;
-#    option dhcp6.inf-max-rt  360;
-#}
-#EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut))
-#        self.expect(self.prompt)
-
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
 
+        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
+
+        # zero out old config
+        self.sendline('cp /dev/null %s' % cfg_file)
+        self.expect(self.prompt)
+
+        # insert tftp server, TODO: how to clean up?
+        board_config['extra_provisioning']['cm']['next-server'] = tftp_server
+        board_config['extra_provisioning']['mta']['next-server'] = tftp_server
+
+        # there is probably a better way to construct this file...
+        for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
+            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+            for key, value in cfg_sec.iteritems():
+                if key == "options":
+                    for k2, v2 in value.iteritems():
+                        self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
+                        self.expect(self.prompt)
+                else:
+                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                    self.expect(self.prompt)
+            self.sendline("echo '}' >> %s" % cfg_file)
+
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
+        self.expect(self.prompt)
+        # combine all configs into one
+        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
+        self.expect(self.prompt)
+        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
+        self.expect(self.prompt)
+
+    def update_cmts_isc_dhcp_config(self, board_config):
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
             board_config['extra_provisioning'] = {}
 
+        # DHCPv4 defaults for when board does not supply defaults
+        # TODO: add DHCPv6 defaults
         if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["mta"] = \
                 { "hardware ethernet": board_config['mta_mac'],
@@ -256,38 +324,8 @@ EOF'''
                   "max-lease-time": self.max_lease_time
                 }
 
-        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
-
-        # zero out old config
-        self.sendline('cp /dev/null %s' % cfg_file)
-        self.expect(self.prompt)
-
-        # insert tftp server, TODO: how to clean up?
-        board_config['extra_provisioning']['cm']['next-server'] = tftp_server
-        board_config['extra_provisioning']['mta']['next-server'] = tftp_server
-
-        # there is probably a better way to construct this file...
-        for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
-            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
-            for key, value in cfg_sec.iteritems():
-                if key == "options":
-                    for k2, v2 in value.iteritems():
-                        self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
-                        self.expect(self.prompt)
-                else:
-                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
-                    self.expect(self.prompt)
-            self.sendline("echo '}' >> %s" % cfg_file)
-
-        # TODO: extra per board dhcp6 provisioning
-
-        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
-        self.expect(self.prompt)
-        # combine all configs into one
-        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
-        self.expect(self.prompt)
-        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
-        self.expect(self.prompt)
+        self.setup_dhcp_config(board_config)
+        self.setup_dhcp6_config(board_config)
 
     def copy_cmts_provisioning_files(self, board_config):
         # Look in all overlays as well, and PATH as a workaround for standalone
