@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a010464b_508fcac2",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 331,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-03-29T20:55:06Z",
+      "side": 1,
+      "message": "shouldn\u0027t we start using the long winded:\nip link set %s down/up\n?",
+      "range": {
+        "startLine": 331,
+        "startChar": 27,
+        "endLine": 331,
+        "endChar": 35
+      },
+      "revId": "9a7554875e77b53dbf2e1cfea7584991cfbaf468",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7a197235_0d4a21b2",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-03-29T20:55:06Z",
+      "side": 1,
+      "message": "ditto",
+      "range": {
+        "startLine": 333,
+        "startChar": 27,
+        "endLine": 333,
+        "endChar": 35
+      },
+      "revId": "9a7554875e77b53dbf2e1cfea7584991cfbaf468",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5871670a_c3658479",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 338,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-03-29T20:55:06Z",
+      "side": 1,
+      "message": "correct ;-)",
+      "range": {
+        "startLine": 338,
+        "startChar": 31,
+        "endLine": 338,
+        "endChar": 33
+      },
+      "revId": "9a7554875e77b53dbf2e1cfea7584991cfbaf468",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
