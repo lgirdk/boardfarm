@@ -491,7 +491,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
             self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
-            if not self.wan_dhcp_server:
+            if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
         # configure routing
