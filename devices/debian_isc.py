@@ -32,6 +32,8 @@ class DebianISCProvisioner(DebianBox):
         self.prov_gateway = ipaddress.IPv4Address(kwargs.pop('prov_gateway', u"192.168.3.222"))
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
+        self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
+
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
@@ -44,6 +46,7 @@ class DebianISCProvisioner(DebianBox):
                     self.standalone_provisioner = False
 
         self.gw = self.prov_ip
+        self.gwv6 = self.prov_ipv6
         self.nw = self.prov_network
         return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
@@ -325,10 +328,16 @@ EOF'''
         self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
         self.expect(self.prompt)
         if not self.wan_no_eth0:
+            self.sendline('ifconfig %s down; ifconfig %s up' % (self.iface_dut, self.iface_dut))
+            self.expect(self.prompt)
             self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
             self.expect(self.prompt)
-        #self.sendline('ifconfig %s inet6 add 2001:ed8:77b5:3::101/64' % self.iface_dut)
-        #self.expect(self.prompt)
+
+            self.enable_ipv6(self.iface_dut)
+            if self.gwv6 is not None:
+                self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
+                self.expect(self.prompt)
+
         # TODO: specify these via config
         for nw in [self.cm_network, self.mta_network, self.open_network]:
             self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
