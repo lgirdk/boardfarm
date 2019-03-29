@@ -41,6 +41,10 @@ class DebianBox(base.BaseDevice):
     iface_dut = "eth1"
     gw = None
 
+    # TODO: does this need to be calculated?
+    gwv6 = ipaddress.IPv6Address(u"2001:dead:beef:1::2")
+    ipv6_prefix = 64
+
     def __init__(self,
                  *args,
                  **kwargs):
@@ -124,6 +128,8 @@ class DebianBox(base.BaseDevice):
                 if opt.startswith('wan-static-ip:'):
                     self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', ''))
                     self.static_ip = True
+                if opt.startswith('wan-static-ipv6:'):
+                    self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
@@ -330,7 +336,6 @@ class DebianBox(base.BaseDevice):
         if self.gw != eth1_addr:
             self.sendline('ifconfig %s %s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1')))
             self.expect(self.prompt)
-
         self.sendline('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
 
@@ -413,6 +418,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.logfile_read = saved_logfile_read
 
     def configure(self, kind, config=[]):
+        # TODO: wan needs to enable on more so we can route out?
+        self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()
         if kind == "wan_device":
@@ -469,9 +476,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
-        self.sendline('\nsysctl net.ipv6.conf.all.disable_ipv6=0')
-        self.expect('sysctl ')
-        self.expect(self.prompt)
 
         # potential cleanup so this wan device works
         self.sendline('iptables -t nat -X')
@@ -494,9 +498,19 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             if not self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
+            if self.gwv6 is not None:
+                # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
+                self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+                self.expect(self.prompt)
+                self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
+                self.expect(self.prompt)
+
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
+        self.sendline('sysctl net.ipv6.conf.all.forwarding=0')
+        self.expect(self.prompt)
+
         if self.wan_no_eth0 or self.wan_dhcp:
             wan_uplink_iface = self.iface_dut
         else:
@@ -522,8 +536,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline('\niptables -t nat -X')
         self.expect('iptables -t')
-        self.expect(self.prompt)
-        self.sendline('sysctl net.ipv6.conf.all.disable_ipv6=0')
         self.expect(self.prompt)
         self.sendline('sysctl net.ipv4.ip_forward=1')
         self.expect(self.prompt)
