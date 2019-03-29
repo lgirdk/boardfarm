@@ -237,6 +237,16 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
+    def set_iface_ipv6addr(self, iface, ipaddr):
+        self.sendline('interface %s' % iface)
+        self.expect(self.prompt)
+        self.sendline('ipv6 address %s' % ipaddr)
+        self.expect(self.prompt)
+        self.sendline('no shutdown')
+        self.expect(self.prompt)
+        self.sendline('exit')
+        self.expect(self.prompt)
+
     def add_ip_bundle(self, index, helper_ip, ip, secondary_ips=[]):
         self.sendline('interface ip-bundle %s' % index)
         self.expect(self.prompt)
@@ -497,6 +507,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 2 and sys.argv[2] == "setup_ipv6":
         print "Setting up IPv6 address, bundles, routes, etc"
+        cmts.set_iface_ipv6addr('gige 0', '2001:dead:beef:1::cafe/64')
         cmts.add_route6('::/0', '2001:dead:beef:1::1')
         cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:2::cafa/64",
                                   secondary_ips=["2001:dead:beef:3::cafa/64", "2001:dead:beef:4::cafa/64"])
