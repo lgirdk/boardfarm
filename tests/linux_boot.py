@@ -95,7 +95,10 @@ class LinuxBootTest(unittest2.TestCase):
                 except Exception as e:
                     retry = retry - 1
                     if(retry > 0):
-                        print(e.get_trace())
+                        if hasattr(e, 'get_trace'):
+                            print(e.get_trace())
+                        else:
+                            print("Exception has no trace, type = %s" % type(e))
                         print("\n\n----------- Test failed! Retrying in 5 seconds... -------------")
                         time.sleep(5)
                     else:
