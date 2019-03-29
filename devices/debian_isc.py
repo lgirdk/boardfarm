@@ -33,6 +33,10 @@ class DebianISCProvisioner(DebianBox):
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
         self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
+        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway', u"2001:dead:beef:2::cafe"))
+        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway', u"2001:dead:beef:3::cafe"))
+        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway', u"2001:dead:beef:4::cafe"))
+        self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway', u"2001:dead:beef:1::cafe"))
 
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
@@ -338,16 +342,14 @@ EOF'''
                 self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
                 self.expect(self.prompt)
 
-        # TODO: specify these via config
         for nw in [self.cm_network, self.mta_network, self.open_network]:
             self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
             self.expect(self.prompt)
-        # TODO: iface_dut needs an ipv6 addr
-        # sysctl net.ipv6.conf.%s.disable_ipv6=0 % iface_dut
-        #self.sendline('ip -6 route add 2001:ed8:77b5:2000::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
-        #self.expect(self.prompt)
-        #self.sendline('ip -6 route add 2001:ed8:77b5:2001::/64 via 2001:ed8:77b5:3::222 dev %s metric 1024' % self.iface_dut)
-        #self.expect(self.prompt)
+
+        for nw in [self.cm_gateway_v6, self.mta_gateway_v6, self.open_gateway_v6]:
+            self.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, self.ipv6_prefix, self.prov_gateway_v6, self.iface_dut))
+            self.expect(self.prompt)
+
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.expect(self.prompt)
