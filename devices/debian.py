@@ -558,6 +558,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
 
     def start_lan_client(self, wan_gw=None):
+        # TODO: this should not be required (fix at some point...)
+        self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+        self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
+        self.expect(self.prompt)
+        self.disable_ipv6('eth0')
+
         self.sendline('\nifconfig %s up' % self.iface_dut)
         self.expect('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
