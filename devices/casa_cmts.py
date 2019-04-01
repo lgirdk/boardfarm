@@ -361,6 +361,8 @@ class CasaCMTS(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline('ip bundle %s' % ip_bundle)
         self.expect(self.prompt)
+        self.sendline('ip-provisioning-mode dual-stack')
+        self.expect(self.prompt)
         count = 1;
         for ch in qam_ch:
             self.sendline('downstream %s interface qam %s/%s/%s' % (count, qam_idx, qam_sub, ch))
