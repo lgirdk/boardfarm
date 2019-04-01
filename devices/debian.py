@@ -575,6 +575,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline("sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script")
         self.expect(self.prompt)
+        # TODO: don't hard code eth0
         self.sendline('ip route del default dev eth0')
         self.expect(self.prompt)
         for attempt in range(3):
@@ -587,7 +588,14 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 self.sendcontrol('c')
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
-        self.sendline('ifconfig %s' % self.iface_dut)
+
+        # very casual try for ipv6 addr, if we don't get one don't fail for now
+        self.enable_ipv6(self.iface_dut)
+        self.sendline('dhclient -6 -i %s -v' % self.iface_dut)
+        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+            self.sendcontrol('c')
+
+        self.sendline('ip addr show dev %s' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('ip route')
         # TODO: we should verify this so other way, because the they could be the same subnets
