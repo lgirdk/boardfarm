@@ -434,6 +434,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
 
     def setup_dhcp_server(self):
+        if not self.wan_dhcp_server:
+            return
+
         # configure DHCP server
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
