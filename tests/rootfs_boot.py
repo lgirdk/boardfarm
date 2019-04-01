@@ -9,6 +9,9 @@ import time
 import linux_boot
 import lib
 import ipaddress
+
+from lib.network_helper import valid_ipv4, valid_ipv6
+
 from devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
@@ -173,71 +176,61 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 if len(pkg) > 0:
                     board.install_package(pkg)
 
+        # TODO: we should do some of this for other types of provisioners
         if prov is not None and 'debian-isc-provisioner' in prov.model:
-            table = self.config.board['station']
-            idx = wan.port # TODO: how to do this right...?
-
-
             start_time = time.time()
             time_for_provisioning = 120
 
-            ips = []
-            while (time.time() - start_time < time_for_provisioning):
-                # reset IPs incase we got part way through and failed
-                ips = []
-                try:
-                    try:
-                        ip = board.get_interface_ipaddr(board.wan_iface)
-                        assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.cm_network, \
-                            "Board failed to obtain WAN IP address"
-                    except:
-                        continue
+            wan_ipv4 = False
+            wan_ipv6 = False
+            erouter_ipv4 = False
+            erouter_ipv6 = False
+            mta_ipv4 = False
+            mta_ipv6 = False # Never possible on any boards?
 
-                    ips += [ip]
+            cm_configmode = board.cm_cfg.cm_configmode
+
+            if cm_configmode == 'bridge':
+                # TODO
+                pass
+            if cm_configmode == 'ipv4':
+                wan_ipv4 = erouter_ipv4 = True
+                mta_ipv4 = True # TODO: is this true?
+            if cm_configmode == 'dslite':
+                # TODO
+                pass
+            if cm_configmode == 'dual-stack':
+                wan_ipv4 = erouter_ipv4 = True
+                wan_ipv6 = erouter_ipv6 = True
+                # TODO: mta does not come up in this mode now, to b e fixed
+            # TODO: no ipv6 only TLV?!?
+
+            while (time.time() - start_time < time_for_provisioning):
+                try:
+                    if wan_ipv4:
+                        valid_ipv4(board.get_interface_ipaddr(board.wan_iface))
+                    if wan_ipv6:
+                        valid_ipv6(board.get_interface_ip6addr(board.wan_iface))
 
                     if hasattr(board, 'erouter_iface'):
-                        try:
-                            ip = board.get_interface_ipaddr(board.erouter_iface)
-                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.open_network, \
-                                "Board failed to obtain erouter IP address"
-                        except:
-                            continue
-                        ips += [ip]
+                        if erouter_ipv4:
+                            valid_ipv4(board.get_interface_ipaddr(board.erouter_iface))
+                        if erouter_ipv6:
+                            valid_ipv6(board.get_interface_ip6addr(board.erouter_iface))
+
                     if hasattr(board, 'mta_iface'):
-                        try:
-                            ip = board.get_interface_ipaddr(board.mta_iface)
-                            assert ipaddress.IPv4Address(ip.decode('utf-8')) in prov.mta_network, \
-                                "Board failed to obtain MTA IP address"
-                        except:
-                            continue
-                        ips += [ip]
+                        if mta_ipv4:
+                            valid_ipv4(board.get_interface_ipaddr(board.mta_iface))
+                        if mta_ipv6:
+                            valid_ipv6(board.get_interface_ip6addr(board.mta_iface))
 
                     # if we get this far, we have all IPs and can exit while loop
                     break
+                except KeyboardInterrupt:
+                    raise
                 except:
                     if time.time() - start_time < time_for_provisioning:
                         raise
-                    pass
-
-            check = [hasattr(board, 'erouter_iface'), hasattr(board, 'mta_iface')]
-            if len(ips) != 1 + sum(1 if True else 0 for x in check):
-                raise Exception("Failed to obtain ip address for all configured interfaces!")
-
-            # TODO: don't hard code 300 or mv1-1
-            prov.sendline('sed /^%s/d -i /etc/iproute2/rt_tables' % idx)
-            prov.expect(prompt)
-            prov.sendline('echo "%s     %s" >> /etc/iproute2/rt_tables' % (idx, table))
-            prov.expect(prompt)
-
-            for ip in ips:
-                prov.sendline('ip rule del from %s' % ip)
-                prov.expect(prompt)
-                prov.sendline('ip rule add from %s lookup %s' % (ip, table))
-                prov.expect(prompt)
-
-            wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
-            prov.sendline('ip route add default via %s dev eth1 table %s' % (wan_ip, table))
-            prov.expect(prompt)
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
         end_seconds_up = board.get_seconds_uptime()
