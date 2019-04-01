@@ -27,6 +27,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         # start dhcp servers
         for device in self.config.board['devices']:
+            if 'options' in device and 'no-dhcp-sever' in device['options']:
+                continue
             if 'options' in device and 'dhcp-server' in device['options']:
                 getattr(self.config, device['name']).setup_dhcp_server()
                 dhcp_started = True
