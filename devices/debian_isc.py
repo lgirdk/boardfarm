@@ -34,10 +34,14 @@ class DebianISCProvisioner(DebianBox):
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
         self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
-        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway', u"2001:dead:beef:2::cafe"))
-        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway', u"2001:dead:beef:3::cafe"))
-        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway', u"2001:dead:beef:4::cafe"))
-        self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway', u"2001:dead:beef:1::cafe"))
+        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:2::cafe"))
+        self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:2::/64"))
+        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway_v6', u"2001:dead:beef:3::cafe"))
+        self.mta_network_v6 = ipaddress.IPv6Network(kwargs.pop('mta_network_v6', u"2001:dead:beef:3::/64"))
+        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:4::cafe"))
+        self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:4::/64"))
+        self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
+        self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
 
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
@@ -55,12 +59,16 @@ class DebianISCProvisioner(DebianBox):
         return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
     def setup_dhcp6_config(self, board_config):
+        tftp_server = self.tftp_device.tftp_server_ipv6_int()
+
         to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
-preferred-lifetime 7500;
+preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
 allow leasequery;
-option dhcp6.name-servers 2001:4860:4860::8888;
+prefix-length-mode prefer;
+
+option dhcp6.name-servers 2001:dead:beef:1::1;
 option dhcp6.domain-search "test.example.com","example.com";
 option dhcp6.info-refresh-time 21600;
 option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
@@ -69,37 +77,52 @@ option space docsis code width 2 length width 2 hash size 100;
 option docsis.tftp-servers code 32 = array of ip6-address;
 option docsis.configuration-file code 33 = text;
 option docsis.syslog-servers code 34 = array of ip6-address;
-#option docsis.device-id code 36 = string;
 option docsis.time-servers code 37 = array of ip6-address;
 option docsis.time-offset code 38 = signed integer 32;
 option vsio.docsis code 4491 = encapsulate docsis;
 
-subnet6 2001:dead:beef:2::cafe::/64 {
-    range6 2001:dead:beef:2::10 2001:dead:beef:2::100;
-    interface %s;
-    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-    option docsis.time-servers 2001:ed8:77b5:3::101;
-    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-    option docsis.syslog-servers 2001:ed8:77b5:3::101 ;
-    option docsis.time-offset 5000;
+subnet6 2001:dead:beef:1::/64 {
+  interface ###IFACE###;
+  ignore booting;
 }
-subnet6 2001:dead:beef:3::cafe::/64 {
-    range6 2001:dead:beef:3::10 2001:dead:beef:3::100;
-    interface %s;
-    option docsis.tftp-servers 2001:ed8:77b5:3::101;
-    option docsis.time-servers 2001:ed8:77b5:3::101;
-    option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-    option docsis.syslog-servers 2001:ed8:77b5:3::101;
-    option docsis.time-offset 5000;
+
+shared-network boardfarm {
+  interface ###IFACE###;
+    subnet6 2001:dead:beef:2::/64 {
+        pool6 {
+            range6 2001:dead:beef:2::10 2001:dead:beef:2::100;
+        }
+        option docsis.tftp-servers ###PROV_IPV6###;
+        option docsis.time-servers ###PROV_IPV6###;
+        option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+        option docsis.syslog-servers ###PROV_IPV6### ;
+        option docsis.time-offset 5000;
+    }
+    subnet6 2001:dead:beef:3::/64 {
+        pool6 {
+            range6 2001:dead:beef:3::10 2001:dead:beef:3::100;
+        }
+        option docsis.tftp-servers ###PROV_IPV6###;
+        option docsis.time-servers ###PROV_IPV6###;
+        option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+    }
+    subnet6 2001:dead:beef:4::/64 {
+        pool6 {
+            range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
+        }
+        prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
+        option dhcp6.solmax-rt   240;
+        option dhcp6.inf-max-rt  360;
+    }
 }
-subnet6 2001:dead:beef:4::cafe::/64 {
-    range6 2001:dead:beef:4::10 2001:dead:beef:4::cafe::100;
-    interface %s;
-    option dhcp6.ia_pd 1234 20000 40000 26 25 30000 60000 64 2001:ed8:77b5:4::;
-    option dhcp6.solmax-rt   240;
-    option dhcp6.inf-max-rt  360;
-}
-EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut)
+EOF'''
+
+        to_send = to_send.replace('###IFACE###', self.iface_dut)
+        to_send = to_send.replace('###PROV_IPV6###', str(self.prov_ipv6))
+        to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[0]))
+        to_send = to_send.replace('###EROUTER_NET_END###', str(self.erouter_net[-ipaddress.IPv6Network(u'::0/%s' % self.ipv6_prefix).num_addresses]))
+        to_send = to_send.replace('###EROUTER_PREFIX###', str(self.ipv6_prefix))
+        # TODO: add ranges for subnet's, syslog server per CM
 
         self.sendline(to_send)
         self.expect(self.prompt)
@@ -113,23 +136,26 @@ EOF''' % (self.iface_dut, self.iface_dut, self.iface_dut)
         self.sendline('cp /dev/null %s' % cfg_file)
         self.expect(self.prompt)
 
-        # TODO: make ipv6 specific
         # insert tftp server, TODO: how to clean up?
-        #board_config['extra_provisioning']['cm']['next-server'] = tftp_server
-        #board_config['extra_provisioning']['mta']['next-server'] = tftp_server
+        if 'options' not in board_config['extra_provisioning_v6']['cm']:
+            board_config['extra_provisioning_v6']['cm']['options'] = {}
+        if 'options' not in board_config['extra_provisioning_v6']['mta']:
+            board_config['extra_provisioning_v6']['mta']['options'] = {}
+        board_config['extra_provisioning_v6']['cm']['options']['docsis.tftp-servers'] = tftp_server
+        board_config['extra_provisioning_v6']['mta']['options']['docsis.tftp-servers'] = tftp_server
 
         # there is probably a better way to construct this file...
-        #for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
-        #    self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
-        #    for key, value in cfg_sec.iteritems():
-        #        if key == "options":
-        #            for k2, v2 in value.iteritems():
-        #                self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
-        #                self.expect(self.prompt)
-        #        else:
-        #            self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
-        #            self.expect(self.prompt)
-        #    self.sendline("echo '}' >> %s" % cfg_file)
+        for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
+            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+            for key, value in cfg_sec.iteritems():
+                if key == "options":
+                    for k2, v2 in value.iteritems():
+                        self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
+                        self.expect(self.prompt)
+                else:
+                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                    self.expect(self.prompt)
+            self.sendline("echo '}' >> %s" % cfg_file)
 
         self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd6.conf.' + board_config['station'])
         self.expect(self.prompt)
@@ -295,9 +321,10 @@ EOF'''
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
             board_config['extra_provisioning'] = {}
+        if 'extra_provisioning_v6' not in board_config:
+            board_config['extra_provisioning_v6'] = {}
 
         # DHCPv4 defaults for when board does not supply defaults
-        # TODO: add DHCPv6 defaults
         if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["mta"] = \
                 { "hardware ethernet": board_config['mta_mac'],
@@ -308,7 +335,6 @@ EOF'''
                               "host-name": "\"" + board_config['station'] + "\""
                             }
                 }
-
         if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["cm"] = \
                 { "hardware ethernet": board_config['cm_mac'],
@@ -316,13 +342,24 @@ EOF'''
                                   "time-offset": "-25200"
                                 }
                 }
-
         if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["erouter"] = \
                 { "hardware ethernet": board_config['erouter_mac'],
                   "default-lease-time" : self.default_lease_time,
                   "max-lease-time": self.max_lease_time
                 }
+
+        # DHCPv6 defaults for when board does not supply defaults
+        if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning_v6']:
+            board_config['extra_provisioning_v6']["mta"] = \
+                { "hardware ethernet": board_config['mta_mac'] }
+        if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning_v6']:
+            board_config['extra_provisioning_v6']["cm"] = \
+                { "hardware ethernet": board_config['cm_mac'],
+                  "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname } }
+        if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning_v6']:
+            board_config['extra_provisioning_v6']["erouter"] = \
+                { "hardware ethernet": board_config['erouter_mac'] }
 
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
@@ -359,12 +396,9 @@ EOF'''
             self.setup_as_wan_gateway()
 
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
+        self.sendline('echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
-        self.expect(self.prompt)
-        #self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
-        self.sendline('sed "/INTERFACESv6/d" -i /etc/default/isc-dhcp-server')
+        self.sendline('echo INTERFACESv6="%s" >> /etc/default/isc-dhcp-server' % self.iface_dut)
         self.expect(self.prompt)
         # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
         self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
@@ -375,6 +409,9 @@ EOF'''
             self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
             self.expect(self.prompt)
 
+            # TODO: we need to route via eth0 at some point
+            # TODO: don't hard code eth0...
+            self.disable_ipv6('eth0')
             self.enable_ipv6(self.iface_dut)
             if self.gwv6 is not None:
                 self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
@@ -388,13 +425,18 @@ EOF'''
             self.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, self.ipv6_prefix, self.prov_gateway_v6, self.iface_dut))
             self.expect(self.prompt)
 
+        self.sendline('ip -6 route add %s via %s' % (str(self.erouter_net), self.prov_gateway_v6))
+        self.expect(self.prompt)
+
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('cat /etc/dhcp/dhcpd.conf')
+        self.expect(self.prompt)
+        self.sendline('cat /etc/dhcp/dhcpd6.conf')
         self.expect(self.prompt)
         self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         # We expect both, so we need debian 9 or greater for this device
         self.expect('Starting ISC DHCPv4 server: dhcpd.\r\n')
-        #self.expect('Starting ISC DHCPv6 server: dhcpd6.\r\n')
+        self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
         self.expect(self.prompt)
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
@@ -426,6 +468,7 @@ EOF'''
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
         self.expect(self.prompt)
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
