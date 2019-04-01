@@ -709,6 +709,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         '''Returns the DUT facing side tftp server ip'''
         return self.gw
 
+    def tftp_server_ipv6_int(self):
+        '''Returns the DUT facing side tftp server ipv6'''
+        return self.gwv6
+
     def link_up(self, interface):
         '''Checking the interface status'''
         self.sendline("ip link show %s" % interface)
