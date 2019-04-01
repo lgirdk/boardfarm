@@ -62,7 +62,16 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                     wan.sendline('ip route add %s via %s' % (nw, gw))
                     wan.expect(prompt)
 
+            # TODO: don't do this and sort out two interfaces with ipv6
+            wan.disable_ipv6('eth0')
+
+            if hasattr(prov, 'prov_gateway_v6'):
+                wan.sendline('ip -6 route add default via %s' % str(prov.prov_gateway_v6))
+                wan.expect(prompt)
+
             wan.sendline('ip route')
+            wan.expect(prompt)
+            wan.sendline('ip -6 route')
             wan.expect(prompt)
 
         if lan:
@@ -134,21 +143,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                     pass
             board.wait_for_network()
         board.wait_for_mounts()
-
-        if self.config.setup_device_networking:
-            # Router mac addresses are likely to change, so flush arp
-            if lan:
-                lan.ip_neigh_flush()
-            if wan:
-                wan.ip_neigh_flush()
-
-            # Clear default routes perhaps left over from prior use
-            if lan:
-                lan.sendline('\nip -6 route del default')
-                lan.expect(prompt)
-            if wan:
-                wan.sendline('\nip -6 route del default')
-                wan.expect(prompt)
 
         # Give other daemons time to boot and settle
         if self.config.setup_device_networking:
