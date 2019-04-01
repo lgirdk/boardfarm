@@ -22,6 +22,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
     time = 60
     server_port = "5201"
     client = lan
+    target_ip = None
 
     def runTest(self):
         installers.install_iperf3(wan)
@@ -31,10 +32,12 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         wan.expect('-----------------------------------------------------------')
         wan.expect('-----------------------------------------------------------')
 
+        if self.target_ip == None:
+            self.target_ip = wan.gw
 
         board.collect_stats(stats=['mpstat'])
 
-        self.client.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, wan.gw, self.time, self.server_port))
+        self.client.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, self.target_ip, self.time, self.server_port))
         self.client.expect(prompt, timeout=self.time+10)
 
         sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', self.client.before)[-1]
@@ -78,6 +81,17 @@ class iPerf3RTest(iPerf3Test):
 
     opts = "-R"
 
+class iPerf3_v6Test(iPerf3Test):
+    '''iPerf3 ipv6 generic performance tests'''
+
+    opts = "-6"
+    target_ip = wan.gwv6
+
+class iPerf3R_v6Test(iPerf3Test):
+    '''iPerf3 ipv6 reverse generic performance tests'''
+
+    opts = "-6 -R"
+    target_ip = wan.gwv6
 
 class iPerf3Test2nd(iPerf3Test):
     '''iPerf3 on second server port'''
