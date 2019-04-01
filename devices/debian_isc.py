@@ -15,6 +15,7 @@ class DebianISCProvisioner(DebianBox):
 
     wan_cmts_provisioner = False
     standalone_provisioner = True
+    wan_dhcp_server = False
 
     # default CM specific settings
     default_lease_time = 604800
@@ -46,7 +47,6 @@ class DebianISCProvisioner(DebianBox):
                     self.wan_cmts_provisioner = True
                     self.shared_tftp_server = True
                     # This does run one.. but it's handled via the provisioning code path
-                    self.wan_dhcp_server = False
                     self.standalone_provisioner = False
 
         self.gw = self.prov_ip
