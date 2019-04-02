@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d8134dfe_36804f83",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-02T21:13:57Z",
+      "side": 1,
+      "message": "this will clash with\nhttps://github.com/lgirdk/boardfarm/pull/286",
+      "revId": "ee9055c1d0a91ff03e4df33bb6f116d97ffd40b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
