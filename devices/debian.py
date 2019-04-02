@@ -29,6 +29,7 @@ class DebianBox(base.BaseDevice):
     static_route = None
     static_ip = False
     wan_dhcp = False
+    wan_dhcpv6 = True
     wan_no_eth0 = False
     pkgs_installed = False
     install_pkgs_after_dhcp = False
@@ -130,6 +131,7 @@ class DebianBox(base.BaseDevice):
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
                     self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
+                    self.wan_dhcpv6 = False
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
@@ -507,6 +509,15 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 self.expect(self.prompt)
                 self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
                 self.expect(self.prompt)
+            elif self.wan_dhcpv6 == True:
+                self.sendline('dhclient -6 -i %s -r' % self.iface_dut)
+                self.expect(self.prompt)
+                self.sendline('dhclient -6 -i %s' % self.iface_dut)
+                self.expect(self.prompt)
+                self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
+                self.expect(self.prompt)
+                print FOOBAR
+                print self.gwv6
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
