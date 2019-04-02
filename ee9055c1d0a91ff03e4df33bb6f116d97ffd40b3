@@ -16,6 +16,24 @@
       "revId": "ee9055c1d0a91ff03e4df33bb6f116d97ffd40b3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e73b276d_413e9cab",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-02T22:33:12Z",
+      "side": 1,
+      "message": "I dropped the last commit in this PR and took mine... they do about the same thing. Can edit further if needed. Did take the first 2 commits in this PR though.",
+      "parentUuid": "d8134dfe_36804f83",
+      "revId": "ee9055c1d0a91ff03e4df33bb6f116d97ffd40b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
