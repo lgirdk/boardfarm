@@ -29,6 +29,7 @@ class DebianBox(base.BaseDevice):
     static_route = None
     static_ip = False
     wan_dhcp = False
+    wan_dhcpv6 = False
     wan_no_eth0 = False
     pkgs_installed = False
     install_pkgs_after_dhcp = False
@@ -141,6 +142,8 @@ class DebianBox(base.BaseDevice):
                     self.wan_no_eth0 = True
                 if opt.startswith('wan-no-dhcp-sever'):
                     self.wan_dhcp_server = False
+                if opt.startswith('wan-dhcp-client-v6'):
+                    self.wan_dhcpv6 = True
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
@@ -501,12 +504,24 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
-            if self.gwv6 is not None:
-                # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-                self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
-                self.expect(self.prompt)
-                self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
-                self.expect(self.prompt)
+        if self.wan_dhcpv6 == True:
+            # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+            self.expect(self.prompt)
+            self.sendline('dhclient -6 -i -v %s -r' % self.iface_dut)
+            self.expect(self.prompt)
+            self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
+            self.expect(self.prompt)
+            self.sendline('ip -6 addr')
+            self.expect(self.prompt)
+            self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
+        elif self.gwv6 is not None:
+            # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+            self.expect(self.prompt)
+            self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
+            self.expect(self.prompt)
+
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
