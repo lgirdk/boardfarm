@@ -32,3 +32,17 @@ def ipv6_to_snmp_format(ipv6_str):
     ipv6_address = ipaddress.ip_address(ipv6_tmp_ip)
 
     return ipv6_address
+
+def valid_ipv4(ip_str):
+    try:
+        ipaddress.IPv4Address(unicode(ip_str))
+        return True
+    except:
+        return False
+
+def valid_ipv6(ip_str):
+    try:
+        ipaddress.IPv6Address(unicode(ip_str))
+        return True
+    except:
+        return False
