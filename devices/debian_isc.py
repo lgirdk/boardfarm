@@ -34,7 +34,7 @@ class DebianISCProvisioner(DebianBox):
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
         self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
-        self.prov_nw_ipv6 = ipaddress.IPv6Interface(str(self.prov_ipv6) + unicode('/%s' % self.ipv6_prefix))
+        self.prov_nw_ipv6 = ipaddress.IPv6Interface(str(self.prov_ipv6) + unicode('/%s' % self.ipv6_prefix)).network
 
         self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:2::cafe"))
         self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:2::/64"))
