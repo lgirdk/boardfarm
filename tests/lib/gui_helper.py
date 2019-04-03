@@ -40,10 +40,20 @@ def click_button_xpath(web_gui, clickbutton):
     except NoSuchElementException:
         return False
 
-def select_option(web_gui, select_button, select_value):
+def select_option_by_id(web_gui, select_button, select_value):
     try:
         #To select the option required
         select = Select(web_gui.find_element_by_id(select_button))
+        select.select_by_visible_text(select_value)
+        time.sleep(5)
+        return select
+    except NoSuchElementException:
+        return None
+
+def select_option_by_name(web_gui, select_button, select_value):
+    try:
+        #To select the option required
+        select = Select(web_gui.find_element_by_name(select_button))
         select.select_by_visible_text(select_value)
         time.sleep(5)
         return select
