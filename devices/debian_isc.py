@@ -433,13 +433,8 @@ EOF'''
         self.expect(self.prompt)
         self.sendline('cat /etc/dhcp/dhcpd6.conf')
         self.expect(self.prompt)
-        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
-        # We expect both, so we need debian 9 or greater for this device
-        self.expect('Starting ISC DHCPv4 server: dhcpd.\r\n')
-        self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
-        self.expect(self.prompt)
-        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
-        self.expect(self.prompt)
+
+        self._restart_dhcp_with_lock()
 
         # only start tftp server if we are a full blown wan+provisioner
         if self.wan_cmts_provisioner:
@@ -466,6 +461,10 @@ EOF'''
         '''New DHCP, cfg files etc for board after it's been provisioned once'''
         self.copy_cmts_provisioning_files(board_config)
         self.update_cmts_isc_dhcp_config(board_config)
+
+        self._restart_dhcp_with_lock()
+
+    def _restart_dhcp_with_lock(self):
         self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
