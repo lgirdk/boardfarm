@@ -346,9 +346,9 @@ def install_jmeter(device):
         device.expect(device.prompt, timeout=90)
         device.sendline('wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.1.tgz')
         device.expect(device.prompt, timeout=90)
-        device.sendline('tar -C /opt -zxf apache-jmeter-5.0.tgz')
+        device.sendline('tar -C /opt -zxf apache-jmeter-5.1.1.tgz')
         device.expect(device.prompt, timeout=120)
-        device.sendline('rm apache-jmeter-5.0.tgz')
+        device.sendline('rm apache-jmeter-*')
 
 def install_IRCserver(device):
     '''Install irc server if not present.'''
