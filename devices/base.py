@@ -41,8 +41,9 @@ class BaseDevice(pexpect.spawn):
         self.expect(self.prompt)
 
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
-            ip6addr = ipaddress.IPv6Address(match)
+            ip6addr = ipaddress.IPv6Address(unicode(match))
             if not ip6addr.is_link_local:
+                # TODO: at some point just return ip6addr
                 return match
 
         raise Exception("Did not find non-link-local ipv6 address")
