@@ -12,10 +12,9 @@ import os
 import time
 import common
 import error_detect
+import ipaddress
 
-#from lib.regexlib import ValidIpv4AddressRegex, ValidIpv6AddressRegex
-from lib.regexlib import LinuxMacFormat
-
+from lib.regexlib import LinuxMacFormat, AllValidIpv6AddressesRegex
 from lib.logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
@@ -38,10 +37,15 @@ class BaseDevice(pexpect.spawn):
 
     def get_interface_ip6addr(self, interface):
         self.sendline("\nifconfig %s" % interface)
-        self.expect('\s((200([0-9a-f]){1,1}:)([0-9a-f]{1,4}:){1,6}([0-9a-f]{1,4}))([\/\s])', timeout=5)
-        ipaddr = self.match.group(1)
+        self.expect_exact("ifconfig %s" % interface)
         self.expect(self.prompt)
-        return ipaddr
+
+        for match in re.findall(AllValidIpv6AddressesRegex, self.before):
+            ip6addr = ipaddress.IPv6Address(match)
+            if not ip6addr.is_link_local:
+                return match
+
+        raise Exception("Did not find non-link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
         self.sendline('cat /sys/class/net/%s/address' % interface)
