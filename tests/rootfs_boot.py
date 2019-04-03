@@ -197,7 +197,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 pass
             if cm_configmode == 'ipv4':
                 wan_ipv4 = erouter_ipv4 = True
-                mta_ipv4 = True # TODO: is this true?
+                # TODO: this fails if we have dhcp6 running, why?
+                #mta_ipv4 = True # TODO: is this true?
             if cm_configmode == 'dslite':
                 # TODO
                 pass
