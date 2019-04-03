@@ -344,7 +344,7 @@ def install_jmeter(device):
         device.expect(device.prompt)
         device.sendline('apt-get install wget openjdk-8-jre-headless -y')
         device.expect(device.prompt, timeout=90)
-        device.sendline('wget https://www-eu.apache.org/dist//jmeter/binaries/apache-jmeter-5.0.tgz')
+        device.sendline('wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.1.tgz')
         device.expect(device.prompt, timeout=90)
         device.sendline('tar -C /opt -zxf apache-jmeter-5.0.tgz')
         device.expect(device.prompt, timeout=120)
