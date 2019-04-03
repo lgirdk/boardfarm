@@ -177,6 +177,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                     board.install_package(pkg)
 
         # TODO: we should do some of this for other types of provisioners
+        # TODO: this should probably move into a DEVICE specific helper function
+        # so all the correct logic can be encoded there
         if prov is not None and 'debian-isc-provisioner' in prov.model:
             start_time = time.time()
             time_for_provisioning = 120
