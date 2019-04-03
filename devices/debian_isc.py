@@ -34,6 +34,8 @@ class DebianISCProvisioner(DebianBox):
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
         self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
+        self.prov_nw_ipv6 = ipaddress.IPv6Interface(str(self.prov_ipv6) + unicode('/%s' % self.ipv6_prefix))
+
         self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:2::cafe"))
         self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:2::/64"))
         self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway_v6', u"2001:dead:beef:3::cafe"))
@@ -432,6 +434,7 @@ EOF'''
         self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.expect(self.prompt)
         self.sendline('cat /etc/dhcp/dhcpd6.conf')
+        self.expect_exact('cat /etc/dhcp/dhcpd6.conf')
         self.expect(self.prompt)
 
         self._restart_dhcp_with_lock()
@@ -465,9 +468,21 @@ EOF'''
         self._restart_dhcp_with_lock()
 
     def _restart_dhcp_with_lock(self):
+        do_ipv6 = True
+
+        try:
+            chk_ip = self.get_interface_ip6addr(self.iface_dut)
+            if chk_ip not in self.prov_nw_ipv6:
+                do_ipv6 = False
+        except:
+            do_ipv6 = False
+
         self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
-        self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
+        if do_ipv6:
+            self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
+        else:
+            print("NOTE: not starting IPv6 because this provisioner is not setup properly")
         self.expect(self.prompt)
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
