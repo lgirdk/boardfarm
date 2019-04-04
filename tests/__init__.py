@@ -24,6 +24,8 @@ if 'BFT_OVERLAY' in os.environ:
 
 test_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
+    if x == "tests":
+        raise Exception("INVALID test file name found, tests.py will cause namespace issues, please rename")
     try:
         exec("import %s as test_file" % x)
         test_mappings[test_file] = []
