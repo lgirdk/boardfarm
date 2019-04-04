@@ -100,12 +100,12 @@ shared-network boardfarm {
     subnet6 2001:dead:beef:2::/64 {
         pool6 {
             range6 2001:dead:beef:2::10 2001:dead:beef:2::100;
+            option docsis.tftp-servers ###PROV_IPV6###;
+            option docsis.time-servers ###PROV_IPV6###;
+            option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+            option docsis.syslog-servers ###PROV_IPV6### ;
+            option docsis.time-offset 5000;
         }
-        option docsis.tftp-servers ###PROV_IPV6###;
-        option docsis.time-servers ###PROV_IPV6###;
-        option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-        option docsis.syslog-servers ###PROV_IPV6### ;
-        option docsis.time-offset 5000;
     }
     subnet6 2001:dead:beef:3::/64 {
         pool6 {
@@ -118,10 +118,10 @@ shared-network boardfarm {
     subnet6 2001:dead:beef:4::/64 {
         pool6 {
             range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
+            prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
+            option dhcp6.solmax-rt   240;
+            option dhcp6.inf-max-rt  360;
         }
-        prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
-        option dhcp6.solmax-rt   240;
-        option dhcp6.inf-max-rt  360;
     }
 }
 EOF'''
