@@ -193,12 +193,13 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             cm_configmode = board.cm_cfg.cm_configmode
 
             if cm_configmode == 'bridge':
-                # TODO
+                wan_ipv4 = True
+                mta_ipv4 = True
                 pass
             if cm_configmode == 'ipv4':
                 wan_ipv4 = erouter_ipv4 = True
                 # TODO: this fails if we have dhcp6 running, why?
-                #mta_ipv4 = True # TODO: is this true?
+                #mta_ipv4 = True # TODO: is this true? Is there another MTA CM cfg item to check?
             if cm_configmode == 'dslite':
                 # TODO
                 pass
