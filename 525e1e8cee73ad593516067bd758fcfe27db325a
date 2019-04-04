@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2a3349b4_571a1d6e",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-04T06:33:23Z",
+      "side": 1,
+      "message": "erouter does not exists \nwan ipv4\nmta ipv4",
+      "range": {
+        "startLine": 194,
+        "startChar": 0,
+        "endLine": 194,
+        "endChar": 22
+      },
+      "revId": "525e1e8cee73ad593516067bd758fcfe27db325a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d55abba_cf026924",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-04T06:33:23Z",
+      "side": 1,
+      "message": "AFAIK it\u0027s ipv6 with a tunnel for the ipv4 (Prasada,Ketan?)\nerouter ipv6  (the lan container will get ipv4+ipv6)\nwan ipv6+ipv4\n\nthe lan ipv4 goes via a gre tunnel through the erouter",
+      "range": {
+        "startLine": 200,
+        "startChar": 18,
+        "endLine": 200,
+        "endChar": 22
+      },
+      "revId": "525e1e8cee73ad593516067bd758fcfe27db325a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2510800e_381cacfe",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-04T06:33:23Z",
+      "side": 1,
+      "message": "GenericTLV TlvCode 202 TlvLength 3 TlvValue 0x010102 ----\u003e 2: IPv6 Protocol Enabled",
+      "range": {
+        "startLine": 206,
+        "startChar": 0,
+        "endLine": 206,
+        "endChar": 39
+      },
+      "revId": "525e1e8cee73ad593516067bd758fcfe27db325a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
