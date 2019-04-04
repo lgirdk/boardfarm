@@ -472,7 +472,7 @@ EOF'''
 
         try:
             chk_ip = self.get_interface_ip6addr(self.iface_dut)
-            if chk_ip not in self.prov_nw_ipv6:
+            if ipaddress.IPv6Address(unicode(chk_ip)) not in self.prov_nw_ipv6:
                 do_ipv6 = False
         except:
             do_ipv6 = False
