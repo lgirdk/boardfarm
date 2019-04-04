@@ -67,21 +67,28 @@ class DebianISCProvisioner(DebianBox):
 preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
+
 allow leasequery;
 prefix-length-mode prefer;
 
-option dhcp6.name-servers 2001:dead:beef:1::1;
-option dhcp6.domain-search "test.example.com","example.com";
 option dhcp6.info-refresh-time 21600;
 option dhcp6.ia_pd code 25 = { integer 32, integer 32, integer 32, integer 16, integer 16, integer 32, integer 32, integer 8, ip6-address};
 option dhcp6.gateway code 32003 = ip6-address;
-option space docsis code width 2 length width 2 hash size 100;
+option space docsis code width 2 length width 2;
+option docsis.device-type code 2 = text;
 option docsis.tftp-servers code 32 = array of ip6-address;
 option docsis.configuration-file code 33 = text;
 option docsis.syslog-servers code 34 = array of ip6-address;
+option docsis.device-id code 36 = string;
 option docsis.time-servers code 37 = array of ip6-address;
 option docsis.time-offset code 38 = signed integer 32;
+option docsis.cm-mac-address code 1026 = string;
 option vsio.docsis code 4491 = encapsulate docsis;
+
+# TODO: move to host section
+#option dhcp6.aftr-name "";
+option dhcp6.name-servers 2001:dead:beef:1::1;
+option dhcp6.domain-search "test.example.com","example.com";
 
 subnet6 2001:dead:beef:1::/64 {
   interface ###IFACE###;
