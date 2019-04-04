@@ -334,7 +334,7 @@ def install_iw(device):
 
 def install_jmeter(device):
     '''Install jmeter if not present.'''
-    device.sendline('export PATH=$PATH:/opt/apache-jmeter-5.0/bin/')
+    device.sendline('export PATH=$PATH:/opt/apache-jmeter-5.1.1/bin/')
     device.expect(device.prompt)
     device.sendline('jmeter --version')
     try:
