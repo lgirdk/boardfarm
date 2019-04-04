@@ -503,6 +503,7 @@ class CasaCMTS(base.BaseDevice):
             return None
 
     def get_center_freq(self, mac_domain=None):
+        print("THIS NEEDS TO BE FIXED")
         return "512000000"
 
         # TODO: fix below
