@@ -573,6 +573,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
 
     def start_lan_client(self, wan_gw=None):
+        # very casual try for ipv6 addr, if we don't get one don't fail for now
+        self.enable_ipv6(self.iface_dut)
+        self.sendline('dhclient -6 -i %s -v' % self.iface_dut)
+        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+            self.sendcontrol('c')
+
         # TODO: this should not be required (fix at some point...)
         self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
         self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
@@ -582,7 +588,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('\nifconfig %s up' % self.iface_dut)
         self.expect('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
-	self.sendline("dhclient -r %s" % self.iface_dut)
+	self.sendline("dhclient -4 -r %s" % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('\nifconfig %s 0.0.0.0' % self.iface_dut)
         self.expect(self.prompt)
@@ -595,7 +601,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         for attempt in range(3):
             try:
-                self.sendline('dhclient -v %s' % self.iface_dut)
+                self.sendline('dhclient -4 -v %s' % self.iface_dut)
                 self.expect('DHCPOFFER', timeout=30)
                 self.expect(self.prompt)
                 break
@@ -604,12 +610,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
 
-        # very casual try for ipv6 addr, if we don't get one don't fail for now
-        self.enable_ipv6(self.iface_dut)
-        self.sendline('dhclient -6 -i %s -v' % self.iface_dut)
-        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
-            self.sendcontrol('c')
-
+        self.sendline('cat /etc/resolv.conf')
+        self.expect(self.prompt)
         self.sendline('ip addr show dev %s' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('ip route')
@@ -630,6 +632,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
             self.lan_network = ipaddress.IPv4Network(self.before.strip().decode())
+        self.sendline('ip -6 route')
+        self.expect(self.prompt)
 
         # Setup HTTP proxy, so board webserver is accessible via this device
         self.sendline('curl --version')
