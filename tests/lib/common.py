@@ -421,7 +421,7 @@ def snmp_mib_set(device, board, iface_ip, mib_name, index, set_type, set_value, 
     elif set_type == "x":
         set_value_hex = set_value[2:].upper()
         set_value_output = ' '.join([set_value_hex[i:i+2] for i in range(0, len(set_value_hex), 2)])
-        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value_output] + device.prompt, timeout=40)
+        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
     assert idx==1,"Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
