@@ -12,6 +12,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
     jmx = "https://jmeter.apache.org/demos/ForEachTest2.jmx"
     shortname = "ForEachTest2"
+    default_time = 600
 
     def runTest(self):
         install_jmeter(lan)
@@ -32,7 +33,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         lan.sendline('JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t test.jmx -l foo.log -e -o output')
         lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
-        for i in range(600):
+        for i in range(self.default_time):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
             conns = board.get_nf_conntrack_conn_count()
@@ -59,15 +60,15 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         board.touch()
 
-        #print "Copying files from lan to dir = %s" % self.config.output_dir
-        #lan.sendline('readlink -f output/')
-        #lan.expect('readlink -f output/')
-        #board.touch()
-        #lan.expect(prompt)
-        #board.touch()
-        #fname=lan.before.strip()
-        #board.touch()
-        #scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
+        print "Copying files from lan to dir = %s" % self.config.output_dir
+        lan.sendline('readlink -f output/')
+        lan.expect('readlink -f output/')
+        board.touch()
+        lan.expect(prompt)
+        board.touch()
+        fname=lan.before.strip()
+        board.touch()
+        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
 
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
