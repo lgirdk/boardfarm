@@ -487,7 +487,7 @@ class CasaCMTS(base.BaseDevice):
         self.expect(self.prompt)
         ertr_ipv4 = re.search('(%s) .*(eRouter)'% ValidIpv4AddressRegex ,self.before)
         if ertr_ipv4:
-            ipv4 =ertr_ipv4.group(0)
+            ipv4 =ertr_ipv4.group(1)
             return ipv4
         else:
             return None
