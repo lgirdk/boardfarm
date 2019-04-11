@@ -85,13 +85,19 @@ class iPerf3_v6Test(iPerf3Test):
     '''iPerf3 ipv6 generic performance tests'''
 
     opts = "-6"
-    target_ip = wan.gwv6
+
+    def runTest(self):
+        self.target_ip = wan.gwv6
+        super(iPerf3_v6Test, self).runTest()
 
 class iPerf3R_v6Test(iPerf3Test):
     '''iPerf3 ipv6 reverse generic performance tests'''
 
     opts = "-6 -R"
-    target_ip = wan.gwv6
+
+    def runTest(self):
+        self.target_ip = wan.gwv6
+        super(iPerf3R_v6Test, self).runTest()
 
 class iPerf3Test2nd(iPerf3Test):
     '''iPerf3 on second server port'''
