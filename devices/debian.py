@@ -136,13 +136,13 @@ class DebianBox(base.BaseDevice):
                 # TODO: remove wan-static-route at some point above
                 if opt.startswith('static-route:'):
                     self.static_route = opt.replace('static-route:', '').replace('-', ' via ')
-                if opt.startswith('wan-dhcp-client'):
+                if opt == 'wan-dhcp-client':
                     self.wan_dhcp = True
-                if opt.startswith('wan-no-eth0'):
+                if opt == 'wan-no-eth0':
                     self.wan_no_eth0 = True
-                if opt.startswith('wan-no-dhcp-sever'):
+                if opt == 'wan-no-dhcp-sever':
                     self.wan_dhcp_server = False
-                if opt.startswith('wan-dhcp-client-v6'):
+                if opt == 'wan-dhcp-client-v6':
                     self.wan_dhcpv6 = True
 
         try:
