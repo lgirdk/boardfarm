@@ -257,3 +257,16 @@ class BaseDevice(pexpect.spawn):
                 common.print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
         except:
             pass
+
+    def prefer_ipv4(self, pref=True):
+        """Edits the /etc/gai.conf file
+
+        This is to give/remove ipv4 preference (by default ipv6 is preferred)
+        See /etc/gai.conf inline comments for more details
+        """
+        if pref is True:
+            self.sendline("sed -i 's/^#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+        else:
+            self.sendline("sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+        self.expect(self.prompt)
+
