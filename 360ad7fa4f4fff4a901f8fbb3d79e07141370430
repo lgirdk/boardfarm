@@ -1,0 +1,191 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "654ecd57_f5b7787b",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "option dhcp6.aftrep code 32001 \u003d ip6-address;\ncan be added to specify AFTR endpoint IPv6  instead of FQDN.",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b37fa9bf_eb2efbf6",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "need to add a hash size of 17\noption space docsis code width 2 length width 2 hash size 17;",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1139f356_445ad6aa",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "replace subnet with variable name self.prov_nw_ipv6/###PROV_NW_IPv6###",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "376dadab_fc0531eb",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "Need to add classes here to differentiate subnet for each type of host.\n\nclass \"CM\" {\n#since all DHCPv6 vendor-opts(17) are encapsulated in relay, need to match dhcp option for docsis from relay message\n  match if option docsis.device-type \u003d \"ECM\";\n}\nclass \"MTA\" {\n  match if option docsis.device-type \u003d \"EMTA\";\n}\nclass \"EROUTER\" {\n  match if option docsis.device-type \u003d \"EROUTER\";\n}",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57bd2dab_a76bcc43",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "replace subnet6 value 2001:dead:beef:2::/64 with self.cm_network_v6/###CM_NW_V6###",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e00fdbb8_464ad2bb",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "Needs to be an appending value to CM network from 10 to 100",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea7f406f_bf966de9",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "allow members of \"CM\";\nadd before ending the pool",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1d4fe528_d484e6b3",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "Similar to CM pool\nreplace subnet6 value 2001:dead:beef:4::/64 with self.open_network_v6/###OPEN_NW_V6###",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bff0da1f_ae25c83a",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "Would be better if calculated with /56, /55 is currently set as default, E-router by default breaks the prefix in 8 /64 subnets, anything more/less and ARM console will throw a warning/error for PD.",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d9177ddc_87a21435",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "allow members of \"EROUTER\";\nadd before ending the pool",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "38e65517_f2a6fb27",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:17:42Z",
+      "side": 1,
+      "message": "For option dhcp6.client-id we need to add a prefix  host-identifier \neg. host-identifier option dhcp6.client-id 00:03:00:01:\u003cMAC address\u003e\n\nWill this be handled via code or via json?",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
