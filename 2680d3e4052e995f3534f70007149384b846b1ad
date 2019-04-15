@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a70542e_65d740e0",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 202,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T13:42:30Z",
+      "side": 1,
+      "message": "In either of the provisioning scenarios we\u0027re always validating the IPv4 of MTA.",
+      "revId": "2680d3e4052e995f3534f70007149384b846b1ad",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
