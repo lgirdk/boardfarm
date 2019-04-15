@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "0e7685bf_2e3596a5",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T17:48:48Z",
+      "side": 1,
+      "message": "My mistake, your right its 32001. It was mentioned in the strings so places a comment.",
+      "parentUuid": "16f2c74a_4cf10ee0",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b37fa9bf_eb2efbf6",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -66,6 +84,24 @@
       "side": 1,
       "message": "Can you clarify why?",
       "parentUuid": "b37fa9bf_eb2efbf6",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "398ccafd_417b677b",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T17:48:48Z",
+      "side": 1,
+      "message": "I had gone thru an issue in docsis node, where he was told isc-dhcpd creates by default a hash size of 10 for vsio, 17 is what is suggested by ISC\u0027s website. Just following standard",
+      "parentUuid": "5856c45c_8872679c",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -136,6 +172,24 @@
       "side": 1,
       "message": "Yes, I tried this based on your provided config and could not get it to work.. so we need to debug.",
       "parentUuid": "376dadab_fc0531eb",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8fa1b469_ea2b3d2b",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T17:48:48Z",
+      "side": 1,
+      "message": "Actually this one is modified a bit. Last time we were using the vendor class id, here we\u0027re using the docsis option device-type. This one should work",
+      "parentUuid": "b9ffc9cf_72297ddc",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -314,6 +368,24 @@
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "07c7c887_7569e9b8",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-15T17:48:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3fc80023_bbe5c497",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
