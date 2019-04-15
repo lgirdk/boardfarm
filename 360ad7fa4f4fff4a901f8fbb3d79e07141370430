@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "16f2c74a_4cf10ee0",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "I was going to add DS-Lite in a separate commit.\n\nWas 32001 incorrect?",
+      "parentUuid": "654ecd57_f5b7787b",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "b37fa9bf_eb2efbf6",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-04-15T13:17:42Z",
       "side": 1,
       "message": "need to add a hash size of 17\noption space docsis code width 2 length width 2 hash size 17;",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5856c45c_8872679c",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Can you clarify why?",
+      "parentUuid": "b37fa9bf_eb2efbf6",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "13317c78_0e4ec5f0",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Yes, I\u0027m aware of this one... major gap. I will work on this today. Easy enough.",
+      "parentUuid": "1139f356_445ad6aa",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "376dadab_fc0531eb",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2019-04-15T13:17:42Z",
       "side": 1,
       "message": "Need to add classes here to differentiate subnet for each type of host.\n\nclass \"CM\" {\n#since all DHCPv6 vendor-opts(17) are encapsulated in relay, need to match dhcp option for docsis from relay message\n  match if option docsis.device-type \u003d \"ECM\";\n}\nclass \"MTA\" {\n  match if option docsis.device-type \u003d \"EMTA\";\n}\nclass \"EROUTER\" {\n  match if option docsis.device-type \u003d \"EROUTER\";\n}",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b9ffc9cf_72297ddc",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Yes, I tried this based on your provided config and could not get it to work.. so we need to debug.",
+      "parentUuid": "376dadab_fc0531eb",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "b37449d8_86a35516",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "57bd2dab_a76bcc43",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e00fdbb8_464ad2bb",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "968c4fdc_7d285701",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e00fdbb8_464ad2bb",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ea7f406f_bf966de9",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -115,6 +223,24 @@
       "writtenOn": "2019-04-15T13:17:42Z",
       "side": 1,
       "message": "allow members of \"CM\";\nadd before ending the pool",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c29313d_cca5867f",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "see above...",
+      "parentUuid": "ea7f406f_bf966de9",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -138,6 +264,24 @@
     },
     {
       "key": {
+        "uuid": "e240d6b4_5fdb5a8d",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1d4fe528_d484e6b3",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bff0da1f_ae25c83a",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "3fc80023_bbe5c497",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "I will look at this, but let\u0027s propose a separate clean change for this.",
+      "parentUuid": "bff0da1f_ae25c83a",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d9177ddc_87a21435",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -166,6 +328,24 @@
       "writtenOn": "2019-04-15T13:17:42Z",
       "side": 1,
       "message": "allow members of \"EROUTER\";\nadd before ending the pool",
+      "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "001701d2_927f1c47",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-15T17:17:43Z",
+      "side": 1,
+      "message": "see above.",
+      "parentUuid": "d9177ddc_87a21435",
       "revId": "360ad7fa4f4fff4a901f8fbb3d79e07141370430",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
