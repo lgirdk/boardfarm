@@ -536,8 +536,11 @@ if __name__ == '__main__':
         print "Setting up IPv6 address, bundles, routes, etc"
         cmts.set_iface_ipv6addr('gige 0', '2001:dead:beef:1::cafe/64')
         cmts.add_route6('::/0', '2001:dead:beef:1::1')
-        cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:2::cafe/64",
-                                  secondary_ips=["2001:dead:beef:3::cafe/64", "2001:dead:beef:4::cafe/64"])
+        # TODO: casa 3200 cmts only supports one ip bundle for ipv6....
+        # so we use a ipv6 address 2001:dead:beef:4::cafe/62 for that which means we can bump
+        # these up too
+        cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:4::cafe/64",
+                                  secondary_ips=["2001:dead:beef:5::cafe/64", "2001:dead:beef:6::cafe/64"])
         sys.exit(0)
 
     # TODO: example for now, need to parse args
