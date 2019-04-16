@@ -516,7 +516,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
             self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
         elif self.gwv6 is not None:
-            self.gwv6 = ipaddress.IPv6Address(u"2001:dead:beef:1::2")
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
             self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
             self.expect(self.prompt)
