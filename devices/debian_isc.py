@@ -38,8 +38,6 @@ class DebianISCProvisioner(DebianBox):
 
         self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe"))
         self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:4::/64"))
-        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway_v6', u"2001:dead:beef:5::cafe"))
-        self.mta_network_v6 = ipaddress.IPv6Network(kwargs.pop('mta_network_v6', u"2001:dead:beef:5::/64"))
         self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe"))
         self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:6::/64"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
@@ -107,14 +105,6 @@ shared-network boardfarm {
         option docsis.syslog-servers ###PROV_IPV6### ;
         option docsis.time-offset 5000;
     }
-    subnet6 2001:dead:beef:5::/64 {
-        pool6 {
-            range6 2001:dead:beef:5::10 2001:dead:beef:5::100;
-        }
-        option docsis.tftp-servers ###PROV_IPV6###;
-        option docsis.time-servers ###PROV_IPV6###;
-        option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-    }
     subnet6 2001:dead:beef:6::/64 {
         pool6 {
             range6 2001:dead:beef:6::10 2001:dead:beef:6::100;
@@ -148,10 +138,7 @@ EOF'''
         # insert tftp server, TODO: how to clean up?
         if 'options' not in board_config['extra_provisioning_v6']['cm']:
             board_config['extra_provisioning_v6']['cm']['options'] = {}
-        if 'options' not in board_config['extra_provisioning_v6']['mta']:
-            board_config['extra_provisioning_v6']['mta']['options'] = {}
         board_config['extra_provisioning_v6']['cm']['options']['docsis.tftp-servers'] = tftp_server
-        board_config['extra_provisioning_v6']['mta']['options']['docsis.tftp-servers'] = tftp_server
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
@@ -359,9 +346,6 @@ EOF'''
                 }
 
         # DHCPv6 defaults for when board does not supply defaults
-        if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning_v6']:
-            board_config['extra_provisioning_v6']["mta"] = \
-                { "hardware ethernet": board_config['mta_mac'] }
         if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning_v6']:
             board_config['extra_provisioning_v6']["cm"] = \
                 { "hardware ethernet": board_config['cm_mac'],
@@ -430,7 +414,7 @@ EOF'''
             self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
             self.expect(self.prompt)
 
-        for nw in [self.cm_gateway_v6, self.mta_gateway_v6, self.open_gateway_v6]:
+        for nw in [self.cm_gateway_v6, self.open_gateway_v6]:
             self.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, self.ipv6_prefix, self.prov_gateway_v6, self.iface_dut))
             self.expect(self.prompt)
 
