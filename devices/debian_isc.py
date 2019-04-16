@@ -36,12 +36,12 @@ class DebianISCProvisioner(DebianBox):
         self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
         self.prov_nw_ipv6 = ipaddress.IPv6Interface(str(self.prov_ipv6) + unicode('/%s' % self.ipv6_prefix)).network
 
-        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:2::cafe"))
-        self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:2::/64"))
-        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway_v6', u"2001:dead:beef:3::cafe"))
-        self.mta_network_v6 = ipaddress.IPv6Network(kwargs.pop('mta_network_v6', u"2001:dead:beef:3::/64"))
-        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:4::cafe"))
-        self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:4::/64"))
+        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe"))
+        self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:4::/64"))
+        self.mta_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('mta_gateway_v6', u"2001:dead:beef:5::cafe"))
+        self.mta_network_v6 = ipaddress.IPv6Network(kwargs.pop('mta_network_v6', u"2001:dead:beef:5::/64"))
+        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe"))
+        self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:6::/64"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
         self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
 
@@ -97,9 +97,9 @@ subnet6 2001:dead:beef:1::/64 {
 
 shared-network boardfarm {
   interface ###IFACE###;
-    subnet6 2001:dead:beef:2::/64 {
+    subnet6 2001:dead:beef:4::/64 {
         pool6 {
-            range6 2001:dead:beef:2::10 2001:dead:beef:2::100;
+            range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
         }
         option docsis.tftp-servers ###PROV_IPV6###;
         option docsis.time-servers ###PROV_IPV6###;
@@ -107,17 +107,17 @@ shared-network boardfarm {
         option docsis.syslog-servers ###PROV_IPV6### ;
         option docsis.time-offset 5000;
     }
-    subnet6 2001:dead:beef:3::/64 {
+    subnet6 2001:dead:beef:5::/64 {
         pool6 {
-            range6 2001:dead:beef:3::10 2001:dead:beef:3::100;
+            range6 2001:dead:beef:5::10 2001:dead:beef:5::100;
         }
         option docsis.tftp-servers ###PROV_IPV6###;
         option docsis.time-servers ###PROV_IPV6###;
         option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
     }
-    subnet6 2001:dead:beef:4::/64 {
+    subnet6 2001:dead:beef:6::/64 {
         pool6 {
-            range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
+            range6 2001:dead:beef:6::10 2001:dead:beef:6::100;
         }
         prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
         option dhcp6.solmax-rt   240;
