@@ -70,7 +70,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         print "Copying files from lan to dir = %s" % self.config.output_dir
         lan.sendline('readlink -f $HOME/%s/' % self.dir)
-        lan.expect_exact('readlink -f $HOME/%s/' % self.dir)
+        lan.expect_exact('$HOME/%s/' % self.dir)
         board.touch()
         lan.expect(prompt)
         board.touch()
