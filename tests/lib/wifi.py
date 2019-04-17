@@ -179,21 +179,43 @@ def uciSetWifiSecurity(board, vap_iface, security):
         board.expect(prompt)
 
 class wifi_stub():
-    def enable_wifi_verify(self, *args, **kwargs):
+    def enable_wifi(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_ssid_verify(self, *args, **kwargs):
+    def set_ssid(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_broadcast_verify(self, *args, **kwargs):
+    def set_broadcast(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_security_verify(self, *args, **kwargs):
+    def set_security(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_password_verify(self, *args, **kwargs):
+    def set_password(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def enable_channel_util_verify(self, *args, **kwargs):
+    def enable_channel_utilization(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_operating_mode_verify(self, *args, **kwargs):
+    def set_operating_mode(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_bandwidth_verify(self, *args, **kwargs):
+    def set_bandwidth(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def set_channel_no_verify(self, *args, **kwargs):
+    def set_channel_number(self, *args, **kwargs):
         raise Exception("Not implemented!")
+    def get_wifi_enabled(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_ssid(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_security(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_password(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_channel_utilization(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_operating_mode(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_bandwidth(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_broadcast(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def get_channel_number(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def prepare(self):
+        pass
+    def cleanup(self):
+        pass
