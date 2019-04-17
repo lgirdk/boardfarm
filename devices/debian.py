@@ -246,6 +246,9 @@ class DebianBox(base.BaseDevice):
         if self.pkgs_installed == True:
             return
 
+        self.sendline('echo "Acquire::ForceIPv4 "true";" > /etc/apt/apt.conf.d/99force-ipv4')
+        self.expect(self.prompt)
+
         if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp and not getattr(self, 'standalone_provisioner', False):
             self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
