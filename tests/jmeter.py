@@ -15,24 +15,32 @@ class JMeter(rootfs_boot.RootFSBootTest):
     default_time = 600
 
     def runTest(self):
+        self.dir = 'jmeter_%s' % self.shortname
         install_jmeter(lan)
 
+        lan.sendline('rm -rf $HOME/%s' % self.dir)
+        lan.expect(prompt)
+        lan.sendline('mkdir -p $HOME/%s/wd' % self.dir)
+        lan.expect(prompt)
+        lan.sendline('mkdir -p $HOME/%s/results' % self.dir)
+        lan.expect(prompt)
+
         if self.jmx.startswith('http'):
-            lan.sendline('curl %s > test.jmx' % self.jmx)
+            lan.sendline('curl %s > $HOME/%s/test.jmx' % (self.jmx, self.dir))
             lan.expect(prompt)
         else:
             print("Copying %s to lan device" % self.jmx)
-            lan.copy_file_to_server(self.jmx, dst='/root/test.jmx')
-
-        lan.sendline('rm -rf output *.log')
-        lan.expect(prompt)
-        lan.sendline('mkdir -p output')
-        lan.expect(prompt)
+            lan.sendline('echo $HOME')
+            lan.expect_exact('echo $HOME')
+            lan.expect(prompt)
+            lan.copy_file_to_server(self.jmx, dst=lan.before.strip() + '/%s/test.jmx' % self.dir)
 
         board.collect_stats(stats=['mpstat'])
 
-        lan.sendline('JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t test.jmx -l foo.log -e -o output')
-        lan.expect_exact('jmeter -n -t test.jmx -l foo.log -e -o output')
+        lan.sendline('cd $HOME/%s/wd' % self.dir)
+        lan.expect(prompt)
+        lan.sendline('JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t ../test.jmx -l foo.log -e -o $HOME/%s/results' % self.dir)
+        lan.expect_exact('foo.log -e -o $HOME/%s/results' % self.dir)
         for i in range(self.default_time):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
@@ -47,8 +55,8 @@ class JMeter(rootfs_boot.RootFSBootTest):
                 raise Exception("jmeter did not have enough time to complete")
 
 
-        #lan.sendline('rm -rf output')
-        #lan.expect(prompt)
+        lan.sendline('cd -')
+        lan.expect(prompt)
         lan.sendline('rm test.jmx')
         lan.expect(prompt)
 
@@ -61,14 +69,14 @@ class JMeter(rootfs_boot.RootFSBootTest):
         board.touch()
 
         print "Copying files from lan to dir = %s" % self.config.output_dir
-        lan.sendline('readlink -f output/')
-        lan.expect('readlink -f output/')
+        lan.sendline('readlink -f $HOME/%s/' % self.dir)
+        lan.expect_exact('readlink -f $HOME/%s/' % self.dir)
         board.touch()
         lan.expect(prompt)
         board.touch()
         fname=lan.before.strip()
         board.touch()
-        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, os.path.join(self.config.output_dir, 'jmeter_%s' % self.shortname))
+        scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, self.config.output_dir)
 
         # let board settle down
         board.expect(pexpect.TIMEOUT, timeout=30)
