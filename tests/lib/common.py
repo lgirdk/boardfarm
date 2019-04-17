@@ -444,6 +444,8 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
+    if re.search("\"", snmp_out):
+        snmp_out = snmp_out.replace("\"", "")
     return snmp_out
 
 def hex2ipv6(hexstr):
