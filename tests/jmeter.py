@@ -40,7 +40,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.sendline('cd $HOME/%s/wd' % self.dir)
         lan.expect(prompt)
         lan.sendline('JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t ../test.jmx -l foo.log -e -o $HOME/%s/results' % self.dir)
-        lan.expect_exact('foo.log -e -o $HOME/%s/results' % self.dir)
+        lan.expect_exact('$HOME/%s/results' % self.dir)
         for i in range(self.default_time):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break;
