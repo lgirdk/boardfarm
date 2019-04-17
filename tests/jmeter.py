@@ -74,7 +74,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         board.touch()
         lan.expect(prompt)
         board.touch()
-        fname=lan.before.strip()
+        fname=lan.before.replace('\n', '').replace('\r', '')
         board.touch()
         scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, self.config.output_dir)
 
