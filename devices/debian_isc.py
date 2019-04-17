@@ -88,6 +88,13 @@ option vsio.docsis code 4491 = encapsulate docsis;
 option dhcp6.name-servers 2001:dead:beef:1::1;
 option dhcp6.domain-search "test.example.com","example.com";
 
+class "CM" {
+  match if option docsis.device-type = "ECM";
+}
+class "EROUTER" {
+  match if option docsis.device-type = "EROUTER";
+}
+
 subnet6 2001:dead:beef:1::/64 {
   interface ###IFACE###;
   ignore booting;
@@ -98,20 +105,22 @@ shared-network boardfarm {
     subnet6 2001:dead:beef:4::/64 {
         pool6 {
             range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
+            allow members of "CM";
+            option docsis.tftp-servers ###PROV_IPV6###;
+            option docsis.time-servers ###PROV_IPV6###;
+            option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
+            option docsis.syslog-servers ###PROV_IPV6### ;
+            option docsis.time-offset 5000;
         }
-        option docsis.tftp-servers ###PROV_IPV6###;
-        option docsis.time-servers ###PROV_IPV6###;
-        option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
-        option docsis.syslog-servers ###PROV_IPV6### ;
-        option docsis.time-offset 5000;
     }
     subnet6 2001:dead:beef:6::/64 {
         pool6 {
             range6 2001:dead:beef:6::10 2001:dead:beef:6::100;
+            allow members of "EROUTER";
+            option dhcp6.solmax-rt   240;
+            option dhcp6.inf-max-rt  360;
+            prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
         }
-        prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
-        option dhcp6.solmax-rt   240;
-        option dhcp6.inf-max-rt  360;
     }
 }
 EOF'''
