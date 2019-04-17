@@ -215,7 +215,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
     def get_channel_number(self, *args, **kwargs):
         raise Exception("Not implemented!")
-    def prepare():
+    def prepare(self):
         pass
-    def cleanup():
+    def cleanup(self):
         pass
