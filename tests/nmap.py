@@ -1,7 +1,7 @@
 # Copyright (c) 2015
 #
 # All rights reserved.
-#
+m#
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
@@ -22,8 +22,7 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
         for i in range(12):
             if 0 == lan.expect(['Nmap scan report', pexpect.TIMEOUT], timeout=100):
                 break
-            board.sendcontrol('c')
-            board.expect(prompt)
+            board.touch()
         lan.expect(prompt, timeout=60)
         open_ports = re.findall("(\d+)/tcp\s+open", lan.before)
         msg = "Found %s open TCP ports on LAN interface: %s." % \
