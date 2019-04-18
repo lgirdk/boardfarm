@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ef562c9f_513f7e57",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 539,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-18T17:09:12Z",
+      "side": 1,
+      "message": "i manually moved our CMTS to this /62- one thing at a time. we can rework all the prefix lengths nad ip address in a single follow up change.\n\nhonestly, none of this will be hard coded it will all be defined in the JSON except the CMTS config which we don\u0027t really want to be changing although we can with the function",
+      "parentUuid": "0c5b82ab_cff12996",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0fec9007_dd7e48a2",
         "filename": "devices/debian_isc.py",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "aad33fdf_2f22b37d",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-18T17:09:12Z",
+      "side": 1,
+      "message": "let\u0027s clean up subnets and prefix lengths in the next commits... im just trying to do minimal single issues per change",
+      "parentUuid": "0fec9007_dd7e48a2",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "53b1582b_b44e5507",
         "filename": "devices/debian_isc.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2019-04-18T09:35:31Z",
       "side": 1,
       "message": "We\u0027ve already removed mta subnet in prev change.",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0d62bd9b_5f3783d3",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-18T17:09:12Z",
+      "side": 1,
+      "message": "that is actually the next change...",
+      "parentUuid": "53b1582b_b44e5507",
       "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
