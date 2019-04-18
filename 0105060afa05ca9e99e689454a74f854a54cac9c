@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0c5b82ab_cff12996",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 539,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "I\u0027ve gone through the configurations of Casa CMTS in CBN (C10g), AMS (C100g - ITC Liberty).\nThey have not used a secondary IPv6 subnet (As i said on the call, Casa\u0027s ip-bundle interface seems to work only with a single primary IPv6 subnet). Although the manual does specify a secondary subnet I\u0027ve not seen anyone using it.\n\nSo let\u0027s go with /60 subnet for the ease of calculation. We\u0027re looking at something like this:\ncmts.add_ipv6_bundle_addrs(1, \"2001:dead:beef:1::1\", \"2001:dead:beef:10::cafe/60\")\n\nNote: \nThe helper-ip has to be in a separate subnet (i.e. the northbound of CMTS)\nOur IP-bundle is on the southbound and since CMTS is like a router we cannot have 2 interfaces of a router on same subnet.\n2001:dead:beef:1::1/60 (ends at 2001:dead:beef:f:ffff:ffff:ffff:ffff/60)\nI\u0027ve assigned the primary IP for CM and E-router from next /60 subnet\n2001:dead:beef:10::1/60\n\nSo yes, they both have a common gateway. We have to apply an ACL on the Ip-bundle to restrict the access from CPE to CM IP.",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0fec9007_dd7e48a2",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "Suggesting the new IP set with /60 in picture: (Note cm and open will have same gw ip)\n\nself.cm_gateway_v6 \u003d ipaddress.IPv6Address(kwargs.pop(\u0027cm_gateway_v6\u0027, u\"2001:dead:beef:10::cafe\"))\nself.cm_network_v6 \u003d ipaddress.IPv6Network(kwargs.pop(\u0027cm_network_v6\u0027, u\"2001:dead:beef:11::/60\"))\nself.open_gateway_v6 \u003d ipaddress.IPv6Address(kwargs.pop(\u0027open_gateway_v6\u0027, u\"2001:dead:beef:10::cafe\"))\nself.open_network_v6 \u003d ipaddress.IPv6Network(kwargs.pop(\u0027open_network_v6\u0027, u\"2001:dead:beef:12::/60\"))",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "53b1582b_b44e5507",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "We\u0027ve already removed mta subnet in prev change.",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4b2dd0e_da3bebb7",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "change the prefix here to /60 as specified in CMTS class.",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d0809cef_02227582",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "Ok this is going to be a bit confusing:\nsubnet6 2001:dead:beef:10::/60",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "feb30a59_be474ade",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-18T09:35:31Z",
+      "side": 1,
+      "message": "We\u0027ll remove the second subnet and move all the pools inside the subnet specified above.\ni.e. subnet6 2001:dead:beef:10::/60",
+      "revId": "0105060afa05ca9e99e689454a74f854a54cac9c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
