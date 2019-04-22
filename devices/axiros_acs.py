@@ -92,6 +92,12 @@ class AxirosACS():
             return None
         return self.Axiros_GetTicketValue (ticketid)
 
+    def getcurrent(self, serial_number, param):
+        self.get(serial_number, param + '.')
+        # TODO: note: verified ticket was sent to ACS with all the results in the param namespace
+        # however the get above does not pull the results so we can't check them here but that's
+        # not a major issue since the API does not do that for the current implementation
+
     def set(self, serial_number, attr, value):
         SetParameterValuesParametersClassArray_type = self.client.get_type('ns0:SetParameterValuesParametersClassArray')
         SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type ([{'key': attr, 'value': value}])
