@@ -580,10 +580,19 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def start_lan_client(self, wan_gw=None):
         # very casual try for ipv6 addr, if we don't get one don't fail for now
-        self.enable_ipv6(self.iface_dut)
-        self.sendline('dhclient -6 -i %s -v' % self.iface_dut)
-        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
-            self.sendcontrol('c')
+        try:
+            self.enable_ipv6(self.iface_dut)
+            # TODO: how to wait for stateless config?
+            self.get_interface_ip6addr(self.iface_dut)
+        except:
+            self.sendline('dhclient -6 -i -r %s' % self.iface_dut)
+            self.expect(self.prompt)
+            self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
+            if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+                self.sendcontrol('c')
+                self.expect(self.prompt)
+            self.sendline('ip -6 addr')
+            self.expect(self.prompt)
 
         # TODO: this should not be required (fix at some point...)
         self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
