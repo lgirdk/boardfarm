@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "96babce9_d47b3ffe",
+        "filename": "bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:33:09Z",
+      "side": 1,
+      "message": "typo?\n\nThis should be more along the lines of something generic:\n\nif has_attr(dyn_dev, \u0027creation_function\u0027):\n    dyn_dev.creation_function()\n\nNot so specific to \"spawn_containers\"\n\nAlso, why can\u0027t this just be in __init__() ?",
+      "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc202510_3a1d7373",
+        "filename": "bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:33:09Z",
+      "side": 1,
+      "message": "What you need is a way to append all the devices create by your new class into config.devices and in the config space.\n\nOr if you follow the method in my sample test (the one that spawns 100\u0027s of connections) you just return a lan device with a lan.devs for all the extra devices already set in __init__",
+      "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
