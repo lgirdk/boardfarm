@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5c7d7057_a2fa6f10",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:37:32Z",
+      "side": 1,
+      "message": "In theory, this is just a DockerFactory, we could spawn any type of container ;-)",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3ca15f96_138ed161",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:37:32Z",
+      "side": 1,
+      "message": "Eeeeeee",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ea6395a1_ccac8856",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:37:32Z",
+      "side": 1,
+      "message": "typo",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f1a12df7_962508b7",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-24T19:37:32Z",
+      "side": 1,
+      "message": "It would be much easier to run the right commands here in sequence instead of invoking deploy scripts.",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
