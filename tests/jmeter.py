@@ -1,4 +1,5 @@
 import os
+import shutil
 import pexpect
 
 import rootfs_boot
@@ -6,6 +7,14 @@ from lib.installers import install_jmeter
 
 from devices import board, lan, prompt
 from devices.common import scp_from
+
+def rm_r(path):
+    if not os.path.exists(path):
+        return
+    if os.path.isfile(path) or os.path.islink(path):
+        os.unlink(path)
+    else:
+        shutil.rmtree(path)
 
 class JMeter(rootfs_boot.RootFSBootTest):
     '''Runs JMeter jmx file from LAN device'''
@@ -76,6 +85,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         board.touch()
         fname=lan.before.replace('\n', '').replace('\r', '')
         board.touch()
+        rm_r(os.path.join(self.config.output_dir, self.dir))
         scp_from(fname, lan.ipaddr, lan.username, lan.password, lan.port, self.config.output_dir)
 
         # let board settle down
