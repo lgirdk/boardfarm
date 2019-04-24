@@ -146,7 +146,7 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcpv6 = True
 
         try:
-            i = self.expect(["yes/no", "assword:", "Last login"] + self.prompt, timeout=30)
+            i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
         except pexpect.TIMEOUT as e:
             raise Exception("Unable to connect to %s." % name)
         except pexpect.EOF as e:
@@ -156,12 +156,12 @@ class DebianBox(base.BaseDevice):
         if i == 0:
             self.sendline("yes")
             i = self.expect(["Last login", "assword:"])
-        if i == 1:
+        if i == 1 or i == 3:
             self.sendline(password)
         else:
             pass
         # if we did initially get a prompt wait for one here
-        if i < 3:
+        if i < 4:
             self.expect(self.prompt)
 
         if ipaddr is None:
