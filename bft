@@ -59,6 +59,12 @@ def setup_dynamic_devices(config, env=None, start=None):
             #    lan_gateway=config.console.lan_gateway,
             #    config=device)
 
+            print "name: %s-%s"%(dyn_dev.name, dyn_dev.model)
+            if dyn_dev.model == 'debian_docker_factory':
+                # create the containers and maybe appends them to the devices list?
+                dyn_dev.spanw_containers()
+                continue
+
             # if this device is a wan cmts provisioner, we set the device name
             # TODO: this should be generic
             if getattr(dyn_dev, 'wan_cmts_provisioner', False):
@@ -109,7 +115,6 @@ def main():
             env = {"wan_iface": "wan%s" % uniqid[:12],
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
-
 
             # Connect to board
             config.console = devices.board_decider(config.board['board_type'],
