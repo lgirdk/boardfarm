@@ -265,6 +265,94 @@ create_container_eth1_wifi () {
 	docker exec $cname ip link set wlan1 up
 }
 
+
+
+# this is a helper function, this function is invoked by create_container_lan_factory
+# DO NOT INVOKE THIS DIRECTLY, create_container_lan_factory will invoke this
+# this function takes 3 arguments
+#    $1 is the sequence value (for example 1)
+#    $2 is the clan value (for example 103)
+#    $3 is the name of the container (for example bft-node-enp1s0-103-1)
+spawn_container() {
+    i=$1
+    vlan=$2
+    cname=$3
+
+    # you can see that the ssh port and web port (which usually are 5000 and 8000
+    # in the deploy_boardfarm_script.sh) are far apart in values: 10000 and 30000
+    # this is to allow many lan clients without the ssh port overwriting the web port
+
+    docker run --name $cname --privileged -h $cname --restart=always \
+    -p $(( 5000 + $((i*100)) + $vlan )):22 \
+    -p $(( 30000 + $((i*100)) + $vlan )):8080 \
+    -d $BF_IMG /usr/sbin/sshd -D
+
+    docker_dev=$(docker exec $cname ip route list | grep ^default |  awk '{print $5}' )
+    docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    docker_dev_ip=$(docker exec $cname ip -4 addr show $docker_dev | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    docker_nw=$(ip route | grep "dev docker0" | grep src | awk '{print $1}' | head -n1)
+
+    sudo ip link add link $IFACE.$vlan name tempfoo.$i type macvtap mode bridge
+    cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+
+    docker exec $cname ip route del default
+    docker exec $cname bash -c "echo \"1 mgmt\" >> /etc/iproute2/rt_tables"
+    docker exec $cname ip route add default via $docker_gw_ip table mgmt
+    docker exec $cname ip rule add from $docker_dev_ip table mgmt
+    docker exec $cname ip rule add to $docker_dev_ip table mgmt
+    docker exec $cname ip rule add from $docker_nw table mgmt
+    docker exec $cname ip rule add to $docker_nw table mgmt
+
+    sudo ip link set netns $cspace dev tempfoo.$i
+    docker exec $cname ip link set tempfoo.$i name eth1
+    docker exec $cname ip link set eth1 up
+    j=0
+    # if dhclient fails, retries one more time
+    while [ $j -lt 2 ]
+    do
+        docker exec $cname dhclient -v eth1
+        host_gw=$(docker exec $cname ip route list | grep ^default |  awk '{print $3}' )
+        [ "X$host_gw" != "X" ] && break 
+        j=$((j+1))
+    done
+    docker exec $cname ping -c 3 $host_gw
+}
+
+
+# this is the container factory, this function takes the following arguments
+#    $1 is the vlan number (for example 103)
+#    $2 is how many containers we want to create ON THE SAME VLAN
+# so if you want to create 33 containers on vlan 103 you will use this as follow:
+#
+#    set -x ; create_container_lan_factory 103 32 ;set +x
+
+create_container_lan_factory () {
+    local vlan=$1
+    local count=${2:-0}
+
+    sudo ip link del $IFACE.$vlan || true
+    sudo ip link add name $IFACE.$vlan link $IFACE type vlan id $vlan
+    sudo ip link set $IFACE.$vlan up
+
+    echo "Stop all containers in vlan $vlan"
+    l=`docker ps -f name=bft-node-$IFACE-$vlan -aq`
+    docker stop $l && docker rm $l
+
+    for i in $( seq 0 $count )
+    do	
+        cname=bft-node-$IFACE-$vlan-$i
+
+        # WAIT for the container to be fully instantiated
+        spawn_container $i $vlan $cname
+
+        # The following line is commented out BECAUSE
+        # if many containers send the DHCP request close to each other
+        # the cable modem DHCP server FAILS to offer ip addresses
+        # 
+        #spawn_container $i $vlan $cname > /tmp/${cname}.log  2>&1 & 
+    done
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
