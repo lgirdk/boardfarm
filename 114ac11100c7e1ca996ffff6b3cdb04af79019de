@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e7d9a280_9ba4c383",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 585,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-25T17:57:18Z",
+      "side": 1,
+      "message": "We can check that on the arm console:\ngateway/lan/rnd/showRnd\n\nwithin this output grep for:\n[12:ipv6ramanagedflag]\u003d[0]\n\nif the value is 0 - stateless\nif the value is 1 - stateful",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5f5e47ee_d98d0ad1",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 587,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-25T17:57:18Z",
+      "side": 1,
+      "message": "To handle stateless autoconfig:\nfrom gateway/lan/rnd/showRnd output grep:\n[12:ipv6raintervaltime]\u003d[180]\n\nAs seen in the output every RA is coming in 180s. \nWait for 180s and check if client now acquires a /64 IP address.\n\nIf not then it\u0027s a bug in cable modem.",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "476e94b2_1bc9d88f",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 595,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-25T17:57:18Z",
+      "side": 1,
+      "message": "We should be checking for /128 IP addresses as well for stateful DHCPv6.",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
