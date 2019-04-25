@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9fef88ea_19fe4c7a",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-25T18:01:10Z",
+      "side": 1,
+      "message": "We should probably wait a bit more before merging this, we need to add the bind.so to LD_PRELOAD shim. for mgmt. part of the container. Then  roll out the change along with the updated dockerfile.",
+      "revId": "8a9bbcb2c1cf49d651f6929a07f81b9e33049680",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
