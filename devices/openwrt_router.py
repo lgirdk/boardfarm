@@ -601,10 +601,19 @@ class OpenWrtRouter(base.BaseDevice):
                     self.failed_stats['mpstat'] = float('nan')
                     continue
 
+                pp.sendline('ps | grep mpstat')
+
             self.stats.append(stat)
 
     def parse_stats(self, dict_to_log={}):
         pp = self.get_pp_dev()
+
+        if 'mpstat' in self.stats:
+            pp.sendline('ps | grep mpstat')
+            pp.expect_exact('ps | grep mpstat')
+            if 0 == pp.expect([pexpect.TIMEOUT, 'mpstat -P ALL 5'], timeout=5):
+                self.failed_stats['mpstat'] = float('nan')
+                self.stats.remove('mpstat')
 
         idx = 0
         for not_used in range(len(self.stats)):
