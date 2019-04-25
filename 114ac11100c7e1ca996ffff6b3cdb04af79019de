@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f2a14ced_867f3491",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 585,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-25T18:36:05Z",
+      "side": 1,
+      "message": "This needs to be generic, not specific any particular device... Can we run tcpdump and check things for this?",
+      "parentUuid": "e7d9a280_9ba4c383",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5f5e47ee_d98d0ad1",
         "filename": "devices/debian.py",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "90270356_4f06cc0b",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 587,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-25T18:36:05Z",
+      "side": 1,
+      "message": "Is it easier to wait 180s? and then proceed? On the other hand, by the time we\u0027ve gone this far, we\u0027ve most likely waited over 180s so it should be present so the logic here checks out?",
+      "parentUuid": "5f5e47ee_d98d0ad1",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "476e94b2_1bc9d88f",
         "filename": "devices/debian.py",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2019-04-25T17:57:18Z",
       "side": 1,
       "message": "We should be checking for /128 IP addresses as well for stateful DHCPv6.",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "898aa106_80182c4b",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 595,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-04-25T18:36:05Z",
+      "side": 1,
+      "message": "Can you elaborate a bit?",
+      "parentUuid": "476e94b2_1bc9d88f",
       "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
