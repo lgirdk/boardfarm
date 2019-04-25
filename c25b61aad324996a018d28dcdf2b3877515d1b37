@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c597ba96_263a12a2",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T05:58:13Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5c7d7057_a2fa6f10",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3ca15f96_138ed161",
         "filename": "devices/debian_host.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-04-24T19:37:32Z",
       "side": 1,
       "message": "Eeeeeee",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b91ca648_5e2cf994",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T05:58:13Z",
+      "side": 1,
+      "message": "temp measure, the commands will be in the python code eventually",
+      "parentUuid": "3ca15f96_138ed161",
       "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "2f1a9fe4_f16a6f36",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T05:58:13Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ea6395a1_ccac8856",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f1a12df7_962508b7",
         "filename": "devices/debian_host.py",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2019-04-24T19:37:32Z",
       "side": 1,
       "message": "It would be much easier to run the right commands here in sequence instead of invoking deploy scripts.",
+      "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87b7cf1c_09a5c9c5",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T05:58:13Z",
+      "side": 1,
+      "message": "yes, but having the script allowed us to test it on the nuc without boardfarm \nFinding the right commands to run took a little time.\nBut eventually python will have the commands in the code (doing away with the bash script)",
+      "parentUuid": "f1a12df7_962508b7",
       "revId": "c25b61aad324996a018d28dcdf2b3877515d1b37",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
