@@ -588,6 +588,8 @@ class OpenWrtRouter(base.BaseDevice):
                         pp.expect(pp.prompt)
                         break
                     except:
+                        pp.sendcontrol('d')
+                        pp = self.get_pp_dev()
                         if i == 4:
                             print_bold("FAILED TO KILL MPSTAT!")
                             pp.sendcontrol('c')
