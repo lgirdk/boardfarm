@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "0a64b3fd_30131a04",
+        "filename": "bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T06:02:53Z",
+      "side": 1,
+      "message": "i did try to do \ndev\u003dsuper() to login first and then dev.creation_fucntion()\nbut i was getting dev\u003d\u003dNone, i will try again",
+      "parentUuid": "96babce9_d47b3ffe",
+      "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cc202510_3a1d7373",
         "filename": "bft",
         "patchSetId": 1
@@ -33,6 +51,24 @@
       "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0391049d_5e4f0423",
+        "filename": "bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-04-25T06:02:53Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "cc202510_3a1d7373",
+      "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
