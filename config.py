@@ -51,7 +51,7 @@ option_dict = {
         "proxy":["normal","sock5"],
         "webdriver":["chrome","ffox"],
         "disp":["xvfb", "xephyr", "xvnc"],
-        "disp_port":["5904"],
+        "disp_port":["0"],
         "disp_size":["1366x768"]
         }
 
@@ -60,7 +60,7 @@ option_dict = {
 default_proxy_type = "normal"
 default_web_driver = "ffox"
 default_display_backend = "xvnc"
-default_display_backend_port = "5904"
+default_display_backend_port = "0" # i.e. use any available ports
 default_display_backend_size = "1366x768"
 
 if 'BFT_OPTIONS' in os.environ:
@@ -76,7 +76,7 @@ if 'BFT_OPTIONS' in os.environ:
         elif k == "disp_port":
             # quick validation
             i = int(v) # if not a valid num python will throw and exception
-            if not 1024 <= i <= 65535:
+            if i != 0 and not 1024 <= i <= 65535:
                 print("Warning: display backend port: %i not in range (1024-65535)" % i)
                 exit(1)
             default_display_backend_port = v
