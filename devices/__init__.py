@@ -23,11 +23,13 @@ wlan5g = None
 prompt = None
 
 device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
         overlay = os.path.abspath(overlay)
         sys.path.insert(0, overlay + '/devices')
         device_files += glob.glob(overlay + '/devices/*.py')
+        device_files += [e.replace('/__init__', '') for e in glob.glob(overlay + '/devices/*/__init__.py')]
 
         sys.path.insert(0, overlay + '/tests')
 
