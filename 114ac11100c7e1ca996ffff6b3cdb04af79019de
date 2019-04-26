@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "972cfbd7_7f6a04cc",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 585,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-26T17:03:03Z",
+      "side": 1,
+      "message": "I agree, I was going thru the IPv6-mibs trying to figure out if we can verify whether client received a stateless IPv6. still researching on that. \n\nHowever yes, tcpdump should work. If the RA has an IPv6 prefix in the packet, it\u0027s stateless.",
+      "parentUuid": "f2a14ced_867f3491",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5f5e47ee_d98d0ad1",
         "filename": "devices/debian.py",
         "patchSetId": 1
@@ -101,6 +119,24 @@
       "side": 1,
       "message": "Can you elaborate a bit?",
       "parentUuid": "476e94b2_1bc9d88f",
+      "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "20680c9c_d0033fd5",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 595,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-04-26T17:03:03Z",
+      "side": 1,
+      "message": "If the CM is in stateless DHCPv6:\nThe lan client receives an RA with a /64 prefix. The lan client clubs this prefix with it\u0027s mac address and creates a \u003cprefix:mac\u003e/64 IPv6 address\n\nIf the CM is in stateful DHCPv6:\nThe lan client receives an RA without a /64 prefix. The RA just helps it set a route to send actual DHCPv6 solicit. The DHCPv6 server this time provides a complete IPv6 address which is of a /128 prefix.\nThis always will be a /128 IP and helps to validate that the LAN client received IP thru stateful dhcp approach.",
+      "parentUuid": "898aa106_80182c4b",
       "revId": "114ac11100c7e1ca996ffff6b3cdb04af79019de",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
