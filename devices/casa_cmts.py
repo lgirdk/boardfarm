@@ -495,9 +495,9 @@ class CasaCMTS(base.BaseDevice):
     def get_ertr_ipv6(self, mac):
         self.sendline("show cable modem %s cpe" % mac)
         self.expect(self.prompt)
-        ertr_ipv6 = re.search(ValidIpv6AddressRegex ,self.before)
+        ertr_ipv6 = re.search('(%s) .*\n.*(eRouter)' %ValidIpv6AddressRegex ,self.before)
         if ertr_ipv6:
-            ipv6 = ertr_ipv6.group()
+            ipv6 = ertr_ipv6.group(1)
             return ipv6
         else:
             return None
