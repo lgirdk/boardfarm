@@ -29,13 +29,21 @@ RUN apt-get update && \
     tcpdump \
     vim-common \
     xinetd \
-    less
+    less \
+    wget \
+    build-essential
 
 # NOTE: apparmor will interfere with dhclient, disable on HOST by running:
 # sudo service apparmor stop
 # sudo service apparmor teardown
 
-    RUN mkdir /var/run/sshd
-    RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN mkdir /var/run/sshd
+RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-    EXPOSE 22
+# The following lines compile a shim to bind a process to an IP address
+# using LD_PRELOAD. To run the shim use the following syntax:
+# BIND_ADDR="X.X.X.X" LD_PRELOAD=/usr/lib/bind.so [command to run]
+RUN wget http://daniel-lange.com/software/bind.c -O /root/bind.c
+RUN cd /root; sed -i '/#include <errno.h>/a #include <arpa\/inet.h>' ./bind.c; gcc -nostartfiles -fpic -shared bind.c -o bind.so -ldl -D_GNU_SOURCE; strip bind.so; mv ./bind.so /usr/lib/
+
+EXPOSE 22
