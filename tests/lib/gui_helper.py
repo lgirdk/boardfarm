@@ -91,3 +91,12 @@ def get_text_value(web_gui, get_value):
         return text_value
     except NoSuchElementException:
         return None
+
+def get_text_value_by_xpath(web_gui, get_value):
+    try:
+        #To get the text box value
+        text_button = web_gui.find_element_by_xpath(get_value)
+        text_value = text_button.text
+        return text_value
+    except NoSuchElementException:
+        return None
