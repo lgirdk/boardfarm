@@ -134,6 +134,7 @@ class LinuxBootTest(unittest2.TestCase):
             else:
                 print(e)
                 traceback.print_exc(file=sys.stdout)
+            print(self)
             self.recover()
             raise
 
