@@ -134,6 +134,14 @@ class LinuxBootTest(unittest2.TestCase):
             else:
                 print(e)
                 traceback.print_exc(file=sys.stdout)
+
+            import os
+            if 'BFT_DEBUG' in os.environ:
+                print(self)
+                for device in self.config.devices:
+                    d = getattr(self.config, device)
+                    print(d)
+
             self.recover()
             raise
 
