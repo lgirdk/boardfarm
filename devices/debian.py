@@ -205,10 +205,19 @@ class DebianBox(base.BaseDevice):
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
-    def sudo_sendline(self, s):
+    def sudo_sendline(self, cmd):
         if self.username != "root":
-            s = "sudo " + s
-        return super(DebianBox, self).sendline(s)
+            self.sendline("sudo true")
+            if 0 == self.expect(["password for .*:"] + self.prompt):
+                 will_prompt_for_password = True
+            else:
+                 will_prompt_for_password = False
+
+            cmd = "sudo " + cmd
+            if will_prompt_for_password:
+                self.sendline(self.password)
+                self.expect(self.prompt)
+        super(DebianBox, self).sendline(cmd)
 
     def reset(self):
         self.sendline('reboot')
@@ -752,7 +761,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
-        match = re.search('NO-CARRIER,BROADCAST,MULTICAST,UP',link_state)
+        match = re.search('BROADCAST,MULTICAST,UP',link_state)
         if match:
             return match.group(0)
         else:
@@ -760,7 +769,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def set_link_state(self, interface, state):
         '''Setting the interface status'''
-        self.sendline("ip link set %s %s" % (interface,state))
+        self.sudo_sendline("ip link set %s %s" % (interface,state))
         self.expect(self.prompt)
 
 if __name__ == '__main__':
