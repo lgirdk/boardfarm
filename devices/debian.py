@@ -752,16 +752,23 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
-        match = re.search('NO-CARRIER,BROADCAST,MULTICAST,UP',link_state)
+        match = re.search('BROADCAST,MULTICAST,UP',link_state)
         if match:
             return match.group(0)
         else:
             return None
 
-    def set_link_state(self, interface, state):
+    def set_link_state(self, interface, state, login_pwd=None):
         '''Setting the interface status'''
         self.sendline("ip link set %s %s" % (interface,state))
         self.expect(self.prompt)
+        match = re.search("Operation not permitted", self.before)
+        if match:
+            self.sendline("sudo ip link set %s %s" % (interface,state))
+            idx = self.expect(["password for .*:"] + self.prompt,timeout=20)
+            if idx == 0:
+                self.sendline(login_pwd)
+                self.expect(self.prompt)
 
 if __name__ == '__main__':
     # Example use
