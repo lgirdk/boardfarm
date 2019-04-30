@@ -208,7 +208,12 @@ class DebianBox(base.BaseDevice):
     def sudo_sendline(self, s):
         if self.username != "root":
             s = "sudo " + s
-        return super(DebianBox, self).sendline(s)
+        super(DebianBox, self).sendline(s)
+        idx = self.expect(["password for .*:"] + self.prompt,timeout=20)
+        if idx == 0:
+            self.sendline(self.password)
+            self.expect(self.prompt)
+        return self.before
 
     def reset(self):
         self.sendline('reboot')
@@ -752,7 +757,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
-        match = re.search('NO-CARRIER,BROADCAST,MULTICAST,UP',link_state)
+        match = re.search('BROADCAST,MULTICAST,UP',link_state)
         if match:
             return match.group(0)
         else:
@@ -760,8 +765,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def set_link_state(self, interface, state):
         '''Setting the interface status'''
-        self.sendline("ip link set %s %s" % (interface,state))
-        self.expect(self.prompt)
+        self.sudo_sendline("ip link set %s %s" % (interface,state))
 
 if __name__ == '__main__':
     # Example use
