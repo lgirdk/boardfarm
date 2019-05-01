@@ -455,3 +455,27 @@ def hex2ipv6(hexstr):
     hexstr = hexstr.replace(' ', '').lower()
     blocks = (''.join(block) for block in zip(*[iter(hexstr)]*4))
     return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
+
+def tcpdump_capture(device, ip_address, port, capture_file):
+    device.sendline("tcpdump -i %s -n \'portrange %s\' -w /tmp/%s &" %(ip_address, port, capture_file))
+    device.expect(device.prompt)
+    return device.before
+
+def kill_process(device, process="tcpdump"):
+    device.sendline("killall %s" %process)
+    device.expect(device.prompt)
+    return device.before
+
+def tcpdump_read(device, capture_file):
+    device.sendline("tcpdump -n -r /tmp/%s" %(capture_file))
+    device.expect(device.prompt)
+    return device.before
+
+def nmap_cli(device, ip_address, protocol, port, retry="0"):
+    if protocol == "tcp":
+        protocol_value = "S"
+    elif protocol == "udp":
+        protocol_value = "U"
+    device.sendline("nmap -s%s %s -p %s -Pn -r -max-retries %s" %(protocol_value,ip_address,port,retry))
+    device.expect(device.prompt,timeout=200)
+    return device.before
