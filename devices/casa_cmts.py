@@ -94,6 +94,10 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('clear cable modem %s offline' % cmmac)
         self.expect(self.prompt)
 
+    def clear_cm_reset(self, cmmac):
+        self.sendline("clear cable modem %s reset" %cmmac)
+        self.expect(self.prompt)
+
     def check_PartialService(self, cmmac):
         self.sendline('show cable modem %s' % cmmac)
         self.expect('(\d+/\d+\.\d+/\d+(\*|\#)\s+\d+/\d+/\d+(\*|\#))\s+online')
