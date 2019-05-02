@@ -440,11 +440,11 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     mib_oid = match.group(1)+'.'+index
     time_out = (timeout*retry)+30
     device.sendline("snmpget -v 2c -c private -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+board.mib[mib_name]+"."+str(index))
-    idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(.*)\s+\r\n'] + device.prompt, timeout=time_out)
+    idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
-    snmp_out = snmp_out.strip("\"")
+    snmp_out = snmp_out.strip("\"").strip()
     return snmp_out
 
 def hex2ipv6(hexstr):
