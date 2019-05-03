@@ -60,6 +60,16 @@ def select_option_by_name(web_gui, select_button, select_value):
     except NoSuchElementException:
         return None
 
+def select_option_by_xpath(web_gui, select_button, select_value):
+    try:
+        #To select the option required
+        select = Select(web_gui.find_element_by_xpath(select_button))
+        select.select_by_visible_text(select_value)
+        time.sleep(5)
+        return select
+    except NoSuchElementException:
+        return None
+
 def get_drop_down_value(web_gui, get_value):
     try:
         #To get the value which already exists
