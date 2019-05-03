@@ -78,15 +78,25 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
 
     def check_online(self, cmmac):
-        output = "offline"
+        """Function checks the encrytion mode and returns True if online"""
+        """Function returns actual status if status other than online"""
         self.sendline('show cable modem %s' % cmmac)
         self.expect('.+ranging cm \d+')
         result = self.match.group()
-        match = re.search('\d+/\d+/\d+\**\s+([^\s]+)', result)
-        if match != None:
-            output = match.group(1)
+        match = re.search('\d+/\d+/\d+\**\s+([^\s]+)\s+\d+\s+.+\d+\s+(\w+)\r\n', result)
+        if match:
+            status = match.group(1)
+            encrytion = match.group(2)
+            if status == "online(pt)" and encrytion == "yes":
+                output = True
+            elif status == "online" and encrytion == "no":
+                output = True
+            elif "online" not in status and status != None:
+                output = status
+            else:
+                assert 0, "ERROR: incorrect cmstatus \""+status+"\" in cmts for bpi encrytion \""+encrytion+"\""
         else:
-            output = "offline"
+            assert 0, "ERROR: Couldn't fetch CM status from cmts"
         self.expect(self.prompt)
         return output
 
