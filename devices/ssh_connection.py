@@ -18,7 +18,10 @@ class SshConnection:
                                args=['-c', self.conn_cmd])
 
         try:
-            result = self.device.expect(["assword:", "passphrase"] + self.device.prompt)
+            result = self.device.expect(["assword:", "passphrase", "yes/no"] + self.device.prompt)
+            if result == 2:
+                self.device.sendline("yes")
+                result = self.device.expect(["assword:", "passphrase"] + self.device.prompt)
         except pexpect.EOF as e:
             raise Exception("Board is in use (connection refused).")
         if result == 0 or result == 1:
