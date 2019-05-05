@@ -419,9 +419,8 @@ def snmp_mib_set(device, board, iface_ip, mib_name, index, set_type, set_value, 
     elif set_type == "s":
         idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] + device.prompt, timeout=time_out)
     elif set_type == "x":
-        set_value_hex = set_value[2:].upper()
-        set_value_output = ' '.join([set_value_hex[i:i+2] for i in range(0, len(set_value_hex), 2)])
-        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
+        set_value_output = set_value.lstrip("0x").upper()
+        idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\Hex-STRING\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=time_out)
     assert idx==1,"Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
@@ -444,7 +443,7 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
-    snmp_out = snmp_out.strip("\"").strip()
+    snmp_out = snmp_out.strip("\"")
     return snmp_out
 
 def hex2ipv6(hexstr):
