@@ -277,7 +277,7 @@ class DebianBox(base.BaseDevice):
 
         # TODO: use netns for all this?
         undo_default_route = None
-        self.sendline('ping -c1 deb.debian.org')
+        self.sendline('ping -4 -c1 deb.debian.org')
         i = self.expect(['ping: unknown host', 'connect: Network is unreachable', pexpect.TIMEOUT] + self.prompt, timeout=10)
         if 0 == i:
             # TODO: don't reference eth0, but the uplink iface
