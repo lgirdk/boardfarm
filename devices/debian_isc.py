@@ -20,6 +20,7 @@ class DebianISCProvisioner(DebianBox):
     # default CM specific settings
     default_lease_time = 604800
     max_lease_time = 604800;
+    do_ipv6 = True
 
     def __init__(self, *args, **kwargs):
 
@@ -52,6 +53,8 @@ class DebianISCProvisioner(DebianBox):
                     self.shared_tftp_server = True
                     # This does run one.. but it's handled via the provisioning code path
                     self.standalone_provisioner = False
+                if opt.startswith('no-ipv6-dhcp'):
+                    self.do_ipv6 = False
 
         self.gw = self.prov_ip
         self.gwv6 = self.prov_ipv6
@@ -468,18 +471,17 @@ EOF'''
         self._restart_dhcp_with_lock()
 
     def _restart_dhcp_with_lock(self):
-        do_ipv6 = True
-
-        try:
-            chk_ip = self.get_interface_ip6addr(self.iface_dut)
-            if ipaddress.IPv6Address(unicode(chk_ip)) not in self.prov_nw_ipv6:
-                do_ipv6 = False
-        except:
-            do_ipv6 = False
+        if self.do_ipv6:
+            try:
+                chk_ip = self.get_interface_ip6addr(self.iface_dut)
+                if ipaddress.IPv6Address(unicode(chk_ip)) not in self.prov_nw_ipv6:
+                    self.do_ipv6 = False
+            except:
+                self.do_ipv6 = False
 
         self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
-        if do_ipv6:
+        if self.do_ipv6:
             self.expect('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
         else:
             print("NOTE: not starting IPv6 because this provisioner is not setup properly")
