@@ -26,15 +26,12 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             # This is a mess, just taking the last tftpd-server?
             tftp_device = getattr(self.config, tftp_server)
 
-        dhcp_started = False
-
         # start dhcp servers
         for device in self.config.board['devices']:
             if 'options' in device and 'no-dhcp-sever' in device['options']:
                 continue
             if 'options' in device and 'dhcp-server' in device['options']:
                 getattr(self.config, device['name']).setup_dhcp_server()
-                dhcp_started = True
 
         if not wan and len(tftp_servers) == 0:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
@@ -47,9 +44,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             wan.configure(kind="wan_device", config=self.config.board)
             if tftp_device is None:
                 tftp_device = wan
-
-        if wan and not dhcp_started:
-            wan.setup_dhcp_server()
 
         tftp_device.start_tftp_server()
 
