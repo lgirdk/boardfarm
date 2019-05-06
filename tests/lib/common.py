@@ -427,7 +427,7 @@ def snmp_mib_set(device, board, iface_ip, mib_name, index, set_type, set_value, 
     device.expect(device.prompt)
     return snmp_out
 
-def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
+def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3, community='private'):
     """
     Name: snmp_mib_get
     Purpose: get the value of mibs via snmp
@@ -439,7 +439,7 @@ def snmp_mib_get(device, board, iface_ip, mib_name, index, timeout=10, retry=3):
     match = re.search("\d+.(.*)",board.mib[mib_name])
     mib_oid = match.group(1)+'.'+index
     time_out = (timeout*retry)+30
-    device.sendline("snmpget -v 2c -c private -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+board.mib[mib_name]+"."+str(index))
+    device.sendline("snmpget -v 2c -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+board.mib[mib_name]+"."+str(index))
     idx = device.expect(['Timeout: No Response from'] + ['iso\.'+mib_oid+'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
