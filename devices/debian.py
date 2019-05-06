@@ -120,14 +120,23 @@ class DebianBox(base.BaseDevice):
             else:
                 self.gw = lan_gateway + lan_network.num_addresses
 
-            self.nw = ipaddress.IPv4Network(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask), strict=False)
+        self.gw_ng = ipaddress.IPv4Interface(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask))
+        self.nw = self.gw_ng.network
+        self.gw_prefixlen = self.nw.prefixlen
 
         # override above values if set in wan options
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', ''))
+                    value = opt.replace('wan-static-ip:', '')
+                    self.gw = ipaddress.IPv4Address(value.split('/')[0])
+                    if '/' not in value:
+                        value = value + (u'/24')
+                    # TODO: use IPv4 and IPv6 interface object everywhere in this class
+                    self.gw_ng = ipaddress.IPv4Interface(value)
+                    self.nw = self.gw_ng.network
+                    self.gw_prefixlen = self.nw.prefixlen
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
                     self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
@@ -340,7 +349,7 @@ class DebianBox(base.BaseDevice):
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
         if self.gw != eth1_addr:
-            self.sendline('ifconfig %s %s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1')))
+            self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw_ng))
             self.expect(self.prompt)
         self.sendline('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
@@ -500,7 +509,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
         elif not self.wan_no_eth0:
-            self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
+            self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw_ng))
             self.expect(self.prompt)
             self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
