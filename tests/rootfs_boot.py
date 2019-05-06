@@ -50,7 +50,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         prov = getattr(self.config, 'provisioner', None)
         if prov is not None:
             prov.tftp_device = tftp_device
-            prov.provision_board(self.config.board)
+            board.reprovision(prov)
 
             if hasattr(prov, 'prov_gateway'):
                 gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
