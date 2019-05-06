@@ -219,3 +219,19 @@ class wifi_stub():
         pass
     def cleanup(self):
         pass
+
+class wifi_client_stub():
+    def disable_and_enable_wifi(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_scan(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_connect(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_connectivity_verify(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_disconnect(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_change_region(self, *args, **kwargs):
+        raise Exception("Not implemented!")
+    def wifi_ssid_disconnect(self, *args, **kwargs):
+        raise Exception("Not implemented!")
