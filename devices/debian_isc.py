@@ -61,6 +61,10 @@ class DebianISCProvisioner(DebianBox):
     def setup_dhcp6_config(self, board_config):
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
 
+        # can't provision without this, so let's ignore v6 if that's the case
+        if tftp_server is None:
+            return
+
         to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
 preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
