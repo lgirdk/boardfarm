@@ -38,6 +38,7 @@ class DebianBox(base.BaseDevice):
     wan_dhcp_server = True
     tftp_device = None
     tftp_dir = '/tftpboot'
+    gw_mask = None
 
     iface_dut = "eth1"
     gw = None
@@ -127,7 +128,8 @@ class DebianBox(base.BaseDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', ''))
+                    self.gw = ipaddress.IPv4Address(opt.replace('wan-static-ip:', '').split('/')[0])
+                    self.gw_mask = opt.replace('wan-static-ip:', '').split('/')[1]
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
                     self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
@@ -340,7 +342,10 @@ class DebianBox(base.BaseDevice):
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
         if self.gw != eth1_addr:
-            self.sendline('ifconfig %s %s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1')))
+            if self.gw_mask is None:
+                self.sendline('ifconfig %s %s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1')))
+            else:
+                self.sendline('ifconfig %s %s/%s' % (self.iface_dut, getattr(self, 'gw', '192.168.0.1'), self.gw_mask))
             self.expect(self.prompt)
         self.sendline('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
