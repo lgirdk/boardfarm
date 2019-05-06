@@ -3,10 +3,9 @@ import debian
 import pexpect
 from countrycode import countrycode
 from lib.wifi import wifi_client_stub
-import pdb
 
 class DebianWifi(debian.DebianBox, wifi_client_stub):
-    '''Extension of Debian class with wifi functions'''
+    ''' Extension of Debian class with wifi functions '''
 
     model = ('debianwifi')
     wifi_interface = "wlan0"
