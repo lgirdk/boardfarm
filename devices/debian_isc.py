@@ -63,6 +63,8 @@ class DebianISCProvisioner(DebianBox):
 
         # can't provision without this, so let's ignore v6 if that's the case
         if tftp_server is None:
+            self.sendline('rm /etc/dhcp/dhcpd6.conf-' + board_config['station'] + '.master')
+            self.expect(self.prompt)
             return
 
         to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
@@ -177,6 +179,12 @@ EOF'''
 
     def setup_dhcp_config(self, board_config):
         tftp_server = self.tftp_device.tftp_server_ip_int()
+
+        # TODO: we should work ipv6 only at some point
+        #if tftp_server is None:
+        #    self.sendline('rm /etc/dhcp/dhcpd.conf-' + board_config['station'] + '.master')
+        #    self.expect(self.prompt)
+        #    return
 
         to_send = '''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
 log-facility local7;
@@ -477,6 +485,8 @@ EOF'''
         try:
             chk_ip = self.get_interface_ip6addr(self.iface_dut)
             if ipaddress.IPv6Address(unicode(chk_ip)) not in self.prov_nw_ipv6:
+                do_ipv6 = False
+            if self.tftp_device.tftp_server_ipv6_int() is None:
                 do_ipv6 = False
         except:
             do_ipv6 = False
