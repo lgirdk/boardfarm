@@ -1,7 +1,7 @@
 argparse
 elasticsearch>=1.0.0
 unittest2
-pexpect==3.1
+pexpect
 beautifulsoup4
 termcolor
 selenium
