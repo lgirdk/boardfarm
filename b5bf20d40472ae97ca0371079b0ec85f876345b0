@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "593591b1_868a29dc",
+        "filename": "bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T14:21:48Z",
+      "side": 1,
+      "message": "NO too embarrassing, ;-)\nI got it to work, i was using a class CTOR the wrong way",
+      "parentUuid": "6add89c6_9cce7eaa",
+      "revId": "b5bf20d40472ae97ca0371079b0ec85f876345b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "cc202510_3a1d7373",
         "filename": "bft",
         "patchSetId": 1
