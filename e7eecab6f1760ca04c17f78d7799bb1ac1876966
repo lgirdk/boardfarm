@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0f76b8bb_3bb279df",
+        "filename": "testpush.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T07:31:55Z",
+      "side": 1,
+      "message": "nice one",
+      "revId": "e7eecab6f1760ca04c17f78d7799bb1ac1876966",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
