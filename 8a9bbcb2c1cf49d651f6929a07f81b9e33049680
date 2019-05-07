@@ -34,6 +34,24 @@
       "revId": "8a9bbcb2c1cf49d651f6929a07f81b9e33049680",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e7f9be9d_9142b1ee",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T14:19:27Z",
+      "side": 1,
+      "message": "The bind has been added to the Dockerfile at 3ac1bd9c73dd Sun Apr 28",
+      "parentUuid": "baa8e730_59010961",
+      "revId": "8a9bbcb2c1cf49d651f6929a07f81b9e33049680",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
