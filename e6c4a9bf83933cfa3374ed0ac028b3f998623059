@@ -16,6 +16,40 @@
       "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "abb80038_578e921a",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 423,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-05-07T09:23:09Z",
+      "side": 1,
+      "message": "Not sure why you have removed this line set_value_output \u003d \u0027 \u0027.join([set_value_output[i:i+2] for i in range(0, len(set_value_output), 2)])\nThis line is required in case if the hex string return outout has spaces in between \"AC 10 01 E0\" especially in IP address\nWe are directly verifying idx \u003d device.expect([\u0027Timeout: No Response from\u0027] + [\u0027iso\\.\u0027+mib_oid+\u0027\\s+\\\u003d\\s+\\Hex-STRING\\:\\s+(%s)\\s+\\r\\n\u0027 % set_value_output] + device.prompt, timeout\u003dtime_out), this will get asserted",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4cce9a1_37c62a8c",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-05-07T09:23:09Z",
+      "side": 1,
+      "message": "You have removed .strip() from the end of this line snmp_out \u003d snmp_out.strip(\"\\\"\")\nThis is required as it will strip of space appended at the end of hex-string mib output\n(Pdb) print \"###%s###\" % mib_out\n###AC 10 01 E0 ###\n(Pdb)",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
