@@ -36,6 +36,42 @@
     },
     {
       "key": {
+        "uuid": "60046941_222d4f79",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 423,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T11:56:38Z",
+      "side": 1,
+      "message": "when i tested it with 0xE0 the upstream code  returned \"\"",
+      "parentUuid": "fa886059_6f0df5ca",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "47547dbe_2bea53ee",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 423,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T11:56:38Z",
+      "side": 1,
+      "message": "makes sense, it failed on 0xXX, i will change the code ...",
+      "parentUuid": "abb80038_578e921a",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f4cce9a1_37c62a8c",
         "filename": "tests/lib/common.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2019-05-07T09:23:09Z",
       "side": 1,
       "message": "You have removed .strip() from the end of this line snmp_out \u003d snmp_out.strip(\"\\\"\")\nThis is required as it will strip of space appended at the end of hex-string mib output\n(Pdb) print \"###%s###\" % mib_out\n###AC 10 01 E0 ###\n(Pdb)",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "20bc2791_04be3006",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 446,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-07T11:56:38Z",
+      "side": 1,
+      "message": "will retest",
+      "parentUuid": "f4cce9a1_37c62a8c",
       "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
