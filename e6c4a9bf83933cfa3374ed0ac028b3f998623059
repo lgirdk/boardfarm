@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa886059_6f0df5ca",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 423,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-07T00:59:27Z",
+      "side": 1,
+      "message": "The upstream version does this:\n\nset_value_hex \u003d set_value[2:].upper()\n\nThat seems to have the same effect in theory. However your version is more robust.",
+      "revId": "e6c4a9bf83933cfa3374ed0ac028b3f998623059",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
