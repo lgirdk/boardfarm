@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6a49e5e7_8452070a",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:20:09Z",
+      "side": 1,
+      "message": "So in normal boardfarm devices we have \n\nget_interface_ipaddr() and get_interface_ip6addr()\n\nHere we have get_ip() and you\u0027re adding get_cnr_ip6addr()\n\nWhat exactly is going on?",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "32c0e3ea_0fc283ec",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:20:09Z",
+      "side": 1,
+      "message": "What if the language is not chinese? Can we check the current lang and set it back to that value when done?\n\nWhy don\u0027t the other functions do this? Do they ignore chinese chars?",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
