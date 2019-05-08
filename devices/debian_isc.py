@@ -42,7 +42,9 @@ class DebianISCProvisioner(DebianBox):
         self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:6::/64"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
         self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
-
+	self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
+	self.time_server = ipaddress.IPv4Address(kwargs.pop('time_server', self.prov_ip))
+        self.syslog_server = ipaddress.IPv4Address(kwargs.pop('syslog_server', self.prov_ip))
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
@@ -243,7 +245,7 @@ shared-network boardfarm {
     option time-offset 1;
     option domain-name-servers ###PROV###;
     option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
-    option docsis-mta.provision-server 0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00 ;
+    option docsis-mta.provision-server 0 ###MTA_SIP_FQDN### ;
   }
   subnet ###OPEN_IP### netmask ###OPEN_NETMASK###
   {
@@ -268,8 +270,9 @@ shared-network boardfarm {
 }
 EOF'''
 
-        to_send = to_send.replace('###LOG_SERVER###', str(self.prov_ip))
-        to_send = to_send.replace('###TIME_SERVER###', str(self.prov_ip))
+        to_send = to_send.replace('###LOG_SERVER###', str(self.syslog_server))
+        to_send = to_send.replace('###TIME_SERVER###', str(self.time_server))
+	to_send = to_send.replace('###MTA_SIP_FQDN###', str(self.sip_fqdn))
         to_send = to_send.replace('###NEXT_SERVER###', str(self.prov_ip))
         to_send = to_send.replace('###IFACE###', str(self.iface_dut))
         to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
