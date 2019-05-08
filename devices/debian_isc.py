@@ -383,7 +383,7 @@ EOF'''
         # DHCPv6 defaults for when board does not supply defaults
         if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning_v6']:
             board_config['extra_provisioning_v6']["cm"] = \
-                { "hardware ethernet": board_config['cm_mac'],
+                { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
                   "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname } }
         if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning_v6']:
             board_config['extra_provisioning_v6']["erouter"] = \
