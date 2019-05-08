@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "25d84988_bcd0ae87",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-08T14:14:34Z",
+      "side": 1,
+      "message": "Need to remove this section and move erouter\u0027s pool section in CM subnet. \nE-router and CM are in same subnet.",
+      "revId": "42d81cf44046cbb9095432d376059dcf0caa0ece",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
