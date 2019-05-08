@@ -447,13 +447,13 @@ class CasaCMTS(base.BaseDevice):
         self.sendline('exit')
         self.expect(self.prompt)
 
-    def run_tcpdump(self, time, opts=""):
+    def run_tcpdump(self, time, iface='any', opts=""):
         self.sendline('diag')
         self.expect('Password:')
         self.sendline('casadiag')
         self.expect(self.prompt)
-        self.sendline('tcpdump "-i any %s"' % opts)
-        self.expect(pexpect.TIMEOUT, timeout=time)
+        self.sendline('tcpdump "-i %s %s"' % (iface, opts))
+        self.expect(self.prompt + [pexpect.TIMEOUT], timeout=time)
         self.sendcontrol('c')
         self.expect(self.prompt)
         self.sendline('exit')
