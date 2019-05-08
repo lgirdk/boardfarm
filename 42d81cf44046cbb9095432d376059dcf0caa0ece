@@ -16,6 +16,24 @@
       "revId": "42d81cf44046cbb9095432d376059dcf0caa0ece",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c2d90b94_eb8ddbe1",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:51:45Z",
+      "side": 1,
+      "message": "I know I tested it out, it seems to just warn if they are the same.. I will keep testing if I need to check for matching (or overlapping subnets) to make it work I will do that...",
+      "parentUuid": "25d84988_bcd0ae87",
+      "revId": "42d81cf44046cbb9095432d376059dcf0caa0ece",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
