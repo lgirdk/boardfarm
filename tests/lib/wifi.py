@@ -238,7 +238,7 @@ class wifi_client_stub():
            Takes interface to be scanned as an argument'''
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
-        return "SSID: <ssid_name1>
+        return "SSID: <ssid_name1> \
                 SSID: <ssid_name2>.."
     def wifi_check_ssid(self, iface, ssid_name):
         '''Function that scans for a particular SSID
