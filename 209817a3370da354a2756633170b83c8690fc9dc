@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "4d52cb32_f5f2d5b5",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:43:45Z",
+      "side": 1,
+      "message": "Not sure why this was called wifi_interface, but this really should be:\n\nget_interface_ipaddr(self, iface)",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6a49e5e7_8452070a",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -37,6 +54,41 @@
     },
     {
       "key": {
+        "uuid": "336d38cd_642ba0bb",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:43:45Z",
+      "side": 1,
+      "message": "I know why you named it, but why not follow the API for other places?\n\nget_interface_ipaddr() and get_interface_ip6addr() would be useful for ALL devices that are based on this class.\n\nget_cnr_ip6addr is not - in fact it\u0027s specific to another device in another repo and not generally useful for a \"windows telnet\" device.",
+      "parentUuid": "92fd2a32_360f6608",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "70a2e355_34e65a65",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:43:45Z",
+      "side": 1,
+      "message": "Shouldn\u0027t you use an IP regex helper here instead of this?",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "32c0e3ea_0fc283ec",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -66,6 +118,24 @@
       "side": 1,
       "message": "I thought it won\u0027t change so added default.. anyway i will do it as generic. Other functions might not require any grep for characters, so they haven\u0027t added .",
       "parentUuid": "32c0e3ea_0fc283ec",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13fdae35_b3168fc3",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-08T16:43:45Z",
+      "side": 1,
+      "message": "but I don\u0027t see a grep in your commit?",
+      "parentUuid": "b5f7ec72_05a0fd78",
       "revId": "209817a3370da354a2756633170b83c8690fc9dc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
