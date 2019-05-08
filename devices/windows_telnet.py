@@ -80,3 +80,18 @@ class WindowsTelnet(base.BaseDevice):
             return match.group(1)
         else:
             return None
+
+    def get_cnr_ip6addr(self):
+        #chcp 437 to change the language to english
+        self.sendline("chcp 437")
+        self.expect(self.prompt)
+        self.sendline("netsh interface ipv6 show  addresses")
+        self.expect(self.prompt)
+        match = re.search('Manual\s+Preferred\s+infinite\s+infinite\s+(2002\S+)', self.before)
+        #set the language back to chinese
+        self.sendline("chcp 950")
+        self.expect(self.prompt)
+        if match:
+            return match.group(1)
+        else:
+            return None
