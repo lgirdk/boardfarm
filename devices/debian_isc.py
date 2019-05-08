@@ -38,8 +38,12 @@ class DebianISCProvisioner(DebianBox):
 
         self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe"))
         self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:4::/64"))
+        self.cm_network_v6_start = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_start', u"2001:dead:beef:4::10"))
+        self.cm_network_v6_end = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_end', u"2001:dead:beef:4::100"))
         self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe"))
         self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:6::/64"))
+        self.open_network_v6_start = ipaddress.IPv6Address(kwargs.pop('open_network_v6_start', u"2001:dead:beef:6::10"))
+        self.open_network_v6_end = ipaddress.IPv6Address(kwargs.pop('open_network_v6_end', u"2001:dead:beef:6::100"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
         self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
 	self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
@@ -93,7 +97,7 @@ option vsio.docsis code 4491 = encapsulate docsis;
 
 # TODO: move to host section
 #option dhcp6.aftr-name "";
-option dhcp6.name-servers 2001:dead:beef:1::1;
+option dhcp6.name-servers ###PROV_IPV6###;
 option dhcp6.domain-search "test.example.com","example.com";
 
 class "CM" {
@@ -103,16 +107,16 @@ class "EROUTER" {
   match if option docsis.device-type = "EROUTER";
 }
 
-subnet6 2001:dead:beef:1::/64 {
+subnet6 ###PROV_NW_IPV6### {
   interface ###IFACE###;
   ignore booting;
 }
 
 shared-network boardfarm {
   interface ###IFACE###;
-    subnet6 2001:dead:beef:4::/64 {
+    subnet6 ###CM_NETWORK_V6### {
         pool6 {
-            range6 2001:dead:beef:4::10 2001:dead:beef:4::100;
+            range6 ###CM_NETWORK_V6_START### ###CM_NETWORK_V6_END###;
             allow members of "CM";
             option docsis.tftp-servers ###PROV_IPV6###;
             option docsis.time-servers ###PROV_IPV6###;
@@ -121,9 +125,9 @@ shared-network boardfarm {
             option docsis.time-offset 5000;
         }
     }
-    subnet6 2001:dead:beef:6::/64 {
+    subnet6 ###OPEN_NETWORK_V6### {
         pool6 {
-            range6 2001:dead:beef:6::10 2001:dead:beef:6::100;
+            range6 ###OPEN_NETWORK_V6_START### ###OPEN_NETWORK_V6_END###;
             allow members of "EROUTER";
             option dhcp6.solmax-rt   240;
             option dhcp6.inf-max-rt  360;
@@ -135,6 +139,13 @@ EOF'''
 
         to_send = to_send.replace('###IFACE###', self.iface_dut)
         to_send = to_send.replace('###PROV_IPV6###', str(self.prov_ipv6))
+        to_send = to_send.replace('###PROV_NW_IPV6###', str(self.prov_nw_ipv6))
+        to_send = to_send.replace('###CM_NETWORK_V6###', str(self.cm_network_v6))
+        to_send = to_send.replace('###CM_NETWORK_V6_START###', str(self.cm_network_v6_start))
+        to_send = to_send.replace('###CM_NETWORK_V6_END###', str(self.cm_network_v6_end))
+        to_send = to_send.replace('###OPEN_NETWORK_V6###', str(self.open_network_v6))
+        to_send = to_send.replace('###OPEN_NETWORK_V6_START###', str(self.open_network_v6_start))
+        to_send = to_send.replace('###OPEN_NETWORK_V6_END###', str(self.open_network_v6_end))
         to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[0]))
         to_send = to_send.replace('###EROUTER_NET_END###', str(self.erouter_net[-ipaddress.IPv6Network(u'::0/%s' % self.ipv6_prefix).num_addresses]))
         to_send = to_send.replace('###EROUTER_PREFIX###', str(self.ipv6_prefix))
