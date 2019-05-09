@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "49ddb198_cb4e9bf8",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-09T15:47:55Z",
+      "side": 1,
+      "message": "Here same subnet is getting defined twice.\nIt will ignore the second subnet scope.\nCan we try with the below one?\n\n\nshared-network boardfarm {\n  interface ###IFACE###;\n    subnet6 ###CM_NETWORK_V6### {\n        pool6 {\n            range6 ###CM_NETWORK_V6_START### ###CM_NETWORK_V6_END###;\n            allow members of \"CM\";\n            option docsis.tftp-servers ###PROV_IPV6###;\n            option docsis.time-servers ###PROV_IPV6###;\n            option docsis.configuration-file \"9_EU_CBN_IPv6_LG.cfg\";\n            option docsis.syslog-servers ###PROV_IPV6### ;\n            option docsis.time-offset 5000;\n        }\n        pool6 {\n            range6 ###OPEN_NETWORK_V6_START### ###OPEN_NETWORK_V6_END###;\n            allow members of \"EROUTER\";\n            option dhcp6.solmax-rt   240;\n            option dhcp6.inf-max-rt  360;\n            prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;\n        }\n    }\n}",
+      "range": {
+        "startLine": 115,
+        "startChar": 0,
+        "endLine": 137,
+        "endChar": 1
+      },
+      "revId": "c507869e7e1568cf4daef0a092448607bb294c3e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
