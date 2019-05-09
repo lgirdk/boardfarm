@@ -19,3 +19,4 @@ Faker
 zeep
 matplotlib
 netaddr
+countrycode
