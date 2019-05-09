@@ -215,6 +215,24 @@
     },
     {
       "key": {
+        "uuid": "248dcea7_e93e7b79",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-09T20:46:05Z",
+      "side": 1,
+      "message": "I\u0027m not even sure what these addresses are for, but you have to figure out how to get the one you want. Maybe that logic can live in the test, and this can just return the ipv6 address(es)?\n\nEither way, these values represent something... static and dhcp addresses. We can\u0027t filter off 2001- that won\u0027t work most other places..\n\nWorst case we can do something like that in in a test specific to someone, but not here in the generic WindowsTelnet class. This should just return ipv6 addresses.\n\n-M",
+      "parentUuid": "ef3cfac9_60502638",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "32c0e3ea_0fc283ec",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
