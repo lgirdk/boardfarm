@@ -197,6 +197,24 @@
     },
     {
       "key": {
+        "uuid": "ef3cfac9_60502638",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-09T20:43:14Z",
+      "side": 1,
+      "message": "Correct it can be any but here I see multiple ipv6 address(see the output). I\u0027m not getting the expected ipv6 when I use regex.py",
+      "parentUuid": "72dd37bb_9e154ff1",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "32c0e3ea_0fc283ec",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
