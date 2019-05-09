@@ -205,7 +205,7 @@ class DebianBox(base.BaseDevice):
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
-    def sudo_sendline(self, s):
+    def sudo_sendline(self, cmd):
         if self.username != "root":
             self.sendline("sudo true")
             if 0 == self.expect(["password for .*:"] + self.prompt):
