@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c57b6b51_1cc141de",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-09T16:00:51Z",
+      "side": 1,
+      "message": "I can change this but it will affect the existing wifi testcases.",
+      "parentUuid": "4d52cb32_f5f2d5b5",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6a49e5e7_8452070a",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "55c5dfa2_e3b16f74",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-09T16:00:51Z",
+      "side": 1,
+      "message": "I will change the function name",
+      "parentUuid": "336d38cd_642ba0bb",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "70a2e355_34e65a65",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -83,6 +119,24 @@
       "writtenOn": "2019-05-08T16:43:45Z",
       "side": 1,
       "message": "Shouldn\u0027t you use an IP regex helper here instead of this?",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "732d2ce8_cddedc4b",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-09T16:00:51Z",
+      "side": 1,
+      "message": "C:\\Users\\cbn\u003enetsh interface ipv6 show  addresses\n\nInterface 1: Loopback Pseudo-Interface 1\n\nAddr Type  DAD State   Valid Life Pref. Life Address\n---------  ----------- ---------- ---------- ------------------------\nOther      Preferred     infinite   infinite ::1\n\nInterface 11: ????\n\nAddr Type  DAD State   Valid Life Pref. Life Address\n---------  ----------- ---------- ---------- ------------------------\nManual     Preferred     infinite   infinite 2001:d030:701d:100::2\nManual     Preferred     infinite   infinite 2002:db50:fa13:1::2\nDhcp       Preferred    23h58m56s  23h57m56s 2002:db50:fa13:1:34:1d7f:fa11:f36c\nOther      Preferred     infinite   infinite fe80::8402:2ea4:7cfb:3f25%11\n\nInterface 12: Teredo Tunneling Pseudo-Interface\n\nAddr Type  DAD State   Valid Life Pref. Life Address\n---------  ----------- ---------- ---------- ------------------------\nOther      Deprecated    infinite   infinite fe80::100:7f:fffe%12\n\nInterface 13: isatap.{0DF93EE2-3A8E-4AAC-B246-99A1B76B64E5}\n\nAddr Type  DAD State   Valid Life Pref. Life Address\n---------  ----------- ---------- ---------- ------------------------\nOther      Deprecated    infinite   infinite fe80::5efe:172.16.1.2%13\n\n\nC:\\Users\\cbn\u003e\n\n\nI need 2002:db50:fa13:1::2 to test , that\u0027s why I used  regex re.search(\u0027Manual\\s+Preferred\\s+infinite\\s+infinite\\s+(2002\\S+)\u0027\nPlease suggest me if you have any idea how can I make it generic here.",
+      "parentUuid": "70a2e355_34e65a65",
       "revId": "209817a3370da354a2756633170b83c8690fc9dc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -136,6 +190,24 @@
       "side": 1,
       "message": "but I don\u0027t see a grep in your commit?",
       "parentUuid": "b5f7ec72_05a0fd78",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "454eac4a_f01998d8",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-09T16:00:51Z",
+      "side": 1,
+      "message": "No issues here, I will get the language and set it back",
+      "parentUuid": "13fdae35_b3168fc3",
       "revId": "209817a3370da354a2756633170b83c8690fc9dc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
