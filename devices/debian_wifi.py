@@ -12,8 +12,8 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
     iface_wlan1 = "wlan1"
 
     def disable_and_enable_wifi(self, iface):
-       self.set_link_state(iface, "down")
-       self.set_link_state(iface, "up")
+       self.disable_wifi(iface)
+       self.enable_wifi(iface)
 
     def disable_wifi(self, iface):
        self.set_link_state(iface, "down")
@@ -98,7 +98,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.iface_dut = iface
         super(DebianWifi, self).start_lan_client()
 
-    def wifi_client_connect(self, iface, ssid_name, password=None):
+    def wifi_client_connect(self, iface, ssid_name, password=None, security_mode=None):
         '''Scan for SSID and verify connectivity'''
         self.disable_and_enable_wifi(iface)
         self.expect(pexpect.TIMEOUT, timeout=20)
