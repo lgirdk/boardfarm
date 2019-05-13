@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "f219aa29_d36aaa06",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-13T15:12:57Z",
+      "side": 1,
+      "message": "could you wrap this in a get_interface_ipaddr(self, iface) (or vice-versa)?",
+      "parentUuid": "a1fd06ae_a172589c",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6a49e5e7_8452070a",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
