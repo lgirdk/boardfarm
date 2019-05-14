@@ -1,0 +1,242 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1efa1c96_1682f998",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Do you need to prefix with _ ?",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "be69feeb_032c282e",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Seems like you would lose the interfaces from the config file? Maybe invert the logic?\n\nif iface is None:\n   iface \u003d self.interfaces\n\nThen use iface in the rest of the function.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87bb7359_77f2fd8b",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Might be nice to allow a string, it can be quite confusing debugging small things like this.\n\nif isinstance(self.interfaces, basestring):\n   iface \u003d [iface]",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03c58a17_46facb49",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Does it need +x if you just source it?",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "535e7f66_fdb6d59e",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "This whole port mess can be majorly simplified by just using ephemeral ports:\n\n$ docker run -it -p 22 bft:node\n\nThen it picks a random port:\n\n8ac5a6092b3b        bft:node                          \"bash\"                   10 seconds ago      Up 9 seconds           0.0.0.0:32769-\u003e22/tcp                                                                                                                                                                        pedantic_lichterman\n\nYou\u0027d have to figure it out, but that should not be too hard.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bf691e7c_3c7be960",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Still not clear why there is a difference between vlan and physical Ethernet device. Are there limitations?",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5d599d0e_f9216972",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "This spacing came out weird? Is this just a really really long long line? You can export each var on their own lines.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bdb6626d_fcb917e2",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Polling for a prompt is a pretty good method ;-)",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7a22c3b_db2d25b0",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "This is simple enough, but would be nice to have a docker ps helper function going forward.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b830106d_01d266e5",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Confused... maybe the free open port will help here.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29144633_6f396c5d",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Hmmm, wondering if we need this.. why? If we need to know the test itself can query the underlying interface...\n\n[mattsm@chippy3:~] 1 $ sudo cat /proc/net/vlan/config\nVLAN Dev name\t | VLAN ID\nName-Type: VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD\nenp4s0f0.4093  | 4093  | enp4s0f0\nbond0.136      | 136  | bond0\n\nIt probably should not even query this, just check the MTU size etc, the VLAN itself should not matter.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "90bbc4c7_ad13d1f9",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Can you add a helper function for this in devices/__init__.py",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dc8c4d99_b474b71f",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "I wonder if we even need to track these?",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e09ab840_fa925ece",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:44:28Z",
+      "side": 1,
+      "message": "Can\u0027t we just run start_lan_client on the new devices? I\u0027d prefer the tests themselves do this.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
