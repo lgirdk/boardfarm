@@ -1,0 +1,293 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3319cf0a_de0a36a3",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "nit: spaces",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1131a352_0b487dae",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "This is bit confusing... what about\n\n docker run bash -c \u0027echo \"alias mgmt\u003d\u0027BIND_ADDR\u003d$docker_dev_ip LD_PRELOAD\u003d/usr/lib/bind.so \u0027\" \u003e\u003e /root/.bashrc\n\nAlso, I\u0027d prefer to add a function to device/base.py or devices/debian.py that does this and checks that things are configured right as well\n\n devices/debian.py: def exec_mgmt_cmd(\u0027 \u0027)\n\n   - would check for bind.so at first run\n   - would check for mgmt rt at first run\n   - call the command properly, and fallback if the node is not configured for this",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ccfd131a_b353b6d6",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "It would be ideal if this function matched the spacing/tabbing present in the rest of the file.",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "148fb099_87ddca2c",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "This could have been it\u0027s own commit",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7137738e_155bfed7",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "You are changing the API of this function, are you sure there are no other users? Better just add driver at the end and make it option with a default value of \u0027macvlan\u0027 that matches what it was previously.",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df947e0f_ef4c61ff",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Nit: maybe add _rt so it\u0027s clear this is the route?",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d91e670b_aad6123d",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Nit: space",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f8740af9_94859d08",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Random spacing change?",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "27aa2ec6_7968f8d9",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Nit: random tab",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "31a75e85_cd7b3a7a",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "I mean this is weird, spaces and then tabs to follow.\n\nI would also invert the logic, just return if the conditions for ivp6 are not met, then for the commands below you don\u0027t have to indent them.",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5e9a8a15_69f20d9f",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "This is a port change embeded inside other changes, also tabs are changed to spaces?",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bd0249ec_071c16a8",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Nit: spacing\n\nWe should be consistent on isolate_management- we should try to do it everywhere or no where. Maybe those should go in our separate deploy scripts as a second call after we create the containers.",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d025c0a0_97a1f546",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Spaces and tabs...\n\nThe proxy changes here should be a separate commit, with an explanation why they are being made.",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f0e4966d_8f923c9c",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 292,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "spaces instead of a tab",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0182d589_6a17847e",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "We have always previously been pre-installing these in Dockerfile AND checking at runtime. Why change this here?",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87475f51_5b96b079",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 322,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Separate commit... how did this get added?\n\nAlso, tabbing and spacing are different...",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "038dc93b_b4a371b8",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 1,
+      "message": "Maybe just put the temporary docker factory scripts in a separate file? Do you think we will need to merge this or it will evolve away from living here?",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}

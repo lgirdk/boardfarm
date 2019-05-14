@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "61143d8d_1135221d",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:07:23Z",
+      "side": 0,
+      "message": "I hope you are the only user of this function? Maybe keep a wrapper function",
+      "revId": "e4be8b90b86a7a67ac576925533b311697a76a9d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
