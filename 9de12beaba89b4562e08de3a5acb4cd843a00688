@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "eaec3743_ff923cd2",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T22:11:28Z",
+      "side": 1,
+      "message": "well i meant docker exec not run ;-)",
+      "parentUuid": "aefd6f37_2fc8154c",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ccfd131a_b353b6d6",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -467,6 +485,24 @@
       "side": 1,
       "message": "Since it was only for Wi-Fi containers didn\u0027t feel the need of pushing it to docker file. Will update the requirement in txt file.",
       "parentUuid": "0182d589_6a17847e",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7c75e26d_f459e211",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T22:11:28Z",
+      "side": 1,
+      "message": "Not in requirements.txt...",
+      "parentUuid": "f49df17d_fdc903f0",
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
