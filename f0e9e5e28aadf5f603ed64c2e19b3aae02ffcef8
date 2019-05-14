@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b7a43757_8fdc4bc4",
+        "filename": "tests/lib/wifi.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:19:09Z",
+      "side": 1,
+      "message": "space after False, before the comma\n\nWhat is provisioning? I think you mean it will not apply changes until you manually call apply_changes() on this class.",
+      "revId": "f0e9e5e28aadf5f603ed64c2e19b3aae02ffcef8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "27649100_75077958",
+        "filename": "tests/lib/wifi.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 225,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-14T20:19:09Z",
+      "side": 1,
+      "message": "We need to add apply_changes() too, since it\u0027s not here. We want that function to be standardized as well. We should add comments on that one as well.",
+      "revId": "f0e9e5e28aadf5f603ed64c2e19b3aae02ffcef8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
