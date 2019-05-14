@@ -179,6 +179,10 @@ def uciSetWifiSecurity(board, vap_iface, security):
         board.expect(prompt)
 
 class wifi_stub():
+    # apply_changes_delay = True/False
+    # The above variable can tweak the behavior of the below functions
+    # If it is set to True, it will apply the changes after setting wifi parameters
+    # If it is set to False , it will not apply any changes after provisioning
     def enable_wifi(self, *args, **kwargs):
         raise Exception("Not implemented!")
     def set_ssid(self, *args, **kwargs):
