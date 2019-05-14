@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "0e8abd06_d876406b",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3319cf0a_de0a36a3",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1131a352_0b487dae",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -30,6 +48,24 @@
       "writtenOn": "2019-05-14T20:07:23Z",
       "side": 1,
       "message": "This is bit confusing... what about\n\n docker run bash -c \u0027echo \"alias mgmt\u003d\u0027BIND_ADDR\u003d$docker_dev_ip LD_PRELOAD\u003d/usr/lib/bind.so \u0027\" \u003e\u003e /root/.bashrc\n\nAlso, I\u0027d prefer to add a function to device/base.py or devices/debian.py that does this and checks that things are configured right as well\n\n devices/debian.py: def exec_mgmt_cmd(\u0027 \u0027)\n\n   - would check for bind.so at first run\n   - would check for mgmt rt at first run\n   - call the command properly, and fallback if the node is not configured for this",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "aefd6f37_2fc8154c",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Haven\u0027t tried docker run. But we were facing issue trying to modify bashrc of container using docker exec in one line.",
+      "parentUuid": "1131a352_0b487dae",
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -50,6 +86,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "589eec0e_533ba1a5",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ccfd131a_b353b6d6",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -87,6 +141,24 @@
     },
     {
       "key": {
+        "uuid": "77eea2a7_d73e3625",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Missed it. Will set the local driver default as macvlan.",
+      "parentUuid": "7137738e_155bfed7",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "df947e0f_ef4c61ff",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -101,6 +173,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a7e53eb_0deb9ba7",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "df947e0f_ef4c61ff",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -121,6 +211,24 @@
     },
     {
       "key": {
+        "uuid": "33b18c71_15dbdf45",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d91e670b_aad6123d",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f8740af9_94859d08",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -135,6 +243,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "87a14c8c_c77e511c",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f8740af9_94859d08",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -155,6 +281,24 @@
     },
     {
       "key": {
+        "uuid": "bf2181d9_58b5c40f",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "27aa2ec6_7968f8d9",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "31a75e85_cd7b3a7a",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -169,6 +313,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1f1652f_23844ee7",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "31a75e85_cd7b3a7a",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -206,6 +368,24 @@
     },
     {
       "key": {
+        "uuid": "25038aba_7168c206",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 281,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "bd0249ec_071c16a8",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d025c0a0_97a1f546",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -220,6 +400,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e3cb4917_00981585",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d025c0a0_97a1f546",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -257,6 +455,24 @@
     },
     {
       "key": {
+        "uuid": "f49df17d_fdc903f0",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 293,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Since it was only for Wi-Fi containers didn\u0027t feel the need of pushing it to docker file. Will update the requirement in txt file.",
+      "parentUuid": "0182d589_6a17847e",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "87475f51_5b96b079",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 7
@@ -271,6 +487,24 @@
       "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8bffa362_19bff0ea",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 7
+      },
+      "lineNbr": 322,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-14T20:52:41Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "87475f51_5b96b079",
+      "revId": "9de12beaba89b4562e08de3a5acb4cd843a00688",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
