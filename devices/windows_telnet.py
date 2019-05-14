@@ -80,3 +80,17 @@ class WindowsTelnet(base.BaseDevice):
             return match.group(1)
         else:
             return None
+
+    def get_interface_ipaddr(self, interface):
+        self.get_ip(interface)
+
+    def get_interface_ip6addr(self):
+        ipv6address = []
+        self.sendline("netsh interface ipv6 show addresses")
+        self.expect(self.prompt)
+        match = re.findall(AllValidIpv6AddressesRegex, self.before)
+        for ip in match:
+            ipv6addr = ipaddress.IPv6Address(unicode(ip))
+            if not ipv6addr.is_link_local:
+                ipv6address.append(ipv6addr)
+        return ipv6address
