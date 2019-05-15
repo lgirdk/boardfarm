@@ -16,6 +16,24 @@
       "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6588b3ac_f27f5391",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-05-15T06:46:50Z",
+      "side": 1,
+      "message": "To match with the windows wifi function, have added security mode here.\n\nThe windows wifi function is in this commit http://172.16.1.237:8080/c/boardfarm-cbn/+/3236/6/devices/wifi_telnet.py",
+      "parentUuid": "bab64c7f_bd56ecfc",
+      "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
