@@ -34,6 +34,24 @@
       "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c29f344b_a34a77a7",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-15T18:44:05Z",
+      "side": 1,
+      "message": "But it can\u0027t just randomly go in this commit, it doesn\u0027t even say anything in commit message.",
+      "parentUuid": "6588b3ac_f27f5391",
+      "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
