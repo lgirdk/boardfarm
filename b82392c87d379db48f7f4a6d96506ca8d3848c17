@@ -52,6 +52,24 @@
       "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c17db2a9_a490b4d9",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-05-16T09:25:47Z",
+      "side": 1,
+      "message": "I updated the commit message for this change as well.",
+      "parentUuid": "c29f344b_a34a77a7",
+      "revId": "b82392c87d379db48f7f4a6d96506ca8d3848c17",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
