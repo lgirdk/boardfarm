@@ -180,6 +180,23 @@
     },
     {
       "key": {
+        "uuid": "a18614bc_fb5342a3",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-17T16:36:28Z",
+      "side": 1,
+      "message": "If I run this, it does back to normal after I exit telnet right?\n\nIf that\u0027s the case, maybe we can run it all the time.",
+      "revId": "209817a3370da354a2756633170b83c8690fc9dc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "70a2e355_34e65a65",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
