@@ -31,6 +31,8 @@ RUN apt-get update && \
     xinetd \
     less \
     wget \
+    iw \
+    wpasupplicant \
     build-essential
 
 # NOTE: apparmor will interfere with dhclient, disable on HOST by running:
