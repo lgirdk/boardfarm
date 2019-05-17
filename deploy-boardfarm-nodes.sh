@@ -7,6 +7,8 @@ OPTS=${4:-"both"} # both, odd, even, odd-dhcp, even-dhcp
 BRINT=br-bft
 BF_IMG=${BF_IMG:-"bft:node"}
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+STARTSSHPORT=5000
+STARTWEBPORT=8000
 
 random_private_mac () {
 	python - <<END
@@ -44,8 +46,8 @@ create_container_eth1_vlan () {
 	cname=bft-node-$IFACE-$vlan-$offset
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset + $vlan )):22 \
-		-p $(( 8000 + $offset + $vlan )):8080 \
+		-p $(( $STARTSSHPORT + $offset + $vlan )):22 \
+		-p $(( $STARTWEBPORT + $offset + $vlan )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	sudo ip link del $IFACE.$vlan || true
@@ -71,8 +73,8 @@ create_container_eth1_bridged_vlan () {
 	cname=bft-node-$IFACE-$vlan-$offset
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset + $vlan )):22 \
-		-p $(( 8000 + $offset + $vlan )):8080 \
+		-p $(( $STARTSSHPORT + $offset + $vlan )):22 \
+		-p $(( $STARTWEBPORT + $offset + $vlan )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
@@ -111,8 +113,8 @@ create_container_eth1_macvtap_vlan () {
 	cname=bft-node-$IFACE-$vlan-$offset
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset + $vlan )):22 \
-		-p $(( 8000 + $offset + $vlan )):8080 \
+		-p $(( $STARTSSHPORT + $offset + $vlan )):22 \
+		-p $(( $STARTWEBPORT + $offset + $vlan )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
@@ -208,8 +210,8 @@ create_container_eth1_static_linked () {
 	cname=bft-node-$IFACE-$name
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset )):22 \
-		-p $(( 8000 + $offset )):8080 \
+		-p $(( $STARTSSHPORT + $offset )):22 \
+		-p $(( $STARTWEBPORT + $offset )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
@@ -233,8 +235,8 @@ create_container_eth1_phys () {
 	cname=bft-node-$dev
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset )):22 \
-		-p $(( 8000 + $offset )):8080 \
+		-p $(( $STARTSSHPORT + $offset )):22 \
+		-p $(( $STARTWEBPORT + $offset )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
@@ -253,8 +255,8 @@ create_container_eth1_wifi () {
 	cname=bft-node-$dev
 	docker stop $cname && docker rm $cname
 	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( 5000 + $offset )):22 \
-		-p $(( 8000 + $offset )):8080 \
+		-p $(( $STARTSSHPORT + $offset )):22 \
+		-p $(( $STARTWEBPORT + $offset )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
