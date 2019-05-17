@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2cd0bb36_dcd0c0c4",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-17T15:10:39Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "68b71c16_e5db0ade",
+      "revId": "041ba80b252005cfa9812506f70dd6efadd9d64e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7e2114e4_710326e0",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "5aaefbf7_19fb5c2c",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-17T15:10:39Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "7e2114e4_710326e0",
+      "revId": "041ba80b252005cfa9812506f70dd6efadd9d64e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d537774b_f17ab079",
         "filename": "devices/windows_telnet.py",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2019-05-14T19:27:04Z",
       "side": 1,
       "message": "The current API returns one address, we can\u0027t return a list here when other functions expect a string. \n\nYou can make another function that returns all addresses... that or we need to refactor all call sites that use get_interface_ip6addr to expect a list instead of a string.",
+      "revId": "041ba80b252005cfa9812506f70dd6efadd9d64e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ecb6cd19_c53872ce",
+        "filename": "devices/windows_telnet.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-05-17T15:10:39Z",
+      "side": 1,
+      "message": "I just re-committed with returning one IPv6 address",
+      "parentUuid": "d537774b_f17ab079",
       "revId": "041ba80b252005cfa9812506f70dd6efadd9d64e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
