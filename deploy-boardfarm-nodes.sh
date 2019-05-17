@@ -265,6 +265,31 @@ create_container_eth1_wifi () {
 	docker exec $cname ip link set wlan1 up
 }
 
+#voice container
+create_container_voice () {
+    #will be from /dev ACM dev name
+    local dev=$1
+    #keep offset as 40000
+    local offset=${2:-1}
+    local proxy_dir=${3:-"0"}
+    local proxy_ip=${4:-"0"}
+
+    cname=bft-node-$dev
+    docker stop $cname && docker rm $cname
+    docker run --name $cname --privileged -h $cname --restart=always \
+    -p $(( 4000 + $offset )):22 \
+    -d $BF_IMG /usr/sbin/sshd -D
+
+    #add proxy details if specified
+    local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
+    then
+        docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
+        docker exec $cname ip route add $proxy_ip via $docker_gw_ip
+    fi
+    docker exec $cname ln -s /dev/tty$dev  /root/line-$dev
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
