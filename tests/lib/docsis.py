@@ -72,6 +72,8 @@ class docsis:
         def encode_mta():
             mtacfg_name=self.file.replace('.txt', '.bin')
             mtacfg_path=os.path.join(self.dir_path, mtacfg_name)
+            if os.path.isfile(mtacfg_path):
+                os.remove(mtacfg_path)
             tclsh = Tkinter.Tcl()
             tclsh.eval("source %s/mta_conf_Proc.tcl" % os.path.dirname(__file__))
             tclsh.eval("run [list %s -e -hash eu -out %s]" % (self.file_path, mtacfg_path))
@@ -82,6 +84,8 @@ class docsis:
         def encode_cm():
             cmcfg_name=self.file.replace('.txt', '.cfg')
             cmcfg_path=os.path.join(self.dir_path, cmcfg_name)
+            if os.path.isfile(cmcfg_path):
+                os.remove(cmcfg_path)
             print("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
             os.system("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
             assert os.path.exists(cmcfg_path)
