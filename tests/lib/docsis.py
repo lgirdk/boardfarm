@@ -22,13 +22,25 @@ class docsis:
         encode(output_type='cm_cfg')
             return output file name(.cfg or .bin)
     """
-    def __init__(self, file_or_obj, tmpdir=None):
+
+    mibs_path_arg = ""
+    def __init__(self, file_or_obj, tmpdir=None, mibs_paths=None):
         # TODO: fix at some point, this tmpdir is already relative to the CM config you
         # are grabbing? Not ideal as that dir might not be writeable, or a tftp or http URL
         # at some point - need to use a real local tmpdir or maybe even results so we can
         # save the resulting artifacts in other tools
         if tmpdir is None:
             tmpdir = os.path.join('tmp', config.board['station'])
+
+        from devices import board
+        if mibs_paths is None and hasattr(board, 'mibs_paths'):
+            default = os.path.expandvars('/home/$USER/.snmp/mibs:/usr/share/snmp/mibs:/usr/share/snmp/mibs/iana:/usr/share/snmp/mibs/ietf:/usr/share/mibs/site:/usr/share/snmp/mibs:/usr/share/mibs/iana:/usr/share/mibs/ietf:/usr/share/mibs/netsnmp')
+            mibs_path_arg = "-M "  + default
+
+            for mibs_path in board.mibs_paths:
+                mibs_path_arg = mibs_path_arg + ":" + mibs_path
+
+            self.mibs_path_arg = mibs_path_arg
 
         # TODO: this is all a bit wild here, need to clean up everything..
         if isinstance(file_or_obj, cm_cfg):
@@ -86,8 +98,8 @@ class docsis:
             cmcfg_path=os.path.join(self.dir_path, cmcfg_name)
             if os.path.isfile(cmcfg_path):
                 os.remove(cmcfg_path)
-            print("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
-            os.system("docsis -e %s /dev/null %s" % (self.file_path, cmcfg_path))
+            print("docsis %s -e %s /dev/null %s" % (self.mibs_path_arg, self.file_path, cmcfg_path))
+            os.system("docsis %s -e %s /dev/null %s" % (self.mibs_path_arg, self.file_path, cmcfg_path))
             assert os.path.exists(cmcfg_path)
 
             return cmcfg_path
