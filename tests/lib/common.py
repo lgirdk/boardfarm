@@ -112,6 +112,11 @@ def firefox_webproxy_driver(ipport):
     profile.set_preference("network.proxy.socks", ip)
     profile.set_preference("network.proxy.socks_port", int(port))
     profile.set_preference("network.proxy.socks_remote_dns", True)
+    profile.set_preference("browser.download.dir", os.getcwd());
+    #number 2 is to save the file to the above current location instead of downloads
+    profile.set_preference("browser.download.folderList", 2)
+    #added this line to open the file without asking any questions
+    profile.set_preference("browser.helperApps.neverAsk.openFile", "text/anytext,text/comma-separated-values,text/csv,application/octet-stream")
     profile.update_preferences()
     driver = webdriver.Firefox(firefox_profile=profile)
     driver.implicitly_wait(30)
