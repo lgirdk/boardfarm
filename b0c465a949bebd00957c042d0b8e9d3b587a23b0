@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "620a94b5_44b85ca2",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "no",
+      "parentUuid": "1efa1c96_1682f998",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "be69feeb_032c282e",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2019-05-14T20:44:28Z",
       "side": 1,
       "message": "Seems like you would lose the interfaces from the config file? Maybe invert the logic?\n\nif iface is None:\n   iface \u003d self.interfaces\n\nThen use iface in the rest of the function.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40b2e05b_00fa554b",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "there was a reason why i did this..... will get back to you :-O",
+      "parentUuid": "be69feeb_032c282e",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "c8111980_b1e4cefe",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "Ack, the idea was to force  the user to know what s/he was doing, as entering the wrong value can by quite destructive (imagine the wrong iface, and it is a vlan one, all the vlan containers will go...)\nBut i will change it for conveninence",
+      "parentUuid": "87bb7359_77f2fd8b",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "03c58a17_46facb49",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "ccf22843_1bb2c833",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "no",
+      "parentUuid": "03c58a17_46facb49",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "535e7f66_fdb6d59e",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -81,6 +153,24 @@
       "writtenOn": "2019-05-14T20:44:28Z",
       "side": 1,
       "message": "This whole port mess can be majorly simplified by just using ephemeral ports:\n\n$ docker run -it -p 22 bft:node\n\nThen it picks a random port:\n\n8ac5a6092b3b        bft:node                          \"bash\"                   10 seconds ago      Up 9 seconds           0.0.0.0:32769-\u003e22/tcp                                                                                                                                                                        pedantic_lichterman\n\nYou\u0027d have to figure it out, but that should not be too hard.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9063ec8b_22df6e3f",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "True, the whole mess was to keep the numbering consistent, but the ephemeral port is a good idea... will look into finding out which port are assigned on the fly.",
+      "parentUuid": "535e7f66_fdb6d59e",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "f1db0148_ade8a71c",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "Ketan has the answer.",
+      "parentUuid": "bf691e7c_3c7be960",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5d599d0e_f9216972",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -118,6 +226,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "004e6b42_164a8980",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "very long line, i will split it",
+      "parentUuid": "5d599d0e_f9216972",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -138,6 +264,24 @@
     },
     {
       "key": {
+        "uuid": "60a58d9f_fa23ad1b",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "Ack, and again i did not think of it, more elegant too",
+      "parentUuid": "bdb6626d_fcb917e2",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c7a22c3b_db2d25b0",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "fbc11773_01097843",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c7a22c3b_db2d25b0",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b830106d_01d266e5",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -166,6 +328,24 @@
       "writtenOn": "2019-05-14T20:44:28Z",
       "side": 1,
       "message": "Confused... maybe the free open port will help here.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0351beb5_bb05ce51",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "it was Ketan\u0027s way of keeping track of the port numbering, for vlan we go by 100, for direct by 10\nwe were trying to be consistent with the current ports numbering",
+      "parentUuid": "b830106d_01d266e5",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -189,6 +369,24 @@
     },
     {
       "key": {
+        "uuid": "f3084525_e92ff1b6",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "the  /proc/net/vlan/config is not populated with macvtap, it shows empty. We discovered this while testing GUI (which gets the proxy)\nroot@bft-node-enp1s0-106-0:~# cat /proc/net/vlan/config\nVLAN Dev name  | VLAN ID\nName-Type: VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD\nroot@bft-node-enp1s0-106-0:~#",
+      "parentUuid": "29144633_6f396c5d",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "90bbc4c7_ad13d1f9",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -203,6 +401,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b413bf08_6f0fc0ea",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "90bbc4c7_ad13d1f9",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -223,6 +439,24 @@
     },
     {
       "key": {
+        "uuid": "bab62890_9191c086",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "define track....",
+      "parentUuid": "dc8c4d99_b474b71f",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e09ab840_fa925ece",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -234,6 +468,24 @@
       "writtenOn": "2019-05-14T20:44:28Z",
       "side": 1,
       "message": "Can\u0027t we just run start_lan_client on the new devices? I\u0027d prefer the tests themselves do this.",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "80cd8eef_ca9877fc",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-20T13:14:00Z",
+      "side": 1,
+      "message": "good point, did not think of it.",
+      "parentUuid": "e09ab840_fa925ece",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
