@@ -123,9 +123,14 @@ shared-network boardfarm {
             option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
             option docsis.syslog-servers ###PROV_IPV6### ;
             option docsis.time-offset 5000;
-        }
+        }'''
+
+        if self.cm_network_v6 != self.open_network_v6:
+            to_send = to_send + '''
     }
-    subnet6 ###OPEN_NETWORK_V6### {
+    subnet6 ###OPEN_NETWORK_V6### {'''
+
+        to_send = to_send + '''
         pool6 {
             range6 ###OPEN_NETWORK_V6_START### ###OPEN_NETWORK_V6_END###;
             allow members of "EROUTER";
