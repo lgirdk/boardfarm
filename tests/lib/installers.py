@@ -633,7 +633,7 @@ def install_pjsua(device):
     '''Install softphone if not present.'''
     try:
         device.sendline('ldconfig -p | grep pj')
-        device.expect(['libpjsua\.so\.2\s\(libc6\,x86\-64\)']
+        device.expect(['libpjsua\.so\.2\s\(libc6\,x86\-64\)'])
         device.expect(device.prompt)
     except:
         install_make(device)
