@@ -1,0 +1,157 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cb7fcd5a_4f9a0c0f",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "Ideally this was a separate commit. That said refactor SSH and WEB ports to have overridable default.\n\nI would not normally block on this though, but there are other comments I must block on below.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f762ffe8_202ccdaa",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "This is cool- a blurb above documenting the theory of this function would be nice.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dc6989fe_e3106989",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "Can\u0027t reorder these, we depend on default_route being the 3rd argument and ip being the second argument.\n\nDidn\u0027t I see this change in another commit too?",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "28750b75_c25441b4",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "If we repeat this a lot it would be ideal to make a function.\n\nAlso, I don\u0027t think we should be installing things in this step. What if we use docker factory to make wifi containers? It will take forever to run this step. Also, don\u0027t want to depend on network connectivity to start a container.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "88d68193_28ad4ff6",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "Is there a difference between eth0 and eth0.$vlan as far as docker is concerned? You can map both these into a container.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "176c7786_dd34148b",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "I really think, esp. since we use the python to start these, we can use random ports:\n\n$ docker run -p 22 bft:node /usr/sbin/sshd -D\n$ docker ps\n1ba1773372b4        bft:node            \"/usr/sbin/sshd -D\"   20 seconds ago      Up 19 seconds       0.0.0.0:32769-\u003e22/tcp                          blissful_volhard\n\nAnd parse the port and use that.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "15bcffc4_60f0d133",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "still untested?",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dcff773b_a1142456",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 408,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "I think this can just take an ethernet interface as an argument- it should not have to worry about vlan. It should assume the underlying interface is there.\n\nOther setup scripts should make the required vlan interfaces before calling this. This would greatly simplify all this.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a4b85bff_3cebe970",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:48:38Z",
+      "side": 1,
+      "message": "this should not care about the VLAN, just the interface name.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
