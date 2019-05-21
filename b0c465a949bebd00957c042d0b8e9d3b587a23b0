@@ -177,6 +177,24 @@
     },
     {
       "key": {
+        "uuid": "11f5ada9_7db5a0f6",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:56:51Z",
+      "side": 1,
+      "message": "that can come in v2, just wanted you to know... should make the coder easier",
+      "parentUuid": "9063ec8b_22df6e3f",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bf691e7c_3c7be960",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -206,6 +224,24 @@
       "side": 1,
       "message": "Ketan has the answer.",
       "parentUuid": "bf691e7c_3c7be960",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed7e4261_59b96209",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:56:51Z",
+      "side": 1,
+      "message": "probably when we create them? i think we should assume an interface passed in will exist. So the deploy scripts should create all the VLAN interfaces before we run boardfarm scripts.",
+      "parentUuid": "f1db0148_ade8a71c",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -457,6 +493,24 @@
     },
     {
       "key": {
+        "uuid": "9bc1efe4_b2c9f347",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:56:51Z",
+      "side": 1,
+      "message": "Don\u0027t remember my thought process before.",
+      "parentUuid": "bab62890_9191c086",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e09ab840_fa925ece",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -504,6 +558,24 @@
       "side": 1,
       "message": "Ketan wanted me to add the ntpdate here. which will ojnly work if a container has an IP.....",
       "parentUuid": "80cd8eef_ca9877fc",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c1a6927_2daa6294",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:56:51Z",
+      "side": 1,
+      "message": "Hmmm, can we just add that to start_lan_client()? Or just require whomever needs it to run it? We don\u0027t need to be adding anything extra to this, this class just starts containers.",
+      "parentUuid": "de43fe80_42ca3739",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
