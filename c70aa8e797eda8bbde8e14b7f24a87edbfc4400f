@@ -50,6 +50,24 @@
       "revId": "c70aa8e797eda8bbde8e14b7f24a87edbfc4400f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "13bad1d3_f9510386",
+        "filename": "tests/lib/installers.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 635,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-05-21T15:38:17Z",
+      "side": 1,
+      "message": "I added the send line inside the try block. It is working!",
+      "parentUuid": "aa697d80_9ab6e2ef",
+      "revId": "c70aa8e797eda8bbde8e14b7f24a87edbfc4400f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
