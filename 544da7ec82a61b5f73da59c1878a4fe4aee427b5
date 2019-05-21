@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8481a80c_ed3ab17a",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:32:34Z",
+      "side": 0,
+      "message": "I think you need to leave this function, even if its a wrapper that calls the updated create_container_eth1_static() function- other scripts can rely on this existing.",
+      "revId": "544da7ec82a61b5f73da59c1878a4fe4aee427b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
