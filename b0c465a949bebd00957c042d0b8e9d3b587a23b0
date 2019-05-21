@@ -388,6 +388,24 @@
     },
     {
       "key": {
+        "uuid": "cb8b7ed6_d92b51ab",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:58:25Z",
+      "side": 1,
+      "message": "hopefully we can switch to random open port soon ;-)",
+      "parentUuid": "0351beb5_bb05ce51",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29144633_6f396c5d",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -417,6 +435,41 @@
       "side": 1,
       "message": "the  /proc/net/vlan/config is not populated with macvtap, it shows empty. We discovered this while testing GUI (which gets the proxy)\nroot@bft-node-enp1s0-106-0:~# cat /proc/net/vlan/config\nVLAN Dev name  | VLAN ID\nName-Type: VLAN_NAME_TYPE_RAW_PLUS_VID_NO_PAD\nroot@bft-node-enp1s0-106-0:~#",
       "parentUuid": "29144633_6f396c5d",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "076bbf67_fff5c09a",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:58:25Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "f3084525_e92ff1b6",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "370cb4f3_57bcd2e0",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-21T20:58:25Z",
+      "side": 1,
+      "message": "vlan is kind of useful for the name...",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
