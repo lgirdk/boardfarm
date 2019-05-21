@@ -489,6 +489,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de43fe80_42ca3739",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-21T07:02:11Z",
+      "side": 1,
+      "message": "Ketan wanted me to add the ntpdate here. which will ojnly work if a container has an IP.....",
+      "parentUuid": "80cd8eef_ca9877fc",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
