@@ -3,6 +3,7 @@ import os
 import pexpect
 from lib.regexlib import ValidIpv4AddressRegex
 from lib.docsis import docsis, cm_cfg
+import re
 
 from devices import DebianBox
 
@@ -46,8 +47,9 @@ class DebianISCProvisioner(DebianBox):
         self.open_network_v6_end = ipaddress.IPv6Address(kwargs.pop('open_network_v6_end', u"2001:dead:beef:6::100"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
         self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
-	self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
-	self.time_server = ipaddress.IPv4Address(kwargs.pop('time_server', self.prov_ip))
+        self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
+        self.time_server = ipaddress.IPv4Address(kwargs.pop('time_server', self.prov_ip))
+        self.timezone = self.get_timzone_offset(kwargs.pop('timezone', u"UTC"))
         self.syslog_server = ipaddress.IPv4Address(kwargs.pop('syslog_server', self.prov_ip))
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
@@ -125,6 +127,7 @@ shared-network boardfarm {
             option docsis.syslog-servers ###PROV_IPV6### ;
             option docsis.time-offset 5000;
             option docsis.PKTCBL-CCCV4 1 4 ###MTA_DHCP_SERVER1### 2 4 ###MTA_DHCP_SERVER2###;
+            option docsis.time-offset ###TIMEZONE###;
         }'''
 
         if self.cm_network_v6 != self.open_network_v6:
@@ -158,6 +161,7 @@ EOF'''
         to_send = to_send.replace('###EROUTER_PREFIX###', str(self.ipv6_prefix))
         to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
         to_send = to_send.replace('###MTA_DHCP_SERVER2###', str(self.prov_ip))
+        to_send = to_send.replace('###TIMEZONE###', str(self.timezone))
         # TODO: add ranges for subnet's, syslog server per CM
 
         self.sendline(to_send)
@@ -253,7 +257,7 @@ shared-network boardfarm {
     option broadcast-address ###CM_BROADCAST###;
     option dhcp-parameter-request-list 43;
     option domain-name "local";
-    option time-offset 1;
+    option time-offset ###TIMEZONE###;
     option tftp-server-name "###DEFAULT_TFTP_SERVER###";
     option docsis-mta.dhcp-server-1 ###MTA_DHCP_SERVER1###;
     option docsis-mta.dhcp-server-2 ###MTA_DHCP_SERVER2###;
@@ -263,7 +267,7 @@ shared-network boardfarm {
   {
     option routers ###MTA_GATEWAY###;
     option broadcast-address ###MTA_BROADCAST###;
-    option time-offset 1;
+    option time-offset ###TIMEZONE###;
     option domain-name-servers ###PROV###;
     option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
     option docsis-mta.provision-server 0 ###MTA_SIP_FQDN### ;
@@ -273,7 +277,7 @@ shared-network boardfarm {
     option routers ###OPEN_GATEWAY###;
     option broadcast-address ###OPEN_BROADCAST###;
     option domain-name "local";
-    option time-offset 1;
+    option time-offset ###TIMEZONE###;
     option domain-name-servers ###PROV###;
   }
   pool {
@@ -293,7 +297,7 @@ EOF'''
 
         to_send = to_send.replace('###LOG_SERVER###', str(self.syslog_server))
         to_send = to_send.replace('###TIME_SERVER###', str(self.time_server))
-	to_send = to_send.replace('###MTA_SIP_FQDN###', str(self.sip_fqdn))
+        to_send = to_send.replace('###MTA_SIP_FQDN###', str(self.sip_fqdn))
         to_send = to_send.replace('###NEXT_SERVER###', str(self.prov_ip))
         to_send = to_send.replace('###IFACE###', str(self.iface_dut))
         to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
@@ -320,9 +324,10 @@ EOF'''
         to_send = to_send.replace('###OPEN_END_RANGE###', str(self.open_network[60]))
         to_send = to_send.replace('###OPEN_GATEWAY###', str(self.open_gateway))
         to_send = to_send.replace('###OPEN_BROADCAST###', str(self.open_network[-1]))
+        to_send = to_send.replace('###TIMEZONE###', str(self.timezone))
 
         self.sendline(to_send)
-	self.expect(self.prompt)
+        self.expect(self.prompt)
 
         self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
         self.expect(self.prompt)
@@ -358,6 +363,22 @@ EOF'''
         self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
+    def get_timzone_offset(self,timezone):
+        if timezone == "UTC":
+            return 0
+        if timezone.startswith("GMT") or timezone.startswith("UTC"):
+            try:
+                offset = int(re.search(r"[\W\D\S]?\d{1,2}",timezone).group(0))
+            except:
+            # In case a value was not provided, will throw an Attribute error
+                return 0
+            # offset should be from GMT -11 to GMT 12
+            if offset in range(-11,13):
+                return 3600 * offset
+            else:
+                print("Invalid Timezone. Using UTC standard")
+                return 0
+
     def update_cmts_isc_dhcp_config(self, board_config):
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
@@ -380,9 +401,13 @@ EOF'''
             board_config['extra_provisioning']["cm"] = \
                 { "hardware ethernet": board_config['cm_mac'],
                      "options": { "domain-name-servers": "%s" % self.prov_ip,
-                                  "time-offset": "-25200"
+                                  "time-offset": "%s" % str(self.timezone)
                                 }
                 }
+
+        # since it skips the previous condition if extra prov is provided
+        board_config['extra_provisioning']["cm"]["options"]["time-offset"] = "%s" % str(self.timezone)
+
         if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["erouter"] = \
                 { "hardware ethernet": board_config['erouter_mac'],
