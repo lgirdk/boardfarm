@@ -183,6 +183,10 @@ class wifi_stub():
     # The above variable can tweak the behavior of the below functions
     # If it is set to True, it will apply the changes after setting wifi parameters
     # If it is set to False, it will not save any changes & apply_changes() will be skipped
+    connect_device = True
+    # The above variable can tweak the behavior of the below functions
+    # If it is set to True, it will connect with the device
+    # If it is set to False, it will not connect with the device
     def enable_wifi(self, *args, **kwargs):
         raise Exception("Not implemented!")
     def set_ssid(self, *args, **kwargs):
@@ -225,6 +229,9 @@ class wifi_stub():
         pass
     def apply_changes(self):
         '''This function used to save the configs to be modified'''
+        pass
+    def restart_tr069(self):
+        '''This function used to connect with the tr069 device'''
         pass
 
 class wifi_client_stub():
