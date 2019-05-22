@@ -296,7 +296,9 @@ create_container_eth1_phys () {
 # eth0 is docker private network, eth1 with device
 create_container_eth1_wifi () {
 	local dev=$1
-	local offset=$2
+	local offset=${2:-40000}
+	local proxy_dir=${3:-"0"}
+	local proxy_ip=${4:-"0"}
 
 	cname=bft-node-$dev
 	docker stop $cname && docker rm $cname
@@ -305,10 +307,20 @@ create_container_eth1_wifi () {
 		-p $(( $STARTWEBPORT + $offset )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
+	isolate_management ${cname}
+
+	#add proxy details if specified
+	local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+	if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
+	then
+		docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
+		docker exec $cname ip route add $proxy_ip via $docker_gw_ip table mgmt
+	fi
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
 	isolate_management ${cname}
 
 	# create lab network access port
+	sudo rfkill unblock wifi
 	sudo iw phy $(cat /sys/class/net/"$dev"/phy80211/name) set netns $cspace
 	docker exec $cname ip link set $dev name wlan1
 	docker exec $cname ip link set wlan1 up
