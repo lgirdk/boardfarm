@@ -93,6 +93,7 @@ option docsis.device-id code 36 = string;
 option docsis.time-servers code 37 = array of ip6-address;
 option docsis.time-offset code 38 = signed integer 32;
 option docsis.cm-mac-address code 1026 = string;
+option docsis.PKTCBL-CCCV4 code 2170 = { integer 16, integer 16, ip-address, integer 16, integer 16, ip-address };
 option vsio.docsis code 4491 = encapsulate docsis;
 
 # TODO: move to host section
@@ -123,6 +124,7 @@ shared-network boardfarm {
             option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
             option docsis.syslog-servers ###PROV_IPV6### ;
             option docsis.time-offset 5000;
+            option docsis.PKTCBL-CCCV4 1 4 ###MTA_DHCP_SERVER1### 2 4 ###MTA_DHCP_SERVER2###;
         }'''
 
         if self.cm_network_v6 != self.open_network_v6:
@@ -154,6 +156,8 @@ EOF'''
         to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[0]))
         to_send = to_send.replace('###EROUTER_NET_END###', str(self.erouter_net[-ipaddress.IPv6Network(u'::0/%s' % self.ipv6_prefix).num_addresses]))
         to_send = to_send.replace('###EROUTER_PREFIX###', str(self.ipv6_prefix))
+        to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
+        to_send = to_send.replace('###MTA_DHCP_SERVER2###', str(self.prov_ip))
         # TODO: add ranges for subnet's, syslog server per CM
 
         self.sendline(to_send)
@@ -172,6 +176,7 @@ EOF'''
         if 'options' not in board_config['extra_provisioning_v6']['cm']:
             board_config['extra_provisioning_v6']['cm']['options'] = {}
         board_config['extra_provisioning_v6']['cm']['options']['docsis.tftp-servers'] = tftp_server
+        board_config['extra_provisioning_v6']['cm']['options']['docsis.PKTCBL-CCCV4'] = "1 4 %s 1 4 %s" % (self.prov_ip, self.prov_ip)
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
