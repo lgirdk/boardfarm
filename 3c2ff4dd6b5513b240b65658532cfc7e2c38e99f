@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "043f540a_0e610129",
+        "filename": "tests/lib/wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T03:43:00Z",
+      "side": 1,
+      "message": "I don\u0027t think this belongs here, how is tr069 related to wifi? maybe one of the functions above would call this for the acs wifi class.",
+      "revId": "3c2ff4dd6b5513b240b65658532cfc7e2c38e99f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
