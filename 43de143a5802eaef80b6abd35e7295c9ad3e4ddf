@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "025caec1_b3a3505a",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T03:46:59Z",
+      "side": 1,
+      "message": "why do you call eval() here?",
+      "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5b942753_9095f31e",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T03:46:59Z",
+      "side": 1,
+      "message": "Does the time offset for all CMs on a particular provisioner should need to be the same? Maybe we can just drop the board specific one?",
+      "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
