@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "53b17e86_79436ef9",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 274,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T21:05:39Z",
+      "side": 1,
+      "message": "ehh, STARTSSHPORT is undefined... this needs to be rebased on top of the change that adds that.",
+      "revId": "a0ff9250389832a5e5a3e5b75840b7d5abdb5a18",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
