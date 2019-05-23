@@ -69,6 +69,24 @@
       "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fdf346e6_f3693d4e",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T21:07:45Z",
+      "side": 1,
+      "message": "I don\u0027t think we can for most parts, even then with one provisioner per CM it would still be one fixed time-server. So we can drop this in a later commit.",
+      "parentUuid": "3bf1de2b_8510bb2a",
+      "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
