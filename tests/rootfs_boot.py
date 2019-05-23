@@ -181,8 +181,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             wan_ipv6 = False
             erouter_ipv4 = False
             erouter_ipv6 = False
-            mta_ipv4 = False
-            mta_ipv6 = False # Never possible on any boards?
+            mta_ipv4 = True
+            mta_ipv6 = False # Not in spec
 
             cm_configmode = board.cm_cfg.cm_configmode
 
@@ -199,8 +199,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             if cm_configmode == 'dual-stack':
                 wan_ipv4 = erouter_ipv4 = True
                 wan_ipv6 = erouter_ipv6 = True
-                # TODO: mta does not come up in this mode now, to b e fixed
-            # TODO: no ipv6 only TLV?!?
 
             while (time.time() - start_time < time_for_provisioning):
                 try:
