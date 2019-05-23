@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "da198aff_7e47935c",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 365,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-23T15:34:32Z",
+      "side": 1,
+      "message": "I\u0027ll replace this with int()",
+      "parentUuid": "025caec1_b3a3505a",
+      "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5b942753_9095f31e",
         "filename": "devices/debian_isc.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-05-23T03:46:59Z",
       "side": 1,
       "message": "Does the time offset for all CMs on a particular provisioner should need to be the same? Maybe we can just drop the board specific one?",
+      "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3bf1de2b_8510bb2a",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 403,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-05-23T15:34:32Z",
+      "side": 1,
+      "message": "Yes all of them need to be the same. Time server and Provisioner needs to be on per MAC domain basis. Unless we want to overkill having provisioner per CM.",
+      "parentUuid": "5b942753_9095f31e",
       "revId": "43de143a5802eaef80b6abd35e7295c9ad3e4ddf",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
