@@ -22,6 +22,30 @@
       "revId": "71404817d70d7fd18382cdebf4e12e35f986a740",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7053750b_8c83316f",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-23T14:47:33Z",
+      "side": 1,
+      "message": "Please make this depend on the other commit providing this change.",
+      "parentUuid": "ba13a3f0_4286c9f8",
+      "range": {
+        "startLine": 258,
+        "startChar": 0,
+        "endLine": 260,
+        "endChar": 0
+      },
+      "revId": "71404817d70d7fd18382cdebf4e12e35f986a740",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
