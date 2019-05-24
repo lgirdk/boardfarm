@@ -40,6 +40,8 @@ class CasaCMTS(base.BaseDevice):
         self.connect()
         self.logfile_read = sys.stdout
 
+        self.name = kwargs.get('name', 'casa_cmts')
+
     def connect(self):
         try:
             try:
