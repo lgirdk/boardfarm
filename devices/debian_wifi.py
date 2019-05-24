@@ -9,6 +9,9 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
     model = ('debianwifi')
     iface_wlan = "wlan0"
+    iface_dut = "wlan0"
+
+    # TODO: this should not be here
     iface_wlan1 = "wlan1"
 
     def disable_and_enable_wifi(self, iface):
