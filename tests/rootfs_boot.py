@@ -224,7 +224,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 except KeyboardInterrupt:
                     raise
                 except:
-                    if time.time() - start_time < time_for_provisioning:
+                    if time.time() - start_time > time_for_provisioning:
                         raise
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
