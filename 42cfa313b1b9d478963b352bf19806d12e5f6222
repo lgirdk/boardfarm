@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2a95b7f7_7abd7ac8",
+        "filename": "tests/DynamicConatiners.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:11:55Z",
+      "side": 1,
+      "message": "you may have a point, maybe we were overthinking it.\ni will try reworking it.",
+      "parentUuid": "b7c47c83_cb744ffa",
+      "revId": "42cfa313b1b9d478963b352bf19806d12e5f6222",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a02152dc_c73e029e",
         "filename": "tests/DynamicConatiners.py",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "793e51f3_5100d90b",
+        "filename": "tests/DynamicConatiners.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:11:55Z",
+      "side": 1,
+      "message": "We did not think it so flexible. We made it as easy (but not as pretty) as we could. loop thought the ifaces, and spawn per iface.\nBut yes, we could have more flexibility (in the near future)",
+      "parentUuid": "a02152dc_c73e029e",
+      "revId": "42cfa313b1b9d478963b352bf19806d12e5f6222",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "14027ec5_e8994e77",
         "filename": "tests/DynamicConatiners.py",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2019-05-14T21:11:31Z",
       "side": 1,
       "message": "I guess they should be be kept around for later reuse",
+      "revId": "42cfa313b1b9d478963b352bf19806d12e5f6222",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "680ae4d3_039d9c47",
+        "filename": "tests/DynamicConatiners.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:11:55Z",
+      "side": 1,
+      "message": "TBH this was just a test to validate that the class did what it was supposed to.\nThere will be a proper web server/client class for the dyn container testing",
+      "parentUuid": "14027ec5_e8994e77",
       "revId": "42cfa313b1b9d478963b352bf19806d12e5f6222",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
