@@ -406,6 +406,24 @@
     },
     {
       "key": {
+        "uuid": "0a187f22_42cffaa7",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:33:46Z",
+      "side": 1,
+      "message": "i will try, he, K, won\u0027t like it for some reason. The only possible snag, from reading on the web, is that there maybe race conditions if there are requests made in parallel. but i will try it anyway.",
+      "parentUuid": "cb8b7ed6_d92b51ab",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29144633_6f396c5d",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -564,6 +582,24 @@
     },
     {
       "key": {
+        "uuid": "f33e4dc2_403d1a99",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:33:46Z",
+      "side": 1,
+      "message": "we do need to have them somewhere (i.e. a list) so the test can access them.",
+      "parentUuid": "9bc1efe4_b2c9f347",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e09ab840_fa925ece",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -629,6 +665,24 @@
       "side": 1,
       "message": "Hmmm, can we just add that to start_lan_client()? Or just require whomever needs it to run it? We don\u0027t need to be adding anything extra to this, this class just starts containers.",
       "parentUuid": "de43fe80_42ca3739",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "415679e2_306d5d81",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-05-28T21:33:46Z",
+      "side": 1,
+      "message": "maybe....  i see your point, you are given a bare container, and do as you see fit.\nwe have made a few assumptions here. Maybe going minimalist is the way forward",
+      "parentUuid": "1c1a6927_2daa6294",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
