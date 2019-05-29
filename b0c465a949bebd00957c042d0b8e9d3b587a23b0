@@ -424,6 +424,24 @@
     },
     {
       "key": {
+        "uuid": "bd025637_e5d29663",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-29T18:19:29Z",
+      "side": 1,
+      "message": "hmm, im sure it will be fine. we can constrict to a range if required.",
+      "parentUuid": "0a187f22_42cffaa7",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29144633_6f396c5d",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -600,6 +618,24 @@
     },
     {
       "key": {
+        "uuid": "9c8b0872_13d9bbd9",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-29T18:19:29Z",
+      "side": 1,
+      "message": "if they are in devices namespace, you can just import them... they need unique names.",
+      "parentUuid": "f33e4dc2_403d1a99",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e09ab840_fa925ece",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -683,6 +719,24 @@
       "side": 1,
       "message": "maybe....  i see your point, you are given a bare container, and do as you see fit.\nwe have made a few assumptions here. Maybe going minimalist is the way forward",
       "parentUuid": "1c1a6927_2daa6294",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca25ab97_db2e0eeb",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-29T18:19:29Z",
+      "side": 1,
+      "message": "good deal",
+      "parentUuid": "415679e2_306d5d81",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
