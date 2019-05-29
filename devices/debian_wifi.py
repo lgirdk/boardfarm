@@ -3,13 +3,14 @@ import debian
 import pexpect
 from countrycode import countrycode
 from lib.wifi import wifi_client_stub
+from lib.network_testing import ping
 
 class DebianWifi(debian.DebianBox, wifi_client_stub):
     '''Extension of Debian class with wifi functions'''
 
     model = ('debianwifi')
-    iface_wlan = "wlan0"
-    iface_wlan1 = "wlan1"
+    iface_wlan = iface_dut = "wlan0"
+    iface_wlan1 = iface_dut1 = "wlan1"
 
     def disable_and_enable_wifi(self, iface):
        self.disable_wifi(iface)
@@ -41,7 +42,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         else:
             return False
 
-    def wifi_connect(self, iface, ssid_name, password=None, security_mode=None):
+    def wifi_connect(self, redis_class, iface, ssid_name, password=None, security_mode=None):
         if password == None:
             self.sudo_sendline("iwconfig %s essid %s" % (iface,ssid_name))
         else:
@@ -78,7 +79,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         output = self.sudo_sendline("iw dev %s disconnect" % iface)
         self.expect(self.prompt)
 
-    def wifi_disconnect(self, iface):
+    def wifi_disconnect(self, redis_class, iface):
         self.disconnect_wpa()
         self.wlan_ssid_disconnect(iface)
 
@@ -98,14 +99,18 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.iface_dut = iface
         super(DebianWifi, self).start_lan_client()
 
-    def wifi_client_connect(self, iface, ssid_name, password=None, security_mode=None):
+    def wifi_client_connect(self, redis_class, iface, ssid_name, password=None, security_mode=None):
         '''Scan for SSID and verify connectivity'''
         self.disable_and_enable_wifi(iface)
         self.expect(pexpect.TIMEOUT, timeout=20)
         output = self.wifi_check_ssid(iface, ssid_name)
         assert output==True,'SSID value check in WLAN container'
 
-        conn_wifi = self.wifi_connect(iface, ssid_name, password)
+        conn_wifi = self.wifi_connect(redis_class, iface, ssid_name, password)
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify(iface)
         assert verify_connect==True,'Connection establishment in WIFI'
+
+    def wifi_ping(self, device, ping_ip):
+        output = ping(device, ping_ip)
+        return output
