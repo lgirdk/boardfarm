@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c0c47512_e8a5a1b5",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-05-29T14:22:00Z",
+      "side": 1,
+      "message": "This is too invasive... we don\u0027t need to pass around locking objects. This needs to be done generically at the test or device level...",
+      "revId": "cf9e752fb2c3fc708de7c83f0889ea8d30b516f3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
