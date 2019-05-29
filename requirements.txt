@@ -19,3 +19,4 @@ zeep
 matplotlib
 netaddr
 countrycode
+boto3
