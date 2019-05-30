@@ -88,9 +88,23 @@ def main():
     # Connect to any board in list
     connected_to_board = False
     random.shuffle(config.BOARD_NAMES)
-    if config.features == []:
-        # move boards with a feature to end of the list
-        config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=lambda x: 'feature' in config.boardfarm_config[x])
+
+    def sortFunc(x):
+        # TODO: add configurable priorities for each type of feature
+        # e.g. wifi is probably one we never want to use unless requested
+        if 'feature' in config.boardfarm_config[x]:
+            if type(config.boardfarm_config[x]['feature']) is list:
+                return len(config.boardfarm_config[x]['feature'])
+            else:
+                return 1
+        else:
+            return -1
+
+    print config.BOARD_NAMES
+    # move boards with a feature to end of the list
+    config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=sortFunc)
+    print config.BOARD_NAMES
+
     for name in config.BOARD_NAMES:
         try:
             config.board = config.boardfarm_config[name]
