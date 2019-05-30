@@ -28,7 +28,8 @@ def get_file_magic(fname, num_bytes=4):
 
 def copy_file_to_server(cmd, password, target="/tftpboot/"):
     '''Requires a command like ssh/scp to transfer a file, and a password.
-    Run the command and enter the password if asked for one.'''
+    Run the command and enter the password if asked for one.
+    NOTE: The command must print the filename once the copy has completed'''
     for attempt in range(5):
         try:
             print_bold(cmd)
@@ -46,6 +47,9 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
 
             fname = p.match.group(0).strip()
             print_bold("\nfile: %s" % fname)
+        except pexpect.EOF:
+            print_bold("EOF exception: unable to extract filename (should be echoed by command)!")
+            print_bold("EOF exception: command: %s"%cmd)
         except Exception as e:
             print_bold(e)
             print_bold("tried to copy file to server and failed!")
