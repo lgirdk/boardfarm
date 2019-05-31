@@ -132,3 +132,36 @@ You are seeing this message as your configuration is now using kermit instead of
         print("No BFT_CONFIG is set, do you need one?")
 
     return openwrt_router.OpenWrtRouter(model, **kwargs)
+
+def create_session(klass_name, name, ipaddr, port, color='green'):
+
+    """
+    Tries to create an object from a class. This is related to the classes
+    in the devices directory, where the CTOR creates a pexpect session.
+
+    Takes:
+    klass:  str, stringified class name (e.g. "DebianBox") this must exists as a class
+    name:   str, name attr to be assigned to the obj
+    ipaddr: str/IPAddress, IP adress for the pexpect session to login to
+    port:   int, port used for the login
+    color:  font coloUr
+    """
+    session = None
+
+    try:
+        klass = globals()[klass_name]
+
+        if "y" in os.getenv('BFT_DEBUG'):
+            print("Creating Session for: class= " + klass_name + ", name=" + name + ", ipaddr=" + ipaddr + ", port=" + str(port) + ", color=" + color)
+
+        session = klass('name', 'ipaddr', 'port', name   = name,
+                                                  ipaddr = ipaddr,
+                                                  port   = str(port),
+                                                  color  = color)
+    except Exception as e:
+        print(e)
+        # should this always fail? or should it be decided by the caller?
+        raise Exception('Failed to instantiate '+ name)
+
+    return session
+
