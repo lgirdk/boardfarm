@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "14741087_dfc3c4d5",
+        "filename": "tests/CommonFunctions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T16:03:08Z",
+      "side": 1,
+      "message": "can we prefix these? with selftest_\n\nAlso, let\u0027s start adding them in selftest.py",
+      "revId": "c42aaf1733d914b10accd6f8685e28ea44c83637",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "4eb432d4_6745b19c",
+        "filename": "testsuites.cfg",
+        "patchSetId": 1
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T16:03:08Z",
+      "side": 1,
+      "message": "can you make a new suite that is [selftest] and add it here with @selftest?\n\n[selftest]\nselftest_test_copy_file_to_server\n\n[travisci]\nRootFSBootTest\nKernelModules\nMemoryUse\nInterfacesShow\nLanDevPingRouter\nRouterPingWanDev\nLanDevPingWanDev\n@selftest\niPerf3Test",
+      "revId": "c42aaf1733d914b10accd6f8685e28ea44c83637",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
