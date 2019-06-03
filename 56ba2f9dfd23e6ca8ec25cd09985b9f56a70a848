@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cb6a20ca_4da4796c",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T17:11:21Z",
+      "side": 1,
+      "message": "I think we need  to do:\n\n*args, **kwargs\n\ninstead of name, ipaddr, port, color, etc\n\nbecause each class decides it\u0027s own args and they are defined in the JSON and imported as args and kwargs.",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "61ec2536_c0b0c237",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T17:11:21Z",
+      "side": 1,
+      "message": "I don\u0027t think we should catch this,let\u0027s keep it simple and drop the try/except",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "71570d60_85c15972",
+        "filename": "tests/CommonFunctions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T17:11:21Z",
+      "side": 1,
+      "message": "This looks good, please prefix like suggested in the other change",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00641040_eb09f8b4",
+        "filename": "testsuites.cfg",
+        "patchSetId": 2
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-03T17:11:21Z",
+      "side": 1,
+      "message": "see my comments about your other selftest_",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
