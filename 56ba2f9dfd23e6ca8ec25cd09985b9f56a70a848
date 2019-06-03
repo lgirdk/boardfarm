@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a6a36657_81663b59",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-03T19:33:28Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "cb6a20ca_4da4796c",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "61ec2536_c0b0c237",
         "filename": "devices/__init__.py",
         "patchSetId": 2
@@ -33,6 +51,24 @@
       "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2fe48149_a97fa350",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-03T19:33:28Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "61ec2536_c0b0c237",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
