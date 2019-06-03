@@ -100,10 +100,8 @@ def main():
         else:
             return -1
 
-    print config.BOARD_NAMES
     # move boards with a feature to end of the list
     config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=sortFunc)
-    print config.BOARD_NAMES
 
     for name in config.BOARD_NAMES:
         try:
