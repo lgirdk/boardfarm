@@ -132,3 +132,4 @@ You are seeing this message as your configuration is now using kermit instead of
         print("No BFT_CONFIG is set, do you need one?")
 
     return openwrt_router.OpenWrtRouter(model, **kwargs)
+
