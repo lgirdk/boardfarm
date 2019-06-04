@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "159ed826_bcde3886",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "We can\u0027t import this here because not all devices have a CMTS",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6cdcd551_7ce86df6",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "RootFSBoot test should not care about nosh image... we can\u0027t add this here...\n\nWe should not even rely on META_BUILD either... what are the ways we can detect a NOSH image? What if the image is ALREADY loaded on the board?",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c22aa56_c107385f",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "This method is useful but we need to move to functions in mv1 device class",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "da6d41b7_826d7ff0",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "Ideally, we just add this function to mv1 class, then we don\u0027t need to check for nosh image. Inside the device class, we can handle sh or nosh.",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f930d877_0e7e8f14",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "If we refactor this to a function on devices/linux.py we can run this by default and override in mv1 class for nosh image.",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29e15ff9_78e9f272",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "This entire provisioning block needs to move to a helper function or into mv1 device class... it\u0027s out of place here...",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "37ceff6d_6f167ca0",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-04T18:28:19Z",
+      "side": 1,
+      "message": "Again, if we handle this inside mv1 device class, this would *just work*... is there a mib to get uptime on mv1?",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
