@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "57b57398_0e0e6448",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-04T06:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a6a36657_81663b59",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "61ec2536_c0b0c237",
         "filename": "devices/__init__.py",
         "patchSetId": 2
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "929ca238_83149ed4",
+        "filename": "devices/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-04T06:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2fe48149_a97fa350",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "71570d60_85c15972",
         "filename": "tests/CommonFunctions.py",
         "patchSetId": 2
@@ -89,6 +125,24 @@
     },
     {
       "key": {
+        "uuid": "99e79a81_f75aa8da",
+        "filename": "tests/CommonFunctions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-04T06:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "71570d60_85c15972",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "00641040_eb09f8b4",
         "filename": "testsuites.cfg",
         "patchSetId": 2
@@ -103,6 +157,24 @@
       "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4a71299_fcecb0cb",
+        "filename": "testsuites.cfg",
+        "patchSetId": 2
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-04T06:34:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "00641040_eb09f8b4",
+      "revId": "56ba2f9dfd23e6ca8ec25cd09985b9f56a70a848",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
