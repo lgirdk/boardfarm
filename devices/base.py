@@ -270,3 +270,9 @@ class BaseDevice(pexpect.spawn):
             self.sendline("sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         self.expect(self.prompt)
 
+    def get_ipv4_time_server(self):
+        return None
+
+    def get_ipv6_time_server(self):
+        return None
+

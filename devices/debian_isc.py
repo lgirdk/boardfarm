@@ -615,3 +615,6 @@ EOF'''
 
         return True
 
+    def get_ipv4_time_server(self):
+        return self.time_server
+
