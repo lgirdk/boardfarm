@@ -12,7 +12,7 @@ import ipaddress
 
 from lib.network_helper import valid_ipv4, valid_ipv6
 
-from devices import board, wan, lan, prompt
+from devices import board, wan, lan, prompt, cmts
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
     '''Flashed image and booted successfully.'''
@@ -124,8 +124,16 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         board.linux_booted = True
         board.wait_for_linux()
         if self.config.META_BUILD and board.flash_meta_booted:
-            board.flash_meta(self.config.META_BUILD, wan, lan)
-        linux_booted_seconds_up = board.get_seconds_uptime()
+            if 'NOSH' in self.config.META_BUILD:
+                nosh_image = True
+                cm_mac = self.config.board['cm_mac']
+                wan_ip = cmts.get_cmip(cm_mac)
+            else:
+                nosh_image = False
+                wan_ip = None
+            board.flash_meta(self.config.META_BUILD, wan, lan, None, True, nosh_image, wan_ip)
+        if nosh_image == False:
+            linux_booted_seconds_up = board.get_seconds_uptime()
         # Retry setting up wan protocol
         if self.config.setup_device_networking:
             for i in range(2):
@@ -138,29 +146,31 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 except:
                     print("\nFailed to check/set the router's WAN protocol.")
                     pass
-            board.wait_for_network()
+            if nosh_image == False:
+                board.wait_for_network()
         board.wait_for_mounts()
 
-        # Give other daemons time to boot and settle
-        if self.config.setup_device_networking:
-            for i in range(5):
-                board.get_seconds_uptime()
-                time.sleep(5)
+        if nosh_image == False:
+            # Give other daemons time to boot and settle
+            if self.config.setup_device_networking:
+                for i in range(5):
+                    board.get_seconds_uptime()
+                    time.sleep(5)
 
-        try:
-            board.sendline("passwd")
-            board.expect("password:", timeout=8)
-            board.sendline("password")
-            board.expect("password:")
-            board.sendline("password")
+            try:
+                board.sendline("passwd")
+                board.expect("password:", timeout=8)
+                board.sendline("password")
+                board.expect("password:")
+                board.sendline("password")
+                board.expect(prompt)
+            except:
+                print("WARNING: Unable to set root password on router.")
+
+            board.sendline('cat /proc/cmdline')
             board.expect(prompt)
-        except:
-            print("WARNING: Unable to set root password on router.")
-
-        board.sendline('cat /proc/cmdline')
-        board.expect(prompt)
-        board.sendline('uname -a')
-        board.expect(prompt)
+            board.sendline('uname -a')
+            board.expect(prompt)
 
         # we can't have random messsages messages
         board.set_printk()
@@ -200,22 +210,23 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 wan_ipv4 = erouter_ipv4 = True
                 wan_ipv6 = erouter_ipv6 = True
 
+            cm_mac, mta_mac, erouter_mac = board.get_cm_macs()
             while (time.time() - start_time < time_for_provisioning):
                 try:
                     if wan_ipv4:
-                        valid_ipv4(board.get_interface_ipaddr(board.wan_iface))
+                        valid_ipv4(cmts.get_cmip(cm_mac))
                     if wan_ipv6:
-                        valid_ipv6(board.get_interface_ip6addr(board.wan_iface))
+                        valid_ipv6(cmts.get_cmipv6(cm_mac))
 
                     if hasattr(board, 'erouter_iface'):
                         if erouter_ipv4:
-                            valid_ipv4(board.get_interface_ipaddr(board.erouter_iface))
+                            valid_ipv4(cmts.get_ertr_ipv4(cm_mac))
                         if erouter_ipv6:
-                            valid_ipv6(board.get_interface_ip6addr(board.erouter_iface))
+                            valid_ipv6(cmts.get_ertr_ipv6(cm_mac))
 
                     if hasattr(board, 'mta_iface'):
                         if mta_ipv4:
-                            valid_ipv4(board.get_interface_ipaddr(board.mta_iface))
+                            valid_ipv4(cmts.get_mtaip(cm_mac, mta_mac))
                         if mta_ipv6:
                             valid_ipv6(board.get_interface_ip6addr(board.mta_iface))
 
@@ -228,12 +239,13 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                         raise
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
-        end_seconds_up = board.get_seconds_uptime()
-        print("\nThe router has been up %s seconds." % end_seconds_up)
-        if self.config.setup_device_networking:
-            assert end_seconds_up > linux_booted_seconds_up
+        if nosh_image == False:
+            end_seconds_up = board.get_seconds_uptime()
+            print("\nThe router has been up %s seconds." % end_seconds_up)
+            if self.config.setup_device_networking:
+                assert end_seconds_up > linux_booted_seconds_up
 
-        self.logged['boot_time'] = end_seconds_up
+            self.logged['boot_time'] = end_seconds_up
 
         if board.routing and lan and self.config.setup_device_networking:
             if wan is not None:
