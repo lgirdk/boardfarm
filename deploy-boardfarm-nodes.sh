@@ -38,6 +38,33 @@ local_route () {
 	docker exec $cname ip route add $local_route dev eth0 via $docker0
 }
 
+# helper function for lan containers to push the mgmt iface in a separate routing table
+# and creates a bash alias named "mgmt" that should be used to bind commands to the 
+# mgmt iface (this is to allow internet connectivity to specific commands without imparing 
+# the default route of the iface_dut)
+# This function should be called when the container has an eth0 and an eth1 ifaces and eth0 
+# needs to be isolated
+isolate_management() {
+	local cname=${1}
+
+	docker_dev=$(docker exec $cname ip route list | grep ^default |  awk '{print $5}' )
+	docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+	docker_dev_ip=$(docker exec $cname ip -4 addr show $docker_dev | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+	docker_nw=$(ip route | grep "dev docker0" | grep src | awk '{print $1}' | head -n1)
+
+	docker exec $cname ip route del default
+	docker exec $cname bash -c "echo \"1 mgmt\" >> /etc/iproute2/rt_tables"
+	docker exec $cname ip route add default via $docker_gw_ip table mgmt
+	docker exec $cname ip rule add from $docker_dev_ip table mgmt
+	docker exec $cname ip rule add to $docker_dev_ip table mgmt
+	docker exec $cname ip rule add from $docker_nw table mgmt
+	docker exec $cname ip rule add to $docker_nw table mgmt
+
+	docker cp $cname:root/.bashrc bashrc_$cname
+	echo "alias mgmt='BIND_ADDR=$docker_dev_ip LD_PRELOAD=/usr/lib/bind.so '" >> bashrc_$cname
+	docker cp bashrc_$cname $cname:root/.bashrc; rm bashrc_$cname
+}
+
 # eth0 is docker private network, eth1 is vlan on specific interface
 create_container_eth1_vlan () {
 	local vlan=$1
@@ -54,6 +81,7 @@ create_container_eth1_vlan () {
 	sudo ip link add link $IFACE name $IFACE.$vlan type vlan id $vlan
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+	isolate_management ${cname}
 	sudo ip link set netns $cspace dev $IFACE.$vlan
 	docker exec $cname ip link set $IFACE.$vlan name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
@@ -78,6 +106,7 @@ create_container_eth1_bridged_vlan () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+	isolate_management ${cname}
 
 	# create bridge
 	sudo ip link add br-$IFACE.$vlan type bridge || true
@@ -118,6 +147,7 @@ create_container_eth1_macvtap_vlan () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+	isolate_management ${cname}
 
 	# create uplink vlan on IFACE
 	sudo ip link add link $IFACE name $IFACE.$vlan type vlan id $vlan
@@ -230,6 +260,7 @@ create_container_eth1_static_linked () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+	isolate_management ${cname}
 
 	# create lab network access port
 	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
@@ -275,6 +306,7 @@ create_container_eth1_wifi () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+	isolate_management ${cname}
 
 	# create lab network access port
 	sudo iw phy $(cat /sys/class/net/"$dev"/phy80211/name) set netns $cspace
