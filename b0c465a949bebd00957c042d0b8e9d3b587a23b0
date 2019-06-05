@@ -90,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "8802240d_56f3a56c",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T14:53:57Z",
+      "side": 1,
+      "message": "Which is may well be your way right from the 1st comment you made....",
+      "parentUuid": "d9e3b02a_dbaae18b",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "87bb7359_77f2fd8b",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -461,6 +479,24 @@
     },
     {
       "key": {
+        "uuid": "0aaeb46c_28fe6cbe",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T14:53:57Z",
+      "side": 1,
+      "message": "when docker is pythonised definitely",
+      "parentUuid": "fbc11773_01097843",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b830106d_01d266e5",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -638,6 +674,24 @@
     },
     {
       "key": {
+        "uuid": "4b30332a_28fbd5e1",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T14:53:57Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "370cb4f3_57bcd2e0",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "90bbc4c7_ad13d1f9",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -685,6 +739,24 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "b413bf08_6f0fc0ea",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "641b3b91_4eafa187",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T14:53:57Z",
+      "side": 1,
+      "message": "it now uses get_device, as suggested",
+      "parentUuid": "9dbec5ef_301019ee",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -917,6 +989,24 @@
       "side": 1,
       "message": "Ack",
       "parentUuid": "ca25ab97_db2e0eeb",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "eded46aa_3b3f171c",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T14:53:57Z",
+      "side": 1,
+      "message": "Done\nthis has been moved into the test, as a finalise container section",
+      "parentUuid": "83c50778_95cc8071",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
