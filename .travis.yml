@@ -9,7 +9,7 @@ before_install:
         - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
         - sudo apt-get -qq update
-        - sudo apt-get install -y qemu-system-x86 docker-ce
+        - sudo apt-get install -y qemu-system-x86 docker-ce python-tk
         - sudo apt-get install -y libsnmp-dev snmp-mibs-downloader
 script:
         - ./bft -l
