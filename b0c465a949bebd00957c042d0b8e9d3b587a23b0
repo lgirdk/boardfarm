@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "d9e3b02a_dbaae18b",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "OK, I remember. The json for the \"docker_host_vlan\" was refactored to the \"locations\" section of he .json file. Hence being common it does not specifies the vlan in it (only the iface).\nBoth the  \"docker_host_vlan\" and  \"docker_host_vlan\" devices (not the containers) are created at startup (as the config is read in). When spawn_containers is invoked has to be told which way to go (either use direct or use vlan) and the override tells the code which way to go.\nWhich is not that good now looking at it. There must be a simpler way",
+      "parentUuid": "40b2e05b_00fa554b",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "87bb7359_77f2fd8b",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -142,6 +160,24 @@
     },
     {
       "key": {
+        "uuid": "703e9fbb_40e301e7",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ccf22843_1bb2c833",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "535e7f66_fdb6d59e",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -192,6 +228,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de63816c_0b0a4376",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "11f5ada9_7db5a0f6",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -248,6 +302,24 @@
     },
     {
       "key": {
+        "uuid": "cddf0ead_8102559f",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "see above, config related.",
+      "parentUuid": "ed7e4261_59b96209",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5d599d0e_f9216972",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -283,6 +355,24 @@
     },
     {
       "key": {
+        "uuid": "60e90a78_629ed2da",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "004e6b42_164a8980",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bdb6626d_fcb917e2",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -312,6 +402,24 @@
       "side": 1,
       "message": "Ack, and again i did not think of it, more elegant too",
       "parentUuid": "bdb6626d_fcb917e2",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7c149417_d23270a2",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "60a58d9f_fa23ad1b",
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -442,6 +550,24 @@
     },
     {
       "key": {
+        "uuid": "08952290_19628ba3",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack\nPhase 2",
+      "parentUuid": "bd025637_e5d29663",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "29144633_6f396c5d",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -547,6 +673,24 @@
     },
     {
       "key": {
+        "uuid": "9dbec5ef_301019ee",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "b413bf08_6f0fc0ea",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dc8c4d99_b474b71f",
         "filename": "devices/debian_host.py",
         "patchSetId": 5
@@ -633,6 +777,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0dffba8f_72accd42",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack\nPhase 2",
+      "parentUuid": "9c8b0872_13d9bbd9",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -740,6 +902,24 @@
       "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "83c50778_95cc8071",
+        "filename": "devices/debian_host.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-05T12:10:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ca25ab97_db2e0eeb",
+      "revId": "b0c465a949bebd00957c042d0b8e9d3b587a23b0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
