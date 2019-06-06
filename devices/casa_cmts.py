@@ -498,25 +498,29 @@ class CasaCMTS(base.BaseDevice):
         if self.match != None:
             return result
 
-    def get_ertr_ipv4(self, mac):
-        self.sendline("show cable modem %s cpe" % mac)
-        self.expect(self.prompt)
-        ertr_ipv4 = re.search('(%s) .*(eRouter)'% ValidIpv4AddressRegex ,self.before)
-        if ertr_ipv4:
-            ipv4 =ertr_ipv4.group(1)
-            return ipv4
-        else:
-            return None
+    def get_ertr_ipv4(self, mac, retry=1):
+        for i in range(retry):
+            self.sendline("show cable modem %s cpe" % mac)
+            self.expect(self.prompt)
+            ertr_ipv4 = re.search('(%s) .*(eRouter)'% ValidIpv4AddressRegex ,self.before)
+            if ertr_ipv4:
+                ipv4 = ertr_ipv4.group(1)
+                break
+            else:
+                ipv4 = None
+        return ipv4
 
-    def get_ertr_ipv6(self, mac):
-        self.sendline("show cable modem %s cpe" % mac)
-        self.expect(self.prompt)
-        ertr_ipv6 = re.search(ValidIpv6AddressRegex ,self.before)
-        if ertr_ipv6:
-            ipv6 = ertr_ipv6.group()
-            return ipv6
-        else:
-            return None
+    def get_ertr_ipv6(self, mac, retry=1):
+        for i in range(retry):
+            self.sendline("show cable modem %s cpe" % mac)
+            self.expect(self.prompt)
+            ertr_ipv6 = re.search(ValidIpv6AddressRegex ,self.before)
+            if ertr_ipv6:
+                ipv6 = ertr_ipv6.group()                
+                break
+            else:
+                ipv6 = None
+        return ipv6
 
     def get_center_freq(self, mac_domain=None):
         return "512000000"
