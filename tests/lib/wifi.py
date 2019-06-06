@@ -252,7 +252,8 @@ class wifi_client_stub():
            Takes interface and ssid to be scanned as an argument'''
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
-        return "SSID: <ssid_name>"
+        return True  # if found
+        return False # if not found
     def wifi_connect(self, iface, ssid_name, password, security_mode):
         '''Function to connect to wifi either with ssid name and password or with ssid name alone
            Takes arguments as SSID and (password,security) if required'''
