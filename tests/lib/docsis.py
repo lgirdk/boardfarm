@@ -10,6 +10,7 @@ import os, config
 from common import cmd_exists
 import Tkinter
 import re
+import time
 
 class docsis:
     """
@@ -190,3 +191,57 @@ class mta_cfg(cm_cfg):
     '''MTA specific class for cfgs'''
 
     encoded_suffix = '.bin'
+
+def check_valid_docsis_ip_networking(board, strict=True, time_for_provisioning=120):
+    start_time = time.time()
+
+    wan_ipv4 = False
+    wan_ipv6 = False
+    erouter_ipv4 = False
+    erouter_ipv6 = False
+    mta_ipv4 = True
+    mta_ipv6 = False # Not in spec
+
+    cm_configmode = board.cm_cfg.cm_configmode
+
+    if cm_configmode == 'bridge':
+        # TODO
+        pass
+    if cm_configmode == 'ipv4':
+        wan_ipv4 = erouter_ipv4 = True
+    if cm_configmode == 'dslite':
+        # TODO
+        pass
+    if cm_configmode == 'dual-stack':
+        wan_ipv4 = erouter_ipv4 = True
+        wan_ipv6 = erouter_ipv6 = True
+
+    while (time.time() - start_time < time_for_provisioning):
+        try:
+            if wan_ipv4:
+                valid_ipv4(board.get_interface_ipaddr(board.wan_iface))
+            if wan_ipv6:
+                valid_ipv6(board.get_interface_ip6addr(board.wan_iface))
+
+            if hasattr(board, 'erouter_iface'):
+                if erouter_ipv4:
+                    valid_ipv4(board.get_interface_ipaddr(board.erouter_iface))
+                if erouter_ipv6:
+                    valid_ipv6(board.get_interface_ip6addr(board.erouter_iface))
+
+            if hasattr(board, 'mta_iface'):
+                if mta_ipv4:
+                    valid_ipv4(board.get_interface_ipaddr(board.mta_iface))
+                if mta_ipv6:
+                    valid_ipv6(board.get_interface_ip6addr(board.mta_iface))
+
+            # if we get this far, we have all IPs and can exit while loop
+            break
+        except KeyboardInterrupt:
+            raise
+        except:
+            if time.time() - start_time > time_for_provisioning:
+                if strict:
+                    assert False, "Failed to provision docsis device properly"
+                else:
+                    print("WARN: failed to provision board entirely")
