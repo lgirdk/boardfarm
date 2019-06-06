@@ -10,6 +10,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 STARTSSHPORT=5000
 STARTWEBPORT=8000
 
+if ! docker inspect --type=image $BF_IMG > /dev/null 2>&1 ; then
+	(cd $DIR; docker build -t $BF_IMG ${BF_IMG/:/-})
+fi
+
 random_private_mac () {
 	python - <<END
 import random
