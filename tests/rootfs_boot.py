@@ -11,6 +11,7 @@ import lib
 import ipaddress
 
 from lib.network_helper import valid_ipv4, valid_ipv6
+from lib.docsis import check_valid_docsis_ip_networking
 
 from devices import board, wan, lan, prompt
 
@@ -170,62 +171,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 if len(pkg) > 0:
                     board.install_package(pkg)
 
-        # TODO: we should do some of this for other types of provisioners
-        # TODO: this should probably move into a DEVICE specific helper function
-        # so all the correct logic can be encoded there
-        if prov is not None and 'debian-isc-provisioner' in prov.model:
-            start_time = time.time()
-            time_for_provisioning = 120
-
-            wan_ipv4 = False
-            wan_ipv6 = False
-            erouter_ipv4 = False
-            erouter_ipv6 = False
-            mta_ipv4 = True
-            mta_ipv6 = False # Not in spec
-
-            cm_configmode = board.cm_cfg.cm_configmode
-
-            if cm_configmode == 'bridge':
-                # TODO
-                pass
-            if cm_configmode == 'ipv4':
-                wan_ipv4 = erouter_ipv4 = True
-                # TODO: this fails if we have dhcp6 running, why?
-                #mta_ipv4 = True # TODO: is this true?
-            if cm_configmode == 'dslite':
-                # TODO
-                pass
-            if cm_configmode == 'dual-stack':
-                wan_ipv4 = erouter_ipv4 = True
-                wan_ipv6 = erouter_ipv6 = True
-
-            while (time.time() - start_time < time_for_provisioning):
-                try:
-                    if wan_ipv4:
-                        valid_ipv4(board.get_interface_ipaddr(board.wan_iface))
-                    if wan_ipv6:
-                        valid_ipv6(board.get_interface_ip6addr(board.wan_iface))
-
-                    if hasattr(board, 'erouter_iface'):
-                        if erouter_ipv4:
-                            valid_ipv4(board.get_interface_ipaddr(board.erouter_iface))
-                        if erouter_ipv6:
-                            valid_ipv6(board.get_interface_ip6addr(board.erouter_iface))
-
-                    if hasattr(board, 'mta_iface'):
-                        if mta_ipv4:
-                            valid_ipv4(board.get_interface_ipaddr(board.mta_iface))
-                        if mta_ipv6:
-                            valid_ipv6(board.get_interface_ip6addr(board.mta_iface))
-
-                    # if we get this far, we have all IPs and can exit while loop
-                    break
-                except KeyboardInterrupt:
-                    raise
-                except:
-                    if time.time() - start_time > time_for_provisioning:
-                        raise
+        if board.has_cmts:
+            check_valid_docsis_ip_networking(board)
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
         end_seconds_up = board.get_seconds_uptime()
