@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "49c979de_844e4088",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "the port parameterised commit https://review.gerrithub.io/c/lgirdk/boardfarm/+/457022",
+      "parentUuid": "cb7fcd5a_4f9a0c0f",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f762ffe8_202ccdaa",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 14
@@ -30,6 +48,24 @@
       "writtenOn": "2019-05-21T20:48:38Z",
       "side": 1,
       "message": "This is cool- a blurb above documenting the theory of this function would be nice.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "42cddcb5_8f724ee6",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "we made this a separate commit, where the function and it\u0027s invocation are committed\nhttps://review.gerrithub.io/c/lgirdk/boardfarm/+/457025\n\nand then I have rebased the current file on top. Is that ok?",
+      "parentUuid": "f762ffe8_202ccdaa",
       "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "92bec9b4_76bce61b",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "dc6989fe_e3106989",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "28750b75_c25441b4",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 14
@@ -64,6 +118,24 @@
       "writtenOn": "2019-05-21T20:48:38Z",
       "side": 1,
       "message": "If we repeat this a lot it would be ideal to make a function.\n\nAlso, I don\u0027t think we should be installing things in this step. What if we use docker factory to make wifi containers? It will take forever to run this step. Also, don\u0027t want to depend on network connectivity to start a container.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fc453a06_7a076642",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 291,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "will pull ketan into the discussion.\nBut the rebased versionwill not have the create_container_eth1_wifi changes as Ketan has a patch under review, which I am guessing he will rebase on top of these changes",
+      "parentUuid": "28750b75_c25441b4",
       "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -104,6 +176,24 @@
     },
     {
       "key": {
+        "uuid": "9687513e_64ba5ba9",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "Phase 2",
+      "parentUuid": "176c7786_dd34148b",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "15bcffc4_60f0d133",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 14
@@ -118,6 +208,24 @@
       "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6ef09cc3_1f2e5012",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "15bcffc4_60f0d133",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -149,6 +257,24 @@
       "writtenOn": "2019-05-21T20:48:38Z",
       "side": 1,
       "message": "this should not care about the VLAN, just the interface name.",
+      "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "40ee2334_c6873f14",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 14
+      },
+      "lineNbr": 444,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T06:24:35Z",
+      "side": 1,
+      "message": "can we delay this (and the other factory changes until phase 2) as we are considering doing away with the bash script and pythonise the code",
+      "parentUuid": "a4b85bff_3cebe970",
       "revId": "094aa20bef2225ba202c61ec3fd26e81dbb349cd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
