@@ -8,8 +8,9 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
     '''Extension of Debian class with wifi functions'''
 
     model = ('debianwifi')
-    iface_wlan = "wlan0"
-    iface_wlan1 = "wlan1"
+    def __init__(self, *args, **kwargs):
+        super(DebianWifi,self).__init__( *args, **kwargs)
+        self.iface_dut = self.iface_wifi = self.wifi_interface = self.kwargs['wifi_interface']
 
     def disable_and_enable_wifi(self, iface):
        self.disable_wifi(iface)
@@ -109,3 +110,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify(iface)
         assert verify_connect==True,'Connection establishment in WIFI'
+
+    def wifi_ping(self, device, ping_ip):
+        output = ping(device, ping_ip)
+        return output
