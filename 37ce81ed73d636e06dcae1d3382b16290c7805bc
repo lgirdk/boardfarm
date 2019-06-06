@@ -72,6 +72,24 @@
     },
     {
       "key": {
+        "uuid": "dbf14e5a_d8ed554e",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T20:44:52Z",
+      "side": 1,
+      "message": "Let\u0027s start by making a function that returns True if it\u0027s a nosh image, or False if not.\n\ndef is_nosh(self):\n\nIs that possible? We could ask the CMTS for the last seen version? We could use SNMP to check some MIB BEFORE rebooting the board?\n\nNOTE: it would only check the first time it\u0027s run... not each time.",
+      "parentUuid": "24f4fb80_b530a051",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "1c22aa56_c107385f",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -124,6 +142,24 @@
     },
     {
       "key": {
+        "uuid": "f8ae877c_615b7747",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T20:44:52Z",
+      "side": 1,
+      "message": "We can use the above is_nosh() function to add our own version of the function in the mv1 class\n\ndef get_seconds_uptime(self):\n   if self._is_nosh:\n       # check for uptime via a MIB?\n   else:\n       super(MV1, self).get_seconds_uptime()",
+      "parentUuid": "dc6bf65f_304eea65",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f930d877_0e7e8f14",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -153,6 +189,24 @@
       "side": 1,
       "message": "ok, so you want me to modify devices/linux.py to check sh or nosh and not to change anything on RootFSBoot class, right.",
       "parentUuid": "f930d877_0e7e8f14",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6d057a20_513a2e21",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T20:44:52Z",
+      "side": 1,
+      "message": "I want you to move this stuff above to a function on devices/openwrt.py (linux.py would be more appropriate but it does not exist)\n\nAfter that is done, and that works exactly as it does now (not we just moved the function). Then you can add a function for MV1 class that does the same thing without a shell, or if we can\u0027t do that... it should do nothing and just print a WARNING message.",
+      "parentUuid": "cd84d52c_7eaf4856",
       "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -194,6 +248,24 @@
     },
     {
       "key": {
+        "uuid": "c3cca820_7ae9ca70",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T20:44:52Z",
+      "side": 1,
+      "message": "Here is a starting point: https://review.gerrithub.io/c/lgirdk/boardfarm/+/457156",
+      "parentUuid": "920ec197_6e8a31c3",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "37ceff6d_6f167ca0",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -226,6 +298,24 @@
       "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d481723a_4b708b40",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T20:44:52Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "de1d7c87_c57383b8",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
