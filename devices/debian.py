@@ -71,6 +71,14 @@ class DebianBox(base.BaseDevice):
 
         self.http_proxy = kwargs.pop('http_proxy', None)
 
+        if pre_cmd_host is not None:
+            sys.stdout.write("\tRunning pre_cmd_host.... ")
+            sys.stdout.flush()
+            phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
+            phc.logfile_read = sys.stdout
+            phc.expect(pexpect.EOF, timeout=120)
+            print("\tpre_cmd_host done")
+
         if ipaddr is not None:
             pexpect.spawn.__init__(self,
                                    command="ssh",
@@ -82,20 +90,17 @@ class DebianBox(base.BaseDevice):
                                          '-o', 'ServerAliveCountMax=5'])
 
             self.ipaddr = ipaddr
-        else:
-            if pre_cmd_host is not None:
-                sys.stdout.write("\tRunning pre_cmd_host.... ")
-                sys.stdout.flush()
-                phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
-                phc.expect(pexpect.EOF, timeout=120)
-                print("\tpre_cmd_host done")
 
-            if cleanup_cmd is not None:
-                self.cleanup_cmd = cleanup_cmd
-                atexit.register(self.run_cleanup_cmd)
+        if cleanup_cmd is not None:
+            self.cleanup_cmd = cleanup_cmd
+            atexit.register(self.run_cleanup_cmd)
 
+        if cmd is not None:
+            sys.stdout.write("\tRunning cmd.... ")
+            sys.stdout.flush()
             pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
             self.ipaddr = None
+            print("\tcmd done")
 
         self.name = name
         self.color = color
@@ -195,12 +200,15 @@ class DebianBox(base.BaseDevice):
                 print("\tpost_cmd_host done")
 
         if post_cmd is not None:
+            sys.stdout.write("\tRunning post_cmd.... ")
+            sys.stdout.flush()
             env_prefix=""
             for k, v in env.iteritems():
                 env_prefix += "export %s=%s; " % (k, v)
 
             self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
+            print("\tpost_cmd done")
 
         if reboot:
             self.reset()
