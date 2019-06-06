@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b558fb49_8123f6d4",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T17:06:38Z",
+      "side": 1,
+      "message": "have you tested it when no password is required? (e.g. when the server knows he id of the client)\nbut my comment maybe out of place",
+      "range": {
+        "startLine": 54,
+        "startChar": 4,
+        "endLine": 54,
+        "endChar": 22
+      },
+      "revId": "e0d79465a554bba07a3da7f48ceff557635614d1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f36f6087_d9f040f1",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T17:06:38Z",
+      "side": 1,
+      "message": "create a cmd according to username\u003d\u003dnone and do not repeat the if statemet",
+      "range": {
+        "startLine": 55,
+        "startChar": 7,
+        "endLine": 55,
+        "endChar": 15
+      },
+      "revId": "e0d79465a554bba07a3da7f48ceff557635614d1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0c9ca8d6_8660d141",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T17:06:38Z",
+      "side": 1,
+      "message": "what if there is no passwd needed?",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 67,
+        "endChar": 72
+      },
+      "revId": "e0d79465a554bba07a3da7f48ceff557635614d1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "590a74f9_a272dcbe",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-06T17:06:38Z",
+      "side": 1,
+      "message": "this logic has code duplication, maybe rearranging it?",
+      "range": {
+        "startLine": 69,
+        "startChar": 0,
+        "endLine": 69,
+        "endChar": 25
+      },
+      "revId": "e0d79465a554bba07a3da7f48ceff557635614d1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
