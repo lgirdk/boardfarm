@@ -42,25 +42,39 @@ local_route () {
 	docker exec $cname ip route add $local_route dev eth0 via $docker0
 }
 
+# creates container running with ssh on eth0, adds DUT facing interface only
+create_container_stub () {
+	local cname=${1}
+	local sshport=${2}
+	local proxyport=${3}
+	local ifacedut=${4}
+
+	docker stop $cname && docker rm $cname
+	docker run --name $cname --privileged -h $cname --restart=always \
+		-p $sshport:22 \
+		-p $proxyport:8080 \
+		-d $BF_IMG /usr/sbin/sshd -D
+
+	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+	sudo ip link set netns $cspace dev $ifacedut
+	docker exec $cname ip link set $ifacedut name eth1
+	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
+}
+
 # eth0 is docker private network, eth1 is vlan on specific interface
 create_container_eth1_vlan () {
 	local vlan=$1
 	local offset=${2:-0}
 
 	cname=bft-node-$IFACE-$vlan-$offset
-	docker stop $cname && docker rm $cname
-	docker run --name $cname --privileged -h $cname --restart=always \
-		-p $(( $STARTSSHPORT + $offset + $vlan )):22 \
-		-p $(( $STARTWEBPORT + $offset + $vlan )):8080 \
-		-d $BF_IMG /usr/sbin/sshd -D
 
 	sudo ip link del $IFACE.$vlan || true
 	sudo ip link add link $IFACE name $IFACE.$vlan type vlan id $vlan
 
-	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
-	sudo ip link set netns $cspace dev $IFACE.$vlan
-	docker exec $cname ip link set $IFACE.$vlan name eth1
-	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
+	create_container_stub $cname \
+			$(( $STARTSSHPORT + $offset + $vlan )) \
+			$(( $STARTWEBPORT + $offset + $vlan )) \
+			$IFACE.$vlan
 }
 
 # eth0 is docker private network, eth1 is vlan on specific interface within a bridge
