@@ -35,22 +35,20 @@
                 {
                         "type": "debian",
                         "name": "wan",
-                        "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name wan-${uniq_id} --privileged -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan-${uniq_id}) dev ${wan_iface}",
-                        "post_cmd": "ip link set ${wan_iface} name eth1",
+                        "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub wan-${uniq_id} 5910 9910 ${wan_iface}",
                         "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
+			"ipaddr": "localhost",
+			"port": "5910",
                         "color": "cyan",
                         "options": "tftpd-server"
                 },
                 {
                         "type": "debian",
                         "name": "lan",
-                        "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name lan-${uniq_id} --privileged -p 9909:9909 -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
-                        "post_cmd": "ip link set ${lan_iface} name eth1",
+                        "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub lan-${uniq_id} 5909 9909 ${lan_iface}",
                         "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
+"ipaddr": "localhost",
+"port": "5909",
                         "color": "blue",
 			"http_proxy": "localhost:9909"
                 }
@@ -60,29 +58,27 @@
     },
     "qemux86-openwrt-1": {
         "board_type": "qemux86-openwrt",
-        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=wan,ifname=${wan_iface} -device e1000,netdev=wan -netdev tap,id=lan,ifname=${lan_iface} -device e1000,netdev=lan",
+        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=lan,ifname=${lan_iface} -device e1000,netdev=lan -netdev tap,id=wan,ifname=${wan_iface} -device e1000,netdev=wan",
         "devices": [
                 {
                         "type": "debian",
-                        "name": "lan",
-                        "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name wan-${uniq_id} --privileged -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan-${uniq_id}) dev ${wan_iface}",
-                        "post_cmd": "ip link set ${wan_iface} name eth1",
+                        "name": "wan",
+                        "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub wan-${uniq_id} 5909 9909 ${wan_iface}",
                         "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
-                        "color": "cyan",
-                        "options": "tftpd-server",
-			"http_proxy": "localhost:9909"
+			"ipaddr": "localhost",
+			"port": "5909",
+                        "color": "blue"
                 },
                 {
                         "type": "debian",
-                        "name": "wan",
-                        "pre_cmd_host": "docker build -t bft:node bft-node",
-                        "cmd": "docker run --name lan-${uniq_id} --privileged -it bft:node /bin/bash",
-                        "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan-${uniq_id}) dev ${lan_iface}",
-                        "post_cmd": "ip link set ${lan_iface} name eth1",
+                        "name": "lan",
+                        "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub lan-${uniq_id} 5910 9910 ${lan_iface}",
                         "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
-                        "color": "blue"
+"ipaddr": "localhost",
+"port": "5910",
+                        "color": "cyan",
+                        "options": "tftpd-server",
+			"http_proxy": "localhost:9909"
                 }
         ],
         "connection_type": "local_serial",
