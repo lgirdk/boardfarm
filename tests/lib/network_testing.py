@@ -50,3 +50,31 @@ def ping(device, ping_ip, ping_interface=None, count=4):
         return True
     else:
         return False
+
+def ssh_service_verify(device, ip, password, username=None, opts=""):
+    if username == None:
+        device.sendline("ssh %s" %ip)
+    else:
+        device.sendline("ssh %s@%s" %(username, ip))
+    try:
+        idx = device.expect(['diffie-hellman-group1-sha1']+ ['(yes/no)']+ ['assword:'], timeout=60)
+        if idx == 0:
+            device.expect(device.prompt)
+            if username == None:
+                device.sendline(" ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 %s" %ip)
+            else:
+                device.sendline(" ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 %s@%s %s" %(username, ip, opts))
+            indx = device.expect(['(yes/no)']+ ['assword:'], timeout=60)
+            assert indx <= 1, "Login using diffie-hellman-group1-sha1 failed"
+            if indx == 0:
+                device.sendline('yes')
+                device.expect("assword:")
+        if idx == 1 :
+            device.sendline('yes')
+            device.expect("assword:")
+        device.sendline(password)
+        device.expect(["mainMenu>"]+ device.prompt)
+        device.sendline("exit")
+        device.expect(device.prompt, timeout=20)
+    except:
+        raise Exception("Failed to connect SSH to :%s" %device.before)
