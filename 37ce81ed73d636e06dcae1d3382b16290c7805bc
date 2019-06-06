@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "e3238d5e_8c5bca78",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "got it, will remove it",
+      "parentUuid": "159ed826_bcde3886",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "6cdcd551_7ce86df6",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-06-04T18:28:19Z",
       "side": 1,
       "message": "RootFSBoot test should not care about nosh image... we can\u0027t add this here...\n\nWe should not even rely on META_BUILD either... what are the ways we can detect a NOSH image? What if the image is ALREADY loaded on the board?",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "24f4fb80_b530a051",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "I just use the self.config.META_BUILD parameter, that is include from boardfarm -m \"xxx\".\nSo I can get \u0027NOSH\u0027 from \u0027xxx\u0027, if test command include -m parameter.\n\nBut now, i can\u0027t test pass when using nosh image to run RootFSBoot test with fw upgrade, I need to modify some thing to do this.\nCan you give me some suggestion how can i do for nosh image? \nthanks",
+      "parentUuid": "6cdcd551_7ce86df6",
       "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -70,6 +106,24 @@
     },
     {
       "key": {
+        "uuid": "dc6bf65f_304eea65",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "Did you mean i need to do all check sh or nosh on mv1 class only. \nAlso linux_booted_seconds_up function need to do check sh or nosh, right.\nSo you wanot me not to change anything on RootFSBoot class.",
+      "parentUuid": "da6d41b7_826d7ff0",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "f930d877_0e7e8f14",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -81,6 +135,24 @@
       "writtenOn": "2019-06-04T18:28:19Z",
       "side": 1,
       "message": "If we refactor this to a function on devices/linux.py we can run this by default and override in mv1 class for nosh image.",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cd84d52c_7eaf4856",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "ok, so you want me to modify devices/linux.py to check sh or nosh and not to change anything on RootFSBoot class, right.",
+      "parentUuid": "f930d877_0e7e8f14",
       "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -104,6 +176,24 @@
     },
     {
       "key": {
+        "uuid": "920ec197_6e8a31c3",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "not really know this part, but will try to move theses.",
+      "parentUuid": "29e15ff9_78e9f272",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "37ceff6d_6f167ca0",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 1
@@ -115,6 +205,24 @@
       "writtenOn": "2019-06-04T18:28:19Z",
       "side": 1,
       "message": "Again, if we handle this inside mv1 device class, this would *just work*... is there a mib to get uptime on mv1?",
+      "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de1d7c87_c57383b8",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 243,
+      "author": {
+        "id": 1016160
+      },
+      "writtenOn": "2019-06-06T09:32:40Z",
+      "side": 1,
+      "message": "ok, will try to modify mv1 and revert this.",
+      "parentUuid": "37ceff6d_6f167ca0",
       "revId": "37ce81ed73d636e06dcae1d3382b16290c7805bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
