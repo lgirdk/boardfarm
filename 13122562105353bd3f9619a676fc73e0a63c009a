@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c66fdab9_9073b42a",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-06T14:43:41Z",
+      "side": 1,
+      "message": "I would like to add this as an option and add the same things in debian.py at some point so if folks don\u0027t use a container as a wan/lan node they can still get these features.",
+      "revId": "13122562105353bd3f9619a676fc73e0a63c009a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
