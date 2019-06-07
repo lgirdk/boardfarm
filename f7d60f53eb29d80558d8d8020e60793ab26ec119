@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "62aeff8f_51172606",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-07T08:52:46Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "ed7ddd6c_2d567018",
+      "revId": "f7d60f53eb29d80558d8d8020e60793ab26ec119",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "b64058d3_45a7d9d6",
         "filename": "devices/debian_wifi.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2019-06-06T20:47:10Z",
       "side": 1,
       "message": "you can drop device and use self.iface_wifi",
+      "revId": "f7d60f53eb29d80558d8d8020e60793ab26ec119",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06430428_87a997eb",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-07T08:52:46Z",
+      "side": 1,
+      "message": "Device is mandatory here as the ping function in lib/network_testing.py expects a device from which the ping has to happen.\n\nWill do a separate commit",
+      "parentUuid": "b64058d3_45a7d9d6",
       "revId": "f7d60f53eb29d80558d8d8020e60793ab26ec119",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
