@@ -661,3 +661,14 @@ def install_pjsua(device):
                 break
         if not_used > 99:
             assert 0,"Failed to install pjsua"
+def install_dnsmasq(device):
+    '''Install dnsmasq if not present.'''
+    device.sendline('apt list --installed | grep -i dnsmasq')
+    try:
+        device.expect('dnsmasq/', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sendline('apt-get install dnsmasq -y')
+        device.expect(['dnsmasq/'] + device.prompt, timeout=70)
+
