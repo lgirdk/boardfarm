@@ -109,3 +109,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify(iface)
         assert verify_connect==True,'Connection establishment in WIFI'
+
+    def wifi_ping(self, device, ping_ip):
+        output = ping(device, ping_ip)
+        return output
