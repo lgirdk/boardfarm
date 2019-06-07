@@ -492,15 +492,25 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('server=8.8.4.4')
         self.sendline('listen-address=127.0.0.1')
         self.sendline('listen-address=%s' % self.gw)
+        self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
 
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
+    def add_hosts(self,hosts):
+        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        if hosts != None:
+            self.sendline('cat > /etc/dnsmasq.hosts << EOF')
+            for key, value in hosts.iteritems():
+                self.sendline(key+" "+ value)
+            self.sendline('EOF')
+            self.sendline('/etc/init.d/dnsmasq restart')
+            self.expect(self.prompt)
 
-    def setup_as_wan_gateway(self):
-
+    def setup_as_wan_gateway(self,hosts=None):
+        #setting hosts as none,helper function to be added
         self.setup_dnsmasq()
-
+        self.add_hosts(hosts)
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
 
