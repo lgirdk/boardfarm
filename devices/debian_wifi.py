@@ -8,8 +8,9 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
     '''Extension of Debian class with wifi functions'''
 
     model = ('debianwifi')
-    iface_wlan = "wlan0"
-    iface_wlan1 = "wlan1"
+    def __init__(self, *args, **kwargs):
+        super(DebianWifi,self).__init__( *args, **kwargs)
+        self.iface_dut = self.iface_wifi = self.wifi_interface = self.kwargs.get('wifi_interface', 'wlan0')
 
     def disable_and_enable_wifi(self, iface):
        self.disable_wifi(iface)
