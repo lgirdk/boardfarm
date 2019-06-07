@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9cb967fe_ab4876fb",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-07T05:43:29Z",
+      "side": 1,
+      "message": "this break is redundant. it will never be executed",
+      "range": {
+        "startLine": 509,
+        "startChar": 16,
+        "endLine": 509,
+        "endChar": 21
+      },
+      "revId": "f6452fa445ff1788968737ec555ee6f9bd8cafb6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5c5ce142_4de64740",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 512,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-07T05:43:29Z",
+      "side": 1,
+      "message": "there should be no else, and the return None should be outside the  for loop scope, so it is executed after the last iteration, as of now, this loop will never loop more than once",
+      "range": {
+        "startLine": 510,
+        "startChar": 0,
+        "endLine": 512,
+        "endChar": 0
+      },
+      "revId": "f6452fa445ff1788968737ec555ee6f9bd8cafb6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c1600bcf_4fe3f0de",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 521,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-07T05:43:29Z",
+      "side": 1,
+      "message": "this break is redundant. it will never be executed",
+      "range": {
+        "startLine": 521,
+        "startChar": 0,
+        "endLine": 521,
+        "endChar": 21
+      },
+      "revId": "f6452fa445ff1788968737ec555ee6f9bd8cafb6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2677c83b_4688d7ea",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 523,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-07T05:43:29Z",
+      "side": 1,
+      "message": "there should be no else, and the return None should be outside the  for loop scope, so it is executed after the last iteration, as of now, this loop will never loop more than once",
+      "range": {
+        "startLine": 522,
+        "startChar": 13,
+        "endLine": 523,
+        "endChar": 27
+      },
+      "revId": "f6452fa445ff1788968737ec555ee6f9bd8cafb6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
