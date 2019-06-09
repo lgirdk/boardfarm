@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "95a3640a_9c16dd4e",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-09T19:28:52Z",
+      "side": 1,
+      "message": "this a lot of names for the same iface, couldn\u0027t we just use iface_dut (for consistency), or does this mess the tests up?",
+      "range": {
+        "startLine": 13,
+        "startChar": 8,
+        "endLine": 13,
+        "endChar": 62
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "145eb8cf_690c63c8",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-09T19:28:52Z",
+      "side": 1,
+      "message": "I believe the default interface is wlan1 (like we have eth1 for the wired iface).\nAm I mistaken?",
+      "range": {
+        "startLine": 13,
+        "startChar": 100,
+        "endLine": 13,
+        "endChar": 105
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
