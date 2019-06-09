@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a54e78ea_c4309419",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-09T20:35:56Z",
+      "side": 1,
+      "message": "you may want to sync up with Shak about \nhttps://review.gerrithub.io/c/lgirdk/boardfarm/+/457023",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 23
+      },
+      "revId": "7ab2203ae011db4047e20c551ae56de82b608ace",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
