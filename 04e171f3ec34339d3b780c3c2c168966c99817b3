@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1584c87d_0631a8ad",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 500,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-09T20:32:36Z",
+      "side": 1,
+      "message": "Nit: we, usually put a blank line between functions",
+      "range": {
+        "startLine": 500,
+        "startChar": 0,
+        "endLine": 500,
+        "endChar": 4
+      },
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e87dd90_8fdc93f3",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-09T20:32:36Z",
+      "side": 1,
+      "message": "Nit: host is not None: (None is a singleton)",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
