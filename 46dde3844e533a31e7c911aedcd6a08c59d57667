@@ -120,6 +120,54 @@
     },
     {
       "key": {
+        "uuid": "58f1f652_daab4e02",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T19:39:26Z",
+      "side": 1,
+      "message": "One interface per connection please...",
+      "parentUuid": "bf352376_66304c70",
+      "range": {
+        "startLine": 13,
+        "startChar": 100,
+        "endLine": 13,
+        "endChar": 105
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cf42e063_65f7cc12",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T19:39:26Z",
+      "side": 1,
+      "message": "Why not just rename the windows ones to match this?",
+      "parentUuid": "9fa66153_c06ee8b4",
+      "range": {
+        "startLine": 13,
+        "startChar": 8,
+        "endLine": 13,
+        "endChar": 62
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "141c7093_fcc09485",
         "filename": "devices/debian_wifi.py",
         "patchSetId": 5
@@ -152,6 +200,24 @@
       "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3c75fbe5_8ec2df4a",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T19:39:26Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "185ef317_7e5de285",
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
