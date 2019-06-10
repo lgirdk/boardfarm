@@ -4,6 +4,7 @@ import pexpect
 from lib.regexlib import ValidIpv4AddressRegex
 from lib.docsis import docsis, cm_cfg
 import re
+import glob
 
 from devices import DebianBox
 
