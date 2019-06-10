@@ -45,6 +45,47 @@
       "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ee61b922_12679e8f",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T17:52:29Z",
+      "side": 1,
+      "message": "I don\u0027t think we need three names, I think we can get away with one iface_dut to be honest.\n\niface_wifi can live here too, we can use that when calling iw commands instead but for anything not specific to wifi we should use iface_dut.\n\nE.g. the ping() function we are added in this class does not belong in this class, it belongs on a base class that pings iface_dut",
+      "parentUuid": "95a3640a_9c16dd4e",
+      "range": {
+        "startLine": 13,
+        "startChar": 8,
+        "endLine": 13,
+        "endChar": 62
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "141c7093_fcc09485",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T17:52:29Z",
+      "side": 1,
+      "message": "iface arg can go away on all these functions...",
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
