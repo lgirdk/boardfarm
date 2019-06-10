@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "fa0aa3e0_cd0e61fd",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T14:32:21Z",
+      "side": 1,
+      "message": "This is probably global, maybe we can set env vars for this instead of passing to each function?",
+      "revId": "b59c0a90ba24949b98a6d61d7c35aa8ef5b589ac",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e3a485d6_19bd124b",
         "filename": "deploy-boardfarm-nodes.sh",
         "patchSetId": 5
