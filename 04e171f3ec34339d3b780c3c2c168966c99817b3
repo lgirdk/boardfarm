@@ -39,6 +39,57 @@
       "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c79eaa3b_110f934f",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T13:59:28Z",
+      "side": 1,
+      "message": "I think we need to save the hosts added into a local variable self.addl_hosts so if we re-start dnsmasq we can add the hosts back.",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "716f79c0_85ab8407",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 510,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T13:59:28Z",
+      "side": 1,
+      "message": "Can we have some better default value? Maybe add some by default?\n\nwan.local\nlan.local\ndut.local\ncmts.local\nprovisioner.local\n\nWe can parse all the available devices, and their iface\u0027s to add ip addresses.",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "900436b6_4fb47472",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 513,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T13:59:28Z",
+      "side": 1,
+      "message": "Why not call this in setup_dnsmasq()?",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
