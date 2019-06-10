@@ -22,6 +22,30 @@
       "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e8ad1a4c_2a1ab7ac",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T13:50:36Z",
+      "side": 1,
+      "message": "also, as I already commented, why does device need to be passed?\n\nping is generic to any device, it does not need to be wifi specific, so it should be in a different class and not pass the device, just use iface_dut",
+      "parentUuid": "b6d9b238_49d811d0",
+      "range": {
+        "startLine": 114,
+        "startChar": 17,
+        "endLine": 114,
+        "endChar": 21
+      },
+      "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
