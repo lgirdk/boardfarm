@@ -72,6 +72,54 @@
     },
     {
       "key": {
+        "uuid": "9fa66153_c06ee8b4",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-10T19:35:58Z",
+      "side": 1,
+      "message": "To match with windows wifi telnet function I have added the same names here. Will remove extra names",
+      "parentUuid": "ee61b922_12679e8f",
+      "range": {
+        "startLine": 13,
+        "startChar": 8,
+        "endLine": 13,
+        "endChar": 62
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bf352376_66304c70",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-10T19:35:58Z",
+      "side": 1,
+      "message": "Currently we have 2 interfaces, wlan0 and wlan1. Ideally we should go with only one interface, hence we should decide one generic name for the interface. Please comment on this",
+      "parentUuid": "145eb8cf_690c63c8",
+      "range": {
+        "startLine": 13,
+        "startChar": 100,
+        "endLine": 13,
+        "endChar": 105
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "141c7093_fcc09485",
         "filename": "devices/debian_wifi.py",
         "patchSetId": 5
@@ -83,6 +131,24 @@
       "writtenOn": "2019-06-10T17:52:29Z",
       "side": 1,
       "message": "iface arg can go away on all these functions...",
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "185ef317_7e5de285",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-10T19:35:58Z",
+      "side": 1,
+      "message": "Will remove the iface args and will come up with a new commit",
+      "parentUuid": "141c7093_fcc09485",
       "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
