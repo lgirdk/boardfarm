@@ -43,12 +43,12 @@ class LoggerMeta(type):
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
             if hasattr(args[0], 'start'):
-                args[0].log_calls += '[%s]calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
+                args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
 
             ret = func(*args, **kwargs)
 
             if hasattr(args[0], 'start'):
-                args[0].log_calls += "[%s]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, repr(ret))
+                args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, repr(ret))
 
             return ret
         return wrapper
@@ -83,10 +83,10 @@ class o_helper(object):
         td = datetime.now()-self.parent.start
         # check for the split case
         if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
-            tmp = '\n[%s]' % td.total_seconds()
+            tmp = '\n[%.6f]' % td.total_seconds()
             tmp += string[1:]
             string = tmp
-        to_log = re.sub('\r\n', '\r\n[%s]' % td.total_seconds(), string)
+        to_log = re.sub('\r\n', '\r\n[%.6f]' % td.total_seconds(), string)
         self.parent.log += to_log
         if hasattr(self.parent, 'test_to_log'):
             self.parent.test_to_log.log += re.sub('\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
