@@ -46,6 +46,30 @@
       "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a7e270fd_7ff4388b",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-10T19:44:44Z",
+      "side": 1,
+      "message": "this ping is to make API common for both windows and Linux client. \nAs said earlier, I was calling this ping function from lib/network_testing.py where I have been expecting for device.",
+      "parentUuid": "e8ad1a4c_2a1ab7ac",
+      "range": {
+        "startLine": 114,
+        "startChar": 17,
+        "endLine": 114,
+        "endChar": 21
+      },
+      "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
