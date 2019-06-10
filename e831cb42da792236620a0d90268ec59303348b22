@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9ab6377b_3b6d0ea9",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T18:26:45Z",
+      "side": 1,
+      "message": "why not just make the default user be two devices? then you pass in prompts, ports, username, password, etc?",
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "747559bf_12d1e75e",
         "filename": "tests/lib/network_testing.py",
         "patchSetId": 2
@@ -19,6 +36,23 @@
         "endLine": 59,
         "endChar": 18
       },
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8e3761ed_fcfc0c7e",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-10T18:26:45Z",
+      "side": 1,
+      "message": "why do we specify this algo? Is this test related? Why is the prompt passed in to this function? Just use device.prompt?",
       "revId": "e831cb42da792236620a0d90268ec59303348b22",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
