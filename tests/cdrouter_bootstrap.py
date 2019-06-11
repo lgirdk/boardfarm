@@ -326,7 +326,7 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
     @staticmethod
     @lib.common.run_once
     def parse(config):
-        if 'cdrouter_server' in config.board:
+        if hasattr(config, 'board') and 'cdrouter_server' in config.board:
             cdrouter_server = config.board['cdrouter_server']
         elif config.cdrouter_server is not None:
             cdrouter_server = config.cdrouter_server
