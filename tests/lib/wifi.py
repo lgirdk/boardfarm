@@ -228,46 +228,40 @@ class wifi_stub():
         pass
 
 class wifi_client_stub():
-    def enable_wifi(self, iface):
-        '''Function to make the wifi interface UP
-           Takes interface as an argument'''
+    def enable_wifi(self):
+        '''Function to make the wifi interface UP'''
         raise Exception("Not implemented!")
-    def disable_wifi(self, iface):
-        '''Function to make the wifi interface DOWN
-           Takes interface as an argument'''
+    def disable_wifi(self):
+        '''Function to make the wifi interface DOWN'''
         raise Exception("Not implemented!")
     def disable_and_enable_wifi(self):
-        '''Function to make the wifi interface DOWN and UP
-           Takes interface as an argument'''
+        '''Function to make the wifi interface DOWN and UP'''
         raise Exception("Not implemented!")
-    def wifi_scan(self, iface):
-        '''Function that scans for SSIDs on a particular radio, and return a list of SSID
-           Takes interface to be scanned as an argument'''
+    def wifi_scan(self):
+        '''Function that scans for SSIDs on a particular radio, and return a list of SSID'''
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return "SSID: <ssid_name1> \
                 SSID: <ssid_name2>.."
-    def wifi_check_ssid(self, iface, ssid_name):
+    def wifi_check_ssid(self, ssid_name):
         '''Function that scans for a particular SSID
-           Takes interface and ssid to be scanned as an argument'''
+           Takes ssid to be scanned as an argument'''
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return True  # if found
         return False # if not found
-    def wifi_connect(self, iface, ssid_name, password, security_mode):
+    def wifi_connect(self, ssid_name, password, security_mode):
         '''Function to connect to wifi either with ssid name and password or with ssid name alone
            Takes arguments as SSID and (password,security) if required'''
         raise Exception("Not implemented!")
-    def wifi_connectivity_verify(self, iface):
+    def wifi_connectivity_verify(self):
         '''Function to verify wifi connectivity
-           Takes interface as argument to check for wifi connectivity
            Returns True or False based on connectivity'''
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return "True or False"
-    def wifi_disconnect(self, iface):
-        '''Function to disconnect wifi
-           Takes interface to be disconnected as argument'''
+    def wifi_disconnect(self):
+        '''Function to disconnect wifi'''
         raise Exception("Not implemented!")
     def wifi_change_region(self, country):
         '''Function to change the country
