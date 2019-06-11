@@ -270,3 +270,14 @@ class BaseDevice(pexpect.spawn):
             self.sendline("sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         self.expect(self.prompt)
 
+    def ping(self, ping_ip ,source_ip=None):
+        if source_ip == None :
+            self.sendline('ping -c 4 '+ping_ip)
+        else:
+            self.sendline("ping -S %s -c 4 %s"%(source_ip, ping_ip))
+        self.expect(self.prompt, timeout=50)
+        match = re.search("4 packets transmitted, 4 received, 0% packet loss", self.before)
+        if match:
+            return 'True'
+        else:
+            return 'False'
