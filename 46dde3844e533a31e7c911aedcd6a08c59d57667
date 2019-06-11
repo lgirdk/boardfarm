@@ -168,6 +168,54 @@
     },
     {
       "key": {
+        "uuid": "3e3e8092_7f3facd5",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-11T12:48:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "cf42e063_65f7cc12",
+      "range": {
+        "startLine": 13,
+        "startChar": 8,
+        "endLine": 13,
+        "endChar": 62
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ca3644a_cb3d765a",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-11T12:48:35Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "58f1f652_daab4e02",
+      "range": {
+        "startLine": 13,
+        "startChar": 100,
+        "endLine": 13,
+        "endChar": 105
+      },
+      "revId": "46dde3844e533a31e7c911aedcd6a08c59d57667",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "141c7093_fcc09485",
         "filename": "devices/debian_wifi.py",
         "patchSetId": 5
