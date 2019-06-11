@@ -22,10 +22,11 @@ if 'BFT_OVERLAY' in os.environ:
 
     sys.path.insert(0, os.getcwd() + '/tests')
 
-test_mappings = { }
+test_mappings = {}
 for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
     if x == "tests":
-        raise Exception("INVALID test file name found, tests.py will cause namespace issues, please rename")
+        raise Exception(
+            "INVALID test file name found, tests.py will cause namespace issues, please rename")
     try:
         exec("import %s as test_file" % x)
         test_mappings[test_file] = []
@@ -40,19 +41,20 @@ for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f])
             traceback.print_exc()
         print("Warning: could not import from file %s. Run with BFT_DEBUG=y for more details" % x)
 
+
 def init(config):
-        for test_file, tests in test_mappings.iteritems():
-            for test in tests:
+    for test_file, tests in test_mappings.iteritems():
+        for test in tests:
                 #print('checking %s in %s' % (test, test_file))
-                if hasattr(test, "parse"):
-                    try:
-                        #print("calling parse on %s" % test)
-                        new_tests = test.parse(config) or []
-                        for new_test in new_tests:
-                            globals()[new_test] = getattr(test_file, new_test)
-                    except Exception as e:
-                        if 'BFT_DEBUG' in os.environ:
-                            import traceback
-                            traceback.print_exc()
-                        print("Failed to run %s parse function!" % test)
-                        pass
+            if hasattr(test, "parse"):
+                try:
+                    #print("calling parse on %s" % test)
+                    new_tests = test.parse(config) or []
+                    for new_test in new_tests:
+                        globals()[new_test] = getattr(test_file, new_test)
+                except Exception as e:
+                    if 'BFT_DEBUG' in os.environ:
+                        import traceback
+                        traceback.print_exc()
+                    print("Failed to run %s parse function!" % test)
+                    pass
