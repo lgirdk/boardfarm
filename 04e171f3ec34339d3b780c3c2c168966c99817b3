@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e4537acb_1ff1c3fb",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 500,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-11T11:59:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1584c87d_0631a8ad",
+      "range": {
+        "startLine": 500,
+        "startChar": 0,
+        "endLine": 500,
+        "endChar": 4
+      },
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "2e87dd90_8fdc93f3",
         "filename": "devices/debian.py",
         "patchSetId": 2
@@ -36,6 +60,24 @@
       "writtenOn": "2019-06-09T20:32:36Z",
       "side": 1,
       "message": "Nit: host is not None: (None is a singleton)",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3622f910_bcff46d0",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-11T11:59:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "2e87dd90_8fdc93f3",
       "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -59,6 +101,24 @@
     },
     {
       "key": {
+        "uuid": "f7176ac3_e44839ef",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-11T11:59:07Z",
+      "side": 1,
+      "message": "Hosts are added to dnsmasq.hosts file.Unless we delete the file or remove hosts from the file ,restarting DNS wont be a problem.",
+      "parentUuid": "c79eaa3b_110f934f",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "716f79c0_85ab8407",
         "filename": "devices/debian.py",
         "patchSetId": 2
@@ -76,6 +136,24 @@
     },
     {
       "key": {
+        "uuid": "110e85ab_66b3f826",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 510,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-11T11:59:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "716f79c0_85ab8407",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "900436b6_4fb47472",
         "filename": "devices/debian.py",
         "patchSetId": 2
@@ -90,6 +168,24 @@
       "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5677857d_6af835a2",
+        "filename": "devices/debian.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 513,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-11T11:59:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "900436b6_4fb47472",
+      "revId": "04e171f3ec34339d3b780c3c2c168966c99817b3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
