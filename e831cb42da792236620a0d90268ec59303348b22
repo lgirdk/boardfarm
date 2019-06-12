@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "09b72fa4_d1c39e2d",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-12T21:13:53Z",
+      "side": 1,
+      "message": "If you pass wan you have\nwan.ipaddr\nwan.password\nwan.port\nwan.prompt\n\nBy just passing the device you get all this info so the function definition above becomes a lot more simple",
+      "parentUuid": "3cc5c157_8c6691b8",
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "747559bf_12d1e75e",
         "filename": "tests/lib/network_testing.py",
         "patchSetId": 2
@@ -113,6 +131,24 @@
       "side": 1,
       "message": "this is required for the test, I can change the prompt if I use 2 devices",
       "parentUuid": "8e3761ed_fcfc0c7e",
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "533f45d4_0c09fdfc",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-12T21:13:53Z",
+      "side": 1,
+      "message": "This is not a test, this is a generic function- can you pass algo as an argument?",
+      "parentUuid": "3cdeae6a_316c753a",
       "revId": "e831cb42da792236620a0d90268ec59303348b22",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
