@@ -35,6 +35,12 @@ logging_server = None
 #     https://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch
 elasticsearch_server = os.environ.get('BFT_ELASTICSERVER', None)
 
+# MongoDB server. Data in JSON-format can be directly sent here.
+mongodb = {"host": os.environ.get('BFT_MONGOHOST', None),
+           "username": os.environ.get('BFT_MONGOUSER', None),
+           "password": os.environ.get('BFT_MONGOPASS', None)
+           }
+
 # Code change server like gerrit, github, etc... Used only in display
 # of the results html file to list links to code changes tested.
 code_change_server = None

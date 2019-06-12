@@ -8,6 +8,7 @@ selenium
 future
 dlipower
 cdrouter
+pymongo
 pyserial
 ipaddress
 easysnmp
