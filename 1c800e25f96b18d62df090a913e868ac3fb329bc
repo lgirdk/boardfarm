@@ -70,6 +70,24 @@
       "revId": "1c800e25f96b18d62df090a913e868ac3fb329bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a3a04bcc_c630be4d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-12T21:15:52Z",
+      "side": 1,
+      "message": "We talked about this today, I shared a link on slack also here is something useful:\n\nhttps://retrypy.readthedocs.io/\n\nretry.wrap() looks to implement all that we will need.",
+      "parentUuid": "3022c0b3_437672e9",
+      "revId": "1c800e25f96b18d62df090a913e868ac3fb329bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
