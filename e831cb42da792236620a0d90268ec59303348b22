@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "edd7adc3_b6922bac",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-06-12T21:30:04Z",
+      "side": 1,
+      "message": "will it work for all devices example doing ssh for cable modem or gateway LAN IP(192.168.100.1)? Usually, I\u0027m taking the ssh password from config file",
+      "parentUuid": "09b72fa4_d1c39e2d",
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "747559bf_12d1e75e",
         "filename": "tests/lib/network_testing.py",
         "patchSetId": 2
@@ -149,6 +167,24 @@
       "side": 1,
       "message": "This is not a test, this is a generic function- can you pass algo as an argument?",
       "parentUuid": "3cdeae6a_316c753a",
+      "revId": "e831cb42da792236620a0d90268ec59303348b22",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "567891ca_9146f338",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-06-12T21:30:04Z",
+      "side": 1,
+      "message": "This is common for all ssh test when it asks crypto key, I don\u0027t think this can be passed as an argument",
+      "parentUuid": "533f45d4_0c09fdfc",
       "revId": "e831cb42da792236620a0d90268ec59303348b22",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
