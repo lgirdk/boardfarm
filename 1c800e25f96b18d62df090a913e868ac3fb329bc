@@ -52,6 +52,24 @@
       "revId": "1c800e25f96b18d62df090a913e868ac3fb329bc",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3022c0b3_437672e9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-06-12T08:17:54Z",
+      "side": 1,
+      "message": "Using this function in most of the places to check whether erouter gets ip in CMTS after provisioning, if we don\u0027t want to add a retry here then we have to continue using pexpect timeout.",
+      "parentUuid": "79d0de11_57d082e4",
+      "revId": "1c800e25f96b18d62df090a913e868ac3fb329bc",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
