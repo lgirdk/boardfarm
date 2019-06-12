@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3dd83c8a_fafceac3",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-12T18:11:26Z",
+      "side": 1,
+      "message": "This might have been here for testing, but it breaks the default network namespace for the WAN container as no default route is present and we don\u0027t set one since we assume WAN internet connectivity.\n\nI think removing this has no bad effect, running mgmt traceroute 8.8.8.8 and traceroute 8.8.8.8 on all devices seem to work as expected.",
+      "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
