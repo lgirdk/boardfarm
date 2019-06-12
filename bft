@@ -26,7 +26,7 @@ import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
-from devices import logstash, elasticlogger, get_device
+from devices import logstash, elasticlogger, mongodblogger, get_device
 
 import matplotlib
 matplotlib.use('Agg')
@@ -432,6 +432,16 @@ def main():
     except Exception as e:
         print(e)
         print("Unable to store results to elasticsearch_server specified in config. "
+              "Results stored locally.")
+
+    try:
+        if hasattr(config, 'mongodb') and config.mongodb['host'] is not None:
+            mongodblogger.MongodbLogger(**config.mongodb).log(info_for_remote_log)
+        else:
+            print("Needed mongodb parameters are not set, see config. Results stored locally.")
+    except Exception as e:
+        print(e)
+        print("Unable to store results to mongodb specified in config. "
               "Results stored locally.")
 
     if set(('BFT_AWS_ACCESS_KEY', 'BFT_AWS_SECRET_ACCESS_KEY', 'BFT_AWS_BUCKET')).issubset(os.environ):
