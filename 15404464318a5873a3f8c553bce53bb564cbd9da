@@ -94,6 +94,30 @@
       "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c539d8f7_3482ef05",
+        "filename": "devices/debian_wifi.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-12T09:48:52Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "6525ce73_74d6756e",
+      "range": {
+        "startLine": 114,
+        "startChar": 17,
+        "endLine": 114,
+        "endChar": 21
+      },
+      "revId": "15404464318a5873a3f8c553bce53bb564cbd9da",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
