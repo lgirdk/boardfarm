@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ec380014_87f4a063",
+        "filename": "config.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-12T18:43:00Z",
+      "side": 1,
+      "message": "We need to figure out what should go here versus in JSON. Just something to think about this is fine for now.",
+      "revId": "234f98f87b2d01308f2f17d5ce9aef70806133f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
