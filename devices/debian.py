@@ -75,7 +75,6 @@ class DebianBox(base.BaseDevice):
             sys.stdout.write("\tRunning pre_cmd_host.... ")
             sys.stdout.flush()
             phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
-            phc.logfile_read = sys.stdout
             phc.expect(pexpect.EOF, timeout=120)
             print("\tpre_cmd_host done")
 
