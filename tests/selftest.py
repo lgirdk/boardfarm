@@ -21,6 +21,11 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
+        if not hasattr(wan, 'ipaddr'):
+            msg = 'WAN device is not running ssh server, can\'t copy with this function'
+            lib.common.test_msg(msg)
+            self.skipTest(msg)
+
         fname = "/tmp/smallFile.txt"
 
         letters = string.ascii_letters
