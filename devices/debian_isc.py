@@ -457,7 +457,7 @@ EOF'''
 
         # if we are not a full blown wan+provisoner then offer to route traffic
         if not self.wan_cmts_provisioner:
-            self.setup_as_wan_gateway()
+            self.setup_as_wan_gateway(hosts=None)
 
         ''' Setup DHCP and time server etc for CM provisioning'''
         self.sendline('echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % self.iface_dut)
