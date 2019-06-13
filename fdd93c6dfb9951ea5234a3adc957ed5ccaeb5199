@@ -16,6 +16,24 @@
       "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "36757734_18dee068",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-13T18:25:15Z",
+      "side": 1,
+      "message": "The idea is to call isolate_management() only if you\u0027re going to come across a scenario with 2 default gateways in a container.\n\nThe reason we should delete the route on line 59,\n- we add it eventually in mgmt rt_table (line 61)\n- if this function has been called, it\u0027s expected on return that a new route will be added for second interface. When that happens, if prev default route exists on main rt_table, it will create a conflict and terminate. (Does not overwrite the route)",
+      "parentUuid": "3dd83c8a_fafceac3",
+      "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
