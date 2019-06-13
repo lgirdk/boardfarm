@@ -283,3 +283,14 @@ class BaseDevice(pexpect.spawn):
             return 'True'
         else:
             return 'False'
+
+    def retry(self, fun, max_retry, *args):
+        for i in range(max_retry):
+            try:
+                output = fun(*args)
+                if output:
+                    break
+            except Exception:
+                continue
+        else:
+           raise Exception('Failed getting value')
