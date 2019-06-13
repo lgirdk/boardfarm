@@ -3,6 +3,8 @@ import lib
 import hashlib
 import random
 import string
+import os
+import tempfile
 from devices import board, wan, lan, wlan, prompt, common
 
 '''
@@ -26,14 +28,14 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
-        fname = "/tmp/smallFile.txt"
+        text_file = tempfile.NamedTemporaryFile()
+        self.fname = fname = text_file.name
 
         letters = string.ascii_letters
         fcontent = ''.join(random.choice(letters) for i in range(50))
 
-        text_file = open(fname, "w")
         text_file.write(fcontent)
-        text_file.close()
+        text_file.flush()
 
         fmd5 = hashlib.md5(open(fname,'rb').read()).hexdigest()
         print("File orginal md5sum: %s"% fmd5)
