@@ -449,13 +449,13 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             raise Exception("Failed to copy file")
         self.logfile_read = saved_logfile_read
 
-    def configure(self, kind, config=[]):
+    def configure(self,hosts, kind, config=[]):
         # TODO: wan needs to enable on more so we can route out?
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()
         if kind == "wan_device":
-            self.setup_as_wan_gateway()
+            self.setup_as_wan_gateway(hosts)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
@@ -495,19 +495,27 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
-    def setup_dnsmasq(self):
+    def setup_dnsmasq(self,hosts):
         self.sendline('cat > /etc/dnsmasq.conf << EOF')
         self.sendline('server=8.8.4.4')
         self.sendline('listen-address=127.0.0.1')
         self.sendline('listen-address=%s' % self.gw)
+	self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
-
+        self.add_hosts(hosts)
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
 
-    def setup_as_wan_gateway(self):
+    def add_hosts(self,hosts):
+        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        if hosts is not None:
+            self.sendline('cat > /etc/dnsmasq.hosts << EOF')
+            for key, value in hosts.iteritems():
+                self.sendline(key+" "+ value)
+            self.sendline('EOF')
 
-        self.setup_dnsmasq()
+    def setup_as_wan_gateway(self,hosts):
+        self.setup_dnsmasq(hosts)
 
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
@@ -817,4 +825,3 @@ if __name__ == '__main__':
 
 
     print
-
