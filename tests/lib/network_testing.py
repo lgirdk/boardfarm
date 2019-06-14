@@ -50,3 +50,42 @@ def ping(device, ping_ip, ping_interface=None, count=4):
         return True
     else:
         return False
+
+def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
+    """
+    This function assumes that the server does not know the identity of the client!!!!!
+    I.e. no passwordless login
+    """
+    device.sendline("ssh %s@%s" %(dest_device.username, ip))
+    try:
+        idx = device.expect(['no matching key exchange method found']+ ['(yes/no)']+ ['assword:'], timeout=60)
+        if idx == 0:
+            device.expect(device.prompt)
+            device.sendline("ssh %s %s@%s %s" %(ssh_key, dest_device.username, ip, opts))
+            idx = device.expect(['(yes/no)'] + ['assword:'], timeout=60)
+            if idx == 0:
+                idx = 1
+        if idx == 1:
+            device.sendline('yes')
+            device.expect("assword:")
+        device.sendline(dest_device.password)
+        device.expect(dest_device.prompt)
+        device.sendline("exit")
+        device.expect(device.prompt, timeout=20)
+    except Exception as e:
+        print(e)
+        raise Exception("Failed to connect SSH to :%s" %device.before)
+
+def telnet_service_verify(device, dest_device, ip, opts=""):
+    device.sendline("telnet%s %s" %(opts, ip))
+    try:
+        device.expect(["Username:"], timeout=60)
+        device.sendline(dest_device.username)
+        device.expect(["assword:"])
+        device.sendline(dest_device.password)
+        device.expect(dest_device.prompt, timeout=40)
+        device.sendline("exit")
+        device.expect(device.prompt, timeout=20)
+    except Exception as e:
+        print(e)
+        raise Exception("Failed to connect telnet to :%s" %device.before)
