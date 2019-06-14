@@ -460,3 +460,14 @@ def hex2ipv6(hexstr):
     hexstr = hexstr.replace(' ', '').lower()
     blocks = (''.join(block) for block in zip(*[iter(hexstr)]*4))
     return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
+
+def retry(func_name, max_retry, *args):
+    for i in range(max_retry):
+        try:
+            output = func_name(*args)
+            if output:
+                return output
+        except:
+            continue
+        else:
+            return None
