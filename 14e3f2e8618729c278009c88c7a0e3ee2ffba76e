@@ -16,6 +16,24 @@
       "revId": "14e3f2e8618729c278009c88c7a0e3ee2ffba76e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a2a0ab13_1717b286",
+        "filename": "devices/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-06-14T08:19:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "eec0004a_b9b2fe32",
+      "revId": "14e3f2e8618729c278009c88c7a0e3ee2ffba76e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
