@@ -34,6 +34,24 @@
       "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cbb8b293_5b739fa5",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-14T19:51:55Z",
+      "side": 1,
+      "message": "If we want to call this for LAN only devices then, we need to do that manually after we create the containers- you can\u0027t add the calls to each function here as these are used for all containers we create.\n\nI\u0027m not sure I\u0027m convinced of the hard... we already delete this default route when we run DHCP client on the lan device... so it just works in that case too.\n\nWhat is an example of where this would fail? (That is if we remove this line)",
+      "parentUuid": "36757734_18dee068",
+      "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
