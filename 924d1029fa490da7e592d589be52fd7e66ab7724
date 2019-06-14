@@ -71,6 +71,57 @@
       "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f4ae3205_f623893d",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-14T20:44:39Z",
+      "side": 1,
+      "message": "could be useful to have add_host and remove_host too...",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9f71eb39_e05e1187",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 518,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-14T20:44:39Z",
+      "side": 1,
+      "message": "optional hosts args here, as stated above",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86c00a3c_ecfaf985",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-14T20:44:39Z",
+      "side": 1,
+      "message": "I know we talked about this, but why didn\u0027t it work in setup_dnsmasq?",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
