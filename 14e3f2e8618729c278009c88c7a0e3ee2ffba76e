@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "eec0004a_b9b2fe32",
+        "filename": "devices/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 296,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-14T02:36:33Z",
+      "side": 1,
+      "message": "this is not specific to a device, so can we put it in tests/lib/common.py?\n\nwe only break if we have a return value from the function? what happens if the function does not return anything?",
+      "revId": "14e3f2e8618729c278009c88c7a0e3ee2ffba76e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
