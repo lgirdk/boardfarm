@@ -21,3 +21,4 @@ matplotlib
 netaddr
 countrycode
 boto3
+requests

@@ -27,6 +27,7 @@ import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
 from devices import logstash, elasticlogger, mongodblogger, get_device
+from dbclients import boardfarmwebclient
 
 import matplotlib
 matplotlib.use('Agg')
@@ -84,6 +85,11 @@ def main():
     os.environ["TERM"] = "dumb"
 
     start = datetime.now()
+
+    # Setup boardfarm client even if config is a local file (in which
+    # case this will do nothing)
+    bfweb = boardfarmwebclient.BoardfarmWebClient(config.boardfarm_config_location,
+                                                  debug=os.environ.get("BFT_DEBUG", False))
 
     # Connect to any board in list
     connected_to_board = False
@@ -197,6 +203,9 @@ def main():
     except:
         print_bold("Using Board %s, User %s" % (name, os.environ['USER']))
 
+    # Let boardfarm server know we are using a station
+    bfweb.checkout(name)
+
     # Make devices (board, lan, wan, available to tests easily)
     devices.initialize_devices(config)
 
@@ -274,6 +283,9 @@ def main():
             curr_test.recover()
 
     print_bold("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
+
+    # Let server know we are no longer using a station
+    bfweb.checkin(name)
 
     try:
         config.console.close()
