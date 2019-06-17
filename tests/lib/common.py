@@ -469,5 +469,5 @@ def retry(func_name, max_retry, *args):
                 return output
         except:
             continue
-        else:
-            return None
+    else:
+        return None
