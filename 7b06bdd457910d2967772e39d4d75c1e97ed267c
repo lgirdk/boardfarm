@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "04121a93_bd3b862d",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 319,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-17T16:43:51Z",
+      "side": 1,
+      "message": "I believe the proxy IP is  (99.9% of the times) the  IP inside the file. Maybe if no ip os give it could be extracted fro the file",
+      "range": {
+        "startLine": 319,
+        "startChar": 7,
+        "endLine": 319,
+        "endChar": 15
+      },
+      "revId": "7b06bdd457910d2967772e39d4d75c1e97ed267c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "94ee27e4_626ae8ac",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 341,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-17T16:43:51Z",
+      "side": 1,
+      "message": "do we need to add rfkill and iw to the /etc/sudoers.d/\u003crootLessCommands\u003e file?",
+      "range": {
+        "startLine": 341,
+        "startChar": 0,
+        "endLine": 341,
+        "endChar": 25
+      },
+      "revId": "7b06bdd457910d2967772e39d4d75c1e97ed267c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
