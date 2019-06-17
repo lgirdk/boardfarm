@@ -52,6 +52,24 @@
       "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9bf4536b_4e4a3674",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 8
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-17T12:19:06Z",
+      "side": 1,
+      "message": "The function call will happen for all containers with 2 interfaces. It\u0027s not just LAN containers, also WAN containers, like the ones generated using create_container_eth1_static_linked.\n\nFor e.g. in create_container_eth1_static_linked:\n- WAN container\u0027s are not set via DHCP, their static route is being defined via the deploy script.\n- Here I\u0027d definitely want to isolate docker mgmt interface. If I don\u0027t delete the default route, following line in wan create function won\u0027t execute.\n\ndocker exec $cname ip route add default via $default_route dev eth1\n\nPlacing the isolate function here was an easier solution. \nIf we create the container first and want to call isolate later, we\u0027ll have to ensure that we call dhclient only during test runs, and the default route is added not via deploy scripts but through JSON for WAN containers. Right now it\u0027s done via deploy.",
+      "parentUuid": "cbb8b293_5b739fa5",
+      "revId": "fdd93c6dfb9951ea5234a3adc957ed5ccaeb5199",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
