@@ -38,6 +38,24 @@
     },
     {
       "key": {
+        "uuid": "233a9f8b_8c69e182",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 452,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae6e4cc0_1ee877ff",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "793c5ddd_02fd8af3",
         "filename": "devices/debian.py",
         "patchSetId": 5
@@ -53,6 +71,24 @@
       "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0cdf47e8_8ee417b8",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "793c5ddd_02fd8af3",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -74,6 +110,24 @@
     },
     {
       "key": {
+        "uuid": "7c7051bd_821144af",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 498,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "96f7fc41_5ac5e581",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f4ae3205_f623893d",
         "filename": "devices/debian.py",
         "patchSetId": 5
@@ -88,6 +142,24 @@
       "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8be36573_4dc0cdad",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f4ae3205_f623893d",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -108,6 +180,24 @@
     },
     {
       "key": {
+        "uuid": "0b7e7d61_97e8f3ca",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 518,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9f71eb39_e05e1187",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "86c00a3c_ecfaf985",
         "filename": "tests/rootfs_boot.py",
         "patchSetId": 5
@@ -119,6 +209,24 @@
       "writtenOn": "2019-06-14T20:44:39Z",
       "side": 1,
       "message": "I know we talked about this, but why didn\u0027t it work in setup_dnsmasq?",
+      "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d94949a7_522c0307",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 1,
+      "message": "Added this in setup_dnsmasq",
+      "parentUuid": "86c00a3c_ecfaf985",
       "revId": "924d1029fa490da7e592d589be52fd7e66ab7724",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true

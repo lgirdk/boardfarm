@@ -16,6 +16,24 @@
       "revId": "0b6caa981fdfc283c0a14ce923b23b65411f99ee",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "46893381_f1431577",
+        "filename": "devices/debian.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 820,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-06-17T20:50:45Z",
+      "side": 0,
+      "message": "Ack",
+      "parentUuid": "baa39b77_4b56d067",
+      "revId": "0b6caa981fdfc283c0a14ce923b23b65411f99ee",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
