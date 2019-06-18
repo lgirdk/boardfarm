@@ -391,6 +391,150 @@ create_container_voice () {
 	docker exec $cname ln -s /dev/tty$dev  /root/line-$dev
 }
 
+# helper function for spawn_container() and create_container_lan_factory()
+get_iface() {
+	local vlan=${1:-None}
+	local ifacevlan
+	if [ "$vlan" == "None" ]
+	then
+		ifacevlan="$IFACE"
+	else
+		ifacevlan="$IFACE.$vlan"
+	fi
+	echo "$ifacevlan"
+}
+
+# this is a helper function, this function is invoked by create_container_lan_factory
+# DO NOT INVOKE THIS DIRECTLY, create_container_lan_factory will invoke this
+# this function takes 3 arguments
+#    $1 is the sequence value (for example 1)
+#    $2 is the clan value (for example 103)
+#    $3 is the name of the container (for example bft-node-enp1s0-103-1)
+spawn_container() {
+    local i=$1
+    local vlan=$2
+    local cname=$3
+    local proxy_dir=${4:-"0"}
+    local proxy_ip=${5:-"0"}
+
+    local ifacevlan
+
+    iface=$(get_iface $vlan)
+
+    # on direct connections we space the container ports by a factor of 10 (may have many ifaces,
+    # this is to avoid overlapping ports values)
+    # on vlan connections we space the container ports by a factor of 100 (ATM 1 vlan iface only)
+    [ "$vlan" == "None" ] && multiplier=10 || multiplier=100
+
+    docker run --name $cname --privileged -h $cname --restart=always \
+    -p $(( STARTSSHPORT  + ((i*multiplier)) + vlan )):22 \
+    -p $(( STARTWEBPORT  + ((i*multiplier)) + vlan )):8080 \
+    -d $BF_IMG /usr/sbin/sshd -D
+
+    #sudo ip link add link $IFACE.$vlan name tempfoo.$i type macvtap mode bridge
+    sudo ip link add link ${iface} name tempfoo.$i type macvtap mode bridge
+    cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+
+    isolate_management ${cname}
+
+    #add proxy details if specified
+    local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
+    then
+        docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
+        docker exec $cname ip route add $proxy_ip via $docker_gw_ip table mgmt
+    fi
+
+    sudo ip link set netns $cspace dev tempfoo.$i
+    docker exec $cname ip link set tempfoo.$i name eth1
+    docker exec $cname ip link set eth1 up
+    j=0
+    # if dhclient fails, retries one more time
+    while [ $j -lt 2 ]
+    do
+        docker exec $cname dhclient -v eth1
+        host_gw=$(docker exec $cname ip route list | grep ^default |  awk '{print $3}' )
+        [ "X$host_gw" != "X" ] && break
+        j=$((j+1))
+    done
+    docker exec $cname ping -c 3 $host_gw
+}
+
+destroy_container_lan_factory() {
+    local vlan=${1:None}
+    local count=${2:-0}
+    local ifacevlan
+
+    ifacevlan=$(get_iface $vlan)
+
+    local suffix
+    if [[ "$ifacevlan" == *.* ]]
+    then
+        suffix=`echo "$ifacevlan" | tr '.' '-'`
+        l=`docker ps -f name=bft-node-$suffix -aq`
+    else
+        l=`docker ps -f name=bft-node-$ifacevlan -aq`
+        suffix=${ifacevlan}"-lan"
+    fi
+    docker stop $l && docker rm $l
+    echo "$suffix"
+}
+
+# this is the container factory, this function takes the following arguments
+#    $1 is the vlan number (for example 103)
+#    $2 is how many containers we want to create ON THE SAME VLAN
+# so if you want to create 33 containers on vlan 103 you will use this as follow:
+#
+#    set -x ; create_container_lan_factory 103 32 ;set +x
+
+create_container_lan_factory() {
+    local vlan=${1:None}
+    local count=${2:-0}
+    local proxy_dir=${3:-"0"}
+    local proxy_ip=${4:-"0"}
+    local ifacevlan
+
+    ifacevlan=$(get_iface $vlan)
+
+    # if no vlan is provided skip the following
+    if [ "$vlan" != "None" ]
+    then
+        sudo ip link del $ifacevlan || true
+        sudo ip link add name $ifacevlan link $IFACE type vlan id $vlan # needs TLC
+        sudo ip link set $ifacevlan up
+    fi
+    echo "Stop all containers for $ifacevlan"
+
+    # container naming
+    # direct: bft-node-<iface>-lan-<count>    e.g.: bft-node-enx503eaa8b7ae4-lan-0
+    # vlan:   bft-node-<iface>-<vlan>-<count> e.g.: bft-node-enp1s0-104-1
+    local suffix
+
+    if [[ "$ifacevlan" == *.* ]]
+    then
+        suffix=`echo "$ifacevlan" | tr '.' '-'`
+        l=`docker ps -f name=bft-node-$suffix -aq`
+    else
+        l=`docker ps -f name=bft-node-$ifacevlan -aq`
+        suffix=${ifacevlan}"-lan"
+    fi
+    docker stop $l && docker rm $l
+
+    for i in $( seq 0 $count )
+    do
+        cname=bft-node-$suffix-$i
+
+        # WAIT for the container to be fully instantiated
+        spawn_container $i $vlan $cname $proxy_dir $proxy_ip
+
+        # The following line is commented out BECAUSE
+        # if many containers send the DHCP request close to each other
+        # the cable modem DHCP server FAILS to offer ip addresses
+        #
+        #spawn_container $i $vlan $cname > /tmp/${cname}.log  2>&1 &
+    done
+}
+
 [ "$IFACE" = "undefined" ] && return
 
 echo "Creating nodes starting on vlan $START_VLAN to $END_VLAN on iface $IFACE"
