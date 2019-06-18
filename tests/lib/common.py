@@ -463,11 +463,10 @@ def hex2ipv6(hexstr):
 
 def retry(func_name, max_retry, *args):
     for i in range(max_retry):
-        try:
-            output = func_name(*args)
-            if output:
-                return output
-        except:
-            continue
+        output = func_name(*args)
+        if output:
+            return output
         else:
-            return None
+            time.sleep(5)
+    else:
+        return None
