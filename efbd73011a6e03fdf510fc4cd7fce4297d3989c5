@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e9d0410d_7e1855b5",
+        "filename": "devices/debian.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-18T19:21:33Z",
+      "side": 1,
+      "message": "Yes, this needs some testing... but I agree it was done.. oddly. We need to check more places for and make sure this works in all sites and configs.",
+      "revId": "efbd73011a6e03fdf510fc4cd7fce4297d3989c5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
