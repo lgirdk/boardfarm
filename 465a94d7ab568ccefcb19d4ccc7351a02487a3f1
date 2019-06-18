@@ -34,6 +34,24 @@
       "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1b679ded_b787ce93",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-18T19:28:39Z",
+      "side": 1,
+      "message": "Maybe we just do network\u003dnone and add two taps one for mgmt and one for testing?\n\n-M",
+      "parentUuid": "d0020e8e_1edebc99",
+      "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
