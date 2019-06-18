@@ -17,6 +17,57 @@
       "revId": "15fa77f1e24e34e5933598514da5ba22bc2bba70",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0f126bae_adf45626",
+        "filename": "devices/boardfarmwebclient.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-18T18:44:09Z",
+      "side": 1,
+      "message": "Can we only print these with BFT_DEBUG set? Probably the same below... we have too many things printed out...",
+      "revId": "15fa77f1e24e34e5933598514da5ba22bc2bba70",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "45d48a2f_069adfbc",
+        "filename": "devices/boardfarmwebclient.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-18T18:44:09Z",
+      "side": 1,
+      "message": "Can we spawn a server here too so we can run this in travisci as a standalone of this device?",
+      "revId": "15fa77f1e24e34e5933598514da5ba22bc2bba70",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5d33d31e_97bb01b7",
+        "filename": "devices/boardfarmwebclient.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-18T18:44:09Z",
+      "side": 1,
+      "message": "Can we use a public board type? rpi3 or qemu type?",
+      "revId": "15fa77f1e24e34e5933598514da5ba22bc2bba70",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
