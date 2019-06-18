@@ -16,6 +16,24 @@
       "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d0020e8e_1edebc99",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-18T19:27:30Z",
+      "side": 1,
+      "message": "It will be used for WAN containers which are spawned behind an isolated network.\nThe isolated network is different from the docker subnet.\n\nMade sense to delete the route only for this case.\nSo didn\u0027t add a flag to it. Rest all scenarios either only have a single interface, or use DHCP to override the default route.",
+      "parentUuid": "8a1a76b1_5df8dbf8",
+      "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
