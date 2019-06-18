@@ -143,7 +143,12 @@ class DebianBox(base.BaseDevice):
                     self.gw_prefixlen = self.nw.prefixlen
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
-                    self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
+                    if "/" in opt:
+                        ipv6_interface=ipaddress.IPv6Interface(opt.replace('wan-static-ipv6:', ''))
+                        self.gwv6 = ipv6_interface.ip
+                        self.ipv6_prefix = ipv6_interface._prefixlen
+                    else:
+                        self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
