@@ -81,8 +81,6 @@ create_container_stub () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
-	# this should avoid the cli wrapping onto itself
-	docker exec $cname bash -c 'echo "stty columns 200" >> /root/.bashrc'
 	sudo ip link set netns $cspace dev $ifacedut
 	docker exec $cname ip link set $ifacedut name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
@@ -269,10 +267,7 @@ create_container_eth1_static_linked () {
 	local name=$1
 	local ip=$2
 	local default_route=$3
-	local offset=${4:-0}
-	local driver=${5:-macvlan}
-	local ipv6_addr=${6:-"0"}
-	local ipv6_default=${7:-"0"}
+	local offset=$4
 
 	cname=bft-node-$IFACE-$name
 	docker stop $cname && docker rm $cname
@@ -282,32 +277,16 @@ create_container_eth1_static_linked () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
-	isolate_management ${cname}
 
 	# create lab network access port
-	if [ "$driver" = "ipvlan" ]
-	then
-		sudo ip link add tempfoo link $IFACE type $driver mode l2
-	else
-		# driver can be macvtap or macvlan. default=macvlan
-		sudo ip link add tempfoo link $IFACE type $driver mode bridge
-	fi
+	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
 	sudo ip link set dev tempfoo up
 	sudo ip link set netns $cspace dev tempfoo
 	docker exec $cname ip link set tempfoo name eth1
 	docker exec $cname ip link set eth1 up
 	docker exec $cname ip addr add $ip dev eth1
-	docker exec $cname ip route del default dev eth0
 	docker exec $cname ip route add default via $default_route dev eth1
 	docker exec $cname ping $default_route -c3
-
-	! [ "$ipv6_addr" != "0" -a "$ipv6_default" != "0" ] && echo "Error: missing ipv6 params" && return
-
-	docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
-	docker exec $cname ip -6 addr add $ipv6_addr dev eth1
-	docker exec $cname ip -6 route add default via $ipv6_default dev eth1
-	sleep 3
-	docker exec $cname bash -c "ping -c3 $ipv6_default"
 }
 
 # eth0 is docker private network, eth1 physical device
@@ -333,9 +312,7 @@ create_container_eth1_phys () {
 # eth0 is docker private network, eth1 with device
 create_container_eth1_wifi () {
 	local dev=$1
-	local offset=${2:-40000}
-	local proxy_dir=${3:-"0"}
-	local proxy_ip=${4:-"0"}
+	local offset=$2
 
 	cname=bft-node-$dev
 	docker stop $cname && docker rm $cname
@@ -344,23 +321,10 @@ create_container_eth1_wifi () {
 		-p $(( $STARTWEBPORT + $offset )):8080 \
 		-d $BF_IMG /usr/sbin/sshd -D
 
-	isolate_management ${cname}
-
-	#add proxy details if specified
-	local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-	if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
-	then
-		docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
-		docker exec $cname ip route add $proxy_ip via $docker_gw_ip table mgmt
-	fi
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
 	isolate_management ${cname}
 
 	# create lab network access port
-	# rfkill and ip need to be added as rootLessCommands on the host
-        # if Wi-Fi was associated to an SSID on the host, on pushing the interface
-        # to container rfkill releases the wifi resource from host.
-        sudo rfkill unblock wifi
 	sudo iw phy $(cat /sys/class/net/"$dev"/phy80211/name) set netns $cspace
 	docker exec $cname ip link set $dev name wlan1
 	docker exec $cname ip link set wlan1 up
@@ -389,6 +353,152 @@ create_container_voice () {
 		docker exec $cname ip route add $proxy_ip via $docker_gw_ip
 	fi
 	docker exec $cname ln -s /dev/tty$dev  /root/line-$dev
+}
+
+# helper function for spawn_container() and create_container_lan_factory()
+get_iface() {
+	local vlan=${1:-None}
+	local ifacevlan
+	if [ "$vlan" == "None" ]
+	then
+		ifacevlan="$IFACE"
+	else
+		ifacevlan="$IFACE.$vlan"
+	fi
+	echo "$ifacevlan"
+}
+
+# this is a helper function, this function is invoked by create_container_lan_factory
+# DO NOT INVOKE THIS DIRECTLY, create_container_lan_factory will invoke this
+# this function takes 3 arguments
+#    $1 is the sequence value (for example 1)
+#    $2 is the clan value (for example 103)
+#    $3 is the name of the container (for example bft-node-enp1s0-103-1)
+spawn_container() {
+    local i=$1
+    local vlan=$2
+    local cname=$3
+    local proxy_dir=${4:-"0"}
+    local proxy_ip=${5:-"0"}
+
+    local ifacevlan
+
+    iface=$(get_iface $vlan)
+
+    # on direct connections we space the container ports by a factor of 10 (may have many ifaces,
+    # this is to avoid overlapping ports values)
+    # on vlan connections we space the container ports by a factor of 100 (ATM 1 vlan iface only)
+    [ "$vlan" == "None" ] && multiplier=10 || multiplier=100
+
+    docker run --name $cname --privileged -h $cname --restart=always \
+    -p $(( STARTSSHPORT  + ((i*multiplier)) + vlan )):22 \
+    -p $(( STARTWEBPORT  + ((i*multiplier)) + vlan )):8080 \
+    -d $BF_IMG /usr/sbin/sshd -D
+
+    #sudo ip link add link $IFACE.$vlan name tempfoo.$i type macvtap mode bridge
+    sudo ip link add link ${iface} name tempfoo.$i type macvtap mode bridge
+    cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+
+
+    isolate_management ${cname}
+    docker exec ${cname} ip route del default
+
+    #add proxy details if specified
+    local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
+    then
+        docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
+        docker exec $cname ip route add $proxy_ip via $docker_gw_ip table mgmt
+    fi
+
+    sudo ip link set netns $cspace dev tempfoo.$i
+    docker exec $cname ip link set tempfoo.$i name eth1
+    docker exec $cname ip link set eth1 up
+    j=0
+    # if dhclient fails, retries one more time
+    while [ $j -lt 2 ]
+    do
+        docker exec $cname dhclient -v eth1
+        host_gw=$(docker exec $cname ip route list | grep ^default |  awk '{print $3}' )
+        [ "X$host_gw" != "X" ] && break
+        j=$((j+1))
+    done
+    docker exec $cname ping -c 3 $host_gw
+}
+
+destroy_container_lan_factory() {
+    local vlan=${1:None}
+    local count=${2:-0}
+    local ifacevlan
+
+    ifacevlan=$(get_iface $vlan)
+
+    local suffix
+    if [[ "$ifacevlan" == *.* ]]
+    then
+        suffix=`echo "$ifacevlan" | tr '.' '-'`
+        l=`docker ps -f name=bft-node-$suffix -aq`
+    else
+        l=`docker ps -f name=bft-node-$ifacevlan -aq`
+        suffix=${ifacevlan}"-lan"
+    fi
+    docker stop $l && docker rm $l
+    echo "$suffix"
+}
+
+# this is the container factory, this function takes the following arguments
+#    $1 is the vlan number (for example 103)
+#    $2 is how many containers we want to create ON THE SAME VLAN
+# so if you want to create 33 containers on vlan 103 you will use this as follow:
+#
+#    set -x ; create_container_lan_factory 103 32 ;set +x
+
+create_container_lan_factory() {
+    local vlan=${1:None}
+    local count=${2:-0}
+    local proxy_dir=${3:-"0"}
+    local proxy_ip=${4:-"0"}
+    local ifacevlan
+
+    ifacevlan=$(get_iface $vlan)
+
+    # if no vlan is provided skip the following
+    if [ "$vlan" != "None" ]
+    then
+        sudo ip link del $ifacevlan || true
+        sudo ip link add name $ifacevlan link $IFACE type vlan id $vlan # needs TLC
+        sudo ip link set $ifacevlan up
+    fi
+    echo "Stop all containers for $ifacevlan"
+
+    # container naming
+    # direct: bft-node-<iface>-lan-<count>    e.g.: bft-node-enx503eaa8b7ae4-lan-0
+    # vlan:   bft-node-<iface>-<vlan>-<count> e.g.: bft-node-enp1s0-104-1
+    local suffix
+
+    if [[ "$ifacevlan" == *.* ]]
+    then
+        suffix=`echo "$ifacevlan" | tr '.' '-'`
+        l=`docker ps -f name=bft-node-$suffix -aq`
+    else
+        l=`docker ps -f name=bft-node-$ifacevlan -aq`
+        suffix=${ifacevlan}"-lan"
+    fi
+    docker stop $l && docker rm $l
+
+    for i in $( seq 0 $count )
+    do
+        cname=bft-node-$suffix-$i
+
+        # WAIT for the container to be fully instantiated
+        spawn_container $i $vlan $cname $proxy_dir $proxy_ip
+
+        # The following line is commented out BECAUSE
+        # if many containers send the DHCP request close to each other
+        # the cable modem DHCP server FAILS to offer ip addresses
+        #
+        #spawn_container $i $vlan $cname > /tmp/${cname}.log  2>&1 &
+    done
 }
 
 [ "$IFACE" = "undefined" ] && return
