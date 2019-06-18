@@ -267,7 +267,10 @@ create_container_eth1_static_linked () {
 	local name=$1
 	local ip=$2
 	local default_route=$3
-	local offset=$4
+	local offset=${4:-0}
+	local driver=${5:-macvlan}
+	local ipv6_addr=${6:-"0"}
+	local ipv6_default=${7:-"0"}
 
 	cname=bft-node-$IFACE-$name
 	docker stop $cname && docker rm $cname
@@ -277,16 +280,32 @@ create_container_eth1_static_linked () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format {{.State.Pid}} $cname)
+	isolate_management ${cname}
 
 	# create lab network access port
-	sudo ip link add tempfoo link $IFACE type macvlan mode bridge
+	if [ "$driver" = "ipvlan" ]
+	then
+		sudo ip link add tempfoo link $IFACE type $driver mode l2
+	else
+		# driver can be macvtap or macvlan. default=macvlan
+		sudo ip link add tempfoo link $IFACE type $driver mode bridge
+	fi
 	sudo ip link set dev tempfoo up
 	sudo ip link set netns $cspace dev tempfoo
 	docker exec $cname ip link set tempfoo name eth1
 	docker exec $cname ip link set eth1 up
 	docker exec $cname ip addr add $ip dev eth1
+	docker exec $cname ip route del default dev eth0
 	docker exec $cname ip route add default via $default_route dev eth1
 	docker exec $cname ping $default_route -c3
+
+	! [ "$ipv6_addr" != "0" -a "$ipv6_default" != "0" ] && echo "Error: missing ipv6 params" && return
+
+	docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
+	docker exec $cname ip -6 addr add $ipv6_addr dev eth1
+	docker exec $cname ip -6 route add default via $ipv6_default dev eth1
+	sleep 3
+	docker exec $cname bash -c "ping -c3 $ipv6_default"
 }
 
 # eth0 is docker private network, eth1 physical device
