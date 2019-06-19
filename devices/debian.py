@@ -499,8 +499,31 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('server=8.8.4.4')
         self.sendline('listen-address=127.0.0.1')
         self.sendline('listen-address=%s' % self.gw)
+        self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
+        self.add_hosts()
+        self.sendline('/etc/init.d/dnsmasq restart')
+        self.expect(self.prompt)
 
+    def add_hosts(self):
+        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        import config
+        from devices import board
+        hosts={}
+        for device in config.board['devices']:
+            if 'ipaddr' in device:
+                domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
+                ip=str(getattr(config, device['name']).ipaddr)
+                hosts[domain_name] = ip
+        if hosts is not None:
+            self.sendline('cat > /etc/dnsmasq.hosts << EOF')
+            for key, value in hosts.iteritems():
+                self.sendline(key+" "+ value)
+            self.sendline('EOF')
+
+    def remove_hosts(self):
+        self.sendline('rm  /etc/dnsmasq.hosts')
+        self.expect(self.prompt)
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
 
