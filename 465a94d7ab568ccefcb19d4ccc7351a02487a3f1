@@ -52,6 +52,24 @@
       "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "14c28ae1_77b934d2",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-19T08:59:22Z",
+      "side": 1,
+      "message": "Can\u0027t do, this stub is for isolated network.\nit uses one IP from public network and then NATs to all devices within the isolated network. Pretty much what docker interface enables me to do.\n\nAlso this adds a layer of restriction on reaching out to the public world from containers.",
+      "parentUuid": "1b679ded_b787ce93",
+      "revId": "465a94d7ab568ccefcb19d4ccc7351a02487a3f1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
