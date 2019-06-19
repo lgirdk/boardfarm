@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ec202a67_de08b50a",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 474,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-19T16:28:06Z",
+      "side": 1,
+      "message": "do we need this and retry above now?",
+      "revId": "3682ad6e4ca3c21edfa81f1d1cd5051084abca4b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
