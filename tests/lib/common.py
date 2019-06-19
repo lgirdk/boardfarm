@@ -470,3 +470,13 @@ def retry(func_name, max_retry, *args):
             time.sleep(5)
     else:
         return None
+
+def resolv_dict(dic, key):
+    """
+    This function used to get the value from gui json, replacement of eval
+    """
+    key = key.strip("[]'").replace("']['", '#').split('#')
+    ret = dic
+    for elem in key:
+        key_value = ret[elem]
+    return key_value
