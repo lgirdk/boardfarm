@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "443f7b4a_3533462a",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-19T17:23:46Z",
+      "side": 1,
+      "message": "Okay here we have two things:\n1) Center frequency of MAC domain set via RCC\n2) CM decide DS center frequency/primary channel dynamically while ranging.\n\nIn both the scenarios, the generic approach would be:\n- show cable modem \u003cmac\u003e\n  Fetch the channel id under DS Intf column\n- show docsis channel utilization | include \u003cDS Intf ID\u003e\n  The second value will provide the center or primary frequency for the CM.\n\nCenter frequencies are CM specific, they can be manually configure to a value on md,\nbut final value has to be done from CM.\n\nSo we should be passing cm_mac as args rather than mac_domain.",
+      "revId": "bdc7268b708cd4d842de3b1ed5ee87ff7e9c9015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
