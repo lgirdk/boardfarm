@@ -1,0 +1,39 @@
+from devices import base
+
+class BaseCmts(base.BaseDevice):
+    '''
+    Common API for the CMTS type devices
+    '''
+
+    def connect(self):
+        raise Exception("Not implemented!")
+
+    def logout(self):
+        raise Exception("Not implemented!")
+
+    def check_online(self, cmmac):
+        raise Exception("Not implemented!")
+
+    def get_cmip(self, cmmac):
+        raise Exception("Not implemented!")
+
+    def get_cmipv6(self, cmmac):
+        raise Exception("Not implemented!")
+
+    def get_mtaip(self, cmmac, mtamac):
+        raise Exception("Not implemented!")
+
+    # this should be get_md_bundle
+    def get_cm_bundle(self,mac_domain):
+        raise Exception("Not implemented!")
+
+    def get_cm_mac_domain(self,cm_mac):
+        raise Exception("Not implemented!")
+
+    def get_cmts_ip_bundle(self,bundle):
+        raise Exception("Not implemented!")
+
+    def get_cmts_model(self):
+        raise Exception("Not implemented!")
+
+
