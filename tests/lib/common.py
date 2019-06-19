@@ -471,6 +471,23 @@ def retry(func_name, max_retry, *args):
     else:
         return None
 
+def retry_on_exception(method, args, retries=10, tout=5):
+    """
+    Retries a method if an exception occurs
+    NOTE: args must be a tuple, hence a 1 arg tuple is (<arg>,)
+    """
+    output = None
+    for not_used in range(retries):
+        try:
+            output = method(*args)
+            break
+        except Exception as e:
+            print_bold("method failed %d time (%s)"%((not_used+1), e))
+            time.sleep(tout)
+            pass
+
+    return output
+
 def resolv_dict(dic, key):
     """
     This function used to get the value from gui json, replacement of eval
