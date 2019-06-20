@@ -35,19 +35,24 @@ class DebianISCProvisioner(DebianBox):
         self.prov_gateway = ipaddress.IPv4Address(kwargs.pop('prov_gateway', u"192.168.3.222"))
         self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
 
-        self.prov_ipv6 = ipaddress.IPv6Address(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1"))
-        self.prov_nw_ipv6 = ipaddress.IPv6Interface(str(self.prov_ipv6) + unicode('/%s' % self.ipv6_prefix)).network
+        self.prov_iface = ipaddress.IPv6Interface(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1/%s" % self.ipv6_prefix))
+        self.prov_ipv6, self.prov_nw_ipv6 = self.prov_iface.ip, self.prov_iface.network
 
-        self.cm_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe"))
-        self.cm_network_v6 = ipaddress.IPv6Network(kwargs.pop('cm_network_v6', u"2001:dead:beef:4::/64"))
+        self.cm_gateway_v6_iface = ipaddress.IPv6Interface(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe/%s" % self.ipv6_prefix))
+        self.cm_gateway_v6, self.cm_network_v6 = self.cm_gateway_v6_iface.ip, self.cm_gateway_v6_iface.network
         self.cm_network_v6_start = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_start', u"2001:dead:beef:4::10"))
         self.cm_network_v6_end = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_end', u"2001:dead:beef:4::100"))
-        self.open_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe"))
-        self.open_network_v6 = ipaddress.IPv6Network(kwargs.pop('open_network_v6', u"2001:dead:beef:6::/64"))
+        self.open_gateway_iface = ipaddress.IPv6Interface(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe/%s" % self.ipv6_prefix))
+        self.open_gateway_v6, self.open_network_v6 = self.open_gateway_iface.ip, self.open_gateway_iface.network
         self.open_network_v6_start = ipaddress.IPv6Address(kwargs.pop('open_network_v6_start', u"2001:dead:beef:6::10"))
         self.open_network_v6_end = ipaddress.IPv6Address(kwargs.pop('open_network_v6_end', u"2001:dead:beef:6::100"))
         self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
-        self.erouter_net = ipaddress.IPv6Network(kwargs.pop('erouter_net', u"2001:dead:beef:f000::/55"))
+
+        # we're storing a list of all /56 subnets possible from erouter_net_iface.
+        # As per docsis, /56 must be the default pd length
+        self.erouter_net_iface = ipaddress.IPv6Interface(kwargs.pop('erouter_net', u"2001:dead:beef:e000::/51"))
+        self.erouter_net = list(self.erouter_net_iface.network.subnets(56-self.erouter_net_iface._prefixlen))
+
         self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
         self.time_server = ipaddress.IPv4Address(kwargs.pop('time_server', self.prov_ip))
         self.timezone = self.get_timzone_offset(kwargs.pop('timezone', u"UTC"))
@@ -157,9 +162,11 @@ EOF'''
         to_send = to_send.replace('###OPEN_NETWORK_V6###', str(self.open_network_v6))
         to_send = to_send.replace('###OPEN_NETWORK_V6_START###', str(self.open_network_v6_start))
         to_send = to_send.replace('###OPEN_NETWORK_V6_END###', str(self.open_network_v6_end))
-        to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[0]))
-        to_send = to_send.replace('###EROUTER_NET_END###', str(self.erouter_net[-ipaddress.IPv6Network(u'::0/%s' % self.ipv6_prefix).num_addresses]))
-        to_send = to_send.replace('###EROUTER_PREFIX###', str(self.ipv6_prefix))
+
+        # keep last ten /56 prefix in erouter pool. for unknown hosts
+        to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[-10].network_address))
+        to_send = to_send.replace('###EROUTER_NET_END###', str(self.erouter_net[-1].network_address))
+        to_send = to_send.replace('###EROUTER_PREFIX###', str(self.erouter_net[-1]._prefixlen))
         to_send = to_send.replace('###MTA_DHCP_SERVER1###', str(self.prov_ip))
         to_send = to_send.replace('###MTA_DHCP_SERVER2###', str(self.prov_ip))
         to_send = to_send.replace('###TIMEZONE###', str(self.timezone))
@@ -182,6 +189,10 @@ EOF'''
             board_config['extra_provisioning_v6']['cm']['options'] = {}
         board_config['extra_provisioning_v6']['cm']['options']['docsis.tftp-servers'] = tftp_server
         board_config['extra_provisioning_v6']['cm']['options']['docsis.PKTCBL-CCCV4'] = "1 4 %s 1 4 %s" % (self.prov_ip, self.prov_ip)
+
+        # the IPv6 subnet for erouter_net in json, should be large enough
+        # len(erouter_net) >= no. of boards + 10
+        board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config['station'].split("-")[-1])%len(self.erouter_net)])
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
