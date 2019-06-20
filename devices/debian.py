@@ -518,8 +518,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         for device in config.board['devices']:
             if 'ipaddr' in device:
                 domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
-                ip=str(getattr(config, device['name']).ipaddr)
-                hosts[domain_name] = ip
+                device = getattr(config, device['name'])
+                if not hasattr(device, 'ipaddr'):
+                    continue
+                hosts[domain_name] = str(device.ipaddr)
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
             for key, value in hosts.iteritems():
