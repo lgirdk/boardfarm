@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e26c1cea_4f43db6c",
+        "filename": "devices/arris_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T20:29:34Z",
+      "side": 1,
+      "message": "^ this is kind of cool",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5ee0d29a_6364f41b",
+        "filename": "devices/arris_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 547,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T20:29:34Z",
+      "side": 1,
+      "message": "you can drop this section, or make it do some reset and configure for the CMTS",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "22cc1a45_884f201d",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T20:29:34Z",
+      "side": 1,
+      "message": "this is fine, but we had been putting these reference base classes in tests/ dir- check out the wifi stubs..\n\nworth discussing if here or there is better",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "df419f68_2a601219",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T20:29:34Z",
+      "side": 1,
+      "message": "now is the time to fix it...",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d57df047_de4edb70",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T20:29:34Z",
+      "side": 1,
+      "message": "Should add some guidance on the return values too...",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
