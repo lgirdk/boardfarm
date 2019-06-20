@@ -16,6 +16,24 @@
       "revId": "3682ad6e4ca3c21edfa81f1d1cd5051084abca4b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7efc8392_008d9126",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 474,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-20T07:13:38Z",
+      "side": 1,
+      "message": "AFAICS:\n - retry() works on value, i.e. if the invoked function returns either False or None, then try again\n - retry_on_exception() works on an exception, i.e. if an exception is raised (and not caught by anything else) during the invocation of method, then try again, else return WHATEVER the value method has returned.\n\nOr am I reading this wrong (very possible.....)\n\nWe could merge the 2 and pass some flag like behaviour\u003donVal/onExecp/both but i don\u0027t know how useful would that be.",
+      "parentUuid": "ec202a67_de08b50a",
+      "revId": "3682ad6e4ca3c21edfa81f1d1cd5051084abca4b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
