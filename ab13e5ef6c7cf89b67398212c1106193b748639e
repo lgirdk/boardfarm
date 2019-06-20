@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5b09ea60_fe40816e",
+        "filename": "devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T19:19:11Z",
+      "side": 1,
+      "message": "we might want to specify here at some point whcih host to remove, or change this to remote all",
+      "revId": "ab13e5ef6c7cf89b67398212c1106193b748639e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
