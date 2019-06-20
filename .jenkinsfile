@@ -1,0 +1,40 @@
+def changeBranch = "change-${GERRIT_CHANGE_NUMBER}-${GERRIT_PATCHSET_NUMBER}"
+
+pipeline {
+    agent { label 'boardfarm' }
+
+    stages {
+        stage('checkout gerrit change') {
+            steps {
+                // TODO: don't hardcode user name
+                git url: 'ssh://mattsm@review.gerrithub.io:29418/lgirdk/boardfarm'
+                sh "git fetch origin ${GERRIT_REFSPEC}:${changeBranch}"
+                sh "git rebase --abort || true"
+                sh "git reset --hard HEAD"
+                sh "git checkout ${changeBranch}"
+                sh "git rebase origin/master"
+            }
+        }
+        stage('run bft test') {
+            steps {
+                ansiColor('xterm') {
+                    sh 'git show HEAD'
+                    sh 'pip install --user -r requirements.txt'
+                    sh 'yes | BFT_DEBUG=y ./bft -b qemux86-openwrt -r http://c4.lgirdk.com/~mattsm/openwrt-x86-generic-combined-ext4.vmdk -y -x travisci'
+                    sh 'grep tests_fail...0, results/test_results.json'
+                }
+            }
+        }
+        stage('post results to gerrit') {
+            steps {
+                sh '''#!/bin/bash
+                    cat results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
+                        sed -e 's/"//g' -e 's/\\t/    /g' | \
+                        while read -r line; do
+                                echo $line >> message
+                        done
+                        '''
+            }
+        }
+    }
+}
