@@ -16,6 +16,24 @@
       "revId": "bdc7268b708cd4d842de3b1ed5ee87ff7e9c9015",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8d24da67_c1f92ccf",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-20T19:26:18Z",
+      "side": 1,
+      "message": "Can you fix this then?\n\nThe idea is to force the CM to the mac domain we\u0027ve configured in the case there are multiple mac domains on a single RF feed.\n\nSo we are trying to determine the right freq to force the CM too here...",
+      "parentUuid": "443f7b4a_3533462a",
+      "revId": "bdc7268b708cd4d842de3b1ed5ee87ff7e9c9015",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
