@@ -11,7 +11,7 @@ import sys
 import base
 import re
 import connection_decider
-from lib.regexlib import ValidIpv6AddressRegex, ValidIpv4AddressRegex
+from lib.regexlib import ValidIpv6AddressRegex, ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
 class CasaCMTS(base.BaseDevice):
     '''
@@ -137,13 +137,12 @@ class CasaCMTS(base.BaseDevice):
 
     def get_cmipv6(self, cmmac):
         self.sendline('show cable modem %s' % cmmac)
-        self.expect('\s((200([0-9a-f]){1,1}:)([0-9a-f]{1,4}:){1,6}([0-9a-f]{1,4}))([\/\s])')
-        result = self.match.group(1)
-        if self.match != None:
-            output = result
+        self.expect(self.prompt)
+        match = re.search(AllValidIpv6AddressesRegex, self.before)
+        if match:
+            output = match.group(0)
         else:
             output = "None"
-        self.expect(self.prompt)
         return output
 
     def get_mtaip(self, cmmac, mtamac):
