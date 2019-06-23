@@ -89,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "2aead3d8_b10080b0",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-23T10:42:09Z",
+      "side": 1,
+      "message": "hmmmm, I see 2 arguments \n1. to keep consistent with the other stubs this should go in tests/ and be done with it\n2. this is a base device which (maybe) could have some very basic functionality (in the docsis world the show cable modem \u003cmac\u003e is universal), the connect could be a bit more intelligent and have some of its elements implemented here (with less code duplication in the derived classes)\nJust  a thought...",
+      "parentUuid": "22cc1a45_884f201d",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "df419f68_2a601219",
         "filename": "devices/base_cmts.py",
         "patchSetId": 1
@@ -106,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "d6c54924_f1c1210e",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-23T10:42:09Z",
+      "side": 1,
+      "message": "will pull Ketan and Prasada in, as my knowledge of cmts\u0027 is somewhat limited",
+      "parentUuid": "df419f68_2a601219",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d57df047_de4edb70",
         "filename": "devices/base_cmts.py",
         "patchSetId": 1
@@ -117,6 +153,24 @@
       "writtenOn": "2019-06-20T20:29:34Z",
       "side": 1,
       "message": "Should add some guidance on the return values too...",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "07962c03_9465a5d6",
+        "filename": "devices/base_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-23T10:42:09Z",
+      "side": 1,
+      "message": "We had (...another...) a meeting where we discussed proper docstring use... that should help",
+      "parentUuid": "d57df047_de4edb70",
       "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
