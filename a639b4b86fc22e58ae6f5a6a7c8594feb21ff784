@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "e257f459_464bd938",
+        "filename": "devices/arris_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-23T10:30:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "e26c1cea_4f43db6c",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5ee0d29a_6364f41b",
         "filename": "devices/arris_cmts.py",
         "patchSetId": 1
@@ -33,6 +51,24 @@
       "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "10a7b51d_c234e0ac",
+        "filename": "devices/arris_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 547,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-23T10:30:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5ee0d29a_6364f41b",
+      "revId": "a639b4b86fc22e58ae6f5a6a7c8594feb21ff784",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
