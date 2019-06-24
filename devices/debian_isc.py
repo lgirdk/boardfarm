@@ -149,6 +149,12 @@ shared-network boardfarm {
             option dhcp6.inf-max-rt  360;
             prefix6 ###EROUTER_NET_START### ###EROUTER_NET_END### /###EROUTER_PREFIX###;
         }
+        pool6 {
+            range6 ###OPEN_NETWORK_HOST_V6_START### ###OPEN_NETWORK_HOST_V6_END###;
+            allow unknown-clients;
+            option dhcp6.solmax-rt   240;
+            option dhcp6.inf-max-rt  360;
+        }
     }
 }
 EOF'''
@@ -162,6 +168,9 @@ EOF'''
         to_send = to_send.replace('###OPEN_NETWORK_V6###', str(self.open_network_v6))
         to_send = to_send.replace('###OPEN_NETWORK_V6_START###', str(self.open_network_v6_start))
         to_send = to_send.replace('###OPEN_NETWORK_V6_END###', str(self.open_network_v6_end))
+        # Increment IP by 200 hosts
+        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_START###', str(self.open_network_v6_start+256*2))
+        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_END###', str(self.open_network_v6_end+256*2))
 
         # keep last ten /56 prefix in erouter pool. for unknown hosts
         to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[-10].network_address))
