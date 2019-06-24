@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-import re
+import re, time
 
 def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap'):
     if port == None:
@@ -19,6 +19,7 @@ def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap
 def kill_process(device, process="tcpdump"):
     device.sudo_sendline("killall %s" %process)
     device.expect(device.prompt)
+    time.sleep(2)
     return device.before
 
 def tcpdump_read(device, capture_file):
