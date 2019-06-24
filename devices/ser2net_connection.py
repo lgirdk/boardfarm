@@ -1,11 +1,14 @@
 import pexpect
+import base_connection
 
-class Ser2NetConnection():
+class Ser2NetConnection(base_connection.BaseConnection):
     def __init__(self, device=None, conn_cmd=None, **kwargs):
         self.device = device
         self.conn_cmd = conn_cmd
 
     def connect(self):
+        if super(LocalCmd, self).connect():
+            return
         pexpect.spawn.__init__(self.device,
                                command='/bin/bash',
                                args=['-c', self.conn_cmd])
@@ -18,4 +21,6 @@ class Ser2NetConnection():
             raise Exception("Password required and not supported")
 
     def close():
+        if super(LocalCmd, self).close():
+            return
         self.device.sendline("~.")
