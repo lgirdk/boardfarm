@@ -22,6 +22,30 @@
       "revId": "2cbf4055a2cee533f4bbb143bf89eec88853a189",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cdc95366_2103bb1e",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-06-25T13:00:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "eade9de6_16edda5c",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 17
+      },
+      "revId": "2cbf4055a2cee533f4bbb143bf89eec88853a189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
