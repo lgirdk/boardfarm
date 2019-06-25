@@ -19,6 +19,8 @@ def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap
 def kill_process(device, process="tcpdump"):
     device.sudo_sendline("killall %s" %process)
     device.expect(device.prompt)
+    device.sudo_sendline("sync")
+    device.expect(device.prompt)
     return device.before
 
 def tcpdump_read(device, capture_file):
