@@ -7,6 +7,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import atexit
 import inspect
 import os
 import random
@@ -205,6 +206,8 @@ def main():
 
     # Let boardfarm server know we are using a station
     bfweb.checkout(name)
+    # Checkin the station when we exit
+    atexit.register(bfweb.checkin, name)
 
     # Make devices (board, lan, wan, available to tests easily)
     devices.initialize_devices(config)
@@ -283,9 +286,6 @@ def main():
             curr_test.recover()
 
     print_bold("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
-
-    # Let server know we are no longer using a station
-    bfweb.checkin(name)
 
     try:
         config.console.close()
