@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "eade9de6_16edda5c",
+        "filename": "tests/lib/network_testing.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-25T11:45:01Z",
+      "side": 1,
+      "message": "Nit: you could have done a \"sync\" to make sure the data is flushed",
+      "range": {
+        "startLine": 22,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 17
+      },
+      "revId": "2cbf4055a2cee533f4bbb143bf89eec88853a189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
