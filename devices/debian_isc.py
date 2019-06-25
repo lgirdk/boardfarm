@@ -501,6 +501,10 @@ EOF'''
                 self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
                 self.expect(self.prompt)
 
+        if self.static_route is not None:
+            self.sendline('ip route add %s' % self.static_route)
+            self.expect(self.prompt)
+
         for nw in [self.cm_network, self.mta_network, self.open_network]:
             self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
             self.expect(self.prompt)
