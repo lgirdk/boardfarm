@@ -38,6 +38,7 @@ class DebianBox(base.BaseDevice):
     wan_dhcp_server = True
     tftp_device = None
     tftp_dir = '/tftpboot'
+    mgmt_dns = None
 
     iface_dut = "eth1"
     gw = None
@@ -162,6 +163,9 @@ class DebianBox(base.BaseDevice):
                     self.wan_dhcp_server = False
                 if opt == 'wan-dhcp-client-v6':
                     self.wan_dhcpv6 = True
+                if opt.startswith('mgmt-dns:'):
+                    value = opt.replace('mgmt-dns:', '')
+                    self.mgmt_dns = ipaddress.IPv4Address(value.split('/')[0])
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
@@ -672,6 +676,13 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline("sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script")
         self.expect(self.prompt)
+
+        if self.mgmt_dns is not None:
+            self.sendline("sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf" % str(self.mgmt_dns))
+            self.expect(self.prompt)
+            self.sendline('echo "append domain-name-servers %s;" >> /etc/dhcp/dhclient.conf' % str(self.mgmt_dns))
+            self.expect(self.prompt)
+
         # TODO: don't hard code eth0
         self.sendline('ip route del default dev eth0')
         self.expect(self.prompt)
