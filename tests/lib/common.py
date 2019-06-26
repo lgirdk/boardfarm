@@ -541,3 +541,19 @@ echo same \=\>n,Wait\(20\)
 )>> /etc/asterisk/extensions.conf'''
         device.sendline(num_mod)
         device.expect(device.prompt)
+
+def start_asterisk(device):
+    device.sendline('nohup asterisk -vvvvvvvd &> ./log.ast &')
+    device.expect(device.prompt)
+
+def softphone_config(device,port,number,sipserver_domain):
+    conf  = '''(
+echo --local-port='''+port+'''
+echo --id=sip:'''+number+'''@'''+sipserver_domain+'''
+echo --registrar=sip:'''+sipserver_domain+'''
+echo --realm=*
+echo --username='''+number+'''
+echo  --password=1234
+)>> pjsua.conf'''
+    device.sendline(conf)
+    device.expect(device.prompt)
