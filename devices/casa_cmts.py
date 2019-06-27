@@ -186,15 +186,23 @@ class CasaCMTS(base.BaseDevice):
         mac_domain = self.match.group(2)
         self.expect(self.prompt)
         return mac_domain
-    
-    def get_cmts_ip_bundle(self,bundle):
+
+    def get_cmts_ip_bundle(self, bundle):
         """get the CMTS bundle IP"""
-        self.sendline('show interface ip-bundle %s | i "secondary"' % bundle)
-        index = self.expect(['ip address ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) secondary'] + self.prompt)
-        if index != 0:
-            assert 0,"ERROR: Failed to get the CMTS bundle IP"
-        cmts_ip = self.match.group(1)
+        import devices
+        from devices import provisioner
+        if hasattr(devices, 'provisioner') and hasattr(devices.provisioner, 'open_gateway'):
+            gw_ip = provisioner.open_gateway
+        else:
+            gw_ip = ValidIpv4AddressRegex
+
+        self.sendline('show interface ip-bundle %s | i secondary' % bundle)
         self.expect(self.prompt)
+        cmts_ip = re.search('ip address (%s) .* secondary'%gw_ip, self.before)
+        if cmts_ip:
+            cmts_ip = cmts_ip.group(1)
+        else:
+            assert 0,"ERROR: Failed to get the CMTS bundle IP"
         return cmts_ip
 
     def reset(self):
