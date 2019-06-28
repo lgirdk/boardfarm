@@ -20,6 +20,7 @@ class CasaCMTS(base.BaseDevice):
 
     prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#', 'CASA-C10G>', 'CASA-C10G#', 'CASA-C10G\(.*\)#']
     model = "casa_cmts"
+    variant = None
 
     def __init__(self,
                  *args,
@@ -71,6 +72,7 @@ class CasaCMTS(base.BaseDevice):
             self.expect(self.prompt)
             self.sendline('page-off')
             self.expect(self.prompt)
+            self.get_cmts_variant()
             return
         except:
             raise Exception("Unable to get prompt on CASA device")
@@ -78,6 +80,16 @@ class CasaCMTS(base.BaseDevice):
     def logout(self):
         self.sendline('exit')
         self.sendline('exit')
+
+    def get_cmts_variant(self):
+        self.sendline(" ")
+        self.expect(self.prompt)
+        if "3000" in self.after:
+            self.variant = "3000"
+        elif "3200" in self.after:
+            self.variant = "3200"
+        elif "10G" in self.after:
+            self.variant = "10G"
 
     def check_online(self, cmmac):
         """Function checks the encrytion mode and returns True if online"""
@@ -155,6 +167,35 @@ class CasaCMTS(base.BaseDevice):
             output = "None"
         self.expect(self.prompt)
         return output
+
+    def DUT_chnl_lock(self,cm_mac):
+        """Check the CM channel locks with 24*8 """
+        if "3000" in self.variant:
+            streams = ['Upstream', 'Downstream']
+            channel_list = []
+            for stream in streams:
+                self.sendline("show cable modem %s verbose | inc \"%s Channel Set\"" % (cm_mac, stream))
+                if stream == 'Upstream':
+                    self.expect(['(\d+/\d+.\d+/\d+).*'])
+                    match = re.search('(\d+/\d+.\d+/\d+).*', self.after)
+                elif stream == 'Downstream':
+                    self.expect(['(\d+/\d+/\d+).*'])
+                    match = re.search('(\d+/\d+/\d+).*', self.after)
+                channel = len(match.group().split(","))
+                channel_list.append(channel)
+            if streams[0] == 'Upstream' and channel_list[0] == 8 and stream[1] == 'Downstream' and channel[1] == 24:
+                return True
+            else:
+                return False
+        else:
+            self.sendline("show cable modem %s bonding" % cm_mac)
+            index = self.expect(["256\(8\*24\)"]+ self.prompt)
+            chnl_lock = self.match.group()
+            if 0 == index:
+                self.expect(self.prompt)
+                return True
+            else:
+                return False
 
     def DUT_chnl_lock(self,cm_mac):
         """Check the CM channel locks with 24*8 """
