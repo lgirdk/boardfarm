@@ -27,8 +27,8 @@ import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
-from devices import logstash, elasticlogger, mongodblogger, get_device
-from dbclients import boardfarmwebclient
+from devices import get_device
+from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
 matplotlib.use('Agg')
