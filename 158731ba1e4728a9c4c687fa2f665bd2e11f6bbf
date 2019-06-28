@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f18cb7f6_382a4e76",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016175
+      },
+      "writtenOn": "2019-06-28T15:58:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "73af1287_60ca8dd9",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5ca38215_5a5f15fd",
         "filename": "devices/casa_cmts.py",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "5d0ad3e5_f451f239",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1016175
+      },
+      "writtenOn": "2019-06-28T15:58:48Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5ca38215_5a5f15fd",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1f8cb3c2_7208f2c7",
         "filename": "devices/casa_cmts.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2019-06-28T14:25:39Z",
       "side": 1,
       "message": "Please update the channel count here",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f6dc18dd_e14f70f4",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1016175
+      },
+      "writtenOn": "2019-06-28T15:58:48Z",
+      "side": 1,
+      "message": "return value should be True or False here , because below condition was already used in scripts and i have matched return value along with this here.",
+      "parentUuid": "1f8cb3c2_7208f2c7",
       "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
