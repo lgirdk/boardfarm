@@ -11,66 +11,75 @@ import sys
 import base
 import re
 import connection_decider
-from lib.regexlib import ValidIpv6AddressRegex, ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 import base_cmts
+from lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
-class CasaCMTS(base_cmts.BaseCmts):
+class ArrisCMTS(base_cmts.BaseCmts):
     '''
-    Connects to and configures a CASA CMTS
+    Connects to and configures a Arris CMTS
     '''
 
-    prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#', 'CASA-C10G>', 'CASA-C10G#', 'CASA-C10G\(.*\)#']
-    model = "casa_cmts"
+    prompt = [ 'arris(.*)>', 'arris(.*)#', 'arris\(.*\)> ', 'arris\(.*\)# ']
+    model = "arris_cmts"
+
+    class ArrisCMTSDecorators():
+
+        @classmethod
+        def mac_to_cmts_type_mac_decorator(cls, function):
+            def wrapper(*args, **kwargs):
+                #import pdb; pdb.set_trace()
+                args = list(args)
+                if ':' in args[1]:
+                    args[1] = args[0].get_cm_mac_cmts_format(args[1])
+                return function(*args)
+            return wrapper
 
     def __init__(self,
                  *args,
                  **kwargs):
         conn_cmd = kwargs.get('conn_cmd', None)
         connection_type = kwargs.get('connection_type', 'local_serial')
-        self.username = kwargs.get('username', 'root')
-        self.password = kwargs.get('password', 'casa')
-        self.password_admin = kwargs.get('password_admin', 'casa')
+        self.username = kwargs.get('username', 'boardfarm')
+        self.password = kwargs.get('password', 'boardfarm')
+        self.password_admin = kwargs.get('password_admin', 'boardfarm')
         self.mac_domain = kwargs.get('mac_domain', None)
 
         if conn_cmd is None:
             # TODO: try to parse from ipaddr, etc
-            raise Exception("No command specified to connect to Casa CMTS")
+            raise Exception("No command specified to connect to Arris CMTS")
 
         self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd)
         self.connection.connect()
         self.connect()
         self.logfile_read = sys.stdout
 
-        self.name = kwargs.get('name', 'casa_cmts')
+        self.name = kwargs.get('name', self.model)
 
     def connect(self):
         try:
             try:
-                self.expect_exact("Escape character is '^]'.", timeout=30)
+                self.expect_exact("Escape character is '^]'.", timeout=5)
             except:
                 pass
-            if 2 != self.expect(['\r\n(.*) login:', '(.*) login:', pexpect.TIMEOUT], timeout=10):
-                hostname = self.match.group(1).replace('\n', '').replace('\r', '').strip()
-                self.prompt.append(hostname + '>')
-                self.prompt.append(hostname + '#')
-                self.prompt.append(hostname + '\(.*\)#')
+            self.sendline()
+            if 1 != self.expect(['\r\nLogin:', pexpect.TIMEOUT], timeout=10):
                 self.sendline(self.username)
                 self.expect('assword:')
                 self.sendline(self.password)
                 self.expect(self.prompt)
             else:
                 # Over telnet we come in at the right prompt
-                # over serial it could be stale so we try to recover
-                self.sendline('q')
-                self.sendline('exit')
-                self.expect([pexpect.TIMEOUT] + self.prompt, timeout=20)
+                # over serial we could have a double login
+                # not yet implemented
+                raise('Failed to connect to Arris via telnet')
             self.sendline('enable')
             if 0 == self.expect(['Password:'] + self.prompt):
                 self.sendline(self.password_admin)
                 self.expect(self.prompt)
             self.sendline('config')
+            self.expect('Enter configuration commands, one per line. End with exit or quit or CTRL Z')
             self.expect(self.prompt)
-            self.sendline('page-off')
+            self.sendline('pagination')
             self.expect(self.prompt)
             return
         except:
@@ -80,85 +89,131 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.sendline('exit')
         self.sendline('exit')
 
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
     def check_online(self, cmmac):
-        """Function checks the encrytion mode and returns True if online"""
-        """Function returns actual status if status other than online"""
-        self.sendline('show cable modem %s' % cmmac)
-        self.expect('.+ranging cm \d+')
-        result = self.match.group()
-        match = re.search('\d+/\d+/\d+\**\s+([^\s]+)\s+\d+\s+.+\d+\s+(\w+)\r\n', result)
-        if match:
-            status = match.group(1)
-            encrytion = match.group(2)
-            if status == "online(pt)" and encrytion == "yes":
-                output = True
-            elif status == "online" and encrytion == "no":
-                output = True
-            elif "online" not in status and status != None:
-                output = status
-            else:
-                assert 0, "ERROR: incorrect cmstatus \""+status+"\" in cmts for bpi encrytion \""+encrytion+"\""
+        """
+        Function checks the encrytion mode and returns True if online
+        Args: cmmac 
+        Return: True if the CM is operational
+                The actual status otherwise
+        """
+        self.sendline('show cable modem  %s detail' % cmmac)
+        self.expect(self.prompt)
+        if 'State=Operational' in self.before:
+            return True
         else:
-            assert 0, "ERROR: Couldn't fetch CM status from cmts"
+            return re.findall('State=(.*?\s)', self.before)[0].strip()
+
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def clear_offline(self, cmmac):
+        """
+        Reset a modem
+        Args: cmmac
+        """
+        self.sendline('exit')
+        self.expect(self.prompt)
+        self.sendline('clear cable modem %s offline' % cmmac)
+        self.expect(self.prompt)
+        self.sendline('configure')
+        self.expect(self.prompt)
+
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def clear_cm_reset(self, cmmac):
+        """
+        Reset a modem
+        Args: cmmac
+        """
+        self.sendline('exit')
+        self.expect(self.prompt)
+        """ NB: this command does not reboot the CM, but forces it to reinitialise """
+        self.sendline("clear cable modem %s reset" %cmmac)
+        self.expect(self.prompt)
+        self.sendline('configure')
+        self.expect(self.prompt)
+
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def get_mtaip(self, cmmac, mtamac):
+        """
+        Gets the mta ip address
+        Args: cmmac, mtamac(not used)
+        Return: mta ip or None if not found
+        """
+        self.sendline('show cable modem %s detail | include MTA' % (cmmac))
+        self.expect('CPE\(MTA\)\s+.*IPv4=(' + ValidIpv4AddressRegex + ')\r\n')
+        result = self.match.group(1)
+        if self.match != None:
+            output = result
+        else:
+            output = "None"
         self.expect(self.prompt)
         return output
 
-    def clear_offline(self, cmmac):
-        self.sendline('clear cable modem %s offline' % cmmac)
-        self.expect(self.prompt)
-
-    def clear_cm_reset(self, cmmac):
-        self.sendline("clear cable modem %s reset" %cmmac)
-        self.expect(self.prompt)
-
-    def check_PartialService(self, cmmac):
-        self.sendline('show cable modem %s' % cmmac)
-        self.expect('(\d+/\d+\.\d+/\d+(\*|\#)\s+\d+/\d+/\d+(\*|\#))\s+online')
-        result = self.match.group(1)
-        match = re.search('\#', result)
-        if match != None:
-            output = 1
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def get_ip_from_regexp(self, cmmac, ip_regexpr):
+        """
+        Gets an ip address according to a regexpr (helper function)
+        Args: cmmac, ip_regexpr
+        Return: ip addr (ipv4/6 according to regexpr) or None if not found
+        """
+        self.sendline('show cable modem | include %s' % cmmac)
+        if 1 == self.expect([cmmac + '\s+(' + ip_regexpr + ')', pexpect.TIMEOUT], timeout=2):
+            output = "None"
         else:
-            output = 0
+            result = self.match.group(1)
+            if self.match != None:
+                output = result
+            else:
+                output = "None"
         self.expect(self.prompt)
         return output
 
     def get_cmip(self, cmmac):
-	tmp = cmmac.replace(":", "").lower()
-	cmmac_cmts = tmp[:4]+"."+ tmp[4:8]+"."+tmp[8:]
-        self.sendline('show cable modem %s' % cmmac)
-        self.expect(cmmac_cmts + '\s+([\d\.]+)')
-        result = self.match.group(1)
-        if self.match != None:
-            output = result
-        else:
-            output = "None"
-        self.expect(self.prompt)
-        return output
+        """
+        Returns the CM mgmt ipv4 address
+        Args: cmmac
+        Return: ip addr (ipv4) or None if not found
+        """
+        return self.get_ip_from_regexp(cmmac, ValidIpv4AddressRegex)
 
     def get_cmipv6(self, cmmac):
-        self.sendline('show cable modem %s' % cmmac)
-        self.expect(self.prompt)
-        match = re.search(AllValidIpv6AddressesRegex, self.before)
-        if match:
-            output = match.group(0)
-        else:
-            output = "None"
-        return output
+        """
+        Returns the CM mgmt ipv6 address
+        Args: cmmac
+        Return: ip addr (ipv4) or None if not found
+        """
+        return self.get_ip_from_regexp(cmmac, AllValidIpv6AddressesRegex)
 
-    def get_mtaip(self, cmmac, mtamac):
-        if ':' in mtamac:
-            mtamac = self.get_cm_mac_cmts_format(mtamac)
-        self.sendline('show cable modem %s cpe' % cmmac)
-        self.expect('([\d\.]+)\s+dhcp\s+' + mtamac)
-        result = self.match.group(1)
-        if self.match != None:
-            output = result
-        else:
-            output = "None"
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def get_cm_mac_domain(self,cm_mac):
+        """
+        Returns the Mac-domain of Cable modem
+        Args: cm_mac
+        Return: ip addr (ipv4) or None if not found
+        """
+        mac_domain = None
+        self.sendline('show cable modem %s detail | include Cable-Mac='% cm_mac)
+        if 0 == self.expect(['Cable-Mac= ([0-9]{1,3}),', pexpect.TIMEOUT], timeout=5):
+            mac_domain = self.match.group(1)
         self.expect(self.prompt)
-        return output
+        return mac_domain
 
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def check_PartialService(self, cmmac):
+        self.sendline('show cable modem %s | include impaired' % cmmac)
+        self.expect('\(impaired:\s')
+        match = self.match.group(1)
+        self.expect(self.prompt)
+        return match != None
+
+    @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
+    def DUT_chnl_lock(self,cm_mac):
+        """Check the CM channel locks with 24*8 """
+        self.sendline("show cable modem | include %s" % cm_mac)
+        index = self.expect(["(24x8)"], timeout=3)
+        self.expect(self.prompt)
+        return 0 == index
+
+    '''
     def DUT_chnl_lock(self,cm_mac):
         """Check the CM channel locks with 24*8 """
         self.sendline("show cable modem %s bonding" % cm_mac)
@@ -180,16 +235,6 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.expect(self.prompt)
         return bundle
 
-    def get_cm_mac_domain(self,cm_mac):
-        """Get the Mac-domain of Cable modem """
-        self.sendline('show cable modem '+cm_mac+' verbose | i "MAC Domain"')
-        idx = self.expect(['(MAC Domain)[ ]{2,}\:([0-9]|[0-9][0-9])'] + self.prompt)
-        if idx != 0:
-            assert 0,"ERROR: Failed to get the CM Mac Domain from the CMTS"
-        mac_domain = self.match.group(2)
-        self.expect(self.prompt)
-        return mac_domain
-    
     def get_cmts_ip_bundle(self,bundle):
         """get the CMTS bundle IP"""
         self.sendline('show interface ip-bundle %s | i "secondary"' % bundle)
@@ -482,6 +527,17 @@ class CasaCMTS(base_cmts.BaseCmts):
         else:
             return True
 
+    # Function:   get_cm_mac_cmts_format(mac)
+    # Parameters: mac        (mac address XX:XX:XX:XX:XX:XX)
+    # returns:    the cm_mac in cmts format xxxx.xxxx.xxxx (lowercase)
+    def get_cm_mac_cmts_format(self, mac):
+        if mac == None:
+            return None
+        # the mac cmts syntax format example is 3843.7d80.0ac0
+        tmp = mac.replace(':', '')
+        mac_cmts_format = tmp[:4]+"."+tmp[4:8]+"."+tmp[8:]
+        return mac_cmts_format.lower()
+
     def check_docsis_mac_ip_provisioning_mode(self, index):
         self.sendline('show interface docsis-mac %s' % index)
         self.expect('ip-provisioning-mode (\w+\-\w+)')
@@ -532,65 +588,5 @@ class CasaCMTS(base_cmts.BaseCmts):
         assert 'channel %s frequency' % sub in self.before
 
         return str(int(self.before.split(' ')[-1]))
+    '''
 
-if __name__ == '__main__':
-    import time
-
-    connection_type = "local_cmd"
-    cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
-
-    if len(sys.argv) > 2 and sys.argv[2] == "setup_ipv6":
-        print "Setting up IPv6 address, bundles, routes, etc"
-        cmts.set_iface_ipv6addr('gige 0', '2001:dead:beef:1::cafe/64')
-        cmts.add_route6('::/0', '2001:dead:beef:1::1')
-        # TODO: casa 3200 cmts only supports one ip bundle for ipv6....
-        # so we use a ipv6 address 2001:dead:beef:4::cafe/62 for that which means we can bump
-        # these up too
-        cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:4::cafe/64",
-                                  secondary_ips=["2001:dead:beef:5::cafe/64", "2001:dead:beef:6::cafe/64"])
-        sys.exit(0)
-
-    # TODO: example for now, need to parse args
-    if False:
-        cmts.mirror_traffic()
-        cmts.run_tcpdump(15, opts="-w dump.pcap")
-        # TODO: extract pcap from CMTS
-        cmts.del_file("dump.pcap")
-        cmts.unmirror_traffic()
-        sys.exit(0)
-
-    cmts.save_running_to_startup_config()
-    cmts.save_running_config_to_local("saved-casa-config-" + time.strftime("%Y%m%d-%H%M%S") + ".cfg")
-    cmts.reset()
-    cmts.wait_for_ready()
-
-    cmts.set_iface_ipaddr('eth 0', '172.19.17.136 255.255.255.192')
-    cmts.set_iface_ipaddr('gige 0', '192.168.3.222 255.255.255.0')
-    # TODO: add third network for open
-    cmts.add_ip_bundle(1, "192.168.3.1", "192.168.200.1", secondary_ips=["192.168.201.1", "192.168.202.1"])
-
-    cmts.add_route("0.0.0.0", "0", "192.168.3.1")
-
-    qam_idx = cmts.get_qam_module()
-    ups_idx = cmts.get_ups_module()
-
-    cmts.set_iface_qam(qam_idx, 0, 'A', 12, 550)
-    cmts.set_iface_qam_freq(qam_idx, 0, 0, 235000000)
-    cmts.set_iface_qam_freq(qam_idx, 0, 1, 243000000)
-    cmts.set_iface_qam_freq(qam_idx, 0, 2, 251000000)
-    cmts.set_iface_qam_freq(qam_idx, 0, 3, 259000000)
-
-    cmts.add_service_class(1, 'UNLIMITED_down', 100000, 10000, downstream=True)
-    cmts.add_service_class(2, 'UNLIMITED_up', 100000, 16320)
-
-    cmts.add_service_group(1, qam_idx, 0, range(4), ups_idx, [0.0, 1.0])
-
-    cmts.add_iface_docsis_mac(1, 1, qam_idx, 0, range(4), ups_idx, [0.0, 1.0])
-
-    cmts.set_iface_upstream(ups_idx, 0.0, 47000000, 6400000, 6)
-
-    print
-    print("Press Control-] to exit interact mode")
-    print("=====================================")
-    cmts.interact()
-    print
