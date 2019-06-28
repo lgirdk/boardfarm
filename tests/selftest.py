@@ -161,12 +161,14 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         wan.sendline()
         wan.expect(wan.prompt)
         wan.sendline("ip a")
+        wan.expect_exact("ip a")
         wan.expect(wan.prompt)
         w = wan.before
 
         self.session.sendline()
         self.session.expect(self.session.prompt)
         self.session.sendline("ip a")
+        self.session.expect_exact("ip a")
         self.session.expect(self.session.prompt)
         s = self.session.before
 
