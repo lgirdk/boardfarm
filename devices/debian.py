@@ -469,6 +469,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.sendline('ip route add %s' % self.static_route)
             self.expect(self.prompt)
 
+        self.sendline('alias mgmt')
+        idx = self.expect(['alias mgmt=', pexpect.TIMEOUT], timeout=10)
+        if idx == 0:
+            self.expect(self.prompt)
+            self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
+
     def setup_dhcp_server(self):
         if not self.wan_dhcp_server:
             return
