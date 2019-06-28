@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "50fcf612_20d6449f",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-28T14:26:31Z",
+      "side": 1,
+      "message": "Why not do this like in debian.py where we delete and add?\n\n\n        if self.static_route is not None:\n            # TODO: add some ppint handle this more robustly\n            self.send(\u0027ip route del %s; \u0027 % self.static_route.split(\u0027 via \u0027)[0])\n            self.sendline(\u0027ip route add %s\u0027 % self.static_route)\n            self.expect(self.prompt)",
+      "revId": "f7546e6086ea5a6cce5185c822a9c44e20a9f78c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
