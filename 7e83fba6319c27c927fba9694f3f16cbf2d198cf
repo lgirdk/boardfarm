@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "50361df9_3bef86d3",
+        "filename": "deploy-boardfarm-nodes.sh",
+        "patchSetId": 24
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-06-28T00:24:21Z",
+      "side": 1,
+      "message": "convert tabs to 4 spaces for consistency.",
+      "revId": "7e83fba6319c27c927fba9694f3f16cbf2d198cf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
