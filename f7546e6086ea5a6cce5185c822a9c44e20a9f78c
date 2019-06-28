@@ -16,6 +16,24 @@
       "revId": "f7546e6086ea5a6cce5185c822a9c44e20a9f78c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04781b6f_48a170f9",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-28T14:38:58Z",
+      "side": 1,
+      "message": "In line 491, we\u0027re bringing down the interface.\nSo the default route gets deleted automatically.",
+      "parentUuid": "50fcf612_20d6449f",
+      "revId": "f7546e6086ea5a6cce5185c822a9c44e20a9f78c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
