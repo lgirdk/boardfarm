@@ -16,6 +16,24 @@
       "revId": "bea737343b603589501191c5987133882a4e73df",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1e187d9_2c21bd0c",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-28T07:14:04Z",
+      "side": 1,
+      "message": "I believe the hasattr part tries to match to the IP that was configure in the json, as the CMTS may have more than 1 secondary interface. I.e.:\n\nshow interface ip-bundle 1\ninterface ip-bundle 1\n  ip address \u003cip\u003e \u003cip\u003e\n  ip address \u003cip\u003e \u003cip\u003e secondary\n  ip address \u003cip\u003e \u003cip\u003e secondary\n  ipv6 address \u003cipv6/n\u003e\n\nIf the open_gateway is not in the json config, then gets the 1st \"secondary\" (no pun intended) entry. Which may not be correct really (ATM we have only seen the multiple entries when open_gateway is explicitly configured). Maybe Prasada could have something to say on this.",
+      "parentUuid": "96b05edf_a9f42bf8",
+      "revId": "bea737343b603589501191c5987133882a4e73df",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
