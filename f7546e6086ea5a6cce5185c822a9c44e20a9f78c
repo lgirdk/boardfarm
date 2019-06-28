@@ -34,6 +34,24 @@
       "revId": "f7546e6086ea5a6cce5185c822a9c44e20a9f78c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7e7fa910_f1777ce2",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-28T14:39:49Z",
+      "side": 1,
+      "message": "OK- I added that in debian.py and don\u0027t remember why but I thought there could be a reason... just keep it in mind if we see issues.",
+      "parentUuid": "04781b6f_48a170f9",
+      "revId": "f7546e6086ea5a6cce5185c822a9c44e20a9f78c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
