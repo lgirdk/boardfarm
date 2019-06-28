@@ -1,6 +1,7 @@
 import pexpect
+import base_connection
 
-class LocalCmd():
+class LocalCmd(base_connection.BaseConnection):
     '''
     Set connection_type to local_cmd, ignores all output for now
     '''
@@ -10,6 +11,8 @@ class LocalCmd():
 
     def connect(self):
         try:
+            if super(LocalCmd, self).connect():
+                return
             pexpect.spawn.__init__(self.device,
                                command='/bin/bash',
                                args=['-c', self.conn_cmd])
@@ -17,5 +20,8 @@ class LocalCmd():
         except pexpect.EOF as e:
             raise Exception("Board is in use (connection refused).")
 
-    def close():
+    def close(self):
+        if super(LocalCmd, self).close():
+            return
         self.device.sendcontrol('c')
+
