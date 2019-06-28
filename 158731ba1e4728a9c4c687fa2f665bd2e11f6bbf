@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "73af1287_60ca8dd9",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-28T14:25:39Z",
+      "side": 1,
+      "message": "It would be generic if we decide the variant via show system command.\nHostnames are user specific and can be renamed to anything:\n\nThis is the command to use here\nCASA-C3000\u003eshow system | include Product\nProduct: C3000, Module: SMM\nCASA-C3000\u003e",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5ca38215_5a5f15fd",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-28T14:25:39Z",
+      "side": 1,
+      "message": "this will always return false in C3000.\nCoz the max channel bonding in C3000 is 16x8.",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1f8cb3c2_7208f2c7",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-06-28T14:25:39Z",
+      "side": 1,
+      "message": "Please update the channel count here",
+      "revId": "158731ba1e4728a9c4c687fa2f665bd2e11f6bbf",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
