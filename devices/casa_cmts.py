@@ -20,6 +20,7 @@ class CasaCMTS(base.BaseDevice):
 
     prompt = ['CASA-C3200>', 'CASA-C3200#', 'CASA-C3200\(.*\)#', 'CASA-C10G>', 'CASA-C10G#', 'CASA-C10G\(.*\)#']
     model = "casa_cmts"
+    variant = None
 
     def __init__(self,
                  *args,
@@ -78,6 +79,12 @@ class CasaCMTS(base.BaseDevice):
     def logout(self):
         self.sendline('exit')
         self.sendline('exit')
+
+    def get_cmts_variant(self):
+        """Function to get the cmts type"""
+        self.sendline("show system | include Product")
+        self.expect(['Product: ([0-9A-Z]+)'])
+        self.variant = self.after
 
     def check_online(self, cmmac):
         """Function checks the encrytion mode and returns True if online"""
@@ -157,15 +164,33 @@ class CasaCMTS(base.BaseDevice):
         return output
 
     def DUT_chnl_lock(self,cm_mac):
-        """Check the CM channel locks with 24*8 """
-        self.sendline("show cable modem %s bonding" % cm_mac)
-        index = self.expect(["256\(8\*24\)"]+ self.prompt)
-        chnl_lock = self.match.group()
-        if 0 == index:
-            self.expect(self.prompt)
-            return True
+        """Check the CM channel locks based on cmts type"""
+        if "3000" in self.variant:
+            streams = ['Upstream', 'Downstream']
+            channel_list = []
+            for stream in streams:
+                self.sendline("show cable modem %s verbose | inc \"%s Channel Set\"" % (cm_mac, stream))
+                if stream == 'Upstream':
+                    self.expect(['(\d+/\d+.\d+/\d+).*'])
+                    match = re.search('(\d+/\d+.\d+/\d+).*', self.after)
+                elif stream == 'Downstream':
+                    self.expect(['(\d+/\d+/\d+).*'])
+                    match = re.search('(\d+/\d+/\d+).*', self.after)
+                channel = len(match.group().split(","))
+                channel_list.append(channel)
+            if channel_list[0] == 8 and channel_list[1] == 16:
+                return True
+            else:
+                return False
         else:
-            return False
+            self.sendline("show cable modem %s bonding" % cm_mac)
+            index = self.expect(["256\(8\*24\)"]+ self.prompt)
+            chnl_lock = self.match.group()
+            if 0 == index:
+                self.expect(self.prompt)
+                return True
+            else:
+                return False
 
     def get_cm_bundle(self,mac_domain):
         """Get the bundle id from mac-domain """
@@ -186,7 +211,7 @@ class CasaCMTS(base.BaseDevice):
         mac_domain = self.match.group(2)
         self.expect(self.prompt)
         return mac_domain
-    
+
     def get_cmts_ip_bundle(self,bundle):
         """get the CMTS bundle IP"""
         self.sendline('show interface ip-bundle %s | i "secondary"' % bundle)
