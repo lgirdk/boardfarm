@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b2b1e108_9eec65ef",
+        "filename": "devices/base_connection.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-06-29T18:01:55Z",
+      "side": 1,
+      "message": "Is disable_kermit only hard-coded right here? Not set in a config file, environment variable, or anything? I\u0027m just curious if there\u0027s an easy way to change it, or a user has to change code.",
+      "revId": "fc007dd8bbdf8944a95f026b6827d6cb370aaee3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
