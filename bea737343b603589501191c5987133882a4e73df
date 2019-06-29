@@ -34,6 +34,24 @@
       "revId": "bea737343b603589501191c5987133882a4e73df",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "031ff3d1_311dae88",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-06-29T02:45:37Z",
+      "side": 1,
+      "message": "Should this just return all matching networks then? Don\u0027t we want to matching against some input network then?",
+      "parentUuid": "e1e187d9_2c21bd0c",
+      "revId": "bea737343b603589501191c5987133882a4e73df",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
