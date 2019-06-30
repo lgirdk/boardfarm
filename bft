@@ -254,7 +254,7 @@ def main():
             for name in config.EXTRA_TESTS:
                 t = getattr(tests, name, None)
                 if t is None:
-                    raise Exception("Unable to load test from tests class!!!! Parsing of test selected via -e failed")
+                    raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
                 print_bold("  %s" % t)
                 test = t(config)
                 test.start = start
