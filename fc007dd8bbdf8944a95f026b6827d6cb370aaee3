@@ -16,6 +16,24 @@
       "revId": "fc007dd8bbdf8944a95f026b6827d6cb370aaee3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c50213da_695756b2",
+        "filename": "devices/base_connection.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-30T13:17:41Z",
+      "side": 1,
+      "message": "my idea was to use this as a \"kill switch\". \nAnd I did not think of using an environment var (I will probably put it in the already existing BFT_OPTIONS) thanks for pointing it out....\nThis implementation is a first attempt, which needs to be tested by as many people as possible. \nReason: there are some windows telnet servers that behave in a non standard way.",
+      "parentUuid": "b2b1e108_9eec65ef",
+      "revId": "fc007dd8bbdf8944a95f026b6827d6cb370aaee3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
