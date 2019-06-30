@@ -34,6 +34,24 @@
       "revId": "fc007dd8bbdf8944a95f026b6827d6cb370aaee3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "82f9e63c_aafdbb6a",
+        "filename": "devices/base_connection.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-06-30T13:20:17Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "c50213da_695756b2",
+      "revId": "fc007dd8bbdf8944a95f026b6827d6cb370aaee3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
