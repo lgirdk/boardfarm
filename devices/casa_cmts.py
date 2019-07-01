@@ -171,7 +171,6 @@ class CasaCMTS(base_cmts.BaseCmts):
         """Check the CM channel locks based on cmts type"""
         streams = ['Upstream', 'Downstream']
         channel_list = []
-        channel_lock = False
         for stream in streams:
             self.sendline("show cable modem %s verbose | inc \"%s Channel Set\"" % (cm_mac, stream))
             if stream == 'Upstream':
@@ -182,13 +181,7 @@ class CasaCMTS(base_cmts.BaseCmts):
                 match = re.search('(\d+/\d+/\d+).*', self.after)
             channel = len(match.group().split(","))
             channel_list.append(channel)
-        if "3000" in self.variant:
-            if channel_list[0] == 8 and channel_list[1] == 16:
-                channel_lock = True
-        else:
-            if channel_list[0] == 8 and channel_list[1] == 24:
-                channel_lock = True
-        return channel_lock
+        return channel_list
 
     def get_cm_bundle(self,mac_domain):
         """Get the bundle id from mac-domain """
