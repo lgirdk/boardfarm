@@ -204,16 +204,16 @@ def main():
     except:
         print_bold("Using Board %s, User %s" % (name, os.environ['USER']))
 
-    # Let boardfarm server know we are using a station
-    bfweb.checkout(name)
-    # Checkin the station when we exit
-    atexit.register(bfweb.checkin, name)
+    # Store name of station in config for convenience
+    config.board['station'] = name
+
+    # Notify boardfarm server of station & devices we are using
+    bfweb.checkout(config.board)
+    # Checkin station & devices when we exit
+    atexit.register(bfweb.checkin)
 
     # Make devices (board, lan, wan, available to tests easily)
     devices.initialize_devices(config)
-
-    # Write board info to json file and stdout
-    config.board['station'] = name
 
     # Update config from board info
     if hasattr(config.console, "update_config"):
