@@ -2,6 +2,7 @@ import ser2net_connection
 import local_serial_connection
 import ssh_connection
 import local_cmd
+import kermit_connection
 
 def connection(conn_type, device, **kwargs):
     '''
@@ -18,6 +19,9 @@ def connection(conn_type, device, **kwargs):
 
     if conn_type in ("local_cmd"):
         return local_cmd.LocalCmd(device=device, **kwargs)
+
+    if conn_type in ("kermit_cmd"):
+        return kermit_connection.KermitConnection(device=device, **kwargs)
 
     # Default for all other models
     print("\nWARNING: Unknown connection type  '%s'." % type)
