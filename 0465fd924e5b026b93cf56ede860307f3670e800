@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "33988b5e_cb17d2a0",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-01T21:48:19Z",
+      "side": 1,
+      "message": "Why did you add this back? No one is using it...",
+      "revId": "0465fd924e5b026b93cf56ede860307f3670e800",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
