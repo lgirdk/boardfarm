@@ -23,6 +23,7 @@ class BoardfarmWebClient(object):
         self.debug = debug
         self.server_url = None
         self.server_version = None
+        self.checked_out = None
         # If config isn't on a server, do nothing
         if not config_url.startswith('http'):
             return
@@ -43,28 +44,32 @@ class BoardfarmWebClient(object):
                 print("The server hosting '%s' does not appear to be a "
                       "boardfarm server." % self.config_url)
 
-    def checkout(self, name):
+    def checkout(self, config):
         if not self.server_version:
             return
         try:
+            # Gather all the '_id' keys out of the config
+            station_id = config.get('_id', None)
+            device_ids = []
+            if "devices" in config:
+                device_ids = [x["_id"] for x in config["devices"] if "_id" in x]
+            self.checked_out = {"ids": [station_id] + device_ids,
+                                "name": config.get("station", None)}
+            self.checked_out.update(self.default_data)
             url = self.server_url + "/checkout"
-            info = {"name": name}
-            info.update(self.default_data)
-            requests.post(url, json=info)
+            requests.post(url, json=self.checked_out)
             print("Notified boardfarm server of checkout of %s" % name)
         except Exception as e:
             if self.debug:
                 print(e)
                 print("Failed to notify boardfarm server of checkout")
 
-    def checkin(self, name):
-        if not self.server_version:
+    def checkin(self):
+        if not self.server_version or not self.checked_out:
             return
         try:
             url = self.server_url + "/checkin"
-            info = {"name": name}
-            info.update(self.default_data)
-            requests.post(url, json=info)
+            requests.post(url, json=self.checked_out)
             print("Notified boardfarm server of checkin of %s" % name)
         except Exception as e:
             if self.debug:
@@ -75,5 +80,7 @@ if __name__ == '__main__':
     bf_config = "http://boardfarm.myexamplesite.com/api/bf_config"
     #bf_config = "../bf_config.json"
     bfweb = BoardfarmWebClient(bf_config, debug=False)
-    bfweb.checkout("rpi3")
-    bfweb.checkin("rpi3")
+    bfweb.checkout({"_id": "1111",
+                    "station": "rpi3",
+                    "devices": [{"_id": "1112"}]})
+    bfweb.checkin()
