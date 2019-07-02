@@ -80,6 +80,14 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.sendline('exit')
         self.sendline('exit')
 
+    def get_cmts_variant(self):
+        '''Function to get the cmt type'''
+        self.sendline("show system | include Product")
+        self.expect(['Product: ([0-9A-Z]+)'])
+        variant = self.after
+        self.expect(self.prompt)
+        return variant
+
     def check_online(self, cmmac):
         """Function checks the encrytion mode and returns True if online"""
         """Function returns actual status if status other than online"""
@@ -160,15 +168,19 @@ class CasaCMTS(base_cmts.BaseCmts):
         return output
 
     def DUT_chnl_lock(self,cm_mac):
-        """Check the CM channel locks with 24*8 """
-        self.sendline("show cable modem %s bonding" % cm_mac)
-        index = self.expect(["256\(8\*24\)"]+ self.prompt)
-        chnl_lock = self.match.group()
-        if 0 == index:
+        """Check the CM channel locks based on cmts type"""
+        streams = ['Upstream', 'Downstream']
+        channel_list = []
+        for stream in streams:
+            self.sendline("show cable modem %s verbose | inc \"%s Channel Set\"" % (cm_mac, stream))
             self.expect(self.prompt)
-            return True
-        else:
-            return False
+            if stream == 'Upstream':
+                match = re.search('(\d+/\d+.\d+/\d+).+', self.before)
+            elif stream == 'Downstream':
+                match = re.search('(\d+/\d+/\d+).+', self.before)
+            channel = len(match.group().split(","))
+            channel_list.append(channel)
+        return channel_list
 
     def get_cm_bundle(self,mac_domain):
         """Get the bundle id from mac-domain """
