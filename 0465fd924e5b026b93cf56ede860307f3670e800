@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "6679227d_91ba3caf",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1016175
+      },
+      "writtenOn": "2019-07-02T08:03:06Z",
+      "side": 1,
+      "message": "For diff types of cmts in future folks can use to know which cmts type. Hence i kept this.\nShould i remove this ?",
+      "parentUuid": "33988b5e_cb17d2a0",
+      "revId": "0465fd924e5b026b93cf56ede860307f3670e800",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "ab68ae48_2a3b930c",
         "filename": "devices/casa_cmts.py",
         "patchSetId": 3
