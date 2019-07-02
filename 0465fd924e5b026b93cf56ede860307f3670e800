@@ -16,6 +16,40 @@
       "revId": "0465fd924e5b026b93cf56ede860307f3670e800",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ab68ae48_2a3b930c",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-07-02T07:38:28Z",
+      "side": 1,
+      "message": "missing device prompt here",
+      "revId": "0465fd924e5b026b93cf56ede860307f3670e800",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "54e9f4d5_77ab675f",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-07-02T07:38:28Z",
+      "side": 1,
+      "message": "here also same",
+      "revId": "0465fd924e5b026b93cf56ede860307f3670e800",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
