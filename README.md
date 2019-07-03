@@ -23,12 +23,45 @@ Software Setup
 
 If you are a Linux user, and wish to run and/or develop tests, please clone this repository and then install needed libaries:
 ```shell
-apt-get install python-pip curl
+apt-get install python-pip curl python-tk libsnmp-dev snmp-mibs-downloader
 cd openwrt/
 pip install -r requirements.txt
 ```
 
 The file `config.py` is the main configuration. For example, it sets the location of the file that describes the available hardware.
+
+### Compiling Qemu to simulate devices
+
+[Qemu](https://www.qemu.org/) does full system simulation, and boardfarm can use that tool to run tests on simulated devices (e.g. a simulated OpenWrt router). If you want to use qemu, you will want a recent version (3.0 or higher). You may have to compile on your own system, and if so here's how:
+
+```sh
+sudo apt-get update
+sudo apt-get install build-essential zlib1g-dev pkg-config \
+    libglib2.0-dev binutils-dev libboost-all-dev autoconf \
+    libtool libssl-dev libpixman-1-dev libpython-dev python-pip \
+    python-capstone virtualenv wget
+wget https://download.qemu.org/qemu-4.0.0.tar.xz
+tar xvJf qemu-4.0.0.tar.xz
+cd qemu-4.0.0
+./configure
+make
+sudo make install
+```
+
+### Getting Docker for simulated devices
+
+Docker is also useful for creating simulated devices for running tests. To get the latest stable docker and set it up correctly:
+
+```sh
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce
+# Add your user to the docker group so that you can run docker without sudo
+sudo usermod -aG docker $USER
+```
 
 Hardware Setup
 --------------
