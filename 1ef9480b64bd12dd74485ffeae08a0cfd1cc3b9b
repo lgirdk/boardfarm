@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "372035f4_bb586e97",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-03T21:43:38Z",
+      "side": 1,
+      "message": "I keep seeing this function being added but no one is calling it... what is the purpose since you reverted the other change?",
+      "range": {
+        "startLine": 83,
+        "startChar": 8,
+        "endLine": 83,
+        "endChar": 24
+      },
+      "revId": "1ef9480b64bd12dd74485ffeae08a0cfd1cc3b9b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
