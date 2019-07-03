@@ -10,7 +10,6 @@ import unittest2
 import lib
 import sys
 import traceback
-import time
 
 from devices import board, wan, lan, wlan, prompt
 from lib.logging import LoggerMeta, now_short
@@ -58,21 +57,26 @@ class LinuxBootTest(unittest2.TestCase):
 
     def testWrapper(self):
         self.start_time = time.time()
+        is_nosh = False
 
         for d in self.config.devices:
             dev = getattr(self.config, d)
             dev.test_to_log = self
             dev.test_prefix = d.encode("utf8")
 
-        for c in board.consoles:
-            c.test_to_log = self
-            c.test_prefix = 'console-%s' % str(board.consoles.index(c) + 1)
+        try:
+            for c in board.consoles:
+                c.test_to_log = self
+                c.test_prefix = 'console-%s' % str(board.consoles.index(c) + 1)
 
-            if not c.isalive():
-                self.result_grade = "SKIP"
-                print("\n\n=========== Test skipped! Board is not alive... =============")
-                self.skipTest("Board is not alive")
-                raise
+                if not c.isalive():
+                    self.result_grade = "SKIP"
+                    print("\n\n=========== Test skipped! Board is not alive... =============")
+                    self.skipTest("Board is not alive")
+                    raise
+        except:
+            print("\n\n=========== testing in nosh image =============\n\n")
+            is_nosh = True
 
         try:
             if wan and hasattr(self, 'wan_setup'):
@@ -90,7 +94,8 @@ class LinuxBootTest(unittest2.TestCase):
             while retry >= 0:
                 try:
                     self.runTest()
-                    board.touch()
+                    if not is_nosh:
+                        board.touch()
                     retry = -1
                 except Exception as e:
                     retry = retry - 1
