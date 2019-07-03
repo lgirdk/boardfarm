@@ -37,8 +37,8 @@ class Interact(rootfs_boot.RootFSBootTest):
     def runTest(self):
         legacy = hasattr(self.config, "wan_device")
         lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
-        board.sendline()
         try:
+            board.sendline()
             board.interact()
         except:
             return

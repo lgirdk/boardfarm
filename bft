@@ -129,10 +129,13 @@ def main():
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
 
-
             # Connect to board
+            if 'y' in config.NOSH:
+                conn_cmmd = ""
+            else:
+                conn_cmmd = config.board['conn_cmd']
             config.console = devices.board_decider(config.board['board_type'],
-                                                 conn_cmd=config.board['conn_cmd'],
+                                                 conn_cmd=conn_cmmd,
                                                  power_ip=config.board.get('powerip', None),
                                                  power_outlet=config.board.get('powerport', None),
                                                  web_proxy=config.board.get('lan_device', None),

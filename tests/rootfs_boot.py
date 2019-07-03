@@ -125,8 +125,8 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         board.linux_booted = True
         board.wait_for_linux()
         if self.config.META_BUILD and board.flash_meta_booted:
-            board.flash_meta(self.config.META_BUILD, wan, lan)
-        linux_booted_seconds_up = board.get_seconds_uptime()
+            board.flash_meta(self.config.META_BUILD, wan, lan, None, True)
+        linux_booted_seconds_up = board.get_seconds_uptime(wan)
         # Retry setting up wan protocol
         if self.config.setup_device_networking:
             for i in range(2):
@@ -145,23 +145,10 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         # Give other daemons time to boot and settle
         if self.config.setup_device_networking:
             for i in range(5):
-                board.get_seconds_uptime()
+                board.get_seconds_uptime(wan)
                 time.sleep(5)
 
-        try:
-            board.sendline("passwd")
-            board.expect("password:", timeout=8)
-            board.sendline("password")
-            board.expect("password:")
-            board.sendline("password")
-            board.expect(prompt)
-        except:
-            print("WARNING: Unable to set root password on router.")
-
-        board.sendline('cat /proc/cmdline')
-        board.expect(prompt)
-        board.sendline('uname -a')
-        board.expect(prompt)
+        board.set_router_password()
 
         # we can't have random messsages messages
         board.set_printk()
@@ -175,7 +162,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
             check_valid_docsis_ip_networking(board)
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
-        end_seconds_up = board.get_seconds_uptime()
+        end_seconds_up = board.get_seconds_uptime(wan)
         print("\nThe router has been up %s seconds." % end_seconds_up)
         if self.config.setup_device_networking:
             assert end_seconds_up > linux_booted_seconds_up
