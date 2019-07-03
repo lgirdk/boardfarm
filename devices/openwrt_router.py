@@ -78,6 +78,7 @@ class OpenWrtRouter(base.BaseDevice):
         self.consoles = [self]
         self.start = kwargs['start']
 
+
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
             conn_cmd = self.conn_list[0]
@@ -86,9 +87,11 @@ class OpenWrtRouter(base.BaseDevice):
             print("\nWARNING: Unknown connection type using ser2net\n")
             connection_type = "ser2net"
 
-        self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd, **kwargs)
-        self.connection.connect()
-        self.logfile_read = output
+        # atom console
+        if type(self.conn_list) is list:
+            self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd, **kwargs)
+            self.connection.connect()
+            self.logfile_read = output
 
         self.power = power.get_power_device(power_ip, outlet=power_outlet, username=power_username, password=power_password)
         self.model = model
@@ -496,16 +499,16 @@ class OpenWrtRouter(base.BaseDevice):
 
     def wait_for_mounts(self):
         # wait for overlay to finish mounting
-	for i in range(5):
-	    try:
-		board.sendline('mount')
-		board.expect_exact('overlayfs:/overlay on / type overlay', timeout=15)
-		board.expect(prompt)
-		break
-	    except:
-		pass
-	else:
-		print("WARN: Overlay still not mounted")
+        for i in range(5):
+            try:
+                board.sendline('mount')
+                board.expect_exact('overlayfs:/overlay on / type overlay', timeout=15)
+                board.expect(prompt)
+                break
+            except:
+                pass
+            else:
+            		print("WARN: Overlay still not mounted")
 
     def get_dns_server(self):
         return "%s" % lan_gateway
@@ -650,6 +653,22 @@ class OpenWrtRouter(base.BaseDevice):
             print "WARN: did not match all stats collected!"
 
         dict_to_log.update(self.failed_stats)
+
+    def set_router_password(self):
+        try:
+            board.sendline("passwd")
+            board.expect("password:", timeout=8)
+            board.sendline("password")
+            board.expect("password:")
+            board.sendline("password")
+            board.expect(prompt)
+
+            board.sendline('cat /proc/cmdline')
+            board.expect(prompt)
+            board.sendline('uname -a')
+            board.expect(prompt)
+        except:
+            print("WARNING: Unable to set root password on router.")
 
 if __name__ == '__main__':
     # Example use

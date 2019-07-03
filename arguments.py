@@ -80,6 +80,7 @@ def parse():
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('-g', '--golden', metavar='', type=str, default=[], nargs='+', help='Path to JSON results to compare against (golden master)')
     parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
+    parser.add_argument('--nosh', metavar='', type=str, default='n', help='Testing in nosh image')
 
     args = parser.parse_args()
 
@@ -283,6 +284,7 @@ def parse():
     config.bootargs = args.bootargs
     config.golden = args.golden
     config.features = args.feature
+    config.NOSH = args.nosh
 
     return config
 
