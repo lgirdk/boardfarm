@@ -81,6 +81,8 @@ create_container_stub () {
 		-d $BF_IMG /usr/sbin/sshd -D
 
 	cspace=$(docker inspect --format '{{.State.Pid}}' $cname)
+	# this should avoid the cli wrapping onto itself
+	docker exec $cname bash -c 'echo "stty columns 200" >> /root/.bashrc'
 	sudo ip link set netns $cspace dev $ifacedut
 	docker exec $cname ip link set $ifacedut name eth1
 	docker exec $cname ip link set dev eth1 address $(random_private_mac $vlan)
