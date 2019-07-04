@@ -191,3 +191,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 self.sendline(self.password)
                 self.expect(self.prompt)
         super(LinuxDevice, self).sendline(cmd)
+
+    def set_cli_size(self, columns):
+        '''Set the terminal colums value'''
+        self.sendline('stty columns %s'%str(columns))
+        self.expect(self.prompt)
