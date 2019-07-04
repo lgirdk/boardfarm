@@ -116,6 +116,7 @@ class DebianBox(linux.LinuxDevice):
         self.lan_gateway = lan_gateway
         self.tftp_device = self
 
+
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
         # board
@@ -185,6 +186,10 @@ class DebianBox(linux.LinuxDevice):
         # if we did initially get a prompt wait for one here
         if i < 4:
             self.expect(self.prompt)
+
+        # attempts to fix the cli colums size
+        self.set_cli_size(200)
+
 
         if ipaddr is None:
             self.sendline('hostname')
