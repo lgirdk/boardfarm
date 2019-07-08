@@ -46,6 +46,30 @@
       "revId": "1ef9480b64bd12dd74485ffeae08a0cfd1cc3b9b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98f08b6f_3098c464",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-08T13:46:52Z",
+      "side": 1,
+      "message": "This can be added back when someone uses the code but for this change I suggested a clean revert of the original change and then a second commit to fix the function below. This is that second commit but it\u0027s adding this function back and I can\u0027t see why...",
+      "parentUuid": "d073a7e4_c46c62ac",
+      "range": {
+        "startLine": 83,
+        "startChar": 8,
+        "endLine": 83,
+        "endChar": 24
+      },
+      "revId": "1ef9480b64bd12dd74485ffeae08a0cfd1cc3b9b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
