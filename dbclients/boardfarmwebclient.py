@@ -29,7 +29,8 @@ class BoardfarmWebClient(object):
             return
         self.default_data = {'hostname': socket.gethostname(),
                              'username': os.environ.get('BUILD_USER_ID', None) or \
-                                         os.environ.get('USER', None)
+                                         os.environ.get('USER', None),
+                             'build_url': os.environ.get('BUILD_URL', None)
                             }
         try:
             # See if this is a boardfarm server by checking the root /api path
