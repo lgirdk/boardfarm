@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "704746b1_038c05ba",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-09T22:14:03Z",
+      "side": 1,
+      "message": "I think we need to re-use the exit codes that are already in use, otherwise scripts will fail.",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57a4dcc7_507e5dbc",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-09T22:14:03Z",
+      "side": 1,
+      "message": "What if the only mv2 board is in use and we request an mv2 board, will it print the first message not the second?",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
