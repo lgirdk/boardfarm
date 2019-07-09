@@ -59,7 +59,9 @@ class BoardfarmWebClient(object):
             self.checked_out.update(self.default_data)
             url = self.server_url + "/checkout"
             requests.post(url, json=self.checked_out)
-            print("Notified boardfarm server of checkout of %s" % name)
+            print("Notified boardfarm server of checkout")
+            if self.debug:
+                print(self.checked_out)
         except Exception as e:
             if self.debug:
                 print(e)
@@ -71,7 +73,9 @@ class BoardfarmWebClient(object):
         try:
             url = self.server_url + "/checkin"
             requests.post(url, json=self.checked_out)
-            print("Notified boardfarm server of checkin of %s" % name)
+            print("Notified boardfarm server of checkin")
+            if self.debug:
+                print(self.checked_out)
         except Exception as e:
             if self.debug:
                 print(e)
