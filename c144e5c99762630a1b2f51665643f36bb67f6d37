@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "d7df599d_4358361e",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-09T22:10:05Z",
+      "side": 1,
+      "message": "Why do we need to import board for this?",
+      "revId": "c144e5c99762630a1b2f51665643f36bb67f6d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c9f71133_b619c829",
         "filename": "devices/casa_cmts.py",
         "patchSetId": 2
