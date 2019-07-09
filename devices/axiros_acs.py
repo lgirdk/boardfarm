@@ -68,7 +68,7 @@ class AxirosACS():
     def close(self):
         pass
 
-    def get(self, serial_number, param):
+    def get(self, serial_number, param, wait=8):
         GetParameterValuesParametersClassArray_type = self.client.get_type('ns0:GetParameterValuesParametersClassArray')
         GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type ([param])
 
@@ -90,10 +90,10 @@ class AxirosACS():
 
         if ticketid is None:
             return None
-        return self.Axiros_GetTicketValue (ticketid)
+        return self.Axiros_GetTicketValue (ticketid, wait=wait)
 
     def getcurrent(self, serial_number, param):
-        self.get(serial_number, param + '.')
+        self.get(serial_number, param + '.', wait=20)
         # TODO: note: verified ticket was sent to ACS with all the results in the param namespace
         # however the get above does not pull the results so we can't check them here but that's
         # not a major issue since the API does not do that for the current implementation
@@ -144,8 +144,8 @@ class AxirosACS():
 
         return response['code']
 
-    def Axiros_GetTicketValue(self, ticketid):
-        for i in range(8):
+    def Axiros_GetTicketValue(self, ticketid, wait=8):
+        for i in range(wait):
             time.sleep (1)
             with self.client.settings(raw_response=True):
                 ticket_resp = self.client.service.get_generic_sb_result(ticketid)
