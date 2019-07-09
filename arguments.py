@@ -123,6 +123,21 @@ def parse():
         print('Unable to access/read Board Farm configuration\n%s' % boardfarm_config_location)
         sys.exit(1)
 
+    # Check if boardfarm configuration is empty
+    if not config.boardfarm_config:
+        print("ERROR! Boardfarm config at %s is empty, so" % args.config_file)
+        print("either all stations are in use or disabled.")
+        sys.exit(10)
+    # Check if given board type(s) have any overlap with available board types from config
+    if args.board_type:
+        all_board_types = [config.boardfarm_config[key].get('board_type') for key in config.boardfarm_config]
+        if not (set(args.board_type) & set(all_board_types)):
+            print("ERROR! You specified board types: %s " % " ".join(args.board_type))
+            print("but that is not an existing & available type of board.")
+            print("Please choose a board type from:")
+            print("\n".join([" * %s" % x for x in set(all_board_types)]))
+            sys.exit(10)
+
     config.batch = args.batch
 
     if args.inventory:
