@@ -541,3 +541,18 @@ echo same \=\>n,Wait\(20\)
 )>> /etc/asterisk/extensions.conf'''
         device.sendline(num_mod)
         device.expect(device.prompt)
+
+def increment_mac(mac, offset):
+    '''This function to increase the value of mac address in any format'''
+    c = ""; incr = 2
+    if '.' in mac:
+        c = '.'
+        incr = 4
+    elif ':' in mac:
+        c = ':'
+    elif '-' in mac:
+        c = '-'
+    mac = mac.replace(c,"")
+    output = "{:012X}".format(int(mac, 16) + offset)
+    output = c.join([output[i:i+incr] for i,j in enumerate(output) if not (i%incr)])
+    return output
