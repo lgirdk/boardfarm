@@ -498,9 +498,14 @@ class CasaCMTS(base_cmts.BaseCmts):
             return result
 
     def get_ertr_ipv4(self, mac):
+        '''Getting erouter ipv4 from CMTS '''
         self.sendline("show cable modem %s cpe" % mac)
         self.expect(self.prompt)
-        ertr_ipv4 = re.search('(%s) .*(eRouter)'% ValidIpv4AddressRegex ,self.before)
+        from netaddr import EUI
+        mac = EUI(mac)
+        ertr_mac = EUI(int(mac) + 2)
+        ertr_mac.dialect = netaddr.mac_cisco
+        ertr_ipv4 = re.search('(%s) .* (%s)' %(ValidIpv4AddressRegex, ertr_mac), self.before)
         if ertr_ipv4:
             ipv4 =ertr_ipv4.group(1)
             return ipv4
@@ -508,6 +513,7 @@ class CasaCMTS(base_cmts.BaseCmts):
             return None
 
     def get_ertr_ipv6(self, mac):
+        '''Getting erouter ipv6 from CMTS '''
         self.sendline("show cable modem %s cpe" % mac)
         self.expect(self.prompt)
         ertr_ipv6 = re.search(ValidIpv6AddressRegex ,self.before)
