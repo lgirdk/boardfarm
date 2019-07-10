@@ -181,3 +181,16 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     def recover(self):
         if self.session is not None:
             self.session.sendline("exit")
+
+class selftest_increment_mac(rootfs_boot.RootFSBootTest):
+    '''This function to increment the value of mac address for different format '''
+
+    def runTest(self):
+        from lib.common import increment_mac
+        mac = ["38:43:7D:80:04:67", "38:43:7D:80:04:0F", "38:43:7D:80:04:FF", '3843.7d80.046f', "38-43-7D-80-04-FF", '3843.7d80.ffff', "38-43-7D-80-FF-FF"]
+
+        expected_mac = ["38:43:7D:80:04:68", "38:43:7D:80:04:10", "38:43:7D:80:05:00", '3843.7d80.0470', "38-43-7D-80-05-00", '3843.7d81.0000', "38-43-7D-81-00-00"]
+        for i in range(len(mac)):
+            assert expected_mac[i].lower() == increment_mac(mac[i], 1).lower(), "Failed on incrementing mac"
+
+        print("Test passed")
