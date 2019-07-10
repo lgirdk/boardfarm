@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "959d482f_7f8b5120",
+        "filename": "tests/linux_boot.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-10T16:56:28Z",
+      "side": 1,
+      "message": "I may be reading this wrong, but is this change assuming that if there is something wrong in this try/except then it must be a nosh image?\nWouldn\u0027t it be better to use the board and check \n        if type(board.conn_list) is list:",
+      "range": {
+        "startLine": 67,
+        "startChar": 8,
+        "endLine": 67,
+        "endChar": 11
+      },
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
