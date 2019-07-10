@@ -39,6 +39,30 @@
       "revId": "c144e5c99762630a1b2f51665643f36bb67f6d37",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8b9f1d8f_ebfbf9ba",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 505,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-10T09:35:27Z",
+      "side": 1,
+      "message": "According to the architects they are +1 and +2......",
+      "parentUuid": "c9f71133_b619c829",
+      "range": {
+        "startLine": 505,
+        "startChar": 21,
+        "endLine": 505,
+        "endChar": 48
+      },
+      "revId": "c144e5c99762630a1b2f51665643f36bb67f6d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
