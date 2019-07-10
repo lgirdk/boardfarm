@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "cb74750b_20af24a0",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-10T00:25:39Z",
+      "side": 1,
+      "message": "Re-use same exit codes? But these are new kinds of exits. You might want to behave differently. Like if we see this exit code, we should wait a random few minutes and try again.",
+      "parentUuid": "704746b1_038c05ba",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "57a4dcc7_507e5dbc",
         "filename": "arguments.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2019-07-09T22:14:03Z",
       "side": 1,
       "message": "What if the only mv2 board is in use and we request an mv2 board, will it print the first message not the second?",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "adb773dd_7d192e13",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-10T00:25:39Z",
+      "side": 1,
+      "message": "No, in that case you would see this error message.\n\nHere\u0027s why: The boardfarm server hands out config files that contain ALL available stations regardless of type.\n\n\"Available\" means both these are met:\n\n  1) available_for_autotests \u003d\u003d true\n  2) active_users \u003c max_users\n\nThat\u0027s it. The boardfarm server doesn\u0027t receive any information about board type, features, or any other thing.",
+      "parentUuid": "57a4dcc7_507e5dbc",
       "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
