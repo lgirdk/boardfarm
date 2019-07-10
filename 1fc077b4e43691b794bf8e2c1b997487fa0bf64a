@@ -2,6 +2,91 @@
   "comments": [
     {
       "key": {
+        "uuid": "6f9bc462_e908ca61",
+        "filename": "arguments.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "This is add an arg for a feature of a specific board type...\n\nWhy not just add a new board type instead of using an argument to modify an existing board type?",
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ac391405_627270af",
+        "filename": "bft",
+        "patchSetId": 7
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "This should all be board specific...",
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ceb2213c_0d4435bb",
+        "filename": "devices/openwrt_router.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "I think we can define an empty function for this for nosh boards\n\n def wait_for_mounts(self):\n    pass",
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c852b3f9_31eed5ad",
+        "filename": "devices/openwrt_router.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 671,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "Another example of a function we can override in the board class to be blank. We might want to make a \n\ndevices/no_console.py\n\nBoard type that inherits from OpenWrtRouter but overrides lots of these functions to skip or perform them in another way.\n\nFeel free to refactor this function in a separate commit, without the try/except and we can merge that part right away.",
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bb8cd539_5952f009",
+        "filename": "tests/interact.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "Why did you need to do this? This is probably OK but I don\u0027t see why it\u0027s required.\n\n-M",
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "959d482f_7f8b5120",
         "filename": "tests/linux_boot.py",
         "patchSetId": 7
@@ -19,6 +104,47 @@
         "endLine": 67,
         "endChar": 11
       },
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cfac90de_0ecc6c78",
+        "filename": "tests/linux_boot.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "I think we just want a new board type, and we need to refactor all console interactions into separate functions that the board type can override and either skip or do differently.",
+      "parentUuid": "959d482f_7f8b5120",
+      "range": {
+        "startLine": 67,
+        "startChar": 8,
+        "endLine": 67,
+        "endChar": 11
+      },
+      "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1c33d467_44902373",
+        "filename": "tests/rootfs_boot.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:34:29Z",
+      "side": 1,
+      "message": "You should override get_seconds_uptime() in the no shell/console class and get via SNMP/wan.\n\nThat function can import wan if needed and we don\u0027t even need to change the arguments.",
       "revId": "1fc077b4e43691b794bf8e2c1b997487fa0bf64a",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
