@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "66129479_695b3141",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T21:25:40Z",
+      "side": 1,
+      "message": "We need to make a new mac dialect for this type of mac address.\n\n\u003e\u003e\u003e class mac_custom(mac_unix): pass\n\u003e\u003e\u003e mac_custom.word_fmt \u003d \u0027%.2X\u0027\n\u003e\u003e\u003e mac \u003d EUI(\u002700-1B-77-49-54-FD\u0027, dialect\u003dmac_custom)\n\u003e\u003e\u003e mac\nEUI(\u002700:1B:77:49:54:FD\u0027)\n\nSee the more complete details here: https://netaddr.readthedocs.io/en/latest/tutorial_02.html#formatting",
+      "revId": "53c50a89bb6644542d655e7043667a6317fc7959",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
