@@ -22,6 +22,30 @@
       "revId": "3aad012e998128a30bcc68addce18310117e4b38",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ed0ceeea_48311382",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T13:58:23Z",
+      "side": 1,
+      "message": "Not sure why I started doing that.. maybe bash completion. I think either is OK but probably try to stick with the first version.",
+      "parentUuid": "1c3bc159_1032dd0e",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 18
+      },
+      "revId": "3aad012e998128a30bcc68addce18310117e4b38",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
