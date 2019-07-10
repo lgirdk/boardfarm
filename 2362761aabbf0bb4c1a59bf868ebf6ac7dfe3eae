@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "f76c47d7_05fb1160",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 130,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T16:06:21Z",
+      "side": 1,
+      "message": "Right now exit code 0 or 10 mean ABORT... 10 means no boards available, 0 means the test run passed.\n\nI think the code 94 below is not new, and maybe should re-use 10?\n\nEither way we abort on 0 or 10 so this code will not change the current scripts we are using.",
+      "parentUuid": "cb74750b_20af24a0",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "57a4dcc7_507e5dbc",
         "filename": "arguments.py",
         "patchSetId": 1
@@ -69,6 +87,24 @@
       "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "289fe5c4_2e560ab0",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-10T16:06:21Z",
+      "side": 1,
+      "message": "OK sounds reasonable, just one last question above about this exit code... should we reuse exit code 10 for this case?",
+      "parentUuid": "adb773dd_7d192e13",
+      "revId": "2362761aabbf0bb4c1a59bf868ebf6ac7dfe3eae",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
