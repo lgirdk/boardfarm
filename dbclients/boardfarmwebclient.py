@@ -45,6 +45,20 @@ class BoardfarmWebClient(object):
                 print("The server hosting '%s' does not appear to be a "
                       "boardfarm server." % self.config_url)
 
+    def post_note(self, name, note):
+        '''
+        If an error is encountered with a station, use this function
+        to send a message to the boardfarm server. Something short
+        and useful for display.
+        '''
+        try:
+            url = self.server_url + "/stations/" + name
+            requests.post(url, json={"note": note})
+        except Exception as e:
+            if self.debug:
+                print(e)
+                print("Failed to notify boardfarm server with message.")
+
     def checkout(self, config):
         if not self.server_version:
             return
