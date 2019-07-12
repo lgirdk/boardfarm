@@ -90,6 +90,7 @@ def main():
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
     bfweb = boardfarmwebclient.BoardfarmWebClient(config.boardfarm_config_location,
+                                                  bf_version=library.version,
                                                   debug=os.environ.get("BFT_DEBUG", False))
 
     # Connect to any board in list
