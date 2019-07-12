@@ -80,6 +80,7 @@ def parse():
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('-g', '--golden', metavar='', type=str, default=[], nargs='+', help='Path to JSON results to compare against (golden master)')
     parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(library.version), help='show version and exit')
 
     args = parser.parse_args()
 
