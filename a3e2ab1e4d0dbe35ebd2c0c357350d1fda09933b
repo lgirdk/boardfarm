@@ -16,6 +16,24 @@
       "revId": "a3e2ab1e4d0dbe35ebd2c0c357350d1fda09933b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "04340f7b_73772cce",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-07-12T13:43:13Z",
+      "side": 1,
+      "message": "Somehow it vanished while committing",
+      "parentUuid": "70e58542_b64377bd",
+      "revId": "a3e2ab1e4d0dbe35ebd2c0c357350d1fda09933b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
