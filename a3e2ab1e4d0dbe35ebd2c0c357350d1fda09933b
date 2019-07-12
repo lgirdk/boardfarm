@@ -34,6 +34,24 @@
       "revId": "a3e2ab1e4d0dbe35ebd2c0c357350d1fda09933b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a214db7e_7cd4d919",
+        "filename": "devices/casa_cmts.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 509,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-12T13:45:20Z",
+      "side": 1,
+      "message": "oh this is a bug in the other commit and IS required. In the future a standalone commit for this is preferred.",
+      "parentUuid": "04340f7b_73772cce",
+      "revId": "a3e2ab1e4d0dbe35ebd2c0c357350d1fda09933b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
