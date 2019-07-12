@@ -6,9 +6,11 @@
 # The full text can be found in LICENSE in the root directory.
 #!/usr/bin/env python
 
+import platform
 import os
 import re
 import socket
+import sys
 
 import requests
 
@@ -18,8 +20,9 @@ class BoardfarmWebClient(object):
     stations, etc.
     '''
 
-    def __init__(self, config_url, debug=False):
+    def __init__(self, config_url, bf_version="1.0.0", debug=False):
         self.config_url = config_url
+        self.bf_version = bf_version
         self.debug = debug
         self.server_url = None
         self.server_version = None
@@ -27,6 +30,7 @@ class BoardfarmWebClient(object):
         # If config isn't on a server, do nothing
         if not config_url.startswith('http'):
             return
+        self.headers = {'user-agent': self._user_agent()}
         self.default_data = {'hostname': socket.gethostname(),
                              'username': os.environ.get('BUILD_USER_ID', None) or \
                                          os.environ.get('USER', None),
@@ -35,15 +39,33 @@ class BoardfarmWebClient(object):
         try:
             # See if this is a boardfarm server by checking the root /api path
             self.server_url = re.search('http.*/api', self.config_url).group(0)
-            r = requests.get(self.server_url)
+            r = requests.get(self.server_url, headers=self.headers)
             data = r.json()
             self.server_version = data.get('version', None)
             print("Using %s as boardfarm server, version %s" %
                   (self.server_url, self.server_version))
-        except:
+        except Exception as e:
             if self.debug:
+                print(e)
                 print("The server hosting '%s' does not appear to be a "
                       "boardfarm server." % self.config_url)
+
+    def _user_agent(self):
+        bfversion = 'Boardfarm %s' % self.bf_version
+        s = platform.system()
+        py = "Python %s.%s.%s" % (sys.version_info[:3])
+        try:
+            system = platform.system()
+            if system == 'Linux':
+                s = "%s %s" % platform.linux_distribution()[:2]
+            elif system == 'Darwin':
+                s = "MacOS %s" % platform.mac_ver()[0]
+            elif system == 'Windows':
+                s = "Windows %s" % platform.win32_ver()[0]
+        except Exception as e:
+            if self.debug:
+                print('Unable to get more specific system info')
+        return ";".join([bfversion, py, s])
 
     def post_note(self, name, note):
         '''
@@ -55,7 +77,7 @@ class BoardfarmWebClient(object):
             return
         try:
             url = self.server_url + "/stations/" + name
-            requests.post(url, json={"note": note})
+            requests.post(url, json={"note": note}, headers=self.headers)
         except Exception as e:
             if self.debug:
                 print(e)
@@ -74,7 +96,7 @@ class BoardfarmWebClient(object):
                                 "name": config.get("station", None)}
             self.checked_out.update(self.default_data)
             url = self.server_url + "/checkout"
-            requests.post(url, json=self.checked_out)
+            requests.post(url, json=self.checked_out, headers=self.headers)
             print("Notified boardfarm server of checkout")
             if self.debug:
                 print(self.checked_out)
@@ -88,7 +110,7 @@ class BoardfarmWebClient(object):
             return
         try:
             url = self.server_url + "/checkin"
-            requests.post(url, json=self.checked_out)
+            requests.post(url, json=self.checked_out, headers=self.headers)
             print("Notified boardfarm server of checkin")
             if self.debug:
                 print(self.checked_out)
