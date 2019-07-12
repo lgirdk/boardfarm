@@ -10,6 +10,9 @@ import os
 from termcolor import cprint
 from pprint import pformat
 
+_version = (1, 0, 0)
+version = '.'.join(str(x) for x in _version)
+
 def print_bold(msg):
     cprint(msg, None, attrs=['bold'])
 
