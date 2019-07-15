@@ -428,6 +428,12 @@ def main():
         for subtest in t.subtests:
             prepare_results_for_kibana(subtest, prefix=prefix)
 
+    # Convert python objects to things that can be stored in
+    # JSON, like strings and numbers.
+    info_for_remote_log = library.clean_for_json(info_for_remote_log)
+    # Remove reserved key names
+    info_for_remote_log.pop('_id', None)
+
     try:
         if config.logging_server is not None:
             logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)

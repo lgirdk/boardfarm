@@ -5,6 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import datetime
+import ipaddress
+import json
 import os
 
 from termcolor import cprint
@@ -12,6 +15,33 @@ from pprint import pformat
 
 _version = (1, 0, 0)
 version = '.'.join(str(x) for x in _version)
+
+
+class HelperEncoder(json.JSONEncoder):
+    '''Turn some objects into a form that can be stored in JSON.'''
+    def default(self, obj):
+        if isinstance(obj, ipaddress.IPv4Network) or \
+           isinstance(obj, ipaddress.IPv4Address):
+            return str(obj)
+        elif isinstance(obj, datetime.datetime):
+            return str(obj)
+        else:
+            try:
+                return json.JSONEncoder.default(self, obj)
+            except:
+                print("WARNING: HelperEncoder doesn't know how to convert %s to a string or number" % type(obj))
+                return ""
+
+def clean_for_json(data):
+    '''
+    Given a python dictionary, walk the structure and convert values to
+    types that are valid for JSON. Return a python dictionary.
+    '''
+    return json.loads(json.dumps(data, cls=HelperEncoder))
+
+def printd(data):
+    '''Pretty-print as a JSON data object.'''
+    print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
 
 def print_bold(msg):
     cprint(msg, None, attrs=['bold'])
