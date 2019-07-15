@@ -197,6 +197,8 @@ class DebianBox(base.BaseDevice):
         if idx == 0:
             self.expect(self.prompt)
             self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
+            self.expect_exact('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
+        self.expect(self.prompt)
 
         if self.port != 22:
             cprint("%s port %s device console = %s" % (ipaddr, port, colored(color, color)), None, attrs=['bold'])
