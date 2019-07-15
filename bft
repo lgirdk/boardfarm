@@ -460,7 +460,7 @@ def main():
         try:
             import boto3
 
-            filename = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z") + '.json'
+            filename = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%S.000Z") + '.json'
             s3 = boto3.resource('s3',
                                 aws_access_key_id=os.environ['BFT_AWS_ACCESS_KEY'],
                                 aws_secret_access_key=os.environ['BFT_AWS_SECRET_ACCESS_KEY'])
