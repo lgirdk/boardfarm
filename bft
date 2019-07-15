@@ -404,8 +404,6 @@ def main():
         pass
     if hasattr(config, 'TEST_SUITE'):
         info_for_remote_log['test_suite'] = str(config.TEST_SUITE)
-    # logstash cannot handle multi-level json, remove full test results
-    info_for_remote_log.pop('test_results', None)
     # but we will add back specific test results data
     for t in tests_to_run:
         def prepare_results_for_kibana(test, prefix=""):
@@ -428,6 +426,11 @@ def main():
         prefix = prepare_results_for_kibana(t) + "-"
         for subtest in t.subtests:
             prepare_results_for_kibana(subtest, prefix=prefix)
+
+    # Remove complex data structures before storing in databases
+    info_for_remote_log = library.remove_data(info_for_remote_log)
+    # Remove reserved key names
+    info_for_remote_log.pop('_id', None)
 
     try:
         if config.logging_server is not None:

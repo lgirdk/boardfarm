@@ -23,6 +23,15 @@ def print_board_info(x):
         else:
             print_bold(" %s: %s" % (key, pformat(x[key]).replace("u'", "'")))
 
+
+def remove_data(d, rm_types=(list, dict)):
+    '''
+    Given a dictionary d, return a new dictionary after removing
+    not-allowed types of data. Useful for simplifying data before
+    storing in a database like eleasticsearch, mongo, etc..
+    '''
+    return {k: v for (k,v) in d.iteritems() if type(v) not in rm_types}
+
 def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],
                     'tests_pass': 0,
