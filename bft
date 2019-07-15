@@ -221,7 +221,7 @@ def main():
         config.console.update_config()
 
     print_bold('\n==========')
-    library.print_board_info(config.board)
+    library.printd(config.board)
 
     # Run tests
     os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
@@ -301,7 +301,7 @@ def main():
     except Exception as e:
         print(e)
         print_bold("For some reason, could not close a connection.")
-    library.print_board_info(config.board)
+    library.printd(config.board)
 
     combined_list = []
     def add_to_combined_list(log, name, combined_list=combined_list):
@@ -428,6 +428,12 @@ def main():
         prefix = prepare_results_for_kibana(t) + "-"
         for subtest in t.subtests:
             prepare_results_for_kibana(subtest, prefix=prefix)
+
+    # Convert python objects to things that can be stored in
+    # JSON, like strings and numbers.
+    info_for_remote_log = library.clean_for_json(info_for_remote_log)
+    # Remove reserved key names
+    info_for_remote_log.pop('_id', None)
 
     try:
         if config.logging_server is not None:
