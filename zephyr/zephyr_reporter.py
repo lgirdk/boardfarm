@@ -105,6 +105,7 @@ def update_zephyr(test_cases_list):
     if len(args) == 0:
         print("Zephyr is not configured, skipping...")
         return
+    print('Starting Zephyr Execution....')
 
     for z in args:
         if "JIRA_URL" == z['jira_url'] or "JIRAPASSWORD" == z['passwd']:
