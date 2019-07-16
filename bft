@@ -384,11 +384,16 @@ def main():
     # run all analysis classes (post processing)
     # also, never fail so we don't block automation
     try:
-        import analysis
-        for cstr in dir(analysis):
-            c = getattr(analysis, cstr)
-            if inspect.isclass(c) and issubclass(c, analysis.Analysis):
-                with open(os.path.join(config.output_dir, "console-combined.log"), 'w') as clog:
+        fname = "console-combined.log"
+        with open(os.path.join(config.output_dir, fname), 'r') as f:
+            clog = f.read()
+        if not clog:
+            print("Skipping analysis because %s is empty..." % fname)
+        else:
+            import analysis
+            for cstr in dir(analysis):
+                c = getattr(analysis, cstr)
+                if inspect.isclass(c) and issubclass(c, analysis.Analysis):
                     c().analyze(clog, config.output_dir)
     except Exception as e:
         if not issubclass(type(e), (StopIteration)):
