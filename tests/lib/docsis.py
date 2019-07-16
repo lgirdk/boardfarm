@@ -11,6 +11,7 @@ from common import cmd_exists
 import Tkinter
 import re
 import time
+import hashlib
 
 class docsis:
     """
@@ -160,6 +161,10 @@ class cm_cfg(object):
     def __str__(self):
         '''String repr of CM txt'''
         return self.txt
+
+    def shortname(self):
+        '''short name for displaying in summary'''
+        return hashlib.md5(self.txt.encode()).hexdigest()
 
     def save(self, full_path):
         with open(full_path, 'w') as txt:
