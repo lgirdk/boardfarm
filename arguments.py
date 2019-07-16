@@ -277,6 +277,20 @@ def parse():
                 if 'feature' not in config.boardfarm_config[b]:
                     continue
                 features = config.boardfarm_config[b]['feature']
+                if 'devices' in config.boardfarm_config[b]:
+                    seen_names = []
+                    for d in config.boardfarm_config[b]['devices']:
+                        if 'feature' in d:
+                            # since we only connect to one type of device
+                            # we need to ignore the features on the other ones
+                            # even though they should be the same
+                            if d['name'] in seen_names:
+                                continue
+                            seen_names.append(d['name'])
+
+                            if type(d['feature']) is str or type(d['feature']) is unicode:
+                                d['feature'] = [d['feature']]
+                            features.extend(x for x in d['feature'] if x not in features)
                 if type(features) is str or type(features) is unicode:
                     features = [features]
                 if set(args.feature) != set(args.feature) & set(features):
