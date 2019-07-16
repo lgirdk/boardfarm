@@ -48,7 +48,11 @@ def setup_dynamic_devices(config, env=None, start=None):
         device['lan_gateway'] = config.console.lan_gateway
         device['start'] = start
 
+        s = time.time()
         dyn_dev = get_device(device['type'], **device)
+        if 'BFT_DEBUG' in os.environ:
+            print("Time to instantiate device = %s" % (time.time() - s))
+
         if dyn_dev is not None:
             if 'name' not in device:
                 raise Exception("Device in config is not named! This is required")
