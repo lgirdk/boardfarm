@@ -24,6 +24,8 @@ class HelperEncoder(json.JSONEncoder):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             return str(obj)
+        elif hasattr(obj, 'shortname'):
+            return obj.shortname()
         else:
             try:
                 return json.JSONEncoder.default(self, obj)
