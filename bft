@@ -403,6 +403,7 @@ def main():
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
+    info_for_remote_log['bft_version'] = library.version
     try:
         info_for_remote_log['duration'] = int(os.environ['TEST_END_TIME'])-int(os.environ['TEST_START_TIME'])
     except:
