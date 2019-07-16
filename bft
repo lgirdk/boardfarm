@@ -472,20 +472,9 @@ def main():
             print(e)
 
     #Update the results in Zephyr
-    print_bold('Starting Zephyr Execution....')
-
     try:
         result_data = json.load(open('./results/test_results.json'))
-        length = len(result_data["test_results"])
-        test_cases_list = []
-
-        for tc in range(0, length):
-            test_cases_list.append([])
-            test_case = result_data["test_results"][tc]["name"]
-            test_cases_list[tc].append(test_case)
-            test_result = result_data["test_results"][tc]["grade"]
-            test_cases_list[tc].append(test_result)
-
+        test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
         zephyr_reporter.update_zephyr(test_cases_list)
     except Exception as e:
         print(e)
