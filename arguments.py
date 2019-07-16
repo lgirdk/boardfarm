@@ -138,6 +138,15 @@ def parse():
             print("Please choose a board type from:")
             print("\n".join([" * %s" % x for x in set(all_board_types)]))
             sys.exit(10)
+    # Check if given board name(s) are present in available boards
+    if args.board_names:
+        all_board_names = [key for key in config.boardfarm_config if key != "locations"]
+        if not (set(args.board_names) & set(all_board_names)):
+            print("ERROR! You specified board names: %s " % " ".join(args.board_names))
+            print("but that is not an existing & available board.")
+            print("Please choose a board name from:")
+            print("\n".join([" * %s" % x for x in sorted(all_board_names)]))
+            sys.exit(10)
 
     config.batch = args.batch
 
