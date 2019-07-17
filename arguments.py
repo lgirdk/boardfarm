@@ -105,6 +105,13 @@ def parse():
             data = open(args.config_file, 'r').read()
         config.boardfarm_config = json.loads(data)
 
+        if "_redirect" in config.boardfarm_config:
+            print("Using boardfarm config file at %s" % config.boardfarm_config['_redirect'])
+            print("Please set your default config by doing:")
+            print('    export BFT_CONFIG="%s"' % config.boardfarm_config['_redirect'])
+            data = urlopen(config.boardfarm_config['_redirect']).read().decode()
+            config.boardfarm_config = json.loads(data)
+
         if 'locations' in config.boardfarm_config:
             location = config.boardfarm_config['locations']
             del config.boardfarm_config['locations']
