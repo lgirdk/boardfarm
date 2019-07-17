@@ -9,12 +9,8 @@
 import json
 import pexpect
 import sys
-import subprocess
 import time
-import unittest2
-import urllib2
 import os
-import signal
 import config
 from termcolor import cprint
 import re, ipaddress
