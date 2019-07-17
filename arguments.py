@@ -190,23 +190,23 @@ def parse():
             continue
         if x.startswith('http://') or x.startswith('https://'):
             try:
-		def add_basic_auth(login_str, request):
-		    '''Adds Basic auth to http request, pass in login:password as string'''
-		    import base64
-		    encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
-		    authheader =  "Basic %s" % encodeuser
-		    request.add_header("Authorization", authheader)
+                def add_basic_auth(login_str, request):
+                    '''Adds Basic auth to http request, pass in login:password as string'''
+                    import base64
+                    encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
+                    authheader =  "Basic %s" % encodeuser
+                    request.add_header("Authorization", authheader)
 
                 import ssl
                 context = ssl._create_unverified_context()
 
-		req = urllib.Request(x)
+                req = urllib.Request(x)
 
                 try:
                     import netrc, urlparse
                     n = netrc.netrc()
                     login, unused, password = n.authenticators(urlparse.urlparse(x).hostname)
-		    add_basic_auth("%s:%s" % (login, password), req)
+                    add_basic_auth("%s:%s" % (login, password), req)
                 except (TypeError, ImportError, IOError, netrc.NetrcParseError):
                     pass
 
