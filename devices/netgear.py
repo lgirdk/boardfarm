@@ -8,12 +8,12 @@
 
 import pexpect
 import sys
-import base
+import linux
 
 # Netgear Switch Prompt
 prompt = "\(M4100-50G\) "
 
-class NetgearM4100(base.BaseDevice):
+class NetgearM4100(linux.LinuxDevice):
     '''
     A netgear switch allows for changing connections by modifying
     VLANs on ports.
