@@ -14,7 +14,7 @@ import socket
 import sys
 import urllib2
 import pexpect
-import base
+import linux
 from datetime import datetime
 import ipaddress
 import re
@@ -24,7 +24,7 @@ import common
 import connection_decider
 from common import print_bold
 
-class OpenWrtRouter(base.BaseDevice):
+class OpenWrtRouter(linux.LinuxDevice):
     '''
     Args:
       model: Examples include "ap148" and "ap135".

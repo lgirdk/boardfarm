@@ -11,7 +11,7 @@ import pexpect
 import ipaddress
 import connection_decider
 import signal
-import base
+import linux
 import sys
 
 KEY_ESCAPE = '\x1B'
@@ -46,7 +46,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         super(CougarPark, self).__init__(*args, **kwargs)
 
         del kwargs['conn_cmd']
-        self.arm = pexpect.spawn.__new__(base.BaseDevice)
+        self.arm = pexpect.spawn.__new__(linux.LinuxDevice)
         arm_conn = connection_decider.connection(kwargs['connection_type'], device=self.arm, conn_cmd=self.conn_list[1], **kwargs)
         arm_conn.connect()
         self.consoles.append(self.arm)
