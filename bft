@@ -19,8 +19,7 @@ import json
 import traceback
 from datetime import datetime
 
-sys.path.insert(0, './zephyr/')
-import zephyr_reporter
+from zephyr import zephyr_reporter
 
 # Put this directory into the python path, so
 # that devices may be imported.
