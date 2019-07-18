@@ -86,7 +86,10 @@ def build_station_info(board_info):
     ret = ""
 
     for device in board_info[u'devices']:
-        ret += "    <li>%s %s</li>\n" % (device[u'name'], device[u'type'])
+        conn = device.get('conn_cmd', None)
+        if not conn:
+            conn = ":".join([device.get('ipaddr',''), device.get('port','')])
+        ret += "    <li>%s %s %s</li>\n" % (device['name'], device['type'], conn)
 
     return ret
 
