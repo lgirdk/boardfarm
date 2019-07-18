@@ -14,6 +14,7 @@ import connection_decider
 from lib.regexlib import ValidIpv6AddressRegex, ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 import base_cmts
 
+
 class CasaCMTS(base_cmts.BaseCmts):
     '''
     Connects to and configures a CASA CMTS
@@ -108,7 +109,7 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.expect(self.prompt)
 
     def clear_cm_reset(self, cmmac):
-        self.sendline("clear cable modem %s reset" %cmmac)
+        self.sendline("clear cable modem %s reset" % cmmac)
         self.expect(self.prompt)
 
     def check_PartialService(self, cmmac):
@@ -124,8 +125,8 @@ class CasaCMTS(base_cmts.BaseCmts):
         return output
 
     def get_cmip(self, cmmac):
-	tmp = cmmac.replace(":", "").lower()
-	cmmac_cmts = tmp[:4]+"."+ tmp[4:8]+"."+tmp[8:]
+        tmp = cmmac.replace(":", "").lower()
+        cmmac_cmts = tmp[:4]+"." + tmp[4:8]+"."+tmp[8:]
         self.sendline('show cable modem %s' % cmmac)
         self.expect(cmmac_cmts + '\s+([\d\.]+)')
         result = self.match.group(1)
@@ -159,7 +160,7 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.expect(self.prompt)
         return output
 
-    def DUT_chnl_lock(self,cm_mac):
+    def DUT_chnl_lock(self, cm_mac):
         """Check the CM channel locks based on cmts type"""
         streams = ['Upstream', 'Downstream']
         channel_list = []
@@ -174,22 +175,22 @@ class CasaCMTS(base_cmts.BaseCmts):
             channel_list.append(channel)
         return channel_list
 
-    def get_cm_bundle(self,mac_domain):
+    def get_cm_bundle(self, mac_domain):
         """Get the bundle id from mac-domain """
         self.sendline('show interface docsis-mac '+mac_domain+' | i "ip bundle"')
         index = self.expect(['(ip bundle)[ ]{1,}([0-9]|[0-9][0-9])'] + self.prompt)
-        if index !=0:
+        if index != 0:
             assert 0, "ERROR:Failed to get the CM bundle id from CMTS"
         bundle = self.match.group(2)
         self.expect(self.prompt)
         return bundle
 
-    def get_cm_mac_domain(self,cm_mac):
+    def get_cm_mac_domain(self, cm_mac):
         """Get the Mac-domain of Cable modem """
         self.sendline('show cable modem '+cm_mac+' verbose | i "MAC Domain"')
         idx = self.expect(['(MAC Domain)[ ]{2,}\:([0-9]|[0-9][0-9])'] + self.prompt)
         if idx != 0:
-            assert 0,"ERROR: Failed to get the CM Mac Domain from the CMTS"
+            assert 0, "ERROR: Failed to get the CM Mac Domain from the CMTS"
         mac_domain = self.match.group(2)
         self.expect(self.prompt)
         return mac_domain
@@ -205,11 +206,11 @@ class CasaCMTS(base_cmts.BaseCmts):
 
         self.sendline('show interface ip-bundle %s | i secondary' % bundle)
         self.expect(self.prompt)
-        cmts_ip = re.search('ip address (%s) .* secondary'%gw_ip, self.before)
+        cmts_ip = re.search('ip address (%s) .* secondary' % gw_ip, self.before)
         if cmts_ip:
             cmts_ip = cmts_ip.group(1)
         else:
-            assert 0,"ERROR: Failed to get the CMTS bundle IP"
+            assert 0, "ERROR: Failed to get the CMTS bundle IP"
         return cmts_ip
 
     def reset(self):
@@ -393,12 +394,12 @@ class CasaCMTS(base_cmts.BaseCmts):
         self.expect(self.prompt)
         self.sendline('ip-provisioning-mode dual-stack')
         self.expect(self.prompt)
-        count = 1;
+        count = 1
         for ch in qam_ch:
             self.sendline('downstream %s interface qam %s/%s/%s' % (count, qam_idx, qam_sub, ch))
             self.expect(self.prompt)
             count += 1
-        count = 1;
+        count = 1
         for ch in ups_ch:
             self.sendline('upstream %s interface upstream %s/%s/0' % (count, ups_idx, ch))
             self.expect(self.prompt)
@@ -488,7 +489,7 @@ class CasaCMTS(base_cmts.BaseCmts):
     #             (i.e. theCM mode is in gateway mode)
     def is_cm_bridged(self, cm_mac):
         self.sendline("show cable modem "+cm_mac+" cpe")
-        if 0==self.expect(['eRouter']+self.prompt):
+        if 0 == self.expect(['eRouter']+self.prompt):
             self.expect(self.prompt)
             return False
         else:
@@ -510,9 +511,9 @@ class CasaCMTS(base_cmts.BaseCmts):
         mac = EUI(mac)
         ertr_mac = EUI(int(mac) + 2)
         ertr_mac.dialect = netaddr.mac_cisco
-        ertr_ipv4 = re.search('(%s) .* (%s)' %(ValidIpv4AddressRegex, ertr_mac), self.before)
+        ertr_ipv4 = re.search('(%s) .* (%s)' % (ValidIpv4AddressRegex, ertr_mac), self.before)
         if ertr_ipv4:
-            ipv4 =ertr_ipv4.group(1)
+            ipv4 = ertr_ipv4.group(1)
             return ipv4
         else:
             return None
@@ -521,7 +522,7 @@ class CasaCMTS(base_cmts.BaseCmts):
         '''Getting erouter ipv6 from CMTS '''
         self.sendline("show cable modem %s cpe" % mac)
         self.expect(self.prompt)
-        ertr_ipv6 = re.search(ValidIpv6AddressRegex ,self.before)
+        ertr_ipv6 = re.search(ValidIpv6AddressRegex, self.before)
         if ertr_ipv6:
             ipv6 = ertr_ipv6.group()
             return ipv6
@@ -552,6 +553,7 @@ class CasaCMTS(base_cmts.BaseCmts):
 
         return str(int(self.before.split(' ')[-1]))
 
+
 if __name__ == '__main__':
     import time
 
@@ -566,7 +568,7 @@ if __name__ == '__main__':
         # so we use a ipv6 address 2001:dead:beef:4::cafe/62 for that which means we can bump
         # these up too
         cmts.add_ipv6_bundle_addrs(1, "2001:dead:beef:1::1", "2001:dead:beef:4::cafe/64",
-                                  secondary_ips=["2001:dead:beef:5::cafe/64", "2001:dead:beef:6::cafe/64"])
+                                   secondary_ips=["2001:dead:beef:5::cafe/64", "2001:dead:beef:6::cafe/64"])
         sys.exit(0)
 
     # TODO: example for now, need to parse args

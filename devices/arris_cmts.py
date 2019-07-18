@@ -14,12 +14,13 @@ import connection_decider
 import base_cmts
 from lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
+
 class ArrisCMTS(base_cmts.BaseCmts):
     '''
     Connects to and configures a Arris CMTS
     '''
 
-    prompt = [ 'arris(.*)>', 'arris(.*)#', 'arris\(.*\)> ', 'arris\(.*\)# ']
+    prompt = ['arris(.*)>', 'arris(.*)#', 'arris\(.*\)> ', 'arris\(.*\)# ']
     model = "arris_cmts"
 
     class ArrisCMTSDecorators():
@@ -126,7 +127,7 @@ class ArrisCMTS(base_cmts.BaseCmts):
         self.sendline('exit')
         self.expect(self.prompt)
         """ NB: this command does not reboot the CM, but forces it to reinitialise """
-        self.sendline("clear cable modem %s reset" %cmmac)
+        self.sendline("clear cable modem %s reset" % cmmac)
         self.expect(self.prompt)
         self.sendline('configure')
         self.expect(self.prompt)
@@ -184,14 +185,14 @@ class ArrisCMTS(base_cmts.BaseCmts):
         return self.get_ip_from_regexp(cmmac, AllValidIpv6AddressesRegex)
 
     @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
-    def get_cm_mac_domain(self,cm_mac):
+    def get_cm_mac_domain(self, cm_mac):
         """
         Returns the Mac-domain of Cable modem
         Args: cm_mac
         Return: ip addr (ipv4) or None if not found
         """
         mac_domain = None
-        self.sendline('show cable modem %s detail | include Cable-Mac='% cm_mac)
+        self.sendline('show cable modem %s detail | include Cable-Mac=' % cm_mac)
         if 0 == self.expect(['Cable-Mac= ([0-9]{1,3}),', pexpect.TIMEOUT], timeout=5):
             mac_domain = self.match.group(1)
         self.expect(self.prompt)
@@ -206,7 +207,7 @@ class ArrisCMTS(base_cmts.BaseCmts):
         return match != None
 
     @ArrisCMTSDecorators.mac_to_cmts_type_mac_decorator
-    def DUT_chnl_lock(self,cm_mac):
+    def DUT_chnl_lock(self, cm_mac):
         """Check the CM channel locks with 24*8 """
         self.sendline("show cable modem | include %s" % cm_mac)
         index = self.expect(["(24x8)"], timeout=3)

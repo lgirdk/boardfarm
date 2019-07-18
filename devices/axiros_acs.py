@@ -36,6 +36,7 @@ if "BFT_DEBUG" in os.environ:
         }
     })
 
+
 class AxirosACS():
 
     model = "axiros_acs_soap"
@@ -58,7 +59,8 @@ class AxirosACS():
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
 
-        self.client = Client(wsdl=self.wsdl, transport=Transport(session=session), wsse=UsernameToken(self.username, self.password))
+        self.client = Client(wsdl=self.wsdl, transport=Transport(session=session),
+                             wsse=UsernameToken(self.username, self.password))
 
     name = "acs_server"
 
@@ -70,37 +72,7 @@ class AxirosACS():
 
     def get(self, serial_number, param, wait=8):
         GetParameterValuesParametersClassArray_type = self.client.get_type('ns0:GetParameterValuesParametersClassArray')
-        GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type ([param])
-
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
-
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
-
-	# get raw soap response (parsing error with zeep)
-        with self.client.settings(raw_response=True):
-           response = self.client.service.GetParameterValues(GetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
-
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
-
-        if ticketid is None:
-            return None
-        return self.Axiros_GetTicketValue (ticketid, wait=wait)
-
-    def getcurrent(self, serial_number, param):
-        self.get(serial_number, param + '.', wait=20)
-        # TODO: note: verified ticket was sent to ACS with all the results in the param namespace
-        # however the get above does not pull the results so we can't check them here but that's
-        # not a major issue since the API does not do that for the current implementation
-
-    def set(self, serial_number, attr, value):
-        SetParameterValuesParametersClassArray_type = self.client.get_type('ns0:SetParameterValuesParametersClassArray')
-        SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type ([{'key': attr, 'value': value}])
+        GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type([param])
 
         CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
@@ -110,7 +82,40 @@ class AxirosACS():
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
-           response = self.client.service.SetParameterValues(SetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+            response = self.client.service.GetParameterValues(
+                GetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+
+        ticketid = None
+        root = ElementTree.fromstring(response.content)
+        for value in root.iter('ticketid'):
+            ticketid = value.text
+            break
+
+        if ticketid is None:
+            return None
+        return self.Axiros_GetTicketValue(ticketid, wait=wait)
+
+    def getcurrent(self, serial_number, param):
+        self.get(serial_number, param + '.', wait=20)
+        # TODO: note: verified ticket was sent to ACS with all the results in the param namespace
+        # however the get above does not pull the results so we can't check them here but that's
+        # not a major issue since the API does not do that for the current implementation
+
+    def set(self, serial_number, attr, value):
+        SetParameterValuesParametersClassArray_type = self.client.get_type('ns0:SetParameterValuesParametersClassArray')
+        SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type([
+                                                                                                  {'key': attr, 'value': value}])
+
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.SetParameterValues(
+                SetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
         ticketid = None
         root = ElementTree.fromstring(response.content)
@@ -121,7 +126,7 @@ class AxirosACS():
         if ticketid is None:
             return None
 
-        return self.Axiros_GetTicketValue (ticketid)
+        return self.Axiros_GetTicketValue(ticketid)
 
     def Axiros_GetListOfCPEs(self):
         CPESearchOptionsClassStruct_type = self.client.get_type('ns0:CPESearchOptionsClassStruct')
@@ -130,7 +135,8 @@ class AxirosACS():
         CommandOptionsForCPESearchStruct_type = self.client.get_type('ns0:CommandOptionsForCPESearchStruct')
         CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
 
-        response = self.client.service.GetListOfCPEs(CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data)
+        response = self.client.service.GetListOfCPEs(
+            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data)
         if response['code'] != 200:
             return None
 
@@ -146,7 +152,7 @@ class AxirosACS():
 
     def Axiros_GetTicketValue(self, ticketid, wait=8):
         for i in range(wait):
-            time.sleep (1)
+            time.sleep(1)
             with self.client.settings(raw_response=True):
                 ticket_resp = self.client.service.get_generic_sb_result(ticketid)
 
@@ -158,6 +164,7 @@ class AxirosACS():
             for value in root.iter('value'):
                 return value.text
         return None
+
 
 if __name__ == '__main__':
     import sys
@@ -171,10 +178,10 @@ if __name__ == '__main__':
 
     acs = AxirosACS(ipaddr=ip, port=port, username=sys.argv[2], password=sys.argv[3])
 
-    acs.Axiros_GetListOfCPEs ()
+    acs.Axiros_GetListOfCPEs()
 
     ret = acs.get('DEAP805811D5', 'Device.DeviceInfo.SoftwareVersion')
     print ret
 
-    ret = acs.get ('DEAP805811D5', 'Device.WiFi.SSID.1.SSID')
+    ret = acs.get('DEAP805811D5', 'Device.WiFi.SSID.1.SSID')
     print ret

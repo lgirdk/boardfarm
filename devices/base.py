@@ -20,6 +20,7 @@ from lib.logging import LoggerMeta, o_helper
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
+
 class BaseDevice(pexpect.spawn):
     __metaclass__ = LoggerMeta
     log = ""
@@ -103,12 +104,12 @@ class BaseDevice(pexpect.spawn):
     logfile_read = property(get_logfile_read, set_logfile_read)
 
     def interact(self, escape_character=chr(29),
-            input_filter=None, output_filter=None):
+                 input_filter=None, output_filter=None):
 
         o = self._logfile_read
         self.logfile_read = None
         ret = super(BaseDevice, self).interact(escape_character,
-                                            input_filter, output_filter)
+                                               input_filter, output_filter)
         self.logfile_read = o
 
         return ret
@@ -124,11 +125,11 @@ class BaseDevice(pexpect.spawn):
         if lan is None:
             exp = [wan]
         else:
-            exp = [wan,lan]
+            exp = [wan, lan]
 
         for x in range(0, len(exp)):
             i = self.expect(exp)
-            if i == 0: # parse wan stats
+            if i == 0:  # parse wan stats
                 self.expect("(\d+.\d+)\s+(\d+.\d+)")
                 wan_pps = float(self.match.group(1)) + float(self.match.group(2))
             if i == 1:
@@ -202,7 +203,7 @@ class BaseDevice(pexpect.spawn):
         else:
             idx = 3
         common.print_bold("%s = expecting: %s" %
-                              (error_detect.caller_file_line(idx), repr(pattern)))
+                          (error_detect.caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
@@ -251,7 +252,7 @@ class BaseDevice(pexpect.spawn):
 
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         try:
-            self.sendline('echo "%d %d %d %d" > /proc/sys/kernel/printk'% (CUR, DEF, MIN, BTDEF))
+            self.sendline('echo "%d %d %d %d" > /proc/sys/kernel/printk' % (CUR, DEF, MIN, BTDEF))
             self.expect(self.prompt, timeout=10)
             if not BFT_DEBUG:
                 common.print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
@@ -272,13 +273,14 @@ class BaseDevice(pexpect.spawn):
 
     def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
         if source_ip == None and ping_interface == None:
-            self.sendline('ping -c %s %s'%(ping_count, ping_ip))
+            self.sendline('ping -c %s %s' % (ping_count, ping_ip))
         elif ping_interface != None:
-            self.sendline('ping -I %s -c %s %s'%(ping_interface, ping_count, ping_ip))
+            self.sendline('ping -I %s -c %s %s' % (ping_interface, ping_count, ping_ip))
         else:
-            self.sendline("ping -S %s -c %s %s"%(source_ip, ping_count, ping_ip))
+            self.sendline("ping -S %s -c %s %s" % (source_ip, ping_count, ping_ip))
         self.expect(self.prompt, timeout=50)
-        match = re.search("%s packets transmitted, %s received, 0%% packet loss" % (ping_count, ping_count), self.before)
+        match = re.search("%s packets transmitted, %s received, 0%% packet loss" %
+                          (ping_count, ping_count), self.before)
         if match:
             return 'True'
         else:
