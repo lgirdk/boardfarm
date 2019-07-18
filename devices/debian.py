@@ -8,7 +8,7 @@
 import sys
 import time
 import pexpect
-import base
+import linux
 import atexit
 import os
 import binascii
@@ -19,7 +19,7 @@ import re
 
 from termcolor import colored, cprint
 
-class DebianBox(base.BaseDevice):
+class DebianBox(linux.LinuxDevice):
     '''
     A linux machine running an ssh server.
     '''
@@ -273,16 +273,6 @@ class DebianBox(base.BaseDevice):
                       self.output, self.username,
                       self.password, self.port,
                       reboot=False)
-
-    def get_interface_ipaddr(self, interface):
-        self.sendline("\nifconfig %s" % interface)
-        regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-                 'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
-                 'inet ('+ValidIpv4AddressRegex+').*netmask ('+ValidIpv4AddressRegex+').*destination '+ValidIpv4AddressRegex]
-        self.expect(regex, timeout=5)
-        ipaddr = self.match.group(1)
-        self.expect(self.prompt)
-        return ipaddr
 
     def install_pkgs(self):
         if self.pkgs_installed == True:

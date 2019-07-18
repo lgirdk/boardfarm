@@ -29,24 +29,12 @@ class BaseDevice(pexpect.spawn):
     delaybetweenchar = None
 
     def get_interface_ipaddr(self, interface):
-        self.sendline("\nifconfig %s" % interface)
-        self.expect('addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):', timeout=5)
-        ipaddr = self.match.group(1)
-        self.expect(self.prompt)
-        return ipaddr
+        '''Get ipv4 address of interface '''
+        raise Exception("Not implemented!")
 
     def get_interface_ip6addr(self, interface):
-        self.sendline("\nifconfig %s" % interface)
-        self.expect_exact("ifconfig %s" % interface)
-        self.expect(self.prompt)
-
-        for match in re.findall(AllValidIpv6AddressesRegex, self.before):
-            ip6addr = ipaddress.IPv6Address(unicode(match))
-            if not ip6addr.is_link_local:
-                # TODO: at some point just return ip6addr
-                return match
-
-        raise Exception("Did not find non-link-local ipv6 address")
+        '''Get ipv6 address of interface '''
+        raise Exception("Not implemented!")
 
     def get_interface_macaddr(self, interface):
         self.sendline('cat /sys/class/net/%s/address' % interface)
