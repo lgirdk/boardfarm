@@ -49,7 +49,6 @@ class ElasticsearchLogger(object):
             'user': username,
             'build_url': os.environ.get('BUILD_URL', 'None'),
             'change_list': os.environ.get('change_list', 'None'),
-            'apss': os.environ.get('apss', 'None').split('-')[0],
             'manifest': os.environ.get('manifest', 'None'),
         }
 
