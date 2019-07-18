@@ -1,5 +1,6 @@
 from devices import base
 
+
 class BaseCmts(base.BaseDevice):
     '''
     Common API for the CMTS type devices
@@ -25,13 +26,13 @@ class BaseCmts(base.BaseDevice):
         raise Exception("Not implemented!")
 
     # this should be get_md_bundle
-    def get_cm_bundle(self,mac_domain):
+    def get_cm_bundle(self, mac_domain):
         raise Exception("Not implemented!")
 
-    def get_cm_mac_domain(self,cm_mac):
+    def get_cm_mac_domain(self, cm_mac):
         raise Exception("Not implemented!")
 
-    def get_cmts_ip_bundle(self,bundle):
+    def get_cmts_ip_bundle(self, bundle):
         raise Exception("Not implemented!")
 
     def get_cmts_model(self):
@@ -55,6 +56,3 @@ class BaseCmts(base.BaseDevice):
         tmp = mac.replace(':', '')
         mac_cmts_format = tmp[:4]+"."+tmp[4:8]+"."+tmp[8:]
         return mac_cmts_format.lower()
-
-
-
