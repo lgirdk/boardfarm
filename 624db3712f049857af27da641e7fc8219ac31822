@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "59f8d4bf_f4508335",
+        "filename": "tests/selftest.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-19T20:31:12Z",
+      "side": 1,
+      "message": "We should not call it testing moved funtion, just call it what it\u0027s testing...\n\nTesting linux device network functions... \n\nTesting enable/disable ipv6\n\nAnd maybe break it into two classes? Don\u0027t forget to add to selftest testsuite as well.\n\nEtc.",
+      "revId": "624db3712f049857af27da641e7fc8219ac31822",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
