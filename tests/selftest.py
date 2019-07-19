@@ -178,6 +178,32 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
 
         print("Test passed")
 
+class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
+    '''
+    tests the function moved from base.py to devices/linux.py
+    '''
+    def runTest(self):
+        from devices import lan, debian, linux
+        if lan.model == "debian":
+            # check that lan is derived from LinuxDevice
+            assert(issubclass(debian.DebianBox, linux.LinuxDevice))
+
+        lan_mac = lan.get_interface_macaddr(lan.iface_dut)
+        assert lan_mac != None, "Failed getting lan mac address"
+        print "lan mac address: %s", lan_mac
+
+        uptime = lan.get_seconds_uptime()
+        assert uptime != None, "Failed getting system uptime"
+        print "system uptime is: %s", uptime
+
+        ping_check = lan.ping("8.8.8.8")
+        print "ping status is %s", ping_check
+
+        ipv6_disable = lan.disable_ipv6(lan.iface_dut)
+        ipv6_enable = lan.enable_ipv6(lan.iface_dut)
+        board.set_printk()
+        print("Test passed")
+
     def recover(self):
         if self.session is not None:
             self.session.sendline("exit")
