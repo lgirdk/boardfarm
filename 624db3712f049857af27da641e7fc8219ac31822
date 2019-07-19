@@ -16,6 +16,24 @@
       "revId": "624db3712f049857af27da641e7fc8219ac31822",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "178a07cb_b0c89acd",
+        "filename": "tests/selftest.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 181,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-07-19T20:48:13Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "59f8d4bf_f4508335",
+      "revId": "624db3712f049857af27da641e7fc8219ac31822",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
