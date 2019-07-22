@@ -5,7 +5,7 @@ import random
 import string
 import os
 import tempfile
-from devices import board, wan, lan, wlan, prompt, common
+from devices import board, wan, lan, wlan, common
 
 '''
     This file can bu used to add unit tests that
@@ -181,3 +181,63 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     def recover(self):
         if self.session is not None:
             self.session.sendline("exit")
+
+class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
+    '''
+    tests the SnmpHelper module:
+    1. compiles and get the oid of some sample mibs
+    2. performs an snmp get on the from the lan to the wan
+       using hte compiled oids
+    '''
+
+    def runTest(self):
+
+        from lib import SnmpHelper
+        from lib.installers import install_snmp, install_snmpd
+        from lib.common import snmp_mib_get
+
+        wrong_mibs = ['PsysDescr', 'sys123ObjectID', 'sysServiceS']
+        linux_mibs = ['sysDescr',\
+                      'sysObjectID',\
+                      'sysServices',\
+                      'sysName',\
+                      'sysServices',\
+                      'sysUpTime']
+
+        test_mibs = [linux_mibs[0], wrong_mibs[0],\
+                     linux_mibs[1], wrong_mibs[1],\
+                     linux_mibs[2], wrong_mibs[2]]
+
+
+        unit_test = SnmpHelper.SnmpMibsUnitTest(mibs_location = './devices/mibs',
+                                                files = ['SNMPv2-MIB'],
+                                                mibs = test_mibs,
+                                                err_mibs = wrong_mibs)
+        assert (unit_test.unitTest())
+
+        # this command makes snmpd accept connections from any hosts over ipv4
+        snmpd_post_cmd = "sed 's/^agentAddress  udp:127.0.0.1:161/#agentAddress  udp:0.0.0.0:161/' -i /etc/snmp/snmpd.conf"
+        install_snmpd(wan, snmpd_post_cmd)
+
+        lan.sendline('echo "nameserver 8.8.8.8" >> /etc/resolv.conf')
+        lan.expect(lan.prompt)
+
+        install_snmp(lan)
+        wan_iface_ip = wan.get_interface_ipaddr(wan.iface_dut)
+
+        for mib in linux_mibs:
+            try:
+                result = snmp_mib_get(lan,
+                                      unit_test.snmp_obj,
+                                      str(wan_iface_ip),
+                                      mib,
+                                      '0',
+                                      community='public')
+
+                print 'snmpget({})@{}={}'.format(mib, wan_iface_ip, result)
+            except Exception as e:
+                print 'Failed on snmpget {} '.format(mib)
+                print(e)
+                raise e
+
+        print("Test passed")
