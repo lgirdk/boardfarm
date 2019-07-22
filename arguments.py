@@ -103,9 +103,10 @@ def parse():
             data = urlopen(args.config_file).read().decode()
         else:
             data = open(args.config_file, 'r').read()
+        config.boardfarm_config_location = args.config_file
         config.boardfarm_config = json.loads(data)
 
-        if "_redirect" in config.boardfarm_config:
+        if "_redirect" in config.boardfarm_config and args.config_file is "":
             print("Using boardfarm config file at %s" % config.boardfarm_config['_redirect'])
             print("Please set your default config by doing:")
             print('    export BFT_CONFIG="%s"' % config.boardfarm_config['_redirect'])
@@ -139,7 +140,7 @@ def parse():
         sys.exit(10)
     # Check if given board type(s) have any overlap with available board types from config
     if args.board_type:
-        all_board_types = [config.boardfarm_config[key].get('board_type') for key in config.boardfarm_config]
+        all_board_types = [config.boardfarm_config[key].get('board_type') for key in config.boardfarm_config if key != "_redirect" ]
         if not (set(args.board_type) & set(all_board_types)):
             print("ERROR! You specified board types: %s " % " ".join(args.board_type))
             print("but that is not an existing & available type of board.")
@@ -304,6 +305,8 @@ def parse():
                 if set(args.feature) != set(args.feature) & set(features):
                     continue
             for t in args.board_type:
+                if b == "_redirect":
+                    continue
                 if config.boardfarm_config[b]['board_type'].lower() == t.lower():
                     if args.filter:
                         if filter_boards(config.boardfarm_config[b], args.filter, b):
