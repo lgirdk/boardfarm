@@ -107,6 +107,24 @@
     },
     {
       "key": {
+        "uuid": "4d9b9411_ef04d6d6",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-22T17:48:15Z",
+      "side": 1,
+      "message": "Can you setup some SNMP server on wan and test this class via LAN device?",
+      "parentUuid": "8affebf7_87b76aaf",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5a645a3b_4ef3c06b",
         "filename": "testsuites.cfg",
         "patchSetId": 3
