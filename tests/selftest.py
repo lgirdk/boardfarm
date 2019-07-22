@@ -181,3 +181,18 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     def recover(self):
         if self.session is not None:
             self.session.sendline("exit")
+
+class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
+    '''
+    tests the SnmpHelper module, compiles and get the oid of some 
+    sample mibs.
+    '''
+
+    def runTest(self):
+
+        from lib import SnmpHelper
+
+        unit_test = SnmpHelper.SnmpMibsUnitTest()
+        assert (unit_test.unitTest())
+
+        print("Test passed")
