@@ -56,7 +56,7 @@ def parse():
                                      epilog=HELP_EPILOG)
     parser.add_argument('-a', '--analysis', metavar='', type=str, default=None, help='Only run post processing analysis on logs')
     parser.add_argument('-b', '--board_type', metavar='', type=str, nargs='+', default=None, help='MODEL(s) of board to connect to')
-    parser.add_argument('-c', '--config_file', metavar='', type=str, default=boardfarm_config_location, help='JSON config file for boardfarm')
+    parser.add_argument('-c', '--config_file', metavar='', type=str, default=None, help='JSON config file for boardfarm')
     parser.add_argument('-e', '--extend', metavar='', type=str, default=None, action="append", help='NAME of extra test to run')
     parser.add_argument('-f', '--filter', metavar='', type=str, default=None, action="append", help='Regex filter off arbitrary board parameters')
     parser.add_argument('-g', '--golden', metavar='', type=str, default=[], nargs='+', help='Path to JSON results to compare against (golden master)')
@@ -99,19 +99,26 @@ def parse():
         sys.exit(0)
 
     try:
-        if args.config_file.startswith("http"):
-            data = urlopen(args.config_file).read().decode()
+        if args.config_file is not None:
+            config.boardfarm_config_location = args.config_file
+
+        if config.boardfarm_config_location.startswith("http"):
+            data = urlopen(config.boardfarm_config_location).read().decode()
         else:
-            data = open(args.config_file, 'r').read()
+            data = open(config.boardfarm_config_location, 'r').read()
+
         config.boardfarm_config = json.loads(data)
 
-        if "_redirect" in config.boardfarm_config:
+        if "_redirect" in config.boardfarm_config and args.config_file is None:
             print("Using boardfarm config file at %s" % config.boardfarm_config['_redirect'])
             print("Please set your default config by doing:")
             print('    export BFT_CONFIG="%s"' % config.boardfarm_config['_redirect'])
             print("If you want to use local config, remove the _redirect line.")
             data = urlopen(config.boardfarm_config['_redirect']).read().decode()
+            config.boardfarm_config_location = config.boardfarm_config['_redirect']
             config.boardfarm_config = json.loads(data)
+
+        config.boardfarm_config.pop('_redirect', None)
 
         if 'locations' in config.boardfarm_config:
             location = config.boardfarm_config['locations']
