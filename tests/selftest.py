@@ -5,7 +5,9 @@ import random
 import string
 import os
 import tempfile
-from devices import board, wan, lan, wlan, prompt, common
+from lib import SnmpHelper
+
+from devices import board, wan, lan, wlan, common
 
 '''
     This file can bu used to add unit tests that
@@ -248,3 +250,148 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         lan.expect(lan.prompt)
         print 'Test Passed'
 
+class SnmpMibsUnitTest(object):
+    """
+    Unit test for the SnmpMibs class.
+    Check for correct and incorrect mibs.
+    Default assumes the .mib files are in $USER/.snmp
+    DEBUG:
+        BFT_DEBUG=y     shows the compiled dictionary
+        BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and
+                        mibs/oid details
+    """
+    error_mibs = ['SsnmpEngineMaxMessageSize', # mispelled MUST fail
+                  'nonExistenMib',             # this one MUST fail
+                  'ifCounterDiscontinuityTimeQ']  # mispelled MUST fail
+
+    mibs = ['docsDevSwAdminStatus',
+            'snmpEngineMaxMessageSize',
+            error_mibs[0],
+            'docsDevServerDhcp',
+            'ifCounterDiscontinuityTime',
+            error_mibs[1],
+            'docsBpi2CmtsMulticastObjects',
+            error_mibs[2]]
+
+    mib_files      = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'] # this is the list of mib/txt files to be compiled
+    srcDirectories = ['/tmp/boardfarm-docsis/mibs'] # this needs to point to the mibs directory location
+    snmp_obj       = None  # will hold an instance of the  SnmpMibs class
+
+    def __init__(self,mibs_location=None, files=None, mibs=None, err_mibs=None):
+        """
+        Takes:
+            mibs_location:  where the .mib files are located (can be a list of dirs)
+            files:          the name of the .mib/.txt files (without the extension)
+            mibs:           e.g. sysDescr, sysObjectID, etc
+            err_mibs:       wrong mibs (just for testing that the compiler rejects invalid mibs)
+        """
+
+        # where the .mib files are located
+        if mibs_location:
+            self.srcDirectories = mibs_location
+
+        if type(self.srcDirectories) != list:
+            self.srcDirectories = [self.srcDirectories]
+
+        for d in self.srcDirectories:
+            if not os.path.exists(str(d)):
+                msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(self.srcDirectories))
+                raise Exception(msg)
+
+        if files:
+            self.mib_files = files
+
+        self.snmp_obj = SnmpHelper.SnmpMibs(self.mib_files, self.srcDirectories)
+
+        if mibs:
+            self.mibs = mibs
+            self.error_mibs = err_mibs
+
+        if type(self.mibs) != list:
+            self.mibs = [self.mibs]
+
+    def unitTest(self):
+        """
+        Compiles the ASN1 and gets the oid of the given mibs
+        Asserts on failure
+        """
+
+        if 'y' in self.snmp_obj.dbg:
+            print(self.snmp_obj.mib_dict)
+            for k in self.snmp_obj.mib_dict:
+                print (k, ":", self.snmp_obj.mib_dict[k])
+
+        print("Testing get mib oid")
+
+        for i in self.mibs:
+            try:
+                oid = self.snmp_obj.get_mib_oid(i)
+                print 'mib: %s - oid=%s'%(i, oid)
+            except Exception as e:
+                #we shoudl NOT find only the errored mibs, all other mibs MUST be found
+                assert(i in self.error_mibs), "Failed to get oid for mib: " + i
+                print "Failed to get oid for mib: %s (expected)"%i
+                if (self.error_mibs is not None):
+                    self.error_mibs.remove(i)
+
+        # the unit test must find all the errored mibs!
+        if (self.error_mibs is not None):
+            assert (self.error_mibs == []), "The test missed the following mibs: %s"%str(self.error_mibs)
+        return True
+
+class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
+    '''
+    Tests the SnmpHelper module:
+    1. compiles and get the oid of some sample mibs
+    2. performs an snmp get from the lan to the wan
+       using hte compiled oids
+    '''
+
+    def runTest(self):
+
+        from lib.installers import install_snmp, install_snmpd
+        from lib.common import snmp_mib_get
+
+        wrong_mibs = ['PsysDescr', 'sys123ObjectID', 'sysServiceS']
+        linux_mibs = ['sysDescr',\
+                      'sysObjectID',\
+                      'sysServices',\
+                      'sysName',\
+                      'sysServices',\
+                      'sysUpTime']
+
+        test_mibs = [linux_mibs[0], wrong_mibs[0],\
+                     linux_mibs[1], wrong_mibs[1],\
+                     linux_mibs[2], wrong_mibs[2]]
+
+
+        unit_test = SnmpMibsUnitTest(mibs_location = './devices/mibs',
+                                     files = ['SNMPv2-MIB'],
+                                     mibs = test_mibs,
+                                     err_mibs = wrong_mibs)
+        assert (unit_test.unitTest())
+
+        install_snmpd(wan)
+
+        lan.sendline('echo "nameserver 8.8.8.8" >> /etc/resolv.conf')
+        lan.expect(lan.prompt)
+
+        install_snmp(lan)
+        wan_iface_ip = wan.get_interface_ipaddr(wan.iface_dut)
+
+        for mib in linux_mibs:
+            try:
+                result = snmp_mib_get(lan,
+                                      unit_test.snmp_obj,
+                                      str(wan_iface_ip),
+                                      mib,
+                                      '0',
+                                      community='public')
+
+                print 'snmpget({})@{}={}'.format(mib, wan_iface_ip, result)
+            except Exception as e:
+                print 'Failed on snmpget {} '.format(mib)
+                print(e)
+                raise e
+
+        print("Test passed")

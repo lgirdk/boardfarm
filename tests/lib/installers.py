@@ -282,6 +282,24 @@ def install_xampp(device):
         device.sendline('touch /opt/lampp/htdocs/test.txt')
         device.expect(device.prompt, timeout=120)
 
+def install_snmpd(device, post_cmd=None):
+    '''
+    Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf 
+    (or for whatever is needed just after the installation)
+    '''
+    device.sendline('apt update && apt install snmpd -y')
+    device.expect(device.prompt, timeout=60)
+
+    # by default snmpd only listen to connections from localhost, comment it out
+    device.sendline("sed 's/agentAddress  udp:127.0.0.1:161/#agentAddress  udp:127.0.0.1:161/' -i /etc/snmp/snmpd.conf")
+    device.expect(device.prompt)
+
+    if post_cmd:
+        device.sendline(post_cmd)
+        device.expect(device.prompt)
+    device.sendline('service snmpd restart')
+    device.expect(device.prompt)
+
 def install_snmp(device):
     '''Install snmp if not present.'''
     device.sendline('\nsnmpget --version')
@@ -290,7 +308,7 @@ def install_snmp(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install snmp -y')
+        device.sendline('apt update && apt-get install snmp -y')
         device.expect(device.prompt, timeout=60)
 
 def install_vsftpd(device):
