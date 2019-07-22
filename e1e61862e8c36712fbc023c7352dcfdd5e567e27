@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a3b25def_e2dbead5",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-22T17:40:33Z",
+      "side": 1,
+      "message": "it will require a proper sed.....",
+      "parentUuid": "11e2f2bd_5aa7fe18",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "a81ba944_8e95bf4c",
         "filename": "tests/lib/SnmpHelper.py",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "9e6f1b3a_d0103c4b",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-22T17:40:33Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a81ba944_8e95bf4c",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "caf0fae5_a2c4f7ce",
         "filename": "tests/lib/SnmpHelper.py",
         "patchSetId": 3
@@ -47,6 +83,24 @@
       "writtenOn": "2019-07-22T16:54:39Z",
       "side": 1,
       "message": "I think we should move the unit test to boardfarm-docsis then... still undecided on if this should be here... I\u0027m considering moving all the docsis related boards there.",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8affebf7_87b76aaf",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-22T17:40:33Z",
+      "side": 1,
+      "message": "TBH this could test some linux generic mibs and the docsis could check some docsis mibs.\nThis simple unit test was to make sure the compiler got the correct mibs  and raised an exception for the incorrect ones\nthe mibs to be tested could be passed in (probably a better way to test)",
+      "parentUuid": "caf0fae5_a2c4f7ce",
       "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
