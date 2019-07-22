@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "11e2f2bd_5aa7fe18",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-22T16:54:39Z",
+      "side": 1,
+      "message": "I think we can rename ours...",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a81ba944_8e95bf4c",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-22T16:54:39Z",
+      "side": 1,
+      "message": "being nitpicky but you can use getattr() here\n\nself.dbg \u003d getattr(self, \u0027BFT_DEBUG\u0027, \"default_value)",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "caf0fae5_a2c4f7ce",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-22T16:54:39Z",
+      "side": 1,
+      "message": "I think we should move the unit test to boardfarm-docsis then... still undecided on if this should be here... I\u0027m considering moving all the docsis related boards there.",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5a645a3b_4ef3c06b",
+        "filename": "testsuites.cfg",
+        "patchSetId": 3
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-22T16:54:39Z",
+      "side": 1,
+      "message": "If the components are missing here, I think we need to move this test at least to boardfarm docsis.. we can run a docsis overlay specific selftest.",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
