@@ -518,12 +518,28 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         from devices import board
         hosts={}
         for device in config.board['devices']:
-            if 'ipaddr' in device:
-                domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
-                device = getattr(config, device['name'])
+            #if wan-static-ip in the options add wan-static-ip to the dnsmasq.hosts
+            domain_name=device.get('name')
+            if 'options' in device:
+                device_opt=device.get('options').split(',')
+                for x in device_opt:
+                     if 'wan-static-ip:' not in x:
+                         continue
+                     elif 'wan-static-ip:' in x:
+                         device_ip = x.split(':')[1].split('/')[0]
+                if 'ipaddr' in device and device_ip is None:
+                     device_ip = getattr(config, device['name']).ipaddr
+            elif 'ipaddr' in device:
+                device_ip = getattr(config, device['name']).ipaddr
+            #else add the ipaddr attribute's ip to the dnsmasq.hosts
+            else:
                 if not hasattr(device, 'ipaddr'):
-                    continue
-                hosts[domain_name] = str(device.ipaddr)
+                    if 'conn_cmd' in device:
+                        device_ip=device.get('conn_cmd').split(' ')[1]
+                    else:
+                        continue
+            hosts[domain_name] = str(device_ip)
+            device_ip = None
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
             for key, value in hosts.iteritems():
