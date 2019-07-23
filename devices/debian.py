@@ -238,20 +238,6 @@ class DebianBox(linux.LinuxDevice):
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
-    def sudo_sendline(self, cmd):
-        if self.username != "root":
-            self.sendline("sudo true")
-            if 0 == self.expect(["password for .*:"] + self.prompt):
-                 will_prompt_for_password = True
-            else:
-                 will_prompt_for_password = False
-
-            cmd = "sudo " + cmd
-            if will_prompt_for_password:
-                self.sendline(self.password)
-                self.expect(self.prompt)
-        super(DebianBox, self).sendline(cmd)
-
     def reset(self):
         self.sendline('reboot')
         self.expect(['going down','disconnected'])
@@ -335,11 +321,6 @@ class DebianBox(linux.LinuxDevice):
         if undo_default_route is not None:
             self.sendline("ip route del default via %s" % undo_default_route)
             self.expect(self.prompt)
-
-    def ip_neigh_flush(self):
-        self.sendline('\nip -s neigh flush all')
-        self.expect('flush all')
-        self.expect(self.prompt)
 
     def turn_on_pppoe(self):
         self.sendline('cat > /etc/ppp/pppoe-server-options << EOF')
@@ -427,33 +408,6 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
-
-    def copy_file_to_server(self, src, dst=None):
-        def gzip_str(string_):
-	    import gzip
-	    import io
-	    out = io.BytesIO()
-	    with gzip.GzipFile(fileobj=out, mode='w') as fo:
-		fo.write(string_)
-	    return out.getvalue()
-
-        with open(src, mode='rb') as file:
-            bin_file = binascii.hexlify(gzip_str(file.read()))
-        if dst is None:
-            dst = self.tftp_dir + '/' + os.path.basename(src)
-        print ("Copying %s to %s" % (src, dst))
-        saved_logfile_read = self.logfile_read
-        self.logfile_read = None
-        self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
-%s
-EOFEOFEOFEOF''' % (dst, bin_file))
-        self.expect(self.prompt)
-        self.sendline('ls %s' % dst)
-        self.expect_exact('ls %s' % dst)
-        i = self.expect(['ls: cannot access %s: No such file or directory' % dst] + self.prompt)
-        if i == 0:
-            raise Exception("Failed to copy file")
-        self.logfile_read = saved_logfile_read
 
     def configure(self, kind, config=[]):
         # TODO: wan needs to enable on more so we can route out?
@@ -774,35 +728,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
                 self.expect(self.prompt)
 
-    def add_new_user(self, id, pwd):
-        '''Create new login ID. But check if already exists'''
-        self.sendline('\nadduser %s' % id)
-        try:
-            self.expect_exact("Enter new UNIX password", timeout=5)
-            self.sendline('%s' % pwd)
-            self.expect_exact("Retype new UNIX password")
-            self.sendline('%s' % pwd)
-            self.expect_exact("Full Name []")
-            self.sendline('%s' % id)
-            self.expect_exact("Room Number []")
-            self.sendline('1')
-            self.expect_exact("Work Phone []")
-            self.sendline('4081234567')
-            self.expect_exact("Home Phone []")
-            self.sendline('4081234567')
-            self.expect_exact("Other []")
-            self.sendline('4081234567')
-            self.expect_exact("Is the information correct?")
-            self.sendline('y')
-            self.expect(self.prompt)
-            self.sendline('usermod -aG sudo %s' % id)
-            self.expect(self.prompt)
-            # Remove "$" in the login prompt and replace it with "#"
-            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
-            self.expect(self.prompt, timeout=30)
-        except:
-            self.expect(self.prompt, timeout=30)
-
     def tftp_server_ip_int(self):
         '''Returns the DUT facing side tftp server ip'''
         return self.gw
@@ -810,22 +735,6 @@ EOFEOFEOFEOF''' % (dst, bin_file))
     def tftp_server_ipv6_int(self):
         '''Returns the DUT facing side tftp server ipv6'''
         return self.gwv6
-
-    def link_up(self, interface):
-        '''Checking the interface status'''
-        self.sendline("ip link show %s" % interface)
-        self.expect(self.prompt)
-        link_state = self.before
-        match = re.search('BROADCAST,MULTICAST,UP',link_state)
-        if match:
-            return match.group(0)
-        else:
-            return None
-
-    def set_link_state(self, interface, state):
-        '''Setting the interface status'''
-        self.sudo_sendline("ip link set %s %s" % (interface,state))
-        self.expect(self.prompt)
 
 if __name__ == '__main__':
     # Example use
