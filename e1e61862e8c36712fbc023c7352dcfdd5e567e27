@@ -161,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "5f979405_12258057",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-23T14:57:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5d9ff7d3_e576d1b7",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a645a3b_4ef3c06b",
         "filename": "testsuites.cfg",
         "patchSetId": 3
@@ -175,6 +193,24 @@
       "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "195c4fcc_2cf88a53",
+        "filename": "testsuites.cfg",
+        "patchSetId": 3
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-23T14:57:03Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "5a645a3b_4ef3c06b",
+      "revId": "e1e61862e8c36712fbc023c7352dcfdd5e567e27",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
