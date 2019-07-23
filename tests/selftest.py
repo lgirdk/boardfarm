@@ -27,7 +27,6 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             msg = 'WAN device is not running ssh server, can\'t copy with this function'
             lib.common.test_msg(msg)
             self.skipTest(msg)
-
         text_file = tempfile.NamedTemporaryFile()
         self.fname = fname = text_file.name
 
@@ -178,9 +177,13 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
 
         print("Test passed")
 
+    def recover(self):
+        if self.session is not None:
+            self.session.sendline("exit")
+
 class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     '''
-    tests the function moved from base.py to devices/linux.py
+    tests the linux functions moved to devices/linux.py
     '''
     def runTest(self):
         from devices import lan, debian, linux
@@ -188,22 +191,60 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
             # check that lan is derived from LinuxDevice
             assert(issubclass(debian.DebianBox, linux.LinuxDevice))
 
+        #get the mac address of the interface
         lan_mac = lan.get_interface_macaddr(lan.iface_dut)
         assert lan_mac != None, "Failed getting lan mac address"
         print "lan mac address: %s", lan_mac
 
+        #check the system uptime
         uptime = lan.get_seconds_uptime()
         assert uptime != None, "Failed getting system uptime"
         print "system uptime is: %s", uptime
 
+        #ping ip using function ping from linux.py
         ping_check = lan.ping("8.8.8.8")
         print "ping status is %s", ping_check
 
+        #disable ipv6
         ipv6_disable = lan.disable_ipv6(lan.iface_dut)
+        #enable ipv6
         ipv6_enable = lan.enable_ipv6(lan.iface_dut)
         board.set_printk()
         print("Test passed")
 
-    def recover(self):
-        if self.session is not None:
-            self.session.sendline("exit")
+        #remove neighbour table entries
+        lan.ip_neigh_flush()
+
+        #set the link state up
+        lan.set_link_state("eth1", "up")
+
+        #Checking the interface status
+        link = lan.is_link_up("eth1")
+        assert link != None, "Failed to check the link is up"
+
+        #add sudo when the username is root
+        lan.sudo_sendline("ping -c5 '8.8.8.8'")
+        lan.expect(lan.prompt, timeout=50)
+
+        #add new user name in linux
+        lan.add_new_user("test", "test")
+        lan.sendline("userdel test")
+        lan.expect(lan.prompt)
+
+        text_file = tempfile.NamedTemporaryFile()
+        letters = string.ascii_letters
+        fcontent = ''.join(random.choice(letters) for i in range(50))
+
+        text_file.write(fcontent)
+        text_file.flush()
+
+        fmd5 = hashlib.md5(open(text_file.name, 'rb').read()).hexdigest()
+        print("File orginal md5sum: %s"% fmd5)
+        print('copying file to lan at /tmp/dst.txt')
+        lan.copy_file_to_server(text_file.name, "/tmp/dst.txt")
+        print('Copy Done. Verify the integrity of the file')
+        lan.sendline('md5sum /tmp/dst.txt')
+        lan.expect(fmd5)
+        lan.expect(lan.prompt)
+        print 'Test Passed'
+
