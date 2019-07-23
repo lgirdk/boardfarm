@@ -46,6 +46,30 @@
       "revId": "a0a50fc93174017480968b7071b4d1a85f1a332b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b090d830_6bff0705",
+        "filename": "arguments.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-23T15:05:29Z",
+      "side": 1,
+      "message": "This may not be the last key we need to add to the boardfarm config. So I\u0027m trying to think how to make our lives easier when we need to add a key.\n\nMaybe we should just have one \"_meta\" key which contains an object to hold all our extra information. example:\n\n  {\n      \"_meta\": {\n          \"_redirect\": \"whatever\",\n          \"futurekey\": \"etc\"\n      }\n      \"locations\": {...},\n      \"board\": {...},\n      ...\n  }",
+      "parentUuid": "d59f3ef8_11732fee",
+      "range": {
+        "startLine": 115,
+        "startChar": 19,
+        "endLine": 115,
+        "endChar": 35
+      },
+      "revId": "a0a50fc93174017480968b7071b4d1a85f1a332b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
