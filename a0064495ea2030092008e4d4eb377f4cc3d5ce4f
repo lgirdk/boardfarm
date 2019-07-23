@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "78c3bb7d_387860ab",
+        "filename": "arguments.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-23T17:39:22Z",
+      "side": 1,
+      "message": "In the \"if\" clause below can you add:\n\n    config.boardfarm_config_location \u003d config.boardfarm_config[\u0027_redirect\u0027]\n\nOtherwise it won\u0027t contain the right info.",
+      "revId": "a0064495ea2030092008e4d4eb377f4cc3d5ce4f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "833fb19a_9888256e",
+        "filename": "arguments.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-23T17:39:22Z",
+      "side": 1,
+      "message": "We want to remove this key even if config_file is set, so here\u0027s a great way to do it:\n\n    config.boardfarm_config.pop(\u0027_redirect\u0027, None)\n\nAnd have that statement be outside this \"if\" clause. That way no matter what it will remove that key. And if the key isn\u0027t present it doesn\u0027t do anything, it won\u0027t error.",
+      "revId": "a0064495ea2030092008e4d4eb377f4cc3d5ce4f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
