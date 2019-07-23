@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "80848686_2c0ef7c0",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-23T18:23:19Z",
+      "side": 1,
+      "message": "Can we move this to the selftest? Don\u0027t want someone to think they are allowed to use this.",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "273c27d1_e5e1851b",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-23T18:23:19Z",
+      "side": 1,
+      "message": "Shouldn\u0027t we just encourage people to use the new object and drop this function?",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ab08f930_fd331c29",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-23T18:23:19Z",
+      "side": 1,
+      "message": "Should this just go in install_snmpd? Is this file really present before installing too?",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "29f0941e_2669bf5a",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-23T18:23:19Z",
+      "side": 1,
+      "message": "Why did you need this?",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
