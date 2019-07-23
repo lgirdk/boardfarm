@@ -12,7 +12,7 @@ import os
 
 from termcolor import cprint
 
-_version = (1, 0, 0)
+_version = (1, 0, 1)
 version = '.'.join(str(x) for x in _version)
 
 
