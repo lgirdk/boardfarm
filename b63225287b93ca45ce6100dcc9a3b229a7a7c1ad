@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9c277acc_c1e8e72a",
+        "filename": "zephyr/zephyr_reporter.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-23T16:16:29Z",
+      "side": 1,
+      "message": "This are all strings specific to your board types, I don\u0027t think they belong in the public code. Can you pull these from somewhere from your private overlay?",
+      "revId": "b63225287b93ca45ce6100dcc9a3b229a7a7c1ad",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
