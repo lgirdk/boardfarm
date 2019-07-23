@@ -117,13 +117,16 @@ class LinuxBootTest(unittest2.TestCase):
                 self.result_grade = "OK"
 
             self.stop_time = time.time()
+            self.logged['test_time'] = float(self.stop_time - self.start_time)
         except unittest2.case.SkipTest:
             self.stop_time = time.time()
+            self.logged['test_time'] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
             print("\n\n=========== Test skipped! Moving on... =============")
             raise
         except Exception as e:
             self.stop_time = time.time()
+            self.logged['test_time'] = float(self.stop_time - self.start_time)
             if hasattr(self, 'expected_failure') and self.expected_failure:
                 self.result_grade = "Exp FAIL"
             else:
