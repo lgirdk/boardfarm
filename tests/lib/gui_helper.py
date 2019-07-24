@@ -110,3 +110,9 @@ def get_text_value_by_xpath(web_gui, get_value):
         return text_value
     except NoSuchElementException:
         return None
+
+def get_value_from_disabled_input(web_gui, get_value):
+    #To get the text with dynamic value
+    js="return document.getElementById(\"{!s}\").value;".format(str(get_value))
+    text_value = web_gui.execute_script(js)
+    return str(text_value)
