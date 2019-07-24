@@ -15,7 +15,7 @@ import error_detect
 import ipaddress
 
 from lib.regexlib import LinuxMacFormat, AllValidIpv6AddressesRegex
-from lib.logging import LoggerMeta, o_helper
+from lib.bft_logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
