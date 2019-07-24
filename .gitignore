@@ -72,6 +72,7 @@ results/
 
 # ctas
 TAGS
+tags
 
 # Alternate config files
 *.json
