@@ -13,7 +13,7 @@ import traceback
 import time
 
 from devices import board, wan, lan, wlan, prompt
-from lib.logging import LoggerMeta, now_short
+from lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
     _testMethodName = "UNDEFINED"
