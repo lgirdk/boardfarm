@@ -161,6 +161,24 @@
     },
     {
       "key": {
+        "uuid": "fb811cfc_7e390d3b",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T09:01:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9851408b_71703d7f",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "29f0941e_2669bf5a",
         "filename": "tests/selftest.py",
         "patchSetId": 6
