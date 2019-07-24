@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "36fed0a9_65e6b7e5",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T07:04:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "80848686_2c0ef7c0",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "273c27d1_e5e1851b",
         "filename": "tests/lib/common.py",
         "patchSetId": 6
@@ -33,6 +51,24 @@
       "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b1b3a378_1d8a236a",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T07:04:07Z",
+      "side": 1,
+      "message": "can try that",
+      "parentUuid": "273c27d1_e5e1851b",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "aa30ba0e_658309b7",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T07:04:07Z",
+      "side": 1,
+      "message": "I thought of allowing a post command to be passed to the installer since there\u0027s plethora of options that can be configured.\nOnce installed snmpd only accepts connections from localhost. There is another line in the config (commented out) which (in theory) should allow for ipv4/6 connections from any hosts, but it did not work (I will try that again as it SHOULD work). \nI can remove this post_cmd from here and place it in the installer.",
+      "parentUuid": "ab08f930_fd331c29",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "29f0941e_2669bf5a",
         "filename": "tests/selftest.py",
         "patchSetId": 6
@@ -64,6 +118,24 @@
       "writtenOn": "2019-07-23T18:23:19Z",
       "side": 1,
       "message": "Why did you need this?",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "abd4d80e_94012720",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T07:04:07Z",
+      "side": 1,
+      "message": "The lan container did not resolve the debian repo. Actually I should have put a FIX ME comment.\nWithout it:\nroot@lan-f978156cd084690:~# apt update               \nErr:1 http://deb.debian.org/debian stretch InRelease                 \n  Temporary failure resolving \u0027deb.debian.org\u0027\nErr:2 http://security.debian.org/debian-security stretch/updates InRelease\n  Temporary failure resolving \u0027security.debian.org\u0027\nand sits for a very long while....",
+      "parentUuid": "29f0941e_2669bf5a",
       "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
