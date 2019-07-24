@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "fddf5772_3a2888d9",
+        "filename": "tests/lib/SnmpHelper.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T08:29:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "36fed0a9_65e6b7e5",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "273c27d1_e5e1851b",
         "filename": "tests/lib/common.py",
         "patchSetId": 6
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "a4dcda5f_21346cd7",
+        "filename": "tests/lib/common.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T08:29:04Z",
+      "side": 1,
+      "message": "maybe we can (for the moment) leave it with the legacy behaviour, to avoid breaking every single test",
+      "parentUuid": "b1b3a378_1d8a236a",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ab08f930_fd331c29",
         "filename": "tests/selftest.py",
         "patchSetId": 6
@@ -101,6 +137,24 @@
       "side": 1,
       "message": "I thought of allowing a post command to be passed to the installer since there\u0027s plethora of options that can be configured.\nOnce installed snmpd only accepts connections from localhost. There is another line in the config (commented out) which (in theory) should allow for ipv4/6 connections from any hosts, but it did not work (I will try that again as it SHOULD work). \nI can remove this post_cmd from here and place it in the installer.",
       "parentUuid": "ab08f930_fd331c29",
+      "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9851408b_71703d7f",
+        "filename": "tests/selftest.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-24T08:29:04Z",
+      "side": 1,
+      "message": "I moved it to the installer..... \noddly enough leaving both config lines commented out seems to work.....",
+      "parentUuid": "aa30ba0e_658309b7",
       "revId": "ae4b7da5ce4372858d43c5902ca9ebb044c4fadb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
