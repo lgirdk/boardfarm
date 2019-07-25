@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "40094a31_2353f46c",
+        "filename": "devices/debian.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 483,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-25T00:29:18Z",
+      "side": 1,
+      "message": "I think you can make this if/else just two lines with one if statement.",
+      "revId": "78a0cdcc9842ebbe934ab02c990a0a51aeea7428",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "698aba88_c666dc3e",
+        "filename": "devices/debian.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 487,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-25T00:29:18Z",
+      "side": 1,
+      "message": "You don\u0027t need to do this if statement twice, just move it above and do it once... and let the option override it further.",
+      "revId": "78a0cdcc9842ebbe934ab02c990a0a51aeea7428",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "75a7b89d_71e6cca9",
+        "filename": "devices/debian.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 492,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-25T00:29:18Z",
+      "side": 1,
+      "message": "Not sure we should try to be too smart here... maybe just use the ipv4 regex instead and try to \u0027extract\u0027 an ipv4 address?",
+      "revId": "78a0cdcc9842ebbe934ab02c990a0a51aeea7428",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8433d66e_9215827f",
+        "filename": "devices/debian.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-25T00:29:18Z",
+      "side": 1,
+      "message": "You should probably do this at the beginning of the loop.",
+      "revId": "78a0cdcc9842ebbe934ab02c990a0a51aeea7428",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
