@@ -470,14 +470,26 @@ class DebianBox(linux.LinuxDevice):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         import config
         from devices import board
+        from lib.regexlib import ValidIpv4AddressRegex
         hosts={}
         for device in config.board['devices']:
+            #comment:if wan-static-ip in the options add wan-static-ip to the dnsmasq.hosts
+            domain_name=device.get('name')
             if 'ipaddr' in device:
-                domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
-                device = getattr(config, device['name'])
-                if not hasattr(device, 'ipaddr'):
-                    continue
-                hosts[domain_name] = str(device.ipaddr)
+                device_ip = getattr(config, device['name']).ipaddr
+            if 'options' in device:
+                device_opt=device.get('options').split(',')
+                for x in device_opt:
+                     if 'wan-static-ip:' in x:
+                         device_ip = x.split(':')[1].split('/')[0]
+                         break
+            else:
+                if 'ipaddr' not in device:
+                    if 'conn_cmd' in device:
+                        device_ip=re.search(ValidIpv4AddressRegex,device.get('conn_cmd')).group(0)
+                    else:
+                        continue
+            hosts[domain_name] = str(device_ip)
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
             for key, value in hosts.iteritems():
