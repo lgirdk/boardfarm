@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b62b665e_bcdaf74e",
+        "filename": "devices/debian_isc.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 581,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-07-25T09:57:56Z",
+      "side": 1,
+      "message": "Nit: can you append a message to the assert?",
+      "range": {
+        "startLine": 581,
+        "startChar": 0,
+        "endLine": 581,
+        "endChar": 29
+      },
+      "revId": "16a403f792da350a84408d8d1e1039666d77f9d7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
