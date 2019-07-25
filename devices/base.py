@@ -15,7 +15,7 @@ import error_detect
 import ipaddress
 
 from lib.regexlib import LinuxMacFormat, AllValidIpv6AddressesRegex
-from lib.bft_logging import LoggerMeta, o_helper
+from lib.bft_logging import LoggerMeta, o_helper, i_helper
 
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ
@@ -25,6 +25,7 @@ class BaseDevice(pexpect.spawn):
     __metaclass__ = LoggerMeta
     log = ""
     log_calls = ""
+    last_write = None
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None
@@ -80,6 +81,18 @@ class BaseDevice(pexpect.spawn):
             self._logfile_read = o_helper(self, value, getattr(self, "color", None))
 
     logfile_read = property(get_logfile_read, set_logfile_read)
+
+    _logfile_send = None
+    def get_logfile_send(self):
+        if self._logfile_read == None:
+            self._logfile_read = i_helper(self)
+
+        return self._logfile_send
+
+    def set_logfile_send(self, value):
+        self._logfile_send = value
+
+    logfile_send = property(get_logfile_send, set_logfile_send)
 
     def interact(self, escape_character=chr(29),
                  input_filter=None, output_filter=None):
@@ -154,6 +167,11 @@ class BaseDevice(pexpect.spawn):
 
     # Optional send and expect functions to try and be fancy at catching errors
     def send(self, s):
+        if self.last_write is not None:
+            if (datetime.now() - self.last_write).total_seconds() > 240:
+                print "WARN: %s last write was more than 4 minutes ago, console might disconnect!" % str(self)
+        self.last_write = datetime.now()
+
         if BFT_DEBUG:
             if 'pexpect/__init__.py: sendline():' in error_detect.caller_file_line(3):
                 idx = 4

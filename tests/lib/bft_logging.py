@@ -64,6 +64,14 @@ def log_message(s, msg, header = False):
         print(full_msg)
         s.log_to_file += now_short()+msg+"\r\n"
 
+class i_helper(object):
+    def __init__(self, parent):
+        self.parent = parent
+    def write(self, string):
+        self.parent.last_write = datetime.now()
+    def flush(self):
+        pass
+
 class o_helper(object):
     def __init__(self, parent, out, color):
         self.color = color
