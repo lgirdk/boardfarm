@@ -8,19 +8,23 @@
 import os
 import sys
 
+local_path = os.path.dirname(os.path.realpath(__file__))
+
 # Boardfarm configuration describes test stations - see boardfarm doc.
 # Can be local or remote file.
-boardfarm_config_location = os.environ.get('BFT_CONFIG', 'boardfarm_config_example.json')
+boardfarm_config_location = os.environ.get('BFT_CONFIG', os.path.join(local_path, 'boardfarm_config_example.json'))
 
 # Test Suite config files. Standard python config file format.
-testsuite_config_files = [os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testsuites.cfg'), ]
+testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
 
 layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
-        if os.path.isfile(overlay + '/testsuites.cfg'):
-            testsuite_config_files.append(overlay + '/testsuites.cfg')
-        if os.path.isfile(overlay + os.sep + "layerconf.py"):
+        testsuites_path = os.path.join(overlay, 'testsuites.cfg')
+        layerconf_path = os.path.join(overlay, 'layerconf.py')
+        if os.path.isfile(testsuites_path):
+            testsuite_config_files.append(testsuites_path)
+        if os.path.isfile(layerconf_path):
             sys.path.insert(0, overlay)
             import layerconf as tmp
             layerconfs.append((overlay, tmp))
