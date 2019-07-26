@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1dc51e12_9ce18956",
+        "filename": "devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 487,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-26T20:47:21Z",
+      "side": 1,
+      "message": "If you just name this an if/elif/else you don\u0027t need this extra interior if",
+      "revId": "387aaa6437a766241ac62e483bc47bc75ed6ee98",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3a540b65_6728cc78",
+        "filename": "devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 492,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-07-26T20:47:21Z",
+      "side": 1,
+      "message": "everything needs a name, so you can probably remove the line above and do\n\nhosts[device.name] \u003d ...",
+      "revId": "387aaa6437a766241ac62e483bc47bc75ed6ee98",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
