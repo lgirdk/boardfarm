@@ -20,6 +20,7 @@ STATUS_CODE_DICT = {'SCHEDULED': -1,
 
 class Zapi(object):
     """Zephyr API interface"""
+
     def __init__(self,
                  project_id=None,
                  version_id=None,
@@ -96,11 +97,11 @@ class Zapi(object):
                         auth=(self._usr, self._pwd))
         data = loads(response.text)
         execution_id = dict(data).keys()[0]
-	#execution_id = "442290"
+        #execution_id = "442290"
         if response.status_code <> 200:
-            print ("WARNING: " + response.text)
-            print (req_url)
-            print (payload)
+            print("WARNING: " + response.text)
+            print(req_url)
+            print(payload)
         return execution_id
 
     def get_executions(self, test_id=None, assignee=None):
@@ -113,9 +114,9 @@ class Zapi(object):
                    }
         req_url = self._zapi_url + 'execution'
         response = get(req_url,
-                        params=payload,
-                        headers=self._zapi_hdr,
-                        auth=(self._usr, self._pwd))
+                       params=payload,
+                       headers=self._zapi_hdr,
+                       auth=(self._usr, self._pwd))
         data = loads(response.text)
         executions = data.get('executions') or []
         return executions
@@ -125,13 +126,13 @@ class Zapi(object):
         data = {field: value}
         req_url = self._zapi_url + 'execution/' + execution_id + '/'
         response = post(req_url,
-                       params=data,
-                       headers=self._zapi_hdr,
-                       auth=(self._usr, self._pwd))
+                        params=data,
+                        headers=self._zapi_hdr,
+                        auth=(self._usr, self._pwd))
         if response.status_code <> 200:
-            print ("WARNING: " + response.text)
-            print (req_url)
-            print (data)
+            print("WARNING: " + response.text)
+            print(req_url)
+            print(data)
         return response
 
     def set_execution(self, exec_status, execution_id, comment="", status_code_dict=STATUS_CODE_DICT):
@@ -144,7 +145,7 @@ class Zapi(object):
                        headers=self._zapi_hdr,
                        auth=(self._usr, self._pwd))
         if response.status_code <> 200:
-            print ("WARNING: " + response.text)
-            print (req_url)
-            print (data)
+            print("WARNING: " + response.text)
+            print(req_url)
+            print(data)
         return response

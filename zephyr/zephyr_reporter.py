@@ -138,11 +138,11 @@ def update_zephyr(test_cases_list):
 
         for i in range(len(test_cases_list)):
             test_name = test_cases_list[i][0]
-            print "Test_name :" + test_name
+            print("Test_name :" + test_name)
             test_id = get_test_id_from_meta_file(z["metafile"], test_name)
 
             if test_id:
-                print "Found Test ID in Meta file : " + test_id
+                print("Found Test ID in Meta file : " + test_id)
                 issue = jira.issue(test_id)
             else:
                 continue
@@ -152,7 +152,7 @@ def update_zephyr(test_cases_list):
 
             exec_id = reporter.create_execution(str(issue.id))
             result = test_cases_list[i][1]
-            print "Test case Result: " + result
+            print("Test case Result: " + result)
             log_data = "sample log data"
             if result == 'FAIL':
                 result = 'FAIL'
