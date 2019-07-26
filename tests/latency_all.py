@@ -23,7 +23,7 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
 
                 board.touch()
 
-                print "comparing " + d1.name + " to " + d2.name
+                print("comparing " + d1.name + " to " + d2.name)
 
                 try:
                     ip1 = d1.get_interface_ipaddr(d1.iface_dut)
@@ -49,9 +49,9 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     if result is not float('nan'):
                         results.append('latency from %s to %s = %s ms' % (d2.name, d1.name, str(result)))
                 except:
-                    print "failed to ping " + d1.name + " to " + d2.name
+                    print("failed to ping " + d1.name + " to " + d2.name)
                     continue
 
-        print "Results:"
+        print("Results:")
         for line in results:
-            print line
+            print(line)

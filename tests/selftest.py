@@ -196,16 +196,16 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         #get the mac address of the interface
         lan_mac = lan.get_interface_macaddr(lan.iface_dut)
         assert lan_mac != None, "Failed getting lan mac address"
-        print "lan mac address: %s", lan_mac
+        print("lan mac address: %s" % lan_mac)
 
         #check the system uptime
         uptime = lan.get_seconds_uptime()
         assert uptime != None, "Failed getting system uptime"
-        print "system uptime is: %s", uptime
+        print("system uptime is: %s" % uptime)
 
         #ping ip using function ping from linux.py
         ping_check = lan.ping("8.8.8.8")
-        print "ping status is %s", ping_check
+        print("ping status is %s" % ping_check)
 
         #disable ipv6
         ipv6_disable = lan.disable_ipv6(lan.iface_dut)
@@ -248,7 +248,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         lan.sendline('md5sum /tmp/dst.txt')
         lan.expect(fmd5)
         lan.expect(lan.prompt)
-        print 'Test Passed'
+        print('Test Passed')
 
 class SnmpMibsUnitTest(object):
     """
@@ -319,18 +319,18 @@ class SnmpMibsUnitTest(object):
         if 'y' in self.snmp_obj.dbg:
             print(self.snmp_obj.mib_dict)
             for k in self.snmp_obj.mib_dict:
-                print (k, ":", self.snmp_obj.mib_dict[k])
+                print(k, ":", self.snmp_obj.mib_dict[k])
 
         print("Testing get mib oid")
 
         for i in self.mibs:
             try:
                 oid = self.snmp_obj.get_mib_oid(i)
-                print 'mib: %s - oid=%s'%(i, oid)
+                print('mib: %s - oid=%s' % (i, oid))
             except Exception as e:
                 #we shoudl NOT find only the errored mibs, all other mibs MUST be found
                 assert(i in self.error_mibs), "Failed to get oid for mib: " + i
-                print "Failed to get oid for mib: %s (expected)"%i
+                print("Failed to get oid for mib: %s (expected)" % i)
                 if (self.error_mibs is not None):
                     self.error_mibs.remove(i)
 
@@ -388,9 +388,9 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                                       '0',
                                       community='public')
 
-                print 'snmpget({})@{}={}'.format(mib, wan_iface_ip, result)
+                print('snmpget({})@{}={}'.format(mib, wan_iface_ip, result))
             except Exception as e:
-                print 'Failed on snmpget {} '.format(mib)
+                print('Failed on snmpget {} '.format(mib))
                 print(e)
                 raise e
 

@@ -48,7 +48,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (prev_conn, prev_failed)
                 break
 
-        print self.result_message
+        print(self.result_message)
 
         self.recover()
 

@@ -179,7 +179,7 @@ class Interact(rootfs_boot.RootFSBootTest):
             i += 1
 
             if key == str(i):
-                print "Enter python shell, press Ctrl-D to exit"
+                print("Enter python shell, press Ctrl-D to exit")
                 try:
                     from IPython import embed
                     embed()
@@ -192,7 +192,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                         shell = code.InteractiveConsole(vars)
                         shell.interact()
                     except:
-                        print "Unable to spawn interactive shell!"
+                        print("Unable to spawn interactive shell!")
                 continue
             i += 1
 

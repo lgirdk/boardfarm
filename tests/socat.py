@@ -32,7 +32,7 @@ class SoCat(rootfs_boot.RootFSBootTest):
                 if (ipaddress.ip_address(random_ip.decode()), random_port) not in self.all_ips:
                     break
             else:
-                print ("Skipping ip addr: %s" % random_ip)
+                print("Skipping ip addr: %s" % random_ip)
         print("Connecting to %s:%s" % (random_ip, random_port))
 
         self.all_ips.append((random_ip, random_port))
@@ -73,14 +73,14 @@ class SoCat(rootfs_boot.RootFSBootTest):
         for i in range(self.conns):
             board.get_nf_conntrack_conn_count()
             board.touch()
-            print ("Starting connection %s" % i)
+            print("Starting connection %s" % i)
             sz, rate, ip, port = self.startSingleFlow(maxtime=single_max)
-            print ("started flow to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+            print("started flow to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
 
             max_time = max(max_time, sz / ( rate * 1024))
             self.check_and_clean_ips()
 
-        print ("waiting max time of %ss" % max_time)
+        print("waiting max time of %ss" % max_time)
 
         start = time.time()
         while time.time() - start < max_time + 5:
@@ -145,7 +145,7 @@ class SoCat(rootfs_boot.RootFSBootTest):
 
         # this needs to be here because we need to make sure mpstat is cleaned up
         board.parse_stats(dict_to_log=self.logged)
-        print ("mpstat cpu usage = %s" % self.logged['mpstat'])
+        print("mpstat cpu usage = %s" % self.logged['mpstat'])
         self.result_message = "BitTorrent test with %s connections, cpu usage = %s" % (self.conns, self.logged['mpstat'])
 
 

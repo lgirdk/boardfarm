@@ -45,7 +45,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 # no proxy, use message below
                 assert False
         except Exception as e:
-            print e
+            print(e)
             raise Exception("No reasonable http proxy found, please add one to the board config")
 
         board.enable_mgmt_gui(board, wan)
@@ -83,7 +83,7 @@ class ScreenshotGUI(RunBrowserViaProxy):
     def runTest(self):
         driver = self.start_browser()
 
-        print ("taking ss of http://%s" % board.lan_gateway)
+        print("taking ss of http://%s" % board.lan_gateway)
         driver.get("http://%s" % board.lan_gateway)
 
         # wait for possible redirects to settle down

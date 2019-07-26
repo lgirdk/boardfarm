@@ -50,7 +50,7 @@ class Nmap_WAN(rootfs_boot.RootFSBootTest):
         self.result_message = msg
         print("open ports = %s" % open_ports)
         if hasattr(board, 'wan_open_ports'):
-            print ("allowing open ports %s" % board.wan_open_ports)
+            print("allowing open ports %s" % board.wan_open_ports)
             open_ports = set(open_ports) - set(board.wan_open_ports)
         assert len(open_ports) == 0
 
