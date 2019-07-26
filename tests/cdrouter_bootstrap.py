@@ -93,7 +93,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                 wandutmac = board.match.group()
                 board.expect(prompt)
 
-            print ("Using %s for WAN mac address" % wandutmac)
+            print("Using %s for WAN mac address" % wandutmac)
 
         lan.vlan = wan.vlan = 0
         for device in self.config.board['devices']:
@@ -116,8 +116,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                     d.vlan = d.match.group(1)
                 d.expect(prompt)
 
-        print ("Using %s for WAN vlan" % wan.vlan)
-        print ("Using %s for LAN vlan" % lan.vlan)
+        print("Using %s for WAN vlan" % wan.vlan)
+        print("Using %s for LAN vlan" % lan.vlan)
 
         # TODO: move wan and lan interface to bft config?
         contents="""
@@ -289,7 +289,7 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
 
             try:
                 metric = c.results.get(result_id, test.name, "bandwidth")
-                print vars(metric)
+                print(vars(metric))
                 # TODO: decide how to export data to kibana
             except:
                 # Not all tests have this metric, no other way?

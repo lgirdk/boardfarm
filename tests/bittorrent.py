@@ -27,7 +27,7 @@ class BitTorrentSingle(BitTorrentBasic):
             #d.expect(prompt)
 
         sz, rate, ip, port = self.startSingleFlow()
-        print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+        print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
         time = sz / ( rate * 1024)
         print("time should be ~%s" % time)
         self.check_and_clean_ips()
@@ -54,7 +54,7 @@ class BitTorrentB2B(BitTorrentBasic):
 
 	for i in range(10000):
 	    sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
-	    print ("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+	    print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
 	    time = sz / ( rate * 1024)
 	    print("time should be ~%s" % time)
             self.check_and_clean_ips()

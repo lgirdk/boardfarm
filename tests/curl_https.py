@@ -21,7 +21,7 @@ class CurlSSLGood(rootfs_boot.RootFSBootTest):
             board.sendline('curl ' + check)
             board.expect('<!DOCTYPE html>')
             board.expect(prompt)
-            print '\n\nCurl downloaded ' + check + ' as expected\n'
+            print('\n\nCurl downloaded ' + check + ' as expected\n')
 
 class CurlSSLBad(rootfs_boot.RootFSBootTest):
     '''Curl can't access https with bad signature.'''
@@ -44,5 +44,5 @@ class CurlSSLBad(rootfs_boot.RootFSBootTest):
             board.sendline('curl ' + check[0])
             board.expect(check[1])
             board.expect(prompt)
-            print '\n\nCurl refused to download ' + check[0] + ' as expected\n'
+            print('\n\nCurl refused to download ' + check[0] + ' as expected\n')
  
