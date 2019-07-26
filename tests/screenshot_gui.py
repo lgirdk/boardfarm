@@ -8,7 +8,6 @@
 import rootfs_boot
 import lib
 from devices import board, wan, lan, prompt
-import config
 
 from pyvirtualdisplay import Display
 import pexpect
@@ -18,13 +17,16 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
     '''Bootstrap firefox running via localproxy'''
     def start_browser(self):
         try:
-            x,y=config.get_display_backend_size()
+            x,y=self.config.get_display_backend_size()
             # try to start vnc server
-            self.display = Display(backend=config.default_display_backend, rfbport=config.default_display_backend_port, visible=0, size=(x, y))
+            self.display = Display(backend=self.config.default_display_backend,
+                                   rfbport=self.config.default_display_backend_port,
+                                   visible=0,
+                                   size=(x, y))
             self.display.start()
 
             if "BFT_DEBUG" in os.environ:
-                print("Connect to VNC display running on localhost:"+config.default_display_backend_port)
+                print("Connect to VNC display running on localhost:"+self.config.default_display_backend_port)
                 raw_input("Press any key after connecting to display....")
         except:
             # fallback xvfb
@@ -51,7 +53,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         board.enable_mgmt_gui(board, wan)
 
         print("Using proxy %s" % proxy)
-        driver = lib.common.get_webproxy_driver(proxy)
+        driver = lib.common.get_webproxy_driver(proxy, self.config)
 
         return driver
 

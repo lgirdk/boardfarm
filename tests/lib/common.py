@@ -11,7 +11,6 @@ import pexpect
 import sys
 import time
 import os
-import config
 from termcolor import cprint
 import re, ipaddress
 
@@ -91,7 +90,7 @@ def phantom_webproxy_driver(ipport):
     driver.set_page_load_timeout(30)
     return driver
 
-def firefox_webproxy_driver(ipport):
+def firefox_webproxy_driver(ipport, config):
     '''
     Use this if you started web proxy on a machine connected to router's LAN.
     '''
@@ -120,7 +119,7 @@ def firefox_webproxy_driver(ipport):
 
     return driver
 
-def chrome_webproxy_driver(ipport):
+def chrome_webproxy_driver(ipport, config):
     '''
     Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
     above, although ChromeWebDriver seems to be slower in loading pages.
@@ -147,13 +146,13 @@ def chrome_webproxy_driver(ipport):
 
     return driver
 
-def get_webproxy_driver(ipport):
+def get_webproxy_driver(ipport, config):
     if config.default_web_driver == "ffox":
-        d = firefox_webproxy_driver(ipport)
+        d = firefox_webproxy_driver(ipport, config)
         d.maximize_window()
         return d
     elif config.default_web_driver == "chrome":
-        return chrome_webproxy_driver(ipport)
+        return chrome_webproxy_driver(ipport, config)
         # the win maximise is done in the chrome options
     else:
         # something has gone wrong, make the error message as self explanatory as possible
