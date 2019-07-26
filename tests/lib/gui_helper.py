@@ -93,6 +93,32 @@ def get_radio_button_value(web_gui, get_value):
     except NoSuchElementException:
         return None
 
+def get_check_box_value(web_gui, get_value):
+    try:
+        #To get radio button value
+        radio_button = web_gui.find_elements_by_id(get_value)
+        for radiobutton in radio_button:
+            radio = radiobutton.get_attribute('src')
+            if "check-box-checked" in radio:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
+
+def get_icon_check_value(web_gui, get_value):
+    try:
+        #To icon check value
+        radio_button = web_gui.find_elements_by_xpath("(.//*[normalize-space(text()) and normalize-space(.)='All'])[8]/following::img[1]")
+        for radiobutton in radio_button:
+            radio = radiobutton.get_attribute('src')
+            if "cancel" in radio:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
+
 def get_text_value(web_gui, get_value):
     try:
         #To get the text box value
