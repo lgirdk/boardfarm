@@ -561,7 +561,7 @@ if __name__ == '__main__':
     cmts = CasaCMTS(conn_cmd=sys.argv[1], connection_type=connection_type)
 
     if len(sys.argv) > 2 and sys.argv[2] == "setup_ipv6":
-        print "Setting up IPv6 address, bundles, routes, etc"
+        print("Setting up IPv6 address, bundles, routes, etc")
         cmts.set_iface_ipv6addr('gige 0', '2001:dead:beef:1::cafe/64')
         cmts.add_route6('::/0', '2001:dead:beef:1::1')
         # TODO: casa 3200 cmts only supports one ip bundle for ipv6....
