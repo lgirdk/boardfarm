@@ -18,7 +18,7 @@ class NetperfReverseTest(netperf_test.NetperfTest):
     '''Setup Netperf and Ran Reverse Throughput.'''
     def runTest(self):
         # setup port forwarding to lan netperf server
-        lan_priv_ip = lan.get_interface_ipaddr("eth1")
+        lan_priv_ip = lan.get_interface_ipaddr(lan.iface_dut)
         board.uci_forward_traffic_redirect("tcp", "12865", lan_priv_ip)
         # setup port for data socket separate from control port
         board.uci_forward_traffic_redirect("tcp", "12866", lan_priv_ip)

@@ -37,7 +37,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
             elif lan.ipaddr is not None:
                 ip = lan.ipaddr
                 lan.sendline('cat /proc/net/vlan/config')
-                lan.expect('eth1.*\|\s([0-9]+).*\|')
+                lan.expect('%s.*\|\s([0-9]+).*\|' % lan.iface_dut)
                 port = 8000 + int(lan.match.group(1))
                 lan.expect(prompt)
                 proxy = "%s:%s" % (ip, port)

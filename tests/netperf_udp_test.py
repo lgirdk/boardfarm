@@ -22,7 +22,7 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         self.run_netperf(lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460")
 
         # setup port forwarding to lan netperf server
-        lan_priv_ip = lan.get_interface_ipaddr("eth1")
+        lan_priv_ip = lan.get_interface_ipaddr(lan.iface_dut)
         board.uci_forward_traffic_redirect("tcp", "12865", lan_priv_ip)
         # setup port for data socket separate from control port
         board.uci_forward_traffic_redirect("udp", "12866", lan_priv_ip)

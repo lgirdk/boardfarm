@@ -38,7 +38,7 @@ class SoCat(rootfs_boot.RootFSBootTest):
         self.all_ips.append((random_ip, random_port))
 
         # start listners
-        wan.sendline('ip addr add %s/32 dev eth1' % random_ip)
+        wan.sendline('ip addr add %s/32 dev %s' % (random_ip, wan.iface_dut))
         wan.expect(prompt)
 
         random_rate = randint(1,1024)
@@ -96,8 +96,8 @@ class SoCat(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def cleanup_ip(self, ip):
-        wan.sendline('ip addr del %s/32 dev eth1' % ip)
-        wan.expect_exact('ip addr del %s/32 dev eth1' % ip)
+        wan.sendline('ip addr del %s/32 dev %s' % (ip, wan.iface_dut))
+        wan.expect_exact('ip addr del %s/32 dev %s' % (ip, wan.iface_dut))
         wan.expect(prompt)
         wan.sendline('pkill -9 -f socat.*bind=%s' % ip)
         wan.expect(prompt)
