@@ -49,11 +49,11 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         if self.cdrouter_server is None:
             self.skipTest("No cdrouter server specified")
 
-        lan.sendline('ifconfig eth1 down')
+        lan.sendline('ifconfig %s down' % lan.iface_dut)
         lan.expect(prompt)
 
         if not board.has_cmts:
-            wan.sendline('ifconfig eth1 down')
+            wan.sendline('ifconfig %s down' % wan.iface_dut)
             wan.expect(prompt)
 
         c = CDRouter(self.cdrouter_server)
@@ -110,7 +110,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             if d.vlan == 0:
                 d.sendline('cat /proc/net/vlan/config')
                 d.expect_exact('cat /proc/net/vlan/config')
-                if 0 == d.expect([pexpect.TIMEOUT, 'eth1.*\|\s([0-9]+).*\|'], timeout=5):
+                if 0 == d.expect([pexpect.TIMEOUT, '%s.*\|\s([0-9]+).*\|' % d.iface_dut], timeout=5):
                     d.vlan = 0
                 else:
                     d.vlan = d.match.group(1)
@@ -313,7 +313,7 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
                 self.results.stop(self.job_id)
         # TODO: full recovery...
         for d in [wan,lan]:
-            d.sendline('ifconfig eth1 up')
+            d.sendline('ifconfig %s up' % d.iface_dut)
             d.expect(prompt)
 
         # make sure board is back in a sane state

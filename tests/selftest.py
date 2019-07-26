@@ -216,10 +216,10 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         lan.ip_neigh_flush()
 
         #set the link state up
-        lan.set_link_state("eth1", "up")
+        lan.set_link_state(lan.iface_dut, "up")
 
         #Checking the interface status
-        link = lan.is_link_up("eth1")
+        link = lan.is_link_up(lan.iface_dut)
         assert link != None, "Failed to check the link is up"
 
         #add sudo when the username is root

@@ -73,7 +73,7 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
 
     def server_opts_reverse(self, node=lan):
         try:
-            lan_priv_ip = node.get_interface_ipaddr("eth1")
+            lan_priv_ip = node.get_interface_ipaddr(lan.iface_dut)
         except:
             lan_priv_ip = node.get_interface_ipaddr("wlan0")
         board.uci_forward_traffic_redirect("udp", "5001", lan_priv_ip)

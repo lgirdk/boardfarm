@@ -37,22 +37,22 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
         board.network_restart()
         # Lan-side Device
-        lan.sendline('\nip -6 addr add 4aaa::6/64 dev eth1')
+        lan.sendline('\nip -6 addr add 4aaa::6/64 dev %s' % lan.iface_dut)
         lan.expect('ip -6')
         lan.expect(prompt)
-        lan.sendline('ip -6 route add 4aaa::1 dev eth1')
+        lan.sendline('ip -6 route add 4aaa::1 dev %s' % lan.iface_dut)
         lan.expect(prompt)
-        lan.sendline('ip -6 route add default via 4aaa::1 dev eth1')
+        lan.sendline('ip -6 route add default via 4aaa::1 dev %s' % lan.iface_dut)
         lan.expect(prompt)
         if 'No route to host' in lan.before:
             raise Exception('Error setting ivp6 routes')
         # Wan-side Device
-        wan.sendline('\nip -6 addr add 5aaa::6/64 dev eth1')
+        wan.sendline('\nip -6 addr add 5aaa::6/64 dev %s' % wan.iface_dut)
         wan.expect('ip -6')
         wan.expect(prompt)
-        wan.sendline('ip -6 route add 5aaa::1 dev eth1')
+        wan.sendline('ip -6 route add 5aaa::1 dev %s' % wan.iface_dut)
         wan.expect(prompt)
-        wan.sendline('ip -6 route add default via 5aaa::1 dev eth1')
+        wan.sendline('ip -6 route add default via 5aaa::1 dev %s' % wan.iface_dut)
         wan.expect(prompt)
         if 'No route to host' in wan.before:
             raise Exception('Error setting ivp6 routes')

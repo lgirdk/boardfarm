@@ -73,7 +73,7 @@ class iPerfTest(rootfs_boot.RootFSBootTest):
 
     def server_opts_reverse(self, node=lan):
         try:
-            lan_priv_ip = node.get_interface_ipaddr("eth1")
+            lan_priv_ip = node.get_interface_ipaddr(lan.iface_dut)
         except:
             lan_priv_ip = node.get_interface_ipaddr("wlan0")
         board.uci_forward_traffic_redirect("tcp", "5001", lan_priv_ip)
@@ -342,7 +342,7 @@ class iPerfBiDirTestLANtoWLAN(iPerfBiDirTest):
         if not wlan:
             self.skipTest("skipping test no wlan")
 
-        self.fip = lan.get_interface_ipaddr("eth1")
+        self.fip = lan.get_interface_ipaddr(lan.iface_dut)
         self.rip = wlan.get_interface_ipaddr("wlan0")
 
         wlan.sendline('iwconfig')
