@@ -567,7 +567,7 @@ def install_postfix(device):
         device.expect(device.prompt, timeout=90)
         device.sendline("apt-get install postfix -y")
         install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout = 120)
-        print install_settings
+        print(install_settings)
         if install_settings ==0:
             device.sendline("2")
             assert 0 == device.expect(['System mail name:']+ device.prompt, timeout = 90), "System mail name option is note received. Installaion failed"

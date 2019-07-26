@@ -84,10 +84,10 @@ class SnmpMibs(object):
                     continue
                 # add it to my dict
                 if "yy" in self.dbg:
-                    print "adding %s:{%s}" %(k, v)
+                    print("adding %s:{%s}" %(k, v))
                 self.mib_dict[k] = v
         if "yy" in self.dbg:
-            print (json.dumps(self.mib_dict, indent=4))
+            print(json.dumps(self.mib_dict, indent=4))
 
     def get_dict_mib(self):
         return self.mib_dict
@@ -101,7 +101,7 @@ class SnmpMibs(object):
             oid = self.mib_dict[mib_name]['oid']
         except:
             if  "y" in self.dbg:
-                print "ERROR: mib \'%s\' not found"%mib_name
+                print("ERROR: mib \'%s\' not found"%mib_name)
             pass
         return oid.encode('ascii','ignore')
 
@@ -118,15 +118,15 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 3:
         if len(sys.argv) == 1:
-            print "Using default values from unit test: %s"%(SnmpMibsUnitTest.srcDirectories)
+            print("Using default values from unit test: %s"%(SnmpMibsUnitTest.srcDirectories))
         else:
-            print "Usage:\n%s <path_to_global_mibs>  [<path_to_vendor_mibs>]"%sys.argv[0]
+            print("Usage:\n%s <path_to_global_mibs>  [<path_to_vendor_mibs>]"%sys.argv[0])
             sys.exit(1)
     else:
-        print 'sys.argv='+sys.argv
+        print('sys.argv='+sys.argv)
         location = sys.argv
 
     unit_test = SnmpMibsUnitTest(mibs_location=location)
     assert (unit_test.unitTest())
 
-    print 'Done.'
+    print('Done.')
