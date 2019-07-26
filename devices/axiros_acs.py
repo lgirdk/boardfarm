@@ -181,7 +181,7 @@ if __name__ == '__main__':
     acs.Axiros_GetListOfCPEs()
 
     ret = acs.get('DEAP805811D5', 'Device.DeviceInfo.SoftwareVersion')
-    print ret
+    print(ret)
 
     ret = acs.get('DEAP805811D5', 'Device.WiFi.SSID.1.SSID')
-    print ret
+    print(ret)

@@ -624,7 +624,7 @@ EOF'''
                 pass
 
             try:
-                print 'Downloading '+server+':'+conf_file+' to '+dest_fname
+                print('Downloading '+server+':'+conf_file+' to '+dest_fname)
                 from devices.common import scp_from
                 scp_from(conf_file, server, self.tftp_device.username, self.tftp_device.password, self.tftp_device.port, dest_fname)
 
@@ -633,7 +633,7 @@ EOF'''
                     # exception, but the file is not where it should be!!
                     print("Tftp completed but %s not found in destination dir: "% dest_fname)
                     return False
-                print "Downloaded: "+conf_file
+                print("Downloaded: "+conf_file)
             except:
                 print("Failed to download %s from %s"% (conf_file, self.ipaddr))
                 return False

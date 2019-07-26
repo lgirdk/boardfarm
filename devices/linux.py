@@ -157,7 +157,7 @@ class LinuxDevice(base.BaseDevice):
             bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
             dst = self.tftp_dir + '/' + os.path.basename(src)
-        print ("Copying %s to %s" % (src, dst))
+        print("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
         self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
