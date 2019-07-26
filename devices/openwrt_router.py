@@ -528,8 +528,8 @@ class OpenWrtRouter(linux.LinuxDevice):
             self.expect(self.prompt)
         return 0 == idx
 
-    def enable_mgmt_gui(self):
-        pass
+    def enable_mgmt_gui(self, board, wan):
+        print('WARNING: Code not written for enable_mgmt_gui for this board type, %s' % self.model)
 
     def get_pp_dev(self):
         return self
