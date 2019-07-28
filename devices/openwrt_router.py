@@ -647,7 +647,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
         # TODO: verify we got 'em all
         if idx != len(self.stats):
-            print "WARN: did not match all stats collected!"
+            print("WARN: did not match all stats collected!")
 
         dict_to_log.update(self.failed_stats)
 

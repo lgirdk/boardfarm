@@ -610,8 +610,8 @@ if __name__ == '__main__':
 
     cmts.set_iface_upstream(ups_idx, 0.0, 47000000, 6400000, 6)
 
-    print
+    print()
     print("Press Control-] to exit interact mode")
     print("=====================================")
     cmts.interact()
-    print
+    print()
