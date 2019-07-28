@@ -113,8 +113,8 @@ if __name__ == '__main__':
     for i in range(43, 48+1):
         dell_switch.configure_eth_trunk_port(i)
 
-    print
+    print()
     print("Press Control-] to exit interact mode")
     print("=====================================")
     dell_switch.interact()
-    print
+    print()

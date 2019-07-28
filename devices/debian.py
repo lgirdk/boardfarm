@@ -766,7 +766,3 @@ if __name__ == '__main__':
         from lib import installers
 
         installers.install_asterisk(dev)
-
-
-    print
-
