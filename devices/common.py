@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from lib.common import cmd_exists
 import binascii
 import os
 import pexpect
@@ -15,6 +14,8 @@ import urllib2
 
 import termcolor
 
+
+cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
 
 def get_file_magic(fname, num_bytes=4):
     '''Return the first few bytes from a file to determine the type.'''
