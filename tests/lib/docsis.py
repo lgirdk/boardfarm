@@ -59,7 +59,7 @@ class docsis:
         # make target tmpdir if it does not exist
         try:
             os.makedirs(self.dir_path)
-        except OSError, err:
+        except OSError as err:
             import errno
             # Reraise the error unless it's about an already existing directory
             if err.errno != errno.EEXIST or not os.path.isdir(self.dir_path):
