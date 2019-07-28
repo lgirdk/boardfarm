@@ -29,9 +29,6 @@ site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 from devices import get_device
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
-import matplotlib
-matplotlib.use('Agg')
-
 def setup_dynamic_devices(config, env=None, start=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 

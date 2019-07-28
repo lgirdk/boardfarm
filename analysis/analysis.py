@@ -47,6 +47,8 @@ class Analysis():
         except:
             data = [int(i) for i in data]
 
+        import matplotlib
+        matplotlib.use('Agg')
         import matplotlib.pyplot as plt
 
         if ts is None:
