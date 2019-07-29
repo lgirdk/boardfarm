@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "26ec0ab0_cf37621a",
+        "filename": "devices/base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-07-29T15:27:28Z",
+      "side": 1,
+      "message": "I wonder if we should create a custom exception and raise it here like\n\n    raise DeviceConnectionClose()\n\nand in bft I suppose we could have a try...except DeviceConnectionClose to catch it and continue with the tests. What do you think?",
+      "revId": "89321ac6f17f7be0c076cf0f9453f8e8984025c8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
