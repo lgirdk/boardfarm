@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9951823c_c5eea528",
+        "filename": "devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 487,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-07-29T08:41:27Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "1dc51e12_9ce18956",
+      "revId": "387aaa6437a766241ac62e483bc47bc75ed6ee98",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3a540b65_6728cc78",
         "filename": "devices/debian.py",
         "patchSetId": 7
@@ -33,6 +51,24 @@
       "revId": "387aaa6437a766241ac62e483bc47bc75ed6ee98",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3df8fd39_0b0d4975",
+        "filename": "devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 492,
+      "author": {
+        "id": 1016481
+      },
+      "writtenOn": "2019-07-29T08:41:27Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3a540b65_6728cc78",
+      "revId": "387aaa6437a766241ac62e483bc47bc75ed6ee98",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
