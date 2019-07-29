@@ -215,6 +215,9 @@ class BaseDevice(pexpect.spawn):
 
         return super(BaseDevice, self).sendcontrol(char)
 
+    def close(self, force=True):
+        return super(BaseDevice, self).close(self, force=True)
+
     def enable_ipv6(self, interface):
         '''Enable ipv6 in interface '''
         raise Exception("Not implemented!")
