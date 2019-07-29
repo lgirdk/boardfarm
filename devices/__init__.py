@@ -22,6 +22,12 @@ wlan2g = None
 wlan5g = None
 prompt = None
 
+class DeviceLoader(object):
+    def __getattr__(self, name):
+        if 'BFT_DEBUG' in os.environ:
+            print("DeviceLoader: %s" % name)
+        return eval(name)
+
 device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
 device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
 if 'BFT_OVERLAY' in os.environ:
@@ -132,3 +138,5 @@ You are seeing this message as your configuration is now using kermit instead of
         print("No BFT_CONFIG is set, do you need one?")
 
     return openwrt_router.OpenWrtRouter(model, **kwargs)
+
+sys.modules[__name__] = DeviceLoader()
