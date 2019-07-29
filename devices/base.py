@@ -215,9 +215,6 @@ class BaseDevice(pexpect.spawn):
 
         return super(BaseDevice, self).sendcontrol(char)
 
-    def expect_exact_split(self, pattern, nsplit=1, *args, **kwargs):
-        pass
-
     def enable_ipv6(self, interface):
         '''Enable ipv6 in interface '''
         raise Exception("Not implemented!")
