@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8bbb22e7_ad4d1f38",
+        "filename": "tests/lib/gui_helper.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-07-29T08:44:43Z",
+      "side": 1,
+      "message": "Usually we prefer to find elements by xpath as the last option. Are we not able to get elements by id or text or class?",
+      "revId": "eaf3dca0ec212f43187b1a68907d95f76594edad",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
