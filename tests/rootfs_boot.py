@@ -8,9 +8,7 @@
 import time
 import linux_boot
 import lib
-import ipaddress
 
-from lib.network_helper import valid_ipv4, valid_ipv6
 from lib.docsis import check_valid_docsis_ip_networking
 
 from devices import board, wan, lan, prompt
