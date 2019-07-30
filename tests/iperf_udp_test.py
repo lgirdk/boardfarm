@@ -10,7 +10,7 @@ import re
 import rootfs_boot
 import ipv6_setup
 import lib
-from lib import streamboost, installers
+from lib import installers
 from devices import board, wan, lan, wlan, prompt
 
 # change this if you want to one time tweak iperf opts
