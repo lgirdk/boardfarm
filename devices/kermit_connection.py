@@ -36,7 +36,7 @@ class KermitConnection():
         except pexpect.EOF as e:
             raise Exception("Board is in use (connection refused).")
 
-    def close():
+    def close(self):
         self.device.sendcontrol('\\')
         self.device.sendline('c')
         self.device.expect(self.prompt)
