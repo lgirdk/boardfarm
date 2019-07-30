@@ -6,9 +6,9 @@ from lib.docsis import docsis, cm_cfg
 import re
 import glob
 
-from devices import DebianBox
+import debian
 
-class DebianISCProvisioner(DebianBox):
+class DebianISCProvisioner(debian.DebianBox):
     '''
     Linux based provisioner using ISC DHCP server
     '''
