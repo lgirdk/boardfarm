@@ -513,8 +513,9 @@ EOF'''
             self.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, self.ipv6_prefix, self.prov_gateway_v6, self.iface_dut))
             self.expect(self.prompt)
 
-        self.sendline('ip -6 route add %s via %s' % (str(self.erouter_net), self.prov_gateway_v6))
-        self.expect(self.prompt)
+        for nw in self.erouter_net:
+            self.sendline('ip -6 route add %s via %s' % (nw, self.prov_gateway_v6))
+            self.expect(self.prompt)
 
         self.update_cmts_isc_dhcp_config(board_config)
         self.sendline('cat /etc/dhcp/dhcpd.conf')
