@@ -446,7 +446,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.network_restart()
                 self.expect(pexpect.TIMEOUT, timeout=10)
 
-    def uci_allow_wan_http(self, lan_ip="192.168.1.1"):
+    def _uci_allow_wan_http(self, lan_ip="192.168.1.1"):
         '''Allow access to webgui from devices on WAN interface.'''
         self.uci_forward_traffic_redirect("tcp", "80", lan_ip)
 
