@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import openwrt_router
+import signal
 import sys
 import pexpect
 import atexit

@@ -36,7 +36,7 @@ class BaseCmts(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def get_cmts_model(self):
-        return model
+        return self.model
 
     def clear_offline(self, cmmac):
         raise Exception("Not implemented!")
