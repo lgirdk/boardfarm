@@ -57,7 +57,7 @@ class BaseDevice(pexpect.spawn):
         self.expect_exact(cmd, timeout=5)
         try:
             self.expect(self.prompt, timeout=timeout)
-        except Exception as e:
+        except Exception:
             self.sendcontrol('c')
             raise Exception("Command did not complete within %s seconds. Prompt was not seen." % timeout)
         return self.before.strip()

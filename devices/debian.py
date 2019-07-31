@@ -166,9 +166,9 @@ class DebianBox(linux.LinuxDevice):
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
-        except pexpect.TIMEOUT as e:
+        except pexpect.TIMEOUT:
             raise Exception("Unable to connect to %s." % name)
-        except pexpect.EOF as e:
+        except pexpect.EOF:
             if hasattr(self, "before"):
                 print(self.before)
             raise Exception("Unable to connect to %s." % name)
@@ -470,7 +470,6 @@ class DebianBox(linux.LinuxDevice):
     def add_hosts(self):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         import config
-        from devices import board
         hosts={}
         for device in config.board['devices']:
             if 'ipaddr' in device:
