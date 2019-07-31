@@ -102,8 +102,6 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
 
 if __name__ == '__main__':
-    import time
-
     dell_switch = DellSwitch(sys.argv[1])
     dell_switch.connect()
 

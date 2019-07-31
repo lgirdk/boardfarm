@@ -11,11 +11,7 @@ import pexpect
 import linux
 import atexit
 import os
-import binascii
-import glob
 import ipaddress
-from lib.regexlib import ValidIpv4AddressRegex
-import re
 
 from termcolor import colored, cprint
 

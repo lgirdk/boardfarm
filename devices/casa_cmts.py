@@ -8,7 +8,6 @@
 
 import pexpect
 import sys
-import base
 import re
 import connection_decider
 from lib.regexlib import ValidIpv6AddressRegex, ValidIpv4AddressRegex, AllValidIpv6AddressesRegex

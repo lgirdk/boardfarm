@@ -8,7 +8,7 @@
 
 import pexpect
 import sys
-import base
+
 import re
 import connection_decider
 import base_cmts

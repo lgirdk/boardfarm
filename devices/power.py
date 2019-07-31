@@ -16,8 +16,6 @@ except:
 import pexpect
 import dlipower
 import time
-import re
-
 import inspect
 
 def get_default_for_arg(function, arg):
