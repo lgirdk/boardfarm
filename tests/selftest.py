@@ -395,3 +395,16 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                 raise e
 
         print("Test passed")
+
+class selftest_test_cmts(rootfs_boot.RootFSBootTest):
+   '''
+   tests the cmts function moved to boardfarm-docsis/devices
+   boardfarm-docsis overlay has to be set for this to work
+   '''
+
+   def runTest(self):
+       from devices import cmts, board
+
+       #Getting the online status of cmts
+       cm_status = cmts.check_online(board.config['cm_mac'])
+       print "Obtained the status of the cm: %s" % cm_status
