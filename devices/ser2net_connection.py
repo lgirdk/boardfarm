@@ -17,5 +17,5 @@ class Ser2NetConnection():
         if result == 0:
             raise Exception("Password required and not supported")
 
-    def close():
+    def close(self):
         self.device.sendline("~.")
