@@ -499,7 +499,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 	    try:
 		board.sendline('mount')
 		board.expect_exact('overlayfs:/overlay on / type overlay', timeout=15)
-		board.expect(prompt)
+		board.expect(self.prompt)
 		break
 	    except:
 		pass
