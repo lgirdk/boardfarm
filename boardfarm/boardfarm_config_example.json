@@ -36,7 +36,7 @@
             {
                 "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
                 "color": "cyan",
-                "ipaddr": "localhost",
+		"ipaddr": "localhost",
                 "name": "wan",
                 "options": "tftpd-server",
                 "port": "5910",
@@ -47,7 +47,7 @@
                 "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
                 "color": "blue",
                 "http_proxy": "localhost:9909",
-                "ipaddr": "localhost",
+		"ipaddr": "localhost",
                 "name": "lan",
                 "port": "5909",
                 "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub lan-${uniq_id} 5909 9909 ${lan_iface}",
@@ -62,25 +62,40 @@
         "connection_type": "local_serial",
         "devices": [
             {
-                "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
-                "color": "blue",
-                "ipaddr": "localhost",
-                "name": "wan",
-                "port": "5909",
-                "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub wan-${uniq_id} 5909 9909 ${wan_iface}",
-                "type": "debian"
+                "name": "wan-factory",
+                "type": "docker-factory",
+		"iface": "${wan_iface}",
+		"targets": [
+			{
+			"name": "wan",
+			"color": "blue",
+			"type": "debian",
+			"img": "bft:node"
+			}
+		]
             },
             {
-                "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
-                "color": "cyan",
-                "http_proxy": "localhost:9909",
-                "ipaddr": "localhost",
-                "name": "lan",
-                "options": "tftpd-server",
-                "port": "5910",
-                "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub lan-${uniq_id} 5910 9910 ${lan_iface}",
-                "type": "debian"
-            }
+                "name": "lan-factory",
+                "type": "docker-factory",
+		"iface": "${lan_iface}",
+		"targets": [
+			{
+			"color": "cyan",
+			"name": "lan",
+			"options": "tftpd-server",
+			"http_proxy": "localhost:9909",
+			"type": "debian",
+			"img": "bft:node"
+			},
+			{
+			"color": "cyan",
+			"name": "lan2",
+			"http_proxy": "localhost:9910",
+			"type": "debian",
+			"img": "bft:node"
+			}
+		]
+	    }
         ],
         "notes": "QEMU emulated devices"
     },
