@@ -5,12 +5,10 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import time
-import unittest2
 import rootfs_boot
 import lib
 import pexpect
-import sys
+
 from devices import board, wan, lan, wlan, prompt
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):

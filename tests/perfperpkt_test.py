@@ -5,12 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import unittest2
+
 import lib
 import iperf_test
-import pexpect
-import sys
-import time
 
 from devices import board, wan, lan, wlan, prompt
 
