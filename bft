@@ -52,14 +52,12 @@ def setup_dynamic_devices(config, env=None, start=None):
         if 'BFT_DEBUG' in os.environ:
             print("Time to instantiate device = %s" % (time.time() - s))
 
-        if dyn_dev is not None:
-            if 'name' not in device:
-                raise Exception("Device in config is not named! This is required")
-            setattr(config, device['name'], dyn_dev)
-            config.devices.append(device['name'])
+        def create_device_helper(name, dev):
+            setattr(config, name, dev)
+            config.devices.append(name)
 
             # TODO: should this be here for should each device type set it?
-            dyn_dev.start = start
+            dev.start = start
 
             # TODO: set the following:
             #    reboot=config.reboot_vms,
@@ -70,9 +68,20 @@ def setup_dynamic_devices(config, env=None, start=None):
 
             # if this device is a wan cmts provisioner, we set the device name
             # TODO: this should be generic
-            if getattr(dyn_dev, 'wan_cmts_provisioner', False):
-                setattr(config, 'provisioner', dyn_dev)
+            if getattr(dev, 'wan_cmts_provisioner', False):
+                setattr(config, 'provisioner', dev)
                 config.devices.append('provisioner')
+
+        if dyn_dev is not None:
+            if 'name' not in device:
+                raise Exception("Device in config is not named! This is required")
+            create_device_helper(device['name'], dyn_dev)
+
+            for dev in getattr(dyn_dev, 'extra_devices', []):
+                if hasattr(dev, 'name'):
+                    create_device_helper(dev.name, dev)
+                else:
+                    raise Exception("Extra device in config is not named! This is required")
 
             continue
 
