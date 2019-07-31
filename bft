@@ -8,14 +8,13 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
+import hashlib
 import inspect
+import json
 import os
 import random
 import sys
-import json
-import hashlib
 import time
-import json
 import traceback
 from datetime import datetime
 
