@@ -6,15 +6,11 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
-from datetime import datetime
-import re
 import os
 import time
 import common
 import error_detect
-import ipaddress
 
-from lib.regexlib import LinuxMacFormat, AllValidIpv6AddressesRegex
 from lib.bft_logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
