@@ -5,8 +5,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import time
-import unittest2
 import rootfs_boot
 import lib
 from devices import board, wan, lan, wlan, prompt
