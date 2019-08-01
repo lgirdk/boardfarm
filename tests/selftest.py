@@ -248,6 +248,30 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         lan.sendline('md5sum /tmp/dst.txt')
         lan.expect(fmd5)
         lan.expect(lan.prompt)
+
+        '''FUnctions moved from openwrt to linux '''
+        #Wait until network interfaces have IP Addresses
+        board.wait_for_network()
+        print "Waited until network interfaces has ip address"
+
+        #Check the available memory of the device
+        memory_avail = board.get_memfree()
+        print 'Available memory of the device:{}'.format(memory_avail)
+
+        #Getting the vmstat
+        vmstat_out = board.get_proc_vmstat()
+        assert vmstat_out is not None, 'virtual machine status is None'
+        print "Got the vmstat{}".format(vmstat_out)
+
+        #Get the total number of connections in the network
+        nw_count = board.get_nf_conntrack_conn_count()
+        assert nw_count is not None , 'connections are empty'
+        print 'Get the total number of connections in the network{}'.format(nw_count)
+
+        #Getting the DNS server upstream
+        ip_addr = board.get_dns_server_upstream()
+        assert ip_addr is not None, 'Getting nameserver ip is None'
+        print "Got the DNS server upstream{}".format(ip_addr)
         print('Test Passed')
 
 class SnmpMibsUnitTest(object):
