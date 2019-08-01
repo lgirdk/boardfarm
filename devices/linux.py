@@ -1,6 +1,7 @@
 import base, binascii
 import os, ipaddress, re
 from lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
+import pexpect
 
 class LinuxDevice(base.BaseDevice):
     '''Linux implementations '''
@@ -196,3 +197,97 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         '''Set the terminal colums value'''
         self.sendline('stty columns %s'%str(columns))
         self.expect(self.prompt)
+
+    def wait_for_linux(self):
+        '''Verify Linux starts up.'''
+        i = self.expect(['Reset Button Push down', 'Linux version', 'Booting Linux', 'Starting kernel ...', 'Kernel command line specified:'], timeout=45)
+        if i == 0:
+            self.expect('httpd')
+            self.sendcontrol('c')
+            self.expect(self.uprompt)
+            self.sendline('boot')
+        i = self.expect(['U-Boot', 'login:', 'Please press Enter to activate this console'] + self.prompt, timeout=150)
+        if i == 0:
+            raise Exception('U-Boot came back when booting kernel')
+        elif i == 1:
+            self.sendline('root')
+            if 0 == self.expect(['assword:'] + self.prompt):
+                self.sendline('password')
+                self.expect(self.prompt)
+
+    def get_dns_server_upstream(self):
+        '''Get the IP of name server'''
+        self.sendline('cat /etc/resolv.conf')
+        self.expect('nameserver (.*)\r\n', timeout=5)
+        ret = self.match.group(1)
+        self.expect(self.prompt)
+        return ret
+
+    def get_nf_conntrack_conn_count(self):
+        '''Get the total number of connections in the network'''
+        pp = self.get_pp_dev()
+
+        for not_used in range(5):
+            try:
+                pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
+                pp.expect_exact('cat /proc/sys/net/netfilter/nf_conntrack_count', timeout=2)
+                pp.expect(pp.prompt, timeout=15)
+                ret = int(pp.before.strip())
+
+                self.touch()
+                return ret
+            except:
+                continue
+            else:
+                raise Exception("Unable to extract nf_conntrack_count!")
+
+    def get_proc_vmstat(self, pp=None):
+        '''Get the virtual machine status '''
+        if pp is None:
+            pp = self.get_pp_dev()
+
+        for not_used in range(5):
+            try:
+                pp.sendline('cat /proc/vmstat')
+                pp.expect_exact('cat /proc/vmstat')
+                pp.expect(pp.prompt)
+                results = re.findall('(\w+) (\d+)', pp.before)
+                ret = {}
+                for key, value in results:
+                    ret[key] = int(value)
+
+                return ret
+            except Exception as e:
+                print(e)
+                continue
+            else:
+                raise Exception("Unable to parse /proc/vmstat!")
+
+    def wait_for_network(self):
+        '''Wait until network interfaces have IP Addresses.'''
+        for interface in [self.wan_iface, self.lan_iface]:
+            for i in range(5):
+                try:
+                    if interface is not None:
+                        ipaddr = self.get_interface_ipaddr(interface).strip()
+                        if not ipaddr:
+                            continue
+                        self.sendline("route -n")
+                        self.expect(interface, timeout=2)
+                        self.expect(self.prompt)
+                except pexpect.TIMEOUT:
+                    print("waiting for wan/lan ipaddr")
+                else:
+                    break
+
+    def get_memfree(self):
+        '''Return the kB of free memory.'''
+        # free pagecache, dentries and inodes for higher accuracy
+        self.sendline('\nsync; echo 3 > /proc/sys/vm/drop_caches')
+        self.expect('drop_caches')
+        self.expect(self.prompt)
+        self.sendline('cat /proc/meminfo | head -2')
+        self.expect('MemFree:\s+(\d+) kB')
+        memFree = self.match.group(1)
+        self.expect(self.prompt)
+        return int(memFree)
