@@ -7,7 +7,6 @@
 #!/usr/bin/env python
 
 import os
-import os.path
 import subprocess
 
 class Boardfarm(object):
