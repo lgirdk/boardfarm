@@ -47,7 +47,7 @@ for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f
 
 def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
-    from lib.common import cmd_exists
+    from boardfarm.lib.common import cmd_exists
     if not cmd_exists(cmd):
         termcolor.cprint("\nThe  command '"+cmd+"' is NOT installed on your system. Please install it.", None, attrs=['bold'])
         if msg is not None: print(cmd+": "+msg)

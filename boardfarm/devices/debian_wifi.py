@@ -2,7 +2,7 @@ import re
 import debian
 import pexpect
 from countrycode import countrycode
-from lib.wifi import wifi_client_stub
+from boardfarm.lib.wifi import wifi_client_stub
 
 class DebianWifi(debian.DebianBox, wifi_client_stub):
     '''Extension of Debian class with wifi functions'''
@@ -23,7 +23,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
        self.set_link_state(self.iface_wifi, "up")
 
     def wifi_scan(self):
-        from tests.lib.installers import install_iw
+        from boardfarm.lib.installers import install_iw
         install_iw(self)
 
         self.sudo_sendline('iw %s scan | grep SSID:' % self.iface_wifi)

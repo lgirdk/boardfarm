@@ -12,7 +12,7 @@ import base
 import re
 import connection_decider
 import base_cmts
-from lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
+from regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
 
 class ArrisCMTS(base_cmts.BaseCmts):

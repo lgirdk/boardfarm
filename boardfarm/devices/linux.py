@@ -1,6 +1,6 @@
 import base, binascii
 import os, pexpect, ipaddress, re
-from lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
+from regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
 
 class LinuxDevice(base.BaseDevice):
     '''Linux implementations '''

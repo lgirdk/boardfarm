@@ -1,4 +1,4 @@
-from devices import base
+import base
 
 
 class BaseCmts(base.BaseDevice):

@@ -3,10 +3,10 @@ import shutil
 import pexpect
 
 import rootfs_boot
-from lib.installers import install_jmeter
+from boardfarm.lib.installers import install_jmeter
 
-from devices import board, lan, prompt
-from devices.common import scp_from
+from boardfarm.devices import board, lan, prompt
+from boardfarm.devices.common import scp_from
 
 def rm_r(path):
     if not os.path.exists(path):

@@ -1,12 +1,12 @@
 import ipaddress
 import os
 import pexpect
-from lib.regexlib import ValidIpv4AddressRegex
-from lib.docsis import docsis, cm_cfg
+from regexlib import ValidIpv4AddressRegex
+from boardfarm.lib.docsis import docsis, cm_cfg
 import re
 import glob
 
-from devices import DebianBox
+from debian import DebianBox
 
 class DebianISCProvisioner(DebianBox):
     '''

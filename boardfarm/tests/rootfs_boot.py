@@ -7,13 +7,13 @@
 
 import time
 import linux_boot
-import lib
+import boardfarm.lib
 import ipaddress
 
-from lib.network_helper import valid_ipv4, valid_ipv6
-from lib.docsis import check_valid_docsis_ip_networking
+from boardfarm.lib.network_helper import valid_ipv4, valid_ipv6
+from boardfarm.lib.docsis import check_valid_docsis_ip_networking
 
-from devices import board, wan, lan, prompt
+from boardfarm.devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
     '''Flashed image and booted successfully.'''
@@ -36,7 +36,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
 
         if not wan and len(tftp_servers) == 0:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
-            lib.common.test_msg(msg)
+            boardfarm.lib.common.test_msg(msg)
             self.skipTest(msg)
 
         # This still needs some clean up, the fall back is to assuming the
@@ -191,7 +191,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
     reflash = False
     reboot = False
 
-    @lib.common.run_once
+    @boardfarm.lib.common.run_once
     def runTest(self):
         if self.__class__.__name__ == "RootFSBootTest":
             self.boot()
@@ -208,7 +208,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                 pass
 
             board.close()
-            lib.common.test_msg("Unable to boot, skipping remaining tests...")
+            boardfarm.lib.common.test_msg("Unable to boot, skipping remaining tests...")
             return
         try:
             # let user interact with console if test failed

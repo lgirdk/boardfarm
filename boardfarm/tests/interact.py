@@ -6,11 +6,11 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-import lib
+import boardfarm.lib
 import os
 import sys
 import glob
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 def print_subclasses(cls):
     for x in cls.__subclasses__():
@@ -36,7 +36,7 @@ class Interact(rootfs_boot.RootFSBootTest):
 
     def runTest(self):
         legacy = hasattr(self.config, "wan_device")
-        lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
+        boardfarm.lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
         try:
             board.interact()
@@ -158,12 +158,12 @@ class Interact(rootfs_boot.RootFSBootTest):
                         t = eval(test)
                         reload(sys.modules[t.__module__])
                         cls = t(self.config)
-                        lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
+                        boardfarm.lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
                         cls.testWrapper()
-                        lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
+                        boardfarm.lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
                         board.sendline()
                     except:
-                        lib.common.test_msg("Failed to find and/or run test, continuing..")
+                        boardfarm.lib.common.test_msg("Failed to find and/or run test, continuing..")
                         continue
                     #except:
                     #    print("Unable to (re-)run specified test")

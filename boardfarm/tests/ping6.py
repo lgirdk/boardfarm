@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class LanDevPing6Router(rootfs_boot.RootFSBootTest):
     '''Device on LAN can ping6 router.'''

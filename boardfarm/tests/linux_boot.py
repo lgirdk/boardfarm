@@ -7,13 +7,13 @@
 
 import time
 import unittest2
-import lib
+import boardfarm.lib
 import sys
 import traceback
 import time
 
-from devices import board, wan, lan, wlan, prompt
-from lib.bft_logging import LoggerMeta, now_short
+from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
     _testMethodName = "UNDEFINED"
@@ -34,9 +34,9 @@ class LinuxBootTest(unittest2.TestCase):
         return self.__class__.__name__
 
     def setUp(self):
-        lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
+        boardfarm.lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
     def tearDown(self):
-        lib.common.test_msg("\n==================== End %s      Time: %s ======================" % (self.__class__.__name__, now_short(self._format)))
+        boardfarm.lib.common.test_msg("\n==================== End %s      Time: %s ======================" % (self.__class__.__name__, now_short(self._format)))
 
     def wan_setup(self):
         None

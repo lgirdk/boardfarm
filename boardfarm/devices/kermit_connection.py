@@ -1,7 +1,5 @@
-import os
 import pexpect
-import config
-from lib.common import cmd_exists
+
 
 class KermitConnection():
     """

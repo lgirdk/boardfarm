@@ -1,5 +1,5 @@
 import pexpect
-from lib.regexlib import telnet_ipv4_conn
+from regexlib import telnet_ipv4_conn
 
 class LocalSerialConnection():
     '''
