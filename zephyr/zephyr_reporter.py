@@ -1,16 +1,11 @@
 #!/usr/bin/python2
 import argparse
 import os
-import sys
-import re
 import csv
 import datetime
 import json
-from pprint import pprint
-from time import gmtime, strftime
 from jira import JIRA
 import zapi
-from jira import JIRA
 import requests
 
 COLUMN_SCRIPT_NAME="TestScript Name"
