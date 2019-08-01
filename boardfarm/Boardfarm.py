@@ -6,6 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 #!/usr/bin/env python
 
+import os
+import os.path
 import subprocess
 
 class Boardfarm(object):
@@ -16,10 +18,14 @@ class Boardfarm(object):
     def __init__(self, config_url):
         self.config_url = config_url
 
-    def run(self):
+    def run(self, board_type, testsuite):
+        output_dir = os.path.join(os.getcwd(), "results")
         print("Trying to run bft ...")
-        cmd = "bft -b mv1 --testsuite basic -c http://172.19.17.134/boardfarm/api/bf_config"
-        result = subprocess.check_output("bft --version", shell=True)
-        #print("result:")
-        #print(result)
-
+        cmd = "bft -b {b} --testsuite {t} -c {c} -o {o}".format(b=board_type,
+                                                                t=testsuite,
+                                                                c=self.config_url,
+                                                                o=output_dir)
+        print(cmd)
+        result = subprocess.check_output(cmd, shell=True)
+        print("Results in %s" % output_dir)
+        print("\n".join(os.listdir(output_dir)))
