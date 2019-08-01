@@ -8,13 +8,12 @@
 import atexit
 import os
 import os.path
-import random
 import signal
 import socket
 import sys
 import urllib2
 import pexpect
-import Open_Embedded
+import linux
 from datetime import datetime
 import ipaddress
 import re
@@ -24,8 +23,7 @@ import common
 import connection_decider
 from common import print_bold
 
-class OpenWrtRouter(Open_Embedded.OpenEmbedded):
-
+class OpenWrtRouter(linux.LinuxDevice):
     '''
     Args:
       model: Examples include "ap148" and "ap135".
@@ -54,9 +52,7 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
     routing = True
     lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
     lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
-
     tmpdir = "/tmp"
-
     def __init__(self,
                  model,
                  conn_cmd,
@@ -109,7 +105,7 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
             self.tftp_server = None
         atexit.register(self.kill_console_at_exit)
 
-    def get_file(self, fname, lan_ip="192.168.1.1"):
+    def get_file(self, fname, lan_ip=lan_gateway):
         '''
         OpenWrt routers have a webserver, so we use that to download
         the file via a webproxy (e.g. a device on the board's LAN).
@@ -185,8 +181,19 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
         else:
             return common.scp_to_tftp_server(os.path.abspath(fname), tserver, tusername, tpassword, tport)
 
-    def prepare_nfsroot(self, NFSROOT):
-        raise Exception('Code not written for prepare_nfsroot for this board type, %s.' % self.model)
+    def install_package(self, fname):
+        '''Install OpenWrt package (opkg).'''
+        target_file = fname.replace('\\', '/').split('/')[-1]
+        new_fname = self.prepare_file(fname)
+        local_file = self.tftp_get_file(self.tftp_server, new_fname, timeout=60)
+        # opkg requires a correct file name
+        self.sendline("mv %s %s" % (local_file, target_file))
+        self.expect(self.prompt)
+        self.sendline("opkg install --force-downgrade %s" % target_file)
+        self.expect(['Installing', 'Upgrading', 'Downgrading'])
+        self.expect(self.prompt, timeout=60)
+        self.sendline("rm -f /%s" % target_file)
+        self.expect(self.prompt)
 
     def wait_for_boot(self):
         '''
@@ -225,8 +232,16 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
         self.expect(["Writing to Nand... done", "Protected 1 sectors", "Saving Environment to NAND...", 'Saving Environment to FAT...'])
         self.expect(self.uprompt)
 
-    def kill_console_at_exit(self):
-        self.kill(signal.SIGKILL)
+    def network_restart(self):
+        '''Restart networking.'''
+        self.sendline('\nifconfig')
+        self.expect('HWaddr', timeout=10)
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/network restart')
+        self.expect(self.prompt, timeout=40)
+        self.sendline('ifconfig')
+        self.expect(self.prompt)
+        self.wait_for_network()
 
     def firewall_restart(self):
         '''Restart the firewall. Return how long it took.'''
@@ -324,6 +339,14 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
                 self.network_restart()
                 self.expect(pexpect.TIMEOUT, timeout=10)
 
+    def enable_mgmt_gui(self):
+        '''Allow access to webgui from devices on WAN interface '''
+        self.uci_allow_wan_http(lan_gateway)
+
+    def enable_ssh(self):
+        '''Allow ssh on wan interface '''
+        self.uci_allow_wan_ssh(lan_gateway)
+
     def uci_allow_wan_http(self, lan_ip="192.168.1.1"):
         '''Allow access to webgui from devices on WAN interface.'''
         self.uci_forward_traffic_redirect("tcp", "80", lan_ip)
@@ -371,8 +394,25 @@ class OpenWrtRouter(Open_Embedded.OpenEmbedded):
         self.expect(self.prompt)
         self.firewall_restart()
 
-    def enable_mgmt_gui(self, board, wan):
-        print('WARNING: Code not written for enable_mgmt_gui for this board type, %s' % self.model)
+    def wait_for_mounts(self):
+        # wait for overlay to finish mounting
+	for i in range(5):
+	    try:
+		board.sendline('mount')
+		board.expect_exact('overlayfs:/overlay on / type overlay', timeout=15)
+		board.expect(prompt)
+		break
+	    except:
+		pass
+	else:
+		print("WARN: Overlay still not mounted")
+
+    def get_user_id(self, user_id):
+        self.sendline('cat /etc/passwd | grep -w ' + user_id)
+        idx = self.expect([user_id] + self.prompt)
+        if idx == 0:
+            self.expect(self.prompt)
+        return 0 == idx
 
     def get_pp_dev(self):
         return self
