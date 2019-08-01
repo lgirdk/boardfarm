@@ -4,13 +4,13 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+import ipaddress
 import pexpect
 import os
 import time
 import common
 import error_detect
-
+import signal
 from lib.bft_logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
@@ -24,6 +24,7 @@ class BaseDevice(pexpect.spawn):
 
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None
+    lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
 
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface '''
@@ -234,3 +235,61 @@ class BaseDevice(pexpect.spawn):
     def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
         '''Check Ping verification from device '''
         raise Exception("Not implemented!")
+
+    def reset(self, break_into_uboot=False):
+        '''Power-cycle this device.'''
+        if not break_into_uboot:
+            self.power.reset()
+            return
+        for attempt in range(3):
+            try:
+                self.power.reset()
+                self.expect('U-Boot', timeout=30)
+                self.expect('Hit any key ')
+                self.sendline('\n\n\n\n\n\n\n') # try really hard
+                self.expect(self.uprompt, timeout=4)
+                # Confirm we are in uboot by typing any command.
+                # If we weren't in uboot, we wouldn't see the command
+                # that we type.
+                self.sendline('echo FOO')
+                self.expect('echo FOO', timeout=4)
+                self.expect(self.uprompt, timeout=4)
+                return
+            except Exception as e:
+                print(e)
+                print("\nWe appeared to have failed to break into U-Boot...")
+
+    def check_memory_addresses(self):
+        '''Check/set memory addresses and size for proper flashing.'''
+        raise Exception("Not implemented!")
+
+    def flash_uboot(self, uboot):
+        raise Exception('Code not written for flash_uboot for this board type, %s' % self.model)
+
+    def flash_rootfs(self, ROOTFS):
+        raise Exception('Code not written for flash_rootfs for this board type, %s' % self.model)
+
+    def flash_linux(self, KERNEL):
+        raise Exception('Code not written for flash_linux for this board type, %s.' % self.model)
+
+    def flash_meta(self, META_BUILD, wan, lan):
+        raise Exception('Code not written for flash_meta for this board type, %s.' % self.model)
+
+    def prepare_nfsroot(self, NFSROOT):
+        raise Exception('Code not written for prepare_nfsroot for this board type, %s.' % self.model)
+
+    def kill_console_at_exit(self):
+        '''killing console '''
+        self.kill(signal.SIGKILL)
+
+    def get_dns_server(self):
+        '''Getting dns server ip address '''
+        return "%s" % self.lan_gateway
+
+    def touch(self):
+        '''Keeps consoles active, so they don't disconnect for long running activities'''
+        self.sendline()
+
+    def boot_linux(self, rootfs=None, bootargs=""):
+        raise Exception("\nWARNING: We don't know how to boot this board to linux "
+              "please write the code to do so.")
