@@ -17,9 +17,11 @@ pymongo
 pyserial
 pyvirtualdisplay
 requests
+tftpy
 selenium
 simplejson
 termcolor
 unittest2
+xmltodict
 zeep
 pysmi
