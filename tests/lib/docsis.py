@@ -6,7 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-import os, config
+import os
+import config
 from common import cmd_exists
 import Tkinter
 import re

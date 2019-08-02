@@ -12,7 +12,8 @@ import sys
 import time
 import os
 from termcolor import cprint
-import re, ipaddress
+import re
+import ipaddress
 
 from selenium import webdriver
 from selenium.webdriver.common.proxy import *
