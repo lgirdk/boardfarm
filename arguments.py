@@ -65,7 +65,7 @@ def parse():
     parser.add_argument('-l', '--list_tests', action='store_true', help='List available tests and exit')
     parser.add_argument('-m', '--meta_img_loc', metavar='', type=str, default=None, help='URL or file PATH to meta image to flash')
     parser.add_argument('-n', '--board_names', metavar='', type=str, nargs='+', default=[], help='NAME(s) of boards to run on')
-    owrt_tests_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "results", '')
+    owrt_tests_dir = os.path.join(os.getcwd(), "results", '')
     parser.add_argument('-o', '--output_dir', metavar='', type=str, default=owrt_tests_dir, help='Directory to output results files too')
     parser.add_argument('-p', '--package', metavar='', type=str, action="append", default=None, help='URL or file PATH of ipk install after boot')
     parser.add_argument('-q', '--feature', metavar='', type=str, default=[], nargs='+', help='Features required for this test run')
