@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "239be853_e4bcd7c8",
+        "filename": "boardfarm_config_example.json",
+        "patchSetId": 9
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T08:56:16Z",
+      "side": 1,
+      "message": "maybe something like:\n{\n    \"name\": \"wan-factory\",\n    \"type\": \"docker-factory\",\n    \"iface\": \"${wan_iface}\",\n    \"target\":\n    {\n        \"color\":\"blue\",\n        \"name\":wan,\n        \"type\":debian,\n        \"image\":\"bft:node\"\n    },\n},\nor will it make the parsing code messier?",
+      "range": {
+        "startLine": 63,
+        "startChar": 0,
+        "endLine": 70,
+        "endChar": 0
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "417f9a3e_246b92fb",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T08:56:16Z",
+      "side": 1,
+      "message": "Just wondering, would it be a bad idea to have a docker wrapper class and then invoke the apis of that class?",
+      "range": {
+        "startLine": 63,
+        "startChar": 12,
+        "endLine": 63,
+        "endChar": 59
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7a9ed015_6ebeec35",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T08:56:16Z",
+      "side": 1,
+      "message": "ok, this is easily parsed, maybe my nested dict is not such a great idea",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 92,
+        "endChar": 39
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bba95548_2acc6ee9",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T08:56:16Z",
+      "side": 1,
+      "message": "i wonder if there would be any added benefit in moving def get_device(model, **kwargs) to a place like boardfarm/libs\nand avoid a device import devices",
+      "range": {
+        "startLine": 95,
+        "startChar": 0,
+        "endLine": 95,
+        "endChar": 38
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
