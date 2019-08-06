@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "2a4fec57_53ec5305",
+        "filename": "devices/base.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-08-06T09:01:13Z",
+      "side": 1,
+      "message": "Removed this line as it is already in OpenWRT",
+      "parentUuid": "25d0ad20_9a4e8b07",
+      "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "5028bbd1_9fc1521e",
         "filename": "devices/openwrt_router.py",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2019-08-05T20:34:56Z",
       "side": 1,
       "message": "Did you change the spaces vs. tabs here?",
+      "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7cbfccdf_50d43663",
+        "filename": "devices/openwrt_router.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 399,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-08-06T09:01:13Z",
+      "side": 1,
+      "message": "Yes replaced the tabs with spaces",
+      "parentUuid": "5028bbd1_9fc1521e",
       "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
