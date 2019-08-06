@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "0d4d1f6a_56b6c533",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-06T17:37:08Z",
+      "side": 1,
+      "message": "Yea, these strings need to eventually be boards specific but for now we can continue with these.",
+      "parentUuid": "f3c2a460_50189042",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 204,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "823a8a11_3d4eaad2",
         "filename": "devices/linux.py",
         "patchSetId": 6
@@ -93,6 +117,30 @@
       "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e63ad115_d3e392e3",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-06T17:37:08Z",
+      "side": 1,
+      "message": "Yes, and we should parse the string with ip_address module to verify it\u0027s a valid ipv4/ipv6 address.\n\nBut this is just moving the functions so it\u0027s OK for this commit to do that.",
+      "parentUuid": "e920cbfc_f43fbd69",
+      "range": {
+        "startLine": 224,
+        "startChar": 15,
+        "endLine": 224,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }

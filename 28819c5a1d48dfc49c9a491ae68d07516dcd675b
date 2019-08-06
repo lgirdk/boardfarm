@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "ebf061e8_5c87dd1e",
+        "filename": "devices/base.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-06T17:37:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2a4fec57_53ec5305",
+      "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5028bbd1_9fc1521e",
         "filename": "devices/openwrt_router.py",
         "patchSetId": 4
@@ -69,6 +87,24 @@
       "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2f548e7d_de3aa777",
+        "filename": "devices/openwrt_router.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 399,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-06T17:37:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7cbfccdf_50d43663",
+      "revId": "28819c5a1d48dfc49c9a491ae68d07516dcd675b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
