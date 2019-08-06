@@ -1,7 +1,9 @@
-
-import sys, re
+import ipaddress
+import re
+import sys
 import base
 import connection_decider
+from lib.regexlib import AllValidIpv6AddressesRegex
 
 class WindowsTelnet(base.BaseDevice):
 
@@ -90,4 +92,4 @@ class WindowsTelnet(base.BaseDevice):
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
             ipv6addr = ipaddress.IPv6Address(unicode(match))
             if not ipv6addr.is_link_local:
-                return ip6addr
+                return ipv6addr
