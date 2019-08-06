@@ -42,7 +42,7 @@ def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", vi
     i = p.expect(["yes/no", "assword:", "Last login"], timeout=30)
     if i == 0:
         p.sendline("yes")
-        i = self.expect(["Last login", "assword:"])
+        i = p.expect(["Last login", "assword:"])
     if i == 1:
         p.sendline(pw)
     else:
