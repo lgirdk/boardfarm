@@ -3,6 +3,10 @@ import os, ipaddress, re
 from lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
 import pexpect
 
+from common import print_bold
+
+BFT_DEBUG = "BFT_DEBUG" in os.environ
+
 class LinuxDevice(base.BaseDevice):
     '''Linux implementations '''
     tftp_dir = '/tftpboot'
@@ -67,7 +71,7 @@ class LinuxDevice(base.BaseDevice):
             self.sendline('echo "%d %d %d %d" > /proc/sys/kernel/printk' % (CUR, DEF, MIN, BTDEF))
             self.expect(self.prompt, timeout=10)
             if not BFT_DEBUG:
-                common.print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
+                print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
         except:
             pass
 
