@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "f3c2a460_50189042",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-08-06T12:59:10Z",
+      "side": 1,
+      "message": "Ack will fix it later",
+      "parentUuid": "756fd046_6dcf64b3",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 204,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "823a8a11_3d4eaad2",
         "filename": "devices/linux.py",
         "patchSetId": 6
@@ -36,6 +60,30 @@
       "writtenOn": "2019-08-06T12:10:58Z",
       "side": 1,
       "message": "we saw this return 1 ipv6 and 1 ipv4 addr in an string format, maybe in the future this could return a tuple/list",
+      "range": {
+        "startLine": 224,
+        "startChar": 15,
+        "endLine": 224,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e920cbfc_f43fbd69",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1016165
+      },
+      "writtenOn": "2019-08-06T12:59:10Z",
+      "side": 1,
+      "message": "if ok to return as a tuple/list then will change it later",
+      "parentUuid": "823a8a11_3d4eaad2",
       "range": {
         "startLine": 224,
         "startChar": 15,
