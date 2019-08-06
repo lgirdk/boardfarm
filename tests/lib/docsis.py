@@ -14,6 +14,8 @@ import re
 import time
 import hashlib
 
+from network_helper import valid_ipv4, valid_ipv6
+
 class docsis:
     """
     Name: docsis module
