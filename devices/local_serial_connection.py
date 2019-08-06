@@ -17,7 +17,7 @@ class LocalSerialConnection():
                            args=['-c', self.conn_cmd])
         try:
             result = self.device.expect([telnet_ipv4_conn, "----------------------------------------------------"])
-        except pexpect.EOF as e:
+        except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
 
     def close(self):

@@ -22,7 +22,7 @@ class SshConnection:
             if result == 2:
                 self.device.sendline("yes")
                 result = self.device.expect(["assword:", "passphrase"] + self.device.prompt)
-        except pexpect.EOF as e:
+        except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
         if result == 0 or result == 1:
             assert self.ssh_password is not None, "Please add ssh_password in your json configuration file."

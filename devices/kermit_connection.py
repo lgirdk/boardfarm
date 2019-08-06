@@ -33,7 +33,7 @@ class KermitConnection():
             if 0 == self.device.expect(['Welcome to Microsoft Telnet Service', pexpect.TIMEOUT], timeout=10):
                 # MS telnet server does weird things... this sendline should get the 'login:' prompt
                 self.device.sendline()
-        except pexpect.EOF as e:
+        except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
 
     def close(self):
