@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "756fd046_6dcf64b3",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T12:10:58Z",
+      "side": 1,
+      "message": "this looks very owrt related, in the future the \n[\u0027Reset Button Push down\u0027, \u0027Linux version\u0027, \u0027Booting Linux\u0027, \u0027Starting kernel ...\u0027, \u0027Kernel command line specified:\u0027] \ncould be split and the derived classes handle their case first and then super the baseclass",
+      "range": {
+        "startLine": 204,
+        "startChar": 0,
+        "endLine": 204,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "823a8a11_3d4eaad2",
+        "filename": "devices/linux.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-06T12:10:58Z",
+      "side": 1,
+      "message": "we saw this return 1 ipv6 and 1 ipv4 addr in an string format, maybe in the future this could return a tuple/list",
+      "range": {
+        "startLine": 224,
+        "startChar": 15,
+        "endLine": 224,
+        "endChar": 18
+      },
+      "revId": "f57f72b359380af3d0ce3b8b8270fe57028c9106",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
