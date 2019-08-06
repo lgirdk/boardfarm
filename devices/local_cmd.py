@@ -14,7 +14,7 @@ class LocalCmd():
                                command='/bin/bash',
                                args=['-c', self.conn_cmd])
             self.device.expect(pexpect.TIMEOUT, timeout=5)
-        except pexpect.EOF as e:
+        except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
 
     def close(self):
