@@ -468,7 +468,7 @@ EOF'''
 
         # Copy binary files to tftp server
         for cfg in cfg_set:
-            from docsis_lib import docsis
+            from docsis_lib.docsis import docsis
             d = docsis(cfg)
             ret = d.encode()
             self.tftp_device.copy_file_to_server(ret)
