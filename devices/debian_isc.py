@@ -2,7 +2,6 @@ import ipaddress
 import os
 import pexpect
 from lib.regexlib import ValidIpv4AddressRegex
-from lib.docsis import docsis, cm_cfg
 import re
 import glob
 
@@ -456,6 +455,8 @@ EOF'''
 
         if 'tftp_cfg_files' in board_config:
             for cfg in board_config['tftp_cfg_files']:
+                # TODO: work around for now, but this should not be required
+                from lib.docsis import cm_cfg
                 if isinstance(cfg, cm_cfg) or isinstance(cfg, mta_cfg):
                     cfg_list.append(cfg)
                 else:
@@ -600,6 +601,8 @@ EOF'''
     def get_cfgs(self, board_config):
         '''Tries to get the cfg out of the dhcpd.conf for the station in question'''
         try:
+            # TODO: these are strings, not cm_cfg or mta_cfg objects
+
             mta_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'mta', board_config['station'])
             mta_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'mta', board_config['station'])
 
