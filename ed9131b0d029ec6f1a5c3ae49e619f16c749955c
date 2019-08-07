@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d6b865e0_3bd7d421",
+        "filename": "devices/linux.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:25:51Z",
+      "side": 1,
+      "message": "Did you mean to remove this? I prefer to do\n\n \"BFT_DEBUG\" in os.environ\n\nusually.",
+      "revId": "ed9131b0d029ec6f1a5c3ae49e619f16c749955c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
