@@ -2,7 +2,6 @@ import ipaddress
 import os
 import pexpect
 from lib.regexlib import ValidIpv4AddressRegex
-from lib.docsis import docsis, cm_cfg
 import re
 import glob
 
@@ -456,6 +455,7 @@ EOF'''
 
         if 'tftp_cfg_files' in board_config:
             for cfg in board_config['tftp_cfg_files']:
+                from docsis_lib.docsis import cm_cfg
                 if isinstance(cfg, cm_cfg) or isinstance(cfg, mta_cfg):
                     cfg_list.append(cfg)
                 else:
@@ -468,6 +468,7 @@ EOF'''
 
         # Copy binary files to tftp server
         for cfg in cfg_set:
+            from docsis_lib import docsis
             d = docsis(cfg)
             ret = d.encode()
             self.tftp_device.copy_file_to_server(ret)
