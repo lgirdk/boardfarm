@@ -291,3 +291,36 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         memFree = self.match.group(1)
         self.expect(self.prompt)
         return int(memFree)
+
+    def setup_dnsmasq(self,gw):
+        self.sendline('cat > /etc/dnsmasq.conf << EOF')
+        self.sendline('server=8.8.4.4')
+        self.sendline('listen-address=127.0.0.1')
+        self.sendline('listen-address=%s' % gw)
+        self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
+        self.sendline('EOF')
+        self.add_hosts()
+        self.sendline('/etc/init.d/dnsmasq restart')
+        self.expect(self.prompt)
+
+    def add_hosts(self):
+        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        import config
+        hosts={}
+        for device in config.devices:
+            if 'wan' in device:
+                dev = getattr(config, device)
+                if hasattr(dev, 'iface_dut'):
+                    device_ip = dev.get_interface_ipaddr(dev.iface_dut)
+                    hosts[device+".boardfarm.com"] = str(device_ip)
+        if hosts is not None:
+            self.sendline('cat > /etc/dnsmasq.hosts << EOF')
+            for key, value in hosts.iteritems():
+                self.sendline(key+" "+ value)
+            self.sendline('EOF')
+
+    def remove_hosts(self):
+        self.sendline('rm  /etc/dnsmasq.hosts')
+        self.expect(self.prompt)
+        self.sendline('/etc/init.d/dnsmasq restart')
+        self.expect(self.prompt)
