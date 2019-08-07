@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "557b95f1_311dc58a",
+        "filename": "devices/linux.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-08-07T18:48:56Z",
+      "side": 1,
+      "message": "See my comment for line 72 below. I didn\u0027t write the original code, I was just trying to fix it.",
+      "parentUuid": "d6b865e0_3bd7d421",
+      "revId": "ed9131b0d029ec6f1a5c3ae49e619f16c749955c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "4394de8e_f1708dfd",
         "filename": "devices/linux.py",
         "patchSetId": 1
