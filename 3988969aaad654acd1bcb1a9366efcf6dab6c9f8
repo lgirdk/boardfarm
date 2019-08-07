@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "af62f94e_6e9f7d0c",
+        "filename": "boardfarm_config_example.json",
+        "patchSetId": 9
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:30:45Z",
+      "side": 1,
+      "message": "I think this is probably better, and matches what Ketan proposed more closely.",
+      "parentUuid": "239be853_e4bcd7c8",
+      "range": {
+        "startLine": 63,
+        "startChar": 0,
+        "endLine": 70,
+        "endChar": 0
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "417f9a3e_246b92fb",
         "filename": "devices/docker_factory.py",
         "patchSetId": 9
@@ -36,6 +60,30 @@
       "writtenOn": "2019-08-06T08:56:16Z",
       "side": 1,
       "message": "Just wondering, would it be a bad idea to have a docker wrapper class and then invoke the apis of that class?",
+      "range": {
+        "startLine": 63,
+        "startChar": 12,
+        "endLine": 63,
+        "endChar": 59
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "490662e0_69a6fa44",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:30:45Z",
+      "side": 1,
+      "message": "Yes, probably better... then you can have a DockerCmdLine and DockerPythonAPI\n\nThe really question is should it block this change?",
+      "parentUuid": "417f9a3e_246b92fb",
       "range": {
         "startLine": 63,
         "startChar": 12,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "c512fad6_4a217912",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:30:45Z",
+      "side": 1,
+      "message": "I will try to switch to the nested dict actually, but I have to make sure it logically works.",
+      "parentUuid": "7a9ed015_6ebeec35",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 92,
+        "endChar": 39
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "bba95548_2acc6ee9",
         "filename": "devices/docker_factory.py",
         "patchSetId": 9
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "52742e8e_c24b0d14",
+        "filename": "devices/docker_factory.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:30:45Z",
+      "side": 1,
+      "message": "separate issue... ;-)",
+      "parentUuid": "bba95548_2acc6ee9",
+      "range": {
+        "startLine": 95,
+        "startChar": 0,
+        "endLine": 95,
+        "endChar": 38
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "c64cfb52_61de4d8c",
         "filename": "devices/openwrt_router.py",
         "patchSetId": 9
@@ -105,6 +201,30 @@
       "writtenOn": "2019-08-06T12:07:29Z",
       "side": 1,
       "message": "why the _?",
+      "range": {
+        "startLine": 449,
+        "startChar": 8,
+        "endLine": 449,
+        "endChar": 27
+      },
+      "revId": "3988969aaad654acd1bcb1a9366efcf6dab6c9f8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c4727b36_53e32cc7",
+        "filename": "devices/openwrt_router.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-07T17:30:45Z",
+      "side": 1,
+      "message": "random garbage...",
+      "parentUuid": "c64cfb52_61de4d8c",
       "range": {
         "startLine": 449,
         "startChar": 8,
