@@ -505,6 +505,12 @@ def resolv_dict(dic, key):
         key_val = key_val[elem]
     return key_val
 
+def get_gateway_ipaddress():
+    '''Creating method to call the get gateway ip address '''
+    #used this gw ip in casa cmts, should be moved to cmts helper function
+    from devices import board
+    return board.get_gateway_address()
+
 def setup_asterisk_config(device,numbers):
     # to add sip.conf and extensions.conf
     gen_conf = '''cat > /etc/asterisk/sip.conf << EOF
