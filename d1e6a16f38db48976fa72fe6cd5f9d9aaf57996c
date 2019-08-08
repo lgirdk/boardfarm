@@ -16,6 +16,24 @@
       "revId": "d1e6a16f38db48976fa72fe6cd5f9d9aaf57996c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c7c07c04_16e3afa8",
+        "filename": "boardfarm/bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-08T14:10:10Z",
+      "side": 1,
+      "message": "we can definetely have a better err msg, and have a look at my other reply",
+      "parentUuid": "073715da_87519b7d",
+      "revId": "d1e6a16f38db48976fa72fe6cd5f9d9aaf57996c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
