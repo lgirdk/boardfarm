@@ -177,6 +177,7 @@ class LinuxBootTest(unittest2.TestCase):
     log_to_file = property(get_log_to_file, set_log_to_file)
 
     def get_device_by_feature(self, feature):
+        import pdb; pdb.set_trace()
         for device in self.config.devices:
             if 'feature' in device and feature in devices['feature']:
                 return getattr(self, device)
