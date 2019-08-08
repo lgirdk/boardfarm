@@ -201,10 +201,12 @@ class DebianBox(linux.LinuxDevice):
             self.expect_exact('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
         self.expect(self.prompt)
 
+        cmsg = '%s ' % ipaddr
         if self.port != 22:
-            cprint("%s port %s device console = %s" % (ipaddr, port, colored(color, color)), None, attrs=['bold'])
-        else:
-            cprint("%s device console = %s" % (ipaddr, colored(color, color)), None, attrs=['bold'])
+            cmsg += '%s port ' % port
+        cmsg += 'device console = '
+        cmsg += colored('%s (%s)' % (color, name), color)
+        cprint(cmsg, None, attrs=['bold'])
 
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
