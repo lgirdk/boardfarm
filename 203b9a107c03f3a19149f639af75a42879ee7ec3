@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8367d8ff_eeee294a",
+        "filename": "boardfarm/tests/linux_boot.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-08T16:10:15Z",
+      "side": 1,
+      "message": "maybe this should be removed?",
+      "range": {
+        "startLine": 180,
+        "startChar": 0,
+        "endLine": 180,
+        "endChar": 35
+      },
+      "revId": "203b9a107c03f3a19149f639af75a42879ee7ec3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2fa85fda_01acd674",
+        "filename": "boardfarm/testsuites.cfg",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-08T16:10:15Z",
+      "side": 1,
+      "message": "maybe remove this?",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 0
+      },
+      "revId": "203b9a107c03f3a19149f639af75a42879ee7ec3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
