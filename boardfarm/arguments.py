@@ -81,6 +81,7 @@ def parse():
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('--nfsroot', metavar='', type=str, default=None, help='URL or file PATH of Rootfs image to flash')
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(library.version), help='show version and exit')
+    parser.add_argument('--nostrict', action='store_true', help='ignores failure to import a tests from a testsuite')
 
     args = parser.parse_args()
 
@@ -337,6 +338,7 @@ def parse():
     config.bootargs = args.bootargs
     config.golden = args.golden
     config.features = args.feature
+    config.TEST_SUITE_NOSTRICT = args.nostrict
 
     return config
 
