@@ -252,8 +252,12 @@ def main():
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
             if not hasattr(tests, name):
-                print_bold("\tTest %s skipped, not found..." % name)
-                continue
+                # we can either fail or ignore a missing test
+                if config.TEST_SUITE_NOSTRICT:
+                    print_bold("\tTest %s skipped, not found..." % name)
+                    continue
+                print_bold("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
+                sys.exit(1)
             test = getattr(tests, name)
             test.start = start
         else:
