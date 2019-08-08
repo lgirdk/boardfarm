@@ -25,9 +25,10 @@ from zephyr import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
+cwd = os.getcwd()
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 from devices import get_device
+os.chdir(cwd)
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
