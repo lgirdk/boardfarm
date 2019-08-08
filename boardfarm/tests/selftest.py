@@ -392,7 +392,7 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
         unit_test = SnmpMibsUnitTest(mibs_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                                      os.pardir,
                                                                      'resources',
-                                                                     'mibs'))
+                                                                     'mibs')),
                                      files = ['SNMPv2-MIB'],
                                      mibs = test_mibs,
                                      err_mibs = wrong_mibs)
