@@ -13,6 +13,7 @@ import termcolor
 
 # insert tests lib so devices and tests can share the same libraries
 sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
+sys.path.insert(0, os.path.dirname(__file__))
 
 board = None
 lan = None
@@ -26,7 +27,7 @@ device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
 device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
-        overlay = os.path.abspath(overlay)
+        overlay = os.path.realpath(overlay)
         sys.path.insert(0, overlay + '/devices')
         device_files += glob.glob(overlay + '/devices/*.py')
         device_files += [e.replace('/__init__', '') for e in glob.glob(overlay + '/devices/*/__init__.py')]

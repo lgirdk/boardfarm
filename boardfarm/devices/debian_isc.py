@@ -450,7 +450,7 @@ EOF'''
     def copy_cmts_provisioning_files(self, board_config):
         # Look in all overlays as well, and PATH as a workaround for standalone
         paths = os.environ['PATH'].split(os.pathsep)
-        paths += os.environ['BFT_OVERLAY'].split(' ')
+        paths += [ os.path.realpath(x) for x in os.environ['BFT_OVERLAY'].split(' ') ]
         cfg_list = []
 
         if 'tftp_cfg_files' in board_config:

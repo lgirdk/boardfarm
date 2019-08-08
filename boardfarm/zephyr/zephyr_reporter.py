@@ -84,6 +84,7 @@ def parse_zapi_config():
     data = []
     if 'BFT_OVERLAY' in os.environ:
         for overlay in os.environ['BFT_OVERLAY'].split(' '):
+            overlay = os.path.realpath(overlay)
             zdir = os.path.join(os.path.abspath(overlay), 'zephyr')
             if os.path.exists(zdir):
                 data.append(json.load(open(os.path.join(zdir, 'zapi_configuration.json'))))
