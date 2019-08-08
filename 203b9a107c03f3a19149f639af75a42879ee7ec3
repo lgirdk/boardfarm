@@ -69,6 +69,30 @@
       "revId": "203b9a107c03f3a19149f639af75a42879ee7ec3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8eba7ca8_57146a0a",
+        "filename": "boardfarm/testsuites.cfg",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1016477
+      },
+      "writtenOn": "2019-08-08T16:21:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2fa85fda_01acd674",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 8,
+        "endChar": 0
+      },
+      "revId": "203b9a107c03f3a19149f639af75a42879ee7ec3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
