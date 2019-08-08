@@ -20,6 +20,7 @@ testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
 layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
+        overlay = os.path.realpath(overlay)
         testsuites_path = os.path.join(overlay, 'testsuites.cfg')
         layerconf_path = os.path.join(overlay, 'layerconf.py')
         if os.path.isfile(testsuites_path):

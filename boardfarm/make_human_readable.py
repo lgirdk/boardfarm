@@ -32,6 +32,7 @@ def pick_template_filename():
     full = owrt_tests_dir+"/html/template_results.html"
     if 'BFT_OVERLAY' in os.environ:
         for overlay in os.environ['BFT_OVERLAY'].split(' '):
+            overlay = os.path.realpath(overlay)
             if os.path.isfile(overlay + "/html/template_results_basic.html"):
                 basic = overlay + "/html/template_results_basic.html"
                 break

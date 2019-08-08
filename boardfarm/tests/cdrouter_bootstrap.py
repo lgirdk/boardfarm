@@ -145,6 +145,7 @@ testvar lanVlanId """ + lan.vlan
                 cdr_conf = open(config, 'r').readlines()
             elif 'BFT_OVERLAY' in os.environ:
                 for p in os.environ['BFT_OVERLAY'].split(' '):
+                    p = os.path.realpath(p)
                     try:
                         cdr_conf = open(os.path.join(p, config), 'r').readlines()
                     except:
