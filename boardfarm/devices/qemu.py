@@ -90,6 +90,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
             cmd = cmd.replace('--enable-kvm ', '')
             self.kvm = False
 
+        # TODO: add script=no,downscript=no to taps
+
         try:
             pexpect.spawn.__init__(self, command='/bin/bash',
                             args=["-c", cmd], env=env)
