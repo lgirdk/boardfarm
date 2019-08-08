@@ -1,0 +1,56 @@
+{
+    "mib_name" : {
+        "Wifi_enable" : "wifiMgmtBssEnable",
+        "Wifi_Apply_setting" : "wifiMgmtApplySettings",
+        "SSID_set" : "wifiMgmtBssSsid",
+        "Security_mode" : "wifiMgmtBssSecurityMode",
+        "Password_set" : "wifiMgmtBssWpaPreSharedKey",
+        "Channel_Util" : "wifiMgmtChannelUtilizationEnable",
+        "Operating_mode" : "wifiMgmtBssNetMode",
+        "Bandwidth" : "wifiMgmtBandWidth",
+        "Channel_mode" : "wifiMgmtChannelSetting",
+        "Broadcast" : "wifiMgmtBssClosedNetwork" ,
+        "Current_channel" : "wifiMgmtCurrentChannel"
+    },
+    "mib_index" : {
+        "private_2.4": "32",
+        "private_5": "92",
+        "gre_2.4" : "33",
+        "gre_5" : "93",
+        "bridge_2.4" : "34",
+        "bridge_5" : "94",
+        "guest_2.4": "35",
+        "guest_5": "95"
+    },
+    "security_mode" : {
+        "Disabled":"0",
+        "WEP64" : "1",
+        "WEP128" :"2",
+        "WPA-PSK" :"3",
+        "WPA2PSK" : "4",
+        "WPAEnterprise" : "5",
+        "WPA2Enterprise" : "6",
+        "RadiusWEP" : "7",
+        "WPA-PSK/WPA2-PSK" : "8",
+        "WPAEnterpriseWPA2Enterprise" : "9"
+    },
+    "operating_mode" : {
+        "802.11n_2.4G":"5",
+        "802.11g":"4",
+        "802.11b":"3",
+        "802.11b/g mixed":"2",
+        "802.11g/n mixed":"6",
+        "802.11b/g/n mixed":"1",
+        "802.11n_5G":"13",
+        "802.11a":"12",
+        "802.11a/n mixed":"11",
+        "802.11ac":"16",
+        "802.11n/ac mixed":"15",
+        "802.11a/n/ac mixed":"14"
+    },
+    "bandwidth" : {
+        "20 MHz":"1",
+        "20/40 MHz":"2",
+        "20/40/80 MHz":"3"
+    }
+}
