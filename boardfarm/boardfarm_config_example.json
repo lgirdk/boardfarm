@@ -62,40 +62,40 @@
         "connection_type": "local_serial",
         "devices": [
             {
+                "iface": "${wan_iface}",
                 "name": "wan-factory",
-                "type": "docker-factory",
-		"iface": "${wan_iface}",
-		"targets": [
-			{
-			"name": "wan",
-			"color": "blue",
-			"type": "debian",
-			"img": "bft:node"
-			}
-		]
+                "targets": [
+                    {
+                        "color": "blue",
+                        "img": "bft:node",
+                        "name": "wan",
+                        "type": "debian"
+                    }
+                ],
+                "type": "docker-factory"
             },
             {
+                "iface": "${lan_iface}",
                 "name": "lan-factory",
-                "type": "docker-factory",
-		"iface": "${lan_iface}",
-		"targets": [
-			{
-			"color": "cyan",
-			"name": "lan",
-			"options": "tftpd-server",
-			"http_proxy": "localhost:9909",
-			"type": "debian",
-			"img": "bft:node"
-			},
-			{
-			"color": "cyan",
-			"name": "lan2",
-			"http_proxy": "localhost:9910",
-			"type": "debian",
-			"img": "bft:node"
-			}
-		]
-	    }
+                "targets": [
+                    {
+                        "color": "cyan",
+                        "http_proxy": "localhost:9909",
+                        "img": "bft:node",
+                        "name": "lan",
+                        "options": "tftpd-server",
+                        "type": "debian"
+                    },
+                    {
+                        "color": "cyan",
+                        "http_proxy": "localhost:9910",
+                        "img": "bft:node",
+                        "name": "lan2",
+                        "type": "debian"
+                    }
+                ],
+                "type": "docker-factory"
+            }
         ],
         "notes": "QEMU emulated devices"
     },
