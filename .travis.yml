@@ -15,6 +15,7 @@ before_install:
 script:
         - ./bft -l
         - ./bft -i
+        - docker build -t bft:node boardfarm/bft-node
         - yes | ./bft -b qemux86-openwrt -r https://www.dropbox.com/s/ak58icpzta1f0if/openwrt-x86-generic-combined-ext4.vmdk?dl=0 -y -x travisci
         - grep tests_fail...0, results/test_results.json
         - cat results/all.log
