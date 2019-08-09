@@ -7,7 +7,7 @@
 
 import lib
 import rootfs_boot
-import os
+
 from devices import board, wan, lan, wlan, prompt
 
 def install_netperf(device):
