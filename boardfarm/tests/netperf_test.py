@@ -7,7 +7,7 @@
 
 import lib
 import rootfs_boot
-import os
+
 from devices import board, wan, lan, wlan, prompt
 
 def install_netperf(device):
@@ -43,7 +43,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
     def recover(self):
         lan.sendcontrol('c')
         lib.common.test_msg("Recover..kill netserver on wan")
-        kill_netserver(wan);
+        self.kill_netserver(wan)
 
     # if you are spawning a lot of connections, sometimes it
     # takes too long to wait for the connection to be established

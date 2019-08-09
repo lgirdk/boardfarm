@@ -5,7 +5,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import re
 import socat
 import rootfs_boot
 from devices import board, wan, lan, prompt
