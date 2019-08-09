@@ -1,4 +1,4 @@
-import linux, os, re
+import linux
 
 class OpenEmbedded(linux.LinuxDevice):
     '''OE core implementation'''

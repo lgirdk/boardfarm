@@ -105,7 +105,6 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
         # we override to use LAN because that's the only way it works for this device
         lan.start_tftp_server()
-        tftp_server_ip = lan.gw
         self.tftp_server_int = lan.gw
 
         # line sep for UEFI
