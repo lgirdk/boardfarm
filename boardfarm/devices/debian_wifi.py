@@ -76,7 +76,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.expect(self.prompt)
 
     def wlan_ssid_disconnect(self):
-        output = self.sudo_sendline("iw dev %s disconnect" % self.iface_wifi)
+        self.sudo_sendline("iw dev %s disconnect" % self.iface_wifi)
         self.expect(self.prompt)
 
     def wifi_disconnect(self):
@@ -106,7 +106,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         output = self.wifi_check_ssid(ssid_name)
         assert output==True,'SSID value check in WLAN container'
 
-        conn_wifi = self.wifi_connect(ssid_name, password)
+        self.wifi_connect(ssid_name, password)
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify()
         assert verify_connect==True,'Connection establishment in WIFI'
