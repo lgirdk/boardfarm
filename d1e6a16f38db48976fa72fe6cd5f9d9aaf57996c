@@ -52,6 +52,24 @@
       "revId": "d1e6a16f38db48976fa72fe6cd5f9d9aaf57996c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "023b7c5c_2755e8f3",
+        "filename": "boardfarm/bft",
+        "patchSetId": 1
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 1016163
+      },
+      "writtenOn": "2019-08-09T16:27:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cb309da5_4e64e76f",
+      "revId": "d1e6a16f38db48976fa72fe6cd5f9d9aaf57996c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
