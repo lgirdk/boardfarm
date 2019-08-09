@@ -287,7 +287,7 @@ def install_snmpd(device, post_cmd=None):
     Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf 
     (or for whatever is needed just after the installation)
     '''
-    device.sendline('apt update && apt install snmpd -y')
+    device.sendline('apt update && apt install snmpd -y -q')
     device.expect(device.prompt, timeout=60)
 
     # by default snmpd only listen to connections from localhost, comment it out
