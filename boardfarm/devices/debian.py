@@ -468,6 +468,8 @@ class DebianBox(linux.LinuxDevice):
         self.add_hosts()
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
+        self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
+        self.expect(self.prompt)
 
     def add_hosts(self):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
