@@ -41,18 +41,6 @@ def nmap_cli(device, ip_address, port, protocol=None, retry="0"):
     device.expect(device.prompt,timeout=200)
     return device.before
 
-def ping(device, ping_ip, ping_interface=None, count=4):
-    if ping_interface == None:
-        device.sudo_sendline("ping -c %s %s"%(count,ping_ip))
-    else:
-        device.sudo_sendline("ping -I %s -c %s %s"%(ping_interface,count,ping_ip))
-    device.expect(device.prompt, timeout=50)
-    match = re.search("%s packets transmitted, %s received, 0%% packet loss" % (count, count), device.before)
-    if match:
-        return True
-    else:
-        return False
-
 def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
     """
     This function assumes that the server does not know the identity of the client!!!!!
