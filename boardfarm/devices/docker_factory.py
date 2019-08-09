@@ -78,6 +78,7 @@ class DockerFactory(linux.LinuxDevice):
             # TODO: list of ports to forward, http proxy port for example and ssh
             self.sendline('docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D' % (target_cname, target_img))
             self.expect(self.prompt)
+            assert "Unable to find image" not in self.before, "Unable to find %s image!" % target_img
             self.expect(pexpect.TIMEOUT, timeout=1)
             self.sendline('docker network connect %s %s' % (self.cname, target_cname))
             self.expect(self.prompt)
