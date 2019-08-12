@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "52aa7fbb_bd47a947",
+        "filename": "boardfarm/tests/lib/common.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 511,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-12T19:29:47Z",
+      "side": 1,
+      "message": "We don\u0027t want to this type of import anywhere really, why not just call the function directly. See my comment on the other commit",
+      "revId": "45d056df085e693ab904dd30e35cfde07fa071e9",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
