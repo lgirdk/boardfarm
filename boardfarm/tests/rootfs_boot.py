@@ -38,7 +38,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
         # This still needs some clean up, the fall back is to assuming the
         # WAN provides the tftpd server, but it's not always the case
         if wan:
-            wan.configure(kind="wan_device", config=self.config.board)
+            wan.configure(kind="wan_device", config=self.config.board, hosts=self.fetch_hosts())
             if tftp_device is None:
                 tftp_device = wan
 
