@@ -7,17 +7,6 @@
 
 import os
 import json
-import re
-
-
-if __name__ == '__main__':
-    # this allows it to run as a standalone module (i.e. python tests/lib/SnmpHelper.py)
-    # forces the import of the global logging not the local one
-    # for this part to be removed we need to rename the local logging.py
-    # or move this module elsewhere
-    import sys
-    sys.path.insert(0, '/usr/lib/python2.7/')
-    import logging
 
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
@@ -71,7 +60,7 @@ class SnmpMibs(object):
         mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
 
         # run recursive MIB compilation
-        results = mibCompiler.compile(*mib_list)
+        mibCompiler.compile(*mib_list)
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         if "y" in self.dbg:
