@@ -22,6 +22,30 @@
       "revId": "d5fe5f32941bce083dcfad1975ba859424acead8",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6223a28e_fa864b4b",
+        "filename": "boardfarm/devices/debian.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 415,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-13T15:58:16Z",
+      "side": 1,
+      "message": "I will look at this a bit as I\u0027m dealing with DNS for Zerotouch.",
+      "parentUuid": "ca5b04bb_6fed7cb9",
+      "range": {
+        "startLine": 415,
+        "startChar": 40,
+        "endLine": 415,
+        "endChar": 53
+      },
+      "revId": "d5fe5f32941bce083dcfad1975ba859424acead8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }
