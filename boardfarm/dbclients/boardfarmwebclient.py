@@ -66,6 +66,7 @@ class BoardfarmWebClient(object):
                 s = "Windows %s" % platform.win32_ver()[0]
         except Exception as e:
             if self.debug:
+                print(e)
                 print('Unable to get more specific system info')
         return ";".join([bfversion, py, s])
 
