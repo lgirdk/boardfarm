@@ -6,11 +6,13 @@
 # The full text can be found in LICENSE in the root directory.
 #!/usr/bin/env python
 
+import multiprocessing
 import platform
 import os
 import re
 import socket
 import sys
+import time
 
 import requests
 
@@ -67,6 +69,16 @@ class BoardfarmWebClient(object):
                 print('Unable to get more specific system info')
         return ";".join([bfversion, py, s])
 
+    def _poll(self, done, seconds=60):
+        '''
+        Periodically let the server know we are still alive and using things.
+        '''
+        time.sleep(seconds)
+        while not done.is_set():
+            url = self.server_url + "/checkout"
+            requests.post(url, json=self.checked_out, headers=self.headers)
+            time.sleep(seconds)
+
     def post_note(self, name, note):
         '''
         If an error is encountered with a station, use this function
@@ -98,6 +110,13 @@ class BoardfarmWebClient(object):
             url = self.server_url + "/checkout"
             requests.post(url, json=self.checked_out, headers=self.headers)
             print("Notified boardfarm server of checkout")
+            # Periodically let server know we're still using devices
+            self.done_with_devices = multiprocessing.Event()
+            w1 = multiprocessing.Process(target=self._poll,
+                                         args=(self.done_with_devices,))
+            # daemon allows main program to exit anytime and kill this process
+            w1.daemon = True
+            w1.start()
             if self.debug:
                 print(self.checked_out)
         except Exception as e:
@@ -109,6 +128,9 @@ class BoardfarmWebClient(object):
         if not self.server_version or not self.checked_out:
             return
         try:
+            # Stop polling
+            self.done_with_devices.set()
+            # and notify server
             url = self.server_url + "/checkin"
             requests.post(url, json=self.checked_out, headers=self.headers)
             print("Notified boardfarm server of checkin")
@@ -126,4 +148,5 @@ if __name__ == '__main__':
     bfweb.checkout({"_id": "1111",
                     "station": "rpi3",
                     "devices": [{"_id": "1112"}]})
+    time.sleep(65)
     bfweb.checkin()
