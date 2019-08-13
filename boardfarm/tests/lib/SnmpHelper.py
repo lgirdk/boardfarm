@@ -7,17 +7,6 @@
 
 import os
 import json
-import re
-
-
-if __name__ == '__main__':
-    # this allows it to run as a standalone module (i.e. python tests/lib/SnmpHelper.py)
-    # forces the import of the global logging not the local one
-    # for this part to be removed we need to rename the local logging.py
-    # or move this module elsewhere
-    import sys
-    sys.path.insert(0, '/usr/lib/python2.7/')
-    import logging
 
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
@@ -71,7 +60,7 @@ class SnmpMibs(object):
         mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
 
         # run recursive MIB compilation
-        results = mibCompiler.compile(*mib_list)
+        mibCompiler.compile(*mib_list)
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         if "y" in self.dbg:
@@ -109,6 +98,78 @@ class SnmpMibs(object):
 
 if __name__ == '__main__':
 
+    import sys
+    class SnmpMibsUnitTest(object):
+        """
+        Unit test for the SnmpMibs class to be run as a standalone module
+        DEBUG:
+            BFT_DEBUG=y     shows the compiled dictionary
+            BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and
+                            mibs/oid details
+        """
+
+        mibs = ['docsDevSwAdminStatus',
+                'snmpEngineMaxMessageSize',
+                'docsDevServerDhcp',
+                'ifCounterDiscontinuityTime',
+                'docsBpi2CmtsMulticastObjects',
+                'docsDevNmAccessIp']
+
+        mib_files      = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'] # this is the list of mib/txt files to be compiled
+        srcDirectories = ['../../'] # this needs to point to the mibs directory location
+        snmp_obj       = None  # will hold an instance of the  SnmpMibs class
+
+        def __init__(self,mibs_location=None, files=None, mibs=None, err_mibs=None):
+            """
+            Takes:
+                mibs_location:  where the .mib files are located (can be a list of dirs)
+                files:          the name of the .mib/.txt files (without the extension)
+                mibs:           e.g. sysDescr, sysObjectID, etc
+                err_mibs:       wrong mibs (just for testing that the compiler rejects invalid mibs)
+            """
+
+            # where the .mib files are located
+            if mibs_location:
+                self.srcDirectories = mibs_location
+
+            if type(self.srcDirectories) != list:
+                self.srcDirectories = [self.srcDirectories]
+
+            for d in self.srcDirectories:
+                if not os.path.exists(str(d)):
+                    msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(self.srcDirectories))
+                    raise Exception(msg)
+
+            if files:
+                self.mib_files = files
+
+            self.snmp_obj = SnmpMibs(self.mib_files, self.srcDirectories)
+
+            if mibs:
+                self.mibs = mibs
+
+            if type(self.mibs) != list:
+                self.mibs = [self.mibs]
+
+        def unitTest(self):
+            """
+            Compiles the ASN1 and gets the oid of the given mibs
+            Asserts on failure
+            """
+
+            if 'y' in self.snmp_obj.dbg:
+                print(self.snmp_obj.mib_dict)
+                for k in self.snmp_obj.mib_dict:
+                    print(k, ":", self.snmp_obj.mib_dict[k])
+
+            print("Testing get mib oid")
+
+            for i in self.mibs:
+                oid = self.snmp_obj.get_mib_oid(i)
+                print('mib: %s - oid=%s' % (i, oid))
+
+            return True
+
     # this section can be used to test the classes above
     # (maybe by redirecting the output to a file)
     # BUT for this to run as a standalone file, it needs an
@@ -123,7 +184,7 @@ if __name__ == '__main__':
             print("Usage:\n%s <path_to_global_mibs>  [<path_to_vendor_mibs>]"%sys.argv[0])
             sys.exit(1)
     else:
-        print('sys.argv='+sys.argv)
+        print('sys.argv='+str(sys.argv))
         location = sys.argv
 
     unit_test = SnmpMibsUnitTest(mibs_location=location)
