@@ -24,7 +24,7 @@ class Serializer(JSONSerializer):
     def default(self, obj):
         try:
             return JSONSerializer.default(self, obj)
-        except TypeError as e:
+        except TypeError:
             return str(obj)
         except:
             return "Unable to serialize"

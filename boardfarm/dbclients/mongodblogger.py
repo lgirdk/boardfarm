@@ -10,7 +10,6 @@ import datetime
 import json
 import os
 import socket
-import sys
 
 import ipaddress
 import pymongo
