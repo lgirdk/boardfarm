@@ -412,13 +412,13 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
 
-    def configure(self, kind, config=[]):
+    def configure(self, kind, config=[],hosts_cb=None):
         # TODO: wan needs to enable on more so we can route out?
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()
         if kind == "wan_device":
-            self.setup_as_wan_gateway()
+            self.setup_as_wan_gateway(hosts_cb=hosts_cb)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
@@ -458,46 +458,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
-    def setup_dnsmasq(self):
-        self.sendline('cat > /etc/dnsmasq.conf << EOF')
-        self.sendline('server=8.8.4.4')
-        self.sendline('listen-address=127.0.0.1')
-        self.sendline('listen-address=%s' % self.gw)
-        self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
-        self.sendline('EOF')
-        self.add_hosts()
-        self.sendline('/etc/init.d/dnsmasq restart')
-        self.expect(self.prompt)
-        self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
-        self.expect(self.prompt)
-
-    def add_hosts(self):
-        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
-        import config
-        hosts={}
-        for device in config.board['devices']:
-            if 'ipaddr' in device:
-                domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
-                device = getattr(config, device['name'])
-                if not hasattr(device, 'ipaddr'):
-                    continue
-                hosts[domain_name] = str(device.ipaddr)
-        if hosts is not None:
-            self.sendline('cat > /etc/dnsmasq.hosts << EOF')
-            for key, value in hosts.iteritems():
-                self.sendline(key+" "+ value)
-            self.sendline('EOF')
-
-    def remove_hosts(self):
-        self.sendline('rm  /etc/dnsmasq.hosts')
-        self.expect(self.prompt)
-        self.sendline('/etc/init.d/dnsmasq restart')
-        self.expect(self.prompt)
-
-    def setup_as_wan_gateway(self):
-
-        self.setup_dnsmasq()
-
+    def setup_as_wan_gateway(self,hosts_cb=None):
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
 
@@ -563,7 +524,11 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_sack')
         self.expect(self.prompt)
-
+        if hosts_cb is None:
+            hosts=None
+        else:
+            hosts=hosts_cb()
+        self.setup_dnsmasq(self.gw,hosts)
         self.sendline('ifconfig %s' % self.iface_dut)
         self.expect(self.prompt)
 
