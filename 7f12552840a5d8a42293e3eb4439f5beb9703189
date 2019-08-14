@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c98ec108_a34d0b19",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "4cb1bb15_cfe03a0a",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9123c8d0_9dde90a9",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 1
@@ -33,6 +51,24 @@
       "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9103c3c3_40ddcc7a",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "9123c8d0_9dde90a9",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "54272b6b_16efaf9f",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "eab70503_1f0251c1",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a777103d_e4d79277",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 1
@@ -67,6 +121,24 @@
       "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "731a4bc1_e17624ea",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "a777103d_e4d79277",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "b94a934c_cd77ba57",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "57429c82_9e0c39d3",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e6b2a63c_100c847b",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 1
@@ -98,6 +188,24 @@
       "writtenOn": "2019-08-14T20:53:19Z",
       "side": 1,
       "message": "I don\u0027t follow this block...",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dec5cb64_08b83390",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "there are these python devices with multiple models within a tuple.\ne.g. qcom_mips - (\"db120\", \"ap143\", \"ap151\", \"ap152-8M\") \n\nNeeded to find intersection of this tuple with profile keys.",
+      "parentUuid": "e6b2a63c_100c847b",
       "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "f5a094bd_9067d0bb",
+        "filename": "boardfarm/devices/axiros_acs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "d6965d9c_f868a989",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "06a58062_cc8410c0",
         "filename": "boardfarm/devices/debian_isc.py",
         "patchSetId": 1
@@ -135,6 +261,24 @@
       "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "474c3b7d_5daabc6e",
+        "filename": "boardfarm/devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-14T22:12:45Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "06a58062_cc8410c0",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
