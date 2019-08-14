@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-import re
 
 def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap'):
     if port == None:
