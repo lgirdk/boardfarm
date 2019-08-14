@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ac8eceb_90da9255",
+        "filename": "tests/lib/db_helper.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T13:50:42Z",
+      "side": 1,
+      "message": "Per lint, we are not using all of these ;-)",
+      "revId": "885ece02f7fec8d44deb952dd48b7cd73001eac7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c5ff48bf_410c583e",
+        "filename": "tests/lib/db_helper.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T13:50:42Z",
+      "side": 1,
+      "message": "Can we print that influxdb is initialized?\n\nThis looks a lot like a device almost, right?",
+      "revId": "885ece02f7fec8d44deb952dd48b7cd73001eac7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "12221fa8_0e3ac1e0",
+        "filename": "tests/lib/db_helper.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T13:50:42Z",
+      "side": 1,
+      "message": "So I mentioned this before, the InfluxDB logger should not really kow or care about what you are monitor, it just needs to log stuff.\n\nCan we make it more generic? There will be another class that can parse iperf from a log in real time and send the messages over to this object.",
+      "revId": "885ece02f7fec8d44deb952dd48b7cd73001eac7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6d0bea6d_af1c485a",
+        "filename": "tests/lib/db_helper.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T13:50:42Z",
+      "side": 1,
+      "message": "Same here, we already have code for this in analysis, just need to figure out how to hook these items together.",
+      "revId": "885ece02f7fec8d44deb952dd48b7cd73001eac7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
