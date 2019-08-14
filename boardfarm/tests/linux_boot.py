@@ -180,3 +180,14 @@ class LinuxBootTest(unittest2.TestCase):
         for device in self.config.devices:
             if 'feature' in device and feature in devices['feature']:
                 return getattr(self, device)
+
+    def fetch_hosts(self):
+        hosts={}
+        for device in self.config.devices:
+            if device.find('lan') == -1:
+                if device.find('fax') == -1:
+                    dev = getattr(self.config, device)
+                    if hasattr(dev, 'iface_dut'):
+                        device_ip = dev.get_interface_ipaddr(dev.iface_dut)
+                        hosts[str(device_ip)]= device+".boardfarm.com"
+        return hosts
