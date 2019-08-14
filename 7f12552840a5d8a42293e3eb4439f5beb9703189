@@ -212,6 +212,24 @@
     },
     {
       "key": {
+        "uuid": "69cf8b32_8a7e13d4",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T22:58:17Z",
+      "side": 1,
+      "message": "Ahh it\u0027s probably better to standardize before you enter this section so you are not checking for str or (str, str) and just go in assuming it\u0027s a string.\n\nAlso, clean up the .keys() usage.",
+      "parentUuid": "dec5cb64_08b83390",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "d6965d9c_f868a989",
         "filename": "boardfarm/devices/axiros_acs.py",
         "patchSetId": 1
