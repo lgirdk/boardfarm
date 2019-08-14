@@ -7,7 +7,7 @@ import glob
 
 import debian
 
-class DebianISCProvisioner(debian.DebianBox):
+class DebianISCProvisioner(object):
     '''
     Linux based provisioner using ISC DHCP server
     '''
@@ -69,7 +69,6 @@ class DebianISCProvisioner(debian.DebianBox):
         self.gw = self.prov_ip
         self.gwv6 = self.prov_ipv6
         self.nw = self.prov_network
-        return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
     def setup_dhcp6_config(self, board_config):
         tftp_server = self.tftp_device.tftp_server_ipv6_int()

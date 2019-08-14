@@ -86,23 +86,42 @@ def initialize_devices(configuration):
         prompt += getattr(d, "prompt", [])
     prompt = list(set(prompt))
 
+def bf_node(cls_list, model, **kwargs):
+
+    def __init__(self, *args, **kwargs):
+        for cls in cls_list:
+            cls.__init__(self, *args, **kwargs)
+
+    return type('BfNode', tuple(cls_list), {'__init__':__init__})(model,**kwargs)
+
 def get_device(model, **kwargs):
+    profile = kwargs.get("profile", {})
+    cls_list = []
+
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__:
 
                 attr = dev.__dict__['model']
 
-                if type(attr) is str and model != attr:
-                    continue
-                elif type(attr) is tuple and model not in attr:
-                    continue
+                if type(attr) is str and model == attr:
+                    cls_list.append(dev)
+                elif type(attr) is tuple and model in attr:
+                    cls_list.append(dev)
 
-                try:
-                    return dev(model, **kwargs)
-                except pexpect.EOF:
-                    msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
-                    raise Exception(msg)
+                if profile.keys() != []:
+                    if type(attr) is str and attr in profile.keys():
+                        cls_list.append(dev)
+                        kwargs.update(profile[attr])
+                    elif type(attr) is tuple and list(set(attr) & set(profile.keys())) != []:
+                        cls_list.append(dev)
+                        kwargs.update(profile[list(set(attr) & set(profile.keys()))[0]])
+
+    try:
+        return bf_node(cls_list, model, **kwargs)
+    except pexpect.EOF:
+        msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
+        raise Exception(msg)
 
     return None
 
