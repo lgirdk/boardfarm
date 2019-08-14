@@ -5,14 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import time
 import unittest2
 import lib
 import sys
 import traceback
 import time
-
-from devices import board, wan, lan, wlan, prompt
+import devices
+from devices import board, wan, lan, wlan
 from lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
@@ -180,3 +179,14 @@ class LinuxBootTest(unittest2.TestCase):
         for device in self.config.devices:
             if 'feature' in device and feature in devices['feature']:
                 return getattr(self, device)
+
+    def fetch_hosts(self):
+        hosts={}
+        for device in self.config.devices:
+            if device.find('lan') == -1:
+                if device.find('fax') == -1:
+                    dev = getattr(self.config, device)
+                    if hasattr(dev, 'iface_dut'):
+                        device_ip = dev.get_interface_ipaddr(dev.iface_dut)
+                        hosts[str(device_ip)]= device+".boardfarm.com"
+        return hosts
