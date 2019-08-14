@@ -1,6 +1,7 @@
 import pexpect
 import sys
 import os
+import atexit
 
 import linux
 
@@ -20,6 +21,7 @@ class DockerFactory(linux.LinuxDevice):
         return self.name
 
     def __init__(self, *args, **kwargs):
+        atexit.register(self.run_cleanup_cmd)
         self.args = args
         self.kwargs = kwargs
 
@@ -110,12 +112,17 @@ class DockerFactory(linux.LinuxDevice):
         self.clean_docker_network()
         return super(DockerFactory, self).close(*args, **kwargs)
 
+    def run_cleanup_cmd(self):
+        self.clean_docker()
+        self.clean_docker_network()
+
     def clean_docker_network(self):
         if self.created_docker_network == True:
             self.sendline('docker network rm %s' % self.cname)
             self.expect(self.prompt)
             self.sendline('docker network ls')
             self.expect(self.prompt)
+            self.created_docker_network = False
 
     def clean_docker(self):
         if self.created_docker == True:
@@ -124,3 +131,4 @@ class DockerFactory(linux.LinuxDevice):
                 self.expect(self.prompt)
                 self.sendline('docker rm %s'% c)
                 self.expect(self.prompt)
+                self.created_docker = False
