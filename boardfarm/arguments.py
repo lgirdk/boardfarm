@@ -343,9 +343,9 @@ def parse():
     return config
 
 if __name__ == '__main__':
-    config = parse()
+    configuration = parse()
     # Display configuration
-    for key in sorted(dir(config)):
+    for key in sorted(dir(configuration)):
         if key.startswith('__'):
             continue
-        print("%s: %s" % (key, getattr(config, key)))
+        print("%s: %s" % (key, getattr(configuration, key)))
