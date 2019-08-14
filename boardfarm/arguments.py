@@ -27,6 +27,18 @@ import library
 import config
 from config import boardfarm_config_location
 
+try:
+    import boardfarm
+except ImportError:
+    print("Please install boardfarm with the command:")
+    print("pip install -e .")
+    if not os.path.isfile("setup.py"):
+        # User currently isn't in the correct directory, so tell them
+        tmp = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+        print("Run that command from %s" % tmp)
+    sys.exit(1)
+
+
 def filter_boards(board_config, filter, name=None):
     s = ""
     for k, v in board_config.items():
