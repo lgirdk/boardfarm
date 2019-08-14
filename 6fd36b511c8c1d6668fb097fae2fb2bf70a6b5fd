@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7ad05317_167c0f95",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 0,
+      "message": "Do we not this this case?",
+      "revId": "6fd36b511c8c1d6668fb097fae2fb2bf70a6b5fd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4cb1bb15_cfe03a0a",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "Can you also check the methods/prop. etc on the class here and check for overlap?",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9123c8d0_9dde90a9",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "Can we name this some combo of the cls_list.__name__. ?",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eab70503_1f0251c1",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "len(profile) is a bit clearer here, need to keep this already confusing code as clean as possible\n\n\u003e\u003e\u003e len({\u0027foo\u0027: \u0027bar\u0027})\n1\n\nor\n\n\u003e\u003e\u003e {\u0027foo\u0027: \u0027bar\u0027} \u003d\u003d {\u0027foo\u0027: \u0027bar\u0027}\nTrue\n\u003e\u003e\u003e {} \u003d\u003d {\u0027foo\u0027: \u0027bar\u0027}\nFalse",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a777103d_e4d79277",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "attr in profile should work too\n\n\u003e\u003e\u003e \u0027foo\u0027 in {\u0027foo\u0027: \u0027bar\u0027}\nTrue",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "57429c82_9e0c39d3",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "should probably make sure there are no overlapping keys? seems like it would help with some debugging",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e6b2a63c_100c847b",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "I don\u0027t follow this block...",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d6965d9c_f868a989",
+        "filename": "boardfarm/devices/axiros_acs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "This can go in it\u0027s own commit.\n\n-M",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06a58062_cc8410c0",
+        "filename": "boardfarm/devices/debian_isc.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-14T20:53:19Z",
+      "side": 1,
+      "message": "Can we leave this as-is for backwards compatiblity for a while?\n\nclass DebianISCProvisioner(debian.DebianBox, ISCProvisioner):\n    model \u003d (\u0027debian-isc-provisioner\u0027)\n\nclass ISCProvisioner(object):\n    model \u003d (\u0027isc-provisioner\u0027)\n\n    ... more ...",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
