@@ -26,6 +26,7 @@ import re
 import library
 import config
 from config import boardfarm_config_location
+from dbclients.boardfarmwebclient import BoardfarmWebClient
 
 def filter_boards(board_config, filter, name=None):
     s = ""
@@ -104,7 +105,9 @@ def parse():
             config.boardfarm_config_location = args.config_file
 
         if config.boardfarm_config_location.startswith("http"):
-            data = urlopen(config.boardfarm_config_location).read().decode()
+            data = BoardfarmWebClient(config.boardfarm_config_location,
+                                      bf_version=library.version,
+                                      debug=os.environ.get("BFT_DEBUG", False)).bf_config_str
         else:
             data = open(config.boardfarm_config_location, 'r').read()
 
@@ -137,7 +140,7 @@ def parse():
 
     except Exception as e:
         print(e)
-        print('Unable to access/read Board Farm configuration\n%s' % boardfarm_config_location)
+        print('Unable to access/read boardfarm configuration from %s' % boardfarm_config_location)
         sys.exit(1)
 
     # Check if boardfarm configuration is empty

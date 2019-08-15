@@ -16,6 +16,9 @@ import time
 
 import requests
 
+class ServerError(Exception):
+    pass
+
 class BoardfarmWebClient(object):
     '''
     Handles interacting with a boardfarm server. For checking out
@@ -38,6 +41,17 @@ class BoardfarmWebClient(object):
                                          os.environ.get('USER', None),
                              'build_url': os.environ.get('BUILD_URL', None)
                             }
+        try:
+            res = requests.get(self.config_url, headers=self.headers)
+            res_json = res.json()
+            res.raise_for_status()
+            self.bf_config_str = res.text
+            self.bf_config = res_json
+        except requests.exceptions.RequestException as e:
+            if res_json:
+                raise ServerError(res_json.get('message', ''))
+            else:
+                raise e
         try:
             # See if this is a boardfarm server by checking the root /api path
             self.server_url = re.search('http.*/api', self.config_url).group(0)
