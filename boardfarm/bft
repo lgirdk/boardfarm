@@ -509,7 +509,7 @@ def main():
     try:
         result_data = json.load(open('./results/test_results.json'))
         test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
-        zephyr_reporter.update_zephyr(test_cases_list)
+        zephyr_reporter.update_zephyr(test_cases_list, result_data)
     except Exception as e:
         print(e)
         print("Unable to Update results in Zephyr")

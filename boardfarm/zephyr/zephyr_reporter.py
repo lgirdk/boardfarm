@@ -7,6 +7,7 @@ import json
 from jira import JIRA
 import zapi
 import requests
+import re
 
 COLUMN_SCRIPT_NAME="TestScript Name"
 COLUMN_JIRA_TEST_ID="Jira ID"
@@ -96,7 +97,7 @@ def parse_zapi_config():
 
     return data
 
-def update_zephyr(test_cases_list):
+def update_zephyr(test_cases_list, result_data):
     args=parse_zapi_config()
     if len(args) == 0:
         print("Zephyr is not configured, skipping...")
@@ -114,10 +115,24 @@ def update_zephyr(test_cases_list):
                     options={'server': z["jira_url"]})
 
         proj = jira.project(z["project"])
-        verid = get_jira_release_id(z['release'], jira, proj)
-        cycleName = z["cycle"]
-        cycleName = cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
-
+        date = str((datetime.datetime.now()).strftime("%Y%m%d"))
+        try:
+            match = re.search('SW_REV: (\w+)\-\w+\-((\d+\.?)+(-\w+))-SH', str(result_data))
+            if date in str(result_data):
+                model = match.group(1)
+                version = match.group(2).replace(match.group(4),'.0-PRE-%s' %model)
+            else:
+                version = z["release"]
+            if date in match.group(4):
+                cycleName = match.group(2)+'-SH-DailyBuild'
+            else:
+                cycleName = match.group(2)
+        except:
+            version = z["release"]
+            cycleName = z["cycle"]
+        print("version = %s" %version)
+        print("cycleName = %s" %cycleName)
+        verid = get_jira_release_id(version, jira, proj)
 
         reporter = zapi.Zapi(project_id=proj.id,
                              version_id=verid,
