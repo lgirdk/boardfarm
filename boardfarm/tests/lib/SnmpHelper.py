@@ -15,6 +15,59 @@ from pysmi.parser import SmiStarParser
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
 
+def find_directory_in_tree(pattern, root_dir):
+    """
+    Looks for all the directories where the name matches pattern
+    Avoids paths patterns already in found, i.e.:
+    root/dir/pattern (considered)
+    root/dir/pattern/dir1/pattern (not considered since already in the path)
+
+    Parameters:
+    pattern:  name to match against
+    root_dir: root of tree to traverse
+
+    Returns a list of dirs
+    """
+    dirs_list = []
+    for root, dirs, files in os.walk(root_dir):
+        for name in dirs:
+            if 'mib' in name or 'mibs' in name:
+                d = os.path.join(root, name)
+                if any(s in d for s in dirs_list):
+                    continue
+                else:
+                    dirs_list.append(d)
+    return dirs_list
+
+def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
+    """
+    Looks for all the files in a directry tree
+
+    Parameters:
+    root_dir: root of tree to traverse, can be a list of directory
+
+    Returns a list of files
+    """
+
+    if (type(root_dir) is not list) and len(root_dir):
+        root_dir = [root_dir]
+
+    file_list = []
+
+    if len(root_dir):
+        for d in root_dir:
+            for root, dirs, files in os.walk(d):
+                for f in files:
+                    if f in ignore:
+                        continue
+                    if no_ext:
+                        f = os.path.splitext(f)[0]
+                    file_list.append(f)
+        if no_dup:
+            file_list = list(dict.fromkeys(file_list))
+    return file_list
+
+
 class SnmpMibs(object):
     """
     Look up specific ASN.1 MIBs at configured Web and FTP sites,
@@ -31,6 +84,44 @@ class SnmpMibs(object):
     """
     dbg = None
     mib_dict = {}
+
+    snmp_parser = None
+
+    @classmethod
+    def get_mib_parser(cls, snmp_mib_files=None, snmp_mib_dirs=None, http_sources=None):
+
+        if cls.snmp_parser is not None:
+            return cls.snmp_parser
+
+        if snmp_mib_files is None:
+            snmp_mib_files= []
+
+        if snmp_mib_dirs is None:
+            snmp_mib_dirs = ['/usr/share/snmp/mibs']
+
+        # add the boardfarm dir as it is not in the overlays
+        snmp_mib_dirs.extend(find_directory_in_tree('mibs',os.path.realpath('.')))
+
+        if 'BFT_OVERLAY' in os.environ:
+            for overlay in os.environ['BFT_OVERLAY'].split(' '):
+                # finds all dirs with the word mibs in it
+                # avoid adding a directory that is already
+                # contained in the directory tree
+                snmp_mib_dirs.extend(find_directory_in_tree('mib', overlay))
+
+            print('Mibs direcotry list: %s' % snmp_mib_dirs)
+
+        # if the mibs file are given, we do not want to add other mibs, as it may
+        # results in unresolved ASN.1 imports
+        if len(snmp_mib_files) == 0:
+            # only traverses the mib dirs and compile all the files
+            # /usr/share/snmp/mibs has miblist.txt which MUST be ignored
+            snmp_mib_files = find_files_in_tree(snmp_mib_dirs, ignore='miblist.txt')
+        print('Mibs file list: %s' % snmp_mib_files)
+
+        # creates the snmp parser object
+        snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
+        return snmp_parser
 
     def __init__(self, mib_list, src_dir_list, http_sources=None):
         if "BFT_DEBUG" in os.environ:
@@ -60,7 +151,24 @@ class SnmpMibs(object):
         mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
 
         # run recursive MIB compilation
-        mibCompiler.compile(*mib_list)
+        mib_dict = mibCompiler.compile(*mib_list)
+
+        err = False
+
+        if mib_dict is None or mib_dict == {}:
+            print("ERROR: failed on mib compilation (mibCompiler.compile returned an empty dictionary)")
+            err = True
+
+        for key, value in mib_dict.iteritems():
+            if value == 'unprocessed':
+                print("ERROR: failed on mib compilation: " + key + ": " + value)
+                err = True
+
+        if err:
+            import sys
+            sys.exit(3)
+        else:
+            print('# %d MIB modules compiled'%len(mib_dict))
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         if "y" in self.dbg:
@@ -107,6 +215,7 @@ if __name__ == '__main__':
             BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and
                             mibs/oid details
         """
+        test_singleton = False # if True it will invoke get_mib_parser() static method
 
         mibs = ['docsDevSwAdminStatus',
                 'snmpEngineMaxMessageSize',
@@ -116,7 +225,7 @@ if __name__ == '__main__':
                 'docsDevNmAccessIp']
 
         mib_files      = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'] # this is the list of mib/txt files to be compiled
-        srcDirectories = ['../../'] # this needs to point to the mibs directory location
+        srcDirectories = ['/usr/share/snmp/mibs'] # this needs to point to the mibs directory location
         snmp_obj       = None  # will hold an instance of the  SnmpMibs class
 
         def __init__(self,mibs_location=None, files=None, mibs=None, err_mibs=None):
@@ -137,13 +246,18 @@ if __name__ == '__main__':
 
             for d in self.srcDirectories:
                 if not os.path.exists(str(d)):
-                    msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(self.srcDirectories))
+                    msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(d))
                     raise Exception(msg)
 
             if files:
                 self.mib_files = files
 
-            self.snmp_obj = SnmpMibs(self.mib_files, self.srcDirectories)
+            if SnmpMibsUnitTest.test_singleton:
+                self.snmp_obj = SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories)
+                print("Using class singleton: %r" % self.snmp_obj)
+            else:
+                self.snmp_obj = SnmpMibs(self.mib_files, self.srcDirectories)
+                print("Using object instance: %r" % self.snmp_obj)
 
             if mibs:
                 self.mibs = mibs
@@ -177,17 +291,21 @@ if __name__ == '__main__':
 
     location = None
 
-    if len(sys.argv) < 3:
-        if len(sys.argv) == 1:
-            print("Using default values from unit test: %s"%(SnmpMibsUnitTest.srcDirectories))
-        else:
-            print("Usage:\n%s <path_to_global_mibs>  [<path_to_vendor_mibs>]"%sys.argv[0])
-            sys.exit(1)
-    else:
-        print('sys.argv='+str(sys.argv))
-        location = sys.argv
+    if '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2:
+        print("Usage:\n%s <path_to_mibs>  [<path_to_mibs> ...]"%sys.argv[0])
+        print("\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs "%sys.argv[0])
+        sys.exit(1)
 
+    print('sys.argv='+str(sys.argv))
+    location = sys.argv[1:]
+
+    SnmpMibsUnitTest.test_singleton = False
     unit_test = SnmpMibsUnitTest(mibs_location=location)
     assert (unit_test.unitTest())
+
+    SnmpMibsUnitTest.test_singleton = True
+    unit_test = SnmpMibsUnitTest(mibs_location=location)
+    assert (unit_test.unitTest())
+
 
     print('Done.')
