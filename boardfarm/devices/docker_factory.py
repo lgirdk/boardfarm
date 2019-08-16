@@ -34,7 +34,7 @@ class DockerFactory(linux.LinuxDevice):
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
-            pexpect.spawn.__init(self, command="ssh",
+            pexpect.spawn.__init__(self, command="ssh",
                                        args=['%s' % (self.ipaddr),
                                              '-o', 'StrictHostKeyChecking=no',
                                              '-o', 'UserKnownHostsFile=/dev/null',
@@ -68,8 +68,10 @@ class DockerFactory(linux.LinuxDevice):
             self.sendline('docker network create -d macvlan -o parent=%s -o macvlan_mode=bridge %s' % (self.iface, self.cname))
             self.expect(self.prompt)
             assert 'Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network' not in self.before
+            assert ' is already using parent interface ' not in self.before
             self.sendline('docker network ls')
             self.expect(self.prompt)
+            assert self.cname in self.before
             self.created_docker_network = True
 
 
