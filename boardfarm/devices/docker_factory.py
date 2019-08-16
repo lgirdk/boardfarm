@@ -2,6 +2,7 @@ import pexpect
 import sys
 import os
 import atexit
+import re
 
 import linux
 
@@ -16,6 +17,7 @@ class DockerFactory(linux.LinuxDevice):
     created_docker = False
     extra_devices = []
     target_cname = []
+    created_network = True
 
     def __str__(self):
         return self.name
@@ -31,11 +33,13 @@ class DockerFactory(linux.LinuxDevice):
         self.env = kwargs.pop('env', None)
         self.name = kwargs.pop('name')
         self.cname = self.name + '-${uniq_id}'
+        self.username = kwargs.pop('username', 'root')
+        self.password = kwargs.pop('password', 'bigfoot1')
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
             pexpect.spawn.__init__(self, command="ssh",
-                                       args=['%s' % (self.ipaddr),
+                                       args=['%s@%s' % (self.username, self.ipaddr),
                                              '-o', 'StrictHostKeyChecking=no',
                                              '-o', 'UserKnownHostsFile=/dev/null',
                                              '-o', 'ServerAliveInterval=60',
@@ -47,7 +51,10 @@ class DockerFactory(linux.LinuxDevice):
         if 'BFT_DEBUG' in os.environ:
             self.logfile_read = sys.stdout
 
-        self.expect(pexpect.TIMEOUT, timeout=1)
+        # TODO: reused function for ssh auth for all of this
+        if 0 == self.expect(['assword', pexpect.TIMEOUT], timeout=10):
+            self.sendline(self.password)
+
         self.sendline('export PS1="docker_session>"')
         self.expect(self.prompt)
         self.sendline('echo FOO')
@@ -68,7 +75,9 @@ class DockerFactory(linux.LinuxDevice):
             self.sendline('docker network create -d macvlan -o parent=%s -o macvlan_mode=bridge %s' % (self.iface, self.cname))
             self.expect(self.prompt)
             assert 'Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network' not in self.before
-            assert ' is already using parent interface ' not in self.before
+            if ' is already using parent interface ' in self.before:
+                self.cname = re.findall('dm-(.*) is already', self.before)[0]
+                self.created_network = False
             self.sendline('docker network ls')
             self.expect(self.prompt)
             assert self.cname in self.before
@@ -119,7 +128,7 @@ class DockerFactory(linux.LinuxDevice):
         self.clean_docker_network()
 
     def clean_docker_network(self):
-        if self.created_docker_network == True:
+        if self.created_docker_network == True and self.created_network == True:
             self.sendline('docker network rm %s' % self.cname)
             self.expect(self.prompt)
             self.sendline('docker network ls')
