@@ -16,6 +16,24 @@
       "revId": "6fd36b511c8c1d6668fb097fae2fb2bf70a6b5fd",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "49347951_02ea5b59",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-19T15:26:07Z",
+      "side": 0,
+      "message": "Either I had to run two different loops one for device model, and next one for profile.\nOr add the model to class list and validate profile within same loop.",
+      "parentUuid": "7ad05317_167c0f95",
+      "revId": "6fd36b511c8c1d6668fb097fae2fb2bf70a6b5fd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
     }
   ]
 }

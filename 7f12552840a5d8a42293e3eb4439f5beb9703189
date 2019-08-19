@@ -230,6 +230,24 @@
     },
     {
       "key": {
+        "uuid": "34ff7cb1_829c2b64",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-19T15:26:07Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "69cf8b32_8a7e13d4",
+      "revId": "7f12552840a5d8a42293e3eb4439f5beb9703189",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d6965d9c_f868a989",
         "filename": "boardfarm/devices/axiros_acs.py",
         "patchSetId": 1
