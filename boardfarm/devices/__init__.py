@@ -86,23 +86,78 @@ def initialize_devices(configuration):
         prompt += getattr(d, "prompt", [])
     prompt = list(set(prompt))
 
+def bf_node(cls_list, model, **kwargs):
+
+    cls_name = "_".join([cls.__name__ for cls in cls_list])
+    cls_members = []
+
+    '''Need to ensure that profile does not have members which override
+    the base_cls implementation.'''
+    temp = []
+    for cls in cls_list:
+        members = [attr for attr in cls.__dict__ if
+                not attr.startswith('__') and
+                not attr.endswith('__') and
+                attr not in ('model','prompt')]
+        common = list(set(members) & set(cls_members))
+        if len(common) > 0:
+            raise Exception("Identified duplicate class members %s between classes  %s" % (str(common), str(cls_list[:cls_list.index(cls)+1])))
+
+        cls_members.extend(members)
+        temp.append(cls)
+
+    cls_list = temp
+    cls_name = "_".join([cls.__name__ for  cls in cls_list])
+
+    def __init__(self, *args, **kwargs):
+        for cls in cls_list:
+            cls.__init__(self, *args, **kwargs)
+
+    return type(cls_name, tuple(cls_list), {'__init__':__init__})(model,**kwargs)
+
 def get_device(model, **kwargs):
+    profile = kwargs.get("profile", {})
+    cls_list = []
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__:
-
                 attr = dev.__dict__['model']
 
-                if type(attr) is str and model != attr:
-                    continue
-                elif type(attr) is tuple and model not in attr:
-                    continue
+                if type(attr) is str and model == attr:
+                    cls_list.append(dev)
+                elif type(attr) is tuple and model in attr:
+                    cls_list.append(dev)
 
-                try:
-                    return dev(model, **kwargs)
-                except pexpect.EOF:
-                    msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
-                    raise Exception(msg)
+                flag = False
+                if len(profile) > 0:
+                    if type(attr) is str and attr in profile:
+                        flag = True
+                        profile_kwargs = profile[attr]
+                    elif type(attr) is tuple and len(set(attr) & set(profile)) == 1:
+                        flag = True
+                        profile_kwargs = profile[ list(set(attr) & set(profile))[0] ]
+
+                if flag:
+                    if dev not in cls_list: cls_list.append(dev)
+                    else:
+                        print("Skipping duplicate device type: %s" % attr)
+                        continue
+                    common_keys = set(kwargs) & set(profile_kwargs)
+                    if len(common_keys) > 0:
+                        print("Identified duplicate keys in profile and base device : %s" % str(list(common_keys)) )
+                        print("Removing duplicate keys from profile!")
+                        for i in list(common_keys):
+                            profile_kwargs.pop(i)
+                    kwargs.update(profile_kwargs)
+
+    try:
+        if len(cls_list) == 0: raise Exception("Unable to spawn instance of model: %s" % model)
+        return bf_node(cls_list, model, **kwargs)
+    except pexpect.EOF:
+        msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
+        raise Exception(msg)
+    except Exception as e:
+        raise Exception(str(e))
 
     return None
 
