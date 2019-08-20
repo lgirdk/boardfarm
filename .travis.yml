@@ -12,6 +12,7 @@ before_install:
         - sudo apt-get -qq update
         - sudo apt-get install -y qemu-system-x86 docker-ce python-tk
         - sudo apt-get install -y libsnmp-dev snmp-mibs-downloader
+        - pip install -e .
 script:
         - ./bft -l
         - ./bft -i
