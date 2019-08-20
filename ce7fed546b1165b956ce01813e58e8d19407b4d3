@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a20f25c_8c7e58ff",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-20T20:44:17Z",
+      "side": 1,
+      "message": "could probably give a hint at what flag is, so a better name",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8c9d66a9_fdab17b0",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-20T20:44:17Z",
+      "side": 1,
+      "message": "please put on the next line",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "06283f48_f8c15e15",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1016147
+      },
+      "writtenOn": "2019-08-20T20:44:17Z",
+      "side": 1,
+      "message": "please put the stuff after the : on the next line",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
