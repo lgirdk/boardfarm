@@ -93,7 +93,7 @@ def parse():
     parser.add_argument('-z', '--no-network', action='store_true', help='Skip basic network tests when booting')
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('--nfsroot', metavar='', type=str, default=None, help='URL or file PATH of Rootfs image to flash')
-    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(library.version), help='show version and exit')
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(boardfarm.__version__), help='show version and exit')
     parser.add_argument('--nostrict', action='store_true', help='ignores failure to import a tests from a testsuite')
 
     args = parser.parse_args()
@@ -118,7 +118,7 @@ def parse():
 
         if config.boardfarm_config_location.startswith("http"):
             data = BoardfarmWebClient(config.boardfarm_config_location,
-                                      bf_version=library.version,
+                                      bf_version=boardfarm.__version__,
                                       debug=os.environ.get("BFT_DEBUG", False)).bf_config_str
         else:
             data = open(config.boardfarm_config_location, 'r').read()
