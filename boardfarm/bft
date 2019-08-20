@@ -25,6 +25,7 @@ from zephyr import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
+import boardfarm
 from devices import get_device
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
@@ -105,7 +106,7 @@ def main():
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
     bfweb = boardfarmwebclient.BoardfarmWebClient(config.boardfarm_config_location,
-                                                  bf_version=library.version,
+                                                  bf_version=boardfarm.__version__,
                                                   debug=os.environ.get("BFT_DEBUG", False))
 
     # Connect to any board in list
@@ -425,7 +426,7 @@ def main():
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
-    info_for_remote_log['bft_version'] = library.version
+    info_for_remote_log['bft_version'] = boardfarm.__version__
     try:
         info_for_remote_log['duration'] = int(os.environ['TEST_END_TIME'])-int(os.environ['TEST_START_TIME'])
     except:
