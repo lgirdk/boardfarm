@@ -4,3 +4,5 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
+
+__version__ = "1.1.0"
