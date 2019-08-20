@@ -9,9 +9,9 @@ import re
 
 import rootfs_boot
 import ipv6_setup
-import lib
-from lib import installers
-from devices import board, wan, lan, wlan, prompt
+from boardfarm import lib
+from boardfarm.lib import installers
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 # change this if you want to one time tweak iperf opts
 time = 60

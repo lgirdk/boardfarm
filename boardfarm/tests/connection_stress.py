@@ -7,9 +7,9 @@
 
 import rootfs_boot
 import time
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
-from lib.installers import install_lighttpd
+from boardfarm.lib.installers import install_lighttpd
 
 class Connection_Stress(rootfs_boot.RootFSBootTest):
     '''Measured CPU use while creating thousands of connections.'''

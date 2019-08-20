@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
     '''Check that opkg will overwrite old configuration files with known MD5.'''

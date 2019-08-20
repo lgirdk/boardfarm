@@ -11,7 +11,7 @@ import time
 import common
 import error_detect
 import signal
-from lib.bft_logging import LoggerMeta, o_helper
+from boardfarm.lib.bft_logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
 BFT_DEBUG = "BFT_DEBUG" in os.environ

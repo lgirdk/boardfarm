@@ -73,7 +73,7 @@ class DockerFactory(linux.LinuxDevice):
             self.created_docker_network = True
 
 
-        from devices import get_device
+        from boardfarm.devices import get_device
         for target in kwargs.pop('targets'):
             target_img = target['img']
             target_type = target['type']

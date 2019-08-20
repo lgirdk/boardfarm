@@ -1,6 +1,6 @@
 import re
 import rootfs_boot
-from devices import board, wan, lan, prompt
+from boardfarm.devices import board, wan, lan, prompt
 
 from random import randint
 import ipaddress

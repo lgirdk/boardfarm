@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from lib.common import cmd_exists
+from boardfarm.lib.common import cmd_exists
 import binascii
 import os
 import pexpect

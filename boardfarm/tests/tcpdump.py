@@ -7,7 +7,7 @@
 
 import pexpect
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
     '''Captures traces for WAN and LAN devices'''

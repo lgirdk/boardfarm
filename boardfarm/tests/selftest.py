@@ -1,13 +1,13 @@
 import rootfs_boot
-import lib
+from boardfarm import lib
 import hashlib
 import random
 import string
 import os
 import tempfile
-from lib import SnmpHelper
+from boardfarm.lib import SnmpHelper
 
-from devices import board, wan, lan, wlan, common
+from boardfarm.devices import board, wan, lan, wlan, common
 
 '''
     This file can bu used to add unit tests that
@@ -188,7 +188,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     tests the linux functions moved to devices/linux.py
     '''
     def runTest(self):
-        from devices import lan, debian, linux
+        from boardfarm.devices import lan, debian, linux
         if lan.model == "debian":
             # check that lan is derived from LinuxDevice
             assert(issubclass(debian.DebianBox, linux.LinuxDevice))
@@ -373,8 +373,8 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
 
     def runTest(self):
 
-        from lib.installers import install_snmp, install_snmpd
-        from lib.common import snmp_mib_get
+        from boardfarm.lib.installers import install_snmp, install_snmpd
+        from boardfarm.lib.common import snmp_mib_get
 
         wrong_mibs = ['PsysDescr', 'sys123ObjectID', 'sysServiceS']
         linux_mibs = ['sysDescr',\

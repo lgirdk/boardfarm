@@ -5,12 +5,12 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import lib
+from boardfarm import lib
 import netperf_test
 import time
 
 from netperf_test import install_netperf
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class NetperfStressTest(netperf_test.NetperfTest):
     @lib.common.run_once

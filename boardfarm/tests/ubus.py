@@ -8,7 +8,7 @@
 import rootfs_boot
 import json
 import time
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 def ubus_call_raw(payload, ipaddr="192.168.1.1"):
     curl_cmd = "curl -d '%s' http://%s/ubus" % (json.dumps(payload), ipaddr)

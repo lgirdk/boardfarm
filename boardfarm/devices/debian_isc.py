@@ -1,7 +1,7 @@
 import ipaddress
 import os
 import pexpect
-from lib.regexlib import ValidIpv4AddressRegex
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 import re
 import glob
 
@@ -533,7 +533,7 @@ EOF'''
 
         # errr, this should not need to call into board object
         try:
-            from devices import board
+            from boardfarm.devices import board
             board.update_cfg_for_site()
         except:
             pass
