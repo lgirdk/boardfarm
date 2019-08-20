@@ -3,7 +3,7 @@ import re
 import sys
 import base
 import connection_decider
-from lib.regexlib import AllValidIpv6AddressesRegex
+from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex
 
 class WindowsTelnet(base.BaseDevice):
 

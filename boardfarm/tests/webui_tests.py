@@ -7,8 +7,8 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import rootfs_boot
-import lib
-from devices import board, wan, lan, wlan, prompt
+from boardfarm import lib
+from boardfarm.devices import board, wan, lan, wlan, prompt
 from selenium.webdriver import ActionChains
 
 class WebTest(rootfs_boot.RootFSBootTest):

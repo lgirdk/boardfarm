@@ -6,10 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 
 
-import lib
+from boardfarm import lib
 import iperf_test
 
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class PerfPerPktTest(iperf_test.iPerfTest):
     '''Count various perf events on a per packet basis'''

@@ -23,8 +23,8 @@ except:
     import urllib2 as urllib
 import re
 
-import library
-import config
+from boardfarm import library
+from boardfarm import config
 from config import boardfarm_config_location
 from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 

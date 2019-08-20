@@ -7,7 +7,7 @@
 
 
 # Read simple test suite config files
-import config
+from boardfarm import config
 import devices.configreader
 tmp = devices.configreader.TestsuiteConfigReader()
 

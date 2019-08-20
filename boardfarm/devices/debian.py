@@ -473,7 +473,7 @@ class DebianBox(linux.LinuxDevice):
 
     def add_hosts(self):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
-        import config
+        from boardfarm import config
         hosts={}
         for device in config.board['devices']:
             if 'ipaddr' in device:
@@ -762,6 +762,6 @@ if __name__ == '__main__':
     if sys.argv[2] == "test_voip":
         sys.path.insert(0, os.getcwd())
         sys.path.insert(0, os.getcwd() + '/tests')
-        from lib import installers
+        from boardfarm.lib import installers
 
         installers.install_asterisk(dev)

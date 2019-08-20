@@ -1,6 +1,6 @@
 import base, binascii
 import os, ipaddress, re
-from lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
 import pexpect
 
 from common import print_bold
