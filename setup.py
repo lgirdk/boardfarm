@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import boardfarm
+
 from setuptools import setup, find_packages
 
 setup(name='boardfarm',
-      version='1.0.0',
+      version=boardfarm.__version__,
       description='Automated testing of network devices',
       author='Various',
       url='https://github.com/lgirdk/boardfarm',

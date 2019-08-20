@@ -18,6 +18,22 @@ import time
 import traceback
 from datetime import datetime
 
+# Try to catch common mistakes: not installing boardfarm, or
+# having wrong version installed.
+try:
+    import boardfarm
+    import version
+    assert boardfarm.__version__ == version.__version__, "Mismatched versions of bft and boardfarm"
+except Exception as e:
+    print(e)
+    print("Please install boardfarm with the command:")
+    cmd = "pip install -e ."
+    if not os.path.isfile("setup.py"):
+        tmp = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+        cmd = "cd %s ; %s" % (tmp, cmd)
+    print(cmd)
+    sys.exit(1)
+
 from zephyr import zephyr_reporter
 
 # Put this directory into the python path, so
@@ -105,7 +121,7 @@ def main():
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
     bfweb = boardfarmwebclient.BoardfarmWebClient(config.boardfarm_config_location,
-                                                  bf_version=library.version,
+                                                  bf_version=boardfarm.__version__,
                                                   debug=os.environ.get("BFT_DEBUG", False))
 
     # Connect to any board in list
@@ -425,7 +441,7 @@ def main():
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
-    info_for_remote_log['bft_version'] = library.version
+    info_for_remote_log['bft_version'] = boardfarm.__version__
     try:
         info_for_remote_log['duration'] = int(os.environ['TEST_END_TIME'])-int(os.environ['TEST_START_TIME'])
     except:
