@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f53e7a26_f8289140",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-21T20:08:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "37767ffb_4699d855",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "3a20f25c_8c7e58ff",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 4
@@ -33,6 +51,24 @@
       "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e1197e01_7b530030",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-21T20:08:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "3a20f25c_8c7e58ff",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     },
     {
       "key": {
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "2b6bedcf_df441761",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-21T20:08:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "8c9d66a9_fdab17b0",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "06283f48_f8c15e15",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 4
@@ -67,6 +121,24 @@
       "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ec618abe_30bbd435",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1016357
+      },
+      "writtenOn": "2019-08-21T20:08:51Z",
+      "side": 1,
+      "message": "Ack",
+      "parentUuid": "06283f48_f8c15e15",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
