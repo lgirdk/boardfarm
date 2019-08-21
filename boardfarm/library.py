@@ -12,6 +12,9 @@ import os
 
 from termcolor import cprint
 
+_version = (1, 1, 0)
+version = '.'.join(str(x) for x in _version)
+
 
 class HelperEncoder(json.JSONEncoder):
     '''Turn some objects into a form that can be stored in JSON.'''
