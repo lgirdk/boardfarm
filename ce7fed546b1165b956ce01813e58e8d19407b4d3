@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "37767ffb_4699d855",
+        "filename": "boardfarm/devices/__init__.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1016622
+      },
+      "writtenOn": "2019-08-21T16:25:36Z",
+      "side": 1,
+      "message": "For other people, can you add a one-sentence docstring that describes what this function does?\nExample:\n\n    \u0027\u0027\u0027Called by X to determine Y\u0027\u0027\u0027",
+      "revId": "ce7fed546b1165b956ce01813e58e8d19407b4d3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "3a20f25c_8c7e58ff",
         "filename": "boardfarm/devices/__init__.py",
         "patchSetId": 4
