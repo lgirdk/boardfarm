@@ -463,6 +463,8 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('server=8.8.4.4')
         self.sendline('listen-address=127.0.0.1')
         self.sendline('listen-address=%s' % self.gw)
+        if self.gwv6 is not None:
+            self.sendline('listen-address=%s' % self.gwv6)
         self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
         self.add_hosts()
