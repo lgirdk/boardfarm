@@ -37,7 +37,7 @@ if "BFT_DEBUG" in os.environ:
     })
 
 
-class AxirosACS():
+class AxirosACS(object):
 
     model = "axiros_acs_soap"
 
