@@ -112,6 +112,27 @@ class DebianBox(linux.LinuxDevice):
         self.lan_gateway = lan_gateway
         self.tftp_device = self
 
+        try:
+            i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
+        except pexpect.TIMEOUT:
+            raise Exception("Unable to connect to %s." % name)
+        except pexpect.EOF:
+            if hasattr(self, "before"):
+                print(self.before)
+            raise Exception("Unable to connect to %s." % name)
+        if i == 0:
+            self.sendline("yes")
+            i = self.expect(["Last login", "assword:"])
+        if i == 1 or i == 3:
+            self.sendline(password)
+        else:
+            pass
+        # if we did initially get a prompt wait for one here
+        if i < 4:
+            self.expect(self.prompt)
+
+        # attempts to fix the cli colums size
+        self.set_cli_size(200)
 
         # we need to pick a non-conflicting private network here
         # also we want it to be consistant and not random for a particular
@@ -162,28 +183,6 @@ class DebianBox(linux.LinuxDevice):
                 if opt.startswith('mgmt-dns:'):
                     value = unicode(opt.replace('mgmt-dns:', ''))
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
-
-        try:
-            i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
-        except pexpect.TIMEOUT:
-            raise Exception("Unable to connect to %s." % name)
-        except pexpect.EOF:
-            if hasattr(self, "before"):
-                print(self.before)
-            raise Exception("Unable to connect to %s." % name)
-        if i == 0:
-            self.sendline("yes")
-            i = self.expect(["Last login", "assword:"])
-        if i == 1 or i == 3:
-            self.sendline(password)
-        else:
-            pass
-        # if we did initially get a prompt wait for one here
-        if i < 4:
-            self.expect(self.prompt)
-
-        # attempts to fix the cli colums size
-        self.set_cli_size(200)
 
 
         if ipaddr is None:
