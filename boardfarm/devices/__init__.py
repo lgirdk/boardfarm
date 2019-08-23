@@ -119,7 +119,10 @@ def bf_node(cls_list, model, **kwargs):
         for cls in cls_list:
             cls.__init__(self, *args, **kwargs)
 
-    return type(cls_name, tuple(cls_list), {'__init__':__init__})(model,**kwargs)
+    ret = type(cls_name, tuple(cls_list), {'__init__':__init__})(model,**kwargs)
+    ret.target = kwargs
+
+    return ret
 
 def get_device(model, **kwargs):
     profile = kwargs.get("profile", {})
@@ -144,7 +147,7 @@ def get_device(model, **kwargs):
                         profile_kwargs = profile[ list(set(attr) & set(profile))[0] ]
 
                 if profile_exists:
-                    if dev not in cls_list: 
+                    if dev not in cls_list:
                         cls_list.append(dev)
                     else:
                         print("Skipping duplicate device type: %s" % attr)
@@ -158,7 +161,7 @@ def get_device(model, **kwargs):
                     kwargs.update(profile_kwargs)
 
     try:
-        if len(cls_list) == 0: 
+        if len(cls_list) == 0:
             raise Exception("Unable to spawn instance of model: %s" % model)
         return bf_node(cls_list, model, **kwargs)
     except pexpect.EOF:
