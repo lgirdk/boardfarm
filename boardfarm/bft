@@ -51,6 +51,7 @@ def setup_dynamic_devices(config, env=None, start=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
+    dynamic_devices = []
     for device in config.board['devices']:
         if device['name'] in config.devices:
             print("Skipping duplicate device type: %s" % device['name'])
@@ -95,12 +96,15 @@ def setup_dynamic_devices(config, env=None, start=None):
             for dev in getattr(dyn_dev, 'extra_devices', []):
                 if hasattr(dev, 'name'):
                     create_device_helper(dev.name, dev)
+                    dynamic_devices.append(dev.target)
                 else:
                     raise Exception("Extra device in config is not named! This is required")
 
             continue
 
         print("Unknown device type for %s" % device)
+
+    config.board['devices'].extend(dynamic_devices)
 
 def main():
     '''Connect to devices, run tests, record results.'''
