@@ -485,8 +485,8 @@ class DebianBox(linux.LinuxDevice):
                 hosts[domain_name] = str(device.ipaddr)
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
-            for key, value in hosts.iteritems():
-                self.sendline(key+" "+ value)
+            for host, ip in hosts.iteritems():
+                self.sendline(ip + " " + host)
             self.sendline('EOF')
 
     def remove_hosts(self):
