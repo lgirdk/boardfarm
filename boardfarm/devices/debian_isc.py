@@ -105,8 +105,9 @@ option vsio.docsis code 4491 = encapsulate docsis;
 
 # TODO: move to host section
 #option dhcp6.aftr-name "";
+#option dhcp6.name-servers 2001:730:1f:60a::cafe:106;
 option dhcp6.name-servers ###PROV_IPV6###;
-option dhcp6.domain-search "test.example.com","example.com";
+option dhcp6.domain-search "boardfarm.com";
 
 class "CM" {
   match if option docsis.device-type = "ECM";
@@ -288,7 +289,7 @@ shared-network boardfarm {
     option routers ###MTA_GATEWAY###;
     option broadcast-address ###MTA_BROADCAST###;
     option time-offset ###TIMEZONE###;
-    option domain-name-servers ###PROV###;
+    option domain-name-servers ###WAN_IP###;
     option docsis-mta.kerberos-realm 05:42:41:53:49:43:01:31:00 ;
     option docsis-mta.provision-server 0 ###MTA_SIP_FQDN### ;
   }
@@ -298,7 +299,7 @@ shared-network boardfarm {
     option broadcast-address ###OPEN_BROADCAST###;
     option domain-name "local";
     option time-offset ###TIMEZONE###;
-    option domain-name-servers ###PROV###;
+    option domain-name-servers ###WAN_IP###;
   }
   pool {
     range ###MTA_START_RANGE### ###MTA_END_RANGE###;
@@ -345,6 +346,8 @@ EOF'''
         to_send = to_send.replace('###OPEN_GATEWAY###', str(self.open_gateway))
         to_send = to_send.replace('###OPEN_BROADCAST###', str(self.open_network[-1]))
         to_send = to_send.replace('###TIMEZONE###', str(self.timezone))
+
+        to_send = to_send.replace('###WAN_IP###', tftp_server)
 
         self.sendline(to_send)
         self.expect(self.prompt)
@@ -406,12 +409,13 @@ EOF'''
         if 'extra_provisioning_v6' not in board_config:
             board_config['extra_provisioning_v6'] = {}
 
+        tftp_server = self.tftp_device.tftp_server_ip_int()
         # DHCPv4 defaults for when board does not supply defaults
         if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["mta"] = \
                 { "hardware ethernet": board_config['mta_mac'],
                  "options": { "domain-name": "\"sipcenter.com\"",
-                              "domain-name-servers": "%s" % self.prov_ip,
+                              "domain-name-servers": "%s" % tftp_server,
                               "routers": "%s" % self.mta_gateway,
                               "log-servers": "%s" % self.prov_ip,
                               "host-name": "\"" + board_config['station'] + "\""
@@ -420,7 +424,7 @@ EOF'''
         if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning']:
             board_config['extra_provisioning']["cm"] = \
                 { "hardware ethernet": board_config['cm_mac'],
-                     "options": { "domain-name-servers": "%s" % self.prov_ip,
+                     "options": { "domain-name-servers": "%s" % tftp_server,
                                   "time-offset": "%s" % str(self.timezone)
                                 }
                 }
