@@ -132,21 +132,20 @@ class DebianBox(linux.LinuxDevice):
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
                     value = unicode(opt.replace('wan-static-ip:', ''))
-                    self.gw = ipaddress.IPv4Address(value.split('/')[0])
                     if '/' not in value:
                         value = value + (u'/24')
-                    # TODO: use IPv4 and IPv6 interface object everywhere in this class
                     self.gw_ng = ipaddress.IPv4Interface(value)
                     self.nw = self.gw_ng.network
                     self.gw_prefixlen = self.nw.prefixlen
+                    self.gw = self.gw_ng.ip
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
-                    if "/" in opt:
-                        ipv6_interface=ipaddress.IPv6Interface(unicode(opt.replace('wan-static-ipv6:', '')))
-                        self.gwv6 = ipv6_interface.ip
-                        self.ipv6_prefix = ipv6_interface._prefixlen
-                    else:
-                        self.gwv6 = ipaddress.IPv6Address(unicode(opt.replace('wan-static-ipv6:', '')))
+                    ipv6_address = opt.replace('wan-static-ipv6:', '')
+                    if "/" not in opt:
+                        ipv6_address += self.ipv6_prefix
+                    self.ipv6_interface=ipaddress.IPv6Interface(unicode(opt.replace('wan-static-ipv6:', '')))
+                    self.ipv6_prefix = ipv6_interface._prefixlen
+                    self.gwv6 = ipv6_interface.ip
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
