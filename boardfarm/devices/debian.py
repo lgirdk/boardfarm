@@ -131,7 +131,7 @@ class DebianBox(linux.LinuxDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    value = unicode(opt.replace('wan-static-ip:', ''))
+                    value = opt.replace('wan-static-ip:', '')
                     self.gw = ipaddress.IPv4Address(value.split('/')[0])
                     if '/' not in value:
                         value = value + (u'/24')
@@ -142,11 +142,11 @@ class DebianBox(linux.LinuxDevice):
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
                     if "/" in opt:
-                        ipv6_interface=ipaddress.IPv6Interface(unicode(opt.replace('wan-static-ipv6:', '')))
+                        ipv6_interface=ipaddress.IPv6Interface(opt.replace('wan-static-ipv6:', ''))
                         self.gwv6 = ipv6_interface.ip
                         self.ipv6_prefix = ipv6_interface._prefixlen
                     else:
-                        self.gwv6 = ipaddress.IPv6Address(unicode(opt.replace('wan-static-ipv6:', '')))
+                        self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
@@ -161,7 +161,7 @@ class DebianBox(linux.LinuxDevice):
                 if opt == 'wan-dhcp-client-v6':
                     self.wan_dhcpv6 = True
                 if opt.startswith('mgmt-dns:'):
-                    value = unicode(opt.replace('mgmt-dns:', ''))
+                    value = opt.replace('mgmt-dns:', '')
                     self.mgmt_dns = ipaddress.IPv4Address(value.split('/')[0])
 
         try:
