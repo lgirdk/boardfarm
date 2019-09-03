@@ -16,7 +16,7 @@ import re
 import ipaddress
 
 from selenium import webdriver
-from selenium.webdriver.common.proxy import *
+from selenium.webdriver.common import proxy
 
 ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
@@ -449,7 +449,6 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
         extra_arg = ' -On '
         oid = parser.get_mib_oid(mib_name)
         mib_oid = oid +  '.'+index
-        escaped_oid = re.escape(oid) + '\.' + str(index)
 
     device.sendline("snmpget -v 2c " + extra_arg + " -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+ oid +"."+str(index))
     idx = device.expect(['Timeout: No Response from'] + [mib_oid+'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
