@@ -68,7 +68,7 @@ def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithm
 def telnet_service_verify(device, dest_device, ip, opts=""):
     device.sendline("telnet%s %s" %(opts, ip))
     try:
-        device.expect(["Username:"], timeout=60)
+        device.expect(["Username:"] + ["login:"], timeout=60)
         device.sendline(dest_device.username)
         device.expect(["assword:"])
         device.sendline(dest_device.password)
