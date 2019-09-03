@@ -194,7 +194,7 @@ class DebianBox(linux.LinuxDevice):
             ipaddr = self.ipaddr = self.before.strip()
 
         self.sendline('alias mgmt')
-        idx = self.expect(['alias mgmt=', pexpect.TIMEOUT], timeout=10)
+        idx = self.expect(['alias mgmt=', 'alias: mgmt: not found', pexpect.TIMEOUT], timeout=10)
         if idx == 0:
             self.expect(self.prompt)
             self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
