@@ -11,12 +11,12 @@ new_tests () {
 }
 
 features () {
-	feature=$(git show | sed -n 's/\s*Features:\s*\(.*\)$/\1/p' | tr '\n' ' ')
+	feature=$(git log $1...HEAD | sed -n 's/\s*Features\?:\s*\(.*\)$/\1/p' | tr '\n' ' ')
 	if [ -n "$feature" ]; then
 		echo -n "-q $feature"
 	fi
 }
 
-result="$(new_tests $1)"
+result="$(new_tests $1)$(features $1)"
 
 [ "$result" != "" ] && echo "$result"
