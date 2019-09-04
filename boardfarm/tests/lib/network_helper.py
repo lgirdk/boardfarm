@@ -6,13 +6,14 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from netaddr import *
 import re
+
+import netaddr
 import ipaddress
 
 def mac_to_snmp_format(mac_addr):
     mac_tmp = re.sub("[\s\.\-]", "", mac_addr)
-    mac = EUI(mac_tmp, dialect=mac_unix)
+    mac = netaddr.EUI(mac_tmp, dialect=netaddr.mac_unix)
     mac_final = str(mac).upper()
 
     return mac_final
