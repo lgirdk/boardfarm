@@ -455,7 +455,7 @@ EOF'''
 
         if 'tftp_cfg_files' in board_config:
             for cfg in board_config['tftp_cfg_files']:
-                from docsis_lib.docsis import cm_cfg
+                from docsis_lib.docsis import cm_cfg, mta_cfg
                 if isinstance(cfg, cm_cfg) or isinstance(cfg, mta_cfg):
                     cfg_list.append(cfg)
                 else:
