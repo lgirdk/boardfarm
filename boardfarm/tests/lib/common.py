@@ -17,6 +17,8 @@ import ipaddress
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
+from installers import install_pysnmp
+from regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
 ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
@@ -556,3 +558,34 @@ echo same \=\>n,Wait\(20\)
 )>> /etc/asterisk/extensions.conf'''
         device.sendline(num_mod)
         device.expect(device.prompt)
+
+def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=100):
+    '''
+    Function to do a snmp walk using asyncore script
+    '''
+    if re.search(ValidIpv4AddressRegex,ip_address):
+        mode = 'ipv4'
+    elif re.search(AllValidIpv6AddressesRegex, ip_address):
+        mode = 'ipv6'
+    install_pysnmp(device)
+    asyncore_script = 'asyncore_snmp.py'
+    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/'+asyncore_script)
+    dest = asyncore_script
+    device.copy_file_to_server(fname, dest)
+    device.sendline('python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
+    device.expect(device.prompt, timeout=time_out)
+    device.sendline('rm %s' % asyncore_script)
+    device.expect(device.prompt)
+    device.sendline('ls -l snmp_output.txt --block-size=kB')
+    device.expect(['.*\s+(\d+)kB'])
+    file_size = device.match.group(1)
+    device.expect(device.prompt)
+    if file_size != '0':
+        device.sendline('tail snmp_output.txt')
+        idx = device.expect("No more variables left in this MIB View")
+        if idx == 0:
+            device.sendline('rm snmp_output.txt')
+            device.expect(device.prompt)
+            return True
+    else:
+        return False
