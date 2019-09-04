@@ -6,3 +6,5 @@
 # The full text can be found in LICENSE in the root directory.
 
 from version import __version__
+
+from Boardfarm import Boardfarm

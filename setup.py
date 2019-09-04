@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
-import boardfarm
+# Get version without importing boardfarm because
+# dependencies may not be installed yet
+import os
+g, ver = {}, {}
+with open(os.path.join("boardfarm","version.py")) as f:
+    exec(f.read(), g, ver)
 
 from setuptools import setup, find_packages
 
 setup(name='boardfarm',
-      version=boardfarm.__version__,
+      version=ver['__version__'],
       description='Automated testing of network devices',
       author='Various',
       url='https://github.com/lgirdk/boardfarm',
