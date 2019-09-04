@@ -345,7 +345,7 @@ def main():
     def add_to_combined_list(log, name, combined_list=combined_list):
         for line in log.split('\r\n'):
             try:
-                if line is '':
+                if line == '':
                     continue
                 if line.startswith('\n'):
                     line = line[1:]
