@@ -1,7 +1,13 @@
 new_tests () {
 	foo=
 
-	for t in `git diff $1...HEAD -U0 tests | grep -v '^-' | grep -v __class__ | sed -n 's/.*class\s\+\(.*\)(.*/\1/p' | grep -v super\(`; do
+	if [ -d "tests" ]; then
+		dir="tests"
+	else
+		dir="boardfarm/tests"
+	fi
+
+	for t in `git diff $1...HEAD -U0 $dir | grep -v '^-' | grep -v __class__ | sed -n 's/.*class\s\+\(.*\)(.*/\1/p' | grep -v super\(`; do
 		foo="$foo $t $(git grep "^class.*($t)" | grep -v ^devices | sed -n 's/.*py:class \([^(]*\)(.*):/\1/p')"
 	done
 
