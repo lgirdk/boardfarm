@@ -112,7 +112,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         common.print_bold("\n===== Flashing linux =====\n")
 
         filename = self.prepare_file(KERNEL)
-        size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
+        self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
 
         self.kernel_file = os.path.basename(KERNEL)
         self.sendline('fatwrite mmc 0 %s %s $filesize' % (self.kernel_file, self.uboot_ddr_addr))

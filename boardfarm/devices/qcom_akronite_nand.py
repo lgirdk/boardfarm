@@ -34,7 +34,7 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         '''Flash Universal Bootloader image.'''
         common.print_bold("\n===== Flashing u-boot =====\n")
         filename = self.prepare_file(uboot)
-        size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
+        self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
         self.sendline('ipq_nand sbl')
         self.expect(self.uprompt)
         self.nand_flash_bin(self.uboot_addr, self.uboot_size, self.uboot_ddr_addr)
@@ -46,12 +46,12 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         common.print_bold("\n===== Flashing rootfs =====\n")
         filename = self.prepare_file(ROOTFS)
 
-        size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
+        self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
         self.nand_flash_bin(self.rootfs_addr, self.rootfs_size, self.uboot_ddr_addr)
 
     def flash_linux(self, KERNEL):
         common.print_bold("\n===== Flashing linux =====\n")
-        filename = self.prepare_file(KERNEL)
+        self.prepare_file(KERNEL)
 
         raise Exception("Kernel is in UBI rootfs, not separate")
 
