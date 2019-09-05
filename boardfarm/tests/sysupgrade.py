@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-import lib
+from boardfarm import lib
 from devices import board, wan, lan, wlan, prompt
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):

@@ -16,7 +16,7 @@ import rootfs_boot
 from devices import board, wan, lan, wlan, prompt
 import os
 import pexpect
-import lib
+from boardfarm import lib
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -273,7 +273,7 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
             self.logged[test.name] = vars(test)
 
             if str(test.name) not in ["start", "final"]:
-                from lib.common import TestResult
+                from boardfarm.lib.common import TestResult
                 try:
                     grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[test.result]
                     tr = TestResult(test.name, grade_map, test.description)

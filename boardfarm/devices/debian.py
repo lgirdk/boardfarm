@@ -764,6 +764,6 @@ if __name__ == '__main__':
     if sys.argv[2] == "test_voip":
         sys.path.insert(0, os.getcwd())
         sys.path.insert(0, os.getcwd() + '/tests')
-        from lib import installers
+        from boardfarm.lib import installers
 
         installers.install_asterisk(dev)

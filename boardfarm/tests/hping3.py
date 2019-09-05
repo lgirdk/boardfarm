@@ -1,7 +1,7 @@
 import rootfs_boot
 import pexpect
 
-from lib.installers import install_hping3
+from boardfarm.lib.installers import install_hping3
 
 from devices import board, prompt, wan, lan
 

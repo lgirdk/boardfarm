@@ -1,5 +1,5 @@
 import rootfs_boot
-import lib
+from boardfarm import lib
 
 class selftest_fake_test(rootfs_boot.RootFSBootTest):
     '''

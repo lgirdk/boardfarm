@@ -1,7 +1,7 @@
 import ipaddress
 import os
 import pexpect
-from lib.regexlib import ValidIpv4AddressRegex
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 import re
 import glob
 

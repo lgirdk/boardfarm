@@ -7,13 +7,13 @@
 
 import time
 import unittest2
-import lib
+from boardfarm import lib
 import sys
 import traceback
 import time
 
 from devices import board, wan, lan, wlan, prompt
-from lib.bft_logging import LoggerMeta, now_short
+from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
     _testMethodName = "UNDEFINED"

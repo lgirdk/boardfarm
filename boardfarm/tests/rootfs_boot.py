@@ -7,7 +7,7 @@
 
 import time
 import linux_boot
-import lib
+from boardfarm import lib
 
 from devices import board, wan, lan, prompt
 

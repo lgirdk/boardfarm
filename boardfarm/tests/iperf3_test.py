@@ -7,7 +7,7 @@
 
 import re
 import rootfs_boot
-from lib import installers
+from boardfarm.lib import installers
 from devices import board, wan, lan, wlan, prompt
 
 try:

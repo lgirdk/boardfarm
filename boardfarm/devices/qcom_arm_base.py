@@ -8,7 +8,7 @@
 import common
 import openwrt_router
 
-from lib.randomMAC import randomMAC
+from boardfarm.lib.randomMAC import randomMAC
 
 class QcomArmBase(openwrt_router.OpenWrtRouter):
 

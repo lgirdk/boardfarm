@@ -17,6 +17,7 @@ import ipaddress
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
+from boardfarm.library import print_bold
 from installers import install_pysnmp
 from regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
@@ -190,7 +191,7 @@ class TestResult:
 
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
 
-from library import print_bold
+
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
     '''
     Starts a simple web service on a specified port,

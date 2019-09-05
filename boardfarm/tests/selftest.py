@@ -1,11 +1,11 @@
 import rootfs_boot
-import lib
+from boardfarm import lib
 import hashlib
 import random
 import string
 import os
 import tempfile
-from lib import SnmpHelper
+from boardfarm.lib import SnmpHelper
 
 from devices import board, wan, lan, wlan, common
 
@@ -373,8 +373,8 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
 
     def runTest(self):
 
-        from lib.installers import install_snmp, install_snmpd
-        from lib.common import snmp_mib_get
+        from boardfarm.lib.installers import install_snmp, install_snmpd
+        from boardfarm.lib.common import snmp_mib_get
 
         wrong_mibs = ['PsysDescr', 'sys123ObjectID', 'sysServiceS']
         linux_mibs = ['sysDescr',\
