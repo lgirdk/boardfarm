@@ -63,8 +63,8 @@ class DebianBox(linux.LinuxDevice):
         post_cmd = kwargs.pop('post_cmd', None)
         cleanup_cmd = kwargs.pop('cleanup_cmd', None)
         env = kwargs.pop('env', None)
-        lan_network = kwargs.pop('lan_network', ipaddress.IPv4Network(u"192.168.1.0/24"))
-        lan_gateway = kwargs.pop('lan_gateway', ipaddress.IPv4Address(u"192.168.1.1"))
+        lan_network = ipaddress.IPv4Interface(unicode(kwargs.pop('lan_network', "192.168.1.0/24"))).network
+        lan_gateway = ipaddress.IPv4Interface(unicode(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
 
         self.http_proxy = kwargs.pop('http_proxy', None)
 
@@ -122,7 +122,7 @@ class DebianBox(linux.LinuxDevice):
             else:
                 self.gw = lan_gateway + lan_network.num_addresses
 
-        self.gw_ng = ipaddress.IPv4Interface(str(self.gw).decode('utf-8') + '/' + str(lan_network.netmask))
+        self.gw_ng = ipaddress.IPv4Interface(unicode(str(self.gw) + '/' + str(lan_network.prefixlen)))
         self.nw = self.gw_ng.network
         self.gw_prefixlen = self.nw.prefixlen
 
@@ -131,22 +131,21 @@ class DebianBox(linux.LinuxDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    value = opt.replace('wan-static-ip:', '')
-                    self.gw = ipaddress.IPv4Address(value.split('/')[0])
+                    value = unicode(opt.replace('wan-static-ip:', ''))
                     if '/' not in value:
                         value = value + (u'/24')
-                    # TODO: use IPv4 and IPv6 interface object everywhere in this class
                     self.gw_ng = ipaddress.IPv4Interface(value)
                     self.nw = self.gw_ng.network
-                    self.gw_prefixlen = self.nw.prefixlen
+                    self.gw_prefixlen = self.nw._prefixlen
+                    self.gw = self.gw_ng.ip
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
-                    if "/" in opt:
-                        ipv6_interface=ipaddress.IPv6Interface(opt.replace('wan-static-ipv6:', ''))
-                        self.gwv6 = ipv6_interface.ip
-                        self.ipv6_prefix = ipv6_interface._prefixlen
-                    else:
-                        self.gwv6 = ipaddress.IPv6Address(opt.replace('wan-static-ipv6:', ''))
+                    ipv6_address = unicode(opt.replace('wan-static-ipv6:', ''))
+                    if "/" not in opt:
+                        ipv6_address += "/%s" % unicode(str(self.ipv6_prefix))
+                    self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
+                    self.ipv6_prefix = self.ipv6_interface._prefixlen
+                    self.gwv6 = self.ipv6_interface.ip
                 if opt.startswith('wan-static-route:'):
                     self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
@@ -161,8 +160,8 @@ class DebianBox(linux.LinuxDevice):
                 if opt == 'wan-dhcp-client-v6':
                     self.wan_dhcpv6 = True
                 if opt.startswith('mgmt-dns:'):
-                    value = opt.replace('mgmt-dns:', '')
-                    self.mgmt_dns = ipaddress.IPv4Address(value.split('/')[0])
+                    value = unicode(opt.replace('mgmt-dns:', ''))
+                    self.mgmt_dns = ipaddress.IPv4Interface(value).ip
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
@@ -477,13 +476,14 @@ class DebianBox(linux.LinuxDevice):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         import config
         hosts={}
-        for device in config.board['devices']:
-            if 'ipaddr' in device:
-                domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
-                device = getattr(config, device['name'])
-                if not hasattr(device, 'ipaddr'):
-                    continue
-                hosts[domain_name] = str(device.ipaddr)
+        if hasattr(config, "board"):
+            for device in config.board['devices']:
+                if 'ipaddr' in device:
+                    domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
+                    device = getattr(config, device['name'])
+                    if not hasattr(device, 'ipaddr'):
+                        continue
+                    hosts[domain_name] = str(device.ipaddr)
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
             for host, ip in hosts.iteritems():
