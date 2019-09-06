@@ -23,7 +23,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
        self.set_link_state(self.iface_wifi, "up")
 
     def wifi_scan(self):
-        from tests.lib.installers import install_iw
+        from boardfarm.lib.installers import install_iw
         install_iw(self)
 
         self.sudo_sendline('iw %s scan | grep SSID:' % self.iface_wifi)
@@ -31,7 +31,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         return self.before
 
     def wifi_check_ssid(self, ssid_name):
-        from tests.lib.installers import install_iw
+        from boardfarm.lib.installers import install_iw
         install_iw(self)
 
         self.sudo_sendline('iw %s scan | grep "SSID: %s"' % (self.iface_wifi, ssid_name))
