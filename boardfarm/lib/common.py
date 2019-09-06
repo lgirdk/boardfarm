@@ -560,7 +560,7 @@ echo same \=\>n,Wait\(20\)
         device.sendline(num_mod)
         device.expect(device.prompt)
 
-def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=100):
+def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200):
     '''
     Function to do a snmp walk using asyncore script
     '''
@@ -573,7 +573,7 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
     fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/'+asyncore_script)
     dest = asyncore_script
     device.copy_file_to_server(fname, dest)
-    device.sendline('python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
+    device.sendline('time python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
     device.expect(device.prompt, timeout=time_out)
     device.sendline('rm %s' % asyncore_script)
     device.expect(device.prompt)
