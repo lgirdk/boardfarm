@@ -437,7 +437,8 @@ EOF'''
             board_config['extra_provisioning']["erouter"] = \
                 { "hardware ethernet": board_config['erouter_mac'],
                   "default-lease-time" : self.default_lease_time,
-                  "max-lease-time": self.max_lease_time
+                  "max-lease-time": self.max_lease_time,
+                      "options": { "domain-name-servers": "%s" % tftp_server}
                 }
 
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
