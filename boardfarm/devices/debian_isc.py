@@ -347,7 +347,7 @@ EOF'''
         to_send = to_send.replace('###OPEN_BROADCAST###', str(self.open_network[-1]))
         to_send = to_send.replace('###TIMEZONE###', str(self.timezone))
 
-        to_send = to_send.replace('###WAN_IP###', tftp_server)
+        to_send = to_send.replace('###WAN_IP###', str(tftp_server))
 
         self.sendline(to_send)
         self.expect(self.prompt)
