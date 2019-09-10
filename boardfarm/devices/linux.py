@@ -295,3 +295,20 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         memFree = self.match.group(1)
         self.expect(self.prompt)
         return int(memFree)
+
+    def start_tinyproxy(self):
+        # TODO: determine which config file is the correct one... but for now just modify both
+        for f in ['/etc/tinyproxy.conf', '/etc/tinyproxy/tinyproxy.conf']:
+            self.sendline("sed -i 's/^Port 8888/Port 8080/' %s" % f)
+            self.expect(self.prompt)
+            self.sendline("sed 's/#Allow/Allow/g' -i %s" % f)
+            self.expect(self.prompt)
+            self.sendline("sed '/Listen/d' -i %s" % f)
+            self.expect(self.prompt)
+            self.sendline('echo "Listen 0.0.0.0" >> %s' % f)
+            self.expect(self.prompt)
+            self.sendline('echo "Listen ::" >> %s' % f)
+            self.expect(self.prompt)
+        self.sendline('/etc/init.d/tinyproxy restart')
+        self.expect('Restarting')
+        self.expect(self.prompt)

@@ -603,6 +603,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
         self.expect(self.prompt)
 
+
     def start_lan_client(self, wan_gw=None):
         # very casual try for ipv6 addr, if we don't get one don't fail for now
         try:
@@ -690,21 +691,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('nmap --version')
         self.expect(self.prompt)
-        # TODO: determine which config file is the correct one... but for now just modify both
-        for f in ['/etc/tinyproxy.conf', '/etc/tinyproxy/tinyproxy.conf']:
-            self.sendline("sed -i 's/^Port 8888/Port 8080/' %s" % f)
-            self.expect(self.prompt)
-            self.sendline("sed 's/#Allow/Allow/g' -i %s" % f)
-            self.expect(self.prompt)
-            self.sendline("sed '/Listen/d' -i %s" % f)
-            self.expect(self.prompt)
-            self.sendline('echo "Listen 0.0.0.0" >> %s' % f)
-            self.expect(self.prompt)
-            self.sendline('echo "Listen ::" >> %s' % f)
-            self.expect(self.prompt)
-        self.sendline('/etc/init.d/tinyproxy restart')
-        self.expect('Restarting')
-        self.expect(self.prompt)
+        self.start_tinyproxy()
         # Write a useful ssh config for routers
         self.sendline('mkdir -p ~/.ssh')
         self.sendline('cat > ~/.ssh/config << EOF')
