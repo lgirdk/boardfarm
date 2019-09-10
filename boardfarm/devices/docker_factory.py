@@ -41,7 +41,7 @@ class DockerFactory(linux.LinuxDevice):
                                              '-o', 'ServerAliveInterval=60',
                                              '-o', 'ServerAliveCountMax=5'])
         else:
-            pexpect.spawn.__init__(self, command='bash', env=self.env)
+            pexpect.spawn.__init__(self, command='bash --noprofile --norc', env=self.env)
             self.ipaddr = 'localhost'
 
         if 'BFT_DEBUG' in os.environ:
