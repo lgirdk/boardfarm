@@ -12,4 +12,4 @@ class OOMAnalysis(analysis.Analysis):
     '''Parse logs for OOM kernel events'''
     def analyze(self, console_log, output_dir):
         if len(re.findall('Out of memory', console_log)):
-            print 'ERROR: log had out of memory condition'
+            print('ERROR: log had out of memory condition')
