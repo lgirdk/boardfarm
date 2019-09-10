@@ -116,3 +116,63 @@ def get_value_from_disabled_input(web_gui, get_value):
     js="return document.getElementById(\"{!s}\").value;".format(str(get_value))
     text_value = web_gui.execute_script(js)
     return str(text_value)
+
+def get_icon_check_value_by_id(web_gui, get_value):
+    try:
+        #To get icon button value
+        icon_button = web_gui.find_elements_by_id(get_value)
+        for iconbutton in icon_button:
+            icon = iconbutton.get_attribute('src')
+            if "icon-check.svg" in icon:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
+
+def get_icon_check_value_by_xpath(web_gui, get_value):
+    try:
+        #To get icon button value
+        icon_button = web_gui.find_elements_by_xpath(get_value)
+        for iconbutton in icon_button:
+            icon = iconbutton.get_attribute('src')
+            if "icon-check.svg" in icon:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
+
+def check_element_is_enable_by_id(web_gui, check_value):
+    try:
+        text_button = web_gui.find_element_by_id(check_value)
+        text_value=text_button.is_enabled()
+        return text_value
+    except NoSuchElementException:
+        return None
+
+def get_check_box_value_by_id(web_gui, get_value):
+    try:
+        #To get icon button value
+        box_button = web_gui.find_elements_by_id(get_value)
+        for boxbutton in box_button:
+            box = boxbutton.get_attribute('src')
+            if "check-box-checked.png" in box:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
+
+def get_check_box_value_by_xpath(web_gui, get_value):
+    try:
+        #To get icon button value
+        box_button = web_gui.find_elements_by_xpath(get_value)
+        for boxbutton in box_button:
+            box = boxbutton.get_attribute('src')
+            if "check-box-checked.png" in box:
+                return True
+            else:
+                return False
+    except NoSuchElementException:
+        return None
