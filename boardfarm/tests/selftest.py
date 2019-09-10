@@ -208,9 +208,9 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         print("ping status is %s" % ping_check)
 
         #disable ipv6
-        ipv6_disable = lan.disable_ipv6(lan.iface_dut)
+        lan.disable_ipv6(lan.iface_dut)
         #enable ipv6
-        ipv6_enable = lan.enable_ipv6(lan.iface_dut)
+        lan.enable_ipv6(lan.iface_dut)
         board.set_printk()
         print("Test passed")
 
@@ -351,7 +351,7 @@ class SnmpMibsUnitTest(object):
             try:
                 oid = self.snmp_obj.get_mib_oid(i)
                 print('mib: %s - oid=%s' % (i, oid))
-            except Exception as e:
+            except Exception:
                 #we shoudl NOT find only the errored mibs, all other mibs MUST be found
                 assert(i in self.error_mibs), "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
