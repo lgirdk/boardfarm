@@ -96,7 +96,6 @@ def bf_node(cls_list, model, **kwargs):
     '''
     cls_name = "_".join([cls.__name__ for cls in cls_list])
     cls_members = []
-
     '''Need to ensure that profile does not have members which override
     the base_cls implementation.'''
     temp = []
@@ -127,6 +126,7 @@ def bf_node(cls_list, model, **kwargs):
 def get_device(model, **kwargs):
     profile = kwargs.get("profile", {})
     cls_list = []
+    profile_list=[]
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__:
@@ -148,7 +148,7 @@ def get_device(model, **kwargs):
 
                 if profile_exists:
                     if dev not in cls_list:
-                        cls_list.append(dev)
+                        profile_list.append(dev)
                     else:
                         print("Skipping duplicate device type: %s" % attr)
                         continue
@@ -161,6 +161,8 @@ def get_device(model, **kwargs):
                     kwargs.update(profile_kwargs)
 
     try:
+        # to ensure profile always initializes after base class.
+        cls_list.extend(profile_list)
         if len(cls_list) == 0:
             raise Exception("Unable to spawn instance of model: %s" % model)
         return bf_node(cls_list, model, **kwargs)
