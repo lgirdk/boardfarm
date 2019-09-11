@@ -425,7 +425,6 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
         extra_arg = ' -On '
         oid = parser.get_mib_oid(mib_name)
         mib_oid = '.' +oid +  '.'+index
-
     if set_type == "i" or set_type == "a" or set_type == "u" or set_type == "s":
         device.sendline("snmpset -v 2c " +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+str(set_value))
         if set_type != "s":
@@ -435,7 +434,7 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
     elif set_type == "x":
         device.sendline("snmpset -v 2c -Ox" +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+set_value)
         """trimming the prefix 0x , since snmp will return in that format"""
-        if len(set_value) == 10:
+        if "0x" in set_value.lower():
             set_value = set_value[2:]
         set_value_hex = set_value.upper()
         set_value_output = ' '.join([set_value_hex[i:i+2] for i in range(0, len(set_value_hex), 2)])
