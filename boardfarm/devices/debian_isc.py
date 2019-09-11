@@ -104,8 +104,9 @@ option docsis.PKTCBL-CCCV4 code 2170 = { integer 16, integer 16, ip-address, int
 option vsio.docsis code 4491 = encapsulate docsis;
 
 # TODO: move to host section
-#option dhcp6.aftr-name "";
-#option dhcp6.name-servers 2001:730:1f:60a::cafe:106;
+option dhcp6.aftr-name  code 64 = string ;
+# aftr-name aftr.boardfarm.com
+option dhcp6.aftr-name 04:61:66:74:72:09:62:6f:61:72:64:66:61:72:6d:03:63:6F:6D:00;
 option dhcp6.name-servers ###PROV_IPV6###;
 option dhcp6.domain-search "boardfarm.com";
 
@@ -439,14 +440,24 @@ EOF'''
                   "max-lease-time": self.max_lease_time
                 }
 
+        tftp_server = self.tftp_device.tftp_server_ipv6_int()
+
         # DHCPv6 defaults for when board does not supply defaults
         if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning_v6']:
             board_config['extra_provisioning_v6']["cm"] = \
                 { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
-                  "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname } }
+                  "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
+                      "dhcp6.name-servers" : "%s" % tftp_server
+                    }
+                }
         if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning_v6']:
             board_config['extra_provisioning_v6']["erouter"] = \
-                { "hardware ethernet": board_config['erouter_mac'] }
+                { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['erouter_mac'],
+                    "hardware ethernet": board_config['erouter_mac'],
+                    "options": {
+                        "dhcp6.name-servers" : "%s" % tftp_server
+                    }
+                }
 
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
