@@ -421,6 +421,11 @@ class DebianBox(linux.LinuxDevice):
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
+        # this needs to be more fine-grained controlled.
+        # also it needs to have args handling.
+        if hasattr(self,"profile"):
+            self.profile["on_boot"]()
+
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
             self.send('ip route del %s; ' % self.static_route.split(' via ')[0])
@@ -475,7 +480,10 @@ class DebianBox(linux.LinuxDevice):
     def add_hosts(self):
         #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         import config
+        # this is a hack, the add_host should have been called from RootFs
         hosts={}
+        if hasattr(self,"profile"):
+            hosts.update(self.profile["hosts"])
         if hasattr(config, "board"):
             for device in config.board['devices']:
                 if 'ipaddr' in device:
