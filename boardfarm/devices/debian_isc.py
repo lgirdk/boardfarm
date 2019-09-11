@@ -24,38 +24,38 @@ class DebianISCProvisioner(debian.DebianBox):
 
     def __init__(self, *args, **kwargs):
 
-        self.cm_network = ipaddress.IPv4Network(kwargs.pop('cm_network', u"192.168.200.0/24"))
-        self.cm_gateway = ipaddress.IPv4Address(kwargs.pop('cm_gateway', u"192.168.200.1"))
-        self.mta_network = ipaddress.IPv4Network(kwargs.pop('mta_network', u"192.168.201.0/24"))
-        self.mta_gateway = ipaddress.IPv4Address(kwargs.pop('mta_gateway', u"192.168.201.1"))
-        self.open_network = ipaddress.IPv4Network(kwargs.pop('open_network', u"192.168.202.0/24"))
-        self.open_gateway = ipaddress.IPv4Address(kwargs.pop('open_gateway', u"192.168.202.1"))
-        self.prov_network = ipaddress.IPv4Network(kwargs.pop('prov_network', u"192.168.3.0/24"))
-        self.prov_gateway = ipaddress.IPv4Address(kwargs.pop('prov_gateway', u"192.168.3.222"))
-        self.prov_ip = ipaddress.IPv4Address(kwargs.pop('prov_ip', u"192.168.3.1"))
+        self.cm_network = ipaddress.IPv4Network(unicode(kwargs.pop('cm_network', "192.168.200.0/24")))
+        self.cm_gateway = ipaddress.IPv4Address(unicode(kwargs.pop('cm_gateway', "192.168.200.1")))
+        self.mta_network = ipaddress.IPv4Network(unicode(kwargs.pop('mta_network', "192.168.201.0/24")))
+        self.mta_gateway = ipaddress.IPv4Address(unicode(kwargs.pop('mta_gateway', "192.168.201.1")))
+        self.open_network = ipaddress.IPv4Network(unicode(kwargs.pop('open_network', "192.168.202.0/24")))
+        self.open_gateway = ipaddress.IPv4Address(unicode(kwargs.pop('open_gateway', "192.168.202.1")))
+        self.prov_network = ipaddress.IPv4Network(unicode(kwargs.pop('prov_network', "192.168.3.0/24")))
+        self.prov_gateway = ipaddress.IPv4Address(unicode(kwargs.pop('prov_gateway', "192.168.3.222")))
+        self.prov_ip = ipaddress.IPv4Address(unicode(kwargs.pop('prov_ip', "192.168.3.1")))
 
-        self.prov_iface = ipaddress.IPv6Interface(kwargs.pop('prov_ipv6', u"2001:dead:beef:1::1/%s" % self.ipv6_prefix))
+        self.prov_iface = ipaddress.IPv6Interface(unicode(kwargs.pop('prov_ipv6', "2001:dead:beef:1::1/%s" % self.ipv6_prefix)))
         self.prov_ipv6, self.prov_nw_ipv6 = self.prov_iface.ip, self.prov_iface.network
 
-        self.cm_gateway_v6_iface = ipaddress.IPv6Interface(kwargs.pop('cm_gateway_v6', u"2001:dead:beef:4::cafe/%s" % self.ipv6_prefix))
+        self.cm_gateway_v6_iface = ipaddress.IPv6Interface(unicode(kwargs.pop('cm_gateway_v6', "2001:dead:beef:4::cafe/%s" % self.ipv6_prefix)))
         self.cm_gateway_v6, self.cm_network_v6 = self.cm_gateway_v6_iface.ip, self.cm_gateway_v6_iface.network
-        self.cm_network_v6_start = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_start', u"2001:dead:beef:4::10"))
-        self.cm_network_v6_end = ipaddress.IPv6Address(kwargs.pop('cm_network_v6_end', u"2001:dead:beef:4::100"))
-        self.open_gateway_iface = ipaddress.IPv6Interface(kwargs.pop('open_gateway_v6', u"2001:dead:beef:6::cafe/%s" % self.ipv6_prefix))
+        self.cm_network_v6_start = ipaddress.IPv6Address(unicode(kwargs.pop('cm_network_v6_start', "2001:dead:beef:4::10")))
+        self.cm_network_v6_end = ipaddress.IPv6Address(unicode(kwargs.pop('cm_network_v6_end', "2001:dead:beef:4::100")))
+        self.open_gateway_iface = ipaddress.IPv6Interface(unicode(kwargs.pop('open_gateway_v6', "2001:dead:beef:6::cafe/%s" % self.ipv6_prefix)))
         self.open_gateway_v6, self.open_network_v6 = self.open_gateway_iface.ip, self.open_gateway_iface.network
-        self.open_network_v6_start = ipaddress.IPv6Address(kwargs.pop('open_network_v6_start', u"2001:dead:beef:6::10"))
-        self.open_network_v6_end = ipaddress.IPv6Address(kwargs.pop('open_network_v6_end', u"2001:dead:beef:6::100"))
-        self.prov_gateway_v6 = ipaddress.IPv6Address(kwargs.pop('prov_gateway_v6', u"2001:dead:beef:1::cafe"))
+        self.open_network_v6_start = ipaddress.IPv6Address(unicode(kwargs.pop('open_network_v6_start', "2001:dead:beef:6::10")))
+        self.open_network_v6_end = ipaddress.IPv6Address(unicode(kwargs.pop('open_network_v6_end', "2001:dead:beef:6::100")))
+        self.prov_gateway_v6 = ipaddress.IPv6Address(unicode(kwargs.pop('prov_gateway_v6', "2001:dead:beef:1::cafe")))
 
         # we're storing a list of all /56 subnets possible from erouter_net_iface.
         # As per docsis, /56 must be the default pd length
-        self.erouter_net_iface = ipaddress.IPv6Interface(kwargs.pop('erouter_net', u"2001:dead:beef:e000::/51"))
+        self.erouter_net_iface = ipaddress.IPv6Interface(unicode(kwargs.pop('erouter_net', "2001:dead:beef:e000::/51")))
         self.erouter_net = list(self.erouter_net_iface.network.subnets(56-self.erouter_net_iface._prefixlen))
 
         self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
-        self.time_server = ipaddress.IPv4Address(kwargs.pop('time_server', self.prov_ip))
-        self.timezone = self.get_timzone_offset(kwargs.pop('timezone', u"UTC"))
-        self.syslog_server = ipaddress.IPv4Address(kwargs.pop('syslog_server', self.prov_ip))
+        self.time_server = ipaddress.IPv4Address(unicode(kwargs.pop('time_server', str(self.prov_ip))))
+        self.timezone = self.get_timzone_offset(unicode(kwargs.pop('timezone', "UTC")))
+        self.syslog_server = ipaddress.IPv4Address(unicode(kwargs.pop('syslog_server', str(self.prov_ip))))
         if 'options' in kwargs:
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
