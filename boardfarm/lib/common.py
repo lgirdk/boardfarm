@@ -105,7 +105,8 @@ def firefox_webproxy_driver(ipport, config):
     profile.set_preference("network.proxy.type", 1)
     profile.set_preference("network.proxy.http", ip)
     profile.set_preference("network.proxy.http_port", int(port))
-    # missing the ssl proxy, should we add it?
+    profile.set_preference("network.proxy.ssl", ip)
+    profile.set_preference("network.proxy.ssl_port", int(port))
     profile.set_preference("network.proxy.ftp", ip)
     profile.set_preference("network.proxy.ftp_port", int(port))
     profile.set_preference("network.proxy.socks", ip)
