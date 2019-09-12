@@ -187,9 +187,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         if self.username != "root":
             self.sendline("sudo true")
             if 0 == self.expect(["password for .*:"] + self.prompt):
-                 will_prompt_for_password = True
+                will_prompt_for_password = True
             else:
-                 will_prompt_for_password = False
+                will_prompt_for_password = False
 
             cmd = "sudo " + cmd
             if will_prompt_for_password:

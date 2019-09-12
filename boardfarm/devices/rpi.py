@@ -54,7 +54,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.expect('\r\n\s+\d+\s+(\d+)\s+(\d+).*0c( Boot)?\r\n')
         start = hex(int(self.match.groups()[0]))
         if (int(size) != int(self.match.groups()[1]) * 512):
-                raise Exception("Partition size does not match, refusing to flash")
+            raise Exception("Partition size does not match, refusing to flash")
         self.expect(self.uprompt)
         count = hex(int(size/512))
         self.sendline('mmc erase %s %s' % (start, count))

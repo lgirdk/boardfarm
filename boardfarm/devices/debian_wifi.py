@@ -13,14 +13,14 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.iface_dut = self.iface_wifi = self.kwargs.get('dut_interface', 'wlan1')
 
     def disable_and_enable_wifi(self):
-       self.disable_wifi()
-       self.enable_wifi()
+        self.disable_wifi()
+        self.enable_wifi()
 
     def disable_wifi(self):
-       self.set_link_state(self.iface_wifi, "down")
+        self.set_link_state(self.iface_wifi, "down")
 
     def enable_wifi(self):
-       self.set_link_state(self.iface_wifi, "up")
+        self.set_link_state(self.iface_wifi, "up")
 
     def wifi_scan(self):
         from boardfarm.lib.installers import install_iw

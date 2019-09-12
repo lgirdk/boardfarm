@@ -17,10 +17,10 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
              "ap148-beeliner", "ap160-1", "ap160-2", "ap161")
 
     machid_table = {"db149": "125b", "ap145": "12ca",
-	  "ap148": "1260", "ap148-beeliner": "1260",
-	  "ap148-osprey": "1260", "ap160-1": "136b",
-	  "ap160-2": "136b", "ap161": "136c",
-	  "dk04": "8010001"}
+          "ap148": "1260", "ap148-beeliner": "1260",
+          "ap148-osprey": "1260", "ap160-1": "136b",
+          "ap160-2": "136b", "ap161": "136c",
+          "dk04": "8010001"}
     uboot_ddr_addr = "0x42000000"
 
     def __init__(self, *args, **kwargs):

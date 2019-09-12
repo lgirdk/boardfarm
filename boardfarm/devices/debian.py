@@ -628,7 +628,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('\nifconfig %s up' % self.iface_dut)
         self.expect('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
-	self.sendline("dhclient -4 -r %s" % self.iface_dut)
+        self.sendline("dhclient -4 -r %s" % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('\nifconfig %s 0.0.0.0' % self.iface_dut)
         self.expect(self.prompt)
@@ -725,8 +725,8 @@ class DebianBox(linux.LinuxDevice):
 
         if wan_gw is not None and 'options' in self.kwargs and \
             'lan-fixed-route-to-wan' in self.kwargs['options']:
-                self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
-                self.expect(self.prompt)
+            self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
+            self.expect(self.prompt)
 
     def tftp_server_ip_int(self):
         '''Returns the DUT facing side tftp server ip'''
