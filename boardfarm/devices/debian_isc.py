@@ -668,3 +668,5 @@ EOF'''
     def get_ipv4_time_server(self):
         return self.time_server
 
+    def get_aftr_name(self):
+        return 'aftr.boardfarm.com'
