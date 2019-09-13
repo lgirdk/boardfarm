@@ -165,8 +165,7 @@ class SnmpMibs(object):
                 err = True
 
         if err:
-            import sys
-            sys.exit(3)
+            raise Exception("SnmpMibs failed to initialize.")
         else:
             print('# %d MIB modules compiled'%len(mib_dict))
 
