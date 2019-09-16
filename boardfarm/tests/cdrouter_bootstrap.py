@@ -7,7 +7,6 @@
 
 from cdrouter import CDRouter
 from cdrouter.configs import Config
-from cdrouter.cdrouter import CDRouterError
 from cdrouter.jobs import Job
 from cdrouter.packages import Package
 
@@ -16,7 +15,6 @@ import rootfs_boot
 from devices import board, wan, lan, wlan, prompt
 import os
 import pexpect
-from boardfarm import lib
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -289,7 +287,7 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
             # TODO: handle skipped tests
 
             try:
-                metric = c.results.get(result_id, test.name, "bandwidth")
+                metric = c.results.get(j.result_id, test.name, "bandwidth")
                 print(vars(metric))
                 # TODO: decide how to export data to kibana
             except:
@@ -323,30 +321,6 @@ testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
         if 0 != board.expect([pexpect.TIMEOUT] + board.uprompt, timeout=5):
             board.reset()
             board.wait_for_linux()
-
-    @staticmethod
-    @lib.common.run_once
-    def parse(config):
-        if hasattr(config, 'board') and 'cdrouter_server' in config.board:
-            cdrouter_server = config.board['cdrouter_server']
-        elif config.cdrouter_server is not None:
-            cdrouter_server = config.cdrouter_server
-        else:
-            return []
-
-        c = CDRouter(cdrouter_server)
-        cdrouter_test_matrix = {}
-        new_tests = []
-        for mod in c.testsuites.list_modules():
-            name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
-            list_of_tests = [ x.encode('ascii','ignore') for x in mod.tests ]
-            globals()[name] = type(name.encode('ascii','ignore') , (CDrouterStub, ),
-                                    {
-                                        'tests': list_of_tests
-                                    })
-            new_tests.append(name)
-
-        return new_tests
 
 class CDrouterCustom(CDrouterStub):
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
