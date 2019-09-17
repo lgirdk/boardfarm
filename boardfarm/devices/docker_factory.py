@@ -32,7 +32,7 @@ class DockerFactory(linux.LinuxDevice):
         self.docker_network = kwargs.pop('docker_network', None)
         env = self.env = kwargs.pop('env', None)
         self.name = kwargs.pop('name')
-        self.cname = self.name + self.env["uniq_id"]
+        self.cname = self.name + "-" +self.env["uniq_id"]
         self.username = kwargs.pop('username', 'root')
         self.password = kwargs.pop('password', 'bigfoot1')
 
@@ -91,39 +91,41 @@ class DockerFactory(linux.LinuxDevice):
             assert self.cname in self.before, "dynamically created docker network not found in list. network id - %s " % self.cname
             self.created_docker_network = True
 
-
-        from devices import get_device
         for target in kwargs.pop('targets'):
-            target_img = target['img']
-            target_type = target['type']
-            target_cname = target['name'] + '-${uniq_id}'
+            self.add_docker_node(target)
 
-            # TODO: check for docker image and build if needed/can
-            # TODO: move default command into Dockerfile
-            # TODO: list of ports to forward, http proxy port for example and ssh
-            self.sendline('docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D' % (target_cname, target_img))
+    def add_docker_node(self, target, docker_network=None):
+        target_img = target['img']
+        target_type = target['type']
+        target_cname = target['name'] + '-${uniq_id}'
+        docker_network = self.cname if docker_network is None else docker_network
+
+        # TODO: check for docker image and build if needed/can
+        # TODO: move default command into Dockerfile
+        # TODO: list of ports to forward, http proxy port for example and ssh
+        self.sendline('docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D' % (target_cname, target_img))
+        self.expect(self.prompt)
+        assert "Unable to find image" not in self.before, "Unable to find %s image!" % target_img
+        self.expect(pexpect.TIMEOUT, timeout=1)
+        self.sendline('docker network connect %s %s' % (docker_network, target_cname))
+        self.expect(self.prompt)
+        assert 'Error response from daemon' not in self.before, "Failed to connect docker network"
+        if self.created_docker_network == True:
+            self.sendline('docker exec %s ip address flush dev eth1' % target_cname)
             self.expect(self.prompt)
-            assert "Unable to find image" not in self.before, "Unable to find %s image!" % target_img
-            self.expect(pexpect.TIMEOUT, timeout=1)
-            self.sendline('docker network connect %s %s' % (self.cname, target_cname))
-            self.expect(self.prompt)
-            assert 'Error response from daemon' not in self.before, "Failed to connect docker network"
-            if self.created_docker_network == True:
-                self.sendline('docker exec %s ip address flush dev eth1' % target_cname)
-                self.expect(self.prompt)
-            self.sendline("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
-            self.expect_exact("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
-            self.expect(self.prompt)
-            target['port'] = self.before.strip()
-            int(self.before.strip())
-            self.created_docker = True
+        self.sendline("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
+        self.expect_exact("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
+        self.expect(self.prompt)
+        target['port'] = self.before.strip()
+        int(self.before.strip())
+        self.created_docker = True
 
-            target['ipaddr'] = self.ipaddr
+        target['ipaddr'] = self.ipaddr
+        from devices import get_device
+        new_device = get_device(target_type, **target)
+        self.extra_devices.append(new_device)
 
-            new_device = get_device(target_type, **target)
-            self.extra_devices.append(new_device)
-
-            self.target_cname.append(target_cname)
+        self.target_cname.append(target_cname)
 
 
     def close(self, *args, **kwargs):
