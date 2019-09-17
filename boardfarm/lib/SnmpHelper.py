@@ -109,7 +109,8 @@ class SnmpMibs(object):
                 # contained in the directory tree
                 snmp_mib_dirs.extend(find_directory_in_tree('mib', overlay))
 
-            print('Mibs direcotry list: %s' % snmp_mib_dirs)
+            if 'BFT_DEBUG' in os.environ:
+                print('Mibs direcotry list: %s' % snmp_mib_dirs)
 
         # if the mibs file are given, we do not want to add other mibs, as it may
         # results in unresolved ASN.1 imports
@@ -117,7 +118,8 @@ class SnmpMibs(object):
             # only traverses the mib dirs and compile all the files
             # /usr/share/snmp/mibs has miblist.txt which MUST be ignored
             snmp_mib_files = find_files_in_tree(snmp_mib_dirs, ignore='miblist.txt')
-        print('Mibs file list: %s' % snmp_mib_files)
+        if 'BFT_DEBUG' in os.environ:
+            print('Mibs file list: %s' % snmp_mib_files)
 
         # creates the snmp parser object
         snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
@@ -166,7 +168,7 @@ class SnmpMibs(object):
 
         if err:
             raise Exception("SnmpMibs failed to initialize.")
-        else:
+        elif 'BFT_DEBUG' in os.environ:
             print('# %d MIB modules compiled'%len(mib_dict))
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
