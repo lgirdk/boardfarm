@@ -10,9 +10,8 @@ import unittest2
 from boardfarm import lib
 import sys
 import traceback
-import time
 
-from devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):
@@ -178,5 +177,5 @@ class LinuxBootTest(unittest2.TestCase):
 
     def get_device_by_feature(self, feature):
         for device in self.config.devices:
-            if 'feature' in device and feature in devices['feature']:
+            if 'feature' in device and feature in device['feature']:
                 return getattr(self, device)
