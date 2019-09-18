@@ -1,5 +1,4 @@
 import sys
-import time
 import os
 import ipaddress
 import pexpect
@@ -245,7 +244,6 @@ if __name__ == '__main__':
     # for getting lib.common from tests working
     sys.path.append(os.getcwd() + '/../')
     sys.path.append(os.getcwd() + '/../tests')
-    import lib.common
 
     # get a base class to work with AFTR profile class.
     from debian import DebianBox as BaseCls
