@@ -140,7 +140,6 @@ class Interact(rootfs_boot.RootFSBootTest):
 
                     if 'BFT_OVERLAY' in os.environ:
                         for o in os.environ['BFT_OVERLAY'].split(' ' ):
-                            overlay = os.path.realpath(overlay)
                             test_files = glob.glob(o + "/tests/*.py")
                             for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
                                 exec("from %s import *" % x)
@@ -188,6 +187,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                 except:
                     try:
                         import readline # optional, will allow Up/Down/History in the console
+                        assert readline # silence pyflakes
                         import code
                         vars = globals().copy()
                         vars.update(locals())
