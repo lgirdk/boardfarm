@@ -4,6 +4,8 @@ import ipaddress
 import pexpect
 from collections import OrderedDict, Counter
 
+from boardfarm.lib.installers import install_wget, apt_install
+
 class AFTR(object):
     '''
     Linux based DSLite server using ISC AFTR
@@ -48,9 +50,9 @@ class AFTR(object):
 
         self.profile["on_boot"] = self.configure_aftr
         self.profile["hosts"] = { "aftr.boardfarm.com" : str(self.ipv6_ep.ip) }
-        self.install_aftr()
 
     def configure_aftr(self):
+        self.install_aftr()
         start_conf = self.generate_aftr_conf()
         start_script = self.generate_aftr_script()
 
@@ -202,11 +204,13 @@ class AFTR(object):
             self.sendline("ls /root/aftr/aftr")
             if self.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2) == 0:
                 self.expect(self.prompt)
+                apt_install(self, 'build-essential')
                 # check for configure script.
                 self.sendline("ls /root/aftr/configure")
                 if self.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2) == 0:
                     self.expect(self.prompt)
                     # need to download the tar file and extract it.
+                    install_wget(self)
                     self.aftr_url = self.aftr_local if self.aftr_local is not None else self.aftr_url
                     self.sendline("wget %s -O /root/aftr.tbz" % self.aftr_url)
                     self.expect(self.prompt, timeout=60)
