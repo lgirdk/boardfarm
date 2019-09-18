@@ -11,6 +11,9 @@ import inspect
 import pexpect
 import termcolor
 
+# TODO: this probably should not the generic device
+import openwrt_router
+
 # insert tests lib so devices and tests can share the same libraries
 sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
 sys.path.insert(0, os.path.dirname(__file__))
@@ -38,7 +41,9 @@ if 'BFT_OVERLAY' in os.environ:
 
 device_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
+    device_file = None
     exec("import %s as device_file" % x)
+    assert device_file is not None
     device_mappings[device_file] = []
     for obj in dir(device_file):
         ref = getattr(device_file, obj)
@@ -63,7 +68,6 @@ def check_for_cmd_on_host(cmd, msg=None):
 def initialize_devices(configuration):
     # Init random global variables. To Do: clean these.
     global power_ip, power_outlet
-    conn_cmd = configuration.board.get('conn_cmd')
     power_ip = configuration.board.get('powerip', None)
     power_outlet = configuration.board.get('powerport', None)
     # Init devices
