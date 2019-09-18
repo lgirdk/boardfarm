@@ -5,8 +5,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import re
-
 import rootfs_boot
 import ipv6_setup
 from boardfarm import lib
@@ -217,10 +215,10 @@ class iPerfUDPReverseTestWLAN(iPerfUDPReverseTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline('iwconfig')
         wlan.expect(prompt)
-        super(iPerfReverseTestWLAN, self).runTest(client=wan, server=wlan)
+        super(iPerfUDPReverseTestWLAN, self).runTest(client=wan, server=wlan)
 
     def recover(self):
-        super(iPerfReverseTestWLAN, self).recover(client=wan, server=wlan)
+        super(iPerfUDPReverseTestWLAN, self).recover(client=wan, server=wlan)
 
 class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPReverseTest):
     '''iPerf IPV6 from WAN to LAN'''
@@ -291,10 +289,10 @@ class iPerfUDPBiDirTestWLAN(iPerfUDPBiDirTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline('iwconfig')
         wlan.expect(prompt)
-        super(iPerfBiDirTestWLAN, self).runTest(node1=wlan, node2=wan)
+        super(iPerfUDPBiDirTestWLAN, self).runTest(node1=wlan, node2=wan)
 
     def recover(self):
-        super(iPerfBiDirTestWLAN, self).recovery(node1=wlan, node2=wan)
+        super(iPerfUDPBiDirTestWLAN, self).recovery(node1=wlan, node2=wan)
 
 class iPerfUDPBiDirTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPBiDirTest):
     '''iPerf IPV6 from LAN to/from WAN'''
