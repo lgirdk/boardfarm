@@ -158,6 +158,14 @@ def parse():
         print('Unable to access/read boardfarm configuration from %s' % boardfarm_config_location)
         sys.exit(1)
 
+    if config.test_args_location is not None:
+        try:
+            with open(config.test_args_location, "r") as fp:
+                config.test_args = json.load(fp)
+        except Exception as e:
+            print(e)
+            print("Warning: unable to fetch test args from %s" % config.test_args_location)
+
     # Check if boardfarm configuration is empty
     if not config.boardfarm_config:
         print("ERROR! Boardfarm config at %s is empty, so" % args.config_file)

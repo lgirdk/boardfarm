@@ -108,3 +108,7 @@ if 'BFT_DEBUG' in os.environ:
     print("Using disp:"+default_display_backend)
     print("Using disp_port:"+default_display_backend_port)
     print("Using disp_size:"+default_display_backend_size)
+
+# BFT_ARGS points to json file for test args.
+# File needs to be a flat json.
+test_args_location = os.environ.get('BFT_ARGS', None)
