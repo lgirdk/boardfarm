@@ -12,7 +12,6 @@ import inspect
 import sys
 import traceback
 
-
 test_files = glob.glob(os.path.dirname(__file__) + "/*.py")
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
@@ -27,7 +26,9 @@ for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f])
     if x == "tests":
         raise Exception("INVALID test file name found, tests.py will cause namespace issues, please rename")
     try:
+        test_file = None
         exec("import %s as test_file" % x)
+        assert test_file is not None
         test_mappings[test_file] = []
         for obj in dir(test_file):
             ref = getattr(test_file, obj)
