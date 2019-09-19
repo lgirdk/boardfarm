@@ -428,12 +428,14 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
         mib_oid = '.' +oid +  '.'+index
     if set_type == "i" or set_type == "a" or set_type == "u" or set_type == "s":
         device.sendline("snmpset -v 2c " +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+str(set_value))
+        device.expect_exact("snmpset -v 2c " +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+str(set_value))
         if set_type != "s":
             idx = device.expect(['Timeout: No Response from'] + [mib_oid+'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
         else:
             idx = device.expect(['Timeout: No Response from'] + [mib_oid+'\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] + device.prompt, timeout=time_out)
     elif set_type == "x":
         device.sendline("snmpset -v 2c -Ox" +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+set_value)
+        device.expect_exact("snmpset -v 2c -Ox" +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+set_value)
         """trimming the prefix 0x , since snmp will return in that format"""
         if "0x" in set_value.lower():
             set_value = set_value[2:]
@@ -472,8 +474,10 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
     """opt_args attribute added to get the output in hexa value using Ox option"""
     if opt_args != '':
         device.sendline("snmpget -v 2c -Ox"+ extra_arg + " -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+ oid +"."+str(index))
+        device.expect_exact("snmpget -v 2c -Ox"+ extra_arg + " -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+ oid +"."+str(index))
     else:
         device.sendline("snmpget -v 2c"+ extra_arg + " -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+ oid +"."+str(index))
+        device.expect_exact("snmpget -v 2c"+ extra_arg + " -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+ oid +"."+str(index))
     idx = device.expect(['Timeout: No Response from'] + [mib_oid+'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
     assert idx==1,"Getting the mib %s"% mib_name
     snmp_out = device.match.group(1)
