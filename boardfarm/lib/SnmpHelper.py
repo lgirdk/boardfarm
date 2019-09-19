@@ -99,8 +99,12 @@ class SnmpMibs(object):
         if snmp_mib_dirs is None:
             snmp_mib_dirs = ['/usr/share/snmp/mibs']
 
+        # looks for the boardfarm directory path
+        thisfiledir = os.path.realpath(__file__)
+        boardfarmdir = thisfiledir[:thisfiledir.rfind('boardfarm')]
+
         # add the boardfarm dir as it is not in the overlays
-        snmp_mib_dirs.extend(find_directory_in_tree('mibs',os.path.realpath('.')))
+        snmp_mib_dirs.extend(find_directory_in_tree('mibs', boardfarmdir))
 
         if 'BFT_OVERLAY' in os.environ:
             for overlay in os.environ['BFT_OVERLAY'].split(' '):
