@@ -3,7 +3,7 @@ import re
 import sys
 import base
 import connection_decider
-from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex
+from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, WindowsMacFormat
 
 class WindowsTelnet(base.BaseDevice):
 
@@ -93,3 +93,18 @@ class WindowsTelnet(base.BaseDevice):
             ipv6addr = ipaddress.IPv6Address(unicode(match))
             if not ipv6addr.is_link_local:
                 return ipv6addr
+
+    def get_interface_macaddr(self, interface):
+        '''
+        Parameter List:
+           /NH      Specifies that the "Column Header" should
+                    not be displayed in the output.
+                    Valid only for TABLE and CSV formats.
+
+           /V       Specifies that verbose output is displayed.'''
+
+        self.sendline('getmac /V /NH')
+        self.expect("{!s}.*({!s}).*\r\n".format(interface, WindowsMacFormat))
+        macaddr=self.match.group(1).replace('-', ':')
+        self.expect(self.prompt)
+        return macaddr
