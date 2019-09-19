@@ -165,6 +165,71 @@ class AxirosACS(object):
                 return value.text
         return None
 
+    def rpc_GetParameterAttributes(self, serial_number, param):
+        GetParameterAttrParametersClassArray_type = self.client.get_type('ns0:GetParameterAttributesParametersClassArray')
+        GetParameterAttrParametersClassArray_data = GetParameterAttrParametersClassArray_type([param])
+
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetParameterAttributes(
+                GetParameterAttrParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+        ticketid = None
+        root = ElementTree.fromstring(response.content)
+        for value in root.iter('ticketid'):
+            ticketid = value.text
+            break
+
+        if ticketid is None:
+            return None
+
+        for i in range(8):
+            time.sleep(1)
+            with self.client.settings(raw_response=True):
+                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+
+            root = ElementTree.fromstring(ticket_resp.content)
+            for value in root.iter('code'):
+                break
+            if (value.text != '200'):
+                continue
+            dict_value = {'Name' : param}
+            for iter_value in ['Notification', 'item']:
+                for value in root.iter(iter_value):
+                    dict_value[iter_value] = value.text
+            dict_value['AccesList'] = dict_value.pop('item')
+            return dict_value
+
+    def rpc_SetParameterAttributes(self, serial_number, attr, value):
+        SetParameterAttrParametersClassArray_type = self.client.get_type('ns0:SetParameterAttributesParametersClassArray')
+        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type([{'Name': attr, 'Notification' : value , 'AccessListChange' : '0', 'AccessList': {'item' : 'Subscriber'}, 'NotificationChange' : '1'}])
+
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.SetParameterAttributes(
+                SetParameterAttrParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+
+        ticketid = None
+        root = ElementTree.fromstring(response.content)
+        for value in root.iter('ticketid'):
+            ticketid = value.text
+            break
+
+        if ticketid is None:
+            return None
+
+        return self.Axiros_GetTicketValue(ticketid)
 
 if __name__ == '__main__':
     import sys
