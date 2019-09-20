@@ -6,16 +6,36 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import devices
 
+import os
+import subprocess
+
+import boardfarm
 from dbclients import boardfarmwebclient
 
 
 class Boardfarm(object):
-    
-    def __init__(self, url, debug=False):
-        self.server = boardfarmwebclient.BoardfarmWebClient(url, debug=debug)
-        self.supported_devices = self._supported_devices()
+    '''
+    This class makes it easy to interact with the boardfarm server, and to run tests.
+    '''
+
+    def __init__(self,
+                 bfconfig_url,
+                 overlays=[],
+                 debug=False):
+        '''
+        Parameters:
+        bfconfig_url: location of boardfarm config file.
+        overlays: list of strings. These are paths to boardfarm 'overlay' directories.
+        debug: if True, there will be much more verbose output.
+        '''
+        self.bfconfig_url = bfconfig_url
+        self.server = boardfarmwebclient.BoardfarmWebClient(bfconfig_url,
+                                                            bf_version=boardfarm.__version__,
+                                                            debug=debug)
+        #self.supported_devices = self._supported_devices()
+        self.overlays = overlays
+        self.debug = debug
 
     def list_tests(self):
         pass
@@ -26,7 +46,28 @@ class Boardfarm(object):
 
     def _supported_devices(self):
         '''Create list of supported device names that can be used in tests.'''
+        import devices
         devs = []
         for f in devices.device_mappings:
             devs += [n.__name__ for n in devices.device_mappings[f]]
         return sorted(devs)
+
+    def run_bft(self, board_type, testsuite):
+        '''
+        Runs the boardfarm tests using the 'bft' command-line tool.
+        '''
+        output_dir = os.path.join(os.getcwd(), "results")
+        print("Trying to run bft ...")
+        cmd = ""
+        if self.overlays:
+            cmd = "export BFT_OVERLAY='%s'; " % " ".join(self.overlays)
+        if self.debug:
+            cmd += "export BFT_DEBUG=%s ; " % self.debug
+        cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(b=board_type,
+                                                                 t=testsuite,
+                                                                 c=self.bfconfig_url,
+                                                                 o=output_dir)
+        print(cmd)
+        subprocess.check_output(cmd, shell=True)
+        print("Results in %s" % output_dir)
+        print("\n".join(os.listdir(output_dir)))
