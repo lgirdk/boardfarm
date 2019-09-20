@@ -112,3 +112,4 @@ if 'BFT_DEBUG' in os.environ:
 # BFT_ARGS points to json file for test args.
 # File needs to be a flat json.
 test_args_location = os.environ.get('BFT_ARGS', None)
+test_args = {}
