@@ -24,6 +24,8 @@ class LinuxBootTest(unittest2.TestCase):
     def __init__(self, config):
         super(LinuxBootTest, self).__init__("testWrapper")
         self.config = config
+        self.test_args = getattr(config, "test_args", {})
+        self.test_case_args = self.test_args.pop(type(self).__name__, {})
         self.reset_after_fail = True
         self.dont_retry = False
         self.logged = dict()
