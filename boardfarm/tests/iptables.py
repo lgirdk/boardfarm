@@ -2,7 +2,7 @@ import rootfs_boot
 
 import os
 
-from devices import board
+from boardfarm.devices import board
 
 class IPTablesDump(rootfs_boot.RootFSBootTest):
     '''Dumps all IPTables rules with stats'''

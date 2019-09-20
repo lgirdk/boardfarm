@@ -8,7 +8,7 @@
 import time
 
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class RestartNetwork(rootfs_boot.RootFSBootTest):
     '''Restarted router network.'''

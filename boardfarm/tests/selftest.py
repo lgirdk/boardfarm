@@ -7,7 +7,7 @@ import os
 import tempfile
 from boardfarm.lib import SnmpHelper
 
-from devices import board, wan, lan, wlan, common
+from boardfarm.devices import board, wan, lan, wlan, common
 
 '''
     This file can bu used to add unit tests that
@@ -188,7 +188,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     tests the linux functions moved to devices/linux.py
     '''
     def runTest(self):
-        from devices import lan, debian, linux
+        from boardfarm.devices import lan, debian, linux
         if lan.model == "debian":
             # check that lan is derived from LinuxDevice
             assert(issubclass(debian.DebianBox, linux.LinuxDevice))

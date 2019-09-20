@@ -121,7 +121,7 @@ class DockerFactory(linux.LinuxDevice):
         self.created_docker = True
 
         target['ipaddr'] = self.ipaddr
-        from devices import get_device
+        from boardfarm.devices import get_device
         new_device = get_device(target_type, **target)
         self.extra_devices.append(new_device)
 

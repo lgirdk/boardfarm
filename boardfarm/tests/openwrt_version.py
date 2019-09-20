@@ -7,7 +7,7 @@
 
 import re
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class OpenwrtVersion(rootfs_boot.RootFSBootTest):
     '''Openwrt release file exists and contains expected data.'''

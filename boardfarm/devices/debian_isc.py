@@ -549,7 +549,7 @@ EOF'''
 
         # errr, this should not need to call into board object
         try:
-            from devices import board
+            from boardfarm.devices import board
             board.update_cfg_for_site()
         except:
             pass

@@ -7,7 +7,7 @@
 
 import rootfs_boot
 from boardfarm import lib
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):
     '''Upgrading via sysupgrade works.'''

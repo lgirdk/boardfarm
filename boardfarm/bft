@@ -41,7 +41,7 @@ from zephyr import zephyr_reporter
 import site
 site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
 
-from devices import get_device
+from boardfarm.devices import get_device
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
@@ -114,7 +114,7 @@ def main():
     config = arguments.parse()
 
     import library
-    import devices
+    from boardfarm import devices
     from termcolor import colored
     from library import print_bold
 
@@ -265,7 +265,7 @@ def main():
     tests_to_run = []
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
-    import tests
+    from boardfarm import tests
     tests.init(config)
     import testsuites
     if config.TEST_SUITE not in testsuites.list_tests:

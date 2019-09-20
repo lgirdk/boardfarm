@@ -101,7 +101,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.wait_for_boot()
 
     def setup_uboot_network(self, tftp_server):
-        from devices import lan
+        from boardfarm.devices import lan
 
         # we override to use LAN because that's the only way it works for this device
         lan.start_tftp_server()
@@ -127,7 +127,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
     def flash_linux(self, KERNEL):
         print("\n===== Updating kernel and rootfs =====\n")
-        from devices import lan
+        from boardfarm.devices import lan
         filename = self.prepare_file(KERNEL, tserver=lan.ipaddr, tport=lan.port)
 
         self.sendline('tftp -p %s -d %s %s' % (self.uboot_ddr_addr, lan.tftp_server_ip_int(), filename))
