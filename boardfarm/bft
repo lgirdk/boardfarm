@@ -165,6 +165,8 @@ def main():
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
 
+            # this will hold the arguments for the board configuration
+            config.board['board_cfg_args'] = config.test_args.get("board_cfg", None)
 
             # Connect to board
             config.console = devices.board_decider(config.board['board_type'],
