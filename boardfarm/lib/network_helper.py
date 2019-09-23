@@ -35,15 +35,7 @@ def ipv6_to_snmp_format(ipv6_str):
     return ipv6_address
 
 def valid_ipv4(ip_str):
-    try:
-        ipaddress.IPv4Address(unicode(ip_str))
-        return True
-    except:
-        return False
+    ipaddress.IPv4Address(unicode(ip_str))
 
 def valid_ipv6(ip_str):
-    try:
-        ipaddress.IPv6Address(unicode(ip_str))
-        return True
-    except:
-        return False
+    ipaddress.IPv6Address(unicode(ip_str))
