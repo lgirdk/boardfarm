@@ -16,7 +16,7 @@ def apt_install(device, name, timeout=120):
     assert (i != 0)
 
 def apt_update(device, timeout=120):
-    device.sendline('apt-get update')
+    device.sendline('apt-get -q update')
     device.expect('Reading package')
     device.expect(device.prompt, timeout=timeout)
 

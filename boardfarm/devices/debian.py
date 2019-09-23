@@ -275,7 +275,7 @@ class DebianBox(linux.LinuxDevice):
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd"
 
         def _install_pkgs():
-            self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
+            self.sendline('apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
             if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
                 self.expect(self.prompt, timeout=300)
             else:
@@ -300,7 +300,7 @@ class DebianBox(linux.LinuxDevice):
                 self.sendline('ping -c1 deb.debian.org')
                 self.expect(self.prompt)
                 undo_default_route = possible_default_gw
-                self.sendline('apt-get update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
+                self.sendline('apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
                 if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
                     self.expect(self.prompt, timeout=300)
                 else:
