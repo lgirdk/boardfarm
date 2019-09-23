@@ -1,6 +1,6 @@
 import rootfs_boot
 
-from boardfarm.devices import board
+from devices import board
 
 class DelayBetweenChar(rootfs_boot.RootFSBootTest):
     def runTest(self):

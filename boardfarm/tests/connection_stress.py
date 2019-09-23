@@ -7,7 +7,7 @@
 
 import rootfs_boot
 import time
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 from boardfarm.lib.installers import install_lighttpd
 

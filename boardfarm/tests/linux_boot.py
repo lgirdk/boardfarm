@@ -11,7 +11,7 @@ from boardfarm import lib
 import sys
 import traceback
 
-from boardfarm.devices import board, wan, lan, wlan
+from devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
 class LinuxBootTest(unittest2.TestCase):

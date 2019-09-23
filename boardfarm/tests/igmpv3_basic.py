@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 class IGMPv3_Running(rootfs_boot.RootFSBootTest):
     '''IGMP Proxy daemon mcproxy is up and running.'''

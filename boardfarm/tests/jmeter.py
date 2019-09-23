@@ -5,7 +5,7 @@ import pexpect
 import rootfs_boot
 from boardfarm.lib.installers import install_jmeter
 
-from boardfarm.devices import board, lan, prompt
+from devices import board, lan, prompt
 from devices.common import scp_from
 
 def rm_r(path):

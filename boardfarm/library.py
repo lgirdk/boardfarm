@@ -121,7 +121,7 @@ def send_results_to_myqsl(testsuite, output_dir):
     build_id = os.environ.get('image_build_id', '')
     build_url = os.environ.get('BUILD_URL', '')
     if '' not in (build_id, testsuite, build_url):
-        from boardfarm.devices import mysql
+        from devices import mysql
         build_url = build_url.replace("https://", "") + "artifact/openwrt/%s/results.html" % dir
         title = 'Board Farm Results (suite: %s)' % testsuite
         reporter = mysql.MySqlReporter()

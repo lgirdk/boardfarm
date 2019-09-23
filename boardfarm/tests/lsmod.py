@@ -7,7 +7,7 @@
 
 import re
 import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 class KernelModules(rootfs_boot.RootFSBootTest):
     '''lsmod shows loaded kernel modules.'''

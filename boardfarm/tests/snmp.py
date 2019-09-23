@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
     '''Runs SNMP sysDescr on WAN iface'''

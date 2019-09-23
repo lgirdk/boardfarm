@@ -10,7 +10,7 @@ from boardfarm import lib
 import os
 import sys
 import glob
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 def print_subclasses(cls):
     for x in cls.__subclasses__():

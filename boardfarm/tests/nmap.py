@@ -10,7 +10,7 @@ import re
 import pexpect
 
 import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from devices import board, wan, lan, wlan, prompt
 
 class Nmap_LAN(rootfs_boot.RootFSBootTest):
     '''Ran nmap port scanning tool on LAN interface.'''
