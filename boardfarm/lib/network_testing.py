@@ -30,6 +30,46 @@ def tcpdump_read(device, capture_file):
     device.expect(device.prompt)
     return output
 
+
+def sip_read(device, capture_file):
+    """
+    To filter SIP packets from the captured file.
+    Parameters:
+        device (obj): Device where the captured file is located
+        capture_file : return value of tcpdump_capture fn
+    Returns:
+        output_sip (str): Filtered SIP packets
+    """
+    device.sudo_sendline("tshark -r %s -Y sip" %(capture_file))
+    device.expect(device.prompt)
+    output_sip = device.before
+    return output_sip
+
+def rtp_read_verify(device, capture_file):
+    """
+    To filter RTP packets from the captured file and verify.
+    Parameters:
+        device (obj): Device where the captured file is located
+        capture_file : return value of tcpdump_capture fn
+    Returns:
+        None
+    """
+    device.sudo_sendline("tshark -r %s -Y rtp" %(capture_file))
+    device.expect("RTP")
+
+def basic_call_verify(output_sip, ip_src):
+    """
+    To verify basic call flow with sip messages.
+    Parameters:
+        output_sip (str): return value of sip_read
+        ip_src (str): IP of device which initiates the call
+    Returns:
+        None
+    """
+    import re
+    sip_msg=re.search(".*"+ip_src+".*INVITE.*?"+ip_src+"\s+SIP.*100\s+Trying.*?"+ip_src+"\s+SIP.*180\s+Ringing.*?"+ip_src+"\s+SIP\/SDP.*200\s+OK.*?"+ip_src+".*ACK.*?"+ip_src+".*BYE.*?"+ip_src+"\s+SIP.*200\s+OK\s+\|",output_sip,re.DOTALL)
+    assert sip_msg is not None,"SIP call failed"
+
 def nmap_cli(device, ip_address, port, protocol=None, retry="0"):
     if protocol == "tcp":
         device.sudo_sendline("nmap -sS %s -p %s -Pn -r -max-retries %s" %(ip_address,port,retry))
