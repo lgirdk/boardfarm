@@ -14,6 +14,8 @@ import termcolor
 # TODO: this probably should not the generic device
 import openwrt_router
 
+from boardfarm.lib import find_subdirs
+
 # insert tests lib so devices and tests can share the same libraries
 sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
 sys.path.insert(0, os.path.dirname(__file__))
@@ -26,18 +28,26 @@ wlan2g = None
 wlan5g = None
 prompt = None
 
+# Local devices
 device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
 device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
-if 'BFT_OVERLAY' in os.environ:
-    for overlay in os.environ['BFT_OVERLAY'].split(' '):
-        overlay = os.path.realpath(overlay)
-        sys.path.insert(0, overlay + '/devices')
-        device_files += glob.glob(overlay + '/devices/*.py')
-        device_files += [e.replace('/__init__', '') for e in glob.glob(overlay + '/devices/*/__init__.py')]
 
-        sys.path.insert(0, overlay + '/tests')
-
-    sys.path.insert(0, os.getcwd() + '/devices')
+# Get devices from overlays
+boardfarm_overlays = os.environ.get('BFT_OVERLAY')
+if boardfarm_overlays:
+    dirs = boardfarm_overlays.split(" ")
+    # Put 'devices' directories into the python path
+    for x in find_subdirs(dirs, "devices"):
+        sys.path.insert(0, x)
+        device_files += glob.glob(os.path.join(x, '*.py'))
+        device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.join(x, '*', '__init__.py'))]
+    # Put 'tests' directories into the python path
+    # Remove once devices no longer import from tests directories
+    for x in find_subdirs(dirs, "tests"):
+        sys.path.insert(0, x)
+    # Put this current directory into the python path
+    # Remove this once other projects property import from boardfarm
+    sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 device_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
