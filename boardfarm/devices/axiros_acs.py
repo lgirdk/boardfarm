@@ -202,8 +202,10 @@ class AxirosACS(object):
             for iter_value in ['Notification', 'item']:
                 for value in root.iter(iter_value):
                     dict_value[iter_value] = value.text
-            dict_value['AccesList'] = dict_value.pop('item')
+            dict_value['AccessList'] = dict_value.pop('item')
             return dict_value
+
+        assert False, "rpc_GetParameterAttributes failed to lookup %s" % param
 
     def rpc_SetParameterAttributes(self, serial_number, attr, value):
         SetParameterAttrParametersClassArray_type = self.client.get_type('ns0:SetParameterAttributesParametersClassArray')
