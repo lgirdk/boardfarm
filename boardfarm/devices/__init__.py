@@ -17,8 +17,9 @@ import openwrt_router
 from boardfarm.lib import find_subdirs
 
 # insert tests lib so devices and tests can share the same libraries
-sys.path.insert(0, os.path.dirname(__file__) + '/../tests')
-sys.path.insert(0, os.path.dirname(__file__))
+# To do: delete these lines when everything is properly importing from boardfarm
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'tests')))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 board = None
 lan = None
@@ -45,9 +46,6 @@ if boardfarm_overlays:
     # Remove once devices no longer import from tests directories
     for x in find_subdirs(dirs, "tests"):
         sys.path.insert(0, x)
-    # Put this current directory into the python path
-    # Remove this once other projects property import from boardfarm
-    sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 device_mappings = { }
 for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
