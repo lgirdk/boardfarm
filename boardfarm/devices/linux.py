@@ -65,6 +65,30 @@ class LinuxDevice(base.BaseDevice):
         self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=1")
         self.expect(self.prompt, timeout=30)
 
+    def release_dhcp(self, interface):
+        '''release ip of the interface '''
+        self.sudo_sendline("dhclient -r {!s}".format(interface))
+        self.expect(self.prompt)
+
+    def check_access_url(self, url, source_ip=None):
+        '''
+        Name: check_access_url
+        Purpose: check source_ip can access url
+        Input:  url, source_ip
+        Output: True or False
+        '''
+        if source_ip == None :
+            self.sendline("curl -I {!s}".format(url))
+        else:
+            self.sendline("curl --interface {!s} -I {!s}".format(source_ip, url))
+
+        self.expect(self.prompt)
+        match = re.search('HTTP/1.1 200 OK', self.before)
+        if match:
+            return True
+        else:
+            return False
+
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         '''Modifies the log level in kernel'''
         try:

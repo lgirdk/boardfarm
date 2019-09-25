@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import sys
+import re
 import time
 import pexpect
 import linux
@@ -231,6 +232,16 @@ class DebianBox(linux.LinuxDevice):
             self.reset()
 
         self.logfile_read = output
+
+    def get_default_gateway(self, interface):
+        self.sendline('ip route | grep {!s}'.format(interface))
+        self.expect(self.prompt)
+
+        match = re.search('default via (.*) dev {!s}.*\r\n'.format(interface), self.before)
+        if match:
+            return match.group(1)
+        else:
+            return None
 
     def run_cleanup_cmd(self):
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
