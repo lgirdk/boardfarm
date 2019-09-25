@@ -32,7 +32,7 @@ pipeline {
 					rm -rf venv
 					virtualenv venv
 					. venv/bin/activate
-					pip install -e .
+					repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
 					repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
 					export BFT_OVERLAY="'''+ overlay + '''"
 					export BFT_CONFIG=''' + config + '''
