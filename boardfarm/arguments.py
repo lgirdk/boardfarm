@@ -128,6 +128,7 @@ def parse():
         except Exception as e:
             print(e)
             print("Warning: unable to fetch test args from %s" % config.test_args_location)
+            config.test_args = None
 
     # Check if boardfarm configuration is empty
     if not config.boardfarm_config:

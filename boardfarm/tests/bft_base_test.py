@@ -15,6 +15,7 @@ from boardfarm.library import check_devices
 import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
+from boardfarm.lib.env_helper import EnvHelper
 
 
 class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
@@ -25,13 +26,15 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
     def __init__(self, config):
         self.config = config
-        self.test_args = getattr(config, "test_args", {})
-        self.test_case_args = self.test_args.pop(type(self).__name__, {})
         self.reset_after_fail = True
         self.dont_retry = False
         self.logged = dict()
         self.subtests = []
         self.attempts = 0
+        try:
+            self.env_helper = board.env_helper_type(config.test_args)
+        except:
+            self.env_helper = EnvHelper(config.test_args)
 
     def id(self):
         return self.__class__.__name__
