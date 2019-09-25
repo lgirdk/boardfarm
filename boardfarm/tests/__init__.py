@@ -12,14 +12,19 @@ import inspect
 import sys
 import traceback
 
-test_files = glob.glob(os.path.dirname(__file__) + "/*.py")
-if 'BFT_OVERLAY' in os.environ:
-    for overlay in os.environ['BFT_OVERLAY'].split(' '):
-        overlay = os.path.abspath(overlay)
-        sys.path.insert(0, overlay + '/tests')
-        test_files += glob.glob(overlay + '/tests/*.py')
+from boardfarm.lib import find_subdirs
 
-    sys.path.insert(0, os.getcwd() + '/tests')
+test_files = glob.glob(os.path.dirname(__file__) + "/*.py")
+boardfarm_overlays = os.environ.get('BFT_OVERLAY')
+if boardfarm_overlays:
+    # Insert 'tests' directories from the overlays
+    dirs = boardfarm_overlays.split(" ")
+    for x in find_subdirs(dirs, "tests"):
+        sys.path.insert(0, x)
+        test_files += glob.glob(os.path.join(x, '*.py'))
+    # Insert this local tests directory too
+    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 
 test_mappings = {}
 for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
