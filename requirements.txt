@@ -6,6 +6,7 @@ countrycode
 dlipower
 easysnmp
 elasticsearch>=1.0.0
+aenum
 Faker
 future
 ipaddress

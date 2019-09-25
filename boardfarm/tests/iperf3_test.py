@@ -8,12 +8,11 @@
 import re
 from boardfarm.tests import rootfs_boot
 from boardfarm.lib import installers
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import mgr, device_type, prompt
 
-try:
-    from boardfarm.devices import winwsl
-except:
-    winwsl = None
+board = mgr.by_type(device_type.DUT)
+wan = mgr.by_type(device_type.wan)
+lan = mgr.by_type(device_type.lan)
 
 class iPerf3Test(rootfs_boot.RootFSBootTest):
     '''iPerf3 generic performance tests'''
@@ -105,8 +104,3 @@ class iPerf3R_v6Test(iPerf3Test):
 class iPerf3Test2nd(iPerf3Test):
     '''iPerf3 on second server port'''
     server_port = "5202"
-
-class iPerf3TestWSL(iPerf3Test):
-    '''iPerf3 with windows WSL client'''
-
-    client = winwsl
