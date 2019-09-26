@@ -168,8 +168,7 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                     board.install_package(pkg)
 
         if board.has_cmts:
-            from boardfarm_docsis.lib.docsis import check_valid_docsis_ip_networking
-            check_valid_docsis_ip_networking(board)
+            board.check_valid_docsis_ip_networking()
 
         # Try to verify router has stayed up (and, say, not suddenly rebooted)
         end_seconds_up = board.get_seconds_uptime()
