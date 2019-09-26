@@ -491,6 +491,8 @@ EOF'''
 
     def provision_board(self, board_config):
         self.install_pkgs()
+        self.sendline('/etc/init.d/rsyslog start')
+        self.expect(self.prompt)
 
         # if we are not a full blown wan+provisoner then offer to route traffic
         if not self.wan_cmts_provisioner:
@@ -595,9 +597,16 @@ EOF'''
         for not_used in range(match_num):
             self.expect(matching)
             match_num -= 1
-
-        assert match_num == 0, "Incorrect number of DHCP servers started, something went wrong!"
         self.expect(self.prompt)
+
+        if match_num != 0:
+            self.sendline('tail /var/log/syslog -n 100')
+            self.expect(self.prompt)
+            self.sendline('cat /etc/dhcp/dhcpd.conf')
+            self.expect(self.prompt)
+            self.sendline('cat /etc/dhcp/dhcpd6.conf')
+            self.expect(self.prompt)
+        assert match_num == 0, "Incorrect number of DHCP servers started, something went wrong!"
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
