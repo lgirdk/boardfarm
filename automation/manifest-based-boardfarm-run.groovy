@@ -34,7 +34,7 @@ pipeline {
 					. venv/bin/activate
 					repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
 					repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
-					export BFT_OVERLAY=$(repo forall -c 'pwd' | grep -v boardfarm$ | tr '\\n' ' ')
+					export BFT_OVERLAY="$(repo forall -c 'pwd' | grep -v boardfarm$ | tr '\n' ' ')"
 					export BFT_CONFIG=''' + config + '''
 					${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm
 					export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm`"
