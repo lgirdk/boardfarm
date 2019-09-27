@@ -46,7 +46,7 @@ class Boardfarm(object):
 
     def _supported_devices(self):
         '''Create list of supported device names that can be used in tests.'''
-        import devices
+        from boardfarm import devices
         devs = []
         for f in devices.device_mappings:
             devs += [n.__name__ for n in devices.device_mappings[f]]

@@ -1,7 +1,7 @@
 import rootfs_boot
 import re
 
-from devices import board
+from boardfarm.devices import board
 
 class LatencyAllDevices(rootfs_boot.RootFSBootTest):
     '''finds latency between all devices'''

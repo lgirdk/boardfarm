@@ -8,8 +8,8 @@
 
 # Read simple test suite config files
 import config
-import devices.configreader
-tmp = devices.configreader.TestsuiteConfigReader()
+from boardfarm.devices import configreader
+tmp = configreader.TestsuiteConfigReader()
 
 config_files = config.testsuite_config_files
 for ovrly_name, ovrly in config.layerconfs:

@@ -8,7 +8,7 @@
 import re
 
 import rootfs_boot
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 from boardfarm.lib.wifi import *
 
 class UciShowWireless(rootfs_boot.RootFSBootTest):

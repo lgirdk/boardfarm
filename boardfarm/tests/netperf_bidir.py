@@ -8,7 +8,7 @@
 from boardfarm import lib
 import netperf_reverse_test
 
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
     def runTest(self):

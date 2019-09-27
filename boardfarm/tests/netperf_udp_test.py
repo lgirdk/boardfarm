@@ -8,7 +8,7 @@
 from boardfarm import lib
 import netperf_test
 
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class NetperfUdpTest(netperf_test.NetperfTest):
     @lib.common.run_once

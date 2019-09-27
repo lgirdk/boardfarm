@@ -8,10 +8,10 @@
 import re
 import rootfs_boot
 from boardfarm.lib import installers
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 try:
-    from devices import winwsl
+    from boardfarm.devices import winwsl
 except:
     winwsl = None
 

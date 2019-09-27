@@ -7,7 +7,7 @@
 
 import rootfs_boot
 from boardfarm import lib
-from devices import board, wan, lan, prompt
+from boardfarm.devices import board, wan, lan, prompt
 
 from pyvirtualdisplay import Display
 import pexpect

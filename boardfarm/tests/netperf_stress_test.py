@@ -10,7 +10,7 @@ import netperf_test
 import time
 
 from netperf_test import install_netperf
-from devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class NetperfStressTest(netperf_test.NetperfTest):
     @lib.common.run_once

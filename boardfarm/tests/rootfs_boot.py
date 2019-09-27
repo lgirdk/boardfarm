@@ -9,7 +9,7 @@ import time
 import linux_boot
 from boardfarm import lib
 
-from devices import board, wan, lan, prompt
+from boardfarm.devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
     '''Flashed image and booted successfully.'''
