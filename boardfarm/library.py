@@ -17,7 +17,9 @@ class HelperEncoder(json.JSONEncoder):
     '''Turn some objects into a form that can be stored in JSON.'''
     def default(self, obj):
         if isinstance(obj, ipaddress.IPv4Network) or \
-           isinstance(obj, ipaddress.IPv4Address):
+           isinstance(obj, ipaddress.IPv4Address) or \
+           isinstance(obj, ipaddress.IPv6Network) or \
+           isinstance(obj, ipaddress.IPv6Address):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             return str(obj)
