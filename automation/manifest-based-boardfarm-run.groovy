@@ -66,12 +66,13 @@ pipeline {
 	}
 	post {
 		always {
+			emailext body: '''${FILE, path="boardfarm/results/results.html"}''',
+				 mimeType: 'text/html',
+				 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
+				 recipientProviders: [[$class: 'RequesterRecipientProvider']],
+				 to: email_results
 			archiveArtifacts artifacts: 'boardfarm/results/*'
 			sh 'rm -rf boardfarm/results'
-			emailext body: '${SCRIPT, template="groovy-html.template"}',
-				recipientProviders: [requestor()],
-				subject: '[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}',
-				to: email_results
 		}
 	}
 }
