@@ -68,11 +68,10 @@ pipeline {
 		always {
 			archiveArtifacts artifacts: 'boardfarm/results/*'
 			sh 'rm -rf boardfarm/results'
-			emailext body: '''${SCRIPT, template="groovy-html.template"}''',
-				 mimeType: 'text/html',
-				 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
-				 recipientProviders: [$class: 'RequesterRecipientProvider'],
-				 to: email_results
+			emailext body: '${SCRIPT, template="groovy-html.template"}',
+				recipientProviders: [requestor()],
+				subject: '[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}',
+				to: email_results
 		}
 	}
 }
