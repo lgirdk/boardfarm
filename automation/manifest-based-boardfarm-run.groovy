@@ -1,3 +1,5 @@
+def extra_args = env.extra_args ?: ''
+
 pipeline {
 	agent { label 'boardfarm && ' + location }
 
@@ -38,7 +40,7 @@ pipeline {
 					export BFT_CONFIG=''' + config + '''
 					${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm
 					export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm`"
-					yes | BFT_DEBUG=y ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}'''
+					yes | BFT_DEBUG=y ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args
 
 					sh 'grep tests_fail...0, boardfarm/results/test_results.json'
 				}
