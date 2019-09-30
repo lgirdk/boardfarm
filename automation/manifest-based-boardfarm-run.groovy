@@ -1,4 +1,5 @@
 def extra_args = env.extra_args ?: ''
+def email_results = env.email_results ?: ''
 def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
@@ -67,6 +68,11 @@ pipeline {
 		always {
 			archiveArtifacts artifacts: 'boardfarm/results/*'
 			sh 'rm -rf boardfarm/results'
+			emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+				 mimeType: 'text/html',
+				 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
+				 recipientProviders: [$class: 'RequesterRecipientProvider'],
+				 to: email_results
 		}
 	}
 }
