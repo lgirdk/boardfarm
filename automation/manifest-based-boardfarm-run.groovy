@@ -1,4 +1,7 @@
 def extra_args = env.extra_args ?: ''
+def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
+def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
+def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
 
 pipeline {
 	agent { label 'boardfarm && ' + location }
@@ -12,13 +15,15 @@ pipeline {
 						sh "rm -rf *"
 						sh "repo init -u " + manifest + " && repo sync --force-remove-dirty"
 						sh "repo forall -c 'git checkout gerrit/$GERRIT_BRANCH'"
-						sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
-						sh "repo manifest -r"
-						def changes = sh returnStatus: true, script: "repo diff | diffstat | grep '0 files changed'"
-						if (changes == 0) {
-							echo "No changes, ending job"
-							return
+						if (GERRIT_REFSPEC != '') {
+							sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
+							def changes = sh returnStatus: true, script: "repo diff | diffstat | grep '0 files changed'"
+							if (changes == 0) {
+								echo "No changes with GERRIT trigger, ending job"
+								return
+							}
 						}
+						sh "repo manifest -r"
 					}
 				}
 			}
