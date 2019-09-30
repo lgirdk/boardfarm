@@ -18,11 +18,6 @@ pipeline {
 						sh "repo forall -c 'git checkout gerrit/$GERRIT_BRANCH'"
 						if (GERRIT_REFSPEC != '') {
 							sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
-							def changes = sh returnStatus: true, script: "repo diff | diffstat | grep '0 files changed'"
-							if (changes == 0) {
-								echo "No changes with GERRIT trigger, ending job"
-								return
-							}
 						}
 						sh "repo manifest -r"
 					}
