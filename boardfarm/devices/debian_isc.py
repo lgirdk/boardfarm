@@ -4,6 +4,7 @@ import pexpect
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 import re
 import glob
+import traceback
 
 import debian
 
@@ -507,7 +508,7 @@ EOF'''
         self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
         self.expect(self.prompt)
         if not self.wan_no_eth0:
-            self.sendline('ifconfig %s down; ifconfig %s up' % (self.iface_dut, self.iface_dut))
+            self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
             self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
             self.expect(self.prompt)
@@ -680,3 +681,13 @@ EOF'''
 
     def get_aftr_name(self):
         return 'aftr.boardfarm.com'
+
+    def send(self, s):
+        bad_commands = ['ifconfig %s down' %  self.iface_dut]
+
+        for cmd in bad_commands:
+            if cmd in s:
+                traceback.print_exc()
+                raise Exception("ERROR: can not turn off shared interface!")
+
+        super(DebianISCProvisioner, self).send(s)
