@@ -130,8 +130,8 @@ class SnmpMibs(object):
             print('Mibs file list: %s' % snmp_mib_files)
 
         # creates the snmp parser object
-        snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
-        return snmp_parser
+        cls.snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
+        return cls.snmp_parser
 
     def __init__(self, mib_list, src_dir_list, http_sources=None):
         if "BFT_DEBUG" in os.environ:
