@@ -445,6 +445,13 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
         idx = device.expect(['Timeout: No Response from'] + [mib_oid+'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
     elif set_type == "t" or set_type == "b" or set_type == "o" or set_type == "n" or set_type == "d":
         idx = 0
+    elif set_type == "str_with_space":
+        set_type = "s"
+        set_value = str(set_value)
+        device.sendline("snmpset -v 2c " +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+"'%s'" %set_value)
+        device.expect_exact("snmpset -v 2c " +extra_arg+" -c "+community+" -t " +str(timeout)+ " -r "+str(retry)+" "+iface_ip+" "+oid+"."+str(index)+" "+set_type+" "+"'%s'" %set_value)
+        idx = device.expect(['Timeout: No Response from'] + ['STRING: \"(.*)\"\r\n'] + device.prompt, timeout=10)
+
     assert idx==1,"Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
@@ -606,3 +613,18 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
             return True
     else:
         return False
+
+def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=200):
+    """
+    Name: snmp_mib_walk
+    Purpose: walk a mib with small mib tree
+    Input: wan, board/snmpParser, prompt, ip_add, mib_name
+    Output: Snmpwalk output
+    Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
+    """
+    oid = parser.mib[mib_name]
+
+    device.sendline("snmpwalk -v 2c -c "+community+" -t " +str(time_out)+ " -r "+str(retry)+" "+ip_address+" "+ oid)
+    device.expect(device.prompt)
+    snmp_out = device.before
+    return snmp_out
