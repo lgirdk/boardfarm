@@ -14,6 +14,7 @@ import os
 from termcolor import cprint
 import re
 import ipaddress
+from boardfarm.lib.SnmpHelper import SnmpMibs
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
@@ -418,11 +419,11 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
     time_out = (timeout*retry)+30
     extra_arg = ''
 
-    try:
+    if not isinstance(parser, SnmpMibs):
         match = re.search("\d+.(.*)",parser.mib[mib_name])
         mib_oid = 'iso.'+match.group(1)+'.'+index
         oid = parser.mib[mib_name]
-    except:
+    else:
         extra_arg = ' -On '
         oid = parser.get_mib_oid(mib_name)
         mib_oid = '.' +oid +  '.'+index
@@ -462,11 +463,11 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
     extra_arg = ''
 
     # this should allow for legacy behaviour (with board passed in)
-    try:
+    if not isinstance(parser, SnmpMibs):
         match = re.search("\d+.(.*)",parser.mib[mib_name])
         mib_oid = 'iso\.' + match.group(1) + '.'+index
         oid = parser.mib[mib_name]
-    except:
+    else:
         extra_arg = ' -On '
         oid = parser.get_mib_oid(mib_name)
         mib_oid = oid +  '.'+index
