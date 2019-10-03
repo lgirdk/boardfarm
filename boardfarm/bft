@@ -115,6 +115,7 @@ def main():
 
     import library
     from boardfarm import devices
+    devices.probe_devices()
     from termcolor import colored
     from library import print_bold
 

@@ -43,16 +43,19 @@ if boardfarm_overlays:
         device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.join(x, '*', '__init__.py'))]
 
 device_mappings = { }
-for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
-    device_file = None
-    exec("import %s as device_file" % x)
-    assert device_file is not None
-    device_mappings[device_file] = []
-    for obj in dir(device_file):
-        ref = getattr(device_file, obj)
-        if inspect.isclass(ref) and hasattr(ref, "model"):
-            device_mappings[device_file].append(ref)
-            exec("from %s import %s" % (x, obj))
+
+def probe_devices():
+    '''To be removed once all overlays are proper modules'''
+    for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
+        device_file = None
+        exec("import %s as device_file" % x)
+        assert device_file is not None
+        device_mappings[device_file] = []
+        for obj in dir(device_file):
+            ref = getattr(device_file, obj)
+            if inspect.isclass(ref) and hasattr(ref, "model"):
+                device_mappings[device_file].append(ref)
+                exec("from %s import %s" % (x, obj))
 
 def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
