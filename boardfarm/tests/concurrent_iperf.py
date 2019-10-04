@@ -1,9 +1,9 @@
 import rootfs_boot
 import pexpect
 
-from devices.common import print_bold
 from datetime import datetime
 
+from boardfarm.library import print_bold
 from boardfarm.devices import board, prompt, wan, lan
 
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):
