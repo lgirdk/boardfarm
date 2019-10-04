@@ -549,7 +549,7 @@ def retry_on_exception(method, args, retries=10, tout=5):
     NOTE: args must be a tuple, hence a 1 arg tuple is (<arg>,)
     """
     output = None
-    for not_used in range(retries):
+    for not_used in range(retries+1):
         try:
             output = method(*args)
             break
