@@ -38,6 +38,12 @@ class web_gui():
         enter_value = enter_input(self.driver, select_value, input_value)
         assert enter_value, 'Unable to enter value %s' % input_value
 
+    def get_text(self, value):
+        key_value = self.key[value]
+        key_value = eval("self.config"+key_value)
+        text = get_text_value(self.driver, key_value)
+        return text
+
     def click_button(self, key_id):
         select_id = self.key[key_id]
         select_key_value = resolv_dict(self.config, select_id)
