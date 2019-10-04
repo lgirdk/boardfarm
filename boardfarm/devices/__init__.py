@@ -28,24 +28,26 @@ wlan2g = None
 wlan5g = None
 prompt = None
 
-# Local devices
-device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
-device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
-
-# Get devices from overlays
-boardfarm_overlays = os.environ.get('BFT_OVERLAY')
-if boardfarm_overlays:
-    dirs = boardfarm_overlays.split(" ")
-    # Put 'devices' directories into the python path
-    for x in find_subdirs(dirs, "devices"):
-        sys.path.insert(0, x)
-        device_files += glob.glob(os.path.join(x, '*.py'))
-        device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.join(x, '*', '__init__.py'))]
 
 device_mappings = { }
 
 def probe_devices():
     '''To be removed once all overlays are proper modules'''
+
+    # Local devices
+    device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+    device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
+
+    # Get devices from overlays
+    boardfarm_overlays = os.environ.get('BFT_OVERLAY')
+    if boardfarm_overlays:
+        dirs = boardfarm_overlays.split(" ")
+        # Put 'devices' directories into the python path
+        for x in find_subdirs(dirs, "devices"):
+            sys.path.insert(0, x)
+            device_files += glob.glob(os.path.join(x, '*.py'))
+            device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.join(x, '*', '__init__.py'))]
+
     for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
         device_file = None
         exec("import %s as device_file" % x)
