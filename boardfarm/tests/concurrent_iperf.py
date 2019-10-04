@@ -21,7 +21,6 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         lan.sendline(cmd % (wan_ip, 4))
         lan.expect(prompt)
 
-        prev_con = 0
         prev_failed = 0
         for con_conn in range(32, 513, 16):
             try:
