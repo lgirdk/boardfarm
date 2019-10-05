@@ -22,6 +22,10 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
     def enable_wifi(self):
         self.set_link_state(self.iface_wifi, "up")
 
+    def release_wifi(self):
+        iface=self.iface_wifi
+        self.release_dhcp(iface)
+
     def wifi_scan(self):
         from boardfarm.lib.installers import install_iw
         install_iw(self)
