@@ -84,7 +84,12 @@ class WindowsTelnet(base.BaseDevice):
             return None
 
     def get_interface_ipaddr(self, interface):
-        self.get_ip(interface)
+        ip=self.get_ip(interface)
+
+        if ip != None:
+            return ip
+        else:
+            assert False, "Can't get interface ip"
 
     def get_interface_ip6addr(self, interface):
         self.sendline("netsh interface ipv6 show addresses %s" %interface)
