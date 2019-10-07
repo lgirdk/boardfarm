@@ -6,7 +6,8 @@ import rootfs_boot
 from boardfarm.lib.installers import install_jmeter
 
 from boardfarm.devices import board, lan, prompt
-from devices.common import scp_from
+# To Do: Move this file or function out of the "devices" directory
+from boardfarm.devices.common import scp_from
 
 def rm_r(path):
     if not os.path.exists(path):
