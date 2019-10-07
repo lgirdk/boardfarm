@@ -27,6 +27,8 @@ wlan = None
 wlan2g = None
 wlan5g = None
 prompt = None
+cmts = None
+provisioner = None
 
 
 device_mappings = { }
