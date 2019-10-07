@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-from gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value
+from gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value, select_option_by_id
 from common import resolv_dict, get_webproxy_driver
 
 class web_gui():
@@ -50,6 +50,13 @@ class web_gui():
         self.scroll_view(select_key_value)
         Click_button = click_button_id(self.driver, select_key_value)
         assert Click_button == True, 'Click button : %s  ' % Click_button
+
+    def selected_option_by_id(self, key_id, value):
+        select_id = self.key[key_id]
+        select_key_value = resolv_dict(self.config, select_id)
+        self.scroll_view(select_key_value)
+        select_button = select_option_by_id(self.driver, select_key_value,value)
+        assert select_button , 'Select button : %s  ' % select_button
 
     def verify_radio(self, value):
         key_value = self.key[value]
