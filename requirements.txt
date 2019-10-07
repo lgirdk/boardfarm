@@ -24,3 +24,4 @@ unittest2
 zeep
 pysmi
 xmltodict
+pysnmp
