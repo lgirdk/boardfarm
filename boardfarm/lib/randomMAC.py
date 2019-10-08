@@ -12,7 +12,3 @@ def randomMAC():
     mac_to_be_decided = ':'.join(map(lambda x : hex(x)[2:].lstrip("0x").zfill(2),mac))
 
     return (mac_to_be_decided)
-
-if __name__ == '__main__':
-    print(randomMAC())
-
