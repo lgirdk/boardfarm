@@ -47,21 +47,21 @@ class BitTorrentB2B(BitTorrentBasic):
             #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
             #d.expect(prompt)
 
-	maxtime=5
+        maxtime=5
 
         board.get_nf_conntrack_conn_count()
 
-	for i in range(10000):
-	    sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
-	    print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
-	    time = sz / ( rate * 1024)
-	    print("time should be ~%s" % time)
+        for i in range(10000):
+            sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
+            print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+            time = sz / ( rate * 1024)
+            print("time should be ~%s" % time)
             self.check_and_clean_ips()
-	    lan.sendline('fg')
-	    lan.expect(prompt, timeout=5)
+            lan.sendline('fg')
+            lan.expect(prompt, timeout=5)
 
-	    board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
-	    board.get_pp_dev().expect(prompt)
+            board.get_pp_dev().sendline('cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+            board.get_pp_dev().expect(prompt)
 
         board.get_nf_conntrack_conn_count()
 

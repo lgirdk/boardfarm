@@ -45,4 +45,4 @@ class CurlSSLBad(rootfs_boot.RootFSBootTest):
             board.expect(check[1])
             board.expect(prompt)
             print('\n\nCurl refused to download ' + check[0] + ' as expected\n')
- 
+

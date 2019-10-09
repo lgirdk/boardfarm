@@ -18,10 +18,10 @@ def install_netperf(device):
         device.expect(device.prompt)
     except:
         # Install Netperf
-	device.sendline('apt-get update')
-	device.expect(device.prompt, timeout=120)
-	device.sendline('apt-get install netperf')
-	device.expect(device.prompt, timeout=120)
+        device.sendline('apt-get update')
+        device.expect(device.prompt, timeout=120)
+        device.sendline('apt-get install netperf')
+        device.expect(device.prompt, timeout=120)
 
 class NetperfTest(rootfs_boot.RootFSBootTest):
     '''Setup Netperf and Run Throughput.'''
