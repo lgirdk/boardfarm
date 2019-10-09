@@ -539,50 +539,6 @@ def resolv_dict(dic, key):
         key_val = key_val[elem]
     return key_val
 
-def setup_asterisk_config(device,numbers):
-    # to add sip.conf and extensions.conf
-    gen_conf = '''cat > /etc/asterisk/sip.conf << EOF
-[general]
-context=default
-bindport=5060
-allowguest=yes
-qualify=yes
-registertimeout=900
-allow=all
-allow=alaw
-allow=gsm
-allow=g723
-allow=g729
-EOF'''
-    gen_mod = '''cat > /etc/asterisk/extensions.conf << EOF
-[default]
-EOF'''
-    device.sendline(gen_conf)
-    device.expect(device.prompt)
-    device.sendline(gen_mod)
-    device.expect(device.prompt)
-    for i in numbers:
-        num_conf = '''(
-echo ['''+i+''']
-echo type=friend
-echo regexten='''+i+'''
-echo secret=1234
-echo qualify=no
-echo nat=force_rport
-echo host=dynamic
-echo canreinvite=no
-echo context=default
-echo dial=SIP/'''+i+'''
-)>>  /etc/asterisk/sip.conf'''
-        device.sendline(num_conf)
-        device.expect(device.prompt)
-        num_mod = '''(
-echo exten \=\> '''+i+''',1,Dial\(SIP\/'''+i+''',10,r\)
-echo same \=\>n,Wait\(20\)
-)>> /etc/asterisk/extensions.conf'''
-        device.sendline(num_mod)
-        device.expect(device.prompt)
-
 def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200):
     '''
     Function to do a snmp walk using asyncore script
