@@ -23,6 +23,7 @@ class DebianISCProvisioner(debian.DebianBox):
     # default CM specific settings
     default_lease_time = 604800
     max_lease_time = 604800;
+    is_env_setup_done = False
 
     def __init__(self, *args, **kwargs):
 
@@ -405,6 +406,7 @@ EOF'''
                 print("Invalid Timezone. Using UTC standard")
                 return 0
 
+    # TODO: This needs to be pushed to boardfarm-docsis at a later stage
     def update_cmts_isc_dhcp_config(self, board_config):
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
@@ -413,59 +415,76 @@ EOF'''
             board_config['extra_provisioning_v6'] = {}
 
         tftp_server = self.tftp_device.tftp_server_ip_int()
-        # DHCPv4 defaults for when board does not supply defaults
-        if 'mta_mac' in board_config and not 'mta' in board_config['extra_provisioning']:
-            board_config['extra_provisioning']["mta"] = \
-                { "hardware ethernet": board_config['mta_mac'],
-                 "options": { "domain-name": "\"sipcenter.com\"",
-                              "domain-name-servers": "%s" % tftp_server,
-                              "routers": "%s" % self.mta_gateway,
-                              "log-servers": "%s" % self.prov_ip,
-                              "host-name": "\"" + board_config['station'] + "\""
-                            }
-                }
-        if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning']:
-            board_config['extra_provisioning']["cm"] = \
-                { "hardware ethernet": board_config['cm_mac'],
-                     "options": { "domain-name-servers": "%s" % tftp_server,
-                                  "time-offset": "%s" % str(self.timezone)
-                                }
-                }
 
-        # since it skips the previous condition if extra prov is provided
-        board_config['extra_provisioning']["cm"]["options"]["time-offset"] = "%s" % str(self.timezone)
-
-        if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning']:
-            board_config['extra_provisioning']["erouter"] = \
-                { "hardware ethernet": board_config['erouter_mac'],
-                  "default-lease-time" : self.default_lease_time,
-                  "max-lease-time": self.max_lease_time,
-                      "options": { "domain-name-servers": "%s" % tftp_server}
+        # This can be later broken down to smaller chunks to add options specific to type of device.
+        mta_dhcp_options = {
+                "mta": { "hardware ethernet": board_config['mta_mac'],
+                         "filename": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
+                         "options": { "bootfile-name": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
+                                      "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
+                                      "domain-name": "\"sipcenter.com\"",
+                                      "domain-name-servers": "%s" % tftp_server,
+                                      "routers": self.mta_gateway,
+                                      "log-servers": self.prov_ip,
+                                      "host-name": "\"" + board_config['station'] + "\""
+                                    }
+                        }
                 }
+        board_config["extra_provisioning"].update(mta_dhcp_options)
 
+        # This can be later broken down to smaller chunks to add options specific to type of device.
+        cm_dhcp_options =  {
+                "cm": { "hardware ethernet": board_config['cm_mac'],
+                         "filename": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
+                         "options": { "bootfile-name": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
+                                      "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
+                                      "docsis-mta.dhcp-server-1": self.prov_ip,
+                                      "docsis-mta.dhcp-server-2": self.prov_ip,
+                                      "docsis-mta.provision-server": "0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00",
+                                      "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
+                                      "domain-name-servers": "%s" % tftp_server,
+                                      "time-offset" : "%s" % str(self.timezone)
+                                    }
+                       }
+            }
+        board_config["extra_provisioning"].update(cm_dhcp_options)
+
+        board_config['extra_provisioning']["erouter"] = \
+            { "hardware ethernet": board_config['erouter_mac'],
+              "default-lease-time" : self.default_lease_time,
+              "max-lease-time": self.max_lease_time,
+                  "options": { "domain-name-servers": "%s" % tftp_server}
+            }
+
+        # This can be later broken down to another method which adds dhcpv6 options to type of device.
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
-
-        # DHCPv6 defaults for when board does not supply defaults
-        if 'cm_mac' in board_config and not 'cm' in board_config['extra_provisioning_v6']:
-            board_config['extra_provisioning_v6']["cm"] = \
-                { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
-                  "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
-                      "dhcp6.name-servers" : "%s" % tftp_server
-                    }
+        board_config['extra_provisioning_v6']["cm"] = \
+            { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
+              "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
+                  "dhcp6.name-servers" : "%s" % tftp_server
                 }
-        if 'erouter_mac' in board_config and not 'erouter' in board_config['extra_provisioning_v6']:
-            board_config['extra_provisioning_v6']["erouter"] = \
-                { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['erouter_mac'],
-                    "hardware ethernet": board_config['erouter_mac'],
-                    "options": {
-                        "dhcp6.name-servers" : "%s" % tftp_server
-                    }
+            }
+        board_config['extra_provisioning_v6']["erouter"] = \
+            { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['erouter_mac'],
+                "hardware ethernet": board_config['erouter_mac'],
+                "options": {
+                    "dhcp6.name-servers" : "%s" % tftp_server
                 }
+            }
 
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
 
+    # adding a docs-string
+    #TODO: this needs to be in boardfarm-docsis.
     def copy_cmts_provisioning_files(self, board_config):
+        """
+        This method looks for board's config file in all overlays.
+        The file is then encrypted using docsis and pushed to TFTP server.
+
+        args:
+        board_config (dict): requires tftp_cfg_files key in board config.
+        """
         # Look in all overlays as well, and PATH as a workaround for standalone
         paths = os.environ['PATH'].split(os.pathsep)
         paths += [ os.path.realpath(x) for x in os.environ['BFT_OVERLAY'].split(' ') ]
@@ -480,6 +499,7 @@ EOF'''
                     for path in paths:
                         cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
         else:
+            #TODO: this needs to be removed
             for path in paths:
                 cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
         cfg_set = set(cfg_list)
@@ -491,88 +511,100 @@ EOF'''
             ret = d.encode()
             self.tftp_device.copy_file_to_server(ret)
 
-    def provision_board(self, board_config):
-        self.install_pkgs()
-        self.sendline('/etc/init.d/rsyslog start')
-        self.expect(self.prompt)
+    # this needs to be cleaned up a bit. Other devices should use this method to configure a dhcp server.
+    # e.g. debian won't require start dhcp_server_server method. it should call this static method.
+    # this will help in removing reprovision_board at a later time.
+    @staticmethod
+    def setup_dhcp_env(device):
+        device.install_pkgs()
+        device.sendline('/etc/init.d/rsyslog start')
+        device.expect(device.prompt)
 
         # if we are not a full blown wan+provisoner then offer to route traffic
-        if not self.wan_cmts_provisioner:
-            self.setup_as_wan_gateway()
+        if not device.wan_cmts_provisioner:
+            device.setup_as_wan_gateway()
 
         ''' Setup DHCP and time server etc for CM provisioning'''
-        self.sendline('echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % self.iface_dut)
-        self.expect(self.prompt)
-        self.sendline('echo INTERFACESv6="%s" >> /etc/default/isc-dhcp-server' % self.iface_dut)
-        self.expect(self.prompt)
+        device.sendline('echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % device.iface_dut)
+        device.expect(device.prompt)
+        device.sendline('echo INTERFACESv6="%s" >> /etc/default/isc-dhcp-server' % device.iface_dut)
+        device.expect(device.prompt)
         # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-        self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
-        self.expect(self.prompt)
-        if not self.wan_no_eth0:
-            self.sendline('ifconfig %s up' % self.iface_dut)
-            self.expect(self.prompt)
-            self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw))
-            self.expect(self.prompt)
+        device.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % device.iface_dut)
+        device.expect(device.prompt)
+        if not device.wan_no_eth0:
+            device.sendline('ifconfig %s up' % device.iface_dut)
+            device.expect(device.prompt)
+            device.sendline('ifconfig %s %s' % (device.iface_dut, device.gw))
+            device.expect(device.prompt)
 
             # TODO: we need to route via eth0 at some point
             # TODO: don't hard code eth0...
-            self.disable_ipv6('eth0')
-            self.enable_ipv6(self.iface_dut)
-            if self.gwv6 is not None:
-                self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
-                self.expect(self.prompt)
+            device.disable_ipv6('eth0')
+            device.enable_ipv6(device.iface_dut)
+            if device.gwv6 is not None:
+                device.sendline('ip -6 addr add %s/%s dev %s' % (device.gwv6, device.ipv6_prefix, device.iface_dut))
+                device.expect(device.prompt)
 
-        if self.static_route is not None:
-            self.sendline('ip route add %s' % self.static_route)
-            self.expect(self.prompt)
+        if device.static_route is not None:
+            device.sendline('ip route add %s' % device.static_route)
+            device.expect(device.prompt)
 
-        for nw in [self.cm_network, self.mta_network, self.open_network]:
-            self.sendline('ip route add %s via %s' % (nw, self.prov_gateway))
-            self.expect(self.prompt)
+        for nw in [device.cm_network, device.mta_network, device.open_network]:
+            device.sendline('ip route add %s via %s' % (nw, device.prov_gateway))
+            device.expect(device.prompt)
 
-        for nw in [self.cm_gateway_v6, self.open_gateway_v6]:
-            self.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, self.ipv6_prefix, self.prov_gateway_v6, self.iface_dut))
-            self.expect(self.prompt)
+        for nw in [device.cm_gateway_v6, device.open_gateway_v6]:
+            device.sendline('ip -6 route add %s/%s via %s dev %s' % (nw, device.ipv6_prefix, device.prov_gateway_v6, device.iface_dut))
+            device.expect(device.prompt)
 
-        for nw in self.erouter_net:
-            self.sendline('ip -6 route add %s via %s' % (nw, self.prov_gateway_v6))
-            self.expect(self.prompt)
+        for nw in device.erouter_net:
+            device.sendline('ip -6 route add %s via %s' % (nw, device.prov_gateway_v6))
+            device.expect(device.prompt)
 
-        self.update_cmts_isc_dhcp_config(board_config)
+        # only start tftp server if we are a full blown wan+provisioner
+        if device.wan_cmts_provisioner:
+            device.start_tftp_server()
+
+        device.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
+        device.expect(device.prompt)
+        device.sendline("grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a\\\\tflags\\t\\t= IPv6' -i /etc/xinetd.d/time")
+        device.expect(device.prompt)
+        device.sendline('/etc/init.d/xinetd restart')
+        device.expect('Starting internet superserver: xinetd.')
+        device.expect(device.prompt)
+        device.is_env_setup_done = True
+
+    def __str__(self):
+        self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.expect(self.prompt)
         self.sendline('cat /etc/dhcp/dhcpd6.conf')
         self.expect_exact('cat /etc/dhcp/dhcpd6.conf')
         self.expect(self.prompt)
+        return ""
 
+
+    # this should be renamed to a more suitable generic name.
+    def provision_board(self, board_config):
+        print_config = False
+        if not self.is_env_setup_done:
+            DebianISCProvisioner.setup_dhcp_env(self)
+            print_config = True
+
+        # this is the chunk from reprovision
+        self.update_cmts_isc_dhcp_config(board_config)
+        self.copy_cmts_provisioning_files(board_config)
         self._restart_dhcp_with_lock()
 
-        # only start tftp server if we are a full blown wan+provisioner
-        if self.wan_cmts_provisioner:
-            self.start_tftp_server()
+        if print_config:
+            print(self)
 
-        # errr, this should not need to call into board object
-        try:
-            from boardfarm.devices import board
-            board.update_cfg_for_site()
-        except:
-            pass
-
-        self.copy_cmts_provisioning_files(board_config)
-
-        self.sendline("sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time")
-        self.expect(self.prompt)
-        self.sendline("grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a\\\\tflags\\t\\t= IPv6' -i /etc/xinetd.d/time")
-        self.expect(self.prompt)
-        self.sendline('/etc/init.d/xinetd restart')
-        self.expect('Starting internet superserver: xinetd.')
-        self.expect(self.prompt)
-
+    #TODO: this needs to be removed at a later point. Keeping it for backward compatiility.
     def reprovision_board(self, board_config):
         '''New DHCP, cfg files etc for board after it's been provisioned once'''
         self.copy_cmts_provisioning_files(board_config)
         self.update_cmts_isc_dhcp_config(board_config)
-
         self._restart_dhcp_with_lock()
 
     def _try_to_restart_dhcp(self, do_ipv6):
