@@ -58,7 +58,7 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
         for d in root_dir:
             for root, dirs, files in os.walk(d):
                 for f in files:
-                    if f in ignore:
+                    if any(map( lambda x: x in f, ignore)):
                         continue
                     if no_ext:
                         f = os.path.splitext(f)[0]
@@ -125,7 +125,7 @@ class SnmpMibs(object):
         if len(snmp_mib_files) == 0:
             # only traverses the mib dirs and compile all the files
             # /usr/share/snmp/mibs has miblist.txt which MUST be ignored
-            snmp_mib_files = find_files_in_tree(snmp_mib_dirs, ignore='miblist.txt')
+            snmp_mib_files = find_files_in_tree(snmp_mib_dirs, ignore=['miblist.txt', '__', '.py'])
         if 'BFT_DEBUG' in os.environ:
             print('Mibs file list: %s' % snmp_mib_files)
 
