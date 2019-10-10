@@ -47,6 +47,7 @@ class AFTR(object):
 
         # local URL of aftr tarball. If we have an offline mirror.
         self.aftr_local = kwargs.get("local_site",None)
+        self.aftr_fqdn = kwargs.get("aftr_fqdn", "aftr.boardfarm.com")
 
         self.profile["on_boot"] = self.configure_aftr
         self.profile["hosts"] = { "aftr.boardfarm.com" : str(self.ipv6_ep.ip) }
