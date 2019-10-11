@@ -10,6 +10,7 @@ import glob
 import inspect
 import pexpect
 import termcolor
+import traceback
 
 # TODO: this probably should not the generic device
 import openwrt_router
@@ -184,6 +185,7 @@ def get_device(model, **kwargs):
         msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
         raise Exception(msg)
     except Exception as e:
+        traceback.print_exc()
         raise Exception(str(e))
 
     return None
