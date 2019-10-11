@@ -8,6 +8,9 @@ def connection(conn_type, device, **kwargs):
     '''
     Depending on the given connection type return an object of the appropriate class type.
     '''
+    if conn_type is None or conn_type in ("local_cmd"):
+        return local_cmd.LocalCmd(device=device, **kwargs)
+
     if conn_type in ("ser2net"):
         return ser2net_connection.Ser2NetConnection(device=device, **kwargs)
 
@@ -16,9 +19,6 @@ def connection(conn_type, device, **kwargs):
 
     if conn_type in ("ssh"):
         return ssh_connection.SshConnection(device=device, **kwargs)
-
-    if conn_type in ("local_cmd"):
-        return local_cmd.LocalCmd(device=device, **kwargs)
 
     if conn_type in ("kermit_cmd"):
         return kermit_connection.KermitConnection(device=device, **kwargs)
