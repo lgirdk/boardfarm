@@ -2,6 +2,7 @@ import ipaddress
 import os
 import pexpect
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
+from boardfarm.lib.common import retry_on_exception
 import re
 import glob
 import traceback
@@ -574,6 +575,22 @@ EOF'''
 
         self._restart_dhcp_with_lock()
 
+    def _try_to_restart_dhcp(self, do_ipv6):
+            self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
+            matching = ['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*']
+            match_num = 1
+            if do_ipv6:
+                matching.append('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
+                match_num += 1
+            else:
+                print("NOTE: not starting IPv6 because this provisioner is not setup properly")
+
+            for not_used in range(match_num):
+                self.expect(matching)
+                match_num -= 1
+            self.expect(self.prompt)
+            return match_num
+
     def _restart_dhcp_with_lock(self):
         do_ipv6 = True
 
@@ -586,19 +603,7 @@ EOF'''
         except:
             do_ipv6 = False
 
-        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
-        matching = ['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*']
-        match_num = 1
-        if do_ipv6:
-            matching.append('Starting ISC DHCPv6 server: dhcpd(6)?.\r\n')
-            match_num += 1
-        else:
-            print("NOTE: not starting IPv6 because this provisioner is not setup properly")
-
-        for not_used in range(match_num):
-            self.expect(matching)
-            match_num -= 1
-        self.expect(self.prompt)
+        match_num = retry_on_exception(self._try_to_restart_dhcp, (do_ipv6,))
 
         if match_num != 0:
             self.sendline('tail /var/log/syslog -n 100')
