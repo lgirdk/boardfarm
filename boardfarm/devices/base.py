@@ -27,6 +27,17 @@ class BaseDevice(pexpect.spawn):
     prompt = ['root\\@.*:.*#', ]
     delaybetweenchar = None
 
+    def __init__(self, *args, **kwargs):
+        # Bad args that pexpext does not take, higher classes should have popped
+        # them off, but we catch them all here in case
+        bad_args = ['tftp_username', 'connection_type', 'power_password', 'rootfs',
+                    'kernel', 'power_outlet', 'web_proxy', 'tftp_port', 'ssh_password',
+                    'tftp_server', 'config', 'power_ip', 'conn_cmd', 'power_username',
+                    'start', 'tftp_password']
+        for arg in bad_args:
+            kwargs.pop(arg)
+        super(BaseDevice, self).__init__(*args, **kwargs)
+
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface '''
         raise Exception("Not implemented!")
