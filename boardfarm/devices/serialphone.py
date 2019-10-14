@@ -11,6 +11,7 @@ class SerialPhone(object):
         self.kwargs = kwargs
 
         self.line = self.kwargs.get("line")
+        self.profile["on_boot"] = self.phone_config
 
     def __str__(self):
         return "serialmodem %s"% self.line
