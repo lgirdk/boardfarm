@@ -181,3 +181,16 @@ class LinuxBootTest(unittest2.TestCase):
         for device in self.config.devices:
             if 'feature' in device and feature in device['feature']:
                 return getattr(self, device)
+
+    def fetch_hosts(self):
+        '''To fetch wan hosts
+        Returns a dictionary of IP(key) with hosts(value) for all Wan devices'''
+        import re
+        hosts={}
+        for device in self.config.devices:
+            if  re.search("wan|sip|phone",device):
+                    dev = getattr(self.config, device)
+                    if hasattr(dev, 'iface_dut'):
+                        device_ip = dev.get_interface_ipaddr(dev.iface_dut)
+                        hosts[str(device_ip)]= device+".boardfarm.com"
+        return hosts
