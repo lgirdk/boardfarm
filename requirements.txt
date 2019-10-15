@@ -19,6 +19,7 @@ pyvirtualdisplay
 requests
 selenium
 simplejson
+sphinx
 termcolor
 unittest2
 zeep
