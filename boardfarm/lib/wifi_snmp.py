@@ -8,9 +8,12 @@ class wifi_snmp(wifi_stub):
     def __init__(self, device, board):
         self.device = device
         self.board = board
-        self.iface_ip = board.get_iface_addr_with_retries(board.wan_iface)
         self.mib_value = self.board.wifi_snmp_file
         self.parser = SnmpHelper.SnmpMibs.get_mib_parser()
+
+    @property
+    def iface_ip(self):
+        return self.board.get_iface_addr_with_retries(self.board.wan_iface)
 
     def enable_wifi(self, wifi_mode):
         index = self.mib_value["mib_index"][wifi_mode]
