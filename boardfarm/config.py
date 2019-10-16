@@ -59,7 +59,7 @@ cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
 # creates a small dictionary of all the options
 # this  will probably grow as options are added
 option_dict = {
-        "proxy":["normal","sock5"],
+        "proxy":["normal","socks5"],
         "webdriver":["chrome","ffox"],
         "disp":["xvfb", "xephyr", "xvnc"],
         "disp_port":["0"],

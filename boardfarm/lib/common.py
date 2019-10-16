@@ -132,7 +132,7 @@ def chrome_webproxy_driver(ipport, config):
     '''
 
     chrome_options = webdriver.ChromeOptions()
-    if config.default_proxy_type ==  'sock5':
+    if config.default_proxy_type ==  'socks5':
         chrome_options.add_argument("--proxy-server=socks5://" + ipport);
     else:
         chrome_options.add_argument('--proxy-server=' + ipport)
