@@ -578,7 +578,10 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
     Output: Snmpwalk output
     Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
     """
-    oid = parser.mib[mib_name]
+    if not isinstance(parser, SnmpMibs):
+        oid = parser.mib[mib_name]
+    else:
+        oid = parser.get_mib_oid(mib_name)
 
     device.sendline("snmpwalk -v 2c -c "+community+" -t " +str(time_out)+ " -r "+str(retry)+" "+ip_address+" "+ oid)
     device.expect(device.prompt)
