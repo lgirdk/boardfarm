@@ -16,7 +16,7 @@ class LinuxDevice(base.BaseDevice):
         self.sendline("\nifconfig %s" % interface)
         regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
                  'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
-                 'inet ('+ValidIpv4AddressRegex+').*netmask ('+ValidIpv4AddressRegex+').*destination '+ValidIpv4AddressRegex]
+                 'inet (' + ValidIpv4AddressRegex + ').*netmask (' + ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex]
         self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
         ipv4address = str(ipaddress.IPv4Address(unicode(ipaddr)))
@@ -55,14 +55,14 @@ class LinuxDevice(base.BaseDevice):
 
     def enable_ipv6(self, interface):
         '''Enable ipv6 of the interface '''
-        self.sendline("sysctl net.ipv6.conf."+interface+".accept_ra=2")
+        self.sendline("sysctl net.ipv6.conf." + interface + ".accept_ra=2")
         self.expect(self.prompt, timeout=30)
-        self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=0")
+        self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=0")
         self.expect(self.prompt, timeout=30)
 
     def disable_ipv6(self, interface):
         '''Disable ipv6 of the interface '''
-        self.sendline("sysctl net.ipv6.conf."+interface+".disable_ipv6=1")
+        self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=1")
         self.expect(self.prompt, timeout=30)
 
     def release_dhcp(self, interface):
@@ -77,7 +77,7 @@ class LinuxDevice(base.BaseDevice):
         Input:  url, source_ip
         Output: True or False
         '''
-        if source_ip == None :
+        if source_ip == None:
             self.sendline("curl -I {!s}".format(url))
         else:
             self.sendline("curl --interface {!s} -I {!s}".format(source_ip, url))
@@ -132,7 +132,7 @@ class LinuxDevice(base.BaseDevice):
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
-        match = re.search('BROADCAST,MULTICAST,UP',link_state)
+        match = re.search('BROADCAST,MULTICAST,UP', link_state)
         if match:
             return match.group(0)
         else:
@@ -140,7 +140,7 @@ class LinuxDevice(base.BaseDevice):
 
     def set_link_state(self, interface, state):
         '''Setting the interface status'''
-        self.sudo_sendline("ip link set %s %s" % (interface,state))
+        self.sudo_sendline("ip link set %s %s" % (interface, state))
         self.expect(self.prompt)
 
     def add_new_user(self, id, pwd):
@@ -223,7 +223,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def set_cli_size(self, columns):
         '''Set the terminal colums value'''
-        self.sendline('stty columns %s'%str(columns))
+        self.sendline('stty columns %s' % str(columns))
         self.expect(self.prompt)
 
     def wait_for_linux(self):

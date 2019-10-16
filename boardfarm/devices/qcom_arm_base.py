@@ -160,7 +160,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
                     {'expect': 'raw 0x3', 'name': 'dcache_misses', 'sname': 'DMISS'},
                     {'expect': 'raw 0x1', 'name': 'icache_misses', 'sname': 'IMISS'}]
 
-        events += [ {'expect': 'raw 0x12013', 'name': 'load_exclusive', 'sname': 'LDREX'},
+        events += [{'expect': 'raw 0x12013', 'name': 'load_exclusive', 'sname': 'LDREX'},
                     {'expect': 'raw 0x12011', 'name': 'store_exclusive', 'sname': 'STREX'},
                     {'expect': 'raw 0x12041', 'name': 'data_sync_barrier', 'sname': 'DSB'},
                     {'expect': 'raw 0x12040', 'name': 'data_mem_barrier', 'sname': 'DBM'},

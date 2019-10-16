@@ -78,7 +78,7 @@ class TestsuiteConfigReader(object):
                         self.section[current_section].append(line)
             except Exception as e:
                 print(e)
-                print("Error line %s of %s" % (i+1, fname))
+                print("Error line %s of %s" % (i + 1, fname))
                 continue
 
     def __str__(self):
@@ -86,7 +86,7 @@ class TestsuiteConfigReader(object):
         for name in sorted(self.section):
             result.append('* %s' % name)
             for i, x in enumerate(self.section[name]):
-                result.append(' %2s %s' % (i+1, x))
+                result.append(' %2s %s' % (i + 1, x))
         return "\n".join(result)
 
 if __name__ == '__main__':

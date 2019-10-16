@@ -14,13 +14,13 @@ class SerialPhone(object):
         self.profile["on_boot"] = self.phone_config
 
     def __str__(self):
-        return "serialmodem %s"% self.line
+        return "serialmodem %s" % self.line
 
     def phone_config(self):
         '''
         to configure system link/soft link
         '''
-        self.sendline("ln -s /dev/tty%s  /root/line-%s" % (self.line,self.line))
+        self.sendline("ln -s /dev/tty%s  /root/line-%s" % (self.line, self.line))
         self.expect(["File exists"] + self.prompt)
     
     def phone_unconfig(self):

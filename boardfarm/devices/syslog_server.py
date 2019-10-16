@@ -1,4 +1,4 @@
-import pexpect
+
 import re
 import time
 import datetime
@@ -30,7 +30,7 @@ class SyslogServer(object):
         Parameters: (string)IP address of the DUT
         '''
 
-        command="rm %s/log_%s" % (self.syslog_path, ip)
+        command = "rm %s/log_%s" % (self.syslog_path, ip)
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.prompt)
@@ -47,8 +47,8 @@ class SyslogServer(object):
         Returns: (string)Syslog messages
         '''
 
-        command="tail -n %s %slog_%s" % (n, self.syslog_path, ip)
-        req=self.check_output(command)
+        command = "tail -n %s %slog_%s" % (n, self.syslog_path, ip)
+        req = self.check_output(command)
         return req
 
     def check_syslog_time(self, ip, check_string):
@@ -64,11 +64,11 @@ class SyslogServer(object):
         Returns: (string) Time of the syslog message
         '''
         log = self.get_syslog_via_ip(ip)
-        match = re.search(".*\s(\d+\:\d+\:\d+).*(%s).*" %check_string, log)
+        match = re.search(".*\s(\d+\:\d+\:\d+).*(%s).*" % check_string, log)
         time_log_msg = match.group(1)
 
         # Check syslog time from server
-        x = time.strptime(time_log_msg,'%H:%M:%S')
-        time_log_msg = datetime.timedelta(hours=x.tm_hour,minutes=x.tm_min,seconds=x.tm_sec).total_seconds()
+        x = time.strptime(time_log_msg, '%H:%M:%S')
+        time_log_msg = datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min, seconds=x.tm_sec).total_seconds()
 
         return time_log_msg

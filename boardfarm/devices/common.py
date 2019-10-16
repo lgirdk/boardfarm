@@ -19,7 +19,7 @@ import termcolor
 def get_file_magic(fname, num_bytes=4):
     '''Return the first few bytes from a file to determine the type.'''
     if fname.startswith("http://") or fname.startswith("https://"):
-        rng = 'bytes=0-%s' % (num_bytes-1)
+        rng = 'bytes=0-%s' % (num_bytes - 1)
         req = urllib2.Request(fname, headers={'Range': rng})
         data = urllib2.urlopen(req).read()
     else:

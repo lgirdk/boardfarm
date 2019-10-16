@@ -106,9 +106,9 @@ if __name__ == '__main__':
     dell_switch.connect()
 
     dell_switch.configure_basic_settings()
-    for i in range(1, 42+1):
+    for i in range(1, 42 + 1):
         dell_switch.configure_eth_private_port(i)
-    for i in range(43, 48+1):
+    for i in range(43, 48 + 1):
         dell_switch.configure_eth_trunk_port(i)
 
     print()

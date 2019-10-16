@@ -32,7 +32,7 @@ class DockerFactory(linux.LinuxDevice):
         self.docker_network = kwargs.pop('docker_network', None)
         env = self.env = kwargs.pop('env', None)
         self.name = kwargs.pop('name')
-        self.cname = self.name + "-" +self.env["uniq_id"]
+        self.cname = self.name + "-" + self.env["uniq_id"]
         self.username = kwargs.pop('username', 'root')
         self.password = kwargs.pop('password', 'bigfoot1')
 
@@ -150,6 +150,6 @@ class DockerFactory(linux.LinuxDevice):
             for c in self.target_cname:
                 self.sendline('docker stop %s' % c)
                 self.expect(self.prompt)
-                self.sendline('docker rm %s'% c)
+                self.sendline('docker rm %s' % c)
                 self.expect(self.prompt)
                 self.created_docker = False

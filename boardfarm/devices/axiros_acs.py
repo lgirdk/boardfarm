@@ -198,7 +198,7 @@ class AxirosACS(object):
                 break
             if (value.text != '200'):
                 continue
-            dict_value = {'Name' : param}
+            dict_value = {'Name': param}
             for iter_value in ['Notification', 'item']:
                 for value in root.iter(iter_value):
                     dict_value[iter_value] = value.text
@@ -209,7 +209,7 @@ class AxirosACS(object):
 
     def rpc_SetParameterAttributes(self, serial_number, attr, value):
         SetParameterAttrParametersClassArray_type = self.client.get_type('ns0:SetParameterAttributesParametersClassArray')
-        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type([{'Name': attr, 'Notification' : value , 'AccessListChange' : '0', 'AccessList': {'item' : 'Subscriber'}, 'NotificationChange' : '1'}])
+        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type([{'Name': attr, 'Notification': value, 'AccessListChange': '0', 'AccessList': {'item': 'Subscriber'}, 'NotificationChange': '1'}])
 
         CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()

@@ -116,10 +116,10 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("ln -sf %s /www/TEMP" % fname)
         self.expect(self.prompt)
-        proxy = urllib2.ProxyHandler({'http': self.web_proxy+':8080'})
+        proxy = urllib2.ProxyHandler({'http': self.web_proxy + ':8080'})
         opener = urllib2.build_opener(proxy)
         urllib2.install_opener(opener)
-        print("\nAttempting download of %s via proxy %s" % (url, self.web_proxy+':8080'))
+        print("\nAttempting download of %s via proxy %s" % (url, self.web_proxy + ':8080'))
         return urllib2.urlopen(url, timeout=30)
 
     def tftp_get_file(self, host, filename, timeout=30):
@@ -207,7 +207,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     print("\n\nWARN: possibly need to hold down reset button to break into U-Boot\n\n")
                     self.expect('Hit any key ')
 
-                self.sendline('\n\n\n\n\n\n\n') # try really hard
+                self.sendline('\n\n\n\n\n\n\n')  # try really hard
                 i = self.expect(['httpd'] + self.uprompt, timeout=4)
                 if i == 0:
                     self.sendcontrol('c')
@@ -278,7 +278,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.uprompt)
         self.sendline('setenv ethact %s' % self.uboot_eth)
         self.expect(self.uprompt)
-        self.expect(pexpect.TIMEOUT, timeout=self.uboot_net_delay) # running dhcp too soon causes hang
+        self.expect(pexpect.TIMEOUT, timeout=self.uboot_net_delay)  # running dhcp too soon causes hang
         self.sendline('dhcp')
         i = self.expect(['Unknown command', 'DHCP client bound to address'], timeout=60)
         self.expect(self.uprompt)
@@ -288,7 +288,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.sendline('setenv serverip %s' % self.tftp_server_int)
         self.expect(self.uprompt)
         if self.tftp_server_int:
-            #interfaces=['eth1','eth0']
+            # interfaces=['eth1','eth0']
             passed = False
             for attempt in range(5):
                 try:
@@ -307,7 +307,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     self.expect('<INTERRUPT>')
                     self.expect(self.uprompt)
                     #self.sendline('setenv ethact %s' % (interfaces[attempt%2]))
-                    #self.expect(self.uprompt)
+                    # self.expect(self.uprompt)
                     self.sendline('dhcp')
                     self.expect('DHCP client bound to address', timeout=60)
                     self.expect(self.uprompt)
@@ -407,7 +407,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
     def get_dns_server(self):
         '''Getting dns server ip address '''
-        return "%s" %self.lan_gateway
+        return "%s" % self.lan_gateway
 
     def get_user_id(self, user_id):
         self.sendline('cat /etc/passwd | grep -w ' + user_id)
@@ -481,7 +481,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                         self.touch()
 
                 if len(idle_vals) != 0:
-                    avg_cpu_usage = 100 - sum(idle_vals)  / len(idle_vals)
+                    avg_cpu_usage = 100 - sum(idle_vals) / len(idle_vals)
                     dict_to_log['mpstat'] = avg_cpu_usage
                 else:
                     dict_to_log['mpstat'] = 0
@@ -507,8 +507,8 @@ if __name__ == '__main__':
     board.sendline('\nuname -a')
     board.expect('Linux')
     board.expect('root@[^ ]+')
-    #board.reset()
-    #board.expect('U-Boot')
+    # board.reset()
+    # board.expect('U-Boot')
     # Example downloading a file from the board
     remote_fname = '/tmp/dhcp.leases'
     local_fname = '/tmp/dhcp.leases'

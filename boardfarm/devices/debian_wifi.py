@@ -9,7 +9,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
     model = ('debianwifi')
     def __init__(self, *args, **kwargs):
-        super(DebianWifi,self).__init__( *args, **kwargs)
+        super(DebianWifi, self).__init__(*args, **kwargs)
         self.iface_dut = self.iface_wifi = self.kwargs.get('dut_interface', 'wlan1')
 
     def disable_and_enable_wifi(self):
@@ -23,7 +23,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.set_link_state(self.iface_wifi, "up")
 
     def release_wifi(self):
-        iface=self.iface_wifi
+        iface = self.iface_wifi
         self.release_dhcp(iface)
 
     def wifi_scan(self):
@@ -40,7 +40,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
         self.sudo_sendline('iw %s scan | grep "SSID: %s"' % (self.iface_wifi, ssid_name))
         self.expect(self.prompt)
-        match = re.search("%s\"\s+.*(%s)"%(ssid_name, ssid_name), self.before)
+        match = re.search("%s\"\s+.*(%s)" % (ssid_name, ssid_name), self.before)
         if match:
             return True
         else:
@@ -48,16 +48,16 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
     def wifi_connect(self, ssid_name, password=None, security_mode=None):
         if password == None:
-            self.sudo_sendline("iwconfig %s essid %s" % (self.iface_wifi,ssid_name))
+            self.sudo_sendline("iwconfig %s essid %s" % (self.iface_wifi, ssid_name))
         else:
             '''Generate WPA supplicant file and execute it'''
-            self.sudo_sendline("rm "+ssid_name+".conf")
+            self.sudo_sendline("rm " + ssid_name + ".conf")
             self.expect(self.prompt)
-            self.sudo_sendline("wpa_passphrase "+ssid_name+" "+password+" >> "+ssid_name+".conf")
+            self.sudo_sendline("wpa_passphrase " + ssid_name + " " + password + " >> " + ssid_name + ".conf")
             self.expect(self.prompt)
-            self.sendline("cat "+ssid_name+".conf")
+            self.sendline("cat " + ssid_name + ".conf")
             self.expect(self.prompt)
-            self.sudo_sendline("wpa_supplicant  -B -Dnl80211 -i"+self.iface_wifi+ " -c"+ssid_name+".conf")
+            self.sudo_sendline("wpa_supplicant  -B -Dnl80211 -i" + self.iface_wifi + " -c" + ssid_name + ".conf")
             self.expect(self.prompt)
             match = re.search('Successfully initialized wpa_supplicant', self.before)
             if match:
@@ -89,7 +89,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
     def wifi_change_region(self, country):
         country = countrycode(country, origin='country_name', target='iso2c')
-        self.sudo_sendline("iw reg set %s"%(country))
+        self.sudo_sendline("iw reg set %s" % (country))
         self.expect(self.prompt)
         self.sendline("iw reg get")
         self.expect(self.prompt)
@@ -108,9 +108,9 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.disable_and_enable_wifi()
         self.expect(pexpect.TIMEOUT, timeout=20)
         output = self.wifi_check_ssid(ssid_name)
-        assert output==True,'SSID value check in WLAN container'
+        assert output == True, 'SSID value check in WLAN container'
 
         self.wifi_connect(ssid_name, password)
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify()
-        assert verify_connect==True,'Connection establishment in WIFI'
+        assert verify_connect == True, 'Connection establishment in WIFI'

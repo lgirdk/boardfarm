@@ -10,7 +10,7 @@ class SipCenter(object):
         self.args = args
         self.kwargs = kwargs
 
-        self.numbers = self.kwargs.get('numbers', ["1000","2000","3000"])
+        self.numbers = self.kwargs.get('numbers', ["1000", "2000", "3000"])
 
     def __str__(self):
         return "asterisk"
@@ -42,21 +42,21 @@ EOF'''
         self.expect(self.prompt)
         for i in self.numbers:
             num_conf = '''(
-echo ['''+i+''']
+echo [''' + i + ''']
 echo type=friend
-echo regexten='''+i+'''
+echo regexten=''' + i + '''
 echo secret=1234
 echo qualify=no
 echo nat=force_rport
 echo host=dynamic
 echo canreinvite=no
 echo context=default
-echo dial=SIP/'''+i+'''
+echo dial=SIP/''' + i + '''
 )>>  /etc/asterisk/sip.conf'''
             self.sendline(num_conf)
             self.expect(self.prompt)
             num_mod = '''(
-echo exten \=\> '''+i+''',1,Dial\(SIP\/'''+i+''',10,r\)
+echo exten \=\> ''' + i + ''',1,Dial\(SIP\/''' + i + ''',10,r\)
 echo same \=\>n,Wait\(20\)
 )>> /etc/asterisk/extensions.conf'''
             self.sendline(num_mod)

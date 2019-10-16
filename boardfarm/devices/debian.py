@@ -22,7 +22,7 @@ class DebianBox(linux.LinuxDevice):
     '''
 
     model = ('debian')
-    prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #" ]
+    prompt = ['root\\@.*:.*#', '/ # ', ".*:~ #"]
     static_route = None
     static_ip = False
     wan_dhcp = False
@@ -108,13 +108,13 @@ class DebianBox(linux.LinuxDevice):
         self.password = password
         self.port = port
         self.location = location
-        self.env=env
+        self.env = env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
         self.tftp_device = self
 
         try:
-            i = self.expect(["yes/no", "assword:", "Last login", username+".*'s password:"] + self.prompt, timeout=30)
+            i = self.expect(["yes/no", "assword:", "Last login", username + ".*'s password:"] + self.prompt, timeout=30)
         except pexpect.TIMEOUT:
             raise Exception("Unable to connect to %s." % name)
         except pexpect.EOF:
@@ -220,7 +220,7 @@ class DebianBox(linux.LinuxDevice):
         if post_cmd is not None:
             sys.stdout.write("\tRunning post_cmd.... ")
             sys.stdout.flush()
-            env_prefix=""
+            env_prefix = ""
             for k, v in env.iteritems():
                 env_prefix += "export %s=%s; " % (k, v)
 
@@ -252,7 +252,7 @@ class DebianBox(linux.LinuxDevice):
 
     def reset(self):
         self.sendline('reboot')
-        self.expect(['going down','disconnected'])
+        self.expect(['going down', 'disconnected'])
         try:
             self.expect(self.prompt, timeout=10)
         except:
@@ -370,26 +370,26 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('ifconfig %s up' % self.iface_dut)
         self.expect(self.prompt)
 
-        #configure tftp server
+        # configure tftp server
         self.sendline('/etc/init.d/tftpd-hpa stop')
         self.expect('Stopping')
         self.expect(self.prompt)
         if not self.shared_tftp_server:
-            self.sendline('rm -rf '+self.tftp_dir)
+            self.sendline('rm -rf ' + self.tftp_dir)
             self.expect(self.prompt)
             self.sendline('rm -rf /srv/tftp')
             self.expect(self.prompt)
         self.sendline('mkdir -p /srv/tftp')
         self.expect(self.prompt)
-        self.sendline('ln -sf /srv/tftp/ '+self.tftp_dir)
+        self.sendline('ln -sf /srv/tftp/ ' + self.tftp_dir)
         self.expect(self.prompt)
-        self.sendline('mkdir -p '+self.tftp_dir+'/tmp')
+        self.sendline('mkdir -p ' + self.tftp_dir + '/tmp')
         self.expect(self.prompt)
-        self.sendline('chmod a+w '+self.tftp_dir+'/tmp')
+        self.sendline('chmod a+w ' + self.tftp_dir + '/tmp')
         self.expect(self.prompt)
-        self.sendline('mkdir -p '+self.tftp_dir+'/crashdump')
+        self.sendline('mkdir -p ' + self.tftp_dir + '/crashdump')
         self.expect(self.prompt)
-        self.sendline('chmod a+w '+self.tftp_dir+'/crashdump')
+        self.sendline('chmod a+w ' + self.tftp_dir + '/crashdump')
         self.expect(self.prompt)
         self.sendline('sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa')
         self.expect(self.prompt)
@@ -433,7 +433,7 @@ class DebianBox(linux.LinuxDevice):
 
         # this needs to be more fine-grained controlled.
         # also it needs to have args handling.
-        if hasattr(self,"profile"):
+        if hasattr(self, "profile"):
             self.profile["on_boot"]()
 
         if self.static_route is not None:
@@ -479,7 +479,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('listen-address=%s' % self.gw)
         if self.gwv6 is not None:
             self.sendline('listen-address=%s' % self.gwv6)
-        self.sendline('addn-hosts=/etc/dnsmasq.hosts') #all additional hosts will be added to dnsmasq.hosts
+        self.sendline('addn-hosts=/etc/dnsmasq.hosts')  # all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
         self.add_hosts()
         self.sendline('/etc/init.d/dnsmasq restart')
@@ -488,16 +488,16 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def add_hosts(self):
-        #to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         import config
         # this is a hack, the add_host should have been called from RootFs
-        hosts={}
-        if hasattr(self,"profile"):
+        hosts = {}
+        if hasattr(self, "profile"):
             hosts.update(self.profile["hosts"])
         if hasattr(config, "board"):
             for device in config.board['devices']:
                 if 'ipaddr' in device:
-                    domain_name=str(getattr(config, device['name']).name)+'.boardfarm.com'
+                    domain_name = str(getattr(config, device['name']).name) + '.boardfarm.com'
                     device = getattr(config, device['name'])
                     if not hasattr(device, 'ipaddr'):
                         continue

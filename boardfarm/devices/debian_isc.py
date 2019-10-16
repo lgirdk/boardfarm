@@ -53,9 +53,9 @@ class DebianISCProvisioner(debian.DebianBox):
         # we're storing a list of all /56 subnets possible from erouter_net_iface.
         # As per docsis, /56 must be the default pd length
         self.erouter_net_iface = ipaddress.IPv6Interface(unicode(kwargs.pop('erouter_net', "2001:dead:beef:e000::/51")))
-        self.erouter_net = list(self.erouter_net_iface.network.subnets(56-self.erouter_net_iface._prefixlen))
+        self.erouter_net = list(self.erouter_net_iface.network.subnets(56 - self.erouter_net_iface._prefixlen))
 
-        self.sip_fqdn = kwargs.pop('sip_fqdn',u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
+        self.sip_fqdn = kwargs.pop('sip_fqdn', u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00")
         self.time_server = ipaddress.IPv4Address(unicode(kwargs.pop('time_server', str(self.prov_ip))))
         self.timezone = self.get_timzone_offset(unicode(kwargs.pop('timezone', "UTC")))
         self.syslog_server = ipaddress.IPv4Address(unicode(kwargs.pop('syslog_server', str(self.prov_ip))))
@@ -173,8 +173,8 @@ EOF'''
         to_send = to_send.replace('###OPEN_NETWORK_V6_START###', str(self.open_network_v6_start))
         to_send = to_send.replace('###OPEN_NETWORK_V6_END###', str(self.open_network_v6_end))
         # Increment IP by 200 hosts
-        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_START###', str(self.open_network_v6_start+256*2))
-        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_END###', str(self.open_network_v6_end+256*2))
+        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_START###', str(self.open_network_v6_start + 256 * 2))
+        to_send = to_send.replace('###OPEN_NETWORK_HOST_V6_END###', str(self.open_network_v6_end + 256 * 2))
 
         # keep last ten /56 prefix in erouter pool. for unknown hosts
         to_send = to_send.replace('###EROUTER_NET_START###', str(self.erouter_net[-10].network_address))
@@ -205,7 +205,7 @@ EOF'''
 
         # the IPv6 subnet for erouter_net in json, should be large enough
         # len(erouter_net) >= no. of boards + 10
-        board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config['station'].split("-")[-1])%len(self.erouter_net)])
+        board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config['station'].split("-")[-1]) % len(self.erouter_net)])
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
@@ -233,7 +233,7 @@ EOF'''
         tftp_server = self.tftp_device.tftp_server_ip_int()
 
         # TODO: we should work ipv6 only at some point
-        #if tftp_server is None:
+        # if tftp_server is None:
         #    self.sendline('rm /etc/dhcp/dhcpd.conf-' + board_config['station'] + '.master')
         #    self.expect(self.prompt)
         #    return
@@ -390,17 +390,17 @@ EOF'''
         self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
-    def get_timzone_offset(self,timezone):
+    def get_timzone_offset(self, timezone):
         if timezone == "UTC":
             return 0
         if timezone.startswith("GMT") or timezone.startswith("UTC"):
             try:
-                offset = int(re.search(r"[\W\D\S]?\d{1,2}",timezone).group(0))
+                offset = int(re.search(r"[\W\D\S]?\d{1,2}", timezone).group(0))
             except:
             # In case a value was not provided, will throw an Attribute error
                 return 0
             # offset should be from GMT -11 to GMT 12
-            if offset in range(-11,13):
+            if offset in range(-11, 13):
                 return 3600 * offset
             else:
                 print("Invalid Timezone. Using UTC standard")
@@ -418,9 +418,9 @@ EOF'''
 
         # This can be later broken down to smaller chunks to add options specific to type of device.
         mta_dhcp_options = {
-                "mta": { "hardware ethernet": board_config['mta_mac'],
+                "mta": {"hardware ethernet": board_config['mta_mac'],
                          "filename": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
-                         "options": { "bootfile-name": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
+                         "options": {"bootfile-name": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
                                       "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
                                       "domain-name": "\"sipcenter.com\"",
                                       "domain-name-servers": "%s" % tftp_server,
@@ -433,42 +433,42 @@ EOF'''
         board_config["extra_provisioning"].update(mta_dhcp_options)
 
         # This can be later broken down to smaller chunks to add options specific to type of device.
-        cm_dhcp_options =  {
-                "cm": { "hardware ethernet": board_config['cm_mac'],
+        cm_dhcp_options = {
+                "cm": {"hardware ethernet": board_config['cm_mac'],
                          "filename": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
-                         "options": { "bootfile-name": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
+                         "options": {"bootfile-name": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
                                       "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
                                       "docsis-mta.dhcp-server-1": self.prov_ip,
                                       "docsis-mta.dhcp-server-2": self.prov_ip,
                                       "docsis-mta.provision-server": "0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00",
                                       "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
                                       "domain-name-servers": "%s" % tftp_server,
-                                      "time-offset" : "%s" % str(self.timezone)
+                                      "time-offset": "%s" % str(self.timezone)
                                     }
                        }
             }
         board_config["extra_provisioning"].update(cm_dhcp_options)
 
         board_config['extra_provisioning']["erouter"] = \
-            { "hardware ethernet": board_config['erouter_mac'],
-              "default-lease-time" : self.default_lease_time,
+            {"hardware ethernet": board_config['erouter_mac'],
+              "default-lease-time": self.default_lease_time,
               "max-lease-time": self.max_lease_time,
-                  "options": { "domain-name-servers": "%s" % tftp_server}
+                  "options": {"domain-name-servers": "%s" % tftp_server}
             }
 
         # This can be later broken down to another method which adds dhcpv6 options to type of device.
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
         board_config['extra_provisioning_v6']["cm"] = \
-            { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
-              "options": { "docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
-                  "dhcp6.name-servers" : "%s" % tftp_server
+            {"host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
+              "options": {"docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
+                  "dhcp6.name-servers": "%s" % tftp_server
                 }
             }
         board_config['extra_provisioning_v6']["erouter"] = \
-            { "host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['erouter_mac'],
+            {"host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['erouter_mac'],
                 "hardware ethernet": board_config['erouter_mac'],
                 "options": {
-                    "dhcp6.name-servers" : "%s" % tftp_server
+                    "dhcp6.name-servers": "%s" % tftp_server
                 }
             }
 
@@ -476,7 +476,7 @@ EOF'''
         self.setup_dhcp6_config(board_config)
 
     # adding a docs-string
-    #TODO: this needs to be in boardfarm-docsis.
+    # TODO: this needs to be in boardfarm-docsis.
     def copy_cmts_provisioning_files(self, board_config):
         """
         This method looks for board's config file in all overlays.
@@ -487,7 +487,7 @@ EOF'''
         """
         # Look in all overlays as well, and PATH as a workaround for standalone
         paths = os.environ['PATH'].split(os.pathsep)
-        paths += [ os.path.realpath(x) for x in os.environ['BFT_OVERLAY'].split(' ') ]
+        paths += [os.path.realpath(x) for x in os.environ['BFT_OVERLAY'].split(' ')]
         cfg_list = []
 
         if 'tftp_cfg_files' in board_config:
@@ -499,7 +499,7 @@ EOF'''
                     for path in paths:
                         cfg_list += glob.glob(path + '/devices/cm-cfg/%s' % cfg)
         else:
-            #TODO: this needs to be removed
+            # TODO: this needs to be removed
             for path in paths:
                 cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
         cfg_set = set(cfg_list)
@@ -600,7 +600,7 @@ EOF'''
         if print_config:
             print(self)
 
-    #TODO: this needs to be removed at a later point. Keeping it for backward compatiility.
+    # TODO: this needs to be removed at a later point. Keeping it for backward compatiility.
     def reprovision_board(self, board_config):
         '''New DHCP, cfg files etc for board after it's been provisioned once'''
         self.copy_cmts_provisioning_files(board_config)
@@ -653,7 +653,7 @@ EOF'''
         val = None
         try:
             self.sendline('cat  /etc/dhcp/dhcpd.conf.%s' % station)
-            idx = self.expect(['(%s-%s\s\{([^}]+)(%s\s(%s))\;)' % (dev, station, attr, exp_pattern) ] + ['No such file or directory'] + [pexpect.TIMEOUT], timeout=10)
+            idx = self.expect(['(%s-%s\s\{([^}]+)(%s\s(%s))\;)' % (dev, station, attr, exp_pattern)] + ['No such file or directory'] + [pexpect.TIMEOUT], timeout=10)
             if idx == 0:
                 # the value should be in group 4
                 val = self.match.group(match_group)
@@ -669,9 +669,9 @@ EOF'''
 
             cm_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'cm', board_config['station'])
             cm_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'cm', board_config['station'])
-            if mta_cfg is None or mta_cfg_srv  is None or cm_cfg is None or cm_cfg_srv is None:
+            if mta_cfg is None or mta_cfg_srv is None or cm_cfg is None or cm_cfg_srv is None:
                 raise
-            return [[mta_cfg.replace('"', ''), mta_cfg_srv], [cm_cfg.replace('"',''), cm_cfg_srv]]
+            return [[mta_cfg.replace('"', ''), mta_cfg_srv], [cm_cfg.replace('"', ''), cm_cfg_srv]]
         except:
             pass
 
@@ -685,30 +685,30 @@ EOF'''
             return False
 
         for elem in cfg_list:
-            conf_file = self.tftp_dir+'/'+elem[0]
+            conf_file = self.tftp_dir + '/' + elem[0]
             server = elem[1]
 
             # this is where the current (to be downloaded from the tftp)
             # config is going to be placed
-            dest_fname = _tmpdir+'/'+os.path.basename(conf_file)+"."+board_config['station']+".current"
+            dest_fname = _tmpdir + '/' + os.path.basename(conf_file) + "." + board_config['station'] + ".current"
             try:
                 os.remove(dest_fname)
             except:
                 pass
 
             try:
-                print('Downloading '+server+':'+conf_file+' to '+dest_fname)
+                print('Downloading ' + server + ':' + conf_file + ' to ' + dest_fname)
                 from devices.common import scp_from
                 scp_from(conf_file, server, self.tftp_device.username, self.tftp_device.password, self.tftp_device.port, dest_fname)
 
                 if not os.path.isfile(dest_fname):
                     # Something has gone wrong as the tftp client has not thrown an
                     # exception, but the file is not where it should be!!
-                    print("Tftp completed but %s not found in destination dir: "% dest_fname)
+                    print("Tftp completed but %s not found in destination dir: " % dest_fname)
                     return False
-                print("Downloaded: "+conf_file)
+                print("Downloaded: " + conf_file)
             except:
-                print("Failed to download %s from %s"% (conf_file, self.ipaddr))
+                print("Failed to download %s from %s" % (conf_file, self.ipaddr))
                 return False
 
         return True
@@ -720,7 +720,7 @@ EOF'''
         return 'aftr.boardfarm.com'
 
     def send(self, s):
-        bad_commands = ['ifconfig %s down' %  self.iface_dut]
+        bad_commands = ['ifconfig %s down' % self.iface_dut]
 
         for cmd in bad_commands:
             if cmd in s:

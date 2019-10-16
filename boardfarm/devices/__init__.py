@@ -31,13 +31,13 @@ cmts = None
 provisioner = None
 
 
-device_mappings = { }
+device_mappings = {}
 
 def probe_devices():
     '''To be removed once all overlays are proper modules'''
 
     # Local devices
-    device_files = glob.glob(os.path.dirname(__file__)+"/*.py")
+    device_files = glob.glob(os.path.dirname(__file__) + "/*.py")
     device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
 
     # Get devices from overlays
@@ -65,13 +65,13 @@ def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
     from boardfarm.lib.common import cmd_exists
     if not cmd_exists(cmd):
-        termcolor.cprint("\nThe  command '"+cmd+"' is NOT installed on your system. Please install it.", None, attrs=['bold'])
-        if msg is not None: print(cmd+": "+msg)
+        termcolor.cprint("\nThe  command '" + cmd + "' is NOT installed on your system. Please install it.", None, attrs=['bold'])
+        if msg is not None: print(cmd + ": " + msg)
         import sys
         if sys.platform == "linux2":
             import platform
             if "Ubuntu" in platform.dist() or "debian" in platform.dist():
-                print("To install run:\n\tsudo apt install <package with "+cmd+">")
+                print("To install run:\n\tsudo apt install <package with " + cmd + ">")
                 exit(1)
         print("To install refer to your system SW app installation instructions")
 
@@ -117,22 +117,22 @@ def bf_node(cls_list, model, **kwargs):
         members = [attr for attr in cls.__dict__ if
                 not attr.startswith('__') and
                 not attr.endswith('__') and
-                attr not in ('model','prompt')]
+                attr not in ('model', 'prompt')]
         common = list(set(members) & set(cls_members))
         if len(common) > 0:
-            raise Exception("Identified duplicate class members %s between classes  %s" % (str(common), str(cls_list[:cls_list.index(cls)+1])))
+            raise Exception("Identified duplicate class members %s between classes  %s" % (str(common), str(cls_list[:cls_list.index(cls) + 1])))
 
         cls_members.extend(members)
         temp.append(cls)
 
     cls_list = temp
-    cls_name = "_".join([cls.__name__ for  cls in cls_list])
+    cls_name = "_".join([cls.__name__ for cls in cls_list])
 
     def __init__(self, *args, **kwargs):
         for cls in cls_list:
             cls.__init__(self, *args, **kwargs)
 
-    ret = type(cls_name, tuple(cls_list), {'__init__':__init__})(model,**kwargs)
+    ret = type(cls_name, tuple(cls_list), {'__init__': __init__})(model, **kwargs)
     ret.target = kwargs
 
     return ret
@@ -140,7 +140,7 @@ def bf_node(cls_list, model, **kwargs):
 def get_device(model, **kwargs):
     profile = kwargs.get("profile", {})
     cls_list = []
-    profile_list=[]
+    profile_list = []
     for device_file, devs in device_mappings.iteritems():
         for dev in devs:
             if 'model' in dev.__dict__:
@@ -158,7 +158,7 @@ def get_device(model, **kwargs):
                         profile_kwargs = profile[attr]
                     elif type(attr) is tuple and len(set(attr) & set(profile)) == 1:
                         profile_exists = True
-                        profile_kwargs = profile[ list(set(attr) & set(profile))[0] ]
+                        profile_kwargs = profile[list(set(attr) & set(profile))[0]]
 
                 if profile_exists:
                     if dev not in cls_list:
@@ -168,7 +168,7 @@ def get_device(model, **kwargs):
                         continue
                     common_keys = set(kwargs) & set(profile_kwargs)
                     if len(common_keys) > 0:
-                        print("Identified duplicate keys in profile and base device : %s" % str(list(common_keys)) )
+                        print("Identified duplicate keys in profile and base device : %s" % str(list(common_keys)))
                         print("Removing duplicate keys from profile!")
                         for i in list(common_keys):
                             profile_kwargs.pop(i)
@@ -191,7 +191,7 @@ def get_device(model, **kwargs):
 def board_decider(model, **kwargs):
     if any('conn_cmd' in s for s in kwargs):
         if any(u'kermit' in s for s in kwargs['conn_cmd']):
-            check_for_cmd_on_host('kermit',"telnet equivalent command. It has lower CPU usage than telnet,\n\
+            check_for_cmd_on_host('kermit', "telnet equivalent command. It has lower CPU usage than telnet,\n\
 and works exactly the same way (e.g. kermit -J <ipaddr> [<port>])\n\
 You are seeing this message as your configuration is now using kermit instead of telnet.")
 

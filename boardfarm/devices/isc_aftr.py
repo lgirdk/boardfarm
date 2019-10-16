@@ -31,26 +31,26 @@ class AFTR(object):
         # IPv6 ep must be from a different subnet than WAN container.
         self.ipv6_ep = ipaddress.IPv6Interface(unicode(kwargs.get("ipv6_ep", "2001::1/48")))
         # Open gateway subnets need to be in this ACL.
-        self.ipv6_ACL = [str(self.ipv6_ep.network), str(self.ipv6_interface.network)] + kwargs.get("ipv6_ACL",["2001:dead:beef::/48"])
+        self.ipv6_ACL = [str(self.ipv6_ep.network), str(self.ipv6_interface.network)] + kwargs.get("ipv6_ACL", ["2001:dead:beef::/48"])
 
         # this address will double NAT to WAN container's public IP
-        self.ipv4_nat = ipaddress.IPv4Interface(unicode(kwargs.get("ipv4_nat","198.18.200.111/16")))
+        self.ipv4_nat = ipaddress.IPv4Interface(unicode(kwargs.get("ipv4_nat", "198.18.200.111/16")))
         self.ipv4_nat_ip = str(self.ipv4_nat.ip)
 
         # static pool port range
-        self.ipv4_nat_pool = kwargs.get("ipv4_nat_pool","5000-59999")
+        self.ipv4_nat_pool = kwargs.get("ipv4_nat_pool", "5000-59999")
         # dynamic pool port range
-        self.ipv4_pcp_pool = kwargs.get("ipv4_pcp_pool","60000-64999")
+        self.ipv4_pcp_pool = kwargs.get("ipv4_pcp_pool", "60000-64999")
 
         # default mss size is 1420
-        self.mtu = kwargs.get("mss","1420")
+        self.mtu = kwargs.get("mss", "1420")
 
         # local URL of aftr tarball. If we have an offline mirror.
-        self.aftr_local = kwargs.get("local_site",None)
+        self.aftr_local = kwargs.get("local_site", None)
         self.aftr_fqdn = kwargs.get("aftr_fqdn", "aftr.boardfarm.com")
 
         self.profile["on_boot"] = self.configure_aftr
-        self.profile["hosts"] = { "aftr.boardfarm.com" : str(self.ipv6_ep.ip) }
+        self.profile["hosts"] = {"aftr.boardfarm.com": str(self.ipv6_ep.ip)}
 
     def configure_aftr(self):
         self.install_aftr()
@@ -87,7 +87,7 @@ class AFTR(object):
             self.expect(self.prompt)
 
         # the replace is pretty static here, will figure out something later.
-        if Counter([i.strip().replace("\$","$").replace("\`","`") for i in start_script.split("\n") if i.strip() != ""]) != Counter(run_script):
+        if Counter([i.strip().replace("\$", "$").replace("\`", "`") for i in start_script.split("\n") if i.strip() != ""]) != Counter(run_script):
             to_send = "cat > /root/aftr/aftr-script << EOF\n%s\nEOF" % start_script
             self.sendline(to_send)
             self.expect(self.prompt)
@@ -116,29 +116,29 @@ class AFTR(object):
 
         # section 0 defines global paramters for NAT, PCP and tunnel.
         # If not specified, aftr script will consider it's default values.
-        self.aftr_conf["section 0: global parameters"]= OrderedDict([
-                ("defmtu " , self.mtu),
-                ("defmss " , "on"),
+        self.aftr_conf["section 0: global parameters"] = OrderedDict([
+                ("defmtu ", self.mtu),
+                ("defmss ", "on"),
                 # dont't throw error if IPv4 packet is too big to fit in one IPv6 encapsulating packet
-                ("deftoobig " , "off")
+                ("deftoobig ", "off")
                 ])
 
         # section 1 defines required parameters.
         # providing minimum requirement to bring up aftr tunnel.
-        self.aftr_conf["section 1: required parameters"]= OrderedDict([
-                ("address endpoint " , str(self.ipv6_ep.ip)),
-                ("address icmp " , self.ipv4_nat_ip),
-                ("pool %s tcp " % self.ipv4_nat_ip , self.ipv4_nat_pool),
-                ("pool %s udp " % self.ipv4_nat_ip , self.ipv4_nat_pool),
-                ("pcp %s tcp " % self.ipv4_nat_ip , self.ipv4_pcp_pool),
-                ("pcp %s udp " % self.ipv4_nat_ip , self.ipv4_pcp_pool),
-                ("#All IPv6 ACLs\n" , "\n".join(map( lambda x: "acl6 %s" % x, self.ipv6_ACL )))
+        self.aftr_conf["section 1: required parameters"] = OrderedDict([
+                ("address endpoint ", str(self.ipv6_ep.ip)),
+                ("address icmp ", self.ipv4_nat_ip),
+                ("pool %s tcp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
+                ("pool %s udp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
+                ("pcp %s tcp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
+                ("pcp %s udp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
+                ("#All IPv6 ACLs\n", "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_ACL)))
                 ])
 
-        for k,v in self.aftr_conf.iteritems():
+        for k, v in self.aftr_conf.iteritems():
             run_conf.append("## %s\n" % k)
-            for option,value in v.iteritems():
-                run_conf.append("%s%s" % (option,value))
+            for option, value in v.iteritems():
+                run_conf.append("%s%s" % (option, value))
             run_conf[-1] += "\n"
 
         return "\n".join(run_conf)
@@ -157,7 +157,7 @@ class AFTR(object):
         run_conf = OrderedDict()
 
         # added a few sysctls to get it working inside a container.
-        run_conf["aftr_start()"] = "\n".join(map( lambda x: "%s%s" % (tab,x),
+        run_conf["aftr_start()"] = "\n".join(map(lambda x: "%s%s" % (tab, x),
             [
                 "ip link set tun0 up",
                 "sysctl -w net.ipv4.ip_forward=1",
@@ -168,13 +168,13 @@ class AFTR(object):
                 "ip -6 route add %s dev tun0" % str(self.ipv6_ep.network),
                 "iptables -t nat -F",
                 "iptables -t nat -A POSTROUTING -s %s -j SNAT --to-source \$PUBLIC" % self.ipv4_nat_ip,
-                "iptables -t nat -A PREROUTING -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-",":"),self.ipv4_nat_ip),
-                "iptables -t nat -A PREROUTING -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-",":"),self.ipv4_nat_ip),
-                "iptables -t nat -A OUTPUT -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-",":"),self.ipv4_nat_ip),
-                "iptables -t nat -A OUTPUT -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-",":"),self.ipv4_nat_ip)
+                "iptables -t nat -A PREROUTING -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                "iptables -t nat -A PREROUTING -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                "iptables -t nat -A OUTPUT -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                "iptables -t nat -A OUTPUT -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip)
             ]))
 
-        run_conf["aftr_stop()"] = "\n".join(map( lambda x: "%s%s" % (tab,x),
+        run_conf["aftr_stop()"] = "\n".join(map(lambda x: "%s%s" % (tab, x),
             [
                 "iptables -t nat -F",
                 "ip link set tun0 down"
@@ -189,13 +189,13 @@ class AFTR(object):
                 "stop)",
                 "%saftr_stop" % tab, "%s;;" % tab,
                 "*)",
-                '%secho "Usage: \$0 start|stop"' % tab, "%sexit 1" % tab ,"%s;;" % tab,
+                '%secho "Usage: \$0 start|stop"' % tab, "%sexit 1" % tab, "%s;;" % tab,
                 "esac\n",
                 "exit 0"
             ])
 
         # there could be a better way to generate this shell script.
-        script += "%s\n%s" % ("\n".join([ "%s\n{\n%s\n}" % (k,v) for k,v in run_conf.iteritems()]),extra_bits)
+        script += "%s\n%s" % ("\n".join(["%s\n{\n%s\n}" % (k, v) for k, v in run_conf.iteritems()]), extra_bits)
         return script
 
     def install_aftr(self):
@@ -253,9 +253,9 @@ if __name__ == '__main__':
     # get a base class to work with AFTR profile class.
     from debian import DebianBox as BaseCls
     class BfNode(BaseCls, AFTR):
-        def __init__(self,*args,**kwargs):
-            BaseCls.__init__(self,*args,**kwargs)
-            AFTR.__init__(self,*args,**kwargs)
+        def __init__(self, *args, **kwargs):
+            BaseCls.__init__(self, *args, **kwargs)
+            AFTR.__init__(self, *args, **kwargs)
 
     dev = BfNode(ipaddr=ipaddr,
             color='blue',

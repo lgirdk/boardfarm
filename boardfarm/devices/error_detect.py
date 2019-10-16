@@ -67,19 +67,19 @@ def detect_fatal_error(console):
 
 def caller_file_line(i):
     #line = 0
-    #print "##################### %s" % i
-    #for s in inspect.stack():
+    # print "##################### %s" % i
+    # for s in inspect.stack():
     #    print "%s: %s" % (line, s)
     #    line = line + 1
-    #print "##################### %s" % i
-    caller = inspect.stack()[i] # caller of spawn or pexpect
+    # print "##################### %s" % i
+    caller = inspect.stack()[i]  # caller of spawn or pexpect
     frame = caller[0]
     info = inspect.getframeinfo(frame)
 
     # readline calls expect
     if info.function == "readline":
         # note: we are calling ourselves, so we have to add more than 1 here
-        return caller_file_line(i+2)
+        return caller_file_line(i + 2)
     return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
 
 

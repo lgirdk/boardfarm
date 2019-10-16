@@ -36,55 +36,55 @@ class WindowsTelnet(base.BaseDevice):
 
     def get_ip(self, wifi_interface):
 
-        self.sendline('netsh interface ip show config '+wifi_interface)
+        self.sendline('netsh interface ip show config ' + wifi_interface)
 
-        self.expect("(.+)>",timeout=30)
+        self.expect("(.+)>", timeout=30)
         Wifi_log = self.match.group(1)
 
-        match = re.search('IP Address:\s+([\d.]+)' , str(Wifi_log))
+        match = re.search('IP Address:\s+([\d.]+)', str(Wifi_log))
         if match:
             return match.group(1)
         else:
             return None
 
-    def ping(self, ping_ip ,source_ip=None, ping_count=4, ping_interface=None):
+    def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
 
-        if source_ip == None :
-            self.sendline('ping -n %s %s'%(ping_count, ping_ip))
+        if source_ip == None:
+            self.sendline('ping -n %s %s' % (ping_count, ping_ip))
         else:
-            self.sendline("ping -S %s -n %s %s"%(source_ip, ping_count, ping_ip))
+            self.sendline("ping -S %s -n %s %s" % (source_ip, ping_count, ping_ip))
 
-        self.expect("(.+)>",timeout=30)
+        self.expect("(.+)>", timeout=30)
         Wifi_log = self.match.group(1)
 
-        match = re.search('Reply from .+: bytes=.+ TTL=' , str(Wifi_log))
+        match = re.search('Reply from .+: bytes=.+ TTL=', str(Wifi_log))
         if match:
             return 'True'
         else:
             return 'False'
 
-    def set_dhcp(self , wifi_interface):
-        self.sendline('netsh interface ip set address '+wifi_interface+" dhcp")
+    def set_dhcp(self, wifi_interface):
+        self.sendline('netsh interface ip set address ' + wifi_interface + " dhcp")
         self.expect(self.prompt)
 
-    def set_static_ip(self , wifi_interface, fix_ip, fix_mark, fix_gateway):
-        self.sendline('netsh interface ip set address '+wifi_interface+" static "+fix_ip+" "+fix_mark+" "+fix_gateway+" 1")
+    def set_static_ip(self, wifi_interface, fix_ip, fix_mark, fix_gateway):
+        self.sendline('netsh interface ip set address ' + wifi_interface + " static " + fix_ip + " " + fix_mark + " " + fix_gateway + " 1")
         self.expect(self.prompt)
 
     def get_default_gateway(self, wifi_interface):
-        self.sendline('netsh interface ip show config '+wifi_interface)
+        self.sendline('netsh interface ip show config ' + wifi_interface)
 
-        self.expect("(.+)>",timeout=30)
+        self.expect("(.+)>", timeout=30)
         Wifi_log = self.match.group(1)
 
-        match = re.search('Default Gateway:\s+([\d.]+)' , str(Wifi_log))
+        match = re.search('Default Gateway:\s+([\d.]+)', str(Wifi_log))
         if match:
             return match.group(1)
         else:
             return None
 
     def get_interface_ipaddr(self, interface):
-        ip=self.get_ip(interface)
+        ip = self.get_ip(interface)
 
         if ip != None:
             return ip
@@ -92,7 +92,7 @@ class WindowsTelnet(base.BaseDevice):
             assert False, "Can't get interface ip"
 
     def get_interface_ip6addr(self, interface):
-        self.sendline("netsh interface ipv6 show addresses %s" %interface)
+        self.sendline("netsh interface ipv6 show addresses %s" % interface)
         self.expect(self.prompt)
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
             ipv6addr = ipaddress.IPv6Address(unicode(match))
@@ -110,6 +110,6 @@ class WindowsTelnet(base.BaseDevice):
 
         self.sendline('getmac /V /NH')
         self.expect("{!s}.*({!s}).*\r\n".format(interface, WindowsMacFormat))
-        macaddr=self.match.group(1).replace('-', ':')
+        macaddr = self.match.group(1).replace('-', ':')
         self.expect(self.prompt)
         return macaddr

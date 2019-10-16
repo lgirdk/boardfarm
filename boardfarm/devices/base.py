@@ -245,7 +245,7 @@ class BaseDevice(pexpect.spawn):
                 self.power.reset()
                 self.expect('U-Boot', timeout=30)
                 self.expect('Hit any key ')
-                self.sendline('\n\n\n\n\n\n\n') # try really hard
+                self.sendline('\n\n\n\n\n\n\n')  # try really hard
                 self.expect(self.uprompt, timeout=4)
                 # Confirm we are in uboot by typing any command.
                 # If we weren't in uboot, we wouldn't see the command

@@ -64,7 +64,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         # Try to break into uboot
         self.expect('Remaining timeout:', timeout=30)
         self.send(KEY_ESCAPE)
-        self.expect('startup.nsh',timeout=30)
+        self.expect('startup.nsh', timeout=30)
         self.send(KEY_ESCAPE)
         self.expect_exact(self.uprompt, timeout=30)
 
@@ -87,7 +87,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.send(KEY_UP)
         self.send(KEY_UP)
         self.send(KEY_UP)
-        for i in range(1,index):
+        for i in range(1, index):
             self.send(KEY_DOWN)
         self.sendline()
         self.send(KEY_F4)
@@ -116,7 +116,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt)
         self.sendline('ifconfig -c %s' % self.uboot_eth)
         self.expect_exact(self.uprompt, timeout=30)
-        self.sendline('ifconfig -s %s static %s 255.255.255.0 %s' % (self.uboot_eth, tftp_server+1, tftp_server))
+        self.sendline('ifconfig -s %s static %s 255.255.255.0 %s' % (self.uboot_eth, tftp_server + 1, tftp_server))
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline('ifconfig -l')
         self.expect_exact(self.uprompt)

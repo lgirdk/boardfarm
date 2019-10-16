@@ -98,15 +98,15 @@ class FriendlyACS():
         return ret['cwmp:GetParameterValuesResponse']['ParameterList']['ParameterValueStruct']['Value']['#text']
 
     def getcurrent(self, serial_number, param, source=0):
-        self.client.service.FTGetDeviceParameters(devicesn=serial_number, source=source, arraynames=[param+'.'])
+        self.client.service.FTGetDeviceParameters(devicesn=serial_number, source=source, arraynames=[param + '.'])
 
     def rpc_SetParameterAttributes(self, serial_number, name, set_value):
-        content = '<cwmp:SetParameterAttributes xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ParameterList arrayType="cwmp:SetParameterAttributesStruct[1]"> <SetParameterAttributesStruct> <Name>%s</Name> <NotificationChange>1</NotificationChange> <Notification>%s</Notification> <AccessListChange>0</AccessListChange> <AccessList></AccessList> </SetParameterAttributesStruct> </ParameterList> </cwmp:SetParameterAttributes>' %(name, set_value)
+        content = '<cwmp:SetParameterAttributes xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ParameterList arrayType="cwmp:SetParameterAttributesStruct[1]"> <SetParameterAttributesStruct> <Name>%s</Name> <NotificationChange>1</NotificationChange> <Notification>%s</Notification> <AccessListChange>0</AccessListChange> <AccessList></AccessList> </SetParameterAttributesStruct> </ParameterList> </cwmp:SetParameterAttributes>' % (name, set_value)
 
         self.rpc(serial_number, name, content)
 
     def rpc_AddObject(self, serial_number, obj_name):
-        content = '<cwmp:AddObject xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ObjectName>%s.</ObjectName>  <ParameterKey></ParameterKey> </cwmp:AddObject>'% obj_name
+        content = '<cwmp:AddObject xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ObjectName>%s.</ObjectName>  <ParameterKey></ParameterKey> </cwmp:AddObject>' % obj_name
         self.rpc(serial_number, obj_name, content)
 
     def rpc_DeleteObject(self, serial_number, obj_name):
@@ -135,5 +135,5 @@ if __name__ == '__main__':
     ret = acs.get('DEAP815610DA', 'Device.DeviceInfo.SoftwareVersion')
     print(ret)
 
-    ret = acs.get ('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
+    ret = acs.get('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
     print(ret)

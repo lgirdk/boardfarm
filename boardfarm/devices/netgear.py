@@ -111,7 +111,7 @@ class NetgearM4100(linux.LinuxDevice):
         self.sendline("exit")
         self.expect(prompt)
         # Loop over all interfaces
-        pvid = 3 # initial offset of 3 due to netgear BS
+        pvid = 3  # initial offset of 3 due to netgear BS
         for i in range(min_port, max_port, 2):
             low = i
             high = i + 1
