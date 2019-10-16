@@ -61,12 +61,12 @@ def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", vi
 
     from termcolor import colored
     class o_helper_foo():
-            def __init__(self, color):
-                    self.color = color
-            def write(self, string):
-                    o.write(colored(string, color))
-            def flush(self):
-                    o.flush()
+        def __init__(self, color):
+            self.color = color
+        def write(self, string):
+            o.write(colored(string, color))
+        def flush(self):
+            o.flush()
 
     if color is not None:
         p.logfile_read = o_helper_foo(color)

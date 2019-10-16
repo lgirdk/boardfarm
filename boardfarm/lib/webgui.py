@@ -27,9 +27,9 @@ class web_gui():
         self.prefix = prefix
 
     def _save_screenshot(self, name):
-       full_path = os.path.join(self.output_dir, name)
-       self.driver.save_screenshot(full_path)
-       return full_path
+        full_path = os.path.join(self.output_dir, name)
+        self.driver.save_screenshot(full_path)
+        return full_path
 
     def enter_input_value(self, key_id, input_value):
         key_value = self.key[key_id]

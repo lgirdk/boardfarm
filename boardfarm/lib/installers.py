@@ -500,11 +500,11 @@ def install_ovpn_client(device, remove=False):
     openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
     '''
     if remove:
-            device.sendline('killall -9 openvpn')
-            device.expect(device.prompt)
-            device.sendline('apt remove openvpn -y')
-            device.expect(device.prompt, timeout=120)
-            return
+        device.sendline('killall -9 openvpn')
+        device.expect(device.prompt)
+        device.sendline('apt remove openvpn -y')
+        device.expect(device.prompt, timeout=120)
+        return
 
     device.sendline('apt-get update')
     device.expect(device.prompt)

@@ -22,11 +22,11 @@ def now_short(_format = "%Y%m%d-%H%M%S"):
     return timeString
 
 def logfile_assert_message(s, condition, message):
-	if not condition:
-	   s.log_to_file += now_short()+message+": FAIL\r\n"
-	   assert 0, message+": FAIL\r\n"
-	else:
-	   s.log_to_file += now_short()+message+": PASS\r\n"
+    if not condition:
+        s.log_to_file += now_short()+message+": FAIL\r\n"
+        assert 0, message+": FAIL\r\n"
+    else:
+        s.log_to_file += now_short()+message+": PASS\r\n"
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
