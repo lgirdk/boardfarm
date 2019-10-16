@@ -29,7 +29,7 @@ def wifi_interface(console):
     return wlan_iface
 
 def randomSSIDName():
-    return 'WIFI-' + ''.join(random.sample(string.lowercase+string.digits,10))
+    return 'WIFI-' + ''.join(random.sample(string.lowercase + string.digits, 10))
 
 def uciSetWifiSSID(console, ssid):
     console.sendline('uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi' % ssid)
@@ -248,7 +248,7 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return True  # if found
-        return False # if not found
+        return False  # if not found
     def wifi_connect(self, ssid_name, password, security_mode):
         '''Function to connect to wifi either with ssid name and password or with ssid name alone
            Takes arguments as SSID and (password,security) if required'''

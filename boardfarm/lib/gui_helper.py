@@ -12,7 +12,7 @@ import time
 
 def enter_input(web_gui, input_path, input_value):
     try:
-        #enter input value in text box for web page
+        # enter input value in text box for web page
         input_tab = web_gui.find_element_by_id(input_path)
         input_tab.clear()
         input_tab.send_keys(input_value)
@@ -22,7 +22,7 @@ def enter_input(web_gui, input_path, input_value):
 
 def click_button_id(web_gui, clickbutton):
     try:
-        #to click any button using id
+        # to click any button using id
         click_tab = web_gui.find_element_by_id(clickbutton)
         click_tab.click()
         time.sleep(5)
@@ -32,7 +32,7 @@ def click_button_id(web_gui, clickbutton):
 
 def click_button_xpath(web_gui, clickbutton):
     try:
-        #to click any button using xpath
+        # to click any button using xpath
         click_tab = web_gui.find_element_by_xpath(clickbutton)
         click_tab.click()
         time.sleep(5)
@@ -42,7 +42,7 @@ def click_button_xpath(web_gui, clickbutton):
 
 def select_option_by_id(web_gui, select_button, select_value):
     try:
-        #To select the option required
+        # To select the option required
         select = Select(web_gui.find_element_by_id(select_button))
         select.select_by_visible_text(select_value)
         time.sleep(5)
@@ -52,7 +52,7 @@ def select_option_by_id(web_gui, select_button, select_value):
 
 def select_option_by_name(web_gui, select_button, select_value):
     try:
-        #To select the option required
+        # To select the option required
         select = Select(web_gui.find_element_by_name(select_button))
         select.select_by_visible_text(select_value)
         time.sleep(5)
@@ -62,7 +62,7 @@ def select_option_by_name(web_gui, select_button, select_value):
 
 def select_option_by_xpath(web_gui, select_button, select_value):
     try:
-        #To select the option required
+        # To select the option required
         select = Select(web_gui.find_element_by_xpath(select_button))
         select.select_by_visible_text(select_value)
         time.sleep(5)
@@ -72,7 +72,7 @@ def select_option_by_xpath(web_gui, select_button, select_value):
 
 def get_drop_down_value(web_gui, get_value):
     try:
-        #To get the value which already exists
+        # To get the value which already exists
         select = Select(web_gui.find_element_by_id(get_value))
         selected_option = select.first_selected_option
         selected_value = selected_option.text
@@ -82,7 +82,7 @@ def get_drop_down_value(web_gui, get_value):
 
 def get_radio_button_value(web_gui, get_value):
     try:
-        #To get radio button value
+        # To get radio button value
         radio_button = web_gui.find_elements_by_id(get_value)
         for radiobutton in radio_button:
             radio = radiobutton.get_attribute('src')
@@ -95,7 +95,7 @@ def get_radio_button_value(web_gui, get_value):
 
 def get_text_value(web_gui, get_value):
     try:
-        #To get the text box value
+        # To get the text box value
         text_button = web_gui.find_element_by_id(get_value)
         text_value = text_button.text
         return text_value
@@ -104,7 +104,7 @@ def get_text_value(web_gui, get_value):
 
 def get_text_value_by_xpath(web_gui, get_value):
     try:
-        #To get the text box value
+        # To get the text box value
         text_button = web_gui.find_element_by_xpath(get_value)
         text_value = text_button.text
         return text_value
@@ -112,14 +112,14 @@ def get_text_value_by_xpath(web_gui, get_value):
         return None
 
 def get_value_from_disabled_input(web_gui, get_value):
-    #To get the text with dynamic value
-    js="return document.getElementById(\"{!s}\").value;".format(str(get_value))
+    # To get the text with dynamic value
+    js = "return document.getElementById(\"{!s}\").value;".format(str(get_value))
     text_value = web_gui.execute_script(js)
     return str(text_value)
 
 def get_icon_check_value_by_id(web_gui, get_value):
     try:
-        #To get icon button value
+        # To get icon button value
         icon_button = web_gui.find_elements_by_id(get_value)
         for iconbutton in icon_button:
             icon = iconbutton.get_attribute('src')
@@ -132,7 +132,7 @@ def get_icon_check_value_by_id(web_gui, get_value):
 
 def get_icon_check_value_by_xpath(web_gui, get_value):
     try:
-        #To get icon button value
+        # To get icon button value
         icon_button = web_gui.find_elements_by_xpath(get_value)
         for iconbutton in icon_button:
             icon = iconbutton.get_attribute('src')
@@ -146,14 +146,14 @@ def get_icon_check_value_by_xpath(web_gui, get_value):
 def check_element_is_enable_by_id(web_gui, check_value):
     try:
         text_button = web_gui.find_element_by_id(check_value)
-        text_value=text_button.is_enabled()
+        text_value = text_button.is_enabled()
         return text_value
     except NoSuchElementException:
         return None
 
 def get_check_box_value_by_id(web_gui, get_value):
     try:
-        #To get icon button value
+        # To get icon button value
         box_button = web_gui.find_elements_by_id(get_value)
         for boxbutton in box_button:
             box = boxbutton.get_attribute('src')
@@ -166,7 +166,7 @@ def get_check_box_value_by_id(web_gui, get_value):
 
 def get_check_box_value_by_xpath(web_gui, get_value):
     try:
-        #To get icon button value
+        # To get icon button value
         box_button = web_gui.find_elements_by_xpath(get_value)
         for boxbutton in box_button:
             box = boxbutton.get_attribute('src')

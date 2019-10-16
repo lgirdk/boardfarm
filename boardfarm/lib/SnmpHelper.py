@@ -58,7 +58,7 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
         for d in root_dir:
             for root, dirs, files in os.walk(d):
                 for f in files:
-                    if any(map( lambda x: x in f, ignore)):
+                    if any(map(lambda x: x in f, ignore)):
                         continue
                     if no_ext:
                         f = os.path.splitext(f)[0]
@@ -98,7 +98,7 @@ class SnmpMibs(object):
             return cls.snmp_parser
 
         if snmp_mib_files is None:
-            snmp_mib_files= []
+            snmp_mib_files = []
 
         if snmp_mib_dirs is None:
             snmp_mib_dirs = ['/usr/share/snmp/mibs']
@@ -177,20 +177,20 @@ class SnmpMibs(object):
         if err:
             raise Exception("SnmpMibs failed to initialize.")
         elif 'BFT_DEBUG' in os.environ:
-            print('# %d MIB modules compiled'%len(mib_dict))
+            print('# %d MIB modules compiled' % len(mib_dict))
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         if "y" in self.dbg:
             print('# MIB module %s' % mibName)
 
-        for k,v in json.loads(jsonDoc).iteritems():
+        for k, v in json.loads(jsonDoc).iteritems():
             if "oid" in v:
                 if "objects" in v or "revisions" in v:
                     # we want to skip objects that have no use
                     continue
                 # add it to my dict
                 if "yy" in self.dbg:
-                    print("adding %s:{%s}" %(k, v))
+                    print("adding %s:{%s}" % (k, v))
                 self.mib_dict[k] = v
         if "yy" in self.dbg:
             print(json.dumps(self.mib_dict, indent=4))
@@ -206,10 +206,10 @@ class SnmpMibs(object):
         try:
             oid = self.mib_dict[mib_name]['oid']
         except:
-            if  "y" in self.dbg:
-                print("ERROR: mib \'%s\' not found"%mib_name)
+            if "y" in self.dbg:
+                print("ERROR: mib \'%s\' not found" % mib_name)
             pass
-        return oid.encode('ascii','ignore')
+        return oid.encode('ascii', 'ignore')
 
 ##############################################################################################
 
@@ -224,7 +224,7 @@ if __name__ == '__main__':
             BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and
                             mibs/oid details
         """
-        test_singleton = False # if True it will invoke get_mib_parser() static method
+        test_singleton = False  # if True it will invoke get_mib_parser() static method
 
         mibs = ['docsDevSwAdminStatus',
                 'snmpEngineMaxMessageSize',
@@ -233,11 +233,11 @@ if __name__ == '__main__':
                 'docsBpi2CmtsMulticastObjects',
                 'docsDevNmAccessIp']
 
-        mib_files      = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'] # this is the list of mib/txt files to be compiled
-        srcDirectories = ['/usr/share/snmp/mibs'] # this needs to point to the mibs directory location
-        snmp_obj       = None  # will hold an instance of the  SnmpMibs class
+        mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB']  # this is the list of mib/txt files to be compiled
+        srcDirectories = ['/usr/share/snmp/mibs']  # this needs to point to the mibs directory location
+        snmp_obj = None  # will hold an instance of the  SnmpMibs class
 
-        def __init__(self,mibs_location=None, files=None, mibs=None, err_mibs=None):
+        def __init__(self, mibs_location=None, files=None, mibs=None, err_mibs=None):
             """
             Takes:
                 mibs_location:  where the .mib files are located (can be a list of dirs)
@@ -301,11 +301,11 @@ if __name__ == '__main__':
     location = None
 
     if '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2:
-        print("Usage:\n%s <path_to_mibs>  [<path_to_mibs> ...]"%sys.argv[0])
-        print("\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs "%sys.argv[0])
+        print("Usage:\n%s <path_to_mibs>  [<path_to_mibs> ...]" % sys.argv[0])
+        print("\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs " % sys.argv[0])
         sys.exit(1)
 
-    print('sys.argv='+str(sys.argv))
+    print('sys.argv=' + str(sys.argv))
     location = sys.argv[1:]
 
     SnmpMibsUnitTest.test_singleton = False

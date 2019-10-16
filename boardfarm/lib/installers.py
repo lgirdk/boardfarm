@@ -12,7 +12,7 @@ def apt_install(device, name, timeout=120):
     device.expect(device.prompt, timeout=timeout)
     device.sendline('dpkg -l %s' % name)
     device.expect_exact('dpkg -l %s' % name)
-    i = device.expect(['dpkg-query: no packages found' ] + device.prompt)
+    i = device.expect(['dpkg-query: no packages found'] + device.prompt)
     assert (i != 0)
 
 def apt_update(device, timeout=120):
@@ -55,7 +55,7 @@ def install_tcpick(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get install tcpick -y')
-        assert 0 == device.expect(['Setting up tcpick']+ device.prompt, timeout=60),"tcpick installation failed"
+        assert 0 == device.expect(['Setting up tcpick'] + device.prompt, timeout=60), "tcpick installation failed"
         device.expect(device.prompt)
 
 def install_upnp(device):
@@ -67,7 +67,7 @@ def install_upnp(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get install miniupnpc -y')
-        assert 0 == device.expect(['Setting up miniupnpc.*']+ device.prompt, timeout=60),"upnp installation failed"
+        assert 0 == device.expect(['Setting up miniupnpc.*'] + device.prompt, timeout=60), "upnp installation failed"
         device.expect(device.prompt)
 
 def install_lighttpd(device):
@@ -376,7 +376,7 @@ def install_IRCserver(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install update-inetd -y') # Update inetd before installation
+        device.sendline('apt-get install update-inetd -y')  # Update inetd before installation
         device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install inspircd -y')
         device.expect(['Setting up inspircd'], timeout=90)
@@ -390,7 +390,7 @@ def install_dovecot(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install update-inetd -y') # Update inetd before installation
+        device.sendline('apt-get install update-inetd -y')  # Update inetd before installation
         device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
         device.expect(['Processing triggers for dovecot-core'], timeout=90)
@@ -408,8 +408,8 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     #device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
     import os
     ovpn_install_script = 'openvpn-install.sh'
-    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/'+ovpn_install_script)
-    dest = '/root/'+ovpn_install_script
+    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/' + ovpn_install_script)
+    dest = '/root/' + ovpn_install_script
     device.copy_file_to_server(fname, dest)
     device.sendline('chmod +x openvpn-install.sh')
     device.expect(device.prompt)
@@ -474,7 +474,7 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
         device.expect(device.prompt)
         if _ip == "ipv4":
             # only add it in ipv4
-            device.sendline('echo "local '+dev_ip+'" > /etc/openvpn/server.conf.tmp')
+            device.sendline('echo "local ' + dev_ip + '" > /etc/openvpn/server.conf.tmp')
             device.expect(device.prompt)
             device.sendline('cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
             device.expect(device.prompt)
@@ -482,10 +482,10 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
             device.expect(device.prompt)
 
     device.sendline('/etc/init.d/openvpn status')
-    index = device.expect(["VPN 'server' is running" ] + [ "VPN 'server' is not running ... failed"] +device.prompt, timeout=90)
+    index = device.expect(["VPN 'server' is running"] + ["VPN 'server' is not running ... failed"] + device.prompt, timeout=90)
     if index != 0:
         device.sendline('/etc/init.d/openvpn restart')
-        device.expect(["Starting virtual private network daemon: server" ])
+        device.expect(["Starting virtual private network daemon: server"])
         # the following are for diagnositcs
         device.sendline('/etc/init.d/openvpn status')
         device.expect(device.prompt)
@@ -516,7 +516,7 @@ def install_pptpd_server(device, remove=False):
     Un/Install the pptpd
     '''
     import pexpect
-    device.expect([pexpect.TIMEOUT]+device.prompt, timeout=5)
+    device.expect([pexpect.TIMEOUT] + device.prompt, timeout=5)
     device.sendline('ls -l /usr/sbin/pptpd')
     index = device.expect(['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + device.prompt, timeout=90)
     if remove:
@@ -563,26 +563,26 @@ def install_postfix(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get update') # Update inetd before installation
+        device.sendline('apt-get update')  # Update inetd before installation
         device.expect(device.prompt, timeout=90)
         device.sendline("apt-get install postfix -y")
-        install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout = 120)
+        install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout=120)
         print(install_settings)
-        if install_settings ==0:
+        if install_settings == 0:
             device.sendline("2")
-            assert 0 == device.expect(['System mail name:']+ device.prompt, timeout = 90), "System mail name option is note received. Installaion failed"
+            assert 0 == device.expect(['System mail name:'] + device.prompt, timeout=90), "System mail name option is note received. Installaion failed"
             device.sendline("testingsmtp.com")
-            assert 0 != device.expect(['Errors were encountered']+ device.prompt, timeout = 90), "Errors Encountered. Installaion failed"
+            assert 0 != device.expect(['Errors were encountered'] + device.prompt, timeout=90), "Errors Encountered. Installaion failed"
 
-        elif install_settings ==1:
+        elif install_settings == 1:
             assert 0 != 1, "Errors Encountered. Installaion failed"
 
-        elif install_settings ==2:
+        elif install_settings == 2:
             device.sendline('postconf -d | grep mail_version')
             device.expect('mail_version =', timeout=5)
 
         device.sendline("service postfix start")
-        assert 0 != device.expect(['failed']+ device.prompt, timeout = 90), "Unable to start Postfix service.Service is not properly installed"
+        assert 0 != device.expect(['failed'] + device.prompt, timeout=90), "Unable to start Postfix service.Service is not properly installed"
 
 def install_asterisk(device):
     '''Install asterisk if not present.'''
@@ -601,7 +601,7 @@ def install_asterisk(device):
                 device.expect(device.prompt)
                 break
         if not_used > 99:
-            assert 0,"Failed to install asterisk"
+            assert 0, "Failed to install asterisk"
 
 def install_make(device):
     '''Install make if not present.'''
@@ -660,11 +660,11 @@ def install_pjsua(device):
         install_libsound2dev(device)
         install_wget(device)
         device.sendline('rm -r pjpr*')
-        device.expect(device.prompt,timeout=70)
+        device.expect(device.prompt, timeout=70)
         device.sendline('wget http://www.pjsip.org/release/2.6/pjproject-2.6.tar.bz2')
-        device.expect(device.prompt,timeout=100)
+        device.expect(device.prompt, timeout=100)
         device.sendline('tar -xjf pjproject-2.6.tar.bz2')
-        device.expect(device.prompt,timeout=70)
+        device.expect(device.prompt, timeout=70)
         device.sendline('cd pjproject-2.6')
         device.expect(device.prompt)
         device.sendline('./configure && make dep && make && make install 2>&1 & ')
@@ -678,4 +678,4 @@ def install_pjsua(device):
                 device.expect(device.prompt)
                 break
         if not_used > 99:
-            assert 0,"Failed to install pjsua"
+            assert 0, "Failed to install pjsua"

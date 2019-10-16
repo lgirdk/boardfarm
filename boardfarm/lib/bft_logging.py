@@ -11,22 +11,22 @@ from datetime import datetime
 from termcolor import colored
 import re
 
-def now_short(_format = "%Y%m%d-%H%M%S"):
+def now_short(_format="%Y%m%d-%H%M%S"):
     """
     Name:now_short
     Purpose: Get current date and time string
     Input:None
     Output:String in "YYYYMMDD-hhmmss" format
     """
-    timeString = time.strftime(_format, time.localtime())+"\t"
+    timeString = time.strftime(_format, time.localtime()) + "\t"
     return timeString
 
 def logfile_assert_message(s, condition, message):
     if not condition:
-        s.log_to_file += now_short()+message+": FAIL\r\n"
-        assert 0, message+": FAIL\r\n"
+        s.log_to_file += now_short() + message + ": FAIL\r\n"
+        assert 0, message + ": FAIL\r\n"
     else:
-        s.log_to_file += now_short()+message+": PASS\r\n"
+        s.log_to_file += now_short() + message + ": PASS\r\n"
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -43,26 +43,26 @@ class LoggerMeta(type):
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
             if hasattr(args[0], 'start'):
-                args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now()-args[0].start).total_seconds(), to_log)
+                args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now() - args[0].start).total_seconds(), to_log)
 
             ret = func(*args, **kwargs)
 
             if hasattr(args[0], 'start'):
-                args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now()-args[0].start).total_seconds(), to_log, repr(ret))
+                args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now() - args[0].start).total_seconds(), to_log, repr(ret))
 
             return ret
         return wrapper
 
-def log_message(s, msg, header = False):
+def log_message(s, msg, header=False):
 
     line_sep = ('=' * (len(msg)))
-    full_msg = "\n\t\t"+line_sep+"\n\t\t"+msg+"\n\t\t"+line_sep+"\n"
+    full_msg = "\n\t\t" + line_sep + "\n\t\t" + msg + "\n\t\t" + line_sep + "\n"
     if header:
-        print("\n\n\t\t\t***"+msg+"***\n\n")
-        s.log_to_file += now_short()+full_msg+"\r\n"
+        print("\n\n\t\t\t***" + msg + "***\n\n")
+        s.log_to_file += now_short() + full_msg + "\r\n"
     else:
         print(full_msg)
-        s.log_to_file += now_short()+msg+"\r\n"
+        s.log_to_file += now_short() + msg + "\r\n"
 
 class o_helper(object):
     def __init__(self, parent, out, color):
@@ -80,7 +80,7 @@ class o_helper(object):
             self.out.write(string)
         if not hasattr(self.parent, 'start'):
             return
-        td = datetime.now()-self.parent.start
+        td = datetime.now() - self.parent.start
         # check for the split case
         if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
             tmp = '\n[%.6f]' % td.total_seconds()

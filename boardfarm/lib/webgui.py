@@ -17,13 +17,13 @@ class web_gui():
                  output_dir=os.path.join(os.getcwd(), "results"),
                  **kwargs):
         self.output_dir = output_dir
-        self.default_delay=30
-        self.driver=None
-        self.display=None
+        self.default_delay = 30
+        self.driver = None
+        self.display = None
 
     # this specified a prefix for the screenshots file names
     # it cna be used to prepend the testcase name to the file name
-    def set_prefix(self, prefix = ''):
+    def set_prefix(self, prefix=''):
         self.prefix = prefix
 
     def _save_screenshot(self, name):
@@ -36,7 +36,7 @@ class web_gui():
         select_value = resolv_dict(self.config, key_value)
         self.scroll_view(select_value)
         enter_value = enter_input(self.driver, select_value, input_value)
-        assert enter_value, 'Unable to enter value %s'  % input_value
+        assert enter_value, 'Unable to enter value %s' % input_value
 
     def click_button(self, key_id):
         select_id = self.key[key_id]
@@ -81,8 +81,8 @@ class web_gui():
 
     def check_element_visibility(self, *element, **kwargs):
         '''ex. *element=('id, 'element') or ('name, 'element')'''
-        timeout=kwargs.get('timeout', self.default_delay)
-        query=None
+        timeout = kwargs.get('timeout', self.default_delay)
+        query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
                     EC.visibility_of_element_located(element))
@@ -92,8 +92,8 @@ class web_gui():
             return query
 
     def check_element_clickable(self, *element, **kwargs):
-        timeout=kwargs.get('timeout', self.default_delay)
-        query=None
+        timeout = kwargs.get('timeout', self.default_delay)
+        query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
                     EC.element_to_be_clickable(element))
@@ -103,8 +103,8 @@ class web_gui():
             return query
 
     def check_element_selection_state_to_be(self, *element, **kwargs):
-        timeout=kwargs.get('timeout', self.default_delay)
-        query=None
+        timeout = kwargs.get('timeout', self.default_delay)
+        query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
                     EC.element_selection_state_to_be(element))
@@ -115,34 +115,34 @@ class web_gui():
 
     def wait_for_element(self, index_by='id', ele_index=None):
         '''wait for element exist'''
-        assert ele_index!=None, 'ele_index=None'
-        if index_by=='name':
-            by=By.NAME
+        assert ele_index != None, 'ele_index=None'
+        if index_by == 'name':
+            by = By.NAME
         else:
-            by=By.ID
+            by = By.ID
 
         self.driver.implicitly_wait(self.default_delay)
 
-        print('wait_for_element(): check_element_visibility(%s, %s)' %(str(by), ele_index))
-        ele=self.check_element_visibility(by, ele_index)
-        assert ele!=None, 'check_element_visibility(%s, %s)=False' %(str(by), ele_index)
+        print('wait_for_element(): check_element_visibility(%s, %s)' % (str(by), ele_index))
+        ele = self.check_element_visibility(by, ele_index)
+        assert ele != None, 'check_element_visibility(%s, %s)=False' % (str(by), ele_index)
 
     def check_element_exists(self, text):
         try:
-            element=self.driver.find_element_by_xpath(text)
-            print("Element '"+text+"' found")
+            element = self.driver.find_element_by_xpath(text)
+            print("Element '" + text + "' found")
             return element
         except NoSuchElementException:
-            print("check_element_exists No element '"+text+"' found")
+            print("check_element_exists No element '" + text + "' found")
             return None
 
     def check_element_exists_by_name(self, text):
         try:
-            element=self.driver.find_element_by_name(text)
-            print("Element '"+text+"' found")
+            element = self.driver.find_element_by_name(text)
+            print("Element '" + text + "' found")
             return element
         except NoSuchElementException:
-            print("No element '"+text+"' found")
+            print("No element '" + text + "' found")
             return None
 
     def wait_for_redirects(self):
@@ -156,7 +156,7 @@ class web_gui():
 
     def gui_logout(self, id_value):
         try:
-            ele_botton=self.check_element_clickable(By.ID, id_value, timeout=3)
+            ele_botton = self.check_element_clickable(By.ID, id_value, timeout=3)
             if ele_botton != None:
                 ele_botton.click()
                 print("Logout clicked")
@@ -169,7 +169,7 @@ class web_gui():
         self.gui_logout(logout_id)
         self.driver.quit()
         print('driver quit')
-        if self.display!=None:
+        if self.display != None:
             self.display.stop()
             print('display stop')
 
@@ -177,7 +177,7 @@ class web_gui():
     # the backend can be set via BFT_OPTIONS
     def open_display(self):
         from boardfarm import config
-        xc,yc = config.default_display_backend_size.split('x')
+        xc, yc = config.default_display_backend_size.split('x')
         x = int(xc)
         y = int(yc)
         self.display = Display(backend=config.default_display_backend,
@@ -198,23 +198,23 @@ class web_gui():
 
     def botton_click_to_next_page(self, index_by='id', ele_index=None):
         '''click botton and verify'''
-        assert ele_index!=None, 'ele_index=None'
-        if index_by=='name':
-            by=By.NAME
+        assert ele_index != None, 'ele_index=None'
+        if index_by == 'name':
+            by = By.NAME
         else:
-            by=By.ID
+            by = By.ID
 
         # verify $botton is exist
-        botton=self.check_element_visibility(by, ele_index)
+        botton = self.check_element_visibility(by, ele_index)
         assert botton != None, 'timeout: not found %s in page' % ele_index
         print('get botton value: %s' % botton.get_attribute("value"))
 
         # check_element_clickable() and click()
-        self._save_screenshot('%s_click.png' %ele_index)
+        self._save_screenshot('%s_click.png' % ele_index)
         self.check_element_clickable(by, ele_index).click()
 
     def home_page(self, page_id):
-        home_page=self.check_element_visibility(By.ID, page_id)
+        home_page = self.check_element_visibility(By.ID, page_id)
         # wait for possible redirects to settle down
         self.wait_for_redirects()
         time.sleep(10)
@@ -228,6 +228,6 @@ class web_gui():
             temp = self.key[path]
             temp = resolv_dict(self.config, temp)
             button = click_button_id(self.driver, temp)
-            assert button, 'Error in click %s' %path
-            print("Click %s : PASS" %path)
+            assert button, 'Error in click %s' % path
+            print("Click %s : PASS" % path)
             time.sleep(2)
