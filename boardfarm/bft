@@ -16,6 +16,8 @@ import random
 import sys
 import time
 import traceback
+import queue
+import threading
 from datetime import datetime
 
 # Try to catch common mistakes: not installing boardfarm, or
@@ -47,26 +49,61 @@ from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 import matplotlib
 matplotlib.use('Agg')
 
+class FailedDevice(object):
+    name = None
+
+def threaded_device_helper(device, ret):
+    s = time.time()
+    if 'BFT_DEBUG' in os.environ:
+        print("Connected to %s" % device['name'])
+
+    try:
+        dyn_dev = get_device(device['type'], **device)
+    except Exception:
+        traceback.print_exc()
+        failed = FailedDevice()
+        failed.name = device['name']
+        ret.put(failed)
+        return
+
+    if 'BFT_DEBUG' in os.environ:
+        print("Time to instantiate device %s = %s" % (device['name'], time.time() - s))
+
+    dyn_dev.name = device['name']
+    ret.put(dyn_dev)
+
 def setup_dynamic_devices(config, env=None, start=None):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
     dynamic_devices = []
-    for device in config.board['devices']:
-        if device['name'] in config.devices:
-            print("Skipping duplicate device type: %s" % device['name'])
-            continue
+    threads = []
+    ret = queue.Queue()
 
+    for device in config.board['devices']:
         device['reboot'] = config.reboot_vms
         device['env'] = env
         device['lan_network'] = config.console.lan_network
         device['lan_gateway'] = config.console.lan_gateway
         device['start'] = start
 
-        s = time.time()
-        dyn_dev = get_device(device['type'], **device)
-        if 'BFT_DEBUG' in os.environ:
-            print("Time to instantiate device = %s" % (time.time() - s))
+        threads.append(threading.Thread(target=threaded_device_helper, args=(device, ret)))
+        threads[-1].start()
+
+    for t in threads:
+        t.join()
+
+    for device in list(ret.queue):
+        if type(device) is FailedDevice:
+            raise Exception("Failed to instantiate device %s" % device.name)
+
+        if not hasattr(device, 'name') and ' ' not in device.name:
+            raise Exception("Device does not have a proper name, please add!")
+
+        if device.name in config.devices:
+            print("Skipping duplicate device type: %s" % device.name)
+            device.close()
+            continue
 
         def create_device_helper(name, dev):
             setattr(config, name, dev)
@@ -88,19 +125,19 @@ def setup_dynamic_devices(config, env=None, start=None):
                 setattr(config, 'provisioner', dev)
                 config.devices.append('provisioner')
 
-        if dyn_dev is not None:
-            if 'name' not in device:
-                raise Exception("Device in config is not named! This is required")
-            create_device_helper(device['name'], dyn_dev)
+        for dev in getattr(device, 'extra_devices', []):
+            if hasattr(dev, 'name'):
+                create_device_helper(dev.name, dev)
+                dynamic_devices.append(dev.target)
+            else:
+                raise Exception("Extra device in config is not named! This is required")
 
-            for dev in getattr(dyn_dev, 'extra_devices', []):
-                if hasattr(dev, 'name'):
-                    create_device_helper(dev.name, dev)
-                    dynamic_devices.append(dev.target)
-                else:
-                    raise Exception("Extra device in config is not named! This is required")
+        if not hasattr(device, 'name'):
+            raise Exception("Device in config is not named! This is required")
+        create_device_helper(device.name, device)
 
-            continue
+
+        continue
 
         print("Unknown device type for %s" % device)
 
