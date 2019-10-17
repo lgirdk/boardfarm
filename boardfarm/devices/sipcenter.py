@@ -1,3 +1,4 @@
+from boardfarm.lib.installers import apt_install
 class SipCenter(object):
     '''
     asterisk  server
@@ -11,9 +12,23 @@ class SipCenter(object):
         self.kwargs = kwargs
 
         self.numbers = self.kwargs.get('numbers', ["1000", "2000", "3000"])
+        #local installation without internet will be added soon
+        self.ast_local_url = kwargs.get("local_site", None)
 
     def __str__(self):
         return "asterisk"
+
+    def install_essentials(self):
+        apt_install(self, 'build-essential')
+        apt_install(self, 'libncurses5-dev')
+        apt_install(self, 'libjansson-dev')
+        apt_install(self, 'uuid-dev')
+        apt_install(self, 'libxml2-dev')
+        apt_install(self, 'libsqlite3-dev')
+
+    def install_asterisk(self):
+        # install asterisk
+        apt_install(self, 'asterisk', timeout='300')
 
     def setup_asterisk_config(self):
         '''
