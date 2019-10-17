@@ -28,13 +28,9 @@ class DockerFactory(linux.LinuxDevice):
         self.kwargs = kwargs
 
         self.ipaddr = kwargs.pop('ipaddr', None)
-        self.iface = kwargs.pop('iface', None)
-        self.docker_network = kwargs.pop('docker_network', None)
-        env = self.env = kwargs.pop('env', None)
-        self.name = kwargs.pop('name')
-        self.cname = self.name + "-" + self.env["uniq_id"]
         self.username = kwargs.pop('username', 'root')
         self.password = kwargs.pop('password', 'bigfoot1')
+        env = self.env = kwargs.pop('env', None)
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
@@ -47,6 +43,11 @@ class DockerFactory(linux.LinuxDevice):
         else:
             pexpect.spawn.__init__(self, command='bash --noprofile --norc', env=self.env)
             self.ipaddr = 'localhost'
+
+        self.iface = kwargs.pop('iface', None)
+        self.docker_network = kwargs.pop('docker_network', None)
+        self.name = kwargs.pop('name')
+        self.cname = self.name + "-" + self.env["uniq_id"]
 
         if 'BFT_DEBUG' in os.environ:
             self.logfile_read = sys.stdout
