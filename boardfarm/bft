@@ -274,7 +274,7 @@ def main():
         sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
-            if not hasattr(tests, name):
+            if name not in tests.available_tests:
                 # we can either fail or ignore a missing test
                 if config.TEST_SUITE_NOSTRICT:
                     print_bold("\tWARNING: Test %s NOT FOUND" % name)
@@ -284,7 +284,7 @@ def main():
                     # strict behaviour
                     print_bold("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
                     sys.exit(1)
-            test = getattr(tests, name)
+            test = tests.available_tests[name]
             test.start = start
         else:
             test = name
@@ -298,8 +298,9 @@ def main():
         print_bold("Extra tests specified on command line:")
         try:
             for name in config.EXTRA_TESTS:
-                t = getattr(tests, name, None)
-                if t is None:
+                try:
+                    t = tests.available_tests[name]
+                except:
                     raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
                 print_bold("  %s" % t)
                 test = t(config)
