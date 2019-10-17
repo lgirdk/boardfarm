@@ -587,3 +587,43 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
     device.expect(device.prompt)
     snmp_out = device.before
     return snmp_out
+
+def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
+    """
+    Name:snmp_set_counter32
+    Purpose: Set snmp which has type as counter32(couldn't set it via SNMP)
+    Input Parameter: mib_set:Mib name which needs to set as type counter32("cmFtpUpstreamFileSize")
+                     value: value of the mib eg: 1000
+    Output: True or False
+    """
+    install_pysnmp(device)
+    pysnmp_file = 'pysnmp_mib_set.py'
+    device.sendline("python")
+    device.expect(">>>")
+    device.sendline("f = open('"+pysnmp_file+"'"+", 'w')")
+    device.expect(">>>")
+    device.sendline("f.write('from pysnmp.entity.rfc3413.oneliner import cmdgen')")
+    device.expect(">>>")
+    device.sendline("exit()")
+    device.expect(device.prompt)
+    command = [("sed -i '1a from pysnmp.proto import rfc1902' "+pysnmp_file),
+               ("sed -i '2a wan_ip = "+'"'+wan_ip+'"'+"' "+ pysnmp_file),\
+               ("sed -i '3a oid = "+'"'+parser.get_mib_oid(mib_set)+'.0"'+"' "+pysnmp_file),\
+               ("sed -i '4a value = "+'"'+value+'"'+"' "+pysnmp_file),\
+               ("sed -i '5a community = "+'"public"'+"' "+pysnmp_file),\
+               ("sed -i '6a value = rfc1902.Counter32(value)' "+pysnmp_file),\
+               ("sed -i '7a cmdGen = cmdgen.CommandGenerator()' "+pysnmp_file),\
+               ("sed -i '8a cmdGen.setCmd(' "+pysnmp_file),\
+               ("sed -i '9a cmdgen.CommunityData(community),' "+pysnmp_file),\
+               ("sed -i '10a cmdgen.UdpTransportTarget((wan_ip, 161), timeout=1, retries=3),' "+pysnmp_file),\
+               ("sed -i '11a (oid, value))' "+pysnmp_file),\
+               ("python "+pysnmp_file),\
+               ("rm "+pysnmp_file),\
+               ]
+    try:
+        for i in command:
+            device.sendline(i)
+            device.expect(device.prompt)
+        return True
+    except:
+        raise Exception("Failed in setting mib using pysnmp")
