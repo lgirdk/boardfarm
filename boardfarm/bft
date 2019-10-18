@@ -38,11 +38,6 @@ except Exception as e:
 
 from zephyr import zephyr_reporter
 
-# Put this directory into the python path, so
-# that devices may be imported.
-import site
-site.addsitedir(os.path.dirname(os.path.realpath(__file__)))
-
 from boardfarm.devices import get_device
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
