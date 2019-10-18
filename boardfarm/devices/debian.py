@@ -489,7 +489,7 @@ class DebianBox(linux.LinuxDevice):
 
     def add_hosts(self):
         # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
-        import config
+        from boardfarm import config
         # this is a hack, the add_host should have been called from RootFs
         hosts = {}
         if hasattr(self, "profile"):
