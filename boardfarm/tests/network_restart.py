@@ -7,7 +7,7 @@
 
 import time
 
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class RestartNetwork(rootfs_boot.RootFSBootTest):

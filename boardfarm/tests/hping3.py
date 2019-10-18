@@ -1,4 +1,4 @@
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 import pexpect
 
 from boardfarm.lib.installers import install_hping3

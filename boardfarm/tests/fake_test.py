@@ -1,4 +1,4 @@
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 from boardfarm import lib
 
 class selftest_fake_test(rootfs_boot.RootFSBootTest):

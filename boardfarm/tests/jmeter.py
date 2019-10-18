@@ -2,7 +2,7 @@ import os
 import shutil
 import pexpect
 
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 from boardfarm.lib.installers import install_jmeter
 
 from boardfarm.devices import board, lan, prompt

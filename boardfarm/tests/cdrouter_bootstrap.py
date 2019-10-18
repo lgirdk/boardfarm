@@ -11,7 +11,7 @@ from cdrouter.jobs import Job
 from cdrouter.packages import Package
 
 import time
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, wan, lan, wlan, prompt
 import os
 import pexpect

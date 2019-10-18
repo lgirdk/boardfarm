@@ -1,4 +1,4 @@
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 import re
 
 from boardfarm.devices import board

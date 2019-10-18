@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):

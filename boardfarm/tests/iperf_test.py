@@ -7,7 +7,7 @@
 
 import re
 
-import rootfs_boot
+from boardfarm.tests import rootfs_boot
 import ipv6_setup
 from boardfarm import lib
 from boardfarm.lib import installers
