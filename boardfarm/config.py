@@ -5,6 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import glob
 import os
 import sys
 
@@ -16,20 +17,24 @@ boardfarm_config_location = os.environ.get('BFT_CONFIG', os.path.join(local_path
 
 # Test Suite config files. Standard python config file format.
 testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
-
+# Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
     for overlay in os.environ['BFT_OVERLAY'].split(' '):
         overlay = os.path.realpath(overlay)
-        testsuites_path = os.path.join(overlay, 'testsuites.cfg')
-        layerconf_path = os.path.join(overlay, 'layerconf.py')
-        if os.path.isfile(testsuites_path):
-            testsuite_config_files.append(testsuites_path)
-        if os.path.isfile(layerconf_path):
-            sys.path.insert(0, overlay)
-            import layerconf as tmp
-            layerconfs.append((overlay, tmp))
-            sys.path.pop(0)
+        # Find testsuite config files
+        testsuites_path = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
+                          glob.glob(os.path.join(overlay, '*', 'testsuites.cfg'))
+        testsuite_config_files += testsuites_path
+        # Find layerconf files and import them
+        layerconf_path = glob.glob(os.path.join(overlay, 'layerconf.py')) + \
+                         glob.glob(os.path.join(overlay, '*', 'layerconf.py'))
+        for f in layerconf_path:
+            if os.path.isfile(f):
+                sys.path.insert(0, overlay)
+                import layerconf as tmp
+                layerconfs.append((overlay, tmp))
+                sys.path.pop(0)
 
 # Logstash server - a place to send JSON-format results to
 # when finished. Set to None or name:port, e.g. 'logstash.mysite.com:1300'
