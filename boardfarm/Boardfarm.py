@@ -11,7 +11,7 @@ import os
 import subprocess
 
 import boardfarm
-from dbclients import boardfarmwebclient
+from .dbclients import boardfarmwebclient
 
 
 class Boardfarm(object):
