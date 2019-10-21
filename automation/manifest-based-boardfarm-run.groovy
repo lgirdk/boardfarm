@@ -69,6 +69,19 @@ pipeline {
 				 to: email_results
 			archiveArtifacts artifacts: 'boardfarm/results/*'
 			sh 'rm -rf boardfarm/results'
+			sh '''
+			set +xe
+			echo "Killing spawned processes..."
+			PID_SELF=$$
+			for PID in $(ps -eo pid,command -u ${USER} | grep -v grep | tail -n+2 | awk '{print $1}' | grep -v ${PID_SELF} | grep -v ${PPID}); do
+				echo "Checking pid ${PID}"
+				if xargs -0 -L1 -a /proc/${PID}/environ 2>/dev/null | grep "BUILD_ID=${BUILD_ID}$"; then
+					echo "Killing $(ps -p ${PID} | tail -1 | awk '{print $1}')"
+					kill ${PID}
+					echo killed ${PID}
+				fi
+			done || true
+			'''
 		}
 	}
 }
