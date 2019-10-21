@@ -77,6 +77,7 @@ pipeline {
 				echo "Checking pid ${PID}"
 				if xargs -0 -L1 -a /proc/${PID}/environ 2>/dev/null | grep "BUILD_ID=${BUILD_ID}$"; then
 					echo "Killing $(ps -p ${PID} | tail -1 | awk '{print $1}')"
+					sed -z 's/$/ /' /proc/$PID/cmdline; echo
 					kill ${PID}
 					echo killed ${PID}
 				fi
