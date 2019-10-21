@@ -679,3 +679,183 @@ def install_pjsua(device):
                 break
         if not_used > 99:
             assert 0, "Failed to install pjsua"
+
+def configure_IRCserver(device, user_name):
+    ''' Method to confgiure IRC server
+        Purpose: To modify and configure IRC server
+        Arguments: user_name(string) Eg: "IRC" '''
+
+    device.sendline ("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
+    device.expect (device.prompt)
+
+    device.sendline('''cat > /etc/inspircd/inspircd.conf << EOF
+<server name="irc.boardfarm.net"
+        description="Boardfarm IRC Server"
+        network="Boardfarm">
+
+<admin name="Boardfarm"
+        nick="%s"
+        email="admin@irc.boardfarm.net">
+
+<bind address="" port="6667" type="clients">
+
+<power diepass="12345" restartpass="12345" pause="2">
+
+<connect allow="*"
+        timeout="60"
+        flood="20"
+        threshold="1"
+        pingfreq="120"
+        sendq="262144"
+        recvq="8192"
+        localmax="3"
+        globalmax="3">
+
+<class name="Shutdown"
+        commands="DIE RESTART REHASH LOADMODULE UNLOADMODULE RELOAD">
+<class name="ServerLink"
+        commands="CONNECT SQUIT RCONNECT MKPASSWD MKSHA256">
+<class name="BanControl"
+        commands="KILL GLINE KLINE ZLINE QLINE ELINE">
+<class name="OperChat"
+        commands="WALLOPS GLOBOPS SETIDLE SPYLIST SPYNAMES">
+<class name="HostCloak"
+        commands="SETHOST SETIDENT SETNAME CHGHOST CHGIDENT">
+
+<type name="NetAdmin"
+        classes="OperChat BanControl HostCloak Shutdown ServerLink"
+        host="netadmin.omega.org.za">
+<type name="GlobalOp"
+        classes="OperChat BanControl HostCloak ServerLink"
+        host="ircop.omega.org.za">
+<type name="Helper"
+        classes="HostCloak"
+        host="helper.omega.org.za">
+
+<oper name="%s"
+        password="12345"
+        host="*@*"
+        type="NetAdmin">
+
+<files motd="/etc/inspircd/inspircd.motd"
+        rules="/etc/inspircd/inspircd.rules">
+
+<channels users="20"
+        opers="60">
+
+<dns server="127.0.0.1" timeout="5">
+
+<pid file="/var/run/inspircd.pid">
+
+<options prefixquit="Quit: "
+        noservices="no"
+        qaprefixes="no"
+        deprotectself="no"
+        deprotectothers="no"
+        flatlinks="no"
+        hideulines="no"
+        syntaxhints="no"
+        cyclehosts="yes"
+        ircumsgprefix="no"
+        announcets="yes"
+        disablehmac="no"
+        hostintopic="yes"
+        quietbursts="yes"
+        pingwarning="15"
+        allowhalfop="yes"
+        exemptchanops="">
+
+<security hidewhois=""
+        userstats="Pu"
+        customversion=""
+        hidesplits="no"
+        hidebans="no"
+        operspywhois="no"
+        hidemodes="eI"
+        maxtargets="20">
+
+<performance nouserdns="no"
+        maxwho="128"
+        softlimit="1024"
+        somaxconn="128"
+        netbuffersize="10240">
+
+<whowas groupsize="10"
+        maxgroups="100000"
+        maxkeep="3d">
+
+<timesync enable="no" master="no">
+
+<badnick nick="ChanServ" reason="Reserved For Services">
+<badnick nick="NickServ" reason="Reserved For Services">
+<badnick nick="OperServ" reason="Reserved For Services">
+<badnick nick="MemoServ" reason="Reserved For Services">
+EOF''' % (user_name, user_name))
+    device.expect (device.prompt)
+
+    device.sendline ("rm /etc/default/inspircd; touch /etc/default/inspircd")
+    device.expect (device.prompt)
+    device.sendline ("echo 'INSPIRCD_ENABLED=1' > /etc/default/inspircd")
+    device.expect (device.prompt)
+
+    device.sendline("service inspircd restart")
+    index = device.expect (['Starting Inspircd... done.'] + device.prompt, timeout=30)
+    assert index == 0, "Start Service inspircd"
+    device.expect (device.prompt)
+    device.sendline("netstat -tulpn | grep -i inspircd")
+    index = device.expect (['tcp6'] + device.prompt, timeout=30)
+    assert index == 0, "Service inspircd running"
+    device.expect (device.prompt)
+
+def configure_IRCclient(device, user_name, irc_client_scriptname, client_id, irc_server_ip, socket_type):
+    ''' Method to confgiure IRC client
+        this function as of now tests only 2 clients
+        Purpose: To create a client python file
+        Arguments: device Eg: wan,lan
+                   user_name(string) Eg: "IRC"
+                   irc_client_scriptname(string) Eg: irc_client.py
+                   client_id(int) Eg: 1st client - 1, 2nd client - 2
+                   irc_server_ip(ip address)
+                   socket_type: Eg ipv6 --> "6" or ipv4 --> "" '''
+
+    device.sendline ("touch %s" %irc_client_scriptname)
+    device.expect(device.prompt)
+    device.sendline ('''cat > %s << EOF
+import socket
+import time
+
+addr = "%s"
+input = """6667
+%s%s
+testinguser%s
+test"""
+
+# Parse input.
+lines = input.split('\\n')
+
+# Connect.
+client = socket.socket(socket.AF_INET%s, socket.SOCK_STREAM)
+client.connect((addr, int(lines[0])))
+
+# Handshake.
+client.send('NICK ' + lines[1] + '\\r\\n')
+client.send('USER ' + lines[2] + ' 0 * :' + lines[3] + '\\r\\n')
+
+time.sleep(15)
+client.send('join #channel\\r\\n')
+
+while True:
+    data = client.recv(8192)
+    print('Received Messages: '+data)
+    if 2 == %s:
+        validate_msg = "client1"
+    else:
+        validate_msg = "client2"
+    if validate_msg in data:
+        client.send(str.encode("PRIVMSG #channel : Yes, the clients are able to communicate\\n"))
+        print("connection success")
+        client.send('quit #channel\\r\\n')
+    else:
+        client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))
+EOF''' % (irc_client_scriptname, irc_server_ip, user_name, client_id, client_id, socket_type, client_id, client_id))
+    device.expect(device.prompt)
