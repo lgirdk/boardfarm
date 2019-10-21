@@ -119,17 +119,20 @@ def firefox_webproxy_driver(ipport, config):
     ip, port = ipport.split(':')
 
     profile = webdriver.FirefoxProfile()
-    profile.set_preference("network.proxy.type", 1)
-    profile.set_preference("network.proxy.http", ip)
-    profile.set_preference("network.proxy.http_port", int(port))
-    profile.set_preference("network.proxy.ssl", ip)
-    profile.set_preference("network.proxy.ssl_port", int(port))
-    profile.set_preference("network.proxy.ftp", ip)
-    profile.set_preference("network.proxy.ftp_port", int(port))
-    profile.set_preference("network.proxy.socks", ip)
-    profile.set_preference("network.proxy.socks_port", int(port))
-    profile.set_preference("network.proxy.socks_remote_dns", True)
-    profile.set_preference("browser.download.dir", os.getcwd())
+    if config.default_proxy_type ==  'socks5':
+        # socks5 section MUST be separated or it will NOT work!!!!
+        profile.set_preference("network.proxy.socks", ip)
+        profile.set_preference("network.proxy.socks_port", int(port))
+        profile.set_preference("network.proxy.socks_remote_dns", True)
+        profile.set_preference("security.enterprise_roots.enabled", True);
+    else:
+        profile.set_preference("network.proxy.type", 1)
+        profile.set_preference("network.proxy.http", ip)
+        profile.set_preference("network.proxy.http_port", int(port))
+        profile.set_preference("network.proxy.ssl", ip)
+        profile.set_preference("network.proxy.ssl_port", int(port))
+        profile.set_preference("network.proxy.ftp", ip)
+        profile.set_preference("network.proxy.ftp_port", int(port))
     #number 2 is to save the file to the above current location instead of downloads
     profile.set_preference("browser.download.folderList", 2)
     #added this line to open the file without asking any questions
