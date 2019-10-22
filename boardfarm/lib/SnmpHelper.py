@@ -87,9 +87,10 @@ class SnmpMibs(object):
 
     snmp_parser = None
 
-    @property
-    def default_mibs(self):
-        return SnmpMibs.get_mib_parser()
+    class __metaclass__(type):
+        @property
+        def default_mibs(self):
+            return SnmpMibs.get_mib_parser()
 
     @classmethod
     def get_mib_parser(cls, snmp_mib_files=None, snmp_mib_dirs=None, http_sources=None):
