@@ -47,14 +47,14 @@ class WindowsTelnet(base.BaseDevice):
         else:
             return None
 
-    def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
+    def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None, wait_time=30):
 
         if source_ip == None:
             self.sendline('ping -n %s %s' % (ping_count, ping_ip))
         else:
             self.sendline("ping -S %s -n %s %s" % (source_ip, ping_count, ping_ip))
 
-        self.expect("(.+)>", timeout=30)
+        self.expect("(.+)>", timeout=wait_time)
         Wifi_log = self.match.group(1)
 
         match = re.search('Reply from .+: bytes=.+ TTL=', str(Wifi_log))
