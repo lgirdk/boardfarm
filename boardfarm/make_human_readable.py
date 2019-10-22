@@ -8,6 +8,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import json
+import glob
 import os
 import re
 import sys
@@ -33,11 +34,15 @@ def pick_template_filename():
     if 'BFT_OVERLAY' in os.environ:
         for overlay in os.environ['BFT_OVERLAY'].split(' '):
             overlay = os.path.realpath(overlay)
-            if os.path.isfile(overlay + "/html/template_results_basic.html"):
-                basic = overlay + "/html/template_results_basic.html"
+            tmp = glob.glob(os.path.join(overlay, 'html', 'template_results_basic.html')) + \
+                  glob.glob(os.path.join(overlay, '*', 'html', 'template_results_basic.html'))
+            if len(tmp) > 0 and os.path.isfile(tmp[0]):
+                basic = tmp[0]
                 break
-            if os.path.isfile(overlay + "/html/template_results.html"):
-                full = overlay + "/html/template_results.html"
+            tmp = glob.glob(os.path.join(overlay, 'html', 'template_results.html')) + \
+                  glob.glob(os.path.join(overlay, '*', 'html', 'template_results.html'))
+            if len(tmp) > 0 and os.path.isfile(tmp[0]):
+                full = tmp[0]
                 break
 
     templates = {'basic': basic,
