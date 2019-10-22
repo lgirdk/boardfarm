@@ -1,5 +1,6 @@
 #!/usr/bin/python2
 import argparse
+import glob
 import os
 import csv
 import datetime
@@ -85,10 +86,14 @@ def parse_zapi_config():
     if 'BFT_OVERLAY' in os.environ:
         for overlay in os.environ['BFT_OVERLAY'].split(' '):
             overlay = os.path.realpath(overlay)
-            zdir = os.path.join(os.path.abspath(overlay), 'zephyr')
-            if os.path.exists(zdir):
-                data.append(json.load(open(os.path.join(zdir, 'zapi_configuration.json'))))
-                data[-1]['metafile'] = os.path.join(zdir, 'boardfarm_tc_meta_file.csv')
+            zapi_conf = glob.glob(overlay, '*', 'zapi_configuration.json') + \
+                        glob.glob(overlay, '*', '*', 'zapi_configuration.json')
+            metafile = glob.glob(overlay, '*', 'boardfarm_tc_meta_file.csv') + \
+                       glob.glob(overlay, '*', '*', 'boardfarm_tc_meta_file.csv')
+            if len(zapi_conf) > 0:
+                data.append(json.load(open(zapi_conf[0])))
+            if len(metafile) > 0:
+                data[-1]['metafile'] = metafile[0]
 
     # TODO: opensource zephyr for boardfarm tests?
     if os.path.exists('zephyr/zapi_configuration.json'):
