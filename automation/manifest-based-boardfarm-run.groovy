@@ -4,6 +4,13 @@ def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
 
+def meta = env.meta ?: ''
+if (meta != '') {
+	meta_args = "-m " + meta
+} else {
+	meta_args = ""
+}
+
 pipeline {
 	agent { label 'boardfarm && ' + location }
 
@@ -42,7 +49,7 @@ pipeline {
 					${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm
 					export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm`"
 					if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
-					yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args
+					yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
 
 					sh 'grep tests_fail...0, boardfarm/results/test_results.json'
 				}
