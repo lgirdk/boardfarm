@@ -10,8 +10,7 @@ import ipaddress
 import json
 import os
 
-from termcolor import cprint
-
+from boardfarm.lib.common import print_bold
 
 class HelperEncoder(json.JSONEncoder):
     '''Turn some objects into a form that can be stored in JSON.'''
@@ -42,9 +41,6 @@ def clean_for_json(data):
 def printd(data):
     '''Pretty-print as a JSON data object.'''
     print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
-
-def print_bold(msg):
-    cprint(msg, None, attrs=['bold'])
 
 def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],
