@@ -11,6 +11,7 @@ future
 ipaddress
 jira
 matplotlib
+nested_lookup
 netaddr
 pexpect
 pymongo
