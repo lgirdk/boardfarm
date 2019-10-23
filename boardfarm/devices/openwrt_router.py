@@ -17,9 +17,9 @@ from datetime import datetime
 import ipaddress
 
 import power
-import common
 import connection_decider
-from common import print_bold
+from boardfarm.lib import common
+from boardfarm.lib.common import print_bold
 
 class OpenWrtRouter(linux.LinuxDevice):
     '''

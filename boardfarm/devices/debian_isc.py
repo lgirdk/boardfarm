@@ -3,6 +3,7 @@ import os
 import pexpect
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 from boardfarm.lib.common import retry_on_exception
+from boardfarm.lib.common import scp_from
 import re
 import glob
 import traceback
@@ -698,7 +699,6 @@ EOF'''
 
             try:
                 print('Downloading ' + server + ':' + conf_file + ' to ' + dest_fname)
-                from devices.common import scp_from
                 scp_from(conf_file, server, self.tftp_device.username, self.tftp_device.password, self.tftp_device.port, dest_fname)
 
                 if not os.path.isfile(dest_fname):

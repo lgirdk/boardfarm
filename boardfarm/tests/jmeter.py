@@ -7,7 +7,7 @@ from boardfarm.lib.installers import install_jmeter
 
 from boardfarm.devices import board, lan, prompt
 # To Do: Move this file or function out of the "devices" directory
-from boardfarm.devices.common import scp_from
+from boardfarm.lib.common import scp_from
 
 def rm_r(path):
     if not os.path.exists(path):
