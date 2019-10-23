@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import glob
 import os
 import re
 import subprocess
@@ -107,11 +108,19 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(0)
 
+    # Find locations of 'tests' subdirectories
     test_code_loc = []
     for d in args.directories:
-        if d.endswith("boardfarm"):
-            d = os.path.join(d, "boardfarm")
-        test_code_loc.append(os.path.join(d, "tests", "*.py"))
+        tmp = glob.glob(os.path.join(d, 'tests')) + \
+              glob.glob(os.path.join(d, '*', 'tests'))
+        if len(tmp) == 1:
+            test_code_loc.append(os.path.join(tmp[0], '*.py'))
+        elif len(tmp) > 1:
+            print("Error in %s" % d)
+            print("  Multiple 'tests' subdirectories found. There should only be "
+                  "one 'tests' directory per project.")
+            sys.exit(1)
+    # Locations of '.git' files
     git_loc = [os.path.join(x, ".git") for x in args.directories]
     valid_test_types = 'rootfs_boot.RootFSBootTest'
 
