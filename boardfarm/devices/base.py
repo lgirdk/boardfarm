@@ -8,7 +8,7 @@
 import pexpect
 import os
 import time
-import common
+from boardfarm.lib import common
 import error_detect
 import signal
 from boardfarm.lib.bft_logging import LoggerMeta, o_helper

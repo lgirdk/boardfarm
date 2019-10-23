@@ -40,6 +40,7 @@ from zephyr import zephyr_reporter
 
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
+from boardfarm.lib.common import print_bold
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
@@ -150,7 +151,6 @@ def main():
     from boardfarm import devices
     devices.probe_devices()
     from termcolor import colored
-    from library import print_bold
 
     os.environ["TERM"] = "dumb"
 

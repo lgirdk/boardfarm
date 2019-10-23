@@ -3,7 +3,7 @@ import pexpect
 
 from datetime import datetime
 
-from boardfarm.library import print_bold
+from boardfarm.lib.common import print_bold
 from boardfarm.devices import board, prompt, wan, lan
 
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):

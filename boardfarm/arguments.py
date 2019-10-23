@@ -24,11 +24,11 @@ except:
     assert urllib
 import re
 
-import library
 import config
 from config import boardfarm_config_location
 from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.lib.common import check_url
+from boardfarm.lib.common import print_bold
 
 try:
     import boardfarm
@@ -282,7 +282,7 @@ def parse():
         exit(0)
 
     if args.board_type:
-        library.print_bold("Selecting board from board type = %s" % args.board_type)
+        print_bold("Selecting board from board type = %s" % args.board_type)
         config.BOARD_NAMES = []
         possible_names = config.boardfarm_config
         if args.board_names:
