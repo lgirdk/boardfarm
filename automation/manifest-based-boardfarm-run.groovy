@@ -36,19 +36,19 @@ pipeline {
 			steps {
 				ansiColor('xterm') {
 					sh '''
-					cd boardfarm
 					pwd
 					ls
 					rm -rf venv
 					virtualenv venv
 					. venv/bin/activate
-					repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
 					repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
+					repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
 					export BFT_OVERLAY="$(repo forall -c 'pwd' | grep -v boardfarm$ | tr '\n' ' ')"
 					export BFT_CONFIG=''' + config + '''
 					${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm
 					export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm`"
 					if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
+					cd boardfarm
 					yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
 
 					sh 'grep tests_fail...0, boardfarm/results/test_results.json'
