@@ -3,7 +3,7 @@ import os, ipaddress, re
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex, LinuxMacFormat
 import pexpect
 
-from common import print_bold
+from boardfarm.lib.common import print_bold
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
