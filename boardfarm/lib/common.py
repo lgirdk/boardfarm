@@ -16,8 +16,18 @@ from termcolor import cprint
 import re
 import ipaddress
 from boardfarm.lib.SnmpHelper import SnmpMibs
+try:
+    from urllib.request import urlopen
+    import urllib
+except:
+    from urllib2 import urlopen
+    import urllib2 as urllib
 import urllib2
 import termcolor
+import base64
+import ssl
+import netrc
+import urlparse
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
@@ -728,3 +738,31 @@ def scp_from(fname, server, username, password, port, dest):
 
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
+
+def check_url(url):
+    try:
+        def add_basic_auth(login_str, request):
+            '''Adds Basic auth to http request, pass in login:password as string'''
+            encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
+            authheader =  "Basic %s" % encodeuser
+            request.add_header("Authorization", authheader)
+
+        context = ssl._create_unverified_context()
+
+        req = urllib.Request(url)
+
+        try:
+            n = netrc.netrc()
+            login, unused, password = n.authenticators(urlparse.urlparse(url).hostname)
+            add_basic_auth("%s:%s" % (login, password), req)
+        except (TypeError, ImportError, IOError, netrc.NetrcParseError):
+            pass
+
+        # If url returns 404 or similar, raise exception
+        urlopen(req, timeout=20, context=context)
+        return True
+    except Exception as e:
+        print(e)
+        print('Error trying to access %s' % url)
+        return False
+

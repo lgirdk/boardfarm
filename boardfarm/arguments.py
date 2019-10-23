@@ -27,6 +27,7 @@ import library
 import config
 from config import boardfarm_config_location
 from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
+from boardfarm.lib.common import check_url
 
 try:
     import boardfarm
@@ -231,32 +232,7 @@ def parse():
         if x is None:
             continue
         if x.startswith('http://') or x.startswith('https://'):
-            try:
-                def add_basic_auth(login_str, request):
-                    '''Adds Basic auth to http request, pass in login:password as string'''
-                    import base64
-                    encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
-                    authheader =  "Basic %s" % encodeuser
-                    request.add_header("Authorization", authheader)
-
-                import ssl
-                context = ssl._create_unverified_context()
-
-                req = urllib.Request(x)
-
-                try:
-                    import netrc, urlparse
-                    n = netrc.netrc()
-                    login, unused, password = n.authenticators(urlparse.urlparse(x).hostname)
-                    add_basic_auth("%s:%s" % (login, password), req)
-                except (TypeError, ImportError, IOError, netrc.NetrcParseError):
-                    pass
-
-                # If url returns 404 or similar, raise exception
-                urlopen(req, timeout=20, context=context)
-            except Exception as e:
-                print(e)
-                print('Error trying to access %s' % x)
+            if not check_url(x):
                 sys.exit(1)
         else:
             if not os.path.isfile(x):
