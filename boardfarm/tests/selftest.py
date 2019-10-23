@@ -7,7 +7,8 @@ import os
 import tempfile
 from boardfarm.lib import SnmpHelper
 
-from boardfarm.devices import board, wan, lan, wlan, common
+from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.lib import common
 
 '''
     This file can bu used to add unit tests that
