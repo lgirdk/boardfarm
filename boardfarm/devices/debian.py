@@ -496,12 +496,26 @@ class DebianBox(linux.LinuxDevice):
             hosts.update(self.profile["hosts"])
         if hasattr(config, "board"):
             for device in config.board['devices']:
+                # TODO: this should be different...
+                if 'lan' in device['name']:
+                    continue
                 d = getattr(config, device['name'])
                 domain_name = device['name'] + '.boardfarm.com'
+                final = None
                 if 'ipaddr' in device:
-                    hosts[domain_name] = str(device['ipaddr'])
+                    final = str(device['ipaddr'])
                 elif hasattr(d, 'ipaddr'):
-                    hosts[domain_name] = str(d.ipaddr)
+                    final = str(d.ipaddr)
+
+                if final == 'localhost':
+                    if hasattr(d, 'gw'):
+                        final = str(d.gw)
+                    elif hasattr(d, 'iface_dut'):
+                        final = d.get_interface_ipaddr(d.iface_dut)
+                    else:
+                        final = None
+                if final is not None:
+                    hosts[domain_name] = final
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
             for host, ip in hosts.iteritems():
