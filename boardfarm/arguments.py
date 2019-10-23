@@ -21,6 +21,7 @@ try:
 except:
     from urllib2 import urlopen
     import urllib2 as urllib
+    assert urllib
 import re
 
 import library
