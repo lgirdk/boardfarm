@@ -15,6 +15,7 @@ import sys
 import time
 
 import requests
+from boardfarm.lib.common import run_once
 
 class ServerError(Exception):
     pass
@@ -59,8 +60,12 @@ class BoardfarmWebClient(object):
             r = requests.get(self.server_url, headers=self.headers)
             data = r.json()
             self.server_version = data.get('version', None)
-            print("Using %s as boardfarm server, version %s" %
-                  (self.server_url, self.server_version))
+
+            @run_once
+            def print_info():
+                print("Using %s as boardfarm server, version %s" %
+                      (self.server_url, self.server_version))
+            print_info()
         except Exception as e:
             if self.debug:
                 print(e)
