@@ -5,6 +5,8 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import re,pexpect
+
 def apt_install(device, name, timeout=120):
     apt_update(device)
     device.sendline('apt-get install -q -y %s' % name)
@@ -591,101 +593,48 @@ def install_postfix(device):
         device.sendline("service postfix start")
         assert 0 != device.expect(['failed'] + device.prompt, timeout=90), "Unable to start Postfix service.Service is not properly installed"
 
-def install_asterisk(device):
-    '''Install asterisk if not present.'''
-    device.sendline('apt list --installed | grep -i asterisk')
+def check_pjsua(device):
+    '''Check if softphone is present.'''
     try:
-        device.expect(['asterisk/'])
+        device.sendline('pjsua')
+        device.expect(['Ready: Success'], timeout=10)
+        device.sendcontrol('c')
         device.expect(device.prompt)
+        return True
     except:
-        device.expect(device.prompt)
-        device.sendline('apt-get install asterisk -y 2>&1 & ')
-        device.expect(device.prompt)
-        for not_used in range(100):
-            device.sendline('apt list --installed | grep -i asterisk')
-            idx = device.expect(['asterisk/'] + device.prompt)
-            if idx == 0:
-                device.expect(device.prompt)
-                break
-        if not_used > 99:
-            assert 0, "Failed to install asterisk"
+        return False
 
-def install_make(device):
-    '''Install make if not present.'''
-    device.sendline('apt list --installed | grep -i make')
-    try:
-        device.expect('make/', timeout=5)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
-        device.sendline('apt-get install make -y')
-        device.expect(['make/'] + device.prompt, timeout=60)
-
-def install_gcc(device):
-    '''Install make if not present.'''
-    device.sendline('apt list --installed | grep -i gcc')
-    try:
-        device.expect('gcc/', timeout=5)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
-        device.sendline('apt-get install gcc -y')
-        device.expect(['gcc/'] + device.prompt, timeout=60)
-
-def install_pkgconfig(device):
-    '''Install make if not present.'''
-    device.sendline('apt list --installed | grep -i pkg-config')
-    try:
-        device.expect('pkg\-config/', timeout=5)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
-        device.sendline('apt-get install pkg-config -y')
-        device.expect(['pkg\-config/'] + device.prompt, timeout=60)
-
-def install_libsound2dev(device):
-    '''Install make if not present.'''
-    device.sendline('apt list --installed | grep -i libasound2-dev')
-    try:
-        device.expect('libasound2\-dev/', timeout=5)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
-        device.sendline('apt-get install libasound2-dev -y')
-        device.expect(['libasound2\-dev/'] + device.prompt, timeout=100)
-
-def install_pjsua(device):
+def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"):
     '''Install softphone if not present.'''
-    try:
-        device.sendline('ldconfig -p | grep pj')
-        device.expect(['libpjsua\.so\.2\s\(libc6\,x86\-64\)'])
-        device.expect(device.prompt)
-    except:
-        install_make(device)
-        install_gcc(device)
-        install_pkgconfig(device)
-        install_libsound2dev(device)
+    result = check_pjsua(device)
+    if not result:
+        apt_install(device, 'make')
+        apt_install(device, 'gcc')
+        apt_install(device, 'pkgconfig')
+        apt_install(device, 'libsound2dev')
         install_wget(device)
-        device.sendline('rm -r pjpr*')
-        device.expect(device.prompt, timeout=70)
-        device.sendline('wget http://www.pjsip.org/release/2.6/pjproject-2.6.tar.bz2')
+        device.sendline('wget %s' % url)
         device.expect(device.prompt, timeout=100)
-        device.sendline('tar -xjf pjproject-2.6.tar.bz2')
+        device.sendline('tar -xjf %s' % url.split("/")[-1])
         device.expect(device.prompt, timeout=70)
-        device.sendline('cd pjproject-2.6')
+        device.sendline('rm %s'% url.split("/")[-1])
+        device.expect(device.prompt, timeout=60)
+        device.sendline("ls")
         device.expect(device.prompt)
-        device.sendline('./configure && make dep && make && make install 2>&1 & ')
+        folder_name=re.findall('(pjproject\-[\d\.]*)\s', device.before)[0]
+        device.sendline('cd %s' % folder_name)
         device.expect(device.prompt)
-        for not_used in range(100):
-            import pexpect
-            device.expect(pexpect.TIMEOUT, timeout=10)
-            device.sendline('ldconfig -p | grep pj')
-            idx = device.expect(['libpjsua\.so\.2\s\(libc6\,x86\-64\)'] + device.prompt)
-            if idx == 0:
-                device.expect(device.prompt)
-                break
-        if not_used > 99:
-            assert 0, "Failed to install pjsua"
+        device.sendline('./configure && make dep && make && make clean &&  make install 2>&1 & ')
+        #this takes more than 4 mins to install
+        device.expect(pexpect.TIMEOUT, timeout=400)
+        device.expect(device.prompt)
+        device.sendline('ls pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu')
+        assert 0 == device.expect(['pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu'] + device.prompt), "Unable to find executable"
+        device.expect(device.prompt)
+        device.sendline('cp pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu /usr/local/bin/pjsua')
+        device.expect(device.prompt)
+        result = check_pjsua(device)
+        assert 0 != result, "Unable to start Pjsua.Service is not installed."
 
 def configure_IRCserver(device, user_name):
     ''' Method to confgiure IRC server
