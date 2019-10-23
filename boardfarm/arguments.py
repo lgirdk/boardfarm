@@ -232,6 +232,9 @@ def parse():
     for x in (config.UBOOT, config.KERNEL, config.ROOTFS, config.META_BUILD):
         if x is None:
             continue
+        if 'mirror://' in x:
+            # we need to check the mirror later once the board is selected
+            continue
         if x.startswith('http://') or x.startswith('https://'):
             if not check_url(x):
                 sys.exit(1)

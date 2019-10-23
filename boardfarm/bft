@@ -39,6 +39,7 @@ except Exception as e:
 from zephyr import zephyr_reporter
 
 from boardfarm.devices import get_device
+from boardfarm.lib.common import check_url
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
@@ -222,6 +223,16 @@ def main():
                                                  start=start)
             print_bold("dut device console = %s" % colored("black", 'grey'))
             config.console.start = start
+
+            # TODO: we should generically check these at one time in the future
+            for x in ["UBOOT", "KERNEL", "ROOTFS", "META_BUILD"]:
+                v = getattr(config, x, "")
+                if v is not None and "mirror://" in v:
+                    print config.board
+                    r = getattr(config, x).replace("mirror://", config.board[u'mirror'])
+                    if not check_url(r):
+                        raise Exception("Unable to reach board mirror, trying next board")
+                    setattr(config, x, r)
 
             if 'devices' in config.board:
                 setup_dynamic_devices(config, env=env, start=start)
