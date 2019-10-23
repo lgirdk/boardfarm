@@ -147,6 +147,7 @@ def main():
     # Read command-line arguments
     import arguments
     config = arguments.parse()
+    boardfarm.current_config = config
 
     import library
     from boardfarm import devices
