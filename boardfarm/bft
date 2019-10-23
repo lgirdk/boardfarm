@@ -18,6 +18,7 @@ import time
 import traceback
 import queue
 import threading
+import re
 from datetime import datetime
 
 # Try to catch common mistakes: not installing boardfarm, or
@@ -179,6 +180,46 @@ def main():
 
     # move boards with a feature to end of the list
     config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=sortFunc)
+
+    def update_value(regex, v):
+        action, match, replace, ignore = regex.split('/')
+        assert action == 's'
+        ret = re.sub(match, replace, v)
+
+        if ret is not None:
+            return ret
+        else:
+            return v
+
+    def parse_type(regex, i):
+        if type(i) == list:
+            walk_list(regex, i)
+            return True
+        if type(i) == dict:
+            walk_dict(regex, i)
+            return True
+        if type(i) == bool:
+            return True
+        if type(i) == int:
+            return True
+
+        return False
+
+    def walk_list(regex, l):
+        for i, v in enumerate(l):
+            if parse_type(regex, v):
+                continue
+            l[i] = update_value(regex, v)
+
+    def walk_dict(regex, d):
+        for k, v in d.iteritems():
+            if parse_type(regex, v):
+                continue
+            d[k] = update_value(regex, v)
+
+    for regex in config.regex_config:
+        print("WARN: running regex replacement = %s" % regex)
+        walk_dict(regex, config.boardfarm_config)
 
     for name in config.BOARD_NAMES:
         try:

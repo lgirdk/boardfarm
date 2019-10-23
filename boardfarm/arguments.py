@@ -97,6 +97,7 @@ def parse():
     parser.add_argument('--nfsroot', metavar='', type=str, default=None, help='URL or file PATH of Rootfs image to flash')
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(boardfarm.__version__), help='show version and exit')
     parser.add_argument('--nostrict', action='store_true', help='ignores failure to import a tests from a testsuite')
+    parser.add_argument('--regex_config', metavar='', type=str, default=[], action="append", help='Regex substitution for board config')
 
     args = parser.parse_args()
 
@@ -345,6 +346,7 @@ def parse():
     config.golden = args.golden
     config.features = args.feature
     config.TEST_SUITE_NOSTRICT = args.nostrict
+    config.regex_config = args.regex_config
 
     return config
 
