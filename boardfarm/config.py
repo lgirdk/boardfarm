@@ -20,7 +20,7 @@ testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
 # Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
-    for overlay in os.environ['BFT_OVERLAY'].split(' '):
+    for overlay in os.environ['BFT_OVERLAY'].strip().split(' '):
         overlay = os.path.realpath(overlay)
         # Find testsuite config files
         testsuites_path = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
