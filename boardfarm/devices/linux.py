@@ -143,12 +143,12 @@ class LinuxDevice(base.BaseDevice):
         else:
             return 'False'
 
-    def is_link_up(self, interface):
+    def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
         '''Checking the interface status'''
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
-        match = re.search('BROADCAST,MULTICAST,UP', link_state)
+        match = re.search(pattern, link_state)
         if match:
             return match.group(0)
         else:
