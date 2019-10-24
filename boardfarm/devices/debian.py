@@ -612,13 +612,18 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
         self.expect(self.prompt)
+        self.sendline('apt install -y ndisc6')
+        self.expect(self.prompt)
 
 
     def start_lan_client(self, wan_gw=None):
         # very casual try for ipv6 addr, if we don't get one don't fail for now
         try:
             self.enable_ipv6(self.iface_dut)
-            # TODO: how to wait for stateless config?
+            self.sendline("rdisc6 -1 eth1")
+            self.expect(self.prompt)
+            check = [line for line in self.before.split("\n") if "Prefix" in line]
+            assert len(check) != 0, "Failed to get IPv6 address via Stateless autoconfiguration."
             self.get_interface_ip6addr(self.iface_dut)
         except:
             self.sendline('dhclient -6 -i -r %s' % self.iface_dut)
