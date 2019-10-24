@@ -246,6 +246,8 @@ def install_wget(device):
 
 def install_ftp(device):
     '''Install ftp if not present.'''
+    device.sendline('apt-get update')
+    device.expect(device.prompt, timeout=90)
     device.sendline('\ndpkg -l | grep ftp')
     try:
         device.expect('classical file transfer client', timeout=5)
@@ -284,7 +286,7 @@ def install_xampp(device):
 
 def install_snmpd(device, post_cmd=None):
     '''
-    Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf 
+    Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf
     (or for whatever is needed just after the installation)
     '''
     device.sendline('apt update && apt install snmpd -y -q')
@@ -311,22 +313,27 @@ def install_snmp(device):
         device.sendline('apt update && apt-get install snmp -y')
         device.expect(device.prompt, timeout=60)
 
-def install_vsftpd(device):
+def install_vsftpd(device, remove=False):
     '''Install vsftpd if not present.'''
-    device.sendline('\nvsftpd -v')
-    try:
-        device.expect('vsftpd: version', timeout=10)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
+    if not remove:
+        device.sendline('apt-get update')
+        device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install vsftpd -y')
         device.expect(device.prompt, timeout=60)
-    device.sendline('sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf')
-    device.expect(device.prompt, timeout=5)
-    device.sendline('sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
-    device.expect(device.prompt, timeout=5)
-    device.sendline('service vsftpd restart')
-    device.expect(device.prompt, timeout=60)
+        device.sendline('sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf')
+        device.expect(device.prompt, timeout=5)
+        device.sendline('sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
+        device.expect(device.prompt, timeout=5)
+        device.sendline('service vsftpd restart')
+        device.expect(device.prompt, timeout=60)
+    else:
+        '''Stopping the services running'''
+        device.sendline("service vsftpd stop")
+        device.expect(device.prompt, timeout=15)
+        device.sendline("/etc/init.d/vsftpd status")
+        device.expect(device.prompt, timeout=15)
+        device.sendline('apt-get --purge remove vsftpd -y')
+        device.expect(device.prompt, timeout=30)
 
 def install_pysnmp(device):
     '''Install pysnmp if not present.'''
