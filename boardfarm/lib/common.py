@@ -766,3 +766,64 @@ def check_url(url):
         print('Error trying to access %s' % url)
         return False
 
+def ftp_useradd(device):
+    '''Add ftp user'''
+    device.sendline("useradd -m client -s /usr/sbin/nologin")
+    index = device.expect(['already exists'] + [] + device.prompt, timeout=10)
+    if index !=0:
+        device.sendline("passwd client")
+        device.expect("Enter new UNIX password:", timeout=10)
+        device.sendline("client")
+        device.expect("Retype new UNIX password:", timeout=10)
+        device.sendline("client")
+        device.expect(device.prompt, timeout=10)
+        device.sendline("echo \"/usr/sbin/nologin\" >> /etc/shells")
+        device.expect(device.prompt, timeout=10)
+        device.sendline("echo \"client\" | tee -a /etc/vsftpd.userlist")
+        device.expect(device.prompt, timeout=10)
+        device.sendline("chmod 777 /home/client")
+        device.expect(device.prompt, timeout=10)
+        device.sendline("service vsftpd restart")
+        device.expect(device.prompt, timeout=90)
+        return "failed" in device.before
+
+def ftp_file_create_delete(device, create_file=None, remove_file=None):
+    '''create and delete ftp file for upload and download'''
+    if create_file:
+        device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" % create_file)
+        device.expect(["\d{6,8}\sbytes"] + device.prompt, timeout=90)
+        device.expect(device.prompt, timeout=10)
+    if remove_file:
+        device.sendline("rm %s.txt" % remove_file)
+        device.expect(device.prompt, timeout=10)
+
+def ftp_device_login(device, ip_mode, device_ip):
+    '''Login to FTP device by creating credentials'''
+    import re
+    match = re.search("(\d)", str(ip_mode))
+    value = match.group()
+    device.sendline("ftp -%s %s" % (value, device_ip))
+    device.expect("Name", timeout=10)
+    device.sendline("client")
+    device.expect("Password:", timeout=10)
+    device.sendline("client")
+    device.expect(['230 Login successful'], timeout=10)
+    device.expect("ftp>", timeout=10)
+
+def ftp_upload_download(device, ftp_load):
+    '''Upload and download file'''
+    if "download" in str(ftp_load):
+	device.sendline("get %s.txt" % ftp_load)
+    elif "upload" in str(ftp_load):
+        device.sendline("put %s.txt" % ftp_load)
+    device.expect("226 Transfer complete.", timeout=60)
+    device.sendline()
+    device.expect("ftp>", timeout=10)
+
+def ftp_close(device):
+    '''Closing the FTP connection'''
+    device.sendcontrol('c')
+    index = device.expect(['>'] + device.prompt, timeout=20)
+    if index == 0:
+        device.sendline("quit")
+        device.expect(device.prompt, timeout=10)
