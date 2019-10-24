@@ -6,7 +6,7 @@ def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
 
 def meta = env.meta ?: ''
 if (meta != '') {
-	meta_args = "-m " + meta
+	meta_args = " -m " + meta
 } else {
 	meta_args = ""
 }
