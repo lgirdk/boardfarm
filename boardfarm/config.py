@@ -31,9 +31,10 @@ if 'BFT_OVERLAY' in os.environ:
                          glob.glob(os.path.join(overlay, '*', 'layerconf.py'))
         for f in layerconf_path:
             if os.path.isfile(f):
-                sys.path.insert(0, overlay)
+                location = os.path.dirname(f)
+                sys.path.insert(0, location)
                 import layerconf as tmp
-                layerconfs.append((overlay, tmp))
+                layerconfs.append((location, tmp))
                 sys.path.pop(0)
 
 # Logstash server - a place to send JSON-format results to
