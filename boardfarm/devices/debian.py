@@ -391,10 +391,6 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('chmod a+w ' + self.tftp_dir + '/crashdump')
         self.expect(self.prompt)
-        self.sendline('sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa')
-        self.expect(self.prompt)
-        self.sendline('echo TFTP_OPTIONS=\\"--secure --create\\" >> /etc/default/tftpd-hpa')
-        self.expect(self.prompt)
         self.sendline('sed /TFTP_ADDRESS/d -i /etc/default/tftpd-hpa')
         self.expect(self.prompt)
         self.sendline('echo TFTP_ADDRESS=\\":69\\" >> /etc/default/tftpd-hpa')
@@ -403,10 +399,14 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('echo TFTP_DIRECTORY=\\"/srv/tftp\\" >> /etc/default/tftpd-hpa')
         self.expect(self.prompt)
-        self.sendline('/etc/init.d/tftpd-hpa restart')
-        self.expect(self.prompt)
+        self.restart_tftp_server()
 
-    def restart_tftp_server(self):
+    # mode can be "ipv4" or "ipv6"
+    def restart_tftp_server(self, mode=None):
+        self.sendline('sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa')
+        self.expect(self.prompt)
+        self.sendline('echo TFTP_OPTIONS=\\"%s--secure --create\\" >> /etc/default/tftpd-hpa' % ("--%s " % mode if mode else ""))
+        self.expect(self.prompt)
         self.sendline('\n/etc/init.d/tftpd-hpa restart')
         self.expect('Restarting')
         self.expect(self.prompt)
