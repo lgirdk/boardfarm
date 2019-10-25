@@ -95,11 +95,19 @@ def parse():
     parser.add_argument('-z', '--no-network', action='store_true', help='Skip basic network tests when booting')
     parser.add_argument('--bootargs', metavar='', type=str, default=None, help='bootargs to set or append to default args (board dependant)')
     parser.add_argument('--nfsroot', metavar='', type=str, default=None, help='URL or file PATH of Rootfs image to flash')
-    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(boardfarm.__version__), help='show version and exit')
+    parser.add_argument('--version', action='store_true', help='show version and exit')
     parser.add_argument('--nostrict', action='store_true', help='ignores failure to import a tests from a testsuite')
     parser.add_argument('--regex_config', metavar='', type=str, default=[], action="append", help='Regex substitution for board config')
 
     args = parser.parse_args()
+
+    if args.version:
+        print('%s %s' % (os.path.basename(sys.argv[0]), boardfarm.__version__))
+        if boardfarm.plugins:
+            print("Installed Plugins:")
+            for key in sorted(boardfarm.plugins):
+                print("%s %s" % (key, getattr(boardfarm.plugins[key], '__version__', '')))
+        sys.exit(0)
 
     if args.list_tests:
         import tests

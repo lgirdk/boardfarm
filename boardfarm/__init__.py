@@ -8,3 +8,6 @@
 from .version import __version__
 
 from .Boardfarm import Boardfarm
+from .plugins import find_plugins
+
+plugins = find_plugins()
