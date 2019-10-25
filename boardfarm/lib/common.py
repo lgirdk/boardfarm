@@ -22,7 +22,7 @@ try:
 except:
     from urllib2 import urlopen
     import urllib2 as urllib
-import urllib2
+
 import termcolor
 import base64
 import ssl
@@ -663,8 +663,8 @@ def get_file_magic(fname, num_bytes=4):
     '''Return the first few bytes from a file to determine the type.'''
     if fname.startswith("http://") or fname.startswith("https://"):
         rng = 'bytes=0-%s' % (num_bytes - 1)
-        req = urllib2.Request(fname, headers={'Range': rng})
-        data = urllib2.urlopen(req).read()
+        req = urllib.Request(fname, headers={'Range': rng})
+        data = urlopen(req).read()
     else:
         f = open(fname, 'rb')
         data = f.read(num_bytes)
