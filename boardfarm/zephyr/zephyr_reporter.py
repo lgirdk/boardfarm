@@ -86,10 +86,10 @@ def parse_zapi_config():
     if 'BFT_OVERLAY' in os.environ:
         for overlay in os.environ['BFT_OVERLAY'].split(' '):
             overlay = os.path.realpath(overlay)
-            zapi_conf = glob.glob(overlay, '*', 'zapi_configuration.json') + \
-                        glob.glob(overlay, '*', '*', 'zapi_configuration.json')
-            metafile = glob.glob(overlay, '*', 'boardfarm_tc_meta_file.csv') + \
-                       glob.glob(overlay, '*', '*', 'boardfarm_tc_meta_file.csv')
+            zapi_conf = glob.glob(os.path.join(overlay, '*', 'zapi_configuration.json')) + \
+                        glob.glob(os.path.join(overlay, '*', '*', 'zapi_configuration.json'))
+            metafile = glob.glob(os.path.join(overlay, '*', 'boardfarm_tc_meta_file.csv')) + \
+                       glob.glob(os.path.join(overlay, '*', '*', 'boardfarm_tc_meta_file.csv'))
             if len(zapi_conf) > 0:
                 data.append(json.load(open(zapi_conf[0])))
             if len(metafile) > 0:
