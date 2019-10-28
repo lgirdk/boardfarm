@@ -55,7 +55,7 @@ class LoggerMeta(type):
 
 def log_message(s, msg, header=False):
 
-    line_sep = ('=' * (len(msg)))
+    line_sep = ('=' * min(len(msg), 80))
     full_msg = "\n\t\t" + line_sep + "\n\t\t" + msg + "\n\t\t" + line_sep + "\n"
     if header:
         print("\n\n\t\t\t***" + msg + "***\n\n")
