@@ -11,6 +11,14 @@ class LinuxDevice(base.BaseDevice):
     '''Linux implementations '''
     tftp_dir = '/tftpboot'
 
+    def check_status(self):
+        '''
+        A simple, safe function to check the state of the device.
+        '''
+        self.sendline("\ncat /proc/version; ip a; ifconfig")
+        self.expect('version')
+        self.expect(self.prompt)
+
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface'''
         self.sendline("\nifconfig %s" % interface)

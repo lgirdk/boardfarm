@@ -396,6 +396,7 @@ def main():
             sys.exit(1)
 
     print_bold('==========')
+    all_devices = [getattr(config, name, None) for name in config.devices]
     try:
         tests_pass = tests_fail = tests_skip = 0
         curr_test = None
@@ -408,6 +409,8 @@ def main():
                 tests_pass += 1
             elif grade == "FAIL" or grade == "Exp FAIL":
                 tests_fail += 1
+                # On failure, see status of devices
+                library.check_devices(all_devices)
             elif grade == "SKIP" or grade is None:
                 tests_skip += 1
 

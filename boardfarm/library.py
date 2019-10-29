@@ -42,6 +42,27 @@ def printd(data):
     '''Pretty-print as a JSON data object.'''
     print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
 
+def check_devices(devices, func_name='check_status'):
+    '''
+    For each device, run a frunction. Useful to see if devices are still
+    alive, running well, or whatever status function you wish to run.
+    '''
+    print('\n' + '='*20 + ' BEGIN Status Check ' + '='*20)
+    for d in devices:
+        if d is None:
+            continue
+        if hasattr(d, func_name):
+            # The next line is kind of like doing: d.func_name()
+            # This allows 'func_name' to be any string.
+            try:
+                getattr(d, func_name)()
+            except:
+                print("Status check for %s failed." % d.__class__.__name__)
+        elif 'BFT_DEBUG' in os.environ:
+            print("Pro Tip: Write a function %s.%s() to run between tests." %
+                  (d.__class__.__name__, func_name))
+    print('\n' + '='*20 + ' END Status Check ' + '='*20)
+
 def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],
                     'tests_pass': 0,
