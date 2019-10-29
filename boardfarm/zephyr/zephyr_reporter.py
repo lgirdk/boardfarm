@@ -149,7 +149,7 @@ def update_zephyr(test_cases_list):
                 continue
 
             if z["updateautomationstatus"]:
-                 update_automation_status(issue)
+                update_automation_status(issue)
 
             exec_id = reporter.create_execution(str(issue.id))
             result = test_cases_list[i][1]
