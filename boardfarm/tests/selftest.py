@@ -423,3 +423,33 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                 raise e
 
         print("Test passed")
+
+
+class selftest_test_retry(rootfs_boot.RootFSBootTest):
+    '''Fails N times before passing, to test the retry function'''
+
+    fail_on = 0
+    runs = 0
+
+    def runTest(self):
+        if not self.config.retry:
+            self.skipTest('Test needs to be rerun with retries')
+
+        assert self.fail_on != 0, "fail_on must be greater than 1"
+
+        runs = self.runs
+        self.runs = runs + 1
+
+        assert runs == self.fail_on, "Planned failure of test"
+
+class selftest_test_retry_1(selftest_test_retry):
+    '''Fails 1 times before passing, to test the retry function'''
+    fail_on=1
+
+class selftest_test_retry_2(selftest_test_retry):
+    '''Fails 2 times before passing, to test the retry function'''
+    fail_on=2
+
+class selftest_test_retry_3(selftest_test_retry):
+    '''Fails 3 times before passing, to test the retry function'''
+    fail_on=3
