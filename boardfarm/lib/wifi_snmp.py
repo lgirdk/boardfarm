@@ -1,7 +1,7 @@
 import pexpect
 import SnmpHelper
 from wifi import wifi_stub
-from common import snmp_mib_get, snmp_mib_set
+from common import snmp_mib_get, snmp_mib_set, retry_on_exception
 
 class wifi_snmp(wifi_stub):
 
@@ -100,7 +100,7 @@ class wifi_snmp(wifi_stub):
         Input: None
         Output: True or False
         """
-        snmp_mib_set(self.device, self.parser, self.iface_ip, self.mib_value["mib_name"]["Wifi_Apply_setting"], '0', 'i', '1')
+        retry_on_exception(snmp_mib_set, (self.device, self.parser, self.iface_ip, self.mib_value["mib_name"]["Wifi_Apply_setting"], '0', 'i', '1',))
         for i in range(4):
             self.board.expect(pexpect.TIMEOUT, timeout=20)
             try:
