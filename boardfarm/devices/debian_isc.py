@@ -576,7 +576,7 @@ EOF'''
         device.expect(device.prompt)
         device.is_env_setup_done = True
 
-    def __str__(self):
+    def print_dhcp_config(self):
         self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.sendline('cat /etc/dhcp/dhcpd.conf')
         self.expect(self.prompt)
@@ -599,7 +599,7 @@ EOF'''
         self._restart_dhcp_with_lock()
 
         if print_config:
-            print(self)
+            self.print_dhcp_config()
 
     # TODO: this needs to be removed at a later point. Keeping it for backward compatiility.
     def reprovision_board(self, board_config):
