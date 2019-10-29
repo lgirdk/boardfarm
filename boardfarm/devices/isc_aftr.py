@@ -213,7 +213,7 @@ class AFTR(object):
                     # need to download the tar file and extract it.
                     install_wget(self)
                     self.aftr_url = self.aftr_local if self.aftr_local is not None else self.aftr_url
-                    self.sendline("wget %s -O /root/aftr.tbz" % self.aftr_url)
+                    self.sendline("curl %s -o /root/aftr.tbz" % self.aftr_url)
                     self.expect(self.prompt, timeout=60)
                     self.sendline("tar -C /root -xvjf /root/aftr.tbz; mv /root/rt28354 /root/aftr")
                 self.expect(self.prompt, timeout=30)
