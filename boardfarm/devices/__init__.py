@@ -21,13 +21,16 @@ from boardfarm.lib import find_subdirs
 # To do: delete these path inserts when everything is properly importing from boardfarm
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
+# Placeholders for devices that are created later
 board = None
 lan = None
+lan2 = None
 wan = None
 wlan = None
 wlan2g = None
 wlan5g = None
 prompt = None
+acs_server = None
 cmts = None
 provisioner = None
 
