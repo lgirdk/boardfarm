@@ -612,9 +612,13 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('apt install -y ndisc6')
-        self.expect(self.prompt)
-
+        self.sendline('apt install -qy ndisc6')
+        if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+            self.expect(self.prompt, timeout=60)
+        else:
+            print("Failed to download packages, things might not work")
+            self.sendcontrol('c')
+            self.expect(self.prompt)
 
     def start_lan_client(self, wan_gw=None):
         # very casual try for ipv6 addr, if we don't get one don't fail for now
