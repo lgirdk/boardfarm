@@ -8,8 +8,9 @@ class wifi_acs(wifi_stub):
     def __init__(self, wan, board, acs_server):
         self.wan = wan
         self.board = board
+        wan_ip = board.get_interface_ipaddr(board.wan_iface)
         self.acs_server = acs_server
-        self.serial_number = board.get_serial_number(wan)
+        self.serial_number = board.get_serial_number(wan, wan_ip)
         self.acs_data = self.board.wifi_acs_file
 
     def prepare(self):
