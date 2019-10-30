@@ -11,8 +11,6 @@ import time
 from boardfarm.lib import common
 import error_detect
 import signal
-import traceback
-
 from boardfarm.lib.bft_logging import LoggerMeta, o_helper
 
 # To Do: maybe make this config variable
@@ -163,9 +161,6 @@ class BaseDevice(pexpect.spawn):
 
     # Optional send and expect functions to try and be fancy at catching errors
     def send(self, s):
-        if not hasattr(self, 'start'):
-            print("WARNING: interacting with device before test is started!")
-            traceback.print_stack()
         if BFT_DEBUG:
             if 'pexpect/__init__.py: sendline():' in error_detect.caller_file_line(3):
                 idx = 4
@@ -184,9 +179,6 @@ class BaseDevice(pexpect.spawn):
         return super(BaseDevice, self).send(s)
 
     def expect_helper(self, pattern, wrapper, *args, **kwargs):
-        if not hasattr(self, 'start'):
-            print("WARNING: interacting with device before test is started!")
-            traceback.print_stack()
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
@@ -224,9 +216,6 @@ class BaseDevice(pexpect.spawn):
         return self.expect_helper(pattern, wrapper, *args, **kwargs)
 
     def sendcontrol(self, char):
-        if not hasattr(self, 'start'):
-            print("WARNING: interacting with device before test is started!")
-            traceback.print_stack()
         if BFT_DEBUG:
             common.print_bold("%s = sending: control-%s" %
                               (error_detect.caller_file_line(3), repr(char)))
