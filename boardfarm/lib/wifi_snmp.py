@@ -9,7 +9,7 @@ class wifi_snmp(wifi_stub):
         self.device = device
         self.board = board
         self.mib_value = self.board.wifi_snmp_file
-        self.parser = SnmpHelper.SnmpMibs.get_mib_parser()
+        self.parser = SnmpHelper.SnmpMibs.default_mibs
 
     @property
     def iface_ip(self):
