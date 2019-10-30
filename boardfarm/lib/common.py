@@ -6,15 +6,22 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
+import base64
 import binascii
+import ipaddress
 import json
-import pexpect
+import netrc
+import os
+import re
+import ssl
 import sys
 import time
-import os
+import urlparse
+
+import termcolor
+import pexpect
+
 from termcolor import cprint
-import re
-import ipaddress
 from boardfarm.lib.SnmpHelper import SnmpMibs
 try:
     from urllib.request import urlopen
@@ -22,12 +29,6 @@ try:
 except:
     from urllib2 import urlopen
     import urllib2 as urllib
-
-import termcolor
-import base64
-import ssl
-import netrc
-import urlparse
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
@@ -799,7 +800,6 @@ def ftp_file_create_delete(device, create_file=None, remove_file=None):
 
 def ftp_device_login(device, ip_mode, device_ip):
     '''Login to FTP device by creating credentials'''
-    import re
     match = re.search("(\d)", str(ip_mode))
     value = match.group()
     device.sendline("ftp -%s %s" % (value, device_ip))
@@ -813,7 +813,7 @@ def ftp_device_login(device, ip_mode, device_ip):
 def ftp_upload_download(device, ftp_load):
     '''Upload and download file'''
     if "download" in str(ftp_load):
-	device.sendline("get %s.txt" % ftp_load)
+        device.sendline("get %s.txt" % ftp_load)
     elif "upload" in str(ftp_load):
         device.sendline("put %s.txt" % ftp_load)
     device.expect("226 Transfer complete.", timeout=60)
