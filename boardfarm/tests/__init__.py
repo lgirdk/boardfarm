@@ -25,9 +25,6 @@ def init(config):
         for x in find_subdirs(dirs, "tests"):
             sys.path.insert(0, x)
             test_files += glob.glob(os.path.join(x, '*.py'))
-        # Insert this local tests directory too
-        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
 
     test_mappings = {}
     for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
