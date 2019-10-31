@@ -16,7 +16,6 @@ import re
 import ssl
 import sys
 import time
-import urlparse
 
 import termcolor
 import pexpect
@@ -24,9 +23,13 @@ import pexpect
 from termcolor import cprint
 from boardfarm.lib.SnmpHelper import SnmpMibs
 try:
+    # Python3
+    from urllib.parse import urlparse
     from urllib.request import urlopen
     import urllib
 except:
+    # Python2
+    from urlparse import urlparse
     from urllib2 import urlopen
     import urllib2 as urllib
 
@@ -754,7 +757,7 @@ def check_url(url):
 
         try:
             n = netrc.netrc()
-            login, unused, password = n.authenticators(urlparse.urlparse(url).hostname)
+            login, unused, password = n.authenticators(urlparse(url).hostname)
             add_basic_auth("%s:%s" % (login, password), req)
         except (TypeError, ImportError, IOError, netrc.NetrcParseError):
             pass
