@@ -14,6 +14,11 @@ if (meta != '') {
 pipeline {
 	agent { label 'boardfarm && ' + location }
 
+
+	options {
+		skipDefaultCheckout(true)
+	}
+
 	stages {
 		stage('checkout gerrit change') {
 
