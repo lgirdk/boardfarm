@@ -37,6 +37,31 @@ pipeline {
             }
         }
 
+        stage('run linting') {
+            steps {
+                sh '''
+                    set +e
+                    pwd
+                    ls
+                    rm -f errors.txt
+                    touch errors.txt
+                    repo forall -c 'git diff --name-only HEAD m/master | sed s,^,$REPO_PATH/,g' > files_changed.txt
+                    echo "Running pyflakes on py files and ignoring init files:"
+                    files_changed=`cat files_changed.txt | grep .py | grep -v __init`
+                    if [ -z "$files_changed" ]; then
+                      exit 0
+                    fi
+                    # Check pyflakes errors
+                    python2 -m pyflakes ${files_changed} > flakes.txt 2>&1
+                    cat flakes.txt | grep -v 'devices\\.' | grep -v 'No such file' > errors.txt
+                    # Check print errors
+                    grep -n -E '^\\s+print\\s' ${files_changed} | awk '{print $1" print should be function: print()"}' >> errors.txt
+                    # Check indentation errors
+                    flake8 --select=E111 ${files_changed} >> errors.txt
+                    '''
+            }
+        }
+
         stage('run bft test') {
             steps {
                 ansiColor('xterm') {
@@ -81,7 +106,7 @@ pipeline {
                  subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
                  to: email_results
-            archiveArtifacts artifacts: 'boardfarm/results/*'
+            archiveArtifacts artifacts: '*.txt,boardfarm/results/*'
             sh 'rm -rf boardfarm/results'
             sh '''
             set +xe
