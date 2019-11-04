@@ -184,6 +184,8 @@ class DebianBox(linux.LinuxDevice):
                 if opt.startswith('mgmt-dns:'):
                     value = unicode(opt.replace('mgmt-dns:', ''))
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
+                else:
+                    self.mgmt_dns = "8.8.8.8"
 
 
         if ipaddr is None:
