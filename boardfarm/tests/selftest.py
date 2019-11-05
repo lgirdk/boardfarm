@@ -326,7 +326,16 @@ class SnmpMibsUnitTest(object):
         if files:
             self.mib_files = files
 
-        self.snmp_obj = SnmpHelper.SnmpMibs(self.mib_files, self.srcDirectories)
+        self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories)
+        print("Using class singleton: %r" % self.snmp_obj)
+
+        # the SAME object should be returned, NOT A NEW/DIFFERENT ONE!!!!!
+        assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories), "SnmpHelper.SnmpMibs.get_mib_parser returned a NEW/different object. FAILED"
+        print("SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
+
+        # the same must be true when using the property method
+        assert self.snmp_obj is SnmpHelper.SnmpMibs.default_mibs, "SnmpHelper.SnmpMibs.default_mibs returned a NEW/different object. FAILED"
+        print("SnmpHelper.SnmpMibs.default_mibs returned the same object PASS")
 
         if mibs:
             self.mibs = mibs
@@ -346,14 +355,21 @@ class SnmpMibsUnitTest(object):
             for k in self.snmp_obj.mib_dict:
                 print(k, ":", self.snmp_obj.mib_dict[k])
 
-        print("Testing get mib oid")
 
+        # used in the second round of testing (i.e. the get oid without the obj)
+        self.mibs1 = self.mibs[:]
+        self.error_mibs1 = self.error_mibs[:]
+
+        print("==================================================================================")
+        print("Testing getting a mib oid with method off the parser obj")
         for i in self.mibs:
             try:
                 oid = self.snmp_obj.get_mib_oid(i)
-                print('mib: %s - oid=%s' % (i, oid))
-            except Exception:
-                #we shoudl NOT find only the errored mibs, all other mibs MUST be found
+                print('parse.get_mib_oid(%s) - oid=%s' % (i, oid))
+
+            except Exception as e:
+                print(e)
+                # we shoudl NOT find only the errored mibs, all other mibs MUST be found
                 assert(i in self.error_mibs), "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
                 if (self.error_mibs is not None):
@@ -362,6 +378,27 @@ class SnmpMibsUnitTest(object):
         # the unit test must find all the errored mibs!
         if (self.error_mibs is not None):
             assert (self.error_mibs == []), "The test missed the following mibs: %s"%str(self.error_mibs)
+
+        print("==================================================================================")
+        print("Testing getting a mib oid with public method (without having to get the obj first)")
+        from boardfarm.lib.SnmpHelper import get_mib_oid
+        for i in self.mibs1:
+            try:
+                oid = get_mib_oid(i)
+                print('get_mib_oid(%s) - oid=%s' % (i, oid))
+
+            except Exception as e:
+                print(e)
+                # we shoudl NOT find only the errored mibs, all other mibs MUST be found
+                assert(i in self.error_mibs1), "Failed to get oid for mib: " + i
+                print("Failed to get oid for mib: %s (expected)" % i)
+                if (self.error_mibs1 is not None):
+                    self.error_mibs1.remove(i)
+
+        # the unit test must find all the errored mibs!
+        if (self.error_mibs1 is not None):
+            assert (self.error_mibs1 == []), "The test missed the following mibs: %s"%str(self.error_mibs1)
+
         return True
 
 class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):

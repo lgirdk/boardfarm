@@ -212,6 +212,22 @@ class SnmpMibs(object):
             pass
         return oid.encode('ascii', 'ignore')
 
+def get_mib_oid(mib_name):
+    """
+    Returns the oid for the given mib name.
+    Uses the singleton of the SnmpHelper.SnmpMibs class, and instantiate one if none were
+    previously created.
+    Note: if the singleton is instatiated via this function the overlays are automatically
+    scanned for mib files inside ".../mibs/" directories.
+
+    Parameters:
+    mib_name    a string (e.g. "sysObjectID", "docsDevSwAdminStatus")
+    Returns:
+    string      the oid (e.g. "1.3.6.1.2.1.69.1.4.5")
+    """
+    obj = SnmpMibs.default_mibs
+    return obj.get_mib_oid(mib_name)
+
 ##############################################################################################
 
 if __name__ == '__main__':
