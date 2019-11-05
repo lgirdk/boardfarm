@@ -9,7 +9,7 @@ import sys
 import re
 import time
 import pexpect
-import linux
+from . import linux
 import atexit
 import os
 import ipaddress

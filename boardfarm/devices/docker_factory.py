@@ -4,7 +4,7 @@ import os
 import atexit
 import re
 
-import linux
+from . import linux
 
 class DockerFactory(linux.LinuxDevice):
     '''

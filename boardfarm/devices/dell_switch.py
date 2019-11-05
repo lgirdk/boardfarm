@@ -8,7 +8,7 @@
 
 import pexpect
 import sys
-import base
+from . import base
 
 
 class DellSwitch(base.BaseDevice):

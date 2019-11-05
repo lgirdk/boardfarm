@@ -8,7 +8,7 @@ import re
 import glob
 import traceback
 
-import debian
+from . import debian
 
 class DebianISCProvisioner(debian.DebianBox):
     '''

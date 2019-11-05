@@ -251,7 +251,7 @@ if __name__ == '__main__':
     sys.path.append(os.getcwd() + '/../tests')
 
     # get a base class to work with AFTR profile class.
-    from debian import DebianBox as BaseCls
+    from .debian import DebianBox as BaseCls
     class BfNode(BaseCls, AFTR):
         def __init__(self, *args, **kwargs):
             BaseCls.__init__(self, *args, **kwargs)

@@ -8,7 +8,7 @@
 
 import pexpect
 import sys
-import linux
+from . import linux
 
 # Netgear Switch Prompt
 prompt = "\(M4100-50G\) "

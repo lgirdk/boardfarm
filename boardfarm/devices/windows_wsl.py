@@ -1,4 +1,4 @@
-import debian
+from . import debian
 
 class WindowsWSL(debian.DebianBox):
 

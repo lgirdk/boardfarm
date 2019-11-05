@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
-import qcom_akronite_nand
+from . import qcom_akronite_nand
 
 
 class QcomDakotaRouterNAND(qcom_akronite_nand.QcomAkroniteRouterNAND):

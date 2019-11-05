@@ -1,8 +1,8 @@
-import ser2net_connection
-import local_serial_connection
-import ssh_connection
-import local_cmd
-import kermit_connection
+from . import ser2net_connection
+from . import local_serial_connection
+from . import ssh_connection
+from . import local_cmd
+from . import kermit_connection
 
 def connection(conn_type, device, **kwargs):
     '''

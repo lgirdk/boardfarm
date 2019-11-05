@@ -1,5 +1,5 @@
 import re
-import debian
+from . import debian
 import pexpect
 from countrycode import countrycode
 from boardfarm.lib.wifi import wifi_client_stub

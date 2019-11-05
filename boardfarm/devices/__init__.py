@@ -13,7 +13,7 @@ import termcolor
 import traceback
 
 # TODO: this probably should not the generic device
-import openwrt_router
+from . import openwrt_router
 
 from boardfarm.lib import find_subdirs
 

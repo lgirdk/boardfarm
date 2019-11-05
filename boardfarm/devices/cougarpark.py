@@ -6,12 +6,12 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
-import openwrt_router
+from . import openwrt_router
 import pexpect
 import ipaddress
-import connection_decider
+from . import connection_decider
 import signal
-import linux
+from . import linux
 import sys
 
 KEY_ESCAPE = '\x1B'

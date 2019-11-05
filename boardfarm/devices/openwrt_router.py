@@ -12,12 +12,12 @@ import socket
 import sys
 import urllib2
 import pexpect
-import linux
+from . import linux
 from datetime import datetime
 import ipaddress
 
-import power
-import connection_decider
+from . import power
+from . import connection_decider
 from boardfarm.lib import common
 from boardfarm.lib.common import print_bold
 

@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
-import qcom_arm_base
+from . import qcom_arm_base
 
 
 class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):

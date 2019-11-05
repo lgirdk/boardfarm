@@ -5,7 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import openwrt_router
+from . import openwrt_router
 import signal
 import sys
 import pexpect

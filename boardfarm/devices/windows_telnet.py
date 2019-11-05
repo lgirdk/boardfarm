@@ -1,8 +1,8 @@
 import ipaddress
 import re
 import sys
-import base
-import connection_decider
+from . import base
+from . import connection_decider
 from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, WindowsMacFormat
 
 class WindowsTelnet(base.BaseDevice):
