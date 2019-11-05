@@ -98,7 +98,7 @@ class Zapi(object):
         data = loads(response.text)
         execution_id = dict(data).keys()[0]
         #execution_id = "442290"
-        if response.status_code <> 200:
+        if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)
             print(payload)
@@ -129,7 +129,7 @@ class Zapi(object):
                         params=data,
                         headers=self._zapi_hdr,
                         auth=(self._usr, self._pwd))
-        if response.status_code <> 200:
+        if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)
             print(data)
@@ -144,7 +144,7 @@ class Zapi(object):
                        json=data,
                        headers=self._zapi_hdr,
                        auth=(self._usr, self._pwd))
-        if response.status_code <> 200:
+        if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)
             print(data)
