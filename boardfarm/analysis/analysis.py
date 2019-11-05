@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 import os
-import re
 
 # no repr
 newline = r"\r\n\[[^\]]+\]"
