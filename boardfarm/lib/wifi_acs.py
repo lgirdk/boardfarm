@@ -1,5 +1,5 @@
 import pexpect, re
-from wifi import wifi_stub
+from .wifi import wifi_stub
 
 class wifi_acs(wifi_stub):
     # for acs connect func it is required

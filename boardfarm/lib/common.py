@@ -35,8 +35,8 @@ except:
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
-from installers import install_pysnmp
-from regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
+from .installers import install_pysnmp
+from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
 ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']

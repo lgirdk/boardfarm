@@ -8,8 +8,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-from gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value, select_option_by_id
-from common import resolv_dict, get_webproxy_driver
+from .gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value, select_option_by_id
+from .common import resolv_dict, get_webproxy_driver
 
 class web_gui():
     prefix = ''

@@ -1,7 +1,7 @@
 import pexpect
-import SnmpHelper
-from wifi import wifi_stub
-from common import snmp_mib_get, snmp_mib_set, retry_on_exception
+from . import SnmpHelper
+from .wifi import wifi_stub
+from .common import snmp_mib_get, snmp_mib_set, retry_on_exception
 
 class wifi_snmp(wifi_stub):
 
