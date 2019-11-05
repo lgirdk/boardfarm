@@ -12,7 +12,7 @@ from cdrouter.packages import Package
 
 import time
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt, wan
 import os
 import pexpect
 

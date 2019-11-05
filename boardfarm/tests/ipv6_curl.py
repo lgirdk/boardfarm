@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import lan, prompt, wan
 
 class IPv6_File_Download(rootfs_boot.RootFSBootTest):
     '''Downloaded file through router using IPv6.'''

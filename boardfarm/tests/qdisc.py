@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board
 
 class DelQdisc(rootfs_boot.RootFSBootTest):
     '''Tries to remove qdisc root node'''

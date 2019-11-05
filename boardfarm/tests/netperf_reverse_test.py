@@ -8,7 +8,7 @@
 from boardfarm import lib
 import netperf_test
 
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt, wan
 
 class NetperfReverseTest(netperf_test.NetperfTest):
     '''Setup Netperf and Ran Reverse Throughput.'''

@@ -8,7 +8,7 @@
 import re
 from boardfarm.tests import rootfs_boot
 from boardfarm.lib import installers
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt, wan
 
 try:
     from boardfarm.devices import winwsl

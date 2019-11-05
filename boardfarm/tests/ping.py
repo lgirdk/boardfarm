@@ -7,7 +7,7 @@
 
 from boardfarm.tests import rootfs_boot
 from boardfarm import lib
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt, wan
 
 class RouterPingWanDev(rootfs_boot.RootFSBootTest):
     '''Router can ping device through WAN interface.'''

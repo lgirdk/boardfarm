@@ -9,7 +9,7 @@ from boardfarm.tests import rootfs_boot
 from boardfarm import lib
 import pexpect
 
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):
     '''Can access main web GUI page.'''

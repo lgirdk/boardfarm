@@ -134,7 +134,6 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
                     break
                 except:
                     print("\nFailed to check/set the router's WAN protocol.")
-                    pass
             board.wait_for_network()
         board.wait_for_mounts()
 

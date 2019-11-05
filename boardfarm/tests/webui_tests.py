@@ -8,7 +8,7 @@
 
 from boardfarm.tests import rootfs_boot
 from boardfarm import lib
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt
 from selenium.webdriver import ActionChains
 
 class WebTest(rootfs_boot.RootFSBootTest):

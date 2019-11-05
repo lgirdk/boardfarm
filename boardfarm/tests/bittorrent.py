@@ -7,7 +7,7 @@
 
 import socat
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, prompt
+from boardfarm.devices import board, lan, prompt
 
 import pexpect
 

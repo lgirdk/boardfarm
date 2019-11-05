@@ -7,7 +7,7 @@
 
 import re
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, prompt
 
 class InterfacesShow(rootfs_boot.RootFSBootTest):
     '''Used "ip" or "ifconfig" to list interfaces.'''

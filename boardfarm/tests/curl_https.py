@@ -1,5 +1,5 @@
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, prompt
 
 class CurlSSLGood(rootfs_boot.RootFSBootTest):
     '''Curl can access https and verify signature.'''

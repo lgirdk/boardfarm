@@ -8,7 +8,7 @@
 import re
 from boardfarm.tests import rootfs_boot
 import pexpect
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, prompt
 
 class Logread(rootfs_boot.RootFSBootTest):
     '''Recorded syslog.'''

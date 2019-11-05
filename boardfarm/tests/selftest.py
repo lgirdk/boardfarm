@@ -7,7 +7,7 @@ import os
 import tempfile
 from boardfarm.lib import SnmpHelper
 
-from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.devices import board, lan, wan
 from boardfarm.lib import common
 
 '''

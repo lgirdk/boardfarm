@@ -10,7 +10,7 @@ import netperf_test
 import time
 
 from netperf_test import install_netperf
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, lan, prompt, wan
 
 class NetperfStressTest(netperf_test.NetperfTest):
     @lib.common.run_once
@@ -62,7 +62,6 @@ class NetperfStressTest(netperf_test.NetperfTest):
         except Exception as e:
             # print the exception for logging reasons
             print(e)
-            pass
 
         # make sure at least one netperf was run
         assert (conns_parsed > 0)
