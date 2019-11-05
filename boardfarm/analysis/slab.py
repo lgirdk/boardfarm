@@ -40,5 +40,5 @@ class SlabAnalysis(analysis.Analysis):
             if len(data[k]) > 1:
                 fname = k
                 for c in r'[]/\;,><&*:%=+@!#^()|?^':
-                        fname = fname.replace(c, '')
+                    fname = fname.replace(c, '')
                 self.make_graph(data[k], k, fname, ts=timestamps[k], output_dir=output_dir)
