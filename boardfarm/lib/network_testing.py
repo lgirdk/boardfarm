@@ -6,8 +6,11 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
+from boardfarm.lib.common import retry_on_exception
+import ipaddress
 
 def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap'):
+
     if port == None:
         device.sudo_sendline("tcpdump -i %s -n -w %s &" % (interface, capture_file))
     else:
@@ -70,15 +73,29 @@ def basic_call_verify(output_sip, ip_src):
     sip_msg = re.search(".*" + ip_src + ".*INVITE.*?" + ip_src + "\s+SIP.*100\s+Trying.*?" + ip_src + "\s+SIP.*180\s+Ringing.*?" + ip_src + "\s+SIP\/SDP.*200\s+OK.*?" + ip_src + ".*ACK.*?" + ip_src + ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|", output_sip, re.DOTALL)
     assert sip_msg is not None, "SIP call failed"
 
-def nmap_cli(device, ip_address, port, protocol=None, retry="0"):
-    if protocol == "tcp":
-        device.sudo_sendline("nmap -sS %s -p %s -Pn -r -max-retries %s" % (ip_address, port, retry))
-    elif protocol == "udp":
-        device.sudo_sendline("nmap -sU %s -p %s -Pn -r -max-retries %s" % (ip_address, port, retry))
-    else:
-        device.sudo_sendline("nmap -sS -sU %s -p %s -Pn -r -max-retries %s" % (ip_address, port, retry))
-    device.expect(device.prompt, timeout=200)
-    return device.before
+def nmap_cli(device, ip_address, port, protocol = "both", retry = 0, timing = '', min_rate = 400):
+    """
+    To run port scanning on the specified target.
+    This method is used to perform port scanning on the specified port range of the target ip specified from the device specified.
+    Parameters: (object)device
+                (string)target_ip
+                (string)port rane to be scanned
+                (string)protocol (tcp/ucp/both)
+                (int)max_retries
+                (string)timing (-T[1-4])
+                (int)min_rate
+    Returns: (string) output of namp command.
+    """
+    ipv6 = '-6' if 'IPv6Address' == type(ipaddress.ip_address(unicode(ip_address))).__name__ else ''
+    protocol_commandmap = {"tcp" : "-sT" , "udp" : "-sU", "both" : "-sT -sU"}
+    device.sudo_sendline("nmap %s %s %s %s -p%s -Pn -r -max-retries %s -min-rate %s > nmap_logs.txt" % (ipv6, timing, protocol_commandmap[protocol.lower()], ip_address, port, retry, min_rate))
+    retry_on_exception(device.expect, (device.prompt,), retries = 16, tout = 30)
+    device.sendline("cat nmap_logs.txt")
+    device.expect(device.prompt)
+    nmap_output = device.before
+    device.sendline("rm nmap_logs.txt")
+    device.expect(device.prompt)
+    return nmap_output
 
 def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
     """
