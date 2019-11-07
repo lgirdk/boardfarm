@@ -22,8 +22,8 @@ def kill_process(device, process="tcpdump"):
     device.expect(device.prompt)
     return device.before
 
-def tcpdump_read(device, capture_file):
-    device.sudo_sendline("tcpdump -n -r %s" % (capture_file))
+def tcpdump_read(device, capture_file, protocol=''):
+    device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
     device.expect(device.prompt)
     output = device.before
     device.sudo_sendline("rm %s" % (capture_file))
