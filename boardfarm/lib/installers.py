@@ -449,7 +449,9 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
         dev_ip = device.get_interface_ipaddr(device.iface_dut)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline('./openvpn-install.sh')
+        if device.shim == None:
+            device.shim = ""
+        device.sendline('%s ./openvpn-install.sh' %device.shim)
         device.expect('IP address:.*', timeout=120)
         for i in range(20):
             device.sendcontrol('h')
