@@ -401,7 +401,8 @@ def main():
     try:
         tests_pass = tests_fail = tests_skip = 0
         curr_test = None
-        for test in tests_to_run:
+        for j, test in enumerate(tests_to_run):
+            bfweb.post_temp_message("Running test %s of %s" % (j+1, len(tests_to_run)))
             curr_test = test
             test.run()
             curr_test = None

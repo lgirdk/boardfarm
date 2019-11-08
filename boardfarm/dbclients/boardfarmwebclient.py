@@ -100,6 +100,22 @@ class BoardfarmWebClient(object):
             requests.post(url, json=self.checked_out, headers=self.headers)
             time.sleep(seconds)
 
+    def post_temp_message(self, msg):
+        '''
+        Use this to post a temporary message visible on the server only
+        while you have a station checked out.
+        The server clears these temporary messages when station is checked in.
+        '''
+        if not self.server_version or not self.checked_out:
+            return
+        try:
+            url = self.server_url + "/stations/" + self.checked_out['name']
+            requests.post(url, json={"_meta.active_msg": msg}, headers=self.headers)
+        except Exception as e:
+            if self.debug:
+                print(e)
+                print("Failed to notify boardfarm server with message.")
+
     def post_note(self, name, note):
         '''
         If an error is encountered with a station, use this function
