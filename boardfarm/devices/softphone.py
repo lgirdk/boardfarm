@@ -7,11 +7,12 @@ class SoftPhone(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-        self.own_number = self.kwargs.get('number')
+        self.own_number = self.kwargs.get('number', '3000')
         self.port = self.kwargs.get('num_port', '5060')
         self.config_name="pjsip.conf"
         self.pjsip_local_url = kwargs.get("local_site", None)
         self.pjsip_prompt = ">>>"
+        self.profile["on_boot"] = self.install_softphone
 
     def __str__(self):
         return "softphone"
