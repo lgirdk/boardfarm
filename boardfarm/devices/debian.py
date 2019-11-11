@@ -198,6 +198,7 @@ class DebianBox(linux.LinuxDevice):
         idx = self.expect(['alias mgmt=', 'alias: mgmt: not found', pexpect.TIMEOUT], timeout=10)
         if idx == 0:
             self.expect(self.prompt)
+            self.shim = "mgmt"
             self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
             self.expect_exact('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
         self.expect(self.prompt)
