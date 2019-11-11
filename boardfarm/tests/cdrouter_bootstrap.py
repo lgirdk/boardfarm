@@ -13,6 +13,7 @@ from cdrouter.packages import Package
 import time
 from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan, prompt, wan
+from boardfarm import lib
 import os
 import pexpect
 
@@ -301,6 +302,30 @@ testvar wanDnsServer %s""" % (cdrouter.wanispip, \
         if 0 != board.expect([pexpect.TIMEOUT] + board.uprompt, timeout=5):
             board.reset()
             board.wait_for_linux()
+
+    @staticmethod
+    @lib.common.run_once
+    def parse(config):
+        try:
+            from boardfarm.devices import cdrouter
+            url = 'http://' + cdrouter.ipaddr
+        except:
+            return []
+
+        c = CDRouter(url)
+        cdrouter_test_matrix = {}
+        new_tests = []
+        for mod in c.testsuites.list_modules():
+            name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
+            list_of_tests = [ x.encode('ascii','ignore') for x in mod.tests ]
+            globals()[name] = type(name.encode('ascii','ignore') , (CDrouterStub, ),
+                                    {
+                                        'tests': list_of_tests
+                                    })
+            new_tests.append(name)
+
+        return new_tests
+
 
 class CDrouterCustom(CDrouterStub):
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
