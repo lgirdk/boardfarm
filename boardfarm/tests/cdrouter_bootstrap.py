@@ -145,13 +145,13 @@ testvar lanVlanId """ + lan.vlan
             for i in range(5):
                 try:
                     wan_ip = board.get_interface_ipaddr(board.erouter_iface)
+                    break
                 except:
                     board.expect(pexpect.TIMEOUT, timeout=15)
                     continue
-                else:
-                    if i == 4:
-                        raise Exception("Failed to get erouter ip address")
-                    break
+            else:
+                if i == 4:
+                    raise Exception("Failed to get erouter ip address")
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
             contents=contents + """
