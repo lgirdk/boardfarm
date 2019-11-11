@@ -1,0 +1,2 @@
+class BftNotSupportedDevice(Exception):
+    pass

@@ -16,6 +16,7 @@ import traceback
 import openwrt_router
 
 from boardfarm.lib import find_subdirs
+from boardfarm.exceptions import BftNotSupportedDevice
 
 
 # To do: delete these path inserts when everything is properly importing from boardfarm
@@ -182,8 +183,10 @@ def get_device(model, **kwargs):
         # to ensure profile always initializes after base class.
         cls_list.extend(profile_list)
         if len(cls_list) == 0:
-            raise Exception("Unable to spawn instance of model: %s" % model)
+            raise BftNotSupportedDevice("Unable to spawn instance of model: %s" % model)
         return bf_node(cls_list, model, **kwargs)
+    except BftNotSupportedDevice:
+        raise
     except pexpect.EOF:
         msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
         raise Exception(msg)
