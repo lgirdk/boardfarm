@@ -42,6 +42,7 @@ from zephyr import zephyr_reporter
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
+from boardfarm.exceptions import BftNotSupportedDevice
 from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
@@ -57,6 +58,9 @@ def threaded_device_helper(device, ret):
 
     try:
         dyn_dev = get_device(device['type'], **device)
+    except BftNotSupportedDevice:
+        print_bold("Device %s not supported in this bft release + overlays, skipping..." % device['name'])
+        return
     except Exception:
         traceback.print_exc()
         failed = FailedDevice()
