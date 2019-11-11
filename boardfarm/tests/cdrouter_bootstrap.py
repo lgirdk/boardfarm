@@ -279,10 +279,11 @@ testvar wanDnsServer %s""" % (cdrouter.wanispip, \
         self.recover()
 
     def recover(self):
-        if board.has_cmts and wan.wan_cmts_provisioner:
-            # TODO: there are more missing ones (see above)
-            wan.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
-            wan.expect(prompt)
+        if board.has_cmts:
+            from boardfarm.devices import provisioner
+            # TODO: there are more missing ones CDrouter expects
+            provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            provisioner.expect(prompt)
 
         if hasattr(self, 'results'):
             r = self.results.get(self.job_id)
