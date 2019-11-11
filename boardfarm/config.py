@@ -56,12 +56,6 @@ mongodb = {"host": os.environ.get('BFT_MONGOHOST', None),
 # of the results html file to list links to code changes tested.
 code_change_server = None
 
-cdrouter_server = os.environ.get('BFT_CDROUTERSERVER', None)
-cdrouter_config = os.environ.get('BFT_CDROUTERCONFIG', None)
-cdrouter_wan_iface = os.environ.get('BFT_CDROUTERWANIFACE', "eth1")
-cdrouter_lan_iface = os.environ.get('BFT_CDROUTERLANIFACE', "eth2")
-
-
 # creates a small dictionary of all the options
 # this  will probably grow as options are added
 option_dict = {

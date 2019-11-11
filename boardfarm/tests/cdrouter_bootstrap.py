@@ -26,20 +26,10 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
     cdrouter_server = None
 
     def runTest(self):
-        if 'cdrouter_server' in self.config.board:
-            self.cdrouter_server = self.config.board['cdrouter_server']
-        elif self.config.cdrouter_server is not None:
-            self.cdrouter_server = self.config.cdrouter_server
-
-        if 'cdrouter_wan_iface' in self.config.board:
-            self.cdrouter_wan_iface = self.config.board['cdrouter_wan_iface']
-        else:
-            self.cdrouter_wan_iface = self.config.cdrouter_wan_iface
-
-        if 'cdrouter_lan_iface' in self.config.board:
-            self.cdrouter_lan_iface = self.config.board['cdrouter_lan_iface']
-        else:
-            self.cdrouter_lan_iface = self.config.cdrouter_lan_iface
+        from boardfarm.devices import cdrouter
+        self.cdrouter_server = "http://" + cdrouter.ipaddr
+        self.cdrouter_wan_iface = cdrouter.wan_iface
+        self.cdrouter_lan_iface = cdrouter.lan_iface
 
         if self.tests is None:
             self.skipTest("No tests defined!")
@@ -50,33 +40,36 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         lan.sendline('ifconfig %s down' % lan.iface_dut)
         lan.expect(prompt)
 
+        print board.has_cmts
+
         if not board.has_cmts:
             wan.sendline('ifconfig %s down' % wan.iface_dut)
             wan.expect(prompt)
 
         c = CDRouter(self.cdrouter_server)
 
-        try:
-            board.sendcontrol('c')
-            board.expect(prompt)
-            board.sendline('reboot')
-            board.expect('reboot: Restarting system')
-        except:
-            board.reset()
-        board.wait_for_linux()
-        board.wait_for_network()
+        #try:
+        #    board.sendcontrol('c')
+        #    board.expect(prompt)
+        #    board.sendline('reboot')
+        #    board.expect('reboot: Restarting system')
+        #except:
+        #    board.reset()
+        #board.wait_for_linux()
+        #board.wait_for_network()
 
-        # Add extra board specific delay
-        board.expect(pexpect.TIMEOUT, timeout=getattr(board, 'cdrouter_bootdelay', 0))
+        ## Add extra board specific delay
+        #board.expect(pexpect.TIMEOUT, timeout=getattr(board, 'cdrouter_bootdelay', 0))
 
         # If alt mac addr is specified in config, use that..
         # CMTS = we route so no wan mac is used
         # if we route, we need to add routes
         wandutmac = None
-        if board.has_cmts and wan.wan_cmts_provisioner:
+        if board.has_cmts:
+            from boardfarm.devices import provisioner
             # TODO: there are more missing ones CDrouter expects
-            wan.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
-            wan.expect(prompt)
+            provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            provisioner.expect(prompt)
         elif not wan.static_ip:
             for device in self.config.board['devices']:
                 if device['name'] == 'wan':
@@ -114,6 +107,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                     d.vlan = d.match.group(1)
                 d.expect(prompt)
 
+        # TODO: WIP
+        wan.vlan = "136"
         print("Using %s for WAN vlan" % wan.vlan)
         print("Using %s for LAN vlan" % lan.vlan)
 
@@ -135,32 +130,17 @@ testvar lanInterface """ + self.cdrouter_lan_iface
             contents=contents + """
 testvar lanVlanId """ + lan.vlan
 
-        def add_cdrouter_config(config):
-            cdr_conf = None
+        if self.extra_config:
+            contents=contents + "\n" + self.extra_config.replace(',', '\n')
 
-            # TODO: make a generic helper to search path and overlays
-            if os.path.isfile(config):
-                cdr_conf = open(config, 'r').readlines()
-            elif 'BFT_OVERLAY' in os.environ:
-                for p in os.environ['BFT_OVERLAY'].split(' '):
-                    p = os.path.realpath(p)
-                    try:
-                        cdr_conf = open(os.path.join(p, config), 'r').readlines()
-                    except:
-                        continue
-                    else:
-                        break
+        def add_cdrouter_config(config):
+            p = os.path.realpath(config)
+            cdr_conf = open(os.path.join(p, config), 'r').readlines()
 
             return "\n" + "".join(cdr_conf)
 
-        # Take config from overall config, but fallback to board config
-        if self.config.cdrouter_config is not None:
-            contents = contents + add_cdrouter_config(self.config.cdrouter_config)
-        elif board.cdrouter_config is not None:
+        if board.cdrouter_config is not None:
             contents = contents + add_cdrouter_config(board.cdrouter_config)
-
-        if self.extra_config:
-            contents=contents + "\n" + self.extra_config.replace(',', '\n')
 
         if board.has_cmts:
             for i in range(5):
@@ -179,15 +159,15 @@ testvar lanVlanId """ + lan.vlan
 testvar wanMode static
 testvar wanIspIp %s
 testvar wanIspGateway %s
-testvar wanIspMask 255.255.255.0
+testvar wanIspMask 255.255.255.128
 testvar wanIspAssignIp %s
 testvar wanNatIp %s
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
-testvar wanDnsServer %s""" % (self.config.board['cdrouter_wanispip'], \
-                              self.config.board['cdrouter_wanispgateway'], \
+testvar wanDnsServer %s""" % (cdrouter.wanispip, \
+                              cdrouter.wanispgateway, \
                               wan_ip, wan_ip, \
-                              self.config.board['cdrouter_ipv4hopcount'], \
+                              cdrouter.ipv4hopcount, \
                               board.get_dns_server(), \
                               board.get_dns_server_upstream())
 
