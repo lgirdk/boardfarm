@@ -13,7 +13,6 @@ import os
 import os.path
 import sys
 import json
-import unittest2
 import traceback
 try:
     from urllib.request import urlopen
@@ -29,6 +28,8 @@ from config import boardfarm_config_location
 from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
+
+import tests
 
 try:
     import boardfarm
@@ -110,17 +111,12 @@ def parse():
         sys.exit(0)
 
     if args.list_tests:
-        import tests
         tests.init(config)
-        # Print all classes that are a subclass of TestCase
-        for e in dir(tests):
-            thing = getattr(tests, e)
-            if inspect.isclass(thing) and \
-               issubclass(thing, unittest2.TestCase):
-                try:
-                    print("%20s - %s" % (e, thing.__doc__.split('\n')[0]))
-                except:
-                    print("%20s -" % e)
+        for k, v in tests.available_tests.iteritems():
+            try:
+                print("%20s - %s" % (k, v.__doc__.split('\n')[0]))
+            except:
+                print("%20s -" % k)
         sys.exit(0)
 
     try:
