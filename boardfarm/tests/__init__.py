@@ -47,13 +47,6 @@ def init(config):
             else:
                 print("Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details" % x)
 
-    # Build dictionary where
-    #   key = test name
-    #   value = reference to test class
-    for key in test_mappings:
-        for item in test_mappings[key]:
-            available_tests[item.__name__] = item
-
     for test_file, tests in test_mappings.iteritems():
         for test in tests:
             if not hasattr(test, "parse"):
@@ -61,8 +54,17 @@ def init(config):
             try:
                 new_tests = test.parse(config) or []
                 for new_test in new_tests:
-                    globals()[new_test] = getattr(test_file, new_test)
+                    available_tests[new_test] = getattr(test_file, new_test)
             except Exception:
                 if 'BFT_DEBUG' in os.environ:
                     traceback.print_exc()
                 print("Warning: Failed to run parse function in %s" % inspect.getsourcefile(test))
+
+    # Build dictionary where
+    #   key = test name
+    #   value = reference to test class
+    for key in test_mappings:
+        for item in test_mappings[key]:
+            available_tests[item.__name__] = item
+
+
