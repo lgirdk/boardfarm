@@ -10,6 +10,8 @@ import os
 
 import unittest2
 
+from .ConfigHelper import ConfigHelper
+
 
 def expectedFailureIf(test):
     def wrap(func):

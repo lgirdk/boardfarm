@@ -233,7 +233,8 @@ def main():
 
     for name in config.BOARD_NAMES:
         try:
-            config.board = config.boardfarm_config[name]
+            # Use helper class to control access to configuration from tests
+            config.board = boardfarm.lib.ConfigHelper(config.boardfarm_config[name])
         except Exception as e:
             print(e)
             print("Error reading info about board %s from board farm configuration." % name)
