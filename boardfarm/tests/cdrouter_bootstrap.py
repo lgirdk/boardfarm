@@ -41,8 +41,6 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         lan.sendline('ifconfig %s down' % lan.iface_dut)
         lan.expect(prompt)
 
-        print board.has_cmts
-
         if not board.has_cmts:
             wan.sendline('ifconfig %s down' % wan.iface_dut)
             wan.expect(prompt)
@@ -313,7 +311,6 @@ testvar wanDnsServer %s""" % (cdrouter.wanispip, \
             return []
 
         c = CDRouter(url)
-        cdrouter_test_matrix = {}
         new_tests = []
         for mod in c.testsuites.list_modules():
             name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
