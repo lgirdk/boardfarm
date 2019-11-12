@@ -69,6 +69,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             # TODO: there are more missing ones CDrouter expects
             provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
+            provisioner.sendline('ip route add 3.3.3.3 via 192.168.3.2')
+            provisioner.expect(prompt)
         elif not wan.static_ip:
             for device in self.config.board['devices']:
                 if device['name'] == 'wan':
@@ -161,6 +163,10 @@ testvar wanIspGateway %s
 testvar wanIspMask 255.255.255.128
 testvar wanIspAssignIp %s
 testvar wanNatIp %s
+testvar remoteHostIp 3.3.3.3
+testvar FreeNetworkStart 200.0.0.0
+testvar FreeNetworkMask  255.255.255.0
+testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s""" % (cdrouter.wanispip, \
@@ -283,6 +289,8 @@ testvar wanDnsServer %s""" % (cdrouter.wanispip, \
             from boardfarm.devices import provisioner
             # TODO: there are more missing ones CDrouter expects
             provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            provisioner.expect(prompt)
+            provisioner.sendline('ip route add 3.3.3.3 via 192.168.3.2')
             provisioner.expect(prompt)
 
         if hasattr(self, 'results'):
