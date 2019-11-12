@@ -339,14 +339,24 @@ def install_vsftpd(device, remove=False):
 
 def install_pysnmp(device):
     '''Install pysnmp if not present.'''
-    device.sendline('\npip freeze | grep pysnmp')
-    try:
-        device.expect('pysnmp==', timeout=5)
-        device.expect(device.prompt)
-    except:
-        device.expect(device.prompt)
-        device.sendline('pip install pysnmp')
-        device.expect(device.prompt, timeout=90)
+    install_flag = False
+    for i in range(1,3):
+        try:
+            device.sendline('\npip freeze | grep pysnmp')
+            device.expect('pysnmp==', timeout=i*(5*i))
+            device.expect_prompt()
+            install_flag = True
+            break
+        except:
+            device.sendcontrol('c')
+            device.expect_prompt()
+            device.sendline('pip install pysnmp')
+            device.expect_prompt(timeout=150)
+            device.expect(pexpect.TIMEOUT, timeout=5)
+
+
+    assert install_flag, "Failed to install pysnmp library"
+
 
 def install_iw(device):
     '''Install iw if not present.'''

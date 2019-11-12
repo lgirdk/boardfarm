@@ -7,7 +7,9 @@
 
 import os
 import json
+import pexpect
 
+from .installers import install_pysnmp
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
@@ -211,6 +213,66 @@ class SnmpMibs(object):
                 print("ERROR: mib \'%s\' not found" % mib_name)
             pass
         return oid.encode('ascii', 'ignore')
+
+def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private"):
+    """
+    Performs an snmp get/set on ip from device's console.
+    If value is provided, action = snmpget else action = snmpset
+
+    Parameters:
+        (pexpect.spawn) device : device used to perform snmp
+        (str) ip : ip address used to perform snmp
+        (str) mib_name : mib name used to perform snmp
+        (int) index : index used along with mib_name
+
+    Returns:
+        (str) result : snmp result
+    """
+
+    if not getattr(device, "pysnmp_installed", False):
+        install_pysnmp(device)
+        setattr(device, "pysnmp_installed", True)
+
+    oid = get_mib_oid(mib_name)
+
+    def _run_snmp(py_set=False):
+        action = "setCmd" if py_set else "getCmd"
+        pysnmp_cmd = 'cmd = %s(SnmpEngine(), CommunityData("%s"), UdpTransportTarget(("%s", 161), timeout=%s, retries=%s), ContextData(), ObjectType(ObjectIdentity("%s.%s")%s))' % \
+                (action, community, ip, timeout, retries, oid, index, ', %s("%s")' % (stype, value) if py_set else "")
+
+        py_steps = [
+                'from pysnmp.hlapi import *',
+                 pysnmp_cmd,
+                'errorIndication, errorStatus, errorIndex, varBinds = next(cmd)',
+                'print(errorStatus == 0)',
+                'result = varBinds[0][1] if errorStatus == 0 else errorStatus',
+                'print(result.prettyPrint())',
+                'print(result.__class__.__name__)'
+                ]
+
+        device.sendline("cat > snmp.py << EOF\n%s\nEOF" % "\n".join(py_steps))
+        device.expect_prompt()
+        device.sendline("python snmp.py")
+        device.expect_exact("python snmp.py")
+        if device.expect(["Traceback", pexpect.TIMEOUT], timeout=3) == 0:
+            device.expect_prompt()
+            data = False, "Python file error :\n%s" % device.before["\n"][-1].strip(), None
+        else:
+            device.expect_prompt()
+            result = [i.strip() for i in device.before.split('\n') if i.strip() != ""]
+            data = result[0] == "True", "\n".join(result[1:-1]), result[-1]
+        device.sendline("rm snmp.py")
+        device.expect_prompt()
+        return data
+
+    status, result, stype = _run_snmp()
+    assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+
+    if value:
+        status, result, stype = _run_snmp(True)
+        assert status, "SNMP SET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+
+    return result
 
 def get_mib_oid(mib_name):
     """

@@ -454,6 +454,15 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                                       community='public')
 
                 print('snmpget({})@{}={}'.format(mib, wan_iface_ip, result))
+                print("Trying with snmp_v2 as well")
+
+                value = SnmpHelper.snmp_v2(lan,
+                                           str(wan_iface_ip),
+                                           mib,
+                                           community='public')
+
+                print("Snmpget via snmpv2 on %s: %s" % (mib, value))
+
             except Exception as e:
                 print('Failed on snmpget {} '.format(mib))
                 print(e)
