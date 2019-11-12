@@ -11,6 +11,7 @@ from boardfarm import lib
 import sys
 import traceback
 
+import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
@@ -33,6 +34,9 @@ class LinuxBootTest(unittest2.TestCase):
 
     def id(self):
         return self.__class__.__name__
+
+    def skipTest(self, reason):
+        raise boardfarm.exceptions.SkipTest(reason)
 
     def setUp(self):
         lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
@@ -117,7 +121,7 @@ class LinuxBootTest(unittest2.TestCase):
 
             self.stop_time = time.time()
             self.logged['test_time'] = float(self.stop_time - self.start_time)
-        except unittest2.case.SkipTest:
+        except boardfarm.exceptions.SkipTest:
             self.stop_time = time.time()
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
