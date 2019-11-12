@@ -288,9 +288,9 @@ testvar wanDnsServer %s""" % (cdrouter.wanispip, \
         if board.has_cmts:
             from boardfarm.devices import provisioner
             # TODO: there are more missing ones CDrouter expects
-            provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            provisioner.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
-            provisioner.sendline('ip route add 3.3.3.3 via 192.168.3.2')
+            provisioner.sendline('ip route del 3.3.3.3 via 192.168.3.2')
             provisioner.expect(prompt)
 
         if hasattr(self, 'results'):
