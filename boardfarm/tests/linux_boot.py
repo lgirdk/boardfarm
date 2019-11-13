@@ -11,6 +11,7 @@ from boardfarm import lib
 import sys
 import traceback
 
+from boardfarm.library import check_devices
 import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
@@ -129,6 +130,15 @@ class LinuxBootTest(unittest2.TestCase):
             raise
         except Exception as e:
             self.stop_time = time.time()
+
+            print("\n\n=========== Test: %s failed! running Device status check! Time: %s ===========" % (self.__class__.__name__, now_short(self._format)))
+            try:
+                all_devices = [board]+[getattr(self.config, name, None) for name in self.config.devices]
+                check_devices(all_devices)
+            except Exception as e:
+                print(e)
+            print("\n\n=========== Test: %s failed! Device status check done! Time: %s ===========" % (self.__class__.__name__, now_short(self._format)))
+
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             if hasattr(self, 'expected_failure') and self.expected_failure:
                 self.result_grade = "Exp FAIL"

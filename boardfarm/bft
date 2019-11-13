@@ -422,9 +422,12 @@ def main():
             elif grade == "FAIL" or grade == "Exp FAIL":
                 tests_fail += 1
                 # On failure, see status of devices
-                library.check_devices(all_devices)
             elif grade == "SKIP" or grade is None:
                 tests_skip += 1
+
+        if tests_fail > 0:
+            # run this only once at end of BF test suite execution
+            library.check_devices(all_devices)
 
     except KeyboardInterrupt:
         print_bold("Run interrupted. Wrapping up...")
