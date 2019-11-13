@@ -413,6 +413,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('\n/etc/init.d/tftpd-hpa restart')
         self.expect('Restarting')
         self.expect(self.prompt)
+        self.sendline('/etc/init.d/tftpd-hpa status')
+        self.expect('in.tftpd is running')
+        self.expect(self.prompt)
 
     def start_sshd_server(self):
         self.sendline('/etc/init.d/rsyslog start')
