@@ -86,16 +86,18 @@ def process_test_results(raw_test_results, golden={}):
             except:
                 elapsed_time = 0
 
-            unexpected = False
+            unexpected = None
             if '_source' in golden:
                 if name + "-result" in golden['_source']:
                     if golden['_source'][name + "-result"] != grade:
                         unexpected = True
+                    else:
+                        unexpected = False
 
-            if grade == "Unexp OK" or (grade == "OK" and unexpected):
+            if grade == "Unexp OK" or (grade == "OK" and unexpected == True):
                 grade = "Unexp OK"
                 full_results['unexpected_pass'] += 1
-            elif grade == "Exp FAIL" or (grade == "FAIL" and not unexpected):
+            elif grade == "Exp FAIL" or (grade == "FAIL" and unexpected == False):
                 grade = "Exp FAIL"
                 full_results['unexpected_fail'] += 1
             elif grade == "OK":
