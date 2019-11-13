@@ -8,22 +8,8 @@
 import glob
 import os
 
-import unittest2
-
 from .ConfigHelper import ConfigHelper
 
-
-def expectedFailureIf(test):
-    def wrap(func):
-        def wrapped(self, *args, **kwargs):
-            if test():
-                @unittest2.expectedFailure
-                def f(): func(self)
-
-                return f()
-            return func(self)
-        return wrapped
-    return wrap
 
 def find_subdirs(directories, name):
     '''
