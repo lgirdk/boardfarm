@@ -7,7 +7,6 @@
 
 import os
 import glob
-import unittest2
 import inspect
 import sys
 import traceback
@@ -37,7 +36,7 @@ def init(config):
             test_mappings[test_file] = []
             for obj in dir(test_file):
                 ref = getattr(test_file, obj)
-                if inspect.isclass(ref) and issubclass(ref, unittest2.TestCase):
+                if inspect.isclass(ref) and hasattr(ref, 'run'):
                     test_mappings[test_file].append(ref)
                     exec("from %s import %s" % (x, obj))
         except Exception as e:
