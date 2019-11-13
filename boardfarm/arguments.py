@@ -29,7 +29,6 @@ from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
 
-import tests
 
 try:
     import boardfarm
@@ -111,6 +110,7 @@ def parse():
         sys.exit(0)
 
     if args.list_tests:
+        import tests
         tests.init(config)
         for k, v in tests.available_tests.iteritems():
             try:
