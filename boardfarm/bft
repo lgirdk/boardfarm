@@ -516,9 +516,9 @@ def main():
     golden = {}
     if config.golden is not []:
         import requests
-        for g in golden:
+        for g in config.golden:
             try:
-                golden.update(requests.get(config.golden).json())
+                golden.update(requests.get(g).json())
             except:
                 print_bold("Failed to fetch golden master results, skipping...")
 

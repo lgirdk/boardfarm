@@ -95,7 +95,7 @@ def process_test_results(raw_test_results, golden={}):
             if grade == "Unexp OK" or (grade == "OK" and unexpected):
                 grade = "Unexp OK"
                 full_results['unexpected_pass'] += 1
-            elif grade == "Exp FAIL" or (grade == "FAIL" and unexpected):
+            elif grade == "Exp FAIL" or (grade == "FAIL" and not unexpected):
                 grade = "Exp FAIL"
                 full_results['unexpected_fail'] += 1
             elif grade == "OK":
