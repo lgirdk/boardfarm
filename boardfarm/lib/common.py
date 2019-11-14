@@ -540,7 +540,7 @@ def hex2ipv6(hexstr):
 def retry(func_name, max_retry, *args):
     for i in range(max_retry):
         output = func_name(*args)
-        if output:
+        if output and output!='False':
             return output
         else:
             time.sleep(5)
