@@ -7,7 +7,6 @@
 
 import glob
 import os
-import sys
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,6 +19,7 @@ testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
 # Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
 if 'BFT_OVERLAY' in os.environ:
+    import importlib
     for overlay in os.environ['BFT_OVERLAY'].strip().split(' '):
         overlay = os.path.realpath(overlay)
         # Find testsuite config files
@@ -32,10 +32,9 @@ if 'BFT_OVERLAY' in os.environ:
         for f in layerconf_path:
             if os.path.isfile(f):
                 location = os.path.dirname(f)
-                sys.path.insert(0, location)
-                import layerconf as tmp
+                m = os.path.basename(location)+'.'+os.path.basename(f.strip('.py'))
+                tmp = importlib.import_module(m)
                 layerconfs.append((location, tmp))
-                sys.path.pop(0)
 
 # Logstash server - a place to send JSON-format results to
 # when finished. Set to None or name:port, e.g. 'logstash.mysite.com:1300'
