@@ -6,7 +6,6 @@ from random import randint
 import ipaddress
 from faker import Factory
 import pexpect
-import re
 import time
 import random
 
