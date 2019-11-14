@@ -10,7 +10,12 @@ import os
 import os.path
 import socket
 import sys
-import urllib2
+try:
+    # Python 3
+    from urllib.request import build_opener, install_opener, ProxyHandler, urlopen
+except:
+    # Python 2
+    from urllib2 import build_opener, install_opener, ProxyHandler, urlopen
 import pexpect
 from . import linux
 from datetime import datetime
@@ -116,11 +121,11 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("ln -sf %s /www/TEMP" % fname)
         self.expect(self.prompt)
-        proxy = urllib2.ProxyHandler({'http': self.web_proxy + ':8080'})
-        opener = urllib2.build_opener(proxy)
-        urllib2.install_opener(opener)
+        proxy = ProxyHandler({'http': self.web_proxy + ':8080'})
+        opener = build_opener(proxy)
+        install_opener(opener)
         print("\nAttempting download of %s via proxy %s" % (url, self.web_proxy + ':8080'))
-        return urllib2.urlopen(url, timeout=30)
+        return urlopen(url, timeout=30)
 
     def tftp_get_file(self, host, filename, timeout=30):
         '''Download file from tftp server.'''
