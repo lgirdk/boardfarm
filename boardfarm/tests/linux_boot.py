@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 import time
-import unittest2
 from boardfarm import lib
 import sys
 import traceback
@@ -16,7 +15,7 @@ import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
-class LinuxBootTest(unittest2.TestCase):
+class LinuxBootTest(object):
     _testMethodName = "UNDEFINED"
     __metaclass__ = LoggerMeta
     log = ""
@@ -24,7 +23,6 @@ class LinuxBootTest(unittest2.TestCase):
     _format = "%a %d %b %Y %H:%M:%S"
 
     def __init__(self, config):
-        super(LinuxBootTest, self).__init__("testWrapper")
         self.config = config
         self.test_args = getattr(config, "test_args", {})
         self.test_case_args = self.test_args.pop(type(self).__name__, {})
@@ -39,9 +37,9 @@ class LinuxBootTest(unittest2.TestCase):
     def skipTest(self, reason):
         raise boardfarm.exceptions.SkipTest(reason)
 
-    def setUp(self):
+    def run(self):
         lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
-    def tearDown(self):
+        self.testWrapper()
         lib.common.test_msg("\n==================== End %s      Time: %s ======================" % (self.__class__.__name__, now_short(self._format)))
 
     def wan_setup(self):
