@@ -1,9 +1,13 @@
-import base, binascii
-import os, ipaddress, re
-from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
+import binascii
+import ipaddress
+import os
+import re
+
 import pexpect
 
+from . import base
 from boardfarm.lib.common import print_bold
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
