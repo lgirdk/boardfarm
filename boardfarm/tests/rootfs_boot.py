@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import time
-import linux_boot
+from . import linux_boot
 from boardfarm import lib
 
 from boardfarm.devices import board, wan, lan, prompt
