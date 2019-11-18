@@ -147,6 +147,7 @@ testvar lanVlanId """ + lan.vlan
             for i in range(5):
                 try:
                     wan_ip = board.get_interface_ipaddr(board.erouter_iface)
+                    wan_ip6 = board.get_interface_ip6addr(board.erouter_iface)
                     break
                 except:
                     board.expect(pexpect.TIMEOUT, timeout=15)
@@ -157,6 +158,11 @@ testvar lanVlanId """ + lan.vlan
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
             contents=contents + """
+testvar supportsIPv6 yes
+testvar ipv6WanMode static
+testvar ipv6WanIspIp %s
+testvar ipv6WanIspPrefixLen 64
+testvar ipv6LanMode autoconf
 testvar wanMode static
 testvar wanIspIp %s
 testvar wanIspGateway %s
@@ -169,12 +175,13 @@ testvar FreeNetworkMask  255.255.255.0
 testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
-testvar wanDnsServer %s""" % (cdrouter.wanispip, \
-                              cdrouter.wanispgateway, \
-                              wan_ip, wan_ip, \
-                              cdrouter.ipv4hopcount, \
-                              board.get_dns_server(), \
-                              board.get_dns_server_upstream())
+testvar wanDnsServer %s
+""" % (wan_ip6, cdrouter.wanispip, \
+       cdrouter.wanispgateway, \
+       wan_ip, wan_ip, \
+       cdrouter.ipv4hopcount, \
+       board.get_dns_server(), \
+       board.get_dns_server_upstream())
 
         print("Using below for config:")
         print(contents)
