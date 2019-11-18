@@ -163,6 +163,10 @@ testvar ipv6WanMode static
 testvar ipv6WanIspIp %s
 testvar ipv6WanIspPrefixLen 64
 testvar ipv6LanMode autoconf
+testvar ipv6RemoteHost            3001:51a:cafe::1
+testvar ipv6FreeNetworkStart      3001:cafe:1::
+testvar ipv6FreeNetworkEnd        3001:cafe:ffff::
+testvar ipv6FreeNetworkPrefixLen  64
 testvar wanMode static
 testvar wanIspIp %s
 testvar wanIspGateway %s
