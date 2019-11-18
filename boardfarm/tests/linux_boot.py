@@ -125,7 +125,7 @@ class LinuxBootTest(object):
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
             print("\n\n=========== Test skipped! Moving on... =============")
-            raise
+            return
         except Exception as e:
             self.stop_time = time.time()
 
@@ -157,14 +157,12 @@ class LinuxBootTest(object):
                     print(d)
 
             self.recover()
-            raise
 
     def recover(self):
         if self.__class__.__name__ == "LinuxBootTest":
             print("aborting tests, unable to boot..")
             sys.exit(1)
         print("ERROR: No default recovery!")
-        raise "No default recovery!"
 
 
     _log_to_file = None
