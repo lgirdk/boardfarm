@@ -63,9 +63,9 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         self.logged['s_rate'] = s_rate
         self.logged['r_rate'] = r_rate
 
-        self.recovery()
+        self.recover()
 
-    def recovery(self):
+    def recover(self):
         for d in [wan, self.client]:
             d.sendcontrol('c')
             d.sendcontrol('c')
