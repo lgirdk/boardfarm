@@ -5,47 +5,58 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import os
 import glob
+import importlib
 import inspect
-import sys
+import os
 import traceback
 
-from boardfarm.lib import find_subdirs
+import boardfarm
 
 available_tests = {}
 
 def init(config):
-    test_files = glob.glob(os.path.dirname(__file__) + "/*.py")
-    boardfarm_overlays = os.environ.get('BFT_OVERLAY')
-    if boardfarm_overlays:
-        # Insert 'tests' directories from the overlays
-        dirs = boardfarm_overlays.split(" ")
-        for x in find_subdirs(dirs, "tests"):
-            sys.path.insert(0, x)
-            test_files += glob.glob(os.path.join(x, '*.py'))
+    '''
+    Dynamically find all test classes accross all boardfarm projects.
+    This creates a dictionary of "test names" to "python object of test class".
+    '''
 
+    # This will be a dictionary where:
+    #   key = filename (without '.py')
+    # value = list of classes
     test_mappings = {}
-    for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
-        if x == "tests":
-            raise Exception("INVALID test file name found, tests.py will cause namespace issues, please rename")
-        try:
-            test_file = None
-            exec("import %s as test_file" % x)
-            assert test_file is not None
-            test_mappings[test_file] = []
-            for obj in dir(test_file):
-                ref = getattr(test_file, obj)
-                if inspect.isclass(ref) and hasattr(ref, 'run'):
-                    test_mappings[test_file].append(ref)
-                    exec("from %s import %s" % (x, obj))
-        except Exception as e:
-            if 'BFT_DEBUG' in os.environ:
-                traceback.print_exc()
-                print("Warning: could not import from file %s.py" % x)
-            else:
-                print("Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details" % x)
 
+    # Create a dictionary of all boardfarm modules
+    all_boardfarm_modules = boardfarm.plugins
+    all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
+
+    # Loop over all modules to import their tests
+    for modname in all_boardfarm_modules:
+        # Find all python files in 'tests' directories
+        location = os.path.join(os.path.dirname(all_boardfarm_modules[modname].__file__), 'tests')
+        file_names = glob.glob(os.path.join(location, '*.py'))
+        file_names = [os.path.basename(x)[:-3] for x in file_names if not "__" in x]
+        for fname in sorted(file_names):
+            tmp = '%s.tests.%s' % (modname, fname)
+            try:
+                module = importlib.import_module(tmp)
+            except Exception:
+                if 'BFT_DEBUG' in os.environ:
+                    traceback.print_exc()
+                    print("Warning: could not import from file %s.py" % fname)
+                else:
+                    print("Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details" % fname)
+                continue
+            if fname in test_mappings:
+                print('WARNING: Two test files have the same name, %s.py' % fname)
+            test_mappings[fname] = []
+            for thing_name in dir(module):
+                thing = getattr(module, thing_name)
+                if inspect.isclass(thing) and hasattr(thing, 'run'):
+                    test_mappings[fname].append(thing)
+
+    # Loop over all test classes in all test files, and
+    # run their 'parse' function if they have one.
     for test_file, tests in test_mappings.iteritems():
         for test in tests:
             if not hasattr(test, "parse"):
