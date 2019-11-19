@@ -157,6 +157,7 @@ class LinuxBootTest(object):
                     print(d)
 
             self.recover()
+            raise
 
     def recover(self):
         if self.__class__.__name__ == "LinuxBootTest":

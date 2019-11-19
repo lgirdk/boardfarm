@@ -39,6 +39,7 @@ except Exception as e:
 
 from zephyr import zephyr_reporter
 
+import boardfarm.exceptions
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
@@ -410,11 +411,18 @@ def main():
     all_devices = [getattr(config, name, None) for name in config.devices]
     try:
         tests_pass = tests_fail = tests_skip = 0
+        stop_testing = False
         curr_test = None
         for j, test in enumerate(tests_to_run):
             bfweb.post_temp_message("Running test %s of %s" % (j+1, len(tests_to_run)))
             curr_test = test
-            test.run()
+            try:
+                test.run()
+            except boardfarm.exceptions.BootFail:
+                stop_testing = True
+            except Exception:
+                # Keep going on to other tests
+                pass
             curr_test = None
             grade = getattr(test, "result_grade", None)
             if grade == "OK" or grade == "Unexp OK":
@@ -424,6 +432,9 @@ def main():
                 # On failure, see status of devices
             elif grade == "SKIP" or grade is None:
                 tests_skip += 1
+
+            if stop_testing:
+                break
 
         if tests_fail > 0:
             # run this only once at end of BF test suite execution

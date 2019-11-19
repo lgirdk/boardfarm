@@ -9,6 +9,7 @@ import time
 from . import linux_boot
 from boardfarm import lib
 
+import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, prompt
 
 class RootFSBootTest(linux_boot.LinuxBootTest):
@@ -189,7 +190,12 @@ class RootFSBootTest(linux_boot.LinuxBootTest):
     @lib.common.run_once
     def runTest(self):
         if self.__class__.__name__ == "RootFSBootTest":
-            self.boot()
+            try:
+                self.boot()
+            except Exception as e:
+                print("\n\nFailed to Boot")
+                print(e)
+                raise boardfarm.exceptions.BootFail
 
     def recover(self):
         if self.__class__.__name__ == "RootFSBootTest":
