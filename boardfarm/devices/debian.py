@@ -15,6 +15,7 @@ import os
 import ipaddress
 
 from termcolor import colored, cprint
+from nested_lookup import nested_lookup
 
 class DebianBox(linux.LinuxDevice):
     '''
@@ -440,7 +441,9 @@ class DebianBox(linux.LinuxDevice):
         # this needs to be more fine-grained controlled.
         # also it needs to have args handling.
         if hasattr(self, "profile"):
-            self.profile["on_boot"]()
+            boot_list = nested_lookup("on_boot", self.profile.get(self.name, {}))
+            for profile_boot in boot_list:
+                profile_boot()
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
@@ -499,7 +502,9 @@ class DebianBox(linux.LinuxDevice):
         # this is a hack, the add_host should have been called from RootFs
         hosts = {}
         if hasattr(self, "profile"):
-            hosts.update(self.profile["hosts"])
+            host_dicts = nested_lookup("hosts", self.profile.get(self.name, {}))
+            for host_data in host_dicts:
+                hosts.update(host_data)
         if hasattr(config, "board"):
             for device in config.board['devices']:
                 # TODO: this should be different...
