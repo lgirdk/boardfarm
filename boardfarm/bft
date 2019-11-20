@@ -549,11 +549,9 @@ def main():
         if not clog:
             print("Skipping analysis because %s is empty..." % fname)
         else:
-            import analysis
-            for cstr in dir(analysis):
-                c = getattr(analysis, cstr)
-                if inspect.isclass(c) and issubclass(c, analysis.Analysis):
-                    c().analyze(clog, config.output_dir)
+            from boardfarm import analysis
+            for name in sorted(analysis.classes):
+                analysis.classes[name]().analyze(clog, config.output_dir)
     except Exception as e:
         if not issubclass(type(e), (StopIteration)):
             print("Failed to run anaylsis:")

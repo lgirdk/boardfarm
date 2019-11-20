@@ -5,7 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import analysis
+from . import analysis
 import re
 import collections
 import os
@@ -27,7 +27,7 @@ class PSAnalysis(analysis.Analysis):
                     continue
                 ts = float(e.pop(0).strip('[]'))
                 pid = e.pop(0)
-                user = e.pop(0)
+                _ = e.pop(0) # user
                 mem = e.pop(0)
                 while e[0] in ['S', 'R', 'SW', 'SW<', 'DW', 'N', '<', 'D', 'Z']: e.pop(0)
                 cmdline = " ".join(e)
