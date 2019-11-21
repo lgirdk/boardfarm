@@ -64,7 +64,6 @@ def probe_devices():
             ref = getattr(device_file, obj)
             if inspect.isclass(ref) and hasattr(ref, "model"):
                 device_mappings[device_file].append(ref)
-                exec("from %s import %s" % (x, obj))
 
 def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
