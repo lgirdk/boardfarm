@@ -25,7 +25,17 @@ def kill_process(device, process="tcpdump"):
     device.expect(device.prompt)
     return device.before
 
-def tcpdump_read(device, capture_file, protocol=''):
+def tcpdump_read(device, capture_file, protocol='', opts=''):
+    '''Read the tcpdump packets
+    Parameters:
+       device: Device where the captured file is located
+       capture_file : Name of the filename where the packets captured via tcpdump_capture
+       opts: can be more than one parameter but it should be joined with "and" eg: ('host '+dest_ip+' and port '+port)
+    Returns:
+       Returns the output of filter
+    '''
+    if opts:
+        protocol = protocol+' and '+opts
     device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
     device.expect(device.prompt)
     output = device.before
