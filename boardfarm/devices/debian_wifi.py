@@ -75,6 +75,24 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         else:
             return False
 
+    def wifi_connect_check(self, ssid_name, password=None):
+        ''' Connect to a SSID and verify
+            WIFI connectivity
+        Arguments: ssid_name - string
+                   password - string,
+                   None if no password
+        Return: True if wifi connected else False
+        '''
+        for i in range(5):
+            self.wifi_connect(ssid_name, password)
+            self.expect(pexpect.TIMEOUT, timeout=10)
+            verify_connect = self.wifi_connectivity_verify()
+            if verify_connect:
+                break
+            else:
+                self.wifi_disconnect()
+        return verify_connect
+
     def disconnect_wpa(self):
         self.sudo_sendline("killall wpa_supplicant")
         self.expect(self.prompt)
