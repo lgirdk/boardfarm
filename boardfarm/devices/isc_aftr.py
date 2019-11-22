@@ -137,9 +137,9 @@ class AFTR(object):
                 ("#All IPv6 ACLs\n", "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_ACL)))
                 ])
 
-        for k, v in self.aftr_conf.iteritems():
+        for k, v in self.aftr_conf.items():
             run_conf.append("## %s\n" % k)
-            for option, value in v.iteritems():
+            for option, value in v.items():
                 run_conf.append("%s%s" % (option, value))
             run_conf[-1] += "\n"
 
@@ -197,7 +197,7 @@ class AFTR(object):
             ])
 
         # there could be a better way to generate this shell script.
-        script += "%s\n%s" % ("\n".join(["%s\n{\n%s\n}" % (k, v) for k, v in run_conf.iteritems()]), extra_bits)
+        script += "%s\n%s" % ("\n".join(["%s\n{\n%s\n}" % (k, v) for k, v in run_conf.items()]), extra_bits)
         return script
 
     def install_aftr(self):

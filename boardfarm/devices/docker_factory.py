@@ -64,7 +64,7 @@ class DockerFactory(linux.LinuxDevice):
 
         if self.ipaddr != 'localhost':
             print(env)
-            for k, v in env.iteritems():
+            for k, v in env.items():
                 self.sendline('export %s=%s' % (k, v))
                 self.expect(self.prompt)
 

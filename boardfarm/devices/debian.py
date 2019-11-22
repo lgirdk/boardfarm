@@ -225,7 +225,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.write("\tRunning post_cmd.... ")
             sys.stdout.flush()
             env_prefix = ""
-            for k, v in env.iteritems():
+            for k, v in env.items():
                 env_prefix += "export %s=%s; " % (k, v)
 
             self.sendline(env_prefix + post_cmd)
@@ -529,7 +529,7 @@ class DebianBox(linux.LinuxDevice):
                     hosts[domain_name] = final
         if hosts is not None:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
-            for host, ip in hosts.iteritems():
+            for host, ip in hosts.items():
                 self.sendline(ip + " " + host)
             self.sendline('EOF')
 

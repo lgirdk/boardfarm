@@ -209,11 +209,11 @@ EOF'''
         board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config['station'].split("-")[-1]) % len(self.erouter_net)])
 
         # there is probably a better way to construct this file...
-        for dev, cfg_sec in board_config['extra_provisioning_v6'].iteritems():
+        for dev, cfg_sec in board_config['extra_provisioning_v6'].items():
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
-            for key, value in cfg_sec.iteritems():
+            for key, value in cfg_sec.items():
                 if key == "options":
-                    for k2, v2 in value.iteritems():
+                    for k2, v2 in value.items():
                         self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
                         self.expect(self.prompt)
                 else:
@@ -371,11 +371,11 @@ EOF'''
         board_config['extra_provisioning']['mta']['next-server'] = tftp_server
 
         # there is probably a better way to construct this file...
-        for dev, cfg_sec in board_config['extra_provisioning'].iteritems():
+        for dev, cfg_sec in board_config['extra_provisioning'].items():
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
-            for key, value in cfg_sec.iteritems():
+            for key, value in cfg_sec.items():
                 if key == "options":
-                    for k2, v2 in value.iteritems():
+                    for k2, v2 in value.items():
                         self.sendline("echo '   option %s %s;' >> %s" % (k2, v2, cfg_file))
                         self.expect(self.prompt)
                 else:
