@@ -70,7 +70,8 @@ class AxirosACS(object):
     def close(self):
         pass
 
-    def get(self, serial_number, param, wait=8):
+    def get_ticketId(self, serial_number, param):
+        '''Get ticketid of the parameter '''
         GetParameterValuesParametersClassArray_type = self.client.get_type('ns0:GetParameterValuesParametersClassArray')
         GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type([param])
 
@@ -90,16 +91,31 @@ class AxirosACS(object):
         for value in root.iter('ticketid'):
             ticketid = value.text
             break
+        return ticketid
 
+    def get(self, serial_number, param, wait=8):
+        '''Get first value of the parameter'''
+        ticketid = self.get_ticketId(serial_number, param)
         if ticketid is None:
             return None
         return self.Axiros_GetTicketValue(ticketid, wait=wait)
 
-    def getcurrent(self, serial_number, param):
-        self.get(serial_number, param + '.', wait=20)
-        # TODO: note: verified ticket was sent to ACS with all the results in the param namespace
-        # however the get above does not pull the results so we can't check them here but that's
-        # not a major issue since the API does not do that for the current implementation
+    def getcurrent(self, serial_number, param, wait=8):
+        '''Get all the keys and values of the parameter'''
+        ticketid = self.get_ticketId(serial_number, param)
+        for i in range(wait):
+            time.sleep(1)
+            with self.client.settings(raw_response=True):
+                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+            root = ElementTree.fromstring(ticket_resp.content)
+            for value in root.iter('code'):
+                break
+            if (value.text != '200'):
+                continue
+            dict_key_value = {}
+            for key, value in zip(root.iter('key'), root.iter('value')):
+                dict_key_value[key.text] = value.text
+            return dict_key_value
 
     def set(self, serial_number, attr, value):
         SetParameterValuesParametersClassArray_type = self.client.get_type('ns0:SetParameterValuesParametersClassArray')
