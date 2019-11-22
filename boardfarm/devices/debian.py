@@ -648,6 +648,7 @@ class DebianBox(linux.LinuxDevice):
     def start_lan_client(self, wan_gw=None):
         # very casual try for ipv6 addr, if we don't get one don't fail for now
         try:
+            self.disable_ipv6(self.iface_dut)
             self.enable_ipv6(self.iface_dut)
             self.sendline("rdisc6 -1 eth1")
             self.expect(self.prompt)
