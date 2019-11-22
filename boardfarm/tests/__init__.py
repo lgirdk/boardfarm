@@ -57,7 +57,7 @@ def init(config):
 
     # Loop over all test classes in all test files, and
     # run their 'parse' function if they have one.
-    for test_file, tests in test_mappings.iteritems():
+    for test_file, tests in test_mappings.items():
         for test in tests:
             if not hasattr(test, "parse"):
                 continue

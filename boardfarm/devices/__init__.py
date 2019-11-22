@@ -145,7 +145,7 @@ def get_device(model, **kwargs):
     profile = kwargs.get("profile", {})
     cls_list = []
     profile_list = []
-    for device_file, devs in device_mappings.iteritems():
+    for device_file, devs in device_mappings.items():
         for dev in devs:
             if 'model' in dev.__dict__:
                 attr = dev.__dict__['model']

@@ -112,7 +112,7 @@ def parse():
     if args.list_tests:
         import tests
         tests.init(config)
-        for k, v in tests.available_tests.iteritems():
+        for k, v in tests.available_tests.items():
             try:
                 print("%20s - %s" % (k, v.__doc__.split('\n')[0]))
             except:
@@ -151,7 +151,7 @@ def parse():
                 if 'location' in config.boardfarm_config[board]:
                     board_location = config.boardfarm_config[board]['location']
                     if board_location in location:
-                        for key, value in location[board_location].iteritems():
+                        for key, value in location[board_location].items():
                             if type(value) == list:
                                 config.boardfarm_config[board][key].extend(value)
                             else:
