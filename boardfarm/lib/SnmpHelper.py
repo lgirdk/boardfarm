@@ -172,7 +172,7 @@ class SnmpMibs(object):
             print("ERROR: failed on mib compilation (mibCompiler.compile returned an empty dictionary)")
             err = True
 
-        for key, value in mib_dict.iteritems():
+        for key, value in mib_dict.items():
             if value == 'unprocessed':
                 print("ERROR: failed on mib compilation: " + key + ": " + value)
                 err = True
@@ -186,7 +186,7 @@ class SnmpMibs(object):
         if "y" in self.dbg:
             print('# MIB module %s' % mibName)
 
-        for k, v in json.loads(jsonDoc).iteritems():
+        for k, v in json.loads(jsonDoc).items():
             if "oid" in v:
                 if "objects" in v or "revisions" in v:
                     # we want to skip objects that have no use

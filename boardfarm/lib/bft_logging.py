@@ -30,7 +30,7 @@ def logfile_assert_message(s, condition, message):
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
-        for attr_name, attr_value in attrs.iteritems():
+        for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = cls.deco(attr_value)
 
