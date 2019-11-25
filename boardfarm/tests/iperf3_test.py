@@ -28,12 +28,12 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         installers.install_iperf3(wan)
         installers.install_iperf3(self.client)
 
+        if self.target_ip == None:
+            self.target_ip = wan.get_interface_ipaddr(wan.iface_dut)
+
         wan.sendline('iperf3 -s -p %s' % self.server_port)
         wan.expect('-----------------------------------------------------------')
         wan.expect('-----------------------------------------------------------')
-
-        if self.target_ip == None:
-            self.target_ip = wan.gw
 
         board.collect_stats(stats=['mpstat'])
 
@@ -87,7 +87,7 @@ class iPerf3_v6Test(iPerf3Test):
     opts = "-6"
 
     def runTest(self):
-        self.target_ip = wan.gwv6
+        self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
         super(iPerf3_v6Test, self).runTest()
 
 class iPerf3R_v6Test(iPerf3Test):
@@ -96,7 +96,7 @@ class iPerf3R_v6Test(iPerf3Test):
     opts = "-6 -R"
 
     def runTest(self):
-        self.target_ip = wan.gwv6
+        self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
         super(iPerf3R_v6Test, self).runTest()
 
 class iPerf3Test2nd(iPerf3Test):
