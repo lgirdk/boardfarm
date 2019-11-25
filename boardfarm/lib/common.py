@@ -605,7 +605,7 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
     else:
         return False
 
-def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=200):
+def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=100):
     """
     Name: snmp_mib_walk
     Purpose: walk a mib with small mib tree
@@ -619,8 +619,15 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
         oid = parser.get_mib_oid(mib_name)
 
     device.sendline("snmpwalk -v 2c -c "+community+" -t " +str(time_out)+ " -r "+str(retry)+" "+ip_address+" "+ oid)
-    device.expect(device.prompt)
-    snmp_out = device.before
+    i = device.expect([pexpect.TIMEOUT] + device.prompt, timeout = (time_out*retry) + 10) # +10 just to be sure
+    if i != 0:
+        # we have a prompt, so we assume the walk completed ok
+        snmp_out = device.before
+    else:
+        # the expect timed out, try to recover and return None
+        snmp_out = None
+        device.sendcontrol('c') # in case the walk is frozen/stuck
+        device.expect(device.prompt)
     return snmp_out
 
 def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
