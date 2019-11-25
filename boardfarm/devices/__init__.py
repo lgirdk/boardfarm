@@ -7,10 +7,13 @@
 import os
 import sys
 import glob
+import importlib
 import inspect
 import pexpect
 import termcolor
 import traceback
+
+import boardfarm
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
@@ -39,31 +42,39 @@ provisioner = None
 device_mappings = {}
 
 def probe_devices():
-    '''To be removed once all overlays are proper modules'''
+    '''
+    Dynamically find all devices classes accross all boardfarm projects.
+    '''
 
-    # Local devices
-    device_files = glob.glob(os.path.dirname(__file__) + "/*.py")
-    device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.dirname(__file__) + '/*/__init__.py')]
+    all_boardfarm_modules = boardfarm.plugins
+    all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
 
-    # Get devices from overlays
-    boardfarm_overlays = os.environ.get('BFT_OVERLAY')
-    if boardfarm_overlays:
-        dirs = boardfarm_overlays.split(" ")
-        # Put 'devices' directories into the python path
-        for x in find_subdirs(dirs, "devices"):
-            sys.path.insert(0, x)
-            device_files += glob.glob(os.path.join(x, '*.py'))
-            device_files += [e.replace('/__init__', '') for e in glob.glob(os.path.join(x, '*', '__init__.py'))]
-
-    for x in sorted([os.path.basename(f)[:-3] for f in device_files if not "__" in f]):
-        device_file = None
-        exec("import %s as device_file" % x)
-        assert device_file is not None
-        device_mappings[device_file] = []
-        for obj in dir(device_file):
-            ref = getattr(device_file, obj)
-            if inspect.isclass(ref) and hasattr(ref, "model"):
-                device_mappings[device_file].append(ref)
+    # Loop over all modules to import their devices
+    for modname in all_boardfarm_modules:
+        # Find all python files in 'devices' directories
+        location = os.path.join(os.path.dirname(all_boardfarm_modules[modname].__file__), 'devices')
+        file_names = glob.glob(os.path.join(location, '*.py'))
+        file_names = [os.path.basename(x)[:-3] for x in file_names if not "__" in x]
+        # Find sub modules too
+        sub_mod = glob.glob(os.path.join(location, '*', '__init__.py'))
+        file_names += [os.path.basename(os.path.dirname(x)) for x in sub_mod]
+        # Import devices
+        for fname in sorted(file_names):
+            tmp = '%s.devices.%s' % (modname, fname)
+            try:
+                module = importlib.import_module(tmp)
+            except Exception:
+                if 'BFT_DEBUG' in os.environ:
+                    traceback.print_exc()
+                    print("Warning: could not import from file %s.py" % fname)
+                else:
+                    print("Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details" % fname)
+                continue
+            device_mappings[module] = []
+            for thing_name in dir(module):
+                thing = getattr(module, thing_name)
+                if inspect.isclass(thing) and hasattr(thing, 'model'):
+                    device_mappings[module].append(thing)
 
 def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
