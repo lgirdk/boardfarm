@@ -21,8 +21,8 @@ class LinuxDevice(base.BaseDevice):
         print("\n\nRunning check_status() on %s" % self.name)
         self.sendline("\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n")
         self.expect_exact('cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n')
-        self.expect('version')
-        self.expect(self.prompt)
+        self.expect('version', timeout=5)
+        self.expect(self.prompt, timeout=5)
 
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface'''

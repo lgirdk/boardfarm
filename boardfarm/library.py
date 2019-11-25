@@ -79,7 +79,11 @@ def check_devices(devices, func_name='check_status'):
     '''
     For each device, run a frunction. Useful to see if devices are still
     alive, running well, or whatever status function you wish to run.
+
+    Returns a list of devices where the check failed
     '''
+    ret = []
+
     print('\n' + '='*20 + ' BEGIN Status Check ' + '='*20)
     for d in devices:
         if d is None:
@@ -95,6 +99,7 @@ def check_devices(devices, func_name='check_status'):
                 print("Checking status for " + d.__class__.__name__ + " (see log in result dir for data)")
                 getattr(d, func_name)()
             except:
+                ret.append(d)
                 print("Status check for %s failed." % d.__class__.__name__)
             if saved_logfile_read is not None:
                 d.logfile_read = saved_logfile_read
@@ -102,6 +107,8 @@ def check_devices(devices, func_name='check_status'):
             print("Pro Tip: Write a function %s.%s() to run between tests." %
                   (d.__class__.__name__, func_name))
     print('\n' + '='*20 + ' END Status Check ' + '='*20)
+
+    return ret
 
 def process_test_results(raw_test_results, golden={}):
     full_results = {'test_results': [],

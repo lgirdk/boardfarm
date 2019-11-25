@@ -76,6 +76,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
     def testWrapper(self):
         self.start_time = time.time()
+        recheck_devices = []
 
         for d in self.config.devices:
             dev = getattr(self.config, d)
@@ -155,7 +156,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                   (self.__class__.__name__, now_short(self._format)))
             try:
                 all_devices = [self.dev.board]+[getattr(self.config, name, None) for name in self.config.devices]
-                check_devices(all_devices)
+                recheck_devices = check_devices(all_devices)
             except Exception as e:
                 print(e)
             print("\n\n=========== Test: %s failed! Device status check done! Time: %s ===========" %
@@ -181,6 +182,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     print(d)
 
             self.recover()
+            check_devices(recheck_devices)
             self.endMarker()
             raise
 
