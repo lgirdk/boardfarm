@@ -5,8 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import socat
-from boardfarm.tests import rootfs_boot
+from boardfarm.tests import rootfs_boot, socat
 from boardfarm.devices import board, lan, prompt
 
 import pexpect

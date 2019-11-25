@@ -7,8 +7,7 @@
 
 
 from boardfarm import lib
-import iperf_test
-
+from boardfarm.tests import iperf_test
 from boardfarm.devices import board, wan, lan, wlan, prompt
 
 class PerfPerPktTest(iperf_test.iPerfTest):

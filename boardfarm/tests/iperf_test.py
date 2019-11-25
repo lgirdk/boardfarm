@@ -7,7 +7,7 @@
 
 
 from boardfarm.tests import rootfs_boot
-import ipv6_setup
+from boardfarm.tests import ipv6_setup
 from boardfarm import lib
 from boardfarm.lib import installers
 from boardfarm.devices import board, wan, lan, wlan, prompt
