@@ -73,8 +73,11 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
 
         board.parse_stats(dict_to_log=self.logged)
 
-        args = (self.logged['s_rate'], self.logged['r_rate'], self.logged['mpstat'])
-        self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec, cpu = %.2f\n" % args
+        if 's_rate' in self.logged:
+            args = (self.logged['s_rate'], self.logged['r_rate'], self.logged['mpstat'])
+            self.result_message = "Sender rate = %s MBits/sec, Receiver rate = %s Mbits/sec, cpu = %.2f\n" % args
+        else:
+            self.result_message = "iPerf3 test failed to parse results (or even run)"
 
 class iPerf3RTest(iPerf3Test):
     '''iPerf3 reverse generic performance tests'''
