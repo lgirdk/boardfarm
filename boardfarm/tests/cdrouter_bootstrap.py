@@ -16,6 +16,7 @@ from boardfarm.devices import board, lan, prompt, wan
 from boardfarm import lib
 import os
 import pexpect
+import ipaddress
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -70,6 +71,10 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
             provisioner.sendline('ip route add 3.3.3.3 via 192.168.3.2')
+            provisioner.expect(prompt)
+            provisioner.sendline('ip route add 3001:cafe:1::/64 via 2001:dead:beef:1::2')
+            provisioner.expect(prompt)
+            provisioner.sendline('ip route add 3001:51a:cafe::1 via 2001:dead:beef:1::2')
             provisioner.expect(prompt)
         elif not wan.static_ip:
             for device in self.config.board['devices']:
@@ -145,22 +150,35 @@ testvar lanVlanId """ + lan.vlan
 
         if board.has_cmts:
             for i in range(5):
+                exp = None
                 try:
                     wan_ip = board.get_interface_ipaddr(board.erouter_iface)
+                    # TODO: this breaks ipv6 only
                     wan_ip6 = board.get_interface_ip6addr(board.erouter_iface)
+
+                    lan.start_lan_client()
+                    lan_ip6 = lan.get_interface_ip6addr(lan.iface_dut)
+                    ip6 = ipaddress.IPv6Network(unicode(lan_ip6))
+                    fixed_prefix6 = str(ip6.supernet(new_prefix=64).network_address)
                     break
-                except:
+                except Exception as e:
+                    exp = e
                     board.expect(pexpect.TIMEOUT, timeout=15)
                     continue
             else:
                 if i == 4:
-                    raise Exception("Failed to get erouter ip address")
+                    raise exp
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
             contents=contents + """
+testvar ipv6LanIp %s%%eui64%%
+testvar ipv6LanPrefixLen 64
+testvar healthCheckEnable yes
 testvar supportsIPv6 yes
 testvar ipv6WanMode static
 testvar ipv6WanIspIp %s
+testvar ipv6WanIspGateway %s
+testvar ipv6WanIspAssignIp %s
 testvar ipv6WanIspPrefixLen 64
 testvar ipv6LanMode autoconf
 testvar ipv6RemoteHost            3001:51a:cafe::1
@@ -180,7 +198,11 @@ testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s
-""" % (wan_ip6, cdrouter.wanispip, \
+""" % (fixed_prefix6,
+       cdrouter.wanispip_v6, \
+       cdrouter.wanispgateway_v6, \
+       wan_ip6, \
+       cdrouter.wanispip, \
        cdrouter.wanispgateway, \
        wan_ip, wan_ip, \
        cdrouter.ipv4hopcount, \
@@ -302,6 +324,10 @@ testvar wanDnsServer %s
             provisioner.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
             provisioner.sendline('ip route del 3.3.3.3 via 192.168.3.2')
+            provisioner.expect(prompt)
+            provisioner.sendline('ip route del 3001:cafe:1::/64 via 2001:dead:beef:1::2')
+            provisioner.expect(prompt)
+            provisioner.sendline('ip route del 3001:51a:cafe::1 via 2001:dead:beef:1::2')
             provisioner.expect(prompt)
 
         if hasattr(self, 'results'):
