@@ -23,7 +23,7 @@ except:
     assert urllib
 import re
 
-import config
+from boardfarm import config
 from config import boardfarm_config_location
 from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.lib.common import check_url

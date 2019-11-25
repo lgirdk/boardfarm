@@ -19,7 +19,7 @@ try:
 except:
     from future.moves.collections import Counter
 
-import config
+from boardfarm import config
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
 
