@@ -490,9 +490,9 @@ def main():
             for e in combined_list:
                 try:
                     if e['name'] == "":
-                        clog.write('[%s]%s\r\n' % (e['time'], e['text']))
+                        clog.write('[%s]%s\r\n' % (e['time'], repr(e['text'])))
                     else:
-                        clog.write('%s: [%s] %s\n' % (e['name'], e['time'], e['text']))
+                        clog.write('%s: [%s] %s\n' % (e['name'], e['time'], repr(e['text'])))
                 except:
                     print("failed to parse line: %s" % repr(e))
 
