@@ -8,7 +8,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
-import hashlib
 import inspect
 import json
 import os
@@ -19,6 +18,7 @@ import traceback
 import queue
 import threading
 import re
+import uuid
 from datetime import datetime
 
 # Try to catch common mistakes: not installing boardfarm, or
@@ -244,7 +244,7 @@ def main():
             tftp_server = None
             tftp_port = "22"
 
-            uniqid = hashlib.md5("%0.100f" % time.time()).hexdigest()[:15]
+            uniqid = uuid.uuid4().hex[:15]  # Random, unique ID and use first 15 bytes
             env = {"wan_iface": "wan%s" % uniqid[:12],
                     "lan_iface": "lan%s" % uniqid[:12],
                     "uniq_id": uniqid}
