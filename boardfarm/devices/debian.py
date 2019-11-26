@@ -645,35 +645,46 @@ class DebianBox(linux.LinuxDevice):
             self.sendcontrol('c')
             self.expect(self.prompt)
 
-    def start_lan_client(self, wan_gw=None):
-        # very casual try for ipv6 addr, if we don't get one don't fail for now
-        try:
+    def start_lan_client(self, wan_gw=None, ipv4_only=False):
+        ipv4, ipv6 = None, None
+        self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
+
+        if not ipv4_only:
+
             self.disable_ipv6(self.iface_dut)
             self.enable_ipv6(self.iface_dut)
-            self.sendline("rdisc6 -1 eth1")
-            self.expect(self.prompt)
-            check = [line for line in self.before.split("\n") if "Prefix" in line]
-            assert len(check) != 0, "Failed to get IPv6 address via Stateless autoconfiguration."
-            self.get_interface_ip6addr(self.iface_dut)
-        except:
-            self.sendline('dhclient -6 -i -r %s' % self.iface_dut)
-            self.expect(self.prompt)
-            self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
-            if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
-                self.sendcontrol('c')
-                self.expect(self.prompt)
-            self.sendline('ip -6 addr')
-            self.expect(self.prompt)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
 
-        # TODO: this should not be required (fix at some point...)
-        self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
-        self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
-        self.expect(self.prompt)
+            # check if board is providing an RA, if yes use that detail to perform DHCPv6
+            # default method used will be statefull DHCPv6
+            output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
+            M_bit, O_bit = True, True
+            if "Prefix" in output:
+                M_bit, O_bit = map(lambda x: "Yes" in x, re.findall("Stateful.*\W", output))
+
+            # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
+            if not M_bit and O_bit:
+                self.sendline("dhclient -S -v %s" % self.iface_dut)
+                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+                    self.sendcontrol('c')
+                    self.expect(self.prompt)
+
+            # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
+            elif M_bit and O_bit:
+                self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
+                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+                    self.sendcontrol('c')
+                    self.expect(self.prompt)
+
+            #if env is dual, code should always return an IPv6 address
+            # need to actually throw an error, for IPv6 not receiving an IP
+            try:
+                ipv6 = self.get_interface_ip6addr(self.iface_dut)
+            except:
+                pass
+
         self.disable_ipv6('eth0')
 
-        self.sendline('\nifconfig %s up' % self.iface_dut)
-        self.expect('ifconfig %s up' % self.iface_dut)
-        self.expect(self.prompt)
         self.sendline("dhclient -4 -r %s" % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('\nifconfig %s 0.0.0.0' % self.iface_dut)
@@ -773,6 +784,9 @@ class DebianBox(linux.LinuxDevice):
             'lan-fixed-route-to-wan' in self.kwargs['options']:
             self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
             self.expect(self.prompt)
+        ipv4 = self.get_interface_ipaddr(self.iface_dut)
+
+        return ipv4, ipv6
 
     def tftp_server_ip_int(self):
         '''Returns the DUT facing side tftp server ip'''
