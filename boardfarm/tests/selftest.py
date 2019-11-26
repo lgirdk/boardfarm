@@ -499,3 +499,10 @@ class selftest_test_retry_2(selftest_test_retry):
 class selftest_test_retry_3(selftest_test_retry):
     '''Fails 3 times before passing, to test the retry function'''
     fail_on=3
+
+class selftest_always_fail(rootfs_boot.RootFSBootTest):
+    '''This test always fails, for testing bft core code'''
+
+    def runTest(self):
+        print("Failing...")
+        assert False
