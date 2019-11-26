@@ -223,7 +223,11 @@ class PX2(PowerDevice):
 
     def reset(self):
         self.pcon.sendline('power outlets %s cycle /y' % self.outlet)
+        self.pcon.expect_exact('power outlets %s cycle /y' % self.outlet)
         self.pcon.expect('# ')
+
+        # no extraneous messages in console log
+        assert not self.pcon.before.strip()
 
 
 class HumanButtonPusher(PowerDevice):
