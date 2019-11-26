@@ -64,7 +64,7 @@ def init(config):
             try:
                 new_tests = test.parse(config) or []
                 for new_test in new_tests:
-                    available_tests[new_test] = getattr(test_file, new_test)
+                    available_tests[new_test.__name__] = new_test
             except Exception:
                 if 'BFT_DEBUG' in os.environ:
                     traceback.print_exc()

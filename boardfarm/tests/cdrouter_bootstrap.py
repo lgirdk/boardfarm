@@ -361,14 +361,12 @@ testvar wanDnsServer %s
         for mod in c.testsuites.list_modules():
             name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
             list_of_tests = [ x.encode('ascii','ignore') for x in mod.tests ]
-            globals()[name] = type(name.encode('ascii','ignore') , (CDrouterStub, ),
+            new_tests.append(type(name.encode('ascii','ignore') , (CDrouterStub, ),
                                     {
                                         'tests': list_of_tests
-                                    })
-            new_tests.append(name)
+                                    }))
 
         return new_tests
-
 
 class CDrouterCustom(CDrouterStub):
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
