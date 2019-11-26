@@ -25,8 +25,6 @@ from datetime import datetime
 # having wrong version installed.
 try:
     import boardfarm
-    import version
-    assert boardfarm.__version__ == version.__version__, "Mismatched versions of bft and boardfarm"
 except Exception as e:
     print(e)
     print("Please install boardfarm with the command:")
@@ -37,14 +35,14 @@ except Exception as e:
     print(cmd)
     sys.exit(1)
 
-from zephyr import zephyr_reporter
+from boardfarm.zephyr import zephyr_reporter
 
 import boardfarm.exceptions
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
 from boardfarm.exceptions import BftNotSupportedDevice
-from dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
+from boardfarm.dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
 import matplotlib
 matplotlib.use('Agg')
@@ -155,12 +153,11 @@ def main():
     '''Connect to devices, run tests, record results.'''
 
     # Read command-line arguments
-    import arguments
+    from boardfarm import arguments
     config = arguments.parse()
     boardfarm.current_config = config
 
-    import library
-    from boardfarm import devices
+    from boardfarm import devices, library
     devices.probe_devices()
     from termcolor import colored
 
@@ -362,9 +359,9 @@ def main():
     tests_to_run = []
     # Add tests from specified suite
     print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
-    import tests
+    from boardfarm import tests
     tests.init(config)
-    import testsuites
+    from boardfarm import testsuites
     if config.TEST_SUITE not in testsuites.list_tests:
         print_bold("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
         sys.exit(1)
@@ -650,7 +647,7 @@ def main():
         print("Unable to Update results in Zephyr")
 
     # Create Pretty HTML output
-    import make_human_readable
+    from boardfarm import make_human_readable
     try:
         title_str = make_human_readable.get_title()
         make_human_readable.xmlresults_to_html(full_results['test_results'], title=title_str,

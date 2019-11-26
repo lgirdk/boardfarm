@@ -24,8 +24,8 @@ except:
 import re
 
 from boardfarm import config
-from config import boardfarm_config_location
-from dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
+from boardfarm.config import boardfarm_config_location
+from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
 
@@ -110,7 +110,7 @@ def parse():
         sys.exit(0)
 
     if args.list_tests:
-        import tests
+        from boardfarm import tests
         tests.init(config)
         for k, v in tests.available_tests.items():
             try:
@@ -270,13 +270,13 @@ def parse():
         pass
 
     if args.analysis:
-        import analysis
+        from boardfarm import analysis
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
                 sys.stdout.write("Running analysis class = %s... " % c)
                 console_log = open(args.analysis, 'r').read()
-                from analysis.analysis import prepare_log
+                from boardfarm.analysis.analysis import prepare_log
                 try:
                     c().analyze(prepare_log(console_log), config.output_dir)
                     print("DONE!")

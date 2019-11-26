@@ -6,7 +6,7 @@ import csv
 import datetime
 import json
 from jira import JIRA
-import zapi
+from . import zapi
 import requests
 
 COLUMN_SCRIPT_NAME="TestScript Name"
