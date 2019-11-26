@@ -172,9 +172,18 @@ def install_java(device):
             device.sendline('apt-get install oracle-java8-installer -y')
             device.expect(device.prompt, timeout=60)
 
-def install_telnet_server(device):
+def install_telnet_server(device,remove=False):
     '''Install xinetd/telnetd if not present.'''
     device.sendline('\nxinetd -version')
+    if remove:
+        device.expect(device.prompt)
+        device.sendline("service xinetd stop")
+        device.expect(device.prompt, timeout=10)
+        device.sendline("/etc/init.d/xinetd status")
+        device.expect(device.prompt, timeout=10)
+        device.sendline('apt-get autoremove xinetd -y')
+        device.expect(device.prompt, timeout=20)
+        return
     try:
         device.expect('xinetd Version 2.3', timeout=5)
         device.expect(device.prompt)
@@ -201,6 +210,10 @@ def install_telnet_server(device):
         device.sendline('echo \"log_on_failure += USERID\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"}\" >> /etc/xinetd.d/telnet')
         device.expect(device.prompt, timeout=60)
+    device.sendline("service xinetd restart")
+    device.expect(['Starting internet superserver: xinetd.'] , timeout=60)
+    device.expect(device.prompt)
+    assert "[ + ]  xinetd" in device.check_output("service --status-all")
 
 def install_tcl(device):
     '''Install tcl if not present.'''
