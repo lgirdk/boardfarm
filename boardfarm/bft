@@ -281,7 +281,7 @@ def main():
             for x in ["UBOOT", "KERNEL", "ROOTFS", "META_BUILD"]:
                 v = getattr(config, x, "")
                 if v is not None and "mirror://" in v:
-                    print config.board
+                    print(config.board)
                     r = getattr(config, x).replace("mirror://", config.board[u'mirror'])
                     if not check_url(r):
                         raise Exception("Unable to reach board mirror, trying next board")
