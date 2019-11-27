@@ -672,6 +672,20 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     except:
         raise Exception("Failed in setting mib using pysnmp")
 
+def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, community='public'):
+    """
+    Name: snmp_mib_bulkwalk
+    Purpose: uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
+    Input: device, ip_address, mib_oid, time_out, retry, community
+    Output: Snmpwalk output
+    Usage: snmp_mib_bulkwalk(device, ip_address, mib_oid)
+    """
+
+    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" %(community, time_out, retry, ip_address, mib_oid))
+    idx = device.expect(["No more variables left in this MIB View", "Timeout: No Response"], timeout=(time_out*retry)+30)
+    device.expect(device.prompt)
+    return idx==0
+
 def get_file_magic(fname, num_bytes=4):
     '''Return the first few bytes from a file to determine the type.'''
     if fname.startswith("http://") or fname.startswith("https://"):
