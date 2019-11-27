@@ -71,6 +71,7 @@ class SoftPhone(object):
         self.expect('Answer with code \(100\-699\) \(empty to cancel\)\:')
         self.sendline('200')
         self.expect('Call 0 state changed to CONFIRMED')
+        self.sendline('/n')
         self.expect(self.pjsip_prompt)
 
     def hangup(self):

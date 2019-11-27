@@ -52,13 +52,13 @@ class SerialPhone(object):
         self.mta_readlines()
         self.expect("OK")
 
-    def mta_readlines(self):
+    def mta_readlines(self, time='3'):
         '''
         to readlines from serial console
         '''
         self.sendline("ser.flush()")
         self.expect(">>>")
-        self.sendline("time.sleep(3)")
+        self.sendline("time.sleep(%s)" % time)
         self.expect(">>>")
         self.sendline("l=ser.readlines()")
         self.expect(">>>")
@@ -73,17 +73,18 @@ class SerialPhone(object):
         self.sendline("ser.write(b'ATDT%s\\r')" % AT)
         self.expect(">>>")
         self.mta_readlines()
-        self.expect("OK")
+        self.expect("ATDT")
 
     def answer(self):
         '''
         to answer the incoming call
         '''
-        self.expect("Ring")
+        self.mta_readlines(time = '10')
+        self.expect("RING")
         self.sendline("ser.write(b'ATA\\r')")
         self.expect(">>>")
         self.mta_readlines()
-        self.expect(["OK"]+["NO CARRIER"])
+        self.expect("ATA")
 
     def hangup(self):
         '''
