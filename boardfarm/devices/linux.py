@@ -19,6 +19,7 @@ class LinuxDevice(base.BaseDevice):
         '''
         A simple, safe function to check the state of the device.
         '''
+        print("\n\nRunning check_status() on %s" % self.name)
         self.sendline("\ncat /proc/version; ip a; ifconfig; route -n")
         self.expect('version')
         self.expect(self.prompt)
