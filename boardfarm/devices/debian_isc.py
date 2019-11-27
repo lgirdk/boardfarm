@@ -729,3 +729,8 @@ EOF'''
                 raise Exception("ERROR: can not turn off shared interface!")
 
         super(DebianISCProvisioner, self).send(s)
+
+    def check_status(self):
+        self.sendline('cat /var/log/syslog | grep dhcpd | tail -n 100')
+        self.expect(self.prompt)
+        super(DebianISCProvisioner, self).check_status()
