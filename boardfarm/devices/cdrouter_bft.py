@@ -10,3 +10,6 @@ class CDrouterDevice(object):
         self.wanispgateway = kwargs.pop('wanispgateway')
         self.wanispgateway_v6 = kwargs.pop('wanispgateway_v6')
         self.ipv4hopcount = kwargs.pop('ipv4hopcount')
+
+    def close(self):
+        pass
