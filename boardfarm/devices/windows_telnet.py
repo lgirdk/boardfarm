@@ -1,5 +1,6 @@
 import ipaddress
 import re
+import six
 import sys
 from . import base
 from . import connection_decider
@@ -95,7 +96,7 @@ class WindowsTelnet(base.BaseDevice):
         self.sendline("netsh interface ipv6 show addresses %s" % interface)
         self.expect(self.prompt)
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
-            ipv6addr = ipaddress.IPv6Address(unicode(match))
+            ipv6addr = ipaddress.IPv6Address(six.text_type(match))
             if not ipv6addr.is_link_local:
                 return ipv6addr
 

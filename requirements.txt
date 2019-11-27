@@ -20,6 +20,7 @@ pyvirtualdisplay
 requests
 selenium
 simplejson
+six
 sphinx
 termcolor
 unittest2

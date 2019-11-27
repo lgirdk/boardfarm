@@ -1,3 +1,4 @@
+import six
 import sys
 import os
 import ipaddress
@@ -29,12 +30,12 @@ class AFTR(object):
         self.is_installed = False
 
         # IPv6 ep must be from a different subnet than WAN container.
-        self.ipv6_ep = ipaddress.IPv6Interface(unicode(kwargs.get("ipv6_ep", "2001::1/48")))
+        self.ipv6_ep = ipaddress.IPv6Interface(six.text_type(kwargs.get("ipv6_ep", "2001::1/48")))
         # Open gateway subnets need to be in this ACL.
         self.ipv6_ACL = [str(self.ipv6_ep.network), str(self.ipv6_interface.network)] + kwargs.get("ipv6_ACL", ["2001:dead:beef::/48"])
 
         # this address will double NAT to WAN container's public IP
-        self.ipv4_nat = ipaddress.IPv4Interface(unicode(kwargs.get("ipv4_nat", "198.18.200.111/16")))
+        self.ipv4_nat = ipaddress.IPv4Interface(six.text_type(kwargs.get("ipv4_nat", "198.18.200.111/16")))
         self.ipv4_nat_ip = str(self.ipv4_nat.ip)
 
         # static pool port range

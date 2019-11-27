@@ -5,6 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import six
 import sys
 import re
 import time
@@ -65,8 +66,8 @@ class DebianBox(linux.LinuxDevice):
         post_cmd = kwargs.pop('post_cmd', None)
         cleanup_cmd = kwargs.pop('cleanup_cmd', None)
         env = kwargs.pop('env', None)
-        lan_network = ipaddress.IPv4Interface(unicode(kwargs.pop('lan_network', "192.168.1.0/24"))).network
-        lan_gateway = ipaddress.IPv4Interface(unicode(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
+        lan_network = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_network', "192.168.1.0/24"))).network
+        lan_gateway = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
 
         self.http_proxy = kwargs.pop('http_proxy', None)
 
@@ -145,7 +146,7 @@ class DebianBox(linux.LinuxDevice):
             else:
                 self.gw = lan_gateway + lan_network.num_addresses
 
-        self.gw_ng = ipaddress.IPv4Interface(unicode(str(self.gw) + '/' + str(lan_network.prefixlen)))
+        self.gw_ng = ipaddress.IPv4Interface(six.text_type(str(self.gw) + '/' + str(lan_network.prefixlen)))
         self.nw = self.gw_ng.network
         self.gw_prefixlen = self.nw.prefixlen
 
@@ -154,7 +155,7 @@ class DebianBox(linux.LinuxDevice):
             options = [x.strip() for x in kwargs['options'].split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ip:'):
-                    value = unicode(opt.replace('wan-static-ip:', ''))
+                    value = six.text_type(opt.replace('wan-static-ip:', ''))
                     if '/' not in value:
                         value = value + (u'/24')
                     self.gw_ng = ipaddress.IPv4Interface(value)
@@ -163,9 +164,9 @@ class DebianBox(linux.LinuxDevice):
                     self.gw = self.gw_ng.ip
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
-                    ipv6_address = unicode(opt.replace('wan-static-ipv6:', ''))
+                    ipv6_address = six.text_type(opt.replace('wan-static-ipv6:', ''))
                     if "/" not in opt:
-                        ipv6_address += "/%s" % unicode(str(self.ipv6_prefix))
+                        ipv6_address += "/%s" % six.text_type(str(self.ipv6_prefix))
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
                     self.ipv6_prefix = self.ipv6_interface._prefixlen
                     self.gwv6 = self.ipv6_interface.ip
@@ -183,7 +184,7 @@ class DebianBox(linux.LinuxDevice):
                 if opt == 'wan-dhcp-client-v6':
                     self.wan_dhcpv6 = True
                 if opt.startswith('mgmt-dns:'):
-                    value = unicode(opt.replace('mgmt-dns:', ''))
+                    value = six.text_type(opt.replace('mgmt-dns:', ''))
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
                 else:
                     self.mgmt_dns = "8.8.8.8"

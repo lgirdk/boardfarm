@@ -2,6 +2,7 @@ import binascii
 import ipaddress
 import os
 import re
+import six
 
 import pexpect
 
@@ -32,7 +33,7 @@ class LinuxDevice(base.BaseDevice):
                  'inet (' + ValidIpv4AddressRegex + ').*netmask (' + ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex]
         self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
-        ipv4address = str(ipaddress.IPv4Address(unicode(ipaddr)))
+        ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
         self.expect(self.prompt)
         return ipv4address
 
@@ -54,7 +55,7 @@ class LinuxDevice(base.BaseDevice):
                 ipv6_iface = None
                 try:
                     # we use IPv6Interface for convenience (any exception will be ignored)
-                    ipv6_iface = ipaddress.IPv6Interface(unicode(i))
+                    ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 except:
                     continue
 
