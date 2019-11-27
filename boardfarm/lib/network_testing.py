@@ -67,8 +67,13 @@ def rtp_read_verify(device, capture_file):
     Returns:
         None
     """
-    device.sudo_sendline("tshark -r %s -Y rtp" % (capture_file))
-    device.expect("RTP")
+    device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % (capture_file))
+    device.expect_prompt()
+    device.sendline("grep RTP rtp.txt|wc -l")
+    device.expect("[1-9]\d*")
+    device.expect_prompt()
+    device.sudo_sendline("rm rtp.txt")
+    device.expect_prompt()
 
 def basic_call_verify(output_sip, ip_src):
     """
