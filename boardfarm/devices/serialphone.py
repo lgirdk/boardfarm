@@ -11,7 +11,9 @@ class SerialPhone(object):
         self.kwargs = kwargs
 
         self.line = self.kwargs.get("line")
-        self.profile["on_boot"] = self.phone_config
+        self.profile[self.name] = self.profile.get(self.name, {})
+        serialphone_profile = self.profile[self.name] = {}
+        serialphone_profile["on_boot"] = self.phone_config
 
     def __str__(self):
         return "serialmodem %s" % self.line

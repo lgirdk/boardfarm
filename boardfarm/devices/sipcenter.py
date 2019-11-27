@@ -14,7 +14,9 @@ class SipCenter(object):
         self.numbers = self.kwargs.get('numbers', ["1000", "2000", "3000"])
         #local installation without internet will be added soon
         self.ast_local_url = kwargs.get("local_site", None)
-        self.profile["on_boot"] = self.start_asterisk
+        self.profile[self.name] = self.profile.get(self.name, {})
+        sipcenter_profile = self.profile[self.name] = {}
+        sipcenter_profile["on_boot"] = self.start_asterisk
 
     def __str__(self):
         return "asterisk"
@@ -63,24 +65,24 @@ EOF'''
         self.sendline(gen_mod)
         self.expect(self.prompt)
         for i in self.numbers:
-            num_conf = '''(
-echo [''' + i + ''']
-echo type=friend
-echo regexten=''' + i + '''
-echo secret=1234
-echo qualify=no
-echo nat=force_rport
-echo host=dynamic
-echo canreinvite=no
-echo context=default
-echo dial=SIP/''' + i + '''
-)>>  /etc/asterisk/sip.conf'''
+            num_conf = '''cat >> /etc/asterisk/sip.conf << EOF
+[''' + i + ''']
+type=friend
+regexten=''' + i + '''
+secret=1234
+qualify=no
+nat=force_rport
+host=dynamic
+canreinvite=no
+context=default
+dial=SIP/''' + i + '''
+EOF'''
             self.sendline(num_conf)
             self.expect(self.prompt)
-            num_mod = '''(
-echo exten \=\> ''' + i + ''',1,Dial\(SIP\/''' + i + ''',10,r\)
-echo same \=\>n,Wait\(20\)
-)>> /etc/asterisk/extensions.conf'''
+            num_mod = '''cat >> /etc/asterisk/extensions.conf << EOF
+exten => ''' + i + ''',1,Dial(SIP/''' + i + ''',20,r)
+same =>n,Wait(20)
+EOF'''
             self.sendline(num_mod)
             self.expect(self.prompt)
 
@@ -89,6 +91,7 @@ echo same \=\>n,Wait\(20\)
         Start the asterisk server if executable is present
         '''
         self.install_asterisk()
+        self.setup_asterisk_config()
         self.sendline('nohup asterisk -vvvvvvvd &> ./log.ast &')
         self.expect(self.prompt)
 

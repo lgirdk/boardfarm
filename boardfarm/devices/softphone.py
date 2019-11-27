@@ -12,7 +12,9 @@ class SoftPhone(object):
         self.config_name="pjsip.conf"
         self.pjsip_local_url = kwargs.get("local_site", None)
         self.pjsip_prompt = ">>>"
-        self.profile["on_boot"] = self.install_softphone
+        self.profile[self.name] = self.profile.get(self.name, {})
+        softphone_profile = self.profile[self.name] = {}
+        softphone_profile["on_boot"] = self.install_softphone
 
     def __str__(self):
         return "softphone"

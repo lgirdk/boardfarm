@@ -50,7 +50,7 @@ class AFTR(object):
         self.aftr_local = kwargs.get("local_site", None)
         self.aftr_fqdn = kwargs.get("aftr_fqdn", "aftr.boardfarm.com")
 
-        self.profile[self.name] = {}
+        self.profile[self.name] = self.profile.get(self.name, {})
         aftr_profile = self.profile[self.name][AFTR.model] = {}
         aftr_profile["on_boot"] = self.configure_aftr
         aftr_profile["hosts"] = {"aftr.boardfarm.com": str(self.ipv6_ep.ip)}
