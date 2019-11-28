@@ -17,6 +17,8 @@ from boardfarm import lib
 import os
 import pexpect
 import ipaddress
+import six
+
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
     '''First attempt at test that runs a CDrouter job, waits for completion,
@@ -158,7 +160,7 @@ testvar lanVlanId """ + lan.vlan
 
                     lan.start_lan_client()
                     lan_ip6 = lan.get_interface_ip6addr(lan.iface_dut)
-                    ip6 = ipaddress.IPv6Network(unicode(lan_ip6))
+                    ip6 = ipaddress.IPv6Network(six.text_type(lan_ip6))
                     fixed_prefix6 = str(ip6.supernet(new_prefix=64).network_address)
                     break
                 except Exception as e:
