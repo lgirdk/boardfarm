@@ -418,19 +418,29 @@ def install_IRCserver(device):
         device.expect(['Setting up inspircd'], timeout=90)
         device.expect(device.prompt)
 
-def install_dovecot(device):
+def install_dovecot(device, remove=False):
     '''Install dovecot server if not present.'''
+    if remove:
+        device.check_output("killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*")
+        device.check_output("rm -rf /etc/dovecot")
+        return
     device.sendline('dovecot --version')
     try:
         device.expect(' \(', timeout=5)
         device.expect(device.prompt)
     except:
-        device.expect(device.prompt)
+        device.expect_prompt()
         device.sendline('apt-get install update-inetd -y')  # Update inetd before installation
-        device.expect(device.prompt, timeout=90)
+        device.expect_prompt(timeout=90)
         device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
         device.expect(['Processing triggers for dovecot-core'], timeout=90)
-        device.expect(device.prompt)
+        device.expect_prompt()
+        device.check_output("cd /usr/share/dovecot; ./mkcert.sh; cd")
+        ssl_settings = ["ssl = yes", "ssl_cert = </etc/dovecot/dovecot.pem", "ssl_key = </etc/dovecot/private/dovecot.pem"]
+        device.sendline("cat > /etc/dovecot/conf.d/10-ssl.conf << EOF\n%s\nEOF\n" % "\n".join(ssl_settings))
+        device.expect_prompt()
+        device.check_output("service dovecot restart")
+        assert "dovecot is running" in device.check_output("service dovecot status"), "Failed to install dovecot"
 
 def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     '''Un/Install the OpenVPN server via a handy script'''

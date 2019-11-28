@@ -838,25 +838,3 @@ def ftp_close(device):
         device.sendline("quit")
         device.expect(device.prompt, timeout=10)
 
-############################################################
-#
-# Dovecot Server configuration
-#
-############################################################
-def configure_dovecotserver(self, device):
-    device.sendline("\n".join(["cat > /etc/dovecot/dovecot.conf<< EOF",
-                    "!include_try /usr/share/dovecot/protocols.d/*.protocol",
-                    "listen = *, ::",
-                    "!include conf.d/*.conf",
-                    "EOF"]))
-    device.expect(device.prompt, timeout=20)
-    device.sendline("\n".join(["cat > etc/dovecot/conf.d/10-auth.conf<< EOF",
-                    "disable_plaintext_auth = no",
-                    "auth_mechanisms = plain login",
-                    "!include auth-system.conf.ext",
-                    "EOF"]))
-    device.expect(device.prompt, timeout=20)
-    device.sendline("\n".join(["cat > /etc/dovecot/conf.d/10-ssl.conf<< EOF",
-                   "ssl = yes",
-                   "EOF"]))
-    device.expect(device.prompt, timeout=20)
