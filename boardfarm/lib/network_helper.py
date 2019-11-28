@@ -10,6 +10,7 @@ import re
 
 import netaddr
 import ipaddress
+import six
 
 def mac_to_snmp_format(mac_addr):
     mac_tmp = re.sub("[\s\.\-]", "", mac_addr)
@@ -35,7 +36,7 @@ def ipv6_to_snmp_format(ipv6_str):
     return ipv6_address
 
 def valid_ipv4(ip_str):
-    ipaddress.IPv4Address(unicode(ip_str))
+    ipaddress.IPv4Address(six.text_type(ip_str))
 
 def valid_ipv6(ip_str):
-    ipaddress.IPv6Address(unicode(ip_str))
+    ipaddress.IPv6Address(six.text_type(ip_str))

@@ -8,6 +8,7 @@
 
 from boardfarm.lib.common import retry_on_exception
 import ipaddress
+import six
 
 def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap'):
 
@@ -103,7 +104,7 @@ def nmap_cli(device, ip_address, port, protocol = None, retry = 0, timing = '', 
     """
     if not protocol:
         protocol = "both"
-    ipv6 = '-6' if 'IPv6Address' == type(ipaddress.ip_address(unicode(ip_address))).__name__ else ''
+    ipv6 = '-6' if 'IPv6Address' == type(ipaddress.ip_address(six.text_type(ip_address))).__name__ else ''
     protocol_commandmap = {"tcp" : "-sT" , "udp" : "-sU", "both" : "-sT -sU"}
     device.sudo_sendline("nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" % (ipv6, timing, protocol_commandmap[protocol], ip_address, port, retry, optional))
     retry_on_exception(device.expect, (device.prompt,), retries = 16, tout = 30)
