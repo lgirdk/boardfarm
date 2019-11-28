@@ -212,14 +212,24 @@ def get_webproxy_driver(ipport, config):
 def test_msg(msg):
     cprint(msg, None, attrs=['bold'])
 
+def _hash_file(filename, block_size, hashobj):
+    """Helper function: takes a hash obj and digests a file through it"""
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(block_size), b''):
+            hashobj.update(block)
+    return hashobj.hexdigest()
+
 def sha256_checksum(filename, block_size=65536):
     '''Calculates the SHA256 on a file'''
     import hashlib
     sha256 = hashlib.sha256()
-    with open(filename, 'rb') as f:
-        for block in iter(lambda: f.read(block_size), b''):
-            sha256.update(block)
-    return sha256.hexdigest()
+    return _hash_file(filename, block_size, sha256)
+
+def keccak512_checksum(filename, block_size=65536):
+    """Calculates the keccak512 hash on a file"""
+    from Crypto.Hash import keccak
+    keccak_hash = keccak.new(digest_bits=512)
+    return _hash_file(filename, block_size, keccak_hash)
 
 class TestResult:
     logged = {}

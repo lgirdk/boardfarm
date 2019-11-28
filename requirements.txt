@@ -14,6 +14,7 @@ matplotlib
 nested_lookup
 netaddr
 pexpect
+pycryptodome
 pymongo
 pyserial
 pyvirtualdisplay
