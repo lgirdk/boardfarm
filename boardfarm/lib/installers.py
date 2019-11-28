@@ -181,7 +181,7 @@ def install_telnet_server(device,remove=False):
         device.expect(device.prompt, timeout=10)
         device.sendline("/etc/init.d/xinetd status")
         device.expect(device.prompt, timeout=10)
-        device.sendline('apt-get autoremove xinetd -y')
+        device.sendline('apt-get purge --auto-remove xinetd telnetd -y')
         device.expect(device.prompt, timeout=20)
         return
     try:
@@ -210,6 +210,10 @@ def install_telnet_server(device,remove=False):
         device.sendline('echo \"log_on_failure += USERID\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"}\" >> /etc/xinetd.d/telnet')
         device.expect(device.prompt, timeout=60)
+        pty_num = len(device.check_output("cat /etc/securetty | grep pts/").split("\n"))
+        # ensure 10 pts sessions for telnet server.
+        for i in range(pty_num, 10):
+            device.check_output('echo "pts/%s" >> /etc/securetty' % i)
     device.sendline("service xinetd restart")
     device.expect(['Starting internet superserver: xinetd.'] , timeout=60)
     device.expect(device.prompt)
@@ -347,7 +351,7 @@ def install_vsftpd(device, remove=False):
         device.expect(device.prompt, timeout=15)
         device.sendline("/etc/init.d/vsftpd status")
         device.expect(device.prompt, timeout=15)
-        device.sendline('apt-get --purge remove vsftpd -y')
+        device.sendline('apt-get purge --auto-remove vsftpd -y')
         device.expect(device.prompt, timeout=30)
 
 def install_pysnmp(device):
@@ -536,7 +540,7 @@ def install_ovpn_client(device, remove=False):
     if remove:
         device.sendline('killall -9 openvpn')
         device.expect(device.prompt)
-        device.sendline('apt remove openvpn -y')
+        device.sendline('apt purge --auto-remove openvpn -y')
         device.expect(device.prompt, timeout=120)
         return
 
@@ -557,7 +561,7 @@ def install_pptpd_server(device, remove=False):
         if index == 0:
             device.sendline("/etc/init.d/pptpd stop")
             device.expect(device.prompt, timeout=60)
-            device.sendline("apt-get remove pptpd -y")
+            device.sendline("apt-get purge --auto-remove pptpd -y")
             device.expect(device.prompt, timeout=60)
         return
 
@@ -580,7 +584,7 @@ def install_pptp_client(device, remove=False):
             device.expect(device.prompt)
             device.sendline("poff pptpserver")
             device.expect(device.prompt)
-            device.sendline('apt-get remove pptp-linux -y')
+            device.sendline('apt-get purge --auto-remove pptp-linux -y')
             device.expect(device.prompt, timeout=60)
         return
 
