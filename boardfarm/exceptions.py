@@ -38,3 +38,9 @@ class PexpectErrorTimeout(pexpect.TIMEOUT):
     Raise this if pexpect times out
     """
     pass
+
+class ConfigKeyError(Exception):
+    '''
+    Invalid use of key in config object
+    '''
+    pass

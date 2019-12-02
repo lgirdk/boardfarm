@@ -1,4 +1,5 @@
-
+import traceback
+from boardfarm.exceptions import ConfigKeyError
 
 class ConfigHelper(dict):
     '''
@@ -11,11 +12,18 @@ class ConfigHelper(dict):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
-    def __getitem__(self, key):        
+    def __getitem__(self, key):
         if key == 'mirror':
             print('WARNING '*9)
             print('Support for calling config["mirror"] directly is going to be removed.')
             print('Please change your test as soon as possible to this file transfer')
             print('in the proper way.')
             print('WARNING '*9)
+
+        if key in ('cm_cfg', 'mta_cfg', 'erouter_cfg'):
+            print("ERROR: use of cm_cfg or mta_cfg in config object is deprecated!")
+            print("Use board.cm_cfg or board.mta_cfg directly!")
+            traceback.print_exc()
+            raise ConfigKeyError
+
         return dict.__getitem__(self, key)
