@@ -15,6 +15,7 @@ import atexit
 import os
 import ipaddress
 
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from termcolor import colored, cprint
 from nested_lookup import nested_lookup
 
@@ -74,12 +75,12 @@ class DebianBox(linux.LinuxDevice):
         if pre_cmd_host is not None:
             sys.stdout.write("\tRunning pre_cmd_host.... ")
             sys.stdout.flush()
-            phc = pexpect.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
+            phc = bft_pexpect_helper.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
             phc.expect(pexpect.EOF, timeout=120)
             print("\tpre_cmd_host done")
 
         if ipaddr is not None:
-            pexpect.spawn.__init__(self,
+            bft_pexpect_helper.spawn.__init__(self,
                                    command="ssh",
                                    args=['%s@%s' % (username, ipaddr),
                                          '-p', port,
@@ -97,7 +98,7 @@ class DebianBox(linux.LinuxDevice):
         if cmd is not None:
             sys.stdout.write("\tRunning cmd.... ")
             sys.stdout.flush()
-            pexpect.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
+            bft_pexpect_helper.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
             self.ipaddr = None
             print("\tcmd done")
 
@@ -215,7 +216,7 @@ class DebianBox(linux.LinuxDevice):
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
             sys.stdout.flush()
-            phc = pexpect.spawn(command='bash', args=['-c', post_cmd_host], env=env)
+            phc = bft_pexpect_helper.spawn(command='bash', args=['-c', post_cmd_host], env=env)
             i = phc.expect([pexpect.EOF, pexpect.TIMEOUT, 'password'])
             if i > 0:
                 print("\tpost_cmd_host did not complete, it likely failed\n")
@@ -251,7 +252,7 @@ class DebianBox(linux.LinuxDevice):
     def run_cleanup_cmd(self):
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
         sys.stdout.flush()
-        cc = pexpect.spawn(command='bash', args=['-c', self.cleanup_cmd], env=self.env)
+        cc = bft_pexpect_helper.spawn(command='bash', args=['-c', self.cleanup_cmd], env=self.env)
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
@@ -265,7 +266,7 @@ class DebianBox(linux.LinuxDevice):
         time.sleep(15)  # Wait for the network to go down.
         for i in range(0, 20):
             try:
-                pexpect.spawn('ping -w 1 -c 1 ' + self.name).expect('64 bytes', timeout=1)
+                bft_pexpect_helper.spawn('ping -w 1 -c 1 ' + self.name).expect('64 bytes', timeout=1)
             except:
                 print(self.name + " not up yet, after %s seconds." % (i + 15))
             else:

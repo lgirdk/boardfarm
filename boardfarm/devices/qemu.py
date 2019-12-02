@@ -13,6 +13,8 @@ import atexit
 import os
 import ipaddress
 
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
 class Qemu(openwrt_router.OpenWrtRouter):
     '''
     Emulated QEMU board
@@ -56,7 +58,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
             raise Exception("The QEMU device type requires specifying a rootfs")
 
         def temp_download(url):
-            dl_console = pexpect.spawn("bash --noprofile --norc")
+            dl_console = bft_pexpect_helper.spawn("bash --noprofile --norc")
             dl_console.sendline('export PS1="prompt>>"')
             dl_console.expect_exact("prompt>>")
             dl_console.sendline('mktemp')
@@ -85,7 +87,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
             cmd += " -kernel %s --append root=/dev/hda2" % kernel
 
         # check if we can run kvm
-        kvm_chk = pexpect.spawn('sudo kvm-ok')
+        kvm_chk = bft_pexpect_helper.spawn('sudo kvm-ok')
         if 0 != kvm_chk.expect(['KVM acceleration can be used', pexpect.EOF]):
             cmd = cmd.replace('--enable-kvm ', '')
             self.kvm = False
@@ -93,7 +95,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         # TODO: add script=no,downscript=no to taps
 
         try:
-            pexpect.spawn.__init__(self, command='/bin/bash',
+            bft_pexpect_helper.spawn.__init__(self, command='/bin/bash',
                             args=["-c", cmd], env=env)
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF:
@@ -102,7 +104,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                     'failed to initialize KVM: Cannot allocate memory' in self.before:
                 cmd = cmd.replace('--enable-kvm ', '')
                 self.kvm = False
-                pexpect.spawn.__init__(self, command='/bin/bash',
+                bft_pexpect_helper.spawn.__init__(self, command='/bin/bash',
                             args=["-c", cmd], env=env)
             else:
                 raise

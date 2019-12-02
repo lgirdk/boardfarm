@@ -6,9 +6,9 @@
 # The full text can be found in LICENSE in the root directory.
 #!/usr/bin/env python
 
-import pexpect
 import sys
 from . import linux
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 # Netgear Switch Prompt
 prompt = "\(M4100-50G\) "
@@ -23,7 +23,7 @@ class NetgearM4100(linux.LinuxDevice):
                  conn_cmd,
                  username='admin',
                  password='bigfoot1'):
-        pexpect.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
+        bft_pexpect_helper.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
         self.logfile_read = sys.stdout
         self.username = username
         self.password = password

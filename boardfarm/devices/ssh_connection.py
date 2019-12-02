@@ -1,5 +1,6 @@
 import pexpect
 
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 class SshConnection:
     '''
@@ -13,7 +14,7 @@ class SshConnection:
         self.ssh_password = ssh_password
 
     def connect(self):
-        pexpect.spawn.__init__(self.device,
+        bft_pexpect_helper.spawn.__init__(self.device,
                                command='/bin/bash',
                                args=['-c', self.conn_cmd])
 

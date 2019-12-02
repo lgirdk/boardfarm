@@ -217,7 +217,7 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
     If value is provided, action = snmpget else action = snmpset
 
     Parameters:
-        (pexpect.spawn) device : device used to perform snmp
+        (bft_pexpect_helper.spawn) device : device used to perform snmp
         (str) ip : ip address used to perform snmp
         (str) mib_name : mib name used to perform snmp
         (int) index : index used along with mib_name

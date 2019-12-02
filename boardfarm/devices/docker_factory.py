@@ -6,6 +6,8 @@ import re
 
 from . import linux
 
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
 class DockerFactory(linux.LinuxDevice):
     '''
     A docker host that can spawn various types of images
@@ -34,14 +36,14 @@ class DockerFactory(linux.LinuxDevice):
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
-            pexpect.spawn.__init__(self, command="ssh",
+            bft_pexpect_helper.spawn.__init__(self, command="ssh",
                                        args=['%s@%s' % (self.username, self.ipaddr),
                                              '-o', 'StrictHostKeyChecking=no',
                                              '-o', 'UserKnownHostsFile=/dev/null',
                                              '-o', 'ServerAliveInterval=60',
                                              '-o', 'ServerAliveCountMax=5'])
         else:
-            pexpect.spawn.__init__(self, command='bash --noprofile --norc', env=self.env)
+            bft_pexpect_helper.spawn.__init__(self, command='bash --noprofile --norc', env=self.env)
             self.ipaddr = 'localhost'
 
         self.iface = kwargs.pop('iface', None)

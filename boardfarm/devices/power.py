@@ -18,6 +18,8 @@ import dlipower
 import time
 import inspect
 
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
 def get_default_for_arg(function, arg):
     args, varargs, keywords, defaults = inspect.getargspec(function)
     return defaults
@@ -172,7 +174,7 @@ class SentrySwitchedCDU(PowerDevice):
             raise Exception("Error with power device %s" % ip_address)
 
     def __connect(self):
-        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
         pcon.expect('Sentry Switched CDU Version', timeout=15)
         pcon.expect('Username:')
         pcon.sendline(self.username)
@@ -210,7 +212,7 @@ class PX2(PowerDevice):
         ip_address, self.outlet = outlet.replace("px2://", '').split(';')
         PowerDevice.__init__(self, ip_address, username, password)
 
-        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
         pcon.expect('Login for PX2 CLI')
         pcon.expect('Username:')
         pcon.sendline(self.username)
@@ -249,7 +251,7 @@ class APCPower(PowerDevice):
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
     def reset(self):
-        pcon = pexpect.spawn('telnet %s' % self.ip_address)
+        pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
         pcon.expect("User Name :")
         pcon.send(self.username + "\r\n")
         pcon.expect("Password  :")
@@ -316,9 +318,9 @@ class SimpleCommandPower(PowerDevice):
                     setattr(self, attr, param.replace(attr + '=', '').encode())
 
     def reset(self):
-        pexpect.spawn(self.off_cmd).expect(pexpect.EOF)
+        bft_pexpect_helper.spawn(self.off_cmd).expect(pexpect.EOF)
         time.sleep(5)
-        pexpect.spawn(self.on_cmd).expect(pexpect.EOF)
+        bft_pexpect_helper.spawn(self.on_cmd).expect(pexpect.EOF)
 
 class SimpleSerialPower(PowerDevice):
     '''

@@ -2,17 +2,22 @@ import pexpect
 import os
 import sys
 import time
+import termcolor
 
 from . import error_detect
-from boardfarm.lib import common
 from boardfarm.lib.bft_logging import o_helper
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
+
+def print_bold(msg):
+    termcolor.cprint(msg, None, attrs=['bold'])
 
 class bft_pexpect_helper(pexpect.spawn):
     '''
     Boardfarm helper for logging pexpect and making minor tweaks
     '''
+
+    spawn = pexpect.spawn
 
     def __init__(self, *args, **kwargs):
         # Filters out boardfarm specific
@@ -79,7 +84,7 @@ class bft_pexpect_helper(pexpect.spawn):
                 idx = 4
             else:
                 idx = 3
-            common.print_bold("%s = sending: %s" %
+            print_bold("%s = sending: %s" %
                               (error_detect.caller_file_line(idx), repr(s)))
 
         if self.delaybetweenchar is not None:
@@ -100,7 +105,7 @@ class bft_pexpect_helper(pexpect.spawn):
             idx = 5
         else:
             idx = 3
-        common.print_bold("%s = expecting: %s" %
+        print_bold("%s = expecting: %s" %
                           (error_detect.caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
@@ -108,14 +113,14 @@ class bft_pexpect_helper(pexpect.spawn):
             frame = error_detect.caller_file_line(idx)
 
             if hasattr(self.match, "group"):
-                common.print_bold("%s = matched: %s" %
+                print_bold("%s = matched: %s" %
                                   (frame, repr(self.match.group())))
             else:
-                common.print_bold("%s = matched: %s" %
+                print_bold("%s = matched: %s" %
                                   (frame, repr(pattern)))
             return ret
         except:
-            common.print_bold("expired")
+            print_bold("expired")
             raise
 
     def expect(self, pattern, *args, **kwargs):
@@ -130,7 +135,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def sendcontrol(self, char):
         if BFT_DEBUG:
-            common.print_bold("%s = sending: control-%s" %
+            print_bold("%s = sending: control-%s" %
                               (error_detect.caller_file_line(3), repr(char)))
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
@@ -157,7 +162,7 @@ def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", vi
                                             % (user, ip, port, extra_args))
         p = via
     else:
-        p = pexpect.spawn("ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s" \
+        p = bft_pexpect_helper.spawn("ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s" \
                                             % (user, ip, port, extra_args))
 
     i = p.expect(["yes/no", "assword:", "Last login"], timeout=30)

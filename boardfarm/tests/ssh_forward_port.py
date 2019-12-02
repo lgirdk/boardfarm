@@ -7,8 +7,6 @@
 
 from boardfarm.tests import rootfs_boot
 from boardfarm import lib
-import pexpect
-
 from boardfarm.devices import board, wan
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):
@@ -25,7 +23,7 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
         if wan:
             t = wan
         else:
-            t = pexpect.spawn("bash")
+            t = lib.bft_pexpect_helper.spawn("bash")
         t.close()
 
         sp = lib.bft_pexpect_helper.spawn_ssh_pexpect(ipaddr, "root",

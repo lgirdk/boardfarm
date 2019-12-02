@@ -1,5 +1,6 @@
 import pexpect
 from boardfarm.lib.regexlib import telnet_ipv4_conn
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 class LocalSerialConnection():
     '''
@@ -12,7 +13,7 @@ class LocalSerialConnection():
         self.conn_cmd = conn_cmd
 
     def connect(self):
-        pexpect.spawn.__init__(self.device,
+        bft_pexpect_helper.spawn.__init__(self.device,
                            command='/bin/bash',
                            args=['-c', self.conn_cmd])
         try:

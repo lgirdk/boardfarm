@@ -6,8 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from . import openwrt_router
-import pexpect
 import ipaddress
 from . import connection_decider
 import signal
@@ -46,7 +46,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         super(CougarPark, self).__init__(*args, **kwargs)
 
         del kwargs['conn_cmd']
-        self.arm = pexpect.spawn.__new__(linux.LinuxDevice)
+        self.arm = bft_pexpect_helper.spawn.__new__(linux.LinuxDevice)
         arm_conn = connection_decider.connection(kwargs['connection_type'], device=self.arm, conn_cmd=self.conn_list[1], **kwargs)
         arm_conn.connect()
         self.consoles.append(self.arm)
