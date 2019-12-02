@@ -137,10 +137,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         return cls.snmp_parser
 
     def __init__(self, mib_list, src_dir_list, http_sources=None):
-        if "BFT_DEBUG" in os.environ:
-            self.dbg = os.environ.get('BFT_DEBUG')
-        else:
-            self.dbg = ""
+        self.dbg = os.environ.get('BFT_DEBUG', '')
 
         if "yy" in self.dbg:
             # VERY verbose, but essential for spotting
