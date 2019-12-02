@@ -121,7 +121,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
                 snmp_mib_dirs.extend(find_directory_in_tree('mib', overlay))
 
             if 'BFT_DEBUG' in os.environ:
-                print('Mibs direcotry list: %s' % snmp_mib_dirs)
+                print('Mibs directory list: %s' % snmp_mib_dirs)
 
         # if the mibs file are given, we do not want to add other mibs, as it may
         # results in unresolved ASN.1 imports
