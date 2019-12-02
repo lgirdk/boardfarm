@@ -237,6 +237,7 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop
     '''
+    http_service_kill(device, "SimpleHTTPServer")
     device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()'"%(ip, port))
     if 0 ==device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
@@ -253,6 +254,7 @@ def start_ip6bound_httpservice(device, ip="::", port="9001"):
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
     '''
+    http_service_kill(device, "SimpleHTTPServer")
     device.sendline('''cat > /root/SimpleHTTPServer6.py<<EOF
 import socket
 import BaseHTTPServer as bhs
@@ -281,6 +283,7 @@ def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/ser
     Send ctrl-c to stop (twice? needs better signal handling)
     '''
     import re
+    http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
     for i in range(10):
@@ -330,6 +333,7 @@ def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server
     Send ctrl-c to stop (twice? needs better signal handling)
     '''
     import re
+    http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
     for i in range(10):
@@ -858,3 +862,18 @@ def postfix_install(device):
     if retry_on_exception(device.get_interface_ipaddr, ("eth0",), retries=1):
         device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" % device.get_interface_ipaddr("eth0"))
     install_postfix(device)
+
+def http_service_kill(device, process):
+    ''' Method to kill the existing hhtp service
+    Input: device - device
+           process - http or https process
+    Return N/A '''
+    for i in range(3):
+        device.sendcontrol('c')
+        device.expect_prompt()
+    device.sendline("ps -elf | grep %s" % process)
+    device.expect_prompt()
+    match = re.search(".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
+    if match:
+        device.sendline("kill -9 %s" % match.group(1))
+        device.expect_prompt()
