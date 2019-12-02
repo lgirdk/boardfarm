@@ -605,9 +605,6 @@ def install_pptp_client(device, remove=False):
 
 def install_postfix(device):
     '''Install postfix server if not present.'''
-    from boardfarm.lib.common import retry_on_exception
-    if retry_on_exception(device.get_interface_ipaddr, ("eth0",), retries=1):
-        device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" % device.get_interface_ipaddr("eth0"))
     device.sendline("apt-get purge postfix -y")
     device.expect(device.prompt, timeout=40)
     device.sendline('postconf -d | grep mail_version')
@@ -618,6 +615,9 @@ def install_postfix(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')  # Update inetd before installation
         device.expect(device.prompt, timeout=90)
+        for i in range(3):
+            device.sendcontrol('c')
+            device.expect(device.prompt, timeout=10)
         device.sendline("apt-get install postfix -y")
         install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout=120)
         print(install_settings)

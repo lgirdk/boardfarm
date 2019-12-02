@@ -22,6 +22,8 @@ import pexpect
 
 from termcolor import cprint
 from boardfarm.lib.SnmpHelper import SnmpMibs
+from boardfarm.lib.installers import install_postfix
+
 try:
     # Python3
     from urllib.parse import urlparse
@@ -838,3 +840,7 @@ def ftp_close(device):
         device.sendline("quit")
         device.expect(device.prompt, timeout=10)
 
+def postfix_install(device):
+    if retry_on_exception(device.get_interface_ipaddr, ("eth0",), retries=1):
+        device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" % device.get_interface_ipaddr("eth0"))
+    install_postfix(device)
