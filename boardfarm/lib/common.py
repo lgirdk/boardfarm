@@ -52,63 +52,6 @@ def run_once(f):
     wrapper.has_run = False
     return wrapper
 
-def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", via=None, color=None, o=sys.stdout, extra_args=""):
-    """
-    Provides a quick way to spawn an ssh session (this avoids having to import the SshConnection class from devices)
-    Uses hardcoded options: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-
-    Parameters:
-    ip:         ip address to ssh to
-    user:       username used by ssh (default 'root')
-    pw:         password (default 'bigfoot1')
-    prompt:     expected prompt (default None, which creates one on the fly using the username in the "%s@.*$" pattern)
-    port:       ssh port (default "22")
-    via:        can be used to pass another pexpect session (default None, i.e. will ssh from localhost)
-    color:      fonts output color (default None)
-    o:          ssh output stream (defautl sys.stdout)
-    extra_args: additional arguments APPENDED to the ssh command line (default "")
-                E.g.: for a socks5 tunnnel with port 50000: extra_args="-D 50000 -N -v -v"
-    """
-    if via:
-        p = via.sendline("ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s" \
-                                            % (user, ip, port, extra_args))
-        p = via
-    else:
-        p = pexpect.spawn("ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s" \
-                                            % (user, ip, port, extra_args))
-
-    i = p.expect(["yes/no", "assword:", "Last login"], timeout=30)
-    if i == 0:
-        p.sendline("yes")
-        i = p.expect(["Last login", "assword:"])
-    if i == 1:
-        p.sendline(pw)
-    else:
-        pass
-
-    if prompt is None:
-        p.prompt = "%s@.*$" % user
-    else:
-        p.prompt = prompt
-
-    p.expect(p.prompt)
-
-    from termcolor import colored
-    class o_helper_foo():
-        def __init__(self, color):
-            self.color = color
-        def write(self, string):
-            o.write(colored(string, color))
-        def flush(self):
-            o.flush()
-
-    if color is not None:
-        p.logfile_read = o_helper_foo(color)
-    else:
-        p.logfile_read = o
-
-    return p
-
 def clear_buffer(console):
     try:
         console.read_nonblocking(size=2000, timeout=1)

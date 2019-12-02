@@ -5,10 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.lib import common
 import re
 import inspect
 import os
+import termcolor
+
+def print_bold(msg):
+    termcolor.cprint(msg, None, attrs=['bold'])
 
 # Add this to your env if you need to disable this for some reason
 BFT_DISABLE_ERROR_DETECT = "BFT_DISABLE_ERROR_DETECT" in os.environ
@@ -21,7 +24,7 @@ def detect_kernel_panic(console, s):
 
 def detect_crashdump_error(console, s):
     if re.findall("Crashdump magic found", s):
-        common.print_bold("Crashdump magic found, trying to save data...");
+        print_bold("Crashdump magic found, trying to save data...");
 
         console.sendcontrol('c')
         console.sendcontrol('c')
@@ -44,9 +47,9 @@ def detect_crashdump_error(console, s):
                 i = console.expect(tftp_expect +
                         ["Resetting with watch dog!"] + console.uprompt)
         except:
-            common.print_bold("Crashdump upload failed")
+            print_bold("Crashdump upload failed")
         else:
-            common.print_bold("Crashdump upload succeeded")
+            print_bold("Crashdump upload succeeded")
 
         # TODO: actually parse data too?
         raise Exception('Crashdump detected')

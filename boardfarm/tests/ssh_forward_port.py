@@ -26,7 +26,8 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
             t = wan
         else:
             t = pexpect.spawn("bash")
+        t.close()
 
-        sp = lib.common.spawn_ssh_pexpect(ipaddr, "root",
+        sp = lib.bft_pexpect_helper.spawn_ssh_pexpect(ipaddr, "root",
                 "password", prompt="root@OpenWrt", port=port, via=wan)
         sp.sendline("exit")
