@@ -6,13 +6,13 @@
 # The full text can be found in LICENSE in the root directory.
 
 import time
-from . import linux_boot
+from . import bft_base_test
 from boardfarm import lib
 
 import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, prompt
 
-class RootFSBootTest(linux_boot.LinuxBootTest):
+class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''
 
     def boot(self, reflash=True):

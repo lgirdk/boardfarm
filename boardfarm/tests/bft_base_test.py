@@ -15,7 +15,7 @@ import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
-class LinuxBootTest(object):
+class BftBaseTest(object):
     _testMethodName = "UNDEFINED"
     __metaclass__ = LoggerMeta
     log = ""
@@ -160,7 +160,7 @@ class LinuxBootTest(object):
             raise
 
     def recover(self):
-        if self.__class__.__name__ == "LinuxBootTest":
+        if self.__class__.__name__ == "BftBaseTest":
             print("aborting tests, unable to boot..")
             sys.exit(1)
         print("ERROR: No default recovery!")
