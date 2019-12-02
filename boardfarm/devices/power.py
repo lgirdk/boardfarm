@@ -40,7 +40,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
     login_failed = False
     all_login_defaults = []
-    for name, obj in globals().items():
+    for name, obj in list(globals().items()):
         if inspect.isclass(obj) and issubclass(obj, PowerDevice):
             defaults = get_default_for_arg(obj.__init__, "username")
             if defaults is not None and len(defaults) == 2:
