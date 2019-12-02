@@ -503,6 +503,8 @@ class selftest_test_retry_3(selftest_test_retry):
 class selftest_always_fail(rootfs_boot.RootFSBootTest):
     '''This test always fails, for testing bft core code'''
 
+    expected_failure = True
+
     def runTest(self):
         print("Failing...")
         assert False
