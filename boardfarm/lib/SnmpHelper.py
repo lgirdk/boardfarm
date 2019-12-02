@@ -8,6 +8,7 @@
 import os
 import json
 import pexpect
+import six
 
 from .installers import install_pysnmp
 from pysmi.reader import FileReader, HttpReader
@@ -69,8 +70,12 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
             file_list = list(dict.fromkeys(file_list))
     return file_list
 
+class SnmpMibsMeta(type):
+        @property
+        def default_mibs(self):
+            return SnmpMibs.get_mib_parser()
 
-class SnmpMibs(object):
+class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
     """
     Look up specific ASN.1 MIBs at configured Web and FTP sites,
     compile them into JSON documents and print them out to stdout.
@@ -88,11 +93,6 @@ class SnmpMibs(object):
     mib_dict = {}
 
     snmp_parser = None
-
-    class __metaclass__(type):
-        @property
-        def default_mibs(self):
-            return SnmpMibs.get_mib_parser()
 
     @classmethod
     def get_mib_parser(cls, snmp_mib_files=None, snmp_mib_dirs=None, http_sources=None):
