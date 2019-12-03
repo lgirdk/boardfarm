@@ -84,6 +84,21 @@ for (x in loc_arr) {
 	}
     }
 }
+def loc_cleanup = [:]
+for (x in loc_arr) {
+    def loc = x
+    loc_cleanup[loc] = {
+        node ('boardfarm && ' + loc) {
+	    sh '''#!/bin/bash
+	    cat boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
+	    sed -e 's/"//g' -e 's/\\t/    /g' | \
+	    while read -r line; do
+	    echo $line >> message
+	    done
+	    '''
+        }
+    }
+}
 
 pipeline {
     agent { label 'boardfarm && ' + loc_arr[0] }
@@ -115,20 +130,13 @@ pipeline {
             }
         }
 
-        stage('post results to gerrit') {
-            steps {
-                sh '''#!/bin/bash
-                cat boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
-                sed -e 's/"//g' -e 's/\\t/    /g' | \
-                while read -r line; do
-                echo $line >> message
-                done
-                '''
-            }
-        }
     }
     post {
         always {
+            script {
+                parallel loc_cleanup
+            }
+
             emailext body: '''${FILE, path="boardfarm/results/results.html"}''',
                  mimeType: 'text/html',
                  subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
