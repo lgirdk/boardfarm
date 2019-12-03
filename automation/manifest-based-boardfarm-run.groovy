@@ -48,7 +48,7 @@ def run_lint () {
     '''
 }
 
-def run_test () {
+def run_test (loc) {
     ansiColor('xterm') {
         sh '''
         pwd
@@ -60,7 +60,7 @@ def run_test () {
         repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
         python --version
         bft --version
-        export BFT_CONFIG=''' + config + '''
+        export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
         ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
         export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
         if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
@@ -71,8 +71,22 @@ def run_test () {
     }
 }
 
+loc_arr = location.tokenize(' ')
+def loc_jobs = [:]
+for (x in loc_arr) {
+    def loc = x
+    loc_jobs[loc] = {
+	stage("run bft in " + loc) {
+            node ('boardfarm && ' + loc) {
+	        sync_code()
+	        run_test(loc)
+            }
+	}
+    }
+}
+
 pipeline {
-    agent { label 'boardfarm && ' + location }
+    agent { label 'boardfarm && ' + loc_arr[0] }
 
 
     options {
@@ -93,11 +107,14 @@ pipeline {
             }
         }
 
-        stage('run bft test') {
+        stage('run test') {
             steps {
-                run_test()
+                script {
+	            parallel loc_jobs
+                }
             }
         }
+
         stage('post results to gerrit') {
             steps {
                 sh '''#!/bin/bash
