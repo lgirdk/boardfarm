@@ -11,6 +11,66 @@ if (meta != '') {
     meta_args = ""
 }
 
+def sync_code () {
+    sshagent ( [ ssh_auth ] ) {
+        script {
+            sh "rm -rf *"
+            sh "repo init -u " + manifest + " && repo sync --force-remove-dirty"
+            sh "repo forall -c 'git checkout gerrit/$GERRIT_BRANCH'"
+            if (GERRIT_REFSPEC != '') {
+                sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
+            }
+            sh "repo manifest -r"
+        }
+    }
+}
+
+def run_lint () {
+    sh '''
+    set +e
+    pwd
+    ls
+    rm -f errors.txt
+    touch errors.txt
+    repo forall -c 'git diff --name-only HEAD m/master | sed s,^,$REPO_PATH/,g' > files_changed.txt
+    echo "Running pyflakes on py files and ignoring init files:"
+    files_changed=`cat files_changed.txt | grep .py | grep -v __init`
+    if [ -z "$files_changed" ]; then
+      exit 0
+    fi
+    # Check pyflakes errors
+    python2 -m pyflakes ${files_changed} > flakes.txt 2>&1
+    cat flakes.txt | grep -v 'devices\\.' | grep -v 'No such file' > errors.txt
+    # Check print errors
+    grep -n -E '^\\s+print\\s' ${files_changed} | awk '{print $1" print should be function: print()"}' >> errors.txt
+    # Check indentation errors
+    flake8 --select=E111 ${files_changed} >> errors.txt
+    '''
+}
+
+def run_test () {
+    ansiColor('xterm') {
+        sh '''
+        pwd
+        ls
+        rm -rf venv
+        virtualenv venv
+        . venv/bin/activate
+        repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
+        repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
+        python --version
+        bft --version
+        export BFT_CONFIG=''' + config + '''
+        ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
+        export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
+        if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
+        cd boardfarm
+        yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
+
+        sh 'grep tests_fail...0, boardfarm/results/test_results.json'
+    }
+}
+
 pipeline {
     agent { label 'boardfarm && ' + location }
 
@@ -23,67 +83,19 @@ pipeline {
         stage('checkout gerrit change') {
 
             steps {
-                sshagent ( [ ssh_auth ] ) {
-                    script {
-                        sh "rm -rf *"
-                        sh "repo init -u " + manifest + " && repo sync --force-remove-dirty"
-                        sh "repo forall -c 'git checkout gerrit/$GERRIT_BRANCH'"
-                        if (GERRIT_REFSPEC != '') {
-                            sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
-                        }
-                        sh "repo manifest -r"
-                    }
-                }
+                sync_code()
             }
         }
 
         stage('run linting') {
             steps {
-                sh '''
-                    set +e
-                    pwd
-                    ls
-                    rm -f errors.txt
-                    touch errors.txt
-                    repo forall -c 'git diff --name-only HEAD m/master | sed s,^,$REPO_PATH/,g' > files_changed.txt
-                    echo "Running pyflakes on py files and ignoring init files:"
-                    files_changed=`cat files_changed.txt | grep .py | grep -v __init`
-                    if [ -z "$files_changed" ]; then
-                      exit 0
-                    fi
-                    # Check pyflakes errors
-                    python2 -m pyflakes ${files_changed} > flakes.txt 2>&1
-                    cat flakes.txt | grep -v 'devices\\.' | grep -v 'No such file' > errors.txt
-                    # Check print errors
-                    grep -n -E '^\\s+print\\s' ${files_changed} | awk '{print $1" print should be function: print()"}' >> errors.txt
-                    # Check indentation errors
-                    flake8 --select=E111 ${files_changed} >> errors.txt
-                    '''
+                run_lint()
             }
         }
 
         stage('run bft test') {
             steps {
-                ansiColor('xterm') {
-                    sh '''
-                    pwd
-                    ls
-                    rm -rf venv
-                    virtualenv venv
-                    . venv/bin/activate
-                    repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
-                    repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
-                    python --version
-                    bft --version
-                    export BFT_CONFIG=''' + config + '''
-                    ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
-                    export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
-                    if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
-                    cd boardfarm
-                    yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
-
-                    sh 'grep tests_fail...0, boardfarm/results/test_results.json'
-                }
+                run_test()
             }
         }
         stage('post results to gerrit') {
