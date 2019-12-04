@@ -26,7 +26,7 @@ def logfile_assert_message(s, condition, message):
         s.log_to_file += now_short() + message + ": FAIL\r\n"
         assert 0, message + ": FAIL\r\n"
     else:
-        s.log_to_file += now_short() + message + ": PASS\r\n"
+        log_message(s, message+": PASS")
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
