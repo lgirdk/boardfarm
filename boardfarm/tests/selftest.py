@@ -11,7 +11,7 @@ from boardfarm.devices import board, lan, wan
 from boardfarm.lib import common
 
 '''
-    This file can bu used to add unit tests that
+    This file can be used to add unit tests that
     tests/validate the behavior of new/modified
     components.
 '''
@@ -508,3 +508,83 @@ class selftest_always_fail(rootfs_boot.RootFSBootTest):
     def runTest(self):
         print("Failing...")
         assert False
+
+class selftest_err_injection(rootfs_boot.RootFSBootTest):
+    """Simple harness to tests that the error injection intercepts
+    the function calls and spoofs the return value.
+    The dictionary must be given via command line using the --err argument, some examples:
+
+    --err "http://<some web addr>/error_injection.json"
+    --err "path_to/error_injection.json"
+
+    for multiple sources (or web) a dict.update() is perfomed:
+
+    --err "path_to/error_injection.json" "path_to/error_injection1.json"
+
+    For this selftest the following json is needed:
+    {
+        "selftest_err_injection":
+        {
+            "simple_bool_return":false,
+            "get_dev_ip_address":"169.254.1.3"
+        }
+    }
+    """
+
+    def simple_bool_return(self):
+        return True
+
+    def get_dev_ip_address(self, dev):
+        return dev.get_interface_ipaddr(dev.iface_dut)
+
+    def testSetup(self):
+        from boardfarm.config import get_err_injection_dict # TO DO: this should come from ConfigHelper
+        # this si a direct ref to the dict  (not a copy!!!)
+        self.config.err_injection_dict = get_err_injection_dict()
+
+        if not self.config.err_injection_dict:
+            print("err_injection_dict not found... Skipping test")
+            self.skipTest("err_injection_dict not found!!!")
+
+        self.cls_name = self.__class__.__name__
+
+    def runTest(self):
+
+        expected_faulures = 0
+
+        self.testSetup()
+
+        assert not self.simple_bool_return(), "error not correctly injected"
+        self.config.err_injection_dict[self.cls_name].pop('simple_bool_return')
+        print("simple_bool_return spoofed PASS")
+
+        assert self.simple_bool_return(), "real value not received"
+        print("simple_bool_return real value PASS")
+
+        addr = self.get_dev_ip_address(lan)
+        assert addr == self.config.err_injection_dict[self.cls_name]['get_dev_ip_address'], "spoofed value not received"
+        print("received spoofed address: {}".format(str(addr)))
+        print("get_dev_ip_address spoofed PASS")
+
+
+        addr = self.get_dev_ip_address(lan)
+        try:
+            assert addr == lan.get_interface_ipaddr(lan.iface_dut)
+            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(str(addr)))
+        except:
+            print("get_dev_ip_address: {}, EXPECTED FAILURE".format(str(addr)))
+            expected_faulures += 1
+        self.config.err_injection_dict[self.cls_name].pop('get_dev_ip_address')
+        assert expected_faulures, "get_dev_ip_address spoofed with EXPECTED FAILURE PASS"
+
+        addr = self.get_dev_ip_address(lan)
+        assert addr == lan.get_interface_ipaddr(lan.iface_dut), "spoofed value not received"
+        print("received real address: {}".format(addr))
+        print("get_dev_ip_address real PASS")
+
+        # just  for the sake of this test we check that all the errors have been injected
+        # this may not be the case a real world scenario
+        assert not self.config.err_injection_dict[self.cls_name], "Not all errors were injected"
+        print("all errors have been injected")
+
+        print("%s: PASS"%(self.cls_name))

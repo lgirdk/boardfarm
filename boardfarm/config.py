@@ -8,6 +8,8 @@
 import importlib
 import glob
 import os
+import requests
+import json
 
 import boardfarm
 
@@ -114,3 +116,62 @@ if 'BFT_DEBUG' in os.environ:
 # File needs to be a flat json.
 test_args_location = os.environ.get('BFT_ARGS', None)
 test_args = {}
+
+# The following is a dictionary use for the error injection feature
+# if populated the code will attempt to intercept the
+# "class_name" obj."function_name" and return value_to_be_returned/
+# instead of running the actual function.
+
+err_injection_dict = {}
+
+def update_error_injection_dict(err_dict):
+    """
+    Updates the error injection dictionary (empty by default) from a list of json files.
+    The dictionary basic structure is
+    {
+      "class_name":
+      {
+         "function_name": value_to_be_returned
+      }
+    }
+
+
+    :param err_dict: A list of filepaths (or http) that contains the error dictionary in json format
+    :type err_dict: list, strings
+
+    Returns:
+
+    :return: err_injection_dict (dict) the updated error injection dictionary
+    :rtype: dict
+    """
+
+    if type(err_dict) is not list:
+        err_dict = [err_dict]
+
+    for d in err_dict:
+        try:
+            if 'BFT_DEBUG' in os.environ:
+                print("Processing: '{}'".format(d))
+            if d.startswith("http"):
+                data = requests.get(d).json()
+                err_injection_dict.update(requests.get(d).json())
+            else:
+                data = open(d, 'r').read()
+                err_injection_dict.update(json.loads(data))
+        except:
+            print("Failed to fetch error dictionay at '{}', skipping...".format(d))
+
+    if err_injection_dict:
+        print("Error injection dictionary:")
+        print(json.dumps(err_injection_dict, indent=4))
+    return err_injection_dict
+
+
+def get_err_injection_dict():
+    """
+    Gets the error injection dictionary
+
+    :return: err_injection_dict (dict): the error injection dictionary
+    :rtype: dict
+    """
+    return err_injection_dict

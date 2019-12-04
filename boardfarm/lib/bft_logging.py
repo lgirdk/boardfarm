@@ -10,6 +10,7 @@ import types
 from datetime import datetime
 from termcolor import colored
 import re
+from functools import wraps
 
 def now_short(_format="%Y%m%d-%H%M%S"):
     """
@@ -38,6 +39,7 @@ class LoggerMeta(type):
 
     @classmethod
     def deco(cls, func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
             func_args_str = "%s %s" % (repr(args), repr(kwargs))
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
@@ -45,7 +47,18 @@ class LoggerMeta(type):
             if hasattr(args[0], 'start'):
                 args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now() - args[0].start).total_seconds(), to_log)
 
-            ret = func(*args, **kwargs)
+            clsname = args[0].__class__.__name__
+
+            # if the err_injection_dict exists, hijack the function call (if matched) and
+            # return the bogus value.
+            from boardfarm.config import get_err_injection_dict # TO DO:  remove once the ConfigHelper is fixed (i.e. is a sigleton)
+            err_injection_dict = get_err_injection_dict()
+            if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[clsname]:
+                ret = err_injection_dict[clsname][func.__name__]
+                if hasattr(args[0], 'start'):
+                    args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((datetime.now() - args[0].start).total_seconds(), to_log, repr(ret))
+            else:
+                ret = func(*args, **kwargs)
 
             if hasattr(args[0], 'start'):
                 args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now() - args[0].start).total_seconds(), to_log, repr(ret))

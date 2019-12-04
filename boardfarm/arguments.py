@@ -98,6 +98,7 @@ def parse():
     parser.add_argument('--version', action='store_true', help='show version and exit')
     parser.add_argument('--nostrict', action='store_true', help='ignores failure to import a tests from a testsuite')
     parser.add_argument('--regex_config', metavar='', type=str, default=[], action="append", help='Regex substitution for board config')
+    parser.add_argument('--err_dict', metavar='', type=str, default=[], nargs='+', help='Path to JSON containing the error injection dictionary')
 
     args = parser.parse_args()
 
@@ -342,6 +343,8 @@ def parse():
         else:
             config.BOARD_NAMES = args.board_names
 
+    if args.err_dict:
+        config.update_error_injection_dict(args.err_dict)
 
     config.WAN_PROTO = args.wan
     config.reboot_vms = args.reboot_vms
