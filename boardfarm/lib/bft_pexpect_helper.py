@@ -4,6 +4,8 @@ import sys
 import time
 import termcolor
 
+IS_PYTHON_3 = sys.version_info > (3, 0)
+
 from . import error_detect
 from boardfarm.lib.bft_logging import o_helper
 
@@ -17,7 +19,14 @@ class bft_pexpect_helper(pexpect.spawn):
     Boardfarm helper for logging pexpect and making minor tweaks
     '''
 
-    spawn = pexpect.spawn
+    # Clean this up when we only have to support Python 3.
+    if IS_PYTHON_3:
+        class spawn(pexpect.spawn):
+            def __init__(self, *args, **kwargs):
+                kwargs['encoding'] = 'ascii'
+                return pexpect.spawn.__init__(self, *args, **kwargs)
+    else:
+        spawn = pexpect.spawn
 
     def __init__(self, *args, **kwargs):
         # Filters out boardfarm specific
@@ -29,7 +38,10 @@ class bft_pexpect_helper(pexpect.spawn):
                     'start', 'tftp_password']
         for arg in bad_args:
             kwargs.pop(arg)
+        if IS_PYTHON_3:
+            kwargs['encoding'] = 'ascii'
         super(bft_pexpect_helper, self).__init__(*args, **kwargs)
+
 
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
