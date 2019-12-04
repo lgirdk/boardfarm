@@ -650,6 +650,13 @@ class DebianBox(linux.LinuxDevice):
     def start_lan_client(self, wan_gw=None, ipv4_only=False):
         ipv4, ipv6 = None, None
         self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
+        self.expect(self.prompt)
+
+        self.sendline('dhclient -6 -r -i %s' % self.iface_dut)
+        self.expect(self.prompt, timeout=60)
+
+        self.sendline('ps aux')
+        assert(self.expect(['dhclient -6'] + self.prompt) != 0)
 
         if not ipv4_only:
 
