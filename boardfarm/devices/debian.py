@@ -770,7 +770,8 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
             self.sendline('[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa')
             if 0 != self.expect(['Protocol mismatch.'] + self.prompt):
-                self.sendline('scp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
+                self.sendline('\nscp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
+                self.expect('_keys')
                 if 0 == self.expect(['assword:'] + self.prompt):
                     self.sendline('password')
                     self.expect(self.prompt)
