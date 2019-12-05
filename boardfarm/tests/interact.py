@@ -10,6 +10,7 @@ from boardfarm import tests
 from boardfarm import lib
 import sys
 from boardfarm.devices import board, wan, lan, wlan, prompt
+from six.moves import input
 
 class Interact(rootfs_boot.RootFSBootTest):
     '''Interact with console, wan, lan, wlan connections and re-run tests'''
@@ -59,7 +60,7 @@ class Interact(rootfs_boot.RootFSBootTest):
             if len(self.config.devices) > 0:
                 print("  Type a device name to connect: %s" % self.config.devices)
             print("  x: Exit")
-            key = raw_input("Please select: ")
+            key = input("Please select: ")
 
             if key in self.config.devices:
                 d = getattr(self.config, key)
