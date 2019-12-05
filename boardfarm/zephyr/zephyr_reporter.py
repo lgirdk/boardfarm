@@ -9,6 +9,8 @@ from jira import JIRA
 from . import zapi
 import requests
 
+import boardfarm
+
 COLUMN_SCRIPT_NAME="TestScript Name"
 COLUMN_JIRA_TEST_ID="Jira ID"
 
@@ -83,17 +85,16 @@ def get_test_id_from_meta_file(meta_file, test_name):
 
 def parse_zapi_config():
     data = []
-    if 'BFT_OVERLAY' in os.environ:
-        for overlay in os.environ['BFT_OVERLAY'].split(' '):
-            overlay = os.path.realpath(overlay)
-            zapi_conf = glob.glob(os.path.join(overlay, '*', 'zapi_configuration.json')) + \
-                        glob.glob(os.path.join(overlay, '*', '*', 'zapi_configuration.json'))
-            metafile = glob.glob(os.path.join(overlay, '*', 'boardfarm_tc_meta_file.csv')) + \
-                       glob.glob(os.path.join(overlay, '*', '*', 'boardfarm_tc_meta_file.csv'))
-            if len(zapi_conf) > 0:
-                data.append(json.load(open(zapi_conf[0])))
-            if len(metafile) > 0:
-                data[-1]['metafile'] = metafile[0]
+    for modname in sorted(boardfarm.plugins):
+        overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
+        zapi_conf = glob.glob(os.path.join(overlay, '*', 'zapi_configuration.json')) + \
+                    glob.glob(os.path.join(overlay, '*', '*', 'zapi_configuration.json'))
+        metafile = glob.glob(os.path.join(overlay, '*', 'boardfarm_tc_meta_file.csv')) + \
+                   glob.glob(os.path.join(overlay, '*', '*', 'boardfarm_tc_meta_file.csv'))
+        if len(zapi_conf) > 0:
+            data.append(json.load(open(zapi_conf[0])))
+        if len(metafile) > 0:
+            data[-1]['metafile'] = metafile[0]
 
     # TODO: opensource zephyr for boardfarm tests?
     if os.path.exists('zephyr/zapi_configuration.json'):
