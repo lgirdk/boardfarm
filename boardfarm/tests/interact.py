@@ -6,17 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.tests import rootfs_boot
+from boardfarm import tests
 from boardfarm import lib
-import os
 import sys
-import glob
 from boardfarm.devices import board, wan, lan, wlan, prompt
-
-def print_subclasses(cls):
-    for x in cls.__subclasses__():
-        print(x.__name__)
-        print_subclasses(x)
-
 
 class Interact(rootfs_boot.RootFSBootTest):
     '''Interact with console, wan, lan, wlan connections and re-run tests'''
@@ -110,45 +103,26 @@ class Interact(rootfs_boot.RootFSBootTest):
 
             if key == str(i):
                 try:
-                    # re import the tests
-                    test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
-                    for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
-                        exec("from %s import *" % x)
-
-                    if 'BFT_OVERLAY' in os.environ:
-                        for o in os.environ['BFT_OVERLAY'].split(' ' ):
-                            o = os.path.realpath(o)
-                            test_files = glob.glob(o + "/tests/*.py")
-                            for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
-                                exec("from %s import *" % x)
-                except:
+                    tests.init(self.config)
+                except Exception as e:
                     print("Unable to re-import tests!")
+                    print(e)
                 else:
-                    # list what we can re-run
-                    rfs_boot = rootfs_boot.RootFSBootTest
                     print("Available tests:")
-                    print_subclasses(rfs_boot)
+                    print('\n'.join(tests.available_tests.keys()))
                 continue
             i += 1
 
             if key == str(i):
                 try:
-                    # re import the tests
-                    test_files = glob.glob(os.path.dirname(__file__)+"/*.py")
-                    for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
-                        exec("from %s import *" % x)
-
-                    if 'BFT_OVERLAY' in os.environ:
-                        for o in os.environ['BFT_OVERLAY'].split(' ' ):
-                            test_files = glob.glob(o + "/tests/*.py")
-                            for x in sorted([os.path.basename(f)[:-3] for f in test_files if not "__" in f]):
-                                exec("from %s import *" % x)
-                except:
+                    tests.init(self.config)
+                except Exception as e:
                     print("Unable to re-import tests!")
+                    print(e)
                 else:
                     # TODO: use an index instead of test name
                     print("Type test to run: ")
-                    test = sys.stdin.readline()
+                    test = sys.stdin.readline().strip()
 
                     #try:
                     board.sendline()
@@ -156,18 +130,11 @@ class Interact(rootfs_boot.RootFSBootTest):
                     board.set_printk()
                     board.expect(prompt)
                     try:
-                        t = eval(test)
-                        reload(sys.modules[t.__module__])
-                        cls = t(self.config)
-                        lib.common.test_msg("\n==================== Begin %s ====================" % cls.__class__.__name__)
-                        cls.testWrapper()
-                        lib.common.test_msg("\n==================== End %s ======================" % cls.__class__.__name__)
-                        board.sendline()
-                    except:
+                        tests.available_tests[test](self.config).run()
+                    except Exception as e:
                         lib.common.test_msg("Failed to find and/or run test, continuing..")
+                        print(e)
                         continue
-                    #except:
-                    #    print("Unable to (re-)run specified test")
 
                 continue
             i += 1
