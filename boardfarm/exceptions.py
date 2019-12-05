@@ -1,3 +1,9 @@
+class BftTestError(Exception):
+    """
+    Raise this if a test step/condition fails
+    """
+    pass
+
 class BftNotSupportedDevice(Exception):
     pass
 
