@@ -14,10 +14,6 @@ from boardfarm.devices import board, wan, lan, wlan, prompt
 class Interact(rootfs_boot.RootFSBootTest):
     '''Interact with console, wan, lan, wlan connections and re-run tests'''
 
-    def print_legacy_devices(self):
-        print("  LAN device:    ssh %s@%s" % (self.config.board.get('lan_username', "root"), self.config.board.get('lan_device')))
-        print("  WAN device:    ssh %s@%s" % (self.config.board.get('wan_username', "root") ,self.config.board.get('wan_device')))
-
     def print_dynamic_devices(self):
         for device in self.config.devices:
             d = getattr(self.config, device)
@@ -28,7 +24,6 @@ class Interact(rootfs_boot.RootFSBootTest):
                 print("  %s device:    %s" % (d.name, d))
 
     def runTest(self):
-        legacy = hasattr(self.config, "wan_device")
         lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
         try:
@@ -39,8 +34,6 @@ class Interact(rootfs_boot.RootFSBootTest):
         while True:
             print("\n\nCurrent station")
             print("  Board console: %s" % self.config.board.get('conn_cmd'))
-            if legacy:
-                self.print_legacy_devices()
             self.print_dynamic_devices()
             print('Pro-tip: Increase kernel message verbosity with\n'
                   '    echo "7 7 7 7" > /proc/sys/kernel/printk')
@@ -54,13 +47,6 @@ class Interact(rootfs_boot.RootFSBootTest):
                 for c in board.consoles:
                     print("  %s: Enter console" % i)
                     i += 1
-            if legacy: 
-                print("  %s: Enter wan console" % i)
-                i += 1
-                print("  %s: Enter lan console" % i)
-                i += 1
-                print("  %s: Enter wlan console" % i)
-                i += 1
 
             print("  %s: List all tests" % i)
             i += 1
@@ -83,22 +69,6 @@ class Interact(rootfs_boot.RootFSBootTest):
             for c in board.consoles:
                 if key == str(i):
                     c.interact()
-                i += 1
-
-            if legacy:
-                if key == str(i):
-                    wan.interact()
-                    continue
-                i += 1
-
-                if key == str(i):
-                    lan.interact()
-                    continue
-                i += 1
-
-                if key == str(i):
-                    wlan.interact()
-                    continue
                 i += 1
 
             if key == str(i):
