@@ -19,6 +19,7 @@ try:
 except:
     from future.moves.collections import Counter
 
+import boardfarm
 from boardfarm import config
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
@@ -31,19 +32,18 @@ def pick_template_filename():
 
     basic = owrt_tests_dir+"/html/template_results_basic.html"
     full = owrt_tests_dir+"/html/template_results.html"
-    if 'BFT_OVERLAY' in os.environ:
-        for overlay in os.environ['BFT_OVERLAY'].split(' '):
-            overlay = os.path.realpath(overlay)
-            tmp = glob.glob(os.path.join(overlay, 'html', 'template_results_basic.html')) + \
-                  glob.glob(os.path.join(overlay, '*', 'html', 'template_results_basic.html'))
-            if len(tmp) > 0 and os.path.isfile(tmp[0]):
-                basic = tmp[0]
-                break
-            tmp = glob.glob(os.path.join(overlay, 'html', 'template_results.html')) + \
-                  glob.glob(os.path.join(overlay, '*', 'html', 'template_results.html'))
-            if len(tmp) > 0 and os.path.isfile(tmp[0]):
-                full = tmp[0]
-                break
+    for modname in sorted(boardfarm.plugins):
+        overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
+        tmp = glob.glob(os.path.join(overlay, 'html', 'template_results_basic.html')) + \
+              glob.glob(os.path.join(overlay, '*', 'html', 'template_results_basic.html'))
+        if len(tmp) > 0 and os.path.isfile(tmp[0]):
+            basic = tmp[0]
+            break
+        tmp = glob.glob(os.path.join(overlay, 'html', 'template_results.html')) + \
+              glob.glob(os.path.join(overlay, '*', 'html', 'template_results.html'))
+        if len(tmp) > 0 and os.path.isfile(tmp[0]):
+            full = tmp[0]
+            break
 
     templates = {'basic': basic,
                  'full': full}
