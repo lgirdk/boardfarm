@@ -2,6 +2,7 @@ import ipaddress
 import os
 import six
 import pexpect
+import boardfarm
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.common import scp_from
@@ -489,7 +490,7 @@ EOF'''
         """
         # Look in all overlays as well, and PATH as a workaround for standalone
         paths = os.environ['PATH'].split(os.pathsep)
-        paths += [os.path.realpath(x) for x in os.environ['BFT_OVERLAY'].split(' ')]
+        paths += [os.path.dirname(boardfarm.plugins[x].__file__) for x in boardfarm.plugins]
         cfg_list = []
 
         if 'tftp_cfg_files' in board_config:
