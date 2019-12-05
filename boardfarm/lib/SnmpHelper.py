@@ -10,6 +10,7 @@ import json
 import pexpect
 import six
 
+import boardfarm
 from .installers import install_pysnmp
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
@@ -113,15 +114,15 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         # add the boardfarm dir as it is not in the overlays
         snmp_mib_dirs.extend(find_directory_in_tree('mibs', boardfarmdir))
 
-        if 'BFT_OVERLAY' in os.environ:
-            for overlay in os.environ['BFT_OVERLAY'].split(' '):
-                # finds all dirs with the word mibs in it
-                # avoid adding a directory that is already
-                # contained in the directory tree
-                snmp_mib_dirs.extend(find_directory_in_tree('mib', overlay))
+        for modname in sorted(boardfarm.plugins):
+            # finds all dirs with the word mibs in it
+            # avoid adding a directory that is already
+            # contained in the directory tree
+            location = os.path.dirname(boardfarm.plugins[modname].__file__)
+            snmp_mib_dirs.extend(find_directory_in_tree('mib', location))
 
-            if 'BFT_DEBUG' in os.environ:
-                print('Mibs directory list: %s' % snmp_mib_dirs)
+        if 'BFT_DEBUG' in os.environ:
+            print('Mibs directory list: %s' % snmp_mib_dirs)
 
         # if the mibs file are given, we do not want to add other mibs, as it may
         # results in unresolved ASN.1 imports
