@@ -11,11 +11,18 @@ import os
 import socket
 
 class RemoteLogger(object):
-    '''
-    Write data to remote logging server, in thise case, Logstash.
-    '''
+    """Write data to remote logging server.
+    """
 
     def __init__(self, server, subtype='demo'):
+        """Constructor used to remote server logging
+
+        :param server: remote server to log
+        :type server: string
+        :param subtype: subtype to be used, defaults to 'demo'
+        :type subtype: string
+        """
+
         '''Logging server requires some default data for easy searching.'''
         username = os.environ.get('BUILD_USER_ID', None)
         if username is None:
@@ -35,7 +42,13 @@ class RemoteLogger(object):
         self.logserver_port = int(port)
 
     def log(self, data, debug=False):
-        '''data must be a simple dictionary.'''
+        """Logs the data to remote server
+
+        :param data: data to log to remote server
+        :type data: dict
+        :param debug: debug to indicate debug logs defaults to False
+        :type debug: boolean
+        """
         # Put in default data
         data.update(self.default_data)
         s = json.dumps(data)
