@@ -5,8 +5,11 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import importlib
 import glob
 import os
+
+import boardfarm
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -18,23 +21,22 @@ boardfarm_config_location = os.environ.get('BFT_CONFIG', os.path.join(local_path
 testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
 # Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
-if 'BFT_OVERLAY' in os.environ:
-    import importlib
-    for overlay in os.environ['BFT_OVERLAY'].strip().split(' '):
-        overlay = os.path.realpath(overlay)
-        # Find testsuite config files
-        testsuites_path = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
-                          glob.glob(os.path.join(overlay, '*', 'testsuites.cfg'))
-        testsuite_config_files += testsuites_path
-        # Find layerconf files and import them
-        layerconf_path = glob.glob(os.path.join(overlay, 'layerconf.py')) + \
-                         glob.glob(os.path.join(overlay, '*', 'layerconf.py'))
-        for f in layerconf_path:
-            if os.path.isfile(f):
-                location = os.path.dirname(f)
-                m = os.path.basename(location)+'.'+os.path.basename(f.strip('.py'))
-                tmp = importlib.import_module(m)
-                layerconfs.append((location, tmp))
+
+for modname in sorted(boardfarm.plugins):
+    overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
+    # Find testsuite config files
+    testsuites_path = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
+                      glob.glob(os.path.join(overlay, '*', 'testsuites.cfg'))
+    testsuite_config_files += testsuites_path
+    # Find layerconf files and import them
+    layerconf_path = glob.glob(os.path.join(overlay, 'layerconf.py')) + \
+                     glob.glob(os.path.join(overlay, '*', 'layerconf.py'))
+    for f in layerconf_path:
+        if os.path.isfile(f):
+            location = os.path.dirname(f)
+            m = os.path.basename(location)+'.'+os.path.basename(f.strip('.py'))
+            tmp = importlib.import_module(m)
+            layerconfs.append((location, tmp))
 
 # Logstash server - a place to send JSON-format results to
 # when finished. Set to None or name:port, e.g. 'logstash.mysite.com:1300'
