@@ -14,6 +14,13 @@ import time
 wlan_iface = None
 
 def wifi_interface(console):
+    """This method returns the wifi interface
+
+    :param console: CM console object
+    :type console: object
+    :returns: The wlan_iface of the modem wlan0/ath0 or None
+    :rtype: string
+    """
     global wlan_iface
 
     if wlan_iface is None:
@@ -29,21 +36,58 @@ def wifi_interface(console):
     return wlan_iface
 
 def randomSSIDName():
+    """This method returns the random SSID name used to set on CM
+
+    :returns: The SSID generated randomly
+    :rtype: string
+    """
     return 'WIFI-' + ''.join(random.sample(string.lowercase + string.digits, 10))
 
 def uciSetWifiSSID(console, ssid):
+    """This method sets the WiFi SSID on the CM
+
+    :param console: CM console object
+    :type console: object
+    :param ssid: SSID to be used to set on CM
+    :type ssid: string
+    """
     console.sendline('uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi' % ssid)
     console.expect_prompt()
 
 def uciSetWifiMode(console, radio, hwmode):
+    """This method sets the WiFi hwmode as per the radio over CM
+
+    :param console: CM console object
+    :type console: object
+    :param radio: radio to set hwmode
+    :type radio: string
+    :param hwmode: hwmode to be set over the CM
+    :type hwmode: string
+    """
     console.sendline('uci set wireless.wifi%s.hwmode=%s; uci commit wireless' % (radio, hwmode))
     console.expect_prompt()
 
 def uciSetChannel(console, radio, channel):
+    """This method sets the channel as per the radio over CM
+
+    :param console: CM console object
+    :type console: object
+    :param radio: radio to set hwmode
+    :type radio: string
+    :param channel: channel to be set over the CM
+    :type channel: string
+    """
     console.sendline('uci set wireless.wifi%s.channel=%s; uci commit wireless' % (radio, channel))
     console.expect_prompt()
 
 def enable_wifi(board, index=0):
+    """This method enables the WiFi as per the index specified.
+
+    :param board: board object
+    :type board: object
+    :param index: index to be used to enable, defaults to 0
+    :type index: int
+    """
     board.sendline('\nuci set wireless.@wifi-device[%s].disabled=0; uci commit wireless' % index)
     board.expect('uci set')
     board.expect_prompt()
@@ -53,7 +97,11 @@ def enable_wifi(board, index=0):
     time.sleep(20)
 
 def enable_all_wifi_interfaces(board):
-    '''Find all wireless interfaces, and enable them.'''
+    """This method enables all the WiFi interface available over the board
+
+    :param board: board object
+    :type board: object
+    """
     board.sendline('\nuci show wireless | grep disabled')
     board.expect('grep disabled')
     board.expect_prompt()
@@ -69,6 +117,13 @@ def enable_all_wifi_interfaces(board):
     board.expect_prompt(timeout=50)
 
 def disable_wifi(board, wlan_iface="ath0"):
+    """This method disables the WiFi over the interface specified
+
+    :param board: board object
+    :type board: object
+    :param wlan_iface: the WiFi interface to be disabled defaults to "ath0"
+    :type wlan_iface: string
+    """
     board.sendline('uci set wireless.@wifi-device[0].disabled=1; uci commit wireless')
     board.expect('uci set')
     board.expect_prompt()
@@ -78,7 +133,13 @@ def disable_wifi(board, wlan_iface="ath0"):
     board.expect_prompt()
 
 def wifi_on(board):
-    '''Return True if WiFi is enabled.'''
+    """This method returns the WiFi enabled status over the CM True if enabled else False
+
+    :param board: board object
+    :type board: object
+    :returns: The WiFi enabled status of the CM
+    :rtype: boolean
+    """
     board.sendline('\nuci show wireless.@wifi-device[0].disabled')
     try:
         board.expect('disabled=0', timeout=5)
@@ -88,6 +149,14 @@ def wifi_on(board):
         return False
 
 def wifi_get_info(board, wlan_iface):
+    """This method gets the WiFi information about the board like essid, channel, rate, freq
+
+    :param board: board object
+    :type board: object
+    :param wlan_iface: The WiFi interface to be used to get details.
+    :type wlan_iface: string
+    :raises: Assert Exception
+    """
     try:
         if "ath" in wlan_iface:
             board.sendline('iwconfig %s' % wlan_iface)
@@ -124,7 +193,18 @@ def wifi_get_info(board, wlan_iface):
     return essid, channel, rate, freq
 
 def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
-    '''Wait for WiFi Bit Rate to be != 0.'''
+    """This method waits for the WiFi Bit Rate to be != 0 default 10 trials with a wait of 15 seconds for each trial.
+
+    :param board: board object
+    :type board: object
+    :param num_tries: number of trials, defaults to 10
+    :type num_tries: int
+    :param sleep: number of seconds to wait, defaults to 15
+    :type sleep: int
+    :param wlan_iface: Wireless interface to wait for, defaults to "ath0"
+    :type wlan_iface: string
+    :raises: Assert Exception
+    """
     for i in range(num_tries):
         time.sleep(sleep)
         essid, channel, rate, freq = wifi_get_info(board, wlan_iface)
@@ -138,6 +218,15 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
         assert False
 
 def wifi_add_vap(console, phy, ssid):
+    """This method adds virtual access point on the interface specified as per the ssid provided.
+
+    :param console: console object
+    :type console: object
+    :param phy: physical interface to be used
+    :type phy: string
+    :param ssid: ssid to be set for VAP
+    :type ssid: string
+    """
     console.sendline('uci add wireless wifi-iface')
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].device="%s"' % phy)
@@ -154,12 +243,28 @@ def wifi_add_vap(console, phy, ssid):
     console.expect_prompt()
 
 def wifi_del_vap(console, index):
+    """This method deletes virtual access point on the interface specified as per the index provided.
+
+    :param console: console object
+    :type console: object
+    :param index: index to be used
+    :type index: int
+    """
     console.sendline('uci delete wireless.@wifi-iface[%s]' % index)
     console.expect_prompt()
     console.sendline('uci commit')
     console.expect_prompt()
 
 def uciSetWifiSecurity(board, vap_iface, security):
+    """This method sets the WiFi security on the VAP interface on the board
+
+    :param board: board object
+    :type board: object
+    :param vap_iface: interface to be used
+    :type vap_iface: string
+    :param security: security to be set
+    :type security: string
+    """
     if security.lower() in ['none']:
         print("Setting security to none.")
         board.sendline('uci set wireless.@wifi-iface[%s].encryption=none' % vap_iface)
@@ -183,88 +288,360 @@ class wifi_stub():
     # If it is set to True, it will apply the changes after setting wifi parameters
     # If it is set to False, it will not save any changes & apply_changes() will be skipped
     def enable_wifi(self, *args, **kwargs):
+        """This method is stub for enabling wifi on CM
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_ssid(self, *args, **kwargs):
+        """This method is stub to set SSID
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_broadcast(self, *args, **kwargs):
+        """This method is stub to set boardcast
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_security(self, *args, **kwargs):
+        """This method is stub to set security
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_password(self, *args, **kwargs):
+        """This method is stub to set password
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def enable_channel_utilization(self, *args, **kwargs):
+        """This method is stub to enable channel utilization
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_operating_mode(self, *args, **kwargs):
+        """This method is stub to set operating mode
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_bandwidth(self, *args, **kwargs):
+        """This method is stub to set bandwidth
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def set_channel_number(self, *args, **kwargs):
+        """This method is stub to enable channel utilization
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_wifi_enabled(self, *args, **kwargs):
+        """This method is stub to get WiFi enabled
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_ssid(self, *args, **kwargs):
+        """This method is stub to get SSID
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_security(self, *args, **kwargs):
+        """This method is stub to get security mode
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_password(self, *args, **kwargs):
+        """This method is stub to get password
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_channel_utilization(self, *args, **kwargs):
+        """This method is stub to get channel utilization
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_operating_mode(self, *args, **kwargs):
+        """This method is stub to get operating mode
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_bandwidth(self, *args, **kwargs):
+        """This method is stub to get bandwidth
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_broadcast(self, *args, **kwargs):
+        """This method is stub to get the broadcast
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def get_channel_number(self, *args, **kwargs):
+        """This method is stub to get the channel number
+
+        :param self: self object
+        :type self: object
+        :param args: arguments to be used if any
+        :type args: NA
+        :param kwargs: extra arguments to be used
+        :type kwargs: NA
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def prepare(self):
+        """This method is stub
+
+        :param self: self object
+        :type self: object
+        """
         pass
+
     def cleanup(self):
+        """This method is stub
+
+        :param self: self object
+        :type self: object
+        """
         pass
+
     def apply_changes(self):
-        '''This function used to save the configs to be modified'''
+        """This method is stub used to save the configs to be modified
+
+        :param self: self object
+        :type self: object
+        """
         pass
 
 class wifi_client_stub():
     def enable_wifi(self):
-        '''Function to make the wifi interface UP'''
+        """This method is WiFi client stub used to enable WiFi/ make the WiFi interface UP
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def disable_wifi(self):
-        '''Function to make the wifi interface DOWN'''
+        """This method is WiFi client stub used to enable WiFi/ make the WiFi interface DOWN
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def disable_and_enable_wifi(self):
-        '''Function to make the wifi interface DOWN and UP'''
+        """This method is WiFi client stub used to disbale and enable WiFi/ make the WiFi interface DOWN and UP
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def wifi_scan(self):
-        '''Function that scans for SSIDs on a particular radio, and return a list of SSID'''
+        """This method is WiFi client stub used to scan for SSIDs on a particular radio, and return a list of SSID
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return "SSID: <ssid_name1> \
                 SSID: <ssid_name2>.."
+
     def wifi_check_ssid(self, ssid_name):
-        '''Function that scans for a particular SSID
-           Takes ssid to be scanned as an argument'''
+        """This method is WiFi client stub used to scan for paticular SSID
+
+        :param self: self object
+        :type self: object
+        :param ssid_name: ssid name to be scanned for
+        :type ssid_name: string
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return True  # if found
         return False  # if not found
+
     def wifi_connect(self, ssid_name, password, security_mode):
-        '''Function to connect to wifi either with ssid name and password or with ssid name alone
-           Takes arguments as SSID and (password,security) if required'''
+        """This method is WiFi client stub used to connect to wifi either with ssid name and password or with ssid name alone
+
+        :param self: self object
+        :type self: object
+        :param ssid_name: ssid name to be scanned for
+        :type ssid_name: string
+        :param password: password to be used to connect to SSID
+        :type password: string
+        :param security_mode: security mode of WiFi
+        :type security_mode: string
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def wifi_connectivity_verify(self):
-        '''Function to verify wifi connectivity
-           Returns True or False based on connectivity'''
+        """This method is WiFi client stub used to verify wifi connectivity
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
         return "True or False"
+
     def wifi_disconnect(self):
-        '''Function to disconnect wifi'''
+        """This method is WiFi client stub used to disconnect WiFi
+
+        :param self: self object
+        :type self: object
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
+
     def wifi_change_region(self, country):
-        '''Function to change the country
-           Takes country name as an argument Eg:Germany
-           Return the country code Eg: Germany as DE'''
+        """This method is WiFi client stub used to change the country
+
+        :param self: self object
+        :type self: object
+        :param country: country to change to
+        :type country: string
+        :raises: Exception "Not implemented"
+        """
         raise Exception("Not implemented!")
         return "DE"
