@@ -222,10 +222,12 @@ You are seeing this message as your configuration is now using kermit instead of
     print("Please check spelling, your environment setup, or write an appropriate class "
           "to handle that kind of board.")
 
-    if 'BFT_OVERLAY' in os.environ:
-        print("\nIs this correct? BFT_OVERLAY=%s\n" % os.environ['BFT_OVERLAY'])
+    if len(boardfarm.plugins) > 0:
+        print("The following boardfarm plugins are installed.")
+        print("Do you need to update them or install others?")
+        print("\n".join(boardfarm.plugins))
     else:
-        print("No BFT_OVERLAY is set, do you need one?")
+        print("No boardfarm plugins are installed, do you need to install some?")
 
     if 'BFT_CONFIG' in os.environ:
         print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ['BFT_CONFIG'])
