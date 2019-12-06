@@ -21,12 +21,10 @@ class Boardfarm(object):
 
     def __init__(self,
                  bfconfig_url,
-                 overlays=[],
                  debug=False):
         '''
         Parameters:
         bfconfig_url: location of boardfarm config file.
-        overlays: list of strings. These are paths to boardfarm 'overlay' directories.
         debug: if True, there will be much more verbose output.
         '''
         self.bfconfig_url = bfconfig_url
@@ -34,7 +32,6 @@ class Boardfarm(object):
                                                             bf_version=boardfarm.__version__,
                                                             debug=debug)
         #self.supported_devices = self._supported_devices()
-        self.overlays = overlays
         self.debug = debug
 
     def list_tests(self):
@@ -59,8 +56,6 @@ class Boardfarm(object):
         output_dir = os.path.join(os.getcwd(), "results")
         print("Trying to run bft ...")
         cmd = ""
-        if self.overlays:
-            cmd = "export BFT_OVERLAY='%s'; " % " ".join(self.overlays)
         if self.debug:
             cmd += "export BFT_DEBUG=%s ; " % self.debug
         cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(b=board_type,
