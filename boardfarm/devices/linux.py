@@ -90,6 +90,17 @@ class LinuxDevice(base.BaseDevice):
         self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=0")
         self.expect(self.prompt, timeout=30)
 
+    def set_static_ip(self, interface, fix_ip, fix_mark):
+        '''set static ip of the interface'''
+        self.sendline('ifconfig {} {} netmask {} up'.format(interface, fix_ip, fix_mark))
+        self.expect(self.prompt)
+
+        ip=self.get_interface_ipaddr(interface)
+        if ip == fix_ip:
+            return ip
+        else:
+            return None
+
     def disable_ipv6(self, interface):
         '''Disable ipv6 of the interface '''
         self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=1")
