@@ -17,6 +17,8 @@ pexpect
 pycryptodome
 pymongo
 pyserial
+pysmi
+pysnmp
 pyvirtualdisplay
 requests
 selenium
@@ -25,7 +27,5 @@ six
 sphinx
 termcolor
 unittest2
-zeep
-pysmi
 xmltodict
-pysnmp
+zeep
