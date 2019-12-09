@@ -10,6 +10,7 @@ Faker
 future
 ipaddress
 jira
+marshmallow<3
 matplotlib
 nested_lookup
 netaddr
