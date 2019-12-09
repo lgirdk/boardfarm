@@ -204,3 +204,10 @@ class BftBaseTest(object):
                     device_ip = dev.get_interface_ipaddr(dev.iface_dut)
                     hosts[str(device_ip)]= device+".boardfarm.com"
         return hosts
+
+    def execute_test_steps(self, prefix="", steps=[]):
+        assert steps, "Please add steps to Test class before calling execute"
+        for test_step in steps:
+                if prefix: test_step.name = prefix + test_step.name
+                with test_step:
+                    test_step.execute()
