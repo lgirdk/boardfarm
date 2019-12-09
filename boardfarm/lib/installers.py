@@ -367,7 +367,7 @@ def install_pysnmp(device):
         except:
             device.sendcontrol('c')
             device.expect_prompt()
-            device.sendline('pip install pysnmp')
+            device.sendline('pip install -q pysnmp')
             device.expect_prompt(timeout=150)
             device.expect(pexpect.TIMEOUT, timeout=5)
 
