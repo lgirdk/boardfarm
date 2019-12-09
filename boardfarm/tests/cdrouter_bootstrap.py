@@ -13,6 +13,7 @@ from cdrouter.packages import Package
 import time
 from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.orchestration import TestResult
 from boardfarm import lib
 import os
 import pexpect
@@ -291,7 +292,6 @@ testvar wanDnsServer %s
             self.logged[test.name] = vars(test)
 
             if str(test.name) not in ["start", "final"]:
-                from boardfarm.lib.common import TestResult
                 try:
                     grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[test.result]
                     tr = TestResult(test.name, grade_map, test.description)

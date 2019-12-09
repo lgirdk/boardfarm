@@ -173,15 +173,7 @@ def keccak512_checksum(filename, block_size=65536):
     keccak_hash = keccak.new(digest_bits=512)
     return _hash_file(filename, block_size, keccak_hash)
 
-class TestResult:
-    logged = {}
-    def __init__(self, name, grade, message):
-        self.name = name
-        self.result_grade = grade
-        self.result_message = message
-
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
-
 
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
     '''
