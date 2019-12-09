@@ -23,7 +23,7 @@ class bft_pexpect_helper(pexpect.spawn):
     if IS_PYTHON_3:
         class spawn(pexpect.spawn):
             def __init__(self, *args, **kwargs):
-                kwargs['encoding'] = 'ascii'
+                kwargs['encoding'] = 'latin1'
                 return pexpect.spawn.__init__(self, *args, **kwargs)
     else:
         spawn = pexpect.spawn
@@ -39,7 +39,7 @@ class bft_pexpect_helper(pexpect.spawn):
         for arg in bad_args:
             kwargs.pop(arg)
         if IS_PYTHON_3:
-            kwargs['encoding'] = 'ascii'
+            kwargs['encoding'] = 'latin1'
         super(bft_pexpect_helper, self).__init__(*args, **kwargs)
 
 
