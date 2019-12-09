@@ -28,13 +28,11 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 try:
     # Python3
     from urllib.parse import urlparse
-    from urllib.request import urlopen
-    import urllib
+    from urllib.request import urlopen, Request
 except:
     # Python2
     from urlparse import urlparse
-    from urllib2 import urlopen
-    import urllib2 as urllib
+    from urllib2 import urlopen, Request
 
 from selenium import webdriver
 from selenium.webdriver.common import proxy
@@ -648,7 +646,7 @@ def get_file_magic(fname, num_bytes=4):
     '''Return the first few bytes from a file to determine the type.'''
     if fname.startswith("http://") or fname.startswith("https://"):
         rng = 'bytes=0-%s' % (num_bytes - 1)
-        req = urllib.Request(fname, headers={'Range': rng})
+        req = Request(fname, headers={'Range': rng})
         data = urlopen(req).read()
     else:
         f = open(fname, 'rb')
@@ -734,7 +732,7 @@ def check_url(url):
 
         context = ssl._create_unverified_context()
 
-        req = urllib.Request(url)
+        req = Request(url)
 
         try:
             n = netrc.netrc()
