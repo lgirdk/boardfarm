@@ -3,6 +3,11 @@
 import random
 
 def randomMAC():
+    """generates and returns random mac address
+
+    :return : random mac address
+    :rtype : string
+    """
     mac = [(random.randint(0x00, 0xff) & 0xfe),  # the lsb is 0, i.e. no multicat bit
              random.randint(0x00, 0xff),
              random.randint(0x00, 0xff),
