@@ -7,6 +7,9 @@ import re
 import subprocess
 import sys
 
+import boardfarm
+
+
 def get_all_classes_from_code(directories, debug=False):
     '''
     Uses 'grep' to find all files of type '.py' in the given directories.
@@ -109,8 +112,10 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Find locations of 'tests' subdirectories
+    all_boardfarm_dirs = [os.path.dirname(boardfarm.plugins[m].__file__) for m in sorted(boardfarm.plugins)]
+    all_boardfarm_dirs.append(os.path.dirname(boardfarm.__file__))
     test_code_loc = []
-    for d in args.directories:
+    for d in sorted(all_boardfarm_dirs):
         tmp = glob.glob(os.path.join(d, 'tests')) + \
               glob.glob(os.path.join(d, '*', 'tests'))
         if len(tmp) == 1:
@@ -121,7 +126,7 @@ if __name__ == '__main__':
                   "one 'tests' directory per project.")
             sys.exit(1)
     # Locations of '.git' files
-    git_loc = [os.path.join(x, ".git") for x in args.directories]
+    git_loc = [os.path.abspath(os.path.join(d, os.pardir, ".git")) for d in all_boardfarm_dirs]
     valid_test_types = 'rootfs_boot.RootFSBootTest'
 
     # Get a dictionary of the form
