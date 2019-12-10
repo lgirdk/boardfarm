@@ -5,9 +5,20 @@ from . import local_cmd
 from . import kermit_connection
 
 def connection(conn_type, device, **kwargs):
-    '''
-    Depending on the given connection type return an object of the appropriate class type.
-    '''
+    """This method return an object of the appropriate class type depending on the given connection type
+    Method initializes the connection specific parameters
+    the connection type include ser2net, local_serial, ssh or kermit
+
+    :param conn_type: indicates the conn_type to be used Ex : local_cmd, ser2net, local_serial, ssh, kermit_cmd
+    :type conn_type: string
+    :param device: the device to which connection to be established
+    :type device: object
+    :param **kwargs: extra set of arguements to be used if any
+    :type **kwargs: dict
+    :raises : NA
+    :return: object of class type used for connection
+    :rtype: object
+    """
     if conn_type is None or conn_type in ("local_cmd"):
         return local_cmd.LocalCmd(device=device, **kwargs)
 
