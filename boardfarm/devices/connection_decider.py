@@ -15,8 +15,8 @@ def connection(conn_type, device, **kwargs):
     :type device: object
     :param **kwargs: extra set of arguements to be used if any
     :type **kwargs: dict
-    :raises : NA
-    :return: object of class type used for connection
+    :raises: NA
+    :return: :class:Response <Response> object of class type used for connection
     :rtype: object
     """
     if conn_type is None or conn_type in ("local_cmd"):
