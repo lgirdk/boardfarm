@@ -91,8 +91,15 @@ class TestsuiteConfigReader(object):
 
 if __name__ == '__main__':
     import os
-    filenames = [os.path.join(os.path.dirname(os.path.realpath(__file__)), '../testsuites.cfg'),
-                ]
+    import glob
+    import boardfarm
+
+    for modname in sorted(boardfarm.plugins):
+        overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
+        # Find testsuite config files
+        filenames = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
+                      glob.glob(os.path.join(overlay, '*', 'testsuites.cfg'))
+
     t = TestsuiteConfigReader()
     t.read(filenames)
     print(t)
