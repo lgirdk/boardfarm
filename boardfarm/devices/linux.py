@@ -22,6 +22,7 @@ class LinuxDevice(base.BaseDevice):
         '''
         print("\n\nRunning check_status() on %s" % self.name)
         self.sendline("\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n")
+        self.expect_exact('cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n')
         self.expect('version')
         self.expect(self.prompt)
 
