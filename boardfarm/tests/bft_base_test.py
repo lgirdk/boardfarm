@@ -105,6 +105,7 @@ class BftBaseTest(object):
                         self.attempts = self.config.retry - retry + 1
                         traceback.print_exc(file=sys.stdout)
                         print("\n\n----------- Test failed! Retrying in 5 seconds... -------------")
+                        self.recover()
                         time.sleep(5)
                         print("=========== Retry attempt number %s of %s =============" % (self.attempts, self.config.retry))
                     else:
