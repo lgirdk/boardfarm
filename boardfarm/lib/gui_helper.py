@@ -157,7 +157,7 @@ def get_check_box_value_by_id(web_gui, get_value):
         box_button = web_gui.find_elements_by_id(get_value)
         for boxbutton in box_button:
             box = boxbutton.get_attribute('src')
-            if "check-box-checked.png" in box:
+            if "check-box-checked.png" in box or 'radio-box-checked.png' in box:
                 return True
             else:
                 return False
@@ -170,7 +170,7 @@ def get_check_box_value_by_xpath(web_gui, get_value):
         box_button = web_gui.find_elements_by_xpath(get_value)
         for boxbutton in box_button:
             box = boxbutton.get_attribute('src')
-            if "check-box-checked.png" in box:
+            if "check-box-checked.png" in box or 'radio-box-checked.png' in box:
                 return True
             else:
                 return False
