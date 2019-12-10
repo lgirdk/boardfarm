@@ -30,6 +30,7 @@ class BftBaseTest(object):
         self.dont_retry = False
         self.logged = dict()
         self.subtests = []
+        self.attempts = 0
 
     def id(self):
         return self.__class__.__name__
@@ -40,7 +41,8 @@ class BftBaseTest(object):
     def run(self):
         lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
         self.testWrapper()
-        lib.common.test_msg("\n==================== End %s      Time: %s ======================" % (self.__class__.__name__, now_short(self._format)))
+        result = self.result_grade + "(" + str(self.attempts ) + ")" if self.attempts else self.result_grade
+        lib.common.test_msg("\n==================== End %s   %s   Time: %s ==================" % (self.__class__.__name__, result, now_short(self._format)))
 
     def wan_setup(self):
         None
@@ -90,6 +92,7 @@ class BftBaseTest(object):
                 retry = self.config.retry
             else:
                 retry = 0
+            self.attempts = retry
 
             while retry >= 0:
                 try:
@@ -99,10 +102,11 @@ class BftBaseTest(object):
                 except Exception as e:
                     retry = retry - 1
                     if(retry > 0):
+                        self.attempts = self.config.retry - retry + 1
                         traceback.print_exc(file=sys.stdout)
                         print("\n\n----------- Test failed! Retrying in 5 seconds... -------------")
                         time.sleep(5)
-                        print("=========== Retry attempt number %s of %s =============" % (self.config.retry - retry + 1, self.config.retry))
+                        print("=========== Retry attempt number %s of %s =============" % (self.attempts, self.config.retry))
                     else:
                         raise
 
