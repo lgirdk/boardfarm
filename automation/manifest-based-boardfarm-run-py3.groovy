@@ -71,9 +71,11 @@ pipeline {
                     rm -rf venv3
                     python3 -m venv venv3
                     . venv3/bin/activate
+                    pip3 install --upgrade pip
+                    python --version
+                    pip3 --version
                     repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
                     repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
-                    python --version
                     bft --version
                     export BFT_CONFIG=''' + config + '''
                     ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
