@@ -3,6 +3,7 @@ def email_results = env.email_results ?: ''
 def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
+def python_version = env.python_version ?: "2"
 
 def meta = env.meta ?: ''
 if (meta != '') {
@@ -22,6 +23,27 @@ def sync_code () {
             }
             sh "repo manifest -r"
         }
+    }
+}
+
+def setup_python () {
+    if (python_version == "2") {
+	sh '''
+        rm -rf venv
+        virtualenv venv
+        . venv/bin/activate
+        repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
+        repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
+        '''
+    } else {
+        sh '''
+        python3 -c 'import tkinter' || sudo apt install python3-tk
+	rm -rf venv
+        python3 -m venv venv
+        . venv/bin/activate
+        repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
+        repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
+        '''
     }
 }
 
@@ -50,14 +72,10 @@ def run_lint () {
 
 def run_test (loc) {
     ansiColor('xterm') {
-        sh '''
-        pwd
-        ls
-        rm -rf venv
-        virtualenv venv
-        . venv/bin/activate
-        repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
-        repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
+	setup_python()
+
+	sh '''
+	. venv/bin/activate
         python --version
         bft --version
         export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
