@@ -48,6 +48,18 @@ def setup_python () {
     }
 }
 
+def post_gerrit_msg_from_file (file) {
+    sh '''
+    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="$(cat errors.txt)"\\\'
+    '''
+}
+
+def post_gerrit_msg (msg) {
+    sh '''
+    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="''' + msg + '''"\\\'
+    '''
+}
+
 def run_lint () {
     sh '''
     set +e
@@ -59,7 +71,8 @@ def run_lint () {
     echo "Running pyflakes on py files and ignoring init files:"
     files_changed=`cat files_changed.txt | grep .py | grep -v __init`
     if [ -z "$files_changed" ]; then
-      exit 0
+        touch errors.txt
+        exit 0
     fi
     # Check pyflakes errors
     python2 -m pyflakes ${files_changed} > flakes.txt 2>&1
@@ -69,6 +82,21 @@ def run_lint () {
     # Check indentation errors
     flake8 --select=E111 ${files_changed} >> errors.txt
     '''
+
+    err_count = sh(returnStdout: true, script: """cat errors.txt | wc -l""") as Integer
+    println("Found " + err_count + " errors in code")
+
+
+    if (err_count > 3) {
+        post_gerrit_msg("pyflakes found many errors")
+    } else if (err_count > 0) {
+        post_gerrit_msg_from_file("errors.txt")
+    }
+
+    if (err_count > 0) {
+        currentBuild.result = 'FAILED'
+        error("pyflakes did not pass")
+    }
 }
 
 def run_test (loc) {
