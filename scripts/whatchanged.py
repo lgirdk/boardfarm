@@ -101,8 +101,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Prosses a "git diff" to find test changes.')
     parser.add_argument('start', type=str, help='Begining git hash')
     parser.add_argument('end', type=str, help='Ending git hash')
-    parser.add_argument('directories', type=str, nargs='+',
-                         help='Space delimited list of boardfarm directories')
     parser.add_argument('--debug', action='store_true',
                         help='Display much more info')
     try:

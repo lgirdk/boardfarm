@@ -75,10 +75,9 @@ pipeline {
                     repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
                     python --version
                     bft --version
-                    export BFT_OVERLAY="$(repo forall -c 'pwd' | grep -v boardfarm$ | tr '\n' ' ')"
                     export BFT_CONFIG=''' + config + '''
-                    ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm
-                    export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD ${BFT_OVERLAY} ${WORKSPACE}/boardfarm`"
+                    ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
+                    export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
                     if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
                     cd boardfarm
                     yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
