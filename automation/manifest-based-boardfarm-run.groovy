@@ -3,7 +3,8 @@ def email_results = env.email_results ?: ''
 def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
-def python_version = "${python_version}" ?: "2"
+// TODO: fetch from jenkins in future
+def python_version = "2"
 
 def meta = env.meta ?: ''
 if (meta != '') {
