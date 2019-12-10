@@ -69,17 +69,27 @@ class TestsuiteConfigReader(object):
                     current_section = re.search('\[(.*)\]', line).group(1)
                     if current_section not in self.section:
                         self.section[current_section] = []
-                if '@' in line:
-                    ref_section = re.search('@(.*)', line).group(1)
-                    if ref_section in self.section:
-                        self.section[current_section] = self.section[current_section] + self.section[ref_section]
-                elif re.match('\w+', line):
+                elif re.match('[@\w]+', line):
                     if current_section:
                         self.section[current_section].append(line)
             except Exception as e:
                 print(e)
                 print("Error line %s of %s" % (i + 1, fname))
                 continue
+
+        for section in self.section:
+            new_section = []
+            for item in self.section[section]:
+                if item.startswith('@'):
+                    ref_section = re.search('@(.*)', item).group(1)
+                    if ref_section in self.section:
+                        new_section += self.section[ref_section]
+                    else:
+                        print("Failed to find %s testsuite" % section)
+                        continue
+                else:
+                    new_section.append(item)
+            self.section[section] = new_section
 
     def __str__(self):
         result = []
