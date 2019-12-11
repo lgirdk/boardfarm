@@ -5,7 +5,6 @@ import re
 import six
 
 from . import base
-from boardfarm.lib.common import print_bold
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
 from boardfarm.exceptions import PexpectErrorTimeout
 
@@ -133,10 +132,9 @@ class LinuxDevice(base.BaseDevice):
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         '''Modifies the log level in kernel'''
         try:
-            self.sendline('echo "%d %d %d %d" > /proc/sys/kernel/printk' % (CUR, DEF, MIN, BTDEF))
+            self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' % (CUR, DEF, MIN, BTDEF))
+            self.expect('echo')
             self.expect(self.prompt, timeout=10)
-            if not BFT_DEBUG:
-                print_bold("printk set to %d %d %d %d" % (CUR, DEF, MIN, BTDEF))
         except:
             pass
 
