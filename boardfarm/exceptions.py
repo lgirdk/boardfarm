@@ -1,3 +1,5 @@
+import pexpect
+
 class TestError(Exception):
     """
     Raise this if a TestStep verification fails
@@ -31,7 +33,7 @@ class CodeError(Exception):
     """
     pass
 
-class PexpectError(Exception):
+class PexpectErrorTimeout(pexpect.TIMEOUT):
     """
     Raise this if pexpect times out
     """
