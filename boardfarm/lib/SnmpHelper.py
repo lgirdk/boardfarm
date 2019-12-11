@@ -201,16 +201,14 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
 
     def get_mib_oid(self, mib_name):
         """
-        Given a mib name, returns the OID, None if not found
+        Given a mib name, return the Object Identifier (OID).
         """
         oid = None
         try:
             oid = self.mib_dict[mib_name]['oid']
-        except:
-            if "y" in self.dbg:
-                print("ERROR: mib \'%s\' not found" % mib_name)
-            pass
-        return oid.encode('ascii', 'ignore')
+        except KeyError:
+            raise Exception("ERROR: mib '%s' not found in mib_dict." % mib_name)
+        return oid
 
 def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private"):
     """
