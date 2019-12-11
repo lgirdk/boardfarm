@@ -1,6 +1,6 @@
-class BftTestError(Exception):
+class TestError(Exception):
     """
-    Raise this if a test step/condition fails
+    Raise this if a TestStep verification fails
     """
     pass
 
@@ -20,4 +20,19 @@ class BootFail(Exception):
     occurs then most likely no other test
     can successfully run.
     '''
+    pass
+
+class CodeError(Exception):
+    """Raise this if an code assert fails
+
+    This exception is only meant for custom assert
+    clause used inside libraries.
+    Not to be used with TestStep verification.
+    """
+    pass
+
+class PexpectError(Exception):
+    """
+    Raise this if pexpect times out
+    """
     pass
