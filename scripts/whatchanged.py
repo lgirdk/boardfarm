@@ -4,6 +4,7 @@ import argparse
 import glob
 import os
 import re
+import six
 import subprocess
 import sys
 
@@ -30,7 +31,7 @@ def get_all_classes_from_code(directories, debug=False):
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: No tests found in %s" % d)
-    raw_text = "".join(raw_text)
+    raw_text = "".join(six.text_type(raw_text))
     # Create a list of tuples (classname, parent_classname)
     result = re.findall('class\s(\w+)\(([\w\.]+)\):', raw_text)
     #print(result)
@@ -65,7 +66,7 @@ def changed_classes(directories, start, end, debug=False):
             if debug:
                 print(cmd)
             diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            result.update(dict(re.findall('class\s(\w+)\(([\w\.]+)\):', diff)))
+            result.update(dict(re.findall('class\s(\w+)\(([\w\.]+)\):', six.text_type(diff))))
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: git diff command failed in %s" % d)
@@ -88,7 +89,7 @@ def get_features(directories, start, end, debug=False):
             if debug:
                 print(cmd)
             text = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            result += re.findall('Features:\s(\w+)', text)
+            result += re.findall('Features:\s(\w+)', six.text_type(text))
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: git log command failed in %s" % d)
@@ -138,7 +139,7 @@ if __name__ == '__main__':
                                           debug=args.debug)
     # Add names of *indirectly* changed classes (child classes of changed classes)
     indirectly_changed_classes = {}
-    for name, parents in all_classes.iteritems():
+    for name, parents in all_classes.items():
         if parents[0] in all_changed_classes.keys():
             indirectly_changed_classes[name] = all_classes[name]
     if args.debug:
