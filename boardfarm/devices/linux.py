@@ -4,11 +4,10 @@ import os
 import re
 import six
 
-import pexpect
-
 from . import base
 from boardfarm.lib.common import print_bold
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
+from boardfarm.exceptions import PexpectErrorTimeout
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
@@ -345,7 +344,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                         self.sendline("route -n")
                         self.expect(interface, timeout=2)
                         self.expect(self.prompt)
-                except pexpect.TIMEOUT:
+                except PexpectErrorTimeout:
                     print("waiting for wan/lan ipaddr")
                 else:
                     break

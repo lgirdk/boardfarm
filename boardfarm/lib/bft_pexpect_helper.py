@@ -8,6 +8,7 @@ IS_PYTHON_3 = sys.version_info > (3, 0)
 
 from . import error_detect
 from boardfarm.lib.bft_logging import o_helper
+from boardfarm.tests_wrappers import throw_pexpect_error
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
@@ -108,6 +109,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
         return super(bft_pexpect_helper, self).send(s)
 
+    @throw_pexpect_error
     def expect_helper(self, pattern, wrapper, *args, **kwargs):
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)

@@ -18,6 +18,7 @@ import ipaddress
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from termcolor import colored, cprint
 from nested_lookup import nested_lookup
+from boardfarm.exceptions import PexpectErrorTimeout
 
 class DebianBox(linux.LinuxDevice):
     '''
@@ -118,7 +119,7 @@ class DebianBox(linux.LinuxDevice):
 
         try:
             i = self.expect(["yes/no", "assword:", "Last login", username + ".*'s password:"] + self.prompt, timeout=30)
-        except pexpect.TIMEOUT:
+        except PexpectErrorTimeout:
             raise Exception("Unable to connect to %s." % name)
         except pexpect.EOF:
             if hasattr(self, "before"):

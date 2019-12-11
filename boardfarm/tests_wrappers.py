@@ -1,5 +1,7 @@
 import functools
 from boardfarm.lib.bft_logging import log_message
+from boardfarm.exceptions import PexpectErrorTimeout
+import pexpect
 
 def skip_on_fail(func):
     """If a test fails then it will throw a skipTest error"""
@@ -13,5 +15,14 @@ def skip_on_fail(func):
             instance.skipTest(e.message)
     return wrapper
 
+def throw_pexpect_error(func):
+    """If a pexpect.TIMEOUT occurs throw boardfarm.PexpectError error"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except pexpect.TIMEOUT as e:
+            raise PexpectErrorTimeout(e)
+    return wrapper
 
 
