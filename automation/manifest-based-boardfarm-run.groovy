@@ -139,12 +139,13 @@ for (x in loc_arr) {
     loc_cleanup[loc] = {
         node ('boardfarm && ' + loc) {
 	    sh '''#!/bin/bash
-	    cat boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
-	    sed -e 's/"//g' -e 's/\\t/    /g' | \
-	    while read -r line; do
-	    echo $line >> message
-	    done
+            echo "Test results" > message
+            echo "============" >> message
+            echo "TODO" >> message
 	    '''
+            post_gerrit_msg_from_file("message")
+            archiveArtifacts artifacts: '*.txt,boardfarm/results/*'
+            sh 'rm -rf boardfarm/results'
         }
     }
 }
@@ -191,8 +192,6 @@ pipeline {
                  subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
                  recipientProviders: [[$class: 'RequesterRecipientProvider']],
                  to: email_results
-            archiveArtifacts artifacts: '*.txt,boardfarm/results/*'
-            sh 'rm -rf boardfarm/results'
             sh '''
             set +xe
             echo "Killing spawned processes..."
