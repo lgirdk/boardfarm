@@ -36,7 +36,7 @@ class TestStep(object):
         self.msg = "[{}]::[Step {}]".format(self.parent_test.__class__.__name__, self.step_id)
 
     def log_msg(self, msg):
-        self.parent_test.log_to_file += now_short() + msg + "\r"
+        self.parent_test.log_to_file += now_short() + msg + "\n\r"
         cprint(msg, None, attrs=['bold'])
 
     def add_verify(self, func, v_msg):
