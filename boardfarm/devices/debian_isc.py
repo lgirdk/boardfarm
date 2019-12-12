@@ -411,6 +411,8 @@ EOF'''
 
     # TODO: This needs to be pushed to boardfarm-docsis at a later stage
     def update_cmts_isc_dhcp_config(self, board_config):
+        from boardfarm.devices import board
+
         if 'extra_provisioning' not in board_config:
             # same defaults so we at least set tftp server to WAN
             board_config['extra_provisioning'] = {}
@@ -422,8 +424,8 @@ EOF'''
         # This can be later broken down to smaller chunks to add options specific to type of device.
         mta_dhcp_options = {
                 "mta": {"hardware ethernet": board_config['mta_mac'],
-                         "filename": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
-                         "options": {"bootfile-name": "\"" + board_config['mta_cfg'].encoded_fname + "\"",
+                         "filename": "\"" + board.mta_cfg.encoded_fname + "\"",
+                         "options": {"bootfile-name": "\"" + board.mta_cfg.encoded_fname + "\"",
                                       "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
                                       "domain-name": "\"sipcenter.com\"",
                                       "domain-name-servers": "%s" % tftp_server,
@@ -438,8 +440,8 @@ EOF'''
         # This can be later broken down to smaller chunks to add options specific to type of device.
         cm_dhcp_options = {
                 "cm": {"hardware ethernet": board_config['cm_mac'],
-                         "filename": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
-                         "options": {"bootfile-name": "\"" + board_config['cm_cfg'].encoded_fname + "\"",
+                         "filename": "\"" + board.cm_cfg.encoded_fname + "\"",
+                         "options": {"bootfile-name": "\"" + board.cm_cfg.encoded_fname + "\"",
                                       "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
                                       "docsis-mta.dhcp-server-1": self.prov_ip,
                                       "docsis-mta.dhcp-server-2": self.prov_ip,
@@ -463,7 +465,7 @@ EOF'''
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
         board_config['extra_provisioning_v6']["cm"] = \
             {"host-identifier option dhcp6.client-id": '00:03:00:01:' + board_config['cm_mac'],
-              "options": {"docsis.configuration-file": '"%s"' % board_config['cm_cfg'].encoded_fname,
+              "options": {"docsis.configuration-file": '"%s"' % board.cm_cfg.encoded_fname,
                   "dhcp6.name-servers": "%s" % tftp_server
                 }
             }
