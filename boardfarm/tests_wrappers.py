@@ -11,8 +11,8 @@ def skip_on_fail(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            log_message(instance, "Skipping Test : %s" % e.message)
-            instance.skipTest(e.message)
+            log_message(instance, "Skipping Test : %s" % e)
+            instance.skipTest(e)
     return wrapper
 
 def throw_pexpect_error(func):
