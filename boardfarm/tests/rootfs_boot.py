@@ -6,6 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 import time
+import traceback
+
 from . import bft_base_test
 from boardfarm import lib
 
@@ -195,6 +197,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             except Exception as e:
                 print("\n\nFailed to Boot")
                 print(e)
+                traceback.print_exc()
                 raise boardfarm.exceptions.BootFail
 
     def recover(self):
