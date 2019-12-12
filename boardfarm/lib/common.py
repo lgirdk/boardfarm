@@ -819,3 +819,8 @@ def http_service_kill(device, process):
     if match:
         device.sendline("kill -9 %s" % match.group(1))
         device.expect_prompt()
+
+def check_prompts(device_list):
+    for dev in device_list:
+        assert "FOO" in dev.check_output('echo "FOO"'), "Failed to validate prompt for device: {}".format(dev.name)
+    return True
