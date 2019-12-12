@@ -653,8 +653,16 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
         self.expect(self.prompt)
 
+        self.sendline("dhclient -4 -r %s" % self.iface_dut)
+        self.expect(self.prompt)
         self.sendline('dhclient -6 -r -i %s' % self.iface_dut)
         self.expect(self.prompt, timeout=60)
+
+        self.sendline('kill $(</run/dhclient6.pid)')
+        self.expect(self.prompt)
+
+        self.sendline('kill $(</run/dhclient.pid)')
+        self.expect(self.prompt)
 
         self.sendline('ps aux')
         assert(self.expect(['dhclient -6'] + self.prompt) != 0)
@@ -695,8 +703,6 @@ class DebianBox(linux.LinuxDevice):
 
         self.disable_ipv6('eth0')
 
-        self.sendline("dhclient -4 -r %s" % self.iface_dut)
-        self.expect(self.prompt)
         self.sendline('\nifconfig %s 0.0.0.0' % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('rm /var/lib/dhcp/dhclient.leases')
