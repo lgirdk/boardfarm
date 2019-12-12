@@ -10,9 +10,8 @@ from . import qcom_akronite_nand
 
 
 class QcomDakotaRouterNAND(qcom_akronite_nand.QcomAkroniteRouterNAND):
-    '''
-    Board with a Dakota processor.
-    '''
+    """QcomDakotaRouter board configuration class inherits from QcomAkroniteRouterNAND
+    """
     model = ("dk07-nand", "dk04-nand")
 
     uboot_ddr_addr = "0x88000000"
@@ -20,7 +19,9 @@ class QcomDakotaRouterNAND(qcom_akronite_nand.QcomAkroniteRouterNAND):
     uboot_network_delay = 5
 
     def boot_linux_ramboot(self):
-        '''Boot Linux from initramfs'''
+        """This method flashes the linux from initramfs.
+        initramfs is a complete set of directories that you would find on a normal root filesystem.
+        """
         common.print_bold("\n===== Booting linux (ramboot) for %s =====" % self.model)
 
         bootargs = 'console=ttyMSM0,115200 clk_ignore_unused norootfssplit mem=256M %s' % self.get_safe_mtdparts()
