@@ -100,6 +100,11 @@ if 'BFT_OPTIONS' in os.environ:
             print("Warning: Ignoring option: %s (misspelled?)" % option)
 
 def get_display_backend_size():
+    """Function to get the display backend size resolution
+
+    :return : display resolution size as x,y
+    :rtype : integer
+    """
     xc,yc = default_display_backend_size.split('x')
     x = int(xc)
     y = int(yc)
