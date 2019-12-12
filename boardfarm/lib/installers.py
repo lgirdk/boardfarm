@@ -614,10 +614,16 @@ def install_postfix(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get update')  # Update inetd before installation
-        device.expect(device.prompt, timeout=90)
-        for i in range(3):
-            device.sendcontrol('c')
-            device.expect(device.prompt, timeout=10)
+        if 0 == device.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+                device.expect(device.prompt, timeout=300)
+        else:
+            print("Failed to download packages, things might not work")
+            for i in range(3):
+                device.sendcontrol('c')
+                device.expect(device.prompt, timeout=10)
+            device.sendline("cat /etc/resolv.conf")
+            device.expect(device.prompt)
+            raise Exception("Failed to download packages, things might not work")
         device.sendline("apt-get install postfix -y")
         install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout=120)
         print(install_settings)
