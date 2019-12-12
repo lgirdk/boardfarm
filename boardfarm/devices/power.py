@@ -201,6 +201,7 @@ class SentrySwitchedCDU(PowerDevice):
                 continue
         raise Exception("\nProblem resetting outlet %s." % self.outlet)
 
+
 class PX2(PowerDevice):
     '''
     Power Unit from Raritan.
@@ -211,7 +212,9 @@ class PX2(PowerDevice):
             password='scripter99'):
         ip_address, self.outlet = outlet.replace("px2://", '').split(';')
         PowerDevice.__init__(self, ip_address, username, password)
+        self.do_login()
 
+    def do_login(self):
         pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
         pcon.expect('Login for PX2 CLI')
         pcon.expect('Username:')
@@ -224,6 +227,12 @@ class PX2(PowerDevice):
         self.pcon = pcon
 
     def reset(self):
+        try:
+            self.pcon.sendline('')
+            self.pcon.expect('# ')
+        except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
+            print("Telnet session has expired, establishing the session again")
+            self.do_login()
         self.pcon.sendline('power outlets %s cycle /y' % self.outlet)
         self.pcon.expect_exact('power outlets %s cycle /y' % self.outlet)
         self.pcon.expect('# ')
