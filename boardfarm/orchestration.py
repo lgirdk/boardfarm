@@ -30,10 +30,7 @@ class TestStep(object):
         self.name = name
         self.actions = []
         self.result = []
-        parent_test.steps.append(self)
         self.verify_f, self.v_msg = None, None
-
-        self.msg = "[{}]::[Step {}]".format(self.parent_test.__class__.__name__, self.step_id)
 
     def log_msg(self, msg):
         self.parent_test.log_to_file += now_short() + msg + "\n\r"
@@ -44,6 +41,7 @@ class TestStep(object):
         self.v_msg = v_msg
 
     def __enter__(self):
+        self.msg = "[{}]::[Step {}]".format(self.parent_test.__class__.__name__, TestStep.step_id)
         self.log_msg(('-' * 80))
         self.log_msg("{}: START".format(self.msg))
         self.log_msg("Description: {}".format(self.name))
@@ -69,7 +67,7 @@ class TestStep(object):
         for a_id, action in enumerate(self.actions):
             prefix = "[{}]:[Step {}.{}]::[{}]".format(
                 self.parent_test.__class__.__name__,
-                self.step_id,
+                TestStep.step_id,
                 a_id+1,
                 action.action.func.__name__)
             tr = None
