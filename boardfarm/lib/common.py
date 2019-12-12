@@ -84,7 +84,7 @@ def firefox_webproxy_driver(ipport, config):
         profile.set_preference("network.proxy.socks", ip)
         profile.set_preference("network.proxy.socks_port", int(port))
         profile.set_preference("network.proxy.socks_remote_dns", True)
-        profile.set_preference("security.enterprise_roots.enabled", True);
+        profile.set_preference("security.enterprise_roots.enabled", True)
     else:
         profile.set_preference("network.proxy.type", 1)
         profile.set_preference("network.proxy.http", ip)
@@ -112,7 +112,7 @@ def chrome_webproxy_driver(ipport, config):
 
     chrome_options = webdriver.ChromeOptions()
     if config.default_proxy_type == 'socks5':
-        chrome_options.add_argument("--proxy-server=socks5://" + ipport);
+        chrome_options.add_argument("--proxy-server=socks5://" + ipport)
     else:
         chrome_options.add_argument('--proxy-server=' + ipport)
 
@@ -226,7 +226,6 @@ def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/ser
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
     '''
-    import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
@@ -276,7 +275,6 @@ def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
     '''
-    import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")

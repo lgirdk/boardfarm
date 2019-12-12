@@ -24,7 +24,7 @@ def detect_kernel_panic(console, s):
 
 def detect_crashdump_error(console, s):
     if re.findall("Crashdump magic found", s):
-        print_bold("Crashdump magic found, trying to save data...");
+        print_bold("Crashdump magic found, trying to save data...")
 
         console.sendcontrol('c')
         console.sendcontrol('c')
