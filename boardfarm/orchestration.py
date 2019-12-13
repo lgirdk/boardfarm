@@ -1,6 +1,7 @@
 from boardfarm.lib.bft_logging import now_short
 from boardfarm.exceptions import TestError, CodeError
 from termcolor import cprint
+from functools import partial
 
 class TestResult:
     logged = {}
@@ -39,6 +40,9 @@ class TestStep(object):
     def add_verify(self, func, v_msg):
         self.verify_f = func
         self.v_msg = v_msg
+
+    def add(self, func, *args, **kwargs):
+        TestAction(self, partial(func, *args, **kwargs))
 
     def __enter__(self):
         self.msg = "[{}]::[Step {}]".format(self.parent_test.__class__.__name__, TestStep.step_id)
@@ -101,7 +105,6 @@ class TestAction(object):
             raise CodeError(e)
 
 if __name__ == '__main__':
-    from functools import partial
 
     def action1(a, m=2):
         print("\nAction 1 performed multiplication\nWill return value: {}\n".format(a*m))
@@ -118,9 +121,11 @@ if __name__ == '__main__':
         def runTest(self):
             # this one can be used to define common test Steps
             with TestStep(self, "This is step1 of test") as ts:
+
+                # if you're intializing a TA, pass the function as a partial,
+                # else code will fail
                 TestAction(ts, partial(action1, 2, m=3))
                 TestAction(ts, partial(action2, 6, m=2))
-
                 # add verification, call it later after execute.
                 # if no verification is added, we're expecting step to pass with exception from actions
                 def _verify():
@@ -130,8 +135,8 @@ if __name__ == '__main__':
                 ts.execute()
 
             with TestStep(self, "This is step2 of test") as ts:
-                TestAction(ts, partial(action1, 2, m=3))
-                TestAction(ts, partial(action2, 6, m=0))
+                ts.add(action1, 2, m=3)
+                ts.add(action2, 6, m=0)
                 ts.execute()
                 # since we didn't add a verification before,we can call one directly as well
                 ts.verify(ts.result[1].output() != 3, "verify step2 output")
