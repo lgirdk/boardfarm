@@ -24,7 +24,7 @@ from termcolor import cprint
 from boardfarm.lib.SnmpHelper import SnmpMibs
 from boardfarm.lib.installers import install_postfix
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-
+from datetime import datetime
 try:
     # Python3
     from urllib.parse import urlparse
@@ -824,3 +824,14 @@ def check_prompts(device_list):
     for dev in device_list:
         assert "FOO" in dev.check_output('echo "FOO"'), "Failed to validate prompt for device: {}".format(dev.name)
     return True
+
+def hex_to_datetime(output):
+    """Convert hexstring format to datettime
+
+    :param output: output of the snmp output
+    :type output: hexstring
+    """
+    out = output.replace('0x','')
+    mib_Hex = [out[i:i+2] for i in range(0, len(out), 2)]
+    dt = datetime(*list(map(lambda x: int(x, 16), [mib_Hex[0]+mib_Hex[1]]+mib_Hex[2:])))
+    return dt
