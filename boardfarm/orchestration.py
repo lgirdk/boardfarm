@@ -78,7 +78,7 @@ class TestStep(object):
                 self.log_msg("{} : PASS".format(prefix))
             except Exception as e:
                 tr = TestResult(prefix, "FAIL", str(e), None)
-                self.log_msg("{} - FAIL :: {}:{}".format(prefix, e.__class__.__name__,e.message))
+                self.log_msg("{} - FAIL :: {}:{}".format(prefix, e.__class__.__name__,str(e)))
                 raise(e)
             finally:
                 self.result.append(tr)
