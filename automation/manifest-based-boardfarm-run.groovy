@@ -81,6 +81,8 @@ def run_lint () {
     grep -n -E '^\\s+print\\s' ${files_changed} | awk '{print $1" print should be function: print()"}' >> errors.txt
     # Check indentation errors
     flake8 --select=E111 ${files_changed} >> errors.txt
+    # Check for bad line endings (we want linux line endings only)
+    file ${files_changed} | grep 'with CRLF line' | awk -F: '{print $1": Run dos2unix on this file please."}' >> errors.txt
     '''
 
     err_count = sh(returnStdout: true, script: """cat errors.txt | wc -l""") as Integer
