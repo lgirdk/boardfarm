@@ -50,7 +50,7 @@ class LinuxDevice(base.BaseDevice):
         # we iterate thorough the buffer grepping ONLY the lines we have tagged
         for line in [picky for picky in self.before.split("\n") if "bft_inet6" in picky]:
             # in every line iterate trough its elements
-            for i in [j for j in line.split(" ") if j.strip()!=""]:
+            for i in [j for j in line.split(" ") if j.strip() != ""]:
                 ipv6_iface = None
                 try:
                     # we use IPv6Interface for convenience (any exception will be ignored)
@@ -94,7 +94,7 @@ class LinuxDevice(base.BaseDevice):
         self.sendline('ifconfig {} {} netmask {} up'.format(interface, fix_ip, fix_mark))
         self.expect(self.prompt)
 
-        ip=self.get_interface_ipaddr(interface)
+        ip = self.get_interface_ipaddr(interface)
         if ip == fix_ip:
             return ip
         else:

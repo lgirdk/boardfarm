@@ -694,7 +694,7 @@ class DebianBox(linux.LinuxDevice):
                     self.sendcontrol('c')
                     self.expect(self.prompt)
 
-            #if env is dual, code should always return an IPv6 address
+            # if env is dual, code should always return an IPv6 address
             # need to actually throw an error, for IPv6 not receiving an IP
             try:
                 ipv6 = self.get_interface_ip6addr(self.iface_dut)

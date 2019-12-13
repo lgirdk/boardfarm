@@ -12,7 +12,7 @@ class SipCenter(object):
         self.kwargs = kwargs
 
         self.numbers = self.kwargs.get('numbers', ["1000", "2000", "3000"])
-        #local installation without internet will be added soon
+        # local installation without internet will be added soon
         self.ast_local_url = kwargs.get("local_site", None)
         self.profile[self.name] = self.profile.get(self.name, {})
         sipcenter_profile = self.profile[self.name] = {}
@@ -37,7 +37,7 @@ class SipCenter(object):
         install asterisk from internet
         '''
         self.install_essentials()
-        apt_install(self, 'asterisk', timeout= 300)
+        apt_install(self, 'asterisk', timeout=300)
 
     def setup_asterisk_config(self):
         '''

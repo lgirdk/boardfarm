@@ -2,14 +2,14 @@ from boardfarm.lib.installers import install_pjsua
 class SoftPhone(object):
 
     model = "pjsip"
-    profile={}
+    profile = {}
 
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
         self.own_number = self.kwargs.get('number', '3000')
         self.port = self.kwargs.get('num_port', '5060')
-        self.config_name="pjsip.conf"
+        self.config_name = "pjsip.conf"
         self.pjsip_local_url = kwargs.get("local_site", None)
         self.pjsip_prompt = ">>>"
         self.profile[self.name] = self.profile.get(self.name, {})
@@ -20,8 +20,8 @@ class SoftPhone(object):
         return "softphone"
 
     def install_softphone(self):
-        #to install softphone from local url or from internet
-        install_pjsua(self, getattr(self,"pjsip_local_url", None))
+        # to install softphone from local url or from internet
+        install_pjsua(self, getattr(self, "pjsip_local_url", None))
 
     def phone_config(self, sipserver_ip):
         '''
@@ -29,22 +29,22 @@ class SoftPhone(object):
         Arguments:
         sipserver_ip(str): ip of sip server
         '''
-        conf  = '''(
-        echo --local-port='''+self.port+'''
-        echo --id=sip:'''+self.own_number+'''@'''+sipserver_ip+'''
-        echo --registrar=sip:'''+sipserver_ip+'''
+        conf = '''(
+        echo --local-port=''' + self.port + '''
+        echo --id=sip:''' + self.own_number + '''@''' + sipserver_ip + '''
+        echo --registrar=sip:''' + sipserver_ip + '''
         echo --realm=*
-        echo --username='''+self.own_number+'''
+        echo --username=''' + self.own_number + '''
         echo --password=1234
         echo --null-audio
-        )> '''+self.config_name
+        )> ''' + self.config_name
         self.sendline(conf)
         self.expect(self.prompt)
 
     def phone_start(self):
         '''To start the soft phone
         Note: Start softphone only when asterisk server is running to avoid failure'''
-        self.sendline('pjsua --config-file='+self.config_name)
+        self.sendline('pjsua --config-file=' + self.config_name)
         self.expect('registration success, status=200 \(OK\)')
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
@@ -60,7 +60,7 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
         self.sendline('m')
         self.expect('Make call\:')
-        self.sendline('sip:'+dial_number+'@'+receiver_ip)
+        self.sendline('sip:' + dial_number + '@' + receiver_ip)
         self.expect('Call 0 state changed to CALLING')
         self.expect(self.pjsip_prompt)
 

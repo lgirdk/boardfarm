@@ -22,7 +22,7 @@ class SerialPhone(object):
         '''
         to configure system link/soft link
         '''
-        #to check whether the dev/tty exists-to be added
+        # to check whether the dev/tty exists-to be added
         self.sendline("ln -s /dev/tty%s  /root/line-%s" % (self.line, self.line))
         self.expect(["File exists"] + self.prompt)
     
@@ -33,7 +33,7 @@ class SerialPhone(object):
         self.sendline("rm  /root/line-%s" % self.line)
         self.expect(self.prompt)
 
-    def phone_start(self,baud="115200",timeout="1"):
+    def phone_start(self, baud="115200", timeout="1"):
         '''
         to start the softphone session
         '''
@@ -43,7 +43,7 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("import serial,time")
         self.expect(">>>")
-        self.sendline("ser = serial.Serial('/root/line-%s', %s ,timeout= %s)" % (self.line,baud,timeout))
+        self.sendline("ser = serial.Serial('/root/line-%s', %s ,timeout= %s)" % (self.line, baud, timeout))
         self.expect(">>>")
         self.sendline("ser.write(b'ATZ\\r')")
         self.expect(">>>")
@@ -66,12 +66,12 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("print(l)")
 
-    def dial(self,number):
+    def dial(self, number):
         '''
         to dial to another number
         number(str) : number to be called
         '''
-        AT=str.encode(number)
+        AT = str.encode(number)
         self.sendline("ser.write(b'ATDT%s\\r')" % AT)
         self.expect(">>>")
         self.mta_readlines()
@@ -81,7 +81,7 @@ class SerialPhone(object):
         '''
         to answer the incoming call
         '''
-        self.mta_readlines(time = '10')
+        self.mta_readlines(time='10')
         self.expect("RING")
         self.sendline("ser.write(b'ATA\\r')")
         self.expect(">>>")
