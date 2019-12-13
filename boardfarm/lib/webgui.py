@@ -189,14 +189,17 @@ class web_gui():
     # Starts the python wrapper for Xvfb, Xephyr and Xvnc
     # the backend can be set via BFT_OPTIONS
     def open_display(self):
+        from pyvirtualdisplay.randomize import Randomizer
         from boardfarm import config
         xc, yc = config.default_display_backend_size.split('x')
         x = int(xc)
         y = int(yc)
+        r = Randomizer() if config.default_display_backend_port == 0 else None
         self.display = Display(backend=config.default_display_backend,
                                rfbport=config.default_display_backend_port,
                                rfbauth=os.environ['HOME'] + '/.vnc/passwd',
                                visible=0,
+                               randomizer=r,
                                size=(x, y))
         self.display.start()
 
