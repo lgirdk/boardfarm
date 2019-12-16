@@ -663,7 +663,10 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
         self.sendline('ps aux')
-        assert(self.expect(['dhclient -6'] + self.prompt) != 0)
+        if self.expect(['dhclient'] + self.prompt) == 0:
+            print("WARN: dhclient still running, something started rogue client!")
+            self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
+            self.expect(self.prompt)
 
         if not ipv4_only:
 
