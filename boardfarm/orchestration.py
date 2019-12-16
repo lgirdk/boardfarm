@@ -1,7 +1,8 @@
 from boardfarm.lib.bft_logging import now_short
 from boardfarm.exceptions import TestError, CodeError
 from termcolor import cprint
-from functools import partial
+from functools import partial, wraps
+import six
 
 class TestResult:
     logged = {}
@@ -23,14 +24,31 @@ class TestResult:
         """
         return self.result
 
-class TestStep(object):
-    step_id = 1
+class TestStepMeta(type):
+    section = {}
 
-    def __init__(self, parent_test, name):
+    def __new__(cls, name, bases, dct):
+        dct['__init__'] = cls.set_args(dct['__init__'])
+        return super(TestStepMeta, cls).__new__(cls, name, bases, dct)
+
+    @classmethod
+    def set_args(cls, func):
+        @wraps(func)
+        def wrapper(self, tst_cls, name, prefix = "Execution"):
+            cls.section[tst_cls] = cls.section.get(tst_cls, {})
+            cls.section[tst_cls][prefix] = cls.section[tst_cls].get(prefix, 0) + 1
+            self.step_id = cls.section[tst_cls][prefix]
+            return func(self, tst_cls, name, prefix)
+        return wrapper
+
+class TestStep(six.with_metaclass(TestStepMeta, object)):
+
+    def __init__(self, parent_test, name, prefix):
         self.parent_test = parent_test
         self.name = name
         self.actions = []
         self.result = []
+        self.prefix = prefix
         self.verify_f, self.v_msg = None, None
 
     def log_msg(self, msg):
@@ -45,7 +63,7 @@ class TestStep(object):
         TestAction(self, partial(func, *args, **kwargs))
 
     def __enter__(self):
-        self.msg = "[{}]::[Step {}]".format(self.parent_test.__class__.__name__, TestStep.step_id)
+        self.msg = "[{}]::[{} Step {}]".format(self.parent_test.__class__.__name__, self.prefix , self.step_id)
         self.log_msg(('-' * 80))
         self.log_msg("{}: START".format(self.msg))
         self.log_msg("Description: {}".format(self.name))
@@ -56,7 +74,6 @@ class TestStep(object):
         r = "PASS" if not traceback else "FAIL"
         self.log_msg(('-' * 80))
         self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
-        TestStep.step_id += 1
 
     # msg has to be the verification message.
     def verify(self, cond, msg):
@@ -69,9 +86,10 @@ class TestStep(object):
 
     def execute(self):
         for a_id, action in enumerate(self.actions):
-            prefix = "[{}]:[Step {}.{}]::[{}]".format(
+            prefix = "[{}]:[{} Step {}.{}]::[{}]".format(
                 self.parent_test.__class__.__name__,
-                TestStep.step_id,
+                self.prefix,
+                self.step_id,
                 a_id+1,
                 action.action.func.__name__)
             tr = None
@@ -120,7 +138,8 @@ if __name__ == '__main__':
 
         def runTest(self):
             # this one can be used to define common test Steps
-            with TestStep(self, "This is step1 of test") as ts:
+            # note: we could assign a section to a test-step, e.g. Cleanup in this case.
+            with TestStep(self, "This is step1 of test", "Cleanup") as ts:
 
                 # if you're intializing a TA, pass the function as a partial,
                 # else code will fail
@@ -134,6 +153,7 @@ if __name__ == '__main__':
                 ts.add_verify(_verify, "verify step1 output")
                 ts.execute()
 
+            # need this to reset the counter.
             with TestStep(self, "This is step2 of test") as ts:
                 ts.add(action1, 2, m=3)
                 ts.add(action2, 6, m=0)
