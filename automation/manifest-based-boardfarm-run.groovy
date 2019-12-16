@@ -144,7 +144,12 @@ for (x in loc_arr) {
             echo "TODO" >> message
 	    '''
             post_gerrit_msg_from_file("message")
-            archiveArtifacts artifacts: '*.txt,boardfarm/results/*'
+            sh '''
+            mkdir -p  ''' + loc + '''/boardfarm/results
+            mv boardfarm/results/* ''' + loc + '''/boardfarm/results/ || true
+            mv *.txt ''' + loc + ''' || true
+            '''
+            archiveArtifacts artifacts: loc + "/*.txt, " + loc + "/boardfarm/results/*"
             sh 'rm -rf boardfarm/results'
         }
     }
