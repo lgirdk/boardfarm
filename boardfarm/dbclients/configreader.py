@@ -14,8 +14,7 @@ except:
     from urllib2 import urlopen
 
 class TestsuiteConfigReader(object):
-    '''
-    Read config file like:
+    """Read config file (in our case testsuite.cfg) like:
 
       [testsuiteA]
       test1
@@ -35,12 +34,19 @@ class TestsuiteConfigReader(object):
        'testsuiteB' : [test7, test2, ...]
        'testsuiteC' : [test7, test2, test3, ...]
       }
-    '''
+    """
 
     def __init__(self):
+        """This method initializes the self.section to empty dict.
+        """
         self.section = {}
 
     def read(self, filenames):
+        """This method reads the config which in turn uses the methods read_config for every file in the list of filenames.
+
+        :param filenames: list of filenames to be read from.
+        :type filenames: list
+        """
         for f in filenames:
             try:
                 self.read_config(f)
@@ -49,9 +55,14 @@ class TestsuiteConfigReader(object):
                 continue
 
     def read_config(self, fname):
-        '''
-        Read local or remote (http) config file and parse into a dictionary.
-        '''
+        """Read local or remote (http) config file and parse into a dictionary.
+           Performs the operations based on the data format available. Example: suite will be appended with "@" at begin
+           if it is supposed to be called in another test suite.
+
+        :param fname: name of the file to be read from.
+        :type fname: string
+        :raises: Exception
+        """
         try:
             if fname.startswith("http"):
                 s_config = urlopen(fname).read()
@@ -93,6 +104,8 @@ class TestsuiteConfigReader(object):
             self.section[section] = new_section
 
     def __str__(self):
+        """The method is used to format the string representation of self object (instance).
+        """
         result = []
         for name in sorted(self.section):
             result.append('* %s' % name)
