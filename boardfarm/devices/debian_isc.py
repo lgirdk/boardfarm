@@ -78,13 +78,8 @@ class DebianISCProvisioner(debian.DebianBox):
         return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
     def setup_dhcp6_config(self, board_config):
+        from boardfarm.devices import board
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
-
-        # can't provision without this, so let's ignore v6 if that's the case
-        if tftp_server is None:
-            self.sendline('rm /etc/dhcp/dhcpd6.conf-' + board_config['station'] + '.master')
-            self.expect(self.prompt)
-            return
 
         to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
 preferred-lifetime 7200;
@@ -225,6 +220,12 @@ EOF'''
 
         self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd6.conf.' + board_config['station'])
         self.expect(self.prompt)
+
+        # can't provision without this, so let's ignore v6 if that's the case
+        if tftp_server is None or board.cm_cfg.cm_configmode not in ('dslite', 'dual-stack', 'ipv6'):
+            self.sendline('rm /etc/dhcp/dhcpd6.conf.' + board_config['station'])
+            self.expect(self.prompt)
+
         # combine all configs into one
         self.sendline("cat /etc/dhcp/dhcpd6.conf.* >> /etc/dhcp/dhcpd6.conf-" + board_config['station'] + ".master")
         self.expect(self.prompt)
@@ -233,13 +234,9 @@ EOF'''
 
 
     def setup_dhcp_config(self, board_config):
-        tftp_server = self.tftp_device.tftp_server_ip_int()
+        from boardfarm.devices import board
 
-        # TODO: we should work ipv6 only at some point
-        # if tftp_server is None:
-        #    self.sendline('rm /etc/dhcp/dhcpd.conf-' + board_config['station'] + '.master')
-        #    self.expect(self.prompt)
-        #    return
+        tftp_server = self.tftp_device.tftp_server_ip_int()
 
         to_send = '''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
 log-facility local7;
@@ -374,6 +371,9 @@ EOF'''
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].items():
+            # skip all but MTA if ipv6 only
+            if board.cm_cfg.cm_configmode not in ('bridge', 'dual-stack', 'ipv4') and dev != 'mta':
+                continue
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
             for key, value in cfg_sec.items():
                 if key == "options":
@@ -387,6 +387,11 @@ EOF'''
 
         self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
         self.expect(self.prompt)
+
+        if tftp_server is None:
+            self.sendline('rm /etc/dhcp/dhcpd.conf.' + board_config['station'])
+            self.expect(self.prompt)
+
         # combine all configs into one
         self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
         self.expect(self.prompt)
