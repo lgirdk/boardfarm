@@ -119,7 +119,13 @@ def run_test (loc) {
         cd boardfarm
         yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
 
-        sh 'grep tests_fail...0, boardfarm/results/test_results.json'
+        sh '''
+        mkdir -p  ''' + loc + '''/boardfarm/results
+        mv boardfarm/results/* ''' + loc + '''/boardfarm/results/ || true
+        '''
+        archiveArtifacts artifacts: loc + "/boardfarm/results/*"
+
+        sh 'grep tests_fail...0, ' + loc + '/boardfarm/results/test_results.json'
     }
 }
 
@@ -147,11 +153,6 @@ for (x in loc_arr) {
             echo "TODO" >> message
             '''
             post_gerrit_msg_from_file("message")
-            sh '''
-            mkdir -p  ''' + loc + '''/boardfarm/results
-            mv boardfarm/results/* ''' + loc + '''/boardfarm/results/ || true
-            '''
-            archiveArtifacts artifacts: loc + "/boardfarm/results/*"
             sh 'rm -rf ' + loc
         }
     }
