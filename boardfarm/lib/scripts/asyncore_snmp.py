@@ -8,11 +8,24 @@ from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pyasn1.codec.ber import encoder, decoder
 
 def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10, mode='ipv4'):
+    """script to run in the remote device for snmp mib walk
+       This script can be copied to the remote device eg:wan
+       and can be executed directly using python for snmp mib walk
+       The walk can done for both ipv6 and ipv4
 
-    ''' script to run in the remote device
-        This script can be copied to the remote device eg:wan
-        and can be executed directly using python '''
-
+    :param target_IP: device IP for mib query
+    :type target_IP: string
+    :param oid: mib query OID
+    :type oid: string
+    :param community: community string for mib query, defaults to public
+    :type community: string, optional
+    :param walk_timeout: snmp walk timeout, defaults to 10
+    :type walk_timeout: integer, optional
+    :param mode: mib query mode, defaults to ipv4
+    :type mode: string, optional
+    :return: mib query output
+    :rtype: string
+    """
     # SNMP table header
     headVars = [v2c.ObjectIdentifier((oid))]
 
