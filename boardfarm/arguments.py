@@ -45,6 +45,17 @@ except ImportError:
 
 
 def filter_boards(board_config, filter, name=None):
+    """Choose boards based on the filter provided
+
+    :param board_config: board config parameters
+    :type board_config: dictionary
+    :param filter: filter type for the board
+    :type filter: string
+    :param name: board name
+    :type name: string
+    :return: True or False
+    :rtype: boolean
+    """
     s = ""
     for k, v in board_config.items():
         s += "%s : %s\n" % (k, v)
@@ -64,9 +75,16 @@ Example use:
 '''
 
 def parse():
-    '''
-    Read command-line arguments, return a simple configuration for running tests.
-    '''
+    """Read command-line arguments, parse and store all values in boardfarm_config
+    Config can be fetched locally or remotely using HTTP.
+    After parsing the config, devices from generic locations are moved inside selected
+    boards.
+    This method also initializes parameters for tests.
+
+    :raises exception: Unable to access/read boardfarm configuration
+    :return: boardfarm config module containing boardfarm_config
+    :rtype: module
+    """
     parser = argparse.ArgumentParser(description='Connect to an available board, flash image(s), and run tests.',
                                      usage='bft [options...]',
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
