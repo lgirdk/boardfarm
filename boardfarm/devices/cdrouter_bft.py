@@ -1,5 +1,6 @@
 class CDrouterDevice(object):
     model = ('cdrouter')
+    name = 'cdrouter'
 
     def __init__(self, *args, **kwargs):
         self.ipaddr = kwargs.pop('ipaddr')
