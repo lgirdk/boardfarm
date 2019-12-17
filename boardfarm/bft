@@ -18,7 +18,6 @@ import traceback
 import queue
 import threading
 import re
-import uuid
 from datetime import datetime
 
 # Try to catch common mistakes: not installing boardfarm, or
@@ -37,6 +36,8 @@ except Exception as e:
 
 from boardfarm.zephyr import zephyr_reporter
 
+from boardfarm import start
+from boardfarm import env
 import boardfarm.exceptions
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
@@ -78,7 +79,7 @@ def threaded_device_helper(device, ret):
     dyn_dev.name = device['name']
     ret.put(dyn_dev)
 
-def setup_dynamic_devices(config, env=None, start=None):
+def setup_dynamic_devices(config):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
@@ -87,9 +88,6 @@ def setup_dynamic_devices(config, env=None, start=None):
     ret = queue.Queue()
 
     for device in config.board['devices']:
-        device['env'] = env
-        device['start'] = start
-
         threads.append(threading.Thread(target=threaded_device_helper, args=(device, ret)))
         threads[-1].start()
 
@@ -111,9 +109,6 @@ def setup_dynamic_devices(config, env=None, start=None):
         def create_device_helper(name, dev):
             setattr(config, name, dev)
             config.devices.append(name)
-
-            # TODO: should this be here for should each device type set it?
-            dev.start = start
 
             # if this device is a wan cmts provisioner, we set the device name
             # TODO: this should be generic
@@ -153,7 +148,6 @@ def main():
 
     os.environ["TERM"] = "dumb"
 
-    start = datetime.now()
 
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
@@ -234,11 +228,6 @@ def main():
             tftp_server = None
             tftp_port = "22"
 
-            uniqid = uuid.uuid4().hex[:15]  # Random, unique ID and use first 15 bytes
-            env = {"wan_iface": "wan%s" % uniqid[:12],
-                    "lan_iface": "lan%s" % uniqid[:12],
-                    "uniq_id": uniqid}
-
             # this will hold the arguments for the board configuration
             config.board['board_cfg_args'] = config.test_args.get("board_cfg", None)
 
@@ -258,11 +247,8 @@ def main():
                                                  power_password=config.board.get('power_password', None),
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
-                                                 config=config.board,
-                                                 env=env,
-                                                 start=start)
+                                                 config=config.board)
             print_bold("dut device console = %s" % colored("black", 'grey'))
-            config.console.start = start
 
             # TODO: we should generically check these at one time in the future
             for x in ["UBOOT", "KERNEL", "ROOTFS", "META_BUILD"]:
@@ -275,7 +261,7 @@ def main():
                     setattr(config, x, r)
 
             if 'devices' in config.board:
-                setup_dynamic_devices(config, env=env, start=start)
+                setup_dynamic_devices(config)
 
             def get_tftp_config(dev):
                 saved = dev.logfile_read
@@ -368,7 +354,6 @@ def main():
                     print_bold("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
                     sys.exit(1)
             test = tests.available_tests[name]
-            test.start = start
         else:
             test = name
         print_bold("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
@@ -387,7 +372,6 @@ def main():
                     raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
                 print_bold("  %s" % t)
                 test = t(config)
-                test.start = start
                 tests_to_run.append(test)
         except Exception as e:
             print_bold(e)

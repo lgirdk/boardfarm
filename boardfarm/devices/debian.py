@@ -15,6 +15,7 @@ import atexit
 import os
 import ipaddress
 
+from boardfarm import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from termcolor import colored, cprint
 from nested_lookup import nested_lookup
@@ -67,7 +68,6 @@ class DebianBox(linux.LinuxDevice):
         post_cmd_host = kwargs.pop('post_cmd_host', None)
         post_cmd = kwargs.pop('post_cmd', None)
         cleanup_cmd = kwargs.pop('cleanup_cmd', None)
-        env = kwargs.pop('env', None)
         lan_network = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_network', "192.168.1.0/24"))).network
         lan_gateway = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
 
@@ -112,7 +112,6 @@ class DebianBox(linux.LinuxDevice):
         self.password = password
         self.port = port
         self.location = location
-        self.env = env
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
         self.tftp_device = self
@@ -253,7 +252,7 @@ class DebianBox(linux.LinuxDevice):
     def run_cleanup_cmd(self):
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
         sys.stdout.flush()
-        cc = bft_pexpect_helper.spawn(command='bash', args=['-c', self.cleanup_cmd], env=self.env)
+        cc = bft_pexpect_helper.spawn(command='bash', args=['-c', self.cleanup_cmd], env=env)
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 

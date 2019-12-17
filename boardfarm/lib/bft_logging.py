@@ -12,6 +12,8 @@ from termcolor import colored
 import re
 from functools import wraps
 
+from boardfarm import start
+
 def now_short(_format="%Y%m%d-%H%M%S"):
     """
     Name:now_short
@@ -44,8 +46,7 @@ class LoggerMeta(type):
             func_args_str = "%s %s" % (repr(args), repr(kwargs))
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
-            if hasattr(args[0], 'start'):
-                args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now() - args[0].start).total_seconds(), to_log)
+            args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now() - start).total_seconds(), to_log)
 
             clsname = args[0].__class__.__name__
 
@@ -55,13 +56,11 @@ class LoggerMeta(type):
             err_injection_dict = get_err_injection_dict()
             if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[clsname]:
                 ret = err_injection_dict[clsname][func.__name__]
-                if hasattr(args[0], 'start'):
-                    args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((datetime.now() - args[0].start).total_seconds(), to_log, repr(ret))
+                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((datetime.now() - start).total_seconds(), to_log, repr(ret))
             else:
                 ret = func(*args, **kwargs)
 
-            if hasattr(args[0], 'start'):
-                args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now() - args[0].start).total_seconds(), to_log, repr(ret))
+            args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now() - start).total_seconds(), to_log, repr(ret))
 
             return ret
         return wrapper
@@ -91,9 +90,7 @@ class o_helper(object):
             self.out.write(colored(string, self.color))
         else:
             self.out.write(string)
-        if not hasattr(self.parent, 'start'):
-            return
-        td = datetime.now() - self.parent.start
+        td = datetime.now() - start
         # check for the split case
         if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
             tmp = '\n[%.6f]' % td.total_seconds()

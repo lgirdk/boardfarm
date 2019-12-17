@@ -76,7 +76,6 @@ class OpenWrtRouter(linux.LinuxDevice):
 
         self.config = config
         self.consoles = [self]
-        self.start = kwargs['start']
 
         if type(conn_cmd) is list:
             self.conn_list = conn_cmd
