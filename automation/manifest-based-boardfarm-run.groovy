@@ -96,6 +96,8 @@ def run_lint () {
         post_gerrit_msg_from_file("errors.txt")
     }
 
+    archiveArtifacts artifacts: "*.txt"
+
     if (err_count > 0) {
         currentBuild.result = 'FAILED'
         error("pyflakes did not pass")
@@ -148,9 +150,8 @@ for (x in loc_arr) {
             sh '''
             mkdir -p  ''' + loc + '''/boardfarm/results
             mv boardfarm/results/* ''' + loc + '''/boardfarm/results/ || true
-            mv *.txt ''' + loc + ''' || true
             '''
-            archiveArtifacts artifacts: loc + "/*.txt, " + loc + "/boardfarm/results/*"
+            archiveArtifacts artifacts: loc + "/boardfarm/results/*"
             sh 'rm -rf ' + loc
         }
     }
