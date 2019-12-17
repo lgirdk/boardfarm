@@ -2,11 +2,12 @@ import ipaddress
 import os
 import six
 import pexpect
+import re
+
 import boardfarm
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.common import scp_from
-import re
 import glob
 import traceback
 
@@ -656,6 +657,14 @@ EOF'''
             self.expect(self.prompt)
         assert match_num == 0, "Incorrect number of DHCP servers started, something went wrong!"
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
+        self.expect(self.prompt)
+
+        self.sendline('ps aux | grep dhcpd; echo DONE')
+        self.expect_exact('ps aux | grep dhcpd; echo DONE')
+        self.expect('DONE')
+
+        assert len(re.findall('dhcpd[^\n]*-4', self.before)) == 1, "Multiple DHCP4 servers running"
+        assert len(re.findall('dhcpd[^\n]*-6', self.before)) == 1, "Multiple DHCP6 servers running"
         self.expect(self.prompt)
 
     def get_attr_from_dhcp(self, attr, exp_pattern, dev, station, match_group=4):
