@@ -10,7 +10,7 @@ import traceback
 
 from . import bft_base_test
 from boardfarm import lib
-
+from boardfarm.lib.common import run_once
 import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, prompt
 
@@ -85,6 +85,10 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         board.reset()
         rootfs = None
 
+        @run_once
+        def flash_meta_helper(board, meta, wan, lan):
+            board.flash_meta(self.config.META_BUILD, wan, lan)
+
         # Reflash only if at least one or more of these
         # variables are set, or else there is nothing to do in u-boot
         meta_interrupt = False
@@ -98,7 +102,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             if self.config.META_BUILD:
                 for attempt in range(3):
                     try:
-                        board.flash_meta(self.config.META_BUILD, wan, lan)
+                        flash_meta_helper(board, self.config.META_BUILD, wan, lan)
                         break
                     except Exception as e:
                         print(e)
@@ -124,7 +128,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         board.linux_booted = True
         board.wait_for_linux()
         if self.config.META_BUILD and board.flash_meta_booted:
-            board.flash_meta(self.config.META_BUILD, wan, lan)
+            flash_meta_helper(board, self.config.META_BUILD, wan, lan)
         linux_booted_seconds_up = board.get_seconds_uptime()
         # Retry setting up wan protocol
         if self.config.setup_device_networking:
