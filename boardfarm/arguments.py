@@ -88,7 +88,6 @@ def parse():
     parser.add_argument('-s', '--sysupgrade', metavar='', type=str, default=None, help='URL or file PATH to Sysupgrade image')
     parser.add_argument('-t', '--retry', type=int, default=0, help='How many times to retry every test if it fails')
     parser.add_argument('-u', '--uboot', metavar='', type=str, default=None, help=argparse.SUPPRESS)
-    parser.add_argument('-v', '--reboot-vms', action="store_true", help='Reboot VMs before starting tests')
     parser.add_argument('-w', '--wan', metavar='', type=str, default='dhcp', help='WAN protocol, dhcp (default) or pppoe')
     parser.add_argument('-x', '--testsuite', metavar='', type=str, default=None, help='NAME of test suite to run')
     parser.add_argument('-y', '--batch', action='store_true', help='Run in unattended mode - do not spawn console on failed test')
@@ -347,7 +346,6 @@ def parse():
         config.update_error_injection_dict(args.err_dict)
 
     config.WAN_PROTO = args.wan
-    config.reboot_vms = args.reboot_vms
     config.setup_device_networking = not args.no_network
     config.bootargs = args.bootargs
     config.golden = args.golden

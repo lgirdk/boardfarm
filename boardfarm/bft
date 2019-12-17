@@ -87,10 +87,7 @@ def setup_dynamic_devices(config, env=None, start=None):
     ret = queue.Queue()
 
     for device in config.board['devices']:
-        device['reboot'] = config.reboot_vms
         device['env'] = env
-        device['lan_network'] = config.console.lan_network
-        device['lan_gateway'] = config.console.lan_gateway
         device['start'] = start
 
         threads.append(threading.Thread(target=threaded_device_helper, args=(device, ret)))
@@ -117,13 +114,6 @@ def setup_dynamic_devices(config, env=None, start=None):
 
             # TODO: should this be here for should each device type set it?
             dev.start = start
-
-            # TODO: set the following:
-            #    reboot=config.reboot_vms,
-            #    env=env,
-            #    lan_network=config.console.lan_network,
-            #    lan_gateway=config.console.lan_gateway,
-            #    config=device)
 
             # if this device is a wan cmts provisioner, we set the device name
             # TODO: this should be generic
