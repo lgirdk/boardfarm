@@ -29,7 +29,7 @@ def sync_code () {
 
 def setup_python () {
     if (python_version == "2") {
-	sh '''
+        sh '''
         rm -rf venv
         virtualenv venv
         . venv/bin/activate
@@ -39,7 +39,7 @@ def setup_python () {
     } else {
         sh '''
         python3 -c 'import tkinter' || sudo apt install python3-tk
-	rm -rf venv
+        rm -rf venv
         python3 -m venv venv
         . venv/bin/activate
         repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
@@ -103,10 +103,10 @@ def run_lint () {
 
 def run_test (loc) {
     ansiColor('xterm') {
-	setup_python()
+        setup_python()
 
-	sh '''
-	. venv/bin/activate
+        sh '''
+        . venv/bin/activate
         python --version
         bft --version
         export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
@@ -125,12 +125,12 @@ def loc_jobs = [:]
 for (x in loc_arr) {
     def loc = x
     loc_jobs[loc] = {
-	stage("run bft in " + loc) {
+        stage("run bft in " + loc) {
             node ('boardfarm && ' + loc) {
-	        sync_code()
-	        run_test(loc)
+                sync_code()
+                run_test(loc)
             }
-	}
+        }
     }
 }
 def loc_cleanup = [:]
@@ -138,11 +138,11 @@ for (x in loc_arr) {
     def loc = x
     loc_cleanup[loc] = {
         node ('boardfarm && ' + loc) {
-	    sh '''#!/bin/bash
+            sh '''#!/bin/bash
             echo "Test results" > message
             echo "============" >> message
             echo "TODO" >> message
-	    '''
+            '''
             post_gerrit_msg_from_file("message")
             sh '''
             mkdir -p  ''' + loc + '''/boardfarm/results
@@ -180,7 +180,7 @@ pipeline {
         stage('run test') {
             steps {
                 script {
-	            parallel loc_jobs
+                    parallel loc_jobs
                 }
             }
         }
