@@ -27,8 +27,8 @@ def sync_code () {
     }
 }
 
-def setup_python () {
-    if (python_version == "2") {
+def setup_python (version) {
+    if (version == "2") {
         sh '''
         rm -rf venv
         virtualenv venv
@@ -106,7 +106,7 @@ def run_lint () {
 
 def run_test (loc) {
     ansiColor('xterm') {
-        setup_python()
+        setup_python(python_version)
 
         sh '''
         . venv/bin/activate
