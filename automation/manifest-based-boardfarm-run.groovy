@@ -150,7 +150,7 @@ for (x in loc_arr) {
             mv *.txt ''' + loc + ''' || true
             '''
             archiveArtifacts artifacts: loc + "/*.txt, " + loc + "/boardfarm/results/*"
-            sh 'rm -rf boardfarm/results'
+            sh 'rm -rf ' + loc
         }
     }
 }
