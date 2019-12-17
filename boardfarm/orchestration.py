@@ -3,6 +3,7 @@ from boardfarm.exceptions import TestError, CodeError
 from termcolor import cprint
 from functools import partial, wraps
 import six
+import inspect
 
 class TestResult:
     logged = {}
@@ -34,16 +35,17 @@ class TestStepMeta(type):
     @classmethod
     def set_args(cls, func):
         @wraps(func)
-        def wrapper(self, tst_cls, name, prefix = "Execution"):
+        def wrapper(self, tst_cls, *args, **kwargs):
             cls.section[tst_cls] = cls.section.get(tst_cls, {})
-            cls.section[tst_cls][prefix] = cls.section[tst_cls].get(prefix, 0) + 1
-            self.step_id = cls.section[tst_cls][prefix]
-            return func(self, tst_cls, name, prefix)
+            caller = inspect.stack()[1][3]
+            cls.section[tst_cls][caller] = cls.section[tst_cls].get(caller, 0) + 1
+            self.step_id = cls.section[tst_cls][caller]
+            return func(self, tst_cls, *args, **kwargs)
         return wrapper
 
 class TestStep(six.with_metaclass(TestStepMeta, object)):
 
-    def __init__(self, parent_test, name, prefix):
+    def __init__(self, parent_test, name, prefix="Execution"):
         self.parent_test = parent_test
         self.name = name
         self.actions = []
