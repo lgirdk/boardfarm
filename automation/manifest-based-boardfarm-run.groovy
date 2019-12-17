@@ -42,6 +42,7 @@ def setup_python () {
         rm -rf venv
         python3 -m venv venv
         . venv/bin/activate
+        pip3 install --upgrade pip
         repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
         repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
         '''
