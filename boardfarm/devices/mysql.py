@@ -9,8 +9,7 @@
 import sys
 
 class MySqlReporter():
-    '''
-    If results are archived somewhere (e.g. a Jenkins server, or other
+    """If results are archived somewhere (e.g. a Jenkins server, or other
     build server), the MySqlReporter class can be used to insert the
     location of the results to a MySQL database.
 
@@ -20,11 +19,16 @@ class MySqlReporter():
     user="username"
     passwd="password"
     db="database_name"
-    '''
+    """
 
     def __init__(self,
                  credential_dir='/local/mnt/workspace/',
                  credential_file='findit_db'):
+        """This method handles initialization of the SQL DB client.
+
+        The method install python-mysqldb, fetches the user credentials
+        and attempts to connect to MySQL server.
+        """
         try:
             import MySQLdb
         except Exception as e:
@@ -48,10 +52,16 @@ class MySqlReporter():
         self.cur = self.db.cursor()
 
     def insert_data(self, build_id, url, jobname):
-        '''
-        Given a build ID (e.g. APSS.LN.0.0.1-00047-S-1) and a
+        """Given a build ID (e.g. APSS.LN.0.0.1-00047-S-1) and a
         url, insert these into the database.
-        '''
+
+        :param build_id: build id of the run eg:APSS.LN.0.0.1-00047-S-1
+        :type build_id: string
+        :param url: results link url
+        :type url: string
+        :param jobname: jobname of the run
+        :type jobname: string
+        """
         cmd = ("INSERT INTO TestResults "
                "(TestResultsBuildID, TestResultsJobName, TestResultsLink) "
                "VALUES (%(BuildID)s, %(JobName)s, %(ResultsLink)s)")
