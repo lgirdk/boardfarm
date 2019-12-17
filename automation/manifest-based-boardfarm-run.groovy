@@ -51,7 +51,7 @@ def setup_python (version) {
 
 def post_gerrit_msg_from_file (file) {
     sh '''
-    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="$(cat errors.txt)"\\\'
+    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="$(cat ''' + file + ''')"\\\'
     '''
 }
 
@@ -125,6 +125,17 @@ def run_test (loc) {
         '''
         archiveArtifacts artifacts: loc + "/boardfarm/results/*"
 
+        sh '''
+        echo "Test results in ''' + loc + '''" > message
+        echo "============" >> message
+        cat ''' + loc + '''/boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
+           sed -e 's/"//g' -e 's/\\t/    /g' | \
+           while read -r line; do
+               echo $line >> message
+           done
+        '''
+        post_gerrit_msg_from_file("message")
+
         sh 'grep tests_fail...0, ' + loc + '/boardfarm/results/test_results.json'
     }
 }
@@ -147,12 +158,6 @@ for (x in loc_arr) {
     def loc = x
     loc_cleanup[loc] = {
         node ('boardfarm && ' + loc) {
-            sh '''#!/bin/bash
-            echo "Test results" > message
-            echo "============" >> message
-            echo "TODO" >> message
-            '''
-            post_gerrit_msg_from_file("message")
             sh 'rm -rf ' + loc
         }
     }
