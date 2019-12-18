@@ -12,9 +12,10 @@ import inspect
 import pexpect
 import termcolor
 import traceback
+from six.moves import UserList
+from aenum import Enum
 
 import boardfarm
-from aenum import Enum
 
 # TODO: type + name are confusing and need to be sorted out
 # This is really to handle legacy types, you really should be requesting device
@@ -71,7 +72,7 @@ class device_descriptor(object):
     features = [device_feature.Unknown]
     obj = None
 
-class device_manager(object):
+class device_manager(UserList):
     '''
     Manages all your devices, for getting and creating (if needed)
     '''
@@ -80,6 +81,8 @@ class device_manager(object):
     List of current devices, which we prefer to reuse instead of creating new ones
     '''
     devices = []
+
+    data = property(lambda self: [ x.obj for x in self.devices ] , lambda *args: None)
 
     '''
     Devices that can create other devices, we store them for later
