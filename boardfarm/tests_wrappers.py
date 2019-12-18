@@ -11,7 +11,7 @@ def skip_on_fail(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            log_message(instance, "Skipping Test : %s" % e)
+            log_message(instance, "Skipping Test : %s" % repr(e))
             instance.skipTest(e)
     return wrapper
 
