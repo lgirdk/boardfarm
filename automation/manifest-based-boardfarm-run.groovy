@@ -160,6 +160,11 @@ for (x in loc_arr) {
     def loc = x
     loc_cleanup[loc] = {
         node ('boardfarm && ' + loc) {
+            emailext body: '''${FILE, path="''' + loc + '''/boardfarm/results/results.html"}''',
+                 mimeType: 'text/html',
+                 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
+                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                 to: email_results
             sh 'rm -rf ' + loc
         }
     }
@@ -202,11 +207,6 @@ pipeline {
                 parallel loc_cleanup
             }
 
-            emailext body: '''${FILE, path="boardfarm/results/results.html"}''',
-                 mimeType: 'text/html',
-                 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
-                 recipientProviders: [[$class: 'RequesterRecipientProvider']],
-                 to: email_results
             sh '''
             set +xe
             echo "Killing spawned processes..."
