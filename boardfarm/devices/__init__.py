@@ -237,11 +237,8 @@ def check_for_cmd_on_host(cmd, msg=None):
                 exit(1)
         print("To install refer to your system SW app installation instructions")
 
+# TODO: this should go away once we fully move to device manager
 def initialize_devices(configuration):
-    # Init random global variables. To Do: clean these.
-    global power_ip, power_outlet
-    power_ip = configuration.board.get('powerip', None)
-    power_outlet = configuration.board.get('powerport', None)
     # Init devices
     global board, lan, wan, wlan, wlan2g, wlan5g, prompt
     board = configuration.console
