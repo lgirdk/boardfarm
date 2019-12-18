@@ -319,9 +319,6 @@ def main():
     # Checkin station & devices when we exit
     atexit.register(bfweb.checkin)
 
-    # Make devices (board, lan, wan, available to tests easily)
-    devices.initialize_devices(config)
-
     # Update config from board info
     if hasattr(config.console, "update_config"):
         config.console.update_config()

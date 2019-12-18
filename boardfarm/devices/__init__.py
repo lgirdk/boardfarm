@@ -29,6 +29,7 @@ class DeviceNone(object):
 class device_type(Enum):
     Unknown = 0
     DUT = 1
+    board = 1
     wan = 2
     wan2 = 2
     lan = 3
@@ -166,20 +167,6 @@ from . import openwrt_router
 
 from boardfarm.lib import find_subdirs
 from boardfarm.exceptions import BftNotSupportedDevice
-
-# Placeholders for devices that are created later
-board = None
-lan = None
-lan2 = None
-wan = None
-wlan = None
-wlan2g = None
-wlan5g = None
-prompt = None
-acs_server = None
-cmts = None
-provisioner = None
-
 from boardfarm import uniqid
 
 env = {"wan_iface": "wan%s" % uniqid[:12],
@@ -237,21 +224,18 @@ def check_for_cmd_on_host(cmd, msg=None):
                 exit(1)
         print("To install refer to your system SW app installation instructions")
 
-# TODO: this should go away once we fully move to device manager
-def initialize_devices(configuration):
-    # Init devices
-    global board, lan, wan, wlan, wlan2g, wlan5g, prompt
-    board = configuration.console
-    lan = None
-    wan = None
-    wlan = None
-    wlan2g = None
-    wlan5g = None
-
-    for device in configuration.devices:
-        globals()[device] = getattr(configuration, device)
-
-    board.root_type = None
+_mod = sys.modules[__name__]
+class _device_helper(object):
+    '''
+    Returns classic devices for from devices import foo
+    Will go away at some point
+    '''
+    def __getattr__(self, key):
+        if getattr(device_type, key, None):
+            return mgr.by_type(getattr(device_type, key))
+        else:
+            return getattr(_mod, key)
+sys.modules[__name__] = _device_helper()
 
 class _prompt(UserList, list):
     '''
