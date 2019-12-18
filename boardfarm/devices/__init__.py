@@ -252,12 +252,25 @@ def initialize_devices(configuration):
         globals()[device] = getattr(configuration, device)
 
     board.root_type = None
-    # Next few lines combines all the prompts into one list of unique prompts.
-    # It lets test writers use "some_device.expect(prompt)"
-    prompt = []
-    for d in (board, lan, wan, wlan):
-        prompt += getattr(d, "prompt", [])
-    prompt = list(set(prompt))
+
+class _prompt(UserList, list):
+    '''
+    This used to be a static list, but since we track devices more closely we can
+    now dynamically create this list of prompts. It checks all currently instanstiated
+    devices and returns a read-only list
+    '''
+    def get_prompts(self):
+        ret = []
+        for d in mgr:
+            for p in getattr(d, 'prompt', []):
+                if p not in ret:
+                    ret.append(p)
+
+        return ret
+
+    data = property(get_prompts, lambda *args: None)
+
+prompt = _prompt()
 
 def bf_node(cls_list, model, **kwargs):
     '''
