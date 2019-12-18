@@ -3,7 +3,8 @@ import pexpect
 
 from boardfarm.lib.installers import install_hping3
 
-from boardfarm.devices import board, prompt, wan, lan
+from boardfarm.devices import board, wan, lan
+from boardfarm.devices import prompt
 
 class hping3_basic_udp(rootfs_boot.RootFSBootTest):
     '''Floods hping3, creating lots of firewall entries in router'''

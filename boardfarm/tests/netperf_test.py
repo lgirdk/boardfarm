@@ -8,7 +8,8 @@
 from boardfarm import lib
 from boardfarm.tests import rootfs_boot
 
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import board, lan, wan
+from boardfarm.devices import prompt
 
 def install_netperf(device):
     # Check version

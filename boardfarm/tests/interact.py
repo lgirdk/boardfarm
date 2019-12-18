@@ -9,7 +9,8 @@ from boardfarm.tests import rootfs_boot
 from boardfarm import tests
 from boardfarm import lib
 import sys
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.devices import prompt
 from six.moves import input
 
 class Interact(rootfs_boot.RootFSBootTest):

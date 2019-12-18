@@ -7,7 +7,8 @@
 
 import random
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import board, lan
+from boardfarm.devices import prompt
 from boardfarm.lib import installers
 
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):

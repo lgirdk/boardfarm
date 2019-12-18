@@ -4,7 +4,8 @@ import pexpect
 from datetime import datetime
 
 from boardfarm.lib.common import print_bold
-from boardfarm.devices import board, prompt, wan, lan
+from boardfarm.devices import board, wan, lan
+from boardfarm.devices import prompt
 
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):
     '''Determine's max number of iperf connections'''

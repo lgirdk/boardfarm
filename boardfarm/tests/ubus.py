@@ -8,7 +8,8 @@
 from boardfarm.tests import rootfs_boot
 import json
 import time
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import board, lan
+from boardfarm.devices import prompt
 
 def ubus_call_raw(payload, ipaddr="192.168.1.1"):
     curl_cmd = "curl -d '%s' http://%s/ubus" % (json.dumps(payload), ipaddr)

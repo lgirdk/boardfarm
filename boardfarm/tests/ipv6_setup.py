@@ -9,7 +9,8 @@ import time
 
 from boardfarm.tests import rootfs_boot
 
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.devices import prompt
 from boardfarm.lib.common import run_once
 
 class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):

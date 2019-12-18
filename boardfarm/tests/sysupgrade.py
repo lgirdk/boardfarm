@@ -7,7 +7,8 @@
 
 from boardfarm.tests import rootfs_boot
 from boardfarm import lib
-from boardfarm.devices import board, prompt
+from boardfarm.devices import board
+from boardfarm.devices import prompt
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):
     '''Upgrading via sysupgrade works.'''

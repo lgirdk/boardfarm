@@ -6,7 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import board, lan
+from boardfarm.devices import prompt
 
 class BridgedMode(rootfs_boot.RootFSBootTest):
     '''Puts router in bridged mode (other tests may not work after running this)'''

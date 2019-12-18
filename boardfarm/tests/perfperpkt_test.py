@@ -8,7 +8,8 @@
 
 from boardfarm import lib
 from boardfarm.tests import iperf_test
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.devices import prompt
 
 class PerfPerPktTest(iperf_test.iPerfTest):
     '''Count various perf events on a per packet basis'''

@@ -12,7 +12,8 @@ from cdrouter.packages import Package
 
 import time
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import board, lan, wan
+from boardfarm.devices import prompt
 from boardfarm.orchestration import TestResult
 from boardfarm import lib
 import os

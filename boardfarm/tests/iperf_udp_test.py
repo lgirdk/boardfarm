@@ -9,7 +9,8 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.tests import ipv6_setup
 from boardfarm import lib
 from boardfarm.lib import installers
-from boardfarm.devices import board, wan, lan, wlan, prompt
+from boardfarm.devices import board, wan, lan, wlan
+from boardfarm.devices import prompt
 
 # change this if you want to one time tweak iperf opts
 time = 60

@@ -12,7 +12,8 @@ from . import bft_base_test
 from boardfarm import lib
 from boardfarm.lib.common import run_once
 import boardfarm.exceptions
-from boardfarm.devices import board, wan, lan, prompt
+from boardfarm.devices import board, wan, lan
+from boardfarm.devices import prompt
 
 class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''

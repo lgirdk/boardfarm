@@ -8,7 +8,8 @@
 import re
 from boardfarm.tests import rootfs_boot
 from boardfarm.lib import installers
-from boardfarm.devices import mgr, device_type, prompt
+from boardfarm.devices import mgr, device_type
+from boardfarm.devices import prompt
 
 board = mgr.by_type(device_type.DUT)
 wan = mgr.by_type(device_type.wan)
