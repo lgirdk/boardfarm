@@ -9,15 +9,15 @@ import time
 from boardfarm import lib
 import sys
 import traceback
+import six
 
 from boardfarm.library import check_devices
 import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
-class BftBaseTest(object):
+class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
     _testMethodName = "UNDEFINED"
-    __metaclass__ = LoggerMeta
     log = ""
     log_calls = ""
     _format = "%a %d %b %Y %H:%M:%S"
