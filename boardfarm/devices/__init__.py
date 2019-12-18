@@ -161,9 +161,6 @@ from . import openwrt_router
 from boardfarm.lib import find_subdirs
 from boardfarm.exceptions import BftNotSupportedDevice
 
-# To do: delete these path inserts when everything is properly importing from boardfarm
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-
 # Placeholders for devices that are created later
 board = None
 lan = None
