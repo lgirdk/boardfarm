@@ -13,7 +13,7 @@ import atexit
 import os
 import ipaddress
 
-from boardfarm import env
+from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 class Qemu(openwrt_router.OpenWrtRouter):

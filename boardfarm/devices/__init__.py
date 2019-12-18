@@ -165,6 +165,11 @@ acs_server = None
 cmts = None
 provisioner = None
 
+from boardfarm import uniqid
+
+env = {"wan_iface": "wan%s" % uniqid[:12],
+        "lan_iface": "lan%s" % uniqid[:12],
+        "uniq_id": uniqid}
 
 device_mappings = {}
 

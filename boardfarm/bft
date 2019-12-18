@@ -37,7 +37,6 @@ except Exception as e:
 from boardfarm.zephyr import zephyr_reporter
 
 from boardfarm import start
-from boardfarm import env
 import boardfarm.exceptions
 from boardfarm.devices import get_device
 from boardfarm.lib.common import check_url
