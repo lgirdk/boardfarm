@@ -91,9 +91,18 @@ class device_manager(object):
         '''Shorthand for getting device by type'''
         return self.get_device_by_type(t, num)
 
+    def by_types(self, types):
+        '''Shorthand for getting devices by types'''
+        return self.get_devices_by_types(types)
+
     def get_device_by_type(self, t, num=1):
         '''Get device that already exists by type'''
         return self.get_device(t, None, None, num)
+
+    def get_devices_by_types(self, types):
+        '''Get multiple devices by types'''
+
+        return [ self.by_type(t, num=1) for t in types ]
 
     def by_feature(self, feature, num=1):
         '''Shorthand for getting device by feature'''
