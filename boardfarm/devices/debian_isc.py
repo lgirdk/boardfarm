@@ -659,12 +659,12 @@ EOF'''
         self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
         self.expect(self.prompt)
 
-        self.sendline('ps aux | grep dhcpd; echo DONE')
-        self.expect_exact('ps aux | grep dhcpd; echo DONE')
+        self.sendline('(flock -x 9; ps aux | grep dhcpd; echo DONE; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
+        self.expect_exact('(flock -x 9; ps aux | grep dhcpd; echo DONE; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
         self.expect('DONE')
 
-        assert len(re.findall('dhcpd[^\n]*-4', self.before)) == 1, "Multiple DHCP4 servers running"
-        assert len(re.findall('dhcpd[^\n]*-6', self.before)) == 1, "Multiple DHCP6 servers running"
+        assert len(re.findall('dhcpd[^\n]*-4', self.before)) == 1, "Wrong number of DHCP4 servers running"
+        assert len(re.findall('dhcpd[^\n]*-6', self.before)) == 1, "Wrong number of DHCP6 servers running"
         self.expect(self.prompt)
 
     def get_attr_from_dhcp(self, attr, exp_pattern, dev, station, match_group=4):
