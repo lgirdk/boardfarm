@@ -12,9 +12,8 @@ import ipaddress
 import pexpect
 
 class RPI(openwrt_router.OpenWrtRouter):
-    '''
-    Raspberry pi board
-    '''
+    """Raspberry pi board device class with OpenWrtRouter OS installed
+    """
     model = ("rpi3")
 
     wan_iface = "erouter0"
@@ -42,9 +41,14 @@ class RPI(openwrt_router.OpenWrtRouter):
     cdrouter_config = "configs/cdrouter-rdkb.conf"
 
     def flash_uboot(self, uboot):
-        '''In this case it's flashing the vfat partition of the bootload.
-           Need to have that image u-boot and serial turned on via dtoverlay
-           for things to work after flashing'''
+        """This method flashes the Raspberry pi board with the Universal Bootloader image.
+        In this case it's flashing the vfat partition of the bootload.
+        Need to have that image u-boot and serial turned on via dtoverlay
+        for things to work after flashing.
+
+        :param uboot: Indicates the absolute location of the file to be used to flash.
+        :type uboot: string
+        """
         common.print_bold("\n===== Flashing bootloader (and u-boot) =====\n")
         filename = self.prepare_file(uboot)
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
@@ -67,6 +71,11 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.setup_uboot_network()
 
     def flash_rootfs(self, ROOTFS):
+        """This method flashes the Raspberry pi board with the ROOTFS (which in general is a patch update on the firmware).
+
+        :param ROOTFS: Indicates the absolute location of the file to be used to flash.
+        :type ROOTFS: string
+        """
         common.print_bold("\n===== Flashing rootfs =====\n")
         filename = self.prepare_file(ROOTFS)
 
@@ -109,6 +118,11 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt, timeout=480)
 
     def flash_linux(self, KERNEL):
+        """This method flashes the Raspberry pi board with a file downloaded using TFTP protocol.
+
+        :param KERNEL: Indicates the absoulte location of the file to be used to flash.
+        :type KERNEL: string
+        """
         common.print_bold("\n===== Flashing linux =====\n")
 
         filename = self.prepare_file(KERNEL)
@@ -119,7 +133,15 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt)
 
     def flash_meta(self, META, wan, lan):
-        '''Flashes a combine signed image over TFTP'''
+        """This method flashes an openembedded-core to RPi. (Flashes a combine signed image using TFTP)
+
+        :param META: Indicates the absoulte location of the file to be used to flash.
+        :type META: string
+        :param wan: Indicates the wan device to be used
+        :type wan: object
+        :param lan: Indicates the lan device to be used
+        :type lan: object
+        """
         print("\n===== Updating entire SD card image =====\n")
         # must start before we copy as it erases files
         wan.start_tftp_server()
@@ -155,6 +177,9 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.wait_for_linux()
 
     def wait_for_linux(self):
+        """This method reboots the device waits for the menu.
+        This method enables Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable before rebooting.
+        """
         super(RPI, self).wait_for_linux()
 
         self.sendline('cat /etc/issue')
@@ -171,7 +196,14 @@ class RPI(openwrt_router.OpenWrtRouter):
             self.sendline('reboot')
             super(RPI, self).wait_for_linux()
 
-    def boot_linux(self, rootfs=None, bootargs=""):
+    def boot_linux(self, rootfs = None, bootargs = ""):
+        """This method boots the RPi's OS.
+
+        :param rootfs: Indicates the rootsfs image path if needs to be loaded (parameter to be used at later point), defaults to None.
+        :type rootfs: NA
+        :param bootargs: Indicates the boot parameters to be specified if any (parameter to be used at later point), defaults to empty string "".
+        :type bootargs: string
+        """
         common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
 
         self.sendline('fdt addr $fdt_addr')
