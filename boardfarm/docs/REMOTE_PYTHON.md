@@ -10,7 +10,7 @@ With asyncio built-in facilities, you could run many SNMP queries in parallel an
 *snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=100)*
 
 ##EXAMPLE:
-output = snmp_asyncore_walk(wan, cm_ipv6, “1.3”, private, 150)
+output = snmp_asyncore_walk(wan, cm_ipv6, '1.3', private, 150)
 
 ##OUTPUT:
 Return value is True or False
