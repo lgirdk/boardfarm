@@ -373,7 +373,7 @@ EOF'''
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].items():
             # skip all but MTA if ipv6 only
-            if board.cm_cfg.cm_configmode not in ('bridge', 'dual-stack', 'ipv4') and dev != 'mta':
+            if board.cm_cfg.cm_configmode not in ('bridge', 'dual-stack', 'ipv4', 'dslite') and dev != 'mta':
                 continue
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
             for key, value in cfg_sec.items():
