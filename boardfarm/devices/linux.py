@@ -377,3 +377,15 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('/etc/init.d/tinyproxy restart')
         self.expect('Restarting')
         self.expect(self.prompt)
+
+    def take_lock(self, file_lock, fd=9, timeout=200):
+        '''Takes a file lock on file_lock'''
+        self.sendline('exec %s>%s' % (fd, file_lock))
+        self.expect(self.prompt)
+        self.sendline('flock -x %s' % fd)
+        self.expect(self.prompt, timeout=timeout)
+
+    def release_lock(self, file_lock, fd=9):
+        '''Releases a lock taken'''
+        self.sendline('flock -u %s' % fd)
+        self.expect(self.prompt)
