@@ -44,7 +44,23 @@ linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
 prompts = ubootprompt + linuxprompt + ['/.* # ', ]
 
 def run_once(f):
+    """Decorator to run a function only once.
+
+    :param f: function name to run only once
+    :type f: Object
+    :return: Output of the function for the first run, Other calls to it will return None
+    :rtype: Any(for first run), None for Other calls
+    """
     def wrapper(*args, **kwargs):
+        """Wrapper function that caches the result for all future arguments and will not run the function again.
+
+        :param args: any number of extra arguments
+        :type args: Arguments(args)
+        :param kwargs: arguments, where you provide a name to the variable as you pass it into the function
+        :type kwargs: Arguments(args)
+        :return: Output of the function
+        :rtype: Any
+        """
         if not wrapper.has_run:
             wrapper.has_run = True
             return f(*args, **kwargs)
@@ -52,15 +68,27 @@ def run_once(f):
     return wrapper
 
 def clear_buffer(console):
+    """Clears buffer size of 2000 characters from the console of the device
+
+    :param console: console of a device (lan, wan, board etc.,)
+    :type console: Object
+    """
     try:
         console.read_nonblocking(size=2000, timeout=1)
     except:
         pass
 
 def phantom_webproxy_driver(ipport):
-    '''
-    Use this if you started web proxy on a machine connected to router's LAN.
-    '''
+    """Use this if you started phantom web proxy on a machine connected to router's LAN.
+    A proxy server sits between a client application, such as a Web browser, and a real server.
+    It intercepts all requests to the real server to see if it can fulfill the requests itself.
+    If not, it forwards the request to the real server
+
+    :param ipport: ip address and port number
+    :type ipport: String
+    :return: gui selenium web driver
+    :rtype: selenium webdriver element
+    """
     service_args = [
         '--proxy=' + ipport,
         '--proxy-type=http',
@@ -72,9 +100,18 @@ def phantom_webproxy_driver(ipport):
     return driver
 
 def firefox_webproxy_driver(ipport, config):
-    '''
-    Use this if you started web proxy on a machine connected to router's LAN.
-    '''
+    """Use this if you started firefox web proxy on a machine connected to router's LAN.
+    A proxy server sits between a client application, such as a Web browser, and a real server.
+    It intercepts all requests to the real server to see if it can fulfill the requests itself.
+    If not, it forwards the request to the real server
+
+    :param ipport: ip and port number
+    :type ipport: String
+    :param config: web elements in Json file
+    :type config: Json
+    :return: gui selenium web driver
+    :rtype: selenium webdriver element
+    """
 
     ip, port = ipport.split(':')
 
@@ -105,10 +142,19 @@ def firefox_webproxy_driver(ipport, config):
     return driver
 
 def chrome_webproxy_driver(ipport, config):
-    '''
-    Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
+    """Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
     above, although ChromeWebDriver seems to be slower in loading pages.
-    '''
+    A proxy server sits between a client application, such as a Web browser, and a real server.
+    It intercepts all requests to the real server to see if it can fulfill the requests itself.
+    If not, it forwards the request to the real server
+
+    :param ipport: ip and port number
+    :type ipport: String
+    :param config: web elements in Json file
+    :type config: Json
+    :return: gui selenium web driver
+    :rtype: selenium webdriver element
+    """
 
     chrome_options = webdriver.ChromeOptions()
     if config.default_proxy_type == 'socks5':
@@ -132,6 +178,16 @@ def chrome_webproxy_driver(ipport, config):
     return driver
 
 def get_webproxy_driver(ipport, config):
+    """Get the web driver initialized based on the web driver configurations in config.py
+
+    :param ipport: ip and port number
+    :type ipport: String
+    :param config: web elements in Json file
+    :type config: Json
+    :raise Exception: Exception thrown when default web driver is None or not recognized
+    :return: gui selenium web driver for ffox and chrome
+    :rtype: selenium webdriver element
+    """
     if config.default_web_driver == "ffox":
         d = firefox_webproxy_driver(ipport, config)
         d.maximize_window()
@@ -152,35 +208,78 @@ def get_webproxy_driver(ipport, config):
     print("Using proxy %s, webdriver: %s" % (proxy, config.default_web_driver))
 
 def test_msg(msg):
+    """Prints the message in Bold
+
+    :param msg: Message to print in bold
+    :type msg: String
+    """
     cprint(msg, None, attrs=['bold'])
 
 def _hash_file(filename, block_size, hashobj):
-    """Helper function: takes a hash obj and digests a file through it"""
+    """Helper function: Initialize a hash obj and digests a file through it.
+    Calculates an md5sum based on the contents of the filename by calling digest()
+
+    :param filename: Name of the file to calculate hash value
+    :type filename: String
+    :param block_size: How many bytes of the file you want to open at a time
+    :type block_size: Integer
+    :param hashobj: Type of algorithm to calculate hash
+    :type hashobj: Hash
+    :return: Returns the hash value in hexadecimal format
+    :rtype: hex
+    """
     with open(filename, 'rb') as f:
         for block in iter(lambda: f.read(block_size), b''):
             hashobj.update(block)
     return hashobj.hexdigest()
 
 def sha256_checksum(filename, block_size=65536):
-    '''Calculates the SHA256 on a file'''
+    """Calculates the SHA256 on a file.
+    SHA-256 generates an almost-unique 256-bit signature for a text
+
+    :param filename: Name of the file to calculate hash value
+    :type filename: String
+    :param block_size: bytes of the file you want to open at a time, defaults to 65536
+    :type block_size: Integer, optional
+    :return: Returns the hash value in hexadecimal format
+    :rtype: hex
+    """
     import hashlib
     sha256 = hashlib.sha256()
     return _hash_file(filename, block_size, sha256)
 
 def keccak512_checksum(filename, block_size=65536):
-    """Calculates the keccak512 hash on a file"""
+    """Calculates the SHA3 hash on a file.
+    SHA-512 or keccak512 generates an almost-unique 512-bit signature for a text
+
+    :param filename: Name of the file to calculate hash value
+    :type filename: String
+    :param block_size: bytes of the file you want to open at a time, defaults to 65536
+    :type block_size: Integer, optional
+    :return: Returns the hash value in hexadecimal format
+    :rtype: hex
+    """
     from Crypto.Hash import keccak
     keccak_hash = keccak.new(digest_bits=512)
     return _hash_file(filename, block_size, keccak_hash)
 
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
 
+
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
-    '''
-    Starts a simple web service on a specified port,
+    """Starts a simple IPv4 web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :param ip: Ip address on which http service to run, defaults to "0.0.0.0"
+    :type ip: String, Optional
+    :param port: port number on which http service to run, defaults to "9000"
+    :type port: String, Optional
+    :return: True or False
+    :rtype: Boolean
+    """
     http_service_kill(device, "SimpleHTTPServer")
     device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()'" % (ip, port))
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
@@ -193,11 +292,19 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
         return True
 
 def start_ip6bound_httpservice(device, ip="::", port="9001"):
-    '''
-    Starts a simple web service on a specified port,
+    """Starts a simple IPv6 web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :param ip: Ipv6 address on which ipv6 http service to run, defaults to "::"
+    :type ip: String, Optional
+    :param port: port number on which ipv6 http service to run, defaults to "9001"
+    :type port: String, Optional
+    :return: True or False
+    :rtype: Boolean
+    """
     http_service_kill(device, "SimpleHTTPServer")
     device.sendline('''cat > /root/SimpleHTTPServer6.py<<EOF
 import socket
@@ -221,11 +328,22 @@ EOF''' % (ip, port))
         return True
 
 def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/server.pem"):
-    '''
-    Starts a simple HTTPS web service on a specified port,
+    """Starts a simple IPv4 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :param ip: Ip address on which https service to run, defaults to "0.0.0.0"
+    :type ip: String, Optional
+    :param port: port number on which https service to run, defaults to "443"
+    :type port: String, Optional
+    :param cert: SSL certificate location, defaults to "/root/server.pem"
+    :type cert: String, Optional
+    :return: True or False
+    :rtype: Boolean
+    """
+    import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
@@ -270,11 +388,22 @@ EOF''' % (ip, port, cert))
         return True
 
 def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server.pem"):
-    '''
-    Starts a simple HTTPS web service on a specified port,
+    """Starts a simple IPv6 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :param ip: Ipv6 address on which https service to run, defaults to "::"
+    :type ip: String, Optional
+    :param port: port number on which https service to run, defaults to "4443"
+    :type port: String, Optional
+    :param cert: SSL certificate location, defaults to "/root/server.pem"
+    :type cert: String, Optional
+    :return: True or False
+    :rtype: Boolean
+    """
+    import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
@@ -315,10 +444,13 @@ EOF''' % (ip, port, cert))
         return True
 
 def configure_postfix(device):
-    '''
-    configures TSL and SSL ports to access postfix server
+    """configures TSL and SSL ports to access postfix server
     The function can be extended with configuration changes to test emails.
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :raise assertion: Asserts if service reload fails
+    """
     device.sendline('''cat > /etc/postfix/master.cf << EOF
 smtp      inet  n       -       y       -       -       smtpd
 465      inet  n       -       n       -       -       smtpd
@@ -382,6 +514,14 @@ EOF''')
 
 
 def file_open_json(file):
+    """Reads json file from the location input
+
+    :param file: path of the json file
+    :type file: String
+    :return: contents of json
+    :rtype: dictionary(dict)
+    :raise Exception: Throws exception if unable to load file
+    """
     try:
         with open(file) as f:
             return json.load(f)
@@ -389,15 +529,32 @@ def file_open_json(file):
         raise Exception("Could not open the json file")
 
 def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value, timeout=10, retry=3, community='private'):
-    """
-    Name: snmp_mib_set
-    Purpose: set value of mibs via snmp
-    Input: wan, board, prompt, wan_ip, mib_name, index, set_type ,set_value
-    Output: set value
-    mib_name has to be passed with name of the mib, index is query index
-    set_type is "i" or "s" or "a" or "x"
-    set_value is the value to be set for the mib
-    Usage: snmp_mib_set(wan, board, board.wan_iface, "wifiMgmtBssSecurityMode", "32", "i", "1")
+    """set value of mibs via snmp.
+    Usage: snmp_mib_set(wan, board, board.wan_ip, "wifiMgmtBssSecurityMode", "32", "i", "1")
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param parser: to parse the mib file
+    :type parser: Parser
+    :param iface_ip: Management ip of the DUT
+    :type iface_ip: String
+    :param mib_name: Snmp mib for which value to be set
+    :type mib_name: String
+    :param index: mib oid index
+    :type index: String
+    :param set_type: type of value to set
+    :type set_type: Data type(i-integer, s-string, x-Hex string etc.,)
+    :param set_value: Value to set
+    :type set_value: String or integer
+    :param timeout: time out for every snmp set request, default to 10 seconds
+    :type timeout: Integer, Optional
+    :param retry: Number of retries on snmp set request failure, default to 3
+    :type retry: Integer, Optional
+    :param community: SNMP Community string that allows access to DUT, defaults to 'private'
+    :type community: String, optional
+    :return: returns the value set
+    :rtype: String
+    :raise Assertion: Asserts when Snmp set requests timeout
     """
     time_out = (timeout * retry) + 30
     extra_arg = ''
@@ -441,13 +598,30 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
     return snmp_out
 
 def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3, community='private', opt_args=''):
-    """
-    Name: snmp_mib_get
-    Purpose: get the value of mibs via snmp
-    Input: wan, board/snmpParser, prompt, wan_ip, mib_name, index
-    Output: get value
-    mib_name has to be passed with name of the mib, index is query index
+    """Get value of mibs via snmp.
     Usage: snmp_mib_set(wan, board/snmpParser, board.wan_iface, "wifiMgmtBssSecurityMode", "32")
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param parser: to parse the mib file
+    :type parser: Parser
+    :param iface_ip: Management ip of the DUT
+    :type iface_ip: String
+    :param mib_name: Snmp mib for which value to be set
+    :type mib_name: String
+    :param index: mib oid index
+    :type index: String
+    :param timeout: time out for every snmp set request, default to 10 seconds
+    :type timeout: Integer, Optional
+    :param retry: Number of retries on snmp set request failure, default to 3
+    :type retry: Integer, Optional
+    :param community: SNMP Community string that allows access to DUT, defaults to 'private'
+    :type community: String, optional
+    :param opt_args: opt_args attribute added to get the output in hexa value using Ox option, default to ''
+    :type opt_args: String, Optional
+    :return: Output value of get request
+    :rtype: String
+    :raise Assertion: Asserts when Snmp get requests timeout
     """
     time_out = (timeout * retry) + 30
     extra_arg = ''
@@ -477,15 +651,29 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
     return snmp_out
 
 def hex2ipv6(hexstr):
-    """
-    Can parse strings in this form:
-    FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3
+    """converts hex string to IPv6 Address
+
+    :param hexstr: ipv6 address in string(FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3)
+    :type hexstr: String
+    :return: IPv6 address
+    :rtype: Unicode
     """
     hexstr = hexstr.replace(' ', '').lower()
     blocks = (''.join(block) for block in zip(*[iter(hexstr)] * 4))
     return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
 
 def retry(func_name, max_retry, *args):
+    """Retry a function if the output of the function is false
+
+    :param func_name: name of the function to retry
+    :type func_name: Object
+    :param max_retry: Maximum number of times to be retried
+    :type max_retry: Integer
+    :param args: Arguments passed to the function
+    :type args: args
+    :return: Output of the function if function is True
+    :rtype: Boolean (True) or None Type(None)
+    """
     for i in range(max_retry):
         output = func_name(*args)
         if output and output != 'False':
@@ -496,9 +684,19 @@ def retry(func_name, max_retry, *args):
         return None
 
 def retry_on_exception(method, args, retries=10, tout=5):
-    """
-    Retries a method if an exception occurs
+    """Retries a method if an exception occurs
     NOTE: args must be a tuple, hence a 1 arg tuple is (<arg>,)
+
+    :param method: name of the function to retry
+    :type method: Object
+    :param args: Arguments passed to the function
+    :type args: args
+    :param retries: Maximum number of retries when a exception occur, defaults to 10
+    :type retries: Integer, Optional
+    :param tout: Sleep time after every exception occur, defaults to 5
+    :type tout: Integer, Optional
+    :return: Output of the function
+    :rtype: Any data type
     """
     output = None
     for not_used in range(retries + 1):
@@ -513,8 +711,14 @@ def retry_on_exception(method, args, retries=10, tout=5):
     return output
 
 def resolv_dict(dic, key):
-    """
-    This function used to get the value from gui json, replacement of eval
+    """This function used to get the value from gui json, replacement of eval
+
+    :param dic: Dictionary to resolve
+    :type dic: Dictionary(dict)
+    :param key: Search Key for value needs to be found
+    :type key: String or a tree
+    :return: Value of the key
+    :rtype: String
     """
     key = key.strip("[]'").replace("']['", '#').split('#')
     key_val = dic
@@ -523,10 +727,24 @@ def resolv_dict(dic, key):
     return key_val
 
 def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200):
-    '''
-    Function to do a snmp walk using asyncore script
-    '''
-    if re.search(ValidIpv4AddressRegex, ip_address):
+    """Function to do a snmp walk using asyncore script
+    Python's asyncore provides an event loop that can handle transactions from multiple non-blocking sockets
+    Usage: snmp_asyncore_walk(wan, cm_ipv6, "1.3", private, 150)
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param ip_address: Management ip of the DUT
+    :type ip_address: String
+    :param mib_oid: Snmp mib to walk
+    :type mib_oid: String
+    :param community: SNMP Community string that allows access to DUT, defaults to 'public'
+    :type community: String, optional
+    :param time_out: time out for every snmp walk request, default to 200 seconds
+    :type time_out: Integer, Optional
+    :return: True or False
+    :rtype: Boolean
+    """
+    if re.search(ValidIpv4AddressRegex,ip_address):
         mode = 'ipv4'
     elif re.search(AllValidIpv6AddressesRegex, ip_address):
         mode = 'ipv6'
@@ -554,12 +772,25 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
         return False
 
 def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=100):
-    """
-    Name: snmp_mib_walk
-    Purpose: walk a mib with small mib tree
-    Input: wan, board/snmpParser, prompt, ip_add, mib_name
-    Output: Snmpwalk output
+    """walk a mib with small mib tree
     Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param parser: to parse the mib file
+    :type parser: Parser
+    :param ip_address: Management ip of the DUT
+    :type ip_address: String
+    :param mib_name: Snmp mib for which value to be set
+    :type mib_name: String
+    :param community: SNMP Community string that allows access to DUT, defaults to 'public'
+    :type community: String, optional
+    :param retry: Number of retries on snmp set request failure, default to 3
+    :type retry: Integer, Optional
+    :param time_out: time out for every snmp walk request, default to 100 seconds
+    :type time_out: Integer, Optional
+    :return: Output value of SNMP walk request
+    :rtype: String
     """
     if not isinstance(parser, SnmpMibs):
         oid = parser.mib[mib_name]
@@ -579,12 +810,22 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
     return snmp_out
 
 def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
-    """
-    Name:snmp_set_counter32
-    Purpose: Set snmp which has type as counter32(couldn't set it via SNMP)
-    Input Parameter: mib_set:Mib name which needs to set as type counter32("cmFtpUpstreamFileSize")
-                     value: value of the mib eg: 1000
-    Output: True or False
+    """Set snmp which has type as counter32(couldn't set it via SNMP)
+    Usage: snmp_set_counter32(wan, self.cm_wan_ip, self.snmp_obj, mib_file['Ftp_Us_FileSize'], value='1000')
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param wan_ip: Management ip of the DUT
+    :type wan_ip: String
+    :param parser: to parse the mib file
+    :type parser: Parser
+    :param mib_set: Snmp mib for which the value to set
+    :type mib_set: String
+    :param value: counter32 value to be set for the mib
+    :type value: String, optional
+    :return: True
+    :rtype: Boolean
+    :raises Exception: Throws exception when failed to set the mib value
     """
     install_pysnmp(device)
     pysnmp_file = 'pysnmp_mib_set.py'
@@ -619,12 +860,23 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
         raise Exception("Failed in setting mib using pysnmp")
 
 def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, community='public'):
-    """
-    Name: snmp_mib_bulkwalk
-    Purpose: uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
-    Input: device, ip_address, mib_oid, time_out, retry, community
-    Output: Snmpwalk output
+    """uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
     Usage: snmp_mib_bulkwalk(device, ip_address, mib_oid)
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param ip_address: Management ip of the DUT
+    :type ip_address: String
+    :param mib_oid: Snmp mib for which value to be set
+    :type mib_oid: String
+    :param time_out: time out for every snmp walk request, default to 90 seconds
+    :type time_out: Integer, Optional
+    :param retry: Number of retries on snmp set request failure, default to 3
+    :type retry: Integer, Optional
+    :param community: SNMP Community string that allows access to DUT, defaults to 'public'
+    :type community: String, optional
+    :return: 0 (Which ensures all the mib variables are read)
+    :rtype: Integer
     """
 
     device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" % (community, time_out, retry, ip_address, mib_oid))
@@ -633,7 +885,16 @@ def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, communi
     return idx == 0
 
 def get_file_magic(fname, num_bytes=4):
-    '''Return the first few bytes from a file to determine the type.'''
+    """Return the first few bytes from a file to determine the file type.
+
+    :param fname: file name with location or URL
+    :type fname: String
+    :param num_bytes: Number of bytes to read from file, defaults to 4
+    :type num_bytes: Integer, Optional
+    :return: binascii - Interpret the data as binary and shown in hex,
+             hexlify represent the binascii result as string
+    :rtype: String
+    """
     if fname.startswith("http://") or fname.startswith("https://"):
         rng = 'bytes=0-%s' % (num_bytes - 1)
         req = Request(fname, headers={'Range': rng})
@@ -646,9 +907,20 @@ def get_file_magic(fname, num_bytes=4):
 
 
 def copy_file_to_server(cmd, password, target="/tftpboot/"):
-    '''Requires a command like ssh/scp to transfer a file, and a password.
+    """Requires a command like ssh/scp to transfer a file, and a password.
     Run the command and enter the password if asked for one.
-    NOTE: The command must print the filename once the copy has completed'''
+    NOTE: The command must print the filename once the copy has completed
+
+    :param cmd: ssh/scp command to copy file to server
+    :type cmd: String
+    :param password: password of the server(target)
+    :type password: String
+    :param target: target location on the server to which the file needs to be copied, defaults to "/tftpboot/"
+    :type target: String, Optional
+    :return: returns file name after copying
+    :rtype: String
+    :raises Exception: Exception thrown on copy file failed
+    """
     for attempt in range(5):
         try:
             print_bold(cmd)
@@ -680,6 +952,22 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
 
 
 def download_from_web(url, server, username, password, port):
+    """Download a file from web by framing curl command and using "copy_file_to_server" function
+
+    :param url: URL to download the file
+    :type url: String
+    :param server: Web Server name or ip
+    :type server: String
+    :param username: Username to login to the server
+    :type username: String
+    :param password: password for authentication
+    :type password: String
+    :param port: port number on which the server is hosted
+    :type port: String
+    :return: returns file name after copying
+    :rtype: String
+    :raises Exception: Exception thrown on copy file failed
+    """
     pipe = ""
     if cmd_exists('pv'):
         pipe = " pv | "
@@ -690,6 +978,22 @@ def download_from_web(url, server, username, password, port):
 
 
 def scp_to_tftp_server(fname, server, username, password, port):
+    """Secure copy file to tftp server using copy_file_to_server
+
+    :param fname: filename to be copied to TFTP server
+    :type fname: String
+    :param server: tftp Server name or ip
+    :type server: String
+    :param username: Username to login to the server
+    :type username: String
+    :param password: password for authentication
+    :type password: String
+    :param port: port number on which the server is hosted
+    :type port: String
+    :return: returns file name after copying
+    :rtype: String
+    :raises Exception: Exception thrown on copy file failed
+    """
     # local file verify it exists first
     if not os.path.isfile(fname):
         print_bold("File passed as parameter does not exist! Failing!\n")
@@ -705,17 +1009,54 @@ def scp_to_tftp_server(fname, server, username, password, port):
 
 
 def scp_from(fname, server, username, password, port, dest):
+    """Secure copy file from server using copy_file_to_server
+
+    :param fname: filename to be copied to TFTP server
+    :type fname: String
+    :param server: Server name or ipaddress
+    :type server: String
+    :param username: Username to login to the server
+    :type username: String
+    :param password: password for authentication
+    :type password: String
+    :param port: port number on which the server is hosted
+    :type port: String
+    :param dest: Destination location with filename to save in local
+    :type dest: String
+    :return: returns file name after copying
+    :rtype: String
+    :raises Exception: Exception thrown on copy file failed
+    """
     cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
     copy_file_to_server(cmd, password, target='DONE')
 
 
 def print_bold(msg):
+    """Prints the input message in Bold
+
+    :param msg: Message to print in bold
+    :type msg: String
+    """
     termcolor.cprint(msg, None, attrs=['bold'])
 
 def check_url(url):
+    """validates the input URL. Parses the input URL and checks for error
+
+    :param url: Web address to be validated
+    :type url: String
+    :return: True or False
+    :rtype: Boolean
+    """
     try:
         def add_basic_auth(login_str, request):
-            '''Adds Basic auth to http request, pass in login:password as string'''
+            """Adds Basic auth to http request, pass in login:password as string.
+            Usage is within the function.
+
+            :param login_str: parsed login and password in "login:password" format
+            :type login_str: String
+            :param request: request to upen url
+            :type request: String
+            """
             encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
             authheader = "Basic %s" % encodeuser
             request.add_header("Authorization", authheader)
@@ -740,7 +1081,14 @@ def check_url(url):
         return False
 
 def ftp_useradd(device):
-    '''Add ftp user'''
+    """Add ftp user to client list to grant access
+
+    :param device: Linux device(lan/wan)
+    :type device: Object
+    :return: None if client already exists,
+             True if "failed" is present in device.before else False
+    :rtype: Boolean or None
+    """
     device.sendline("useradd -m client -s /usr/sbin/nologin")
     index = device.expect(['already exists'] + [] + device.prompt, timeout=10)
     if index != 0:
@@ -761,7 +1109,15 @@ def ftp_useradd(device):
         return "failed" in device.before
 
 def ftp_file_create_delete(device, create_file=None, remove_file=None):
-    '''create and delete ftp file for upload and download'''
+    """create and delete ftp file for upload and download
+
+    :param device: Linux device(lan/wan)
+    :type device: Object
+    :param create_file: Flag to create file, can be anything except 0, defaults to None
+    :type create_file: any , Optional
+    :param remove_file: Flag to remove file, can be anything except 0, defaults to None
+    :type remove_file: any , Optional
+    """
     if create_file:
         device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" % create_file)
         device.expect(["\d{6,8}\sbytes"] + device.prompt, timeout=90)
@@ -771,7 +1127,15 @@ def ftp_file_create_delete(device, create_file=None, remove_file=None):
         device.expect(device.prompt, timeout=10)
 
 def ftp_device_login(device, ip_mode, device_ip):
-    '''Login to FTP device by creating credentials'''
+    """Login to FTP device by creating credentials
+
+    :param device: Linux device(lan/wan)
+    :type device: Object
+    :param ip_mode: ipv4 or ipv6
+    :type ip_mode: String
+    :param device_ip: ip address of destination device(lan/wan)
+    :type device_ip: String
+    """
     match = re.search("(\d)", str(ip_mode))
     value = match.group()
     device.sendline("ftp -%s %s" % (value, device_ip))
@@ -783,7 +1147,14 @@ def ftp_device_login(device, ip_mode, device_ip):
     device.expect("ftp>", timeout=10)
 
 def ftp_upload_download(device, ftp_load):
-    '''Upload and download file'''
+    """Upload or download file
+
+    :param device: Linux device(lan/wan)
+    :type device: Object
+    :param ftp_load: "download" or "upload"
+    :type ftp_load: String
+    """
+
     if "download" in str(ftp_load):
         device.sendline("get %s.txt" % ftp_load)
     elif "upload" in str(ftp_load):
@@ -793,7 +1164,11 @@ def ftp_upload_download(device, ftp_load):
     device.expect("ftp>", timeout=10)
 
 def ftp_close(device):
-    '''Closing the FTP connection'''
+    """Closing the FTP connection
+
+    :param device: Linux device(lan/wan)
+    :type device: Object
+    """
     device.sendcontrol('c')
     index = device.expect(['>'] + device.prompt, timeout=20)
     if index == 0:
@@ -801,15 +1176,24 @@ def ftp_close(device):
         device.expect(device.prompt, timeout=10)
 
 def postfix_install(device):
+    """Add eth0 ip to hosts and Install postfix service if not present
+    Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     if retry_on_exception(device.get_interface_ipaddr, ("eth0",), retries=1):
         device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" % device.get_interface_ipaddr("eth0"))
     install_postfix(device)
 
 def http_service_kill(device, process):
-    ''' Method to kill the existing hhtp service
-    Input: device - device
-           process - http or https process
-    Return N/A '''
+    """Method to kill the existing http service
+
+    :param device: lan or wan
+    :type device: Object
+    :param process: http or https
+    :type process: String
+    """
     for i in range(3):
         device.sendcontrol('c')
         device.expect_prompt()
@@ -821,6 +1205,12 @@ def http_service_kill(device, process):
         device.expect_prompt()
 
 def check_prompts(device_list):
+    """check to verify prompt of devices.In order to ensure, that all processes were killed by previous
+    test, before running a new test.
+
+    :param device_list: List of devices to check
+    :type device: List
+    """
     for dev in device_list:
         assert "FOO" in dev.check_output('echo "FOO"'), "Failed to validate prompt for device: {}".format(dev.name)
     return True
@@ -835,3 +1225,4 @@ def hex_to_datetime(output):
     mib_Hex = [out[i:i+2] for i in range(0, len(out), 2)]
     dt = datetime(*list(map(lambda x: int(x, 16), [mib_Hex[0]+mib_Hex[1]]+mib_Hex[2:])))
     return dt
+
