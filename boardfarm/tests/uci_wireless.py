@@ -10,7 +10,7 @@ import re
 from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board
 from boardfarm.devices import prompt
-from boardfarm.lib.wifi import *
+from boardfarm.lib.wifi import wifi_interface
 
 class UciShowWireless(rootfs_boot.RootFSBootTest):
     '''UCI lists wifi interfaces.'''

@@ -59,7 +59,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         return driver
 
     def runTest(self):
-        driver = self.start_browser()
+        self.start_browser()
 
         print("Browser is running, connect and debug")
         print("Press Control-] to exit interactive mode")
