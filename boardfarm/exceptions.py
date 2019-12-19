@@ -11,6 +11,12 @@ class TestError(BftBaseException):
     """
     pass
 
+class TestImportError(Exception):
+    '''
+    Raise this if there is an exception when importing a test.
+    '''
+    pass
+
 class BftNotSupportedDevice(BftBaseException):
     pass
 

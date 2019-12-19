@@ -26,6 +26,7 @@ import re
 from boardfarm import config
 from boardfarm.config import boardfarm_config_location
 from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
+from boardfarm.exceptions import TestImportError
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
 
@@ -110,8 +111,12 @@ def parse():
         sys.exit(0)
 
     if args.list_tests:
-        from boardfarm import tests
-        tests.init(config)
+        try:
+            from boardfarm import tests
+            tests.init(config)
+        except TestImportError as e:
+            print(e)
+            sys.exit(1)
         for k, v in tests.available_tests.items():
             try:
                 print("%20s - %s" % (k, v.__doc__.split('\n')[0]))

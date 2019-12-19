@@ -12,6 +12,7 @@ import os
 import traceback
 
 import boardfarm
+from boardfarm.exceptions import TestImportError
 
 available_tests = {}
 
@@ -41,12 +42,8 @@ def init(config):
             try:
                 module = importlib.import_module(tmp)
             except Exception:
-                if 'BFT_DEBUG' in os.environ:
-                    traceback.print_exc()
-                    print("Warning: could not import from file %s.py" % fname)
-                else:
-                    print("Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details" % fname)
-                continue
+                traceback.print_exc()
+                raise TestImportError("Error: Could not import from test file %s.py" % fname)
             if fname in test_mappings:
                 print('WARNING: Two test files have the same name, %s.py' % fname)
             test_mappings[fname] = []
