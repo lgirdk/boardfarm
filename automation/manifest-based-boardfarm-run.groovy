@@ -51,7 +51,7 @@ def setup_python (version) {
 
 def post_gerrit_msg_from_file (file) {
     sh '''
-    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="$(cat ''' + file + ''')"\\\'
+    cat ''' + file + ''' | ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \'--message="$(</dev/fd/0)"\'
     '''
 }
 
