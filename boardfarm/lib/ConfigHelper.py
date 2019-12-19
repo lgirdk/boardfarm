@@ -27,3 +27,6 @@ class ConfigHelper(dict):
             raise ConfigKeyError
 
         return dict.__getitem__(self, key)
+
+    def get_station(self):
+        return dict.__getitem__(self, 'station')

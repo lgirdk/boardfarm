@@ -82,7 +82,7 @@ class DebianISCProvisioner(debian.DebianBox):
         from boardfarm.devices import board
         tftp_server = self.tftp_device.tftp_server_ipv6_int()
 
-        to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config['station'] + '''.master << EOF
+        to_send = '''cat > /etc/dhcp/dhcpd6.conf-''' + board_config.get_station() + '''.master << EOF
 preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
@@ -187,10 +187,10 @@ EOF'''
         self.sendline(to_send)
         self.expect(self.prompt)
 
-        self.sendline('rm /etc/dhcp/dhcpd6.conf.''' + board_config['station'])
+        self.sendline('rm /etc/dhcp/dhcpd6.conf.''' + board_config.get_station())
         self.expect(self.prompt)
 
-        cfg_file = "/etc/dhcp/dhcpd6.conf-" + board_config['station']
+        cfg_file = "/etc/dhcp/dhcpd6.conf-" + board_config.get_station()
 
         # zero out old config
         self.sendline('cp /dev/null %s' % cfg_file)
@@ -204,11 +204,11 @@ EOF'''
 
         # the IPv6 subnet for erouter_net in json, should be large enough
         # len(erouter_net) >= no. of boards + 10
-        board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config['station'].split("-")[-1]) % len(self.erouter_net)])
+        board_config['extra_provisioning_v6']['erouter']['fixed-prefix6'] = str(self.erouter_net[int(board_config.get_station().split("-")[-1]) % len(self.erouter_net)])
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning_v6'].items():
-            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config.get_station(), cfg_file))
             for key, value in cfg_sec.items():
                 if key == "options":
                     for k2, v2 in value.items():
@@ -219,18 +219,18 @@ EOF'''
                     self.expect(self.prompt)
             self.sendline("echo '}' >> %s" % cfg_file)
 
-        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd6.conf.' + board_config['station'])
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd6.conf.' + board_config.get_station())
         self.expect(self.prompt)
 
         # can't provision without this, so let's ignore v6 if that's the case
         if tftp_server is None or board.cm_cfg.cm_configmode not in ('dslite', 'dual-stack', 'ipv6'):
-            self.sendline('rm /etc/dhcp/dhcpd6.conf.' + board_config['station'])
+            self.sendline('rm /etc/dhcp/dhcpd6.conf.' + board_config.get_station())
             self.expect(self.prompt)
 
         # combine all configs into one
-        self.sendline("cat /etc/dhcp/dhcpd6.conf.* >> /etc/dhcp/dhcpd6.conf-" + board_config['station'] + ".master")
+        self.sendline("cat /etc/dhcp/dhcpd6.conf.* >> /etc/dhcp/dhcpd6.conf-" + board_config.get_station() + ".master")
         self.expect(self.prompt)
-        self.sendline("mv /etc/dhcp/dhcpd6.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd6.conf")
+        self.sendline("mv /etc/dhcp/dhcpd6.conf-" + board_config.get_station() + ".master /etc/dhcp/dhcpd6.conf")
         self.expect(self.prompt)
 
 
@@ -239,7 +239,7 @@ EOF'''
 
         tftp_server = self.tftp_device.tftp_server_ip_int()
 
-        to_send = '''cat > /etc/dhcp/dhcpd.conf-''' + board_config['station'] + '''.master << EOF
+        to_send = '''cat > /etc/dhcp/dhcpd.conf-''' + board_config.get_station() + '''.master << EOF
 log-facility local7;
 option log-servers ###LOG_SERVER###;
 option time-servers ###TIME_SERVER###;
@@ -357,10 +357,10 @@ EOF'''
         self.sendline(to_send)
         self.expect(self.prompt)
 
-        self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config['station'])
+        self.sendline('rm /etc/dhcp/dhcpd.conf.''' + board_config.get_station())
         self.expect(self.prompt)
 
-        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config['station']
+        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config.get_station()
 
         # zero out old config
         self.sendline('cp /dev/null %s' % cfg_file)
@@ -375,7 +375,7 @@ EOF'''
             # skip all but MTA if ipv6 only
             if board.cm_cfg.cm_configmode not in ('bridge', 'dual-stack', 'ipv4', 'dslite') and dev != 'mta':
                 continue
-            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config['station'], cfg_file))
+            self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config.get_station(), cfg_file))
             for key, value in cfg_sec.items():
                 if key == "options":
                     for k2, v2 in value.items():
@@ -386,17 +386,17 @@ EOF'''
                     self.expect(self.prompt)
             self.sendline("echo '}' >> %s" % cfg_file)
 
-        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config['station'])
+        self.sendline('mv ' + cfg_file + ' /etc/dhcp/dhcpd.conf.' + board_config.get_station())
         self.expect(self.prompt)
 
         if tftp_server is None:
-            self.sendline('rm /etc/dhcp/dhcpd.conf.' + board_config['station'])
+            self.sendline('rm /etc/dhcp/dhcpd.conf.' + board_config.get_station())
             self.expect(self.prompt)
 
         # combine all configs into one
-        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master")
+        self.sendline("cat /etc/dhcp/dhcpd.conf.* >> /etc/dhcp/dhcpd.conf-" + board_config.get_station() + ".master")
         self.expect(self.prompt)
-        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config['station'] + ".master /etc/dhcp/dhcpd.conf")
+        self.sendline("mv /etc/dhcp/dhcpd.conf-" + board_config.get_station() + ".master /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
 
     def get_timzone_offset(self, timezone):
@@ -437,7 +437,7 @@ EOF'''
                                       "domain-name-servers": "%s" % tftp_server,
                                       "routers": self.mta_gateway,
                                       "log-servers": self.prov_ip,
-                                      "host-name": "\"" + board_config['station'] + "\""
+                                      "host-name": "\"" + board_config.get_station() + "\""
                                     }
                         }
                 }
@@ -693,11 +693,11 @@ EOF'''
     def get_cfgs(self, board_config):
         '''Tries to get the cfg out of the dhcpd.conf for the station in question'''
         try:
-            mta_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'mta', board_config['station'])
-            mta_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'mta', board_config['station'])
+            mta_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'mta', board_config.get_station())
+            mta_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'mta', board_config.get_station())
 
-            cm_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'cm', board_config['station'])
-            cm_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'cm', board_config['station'])
+            cm_cfg = self.get_attr_from_dhcp('filename', '".*?"', 'cm', board_config.get_station())
+            cm_cfg_srv = self.get_attr_from_dhcp('next-server', ValidIpv4AddressRegex, 'cm', board_config.get_station())
             if mta_cfg is None or mta_cfg_srv is None or cm_cfg is None or cm_cfg_srv is None:
                 raise
             return [[mta_cfg.replace('"', ''), mta_cfg_srv], [cm_cfg.replace('"', ''), cm_cfg_srv]]
@@ -719,7 +719,7 @@ EOF'''
 
             # this is where the current (to be downloaded from the tftp)
             # config is going to be placed
-            dest_fname = _tmpdir + '/' + os.path.basename(conf_file) + "." + board_config['station'] + ".current"
+            dest_fname = _tmpdir + '/' + os.path.basename(conf_file) + "." + board_config.get_station() + ".current"
             try:
                 os.remove(dest_fname)
             except:
