@@ -1,21 +1,26 @@
 import pexpect
 
-class TestError(Exception):
+class BftBaseException(Exception):
+    '''
+    Base exception all Bft exceptions inherit from
+    '''
+
+class TestError(BftBaseException):
     """
     Raise this if a TestStep verification fails
     """
     pass
 
-class BftNotSupportedDevice(Exception):
+class BftNotSupportedDevice(BftBaseException):
     pass
 
-class SkipTest(Exception):
+class SkipTest(BftBaseException):
     '''
     Raise this to skip running a test.
     '''
     pass
 
-class BootFail(Exception):
+class BootFail(BftBaseException):
     '''
     Raise this if the board fails to boot.
     This exception is special because if it
@@ -24,7 +29,7 @@ class BootFail(Exception):
     '''
     pass
 
-class CodeError(Exception):
+class CodeError(BftBaseException):
     """Raise this if an code assert fails
 
     This exception is only meant for custom assert
@@ -33,13 +38,13 @@ class CodeError(Exception):
     """
     pass
 
-class PexpectErrorTimeout(pexpect.TIMEOUT):
+class PexpectErrorTimeout(pexpect.TIMEOUT, BftBaseException):
     """
     Raise this if pexpect times out
     """
     pass
 
-class ConfigKeyError(Exception):
+class ConfigKeyError(BftBaseException):
     '''
     Invalid use of key in config object
     '''
