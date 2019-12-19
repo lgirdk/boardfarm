@@ -16,6 +16,11 @@ from six.moves import UserList
 from aenum import Enum
 
 import boardfarm
+from boardfarm.exceptions import DeviceDoesNotExistError
+
+class DeviceNone(object):
+    def __getattr__(self, key):
+        raise DeviceDoesNotExistError
 
 # TODO: type + name are confusing and need to be sorted out
 # This is really to handle legacy types, you really should be requesting device
@@ -138,7 +143,8 @@ class device_manager(UserList):
         if len(matching) > 1 and 'BFT_DEBUG' in os.environ:
             print("multiple matches, returning first hit")
 
-        assert len(matching), "We don't know how to create devices by name and none exist!"
+        if len(matching) == 0:
+            return DeviceNone()
 
         return matching[0].obj
 

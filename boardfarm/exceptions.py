@@ -49,3 +49,8 @@ class ConfigKeyError(BftBaseException):
     Invalid use of key in config object
     '''
     pass
+
+class DeviceDoesNotExistError(BftBaseException):
+    '''
+    Device does not exist
+    '''
