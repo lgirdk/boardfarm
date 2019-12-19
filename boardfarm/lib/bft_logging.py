@@ -15,16 +15,29 @@ from functools import wraps
 from boardfarm import start
 
 def now_short(_format="%Y%m%d-%H%M%S"):
-    """
-    Name:now_short
-    Purpose: Get current date and time string
-    Input:None
-    Output:String in "YYYYMMDD-hhmmss" format
+    """Get current date and time string
+
+    :param _format: time stamp format, defaults to "%Y%m%d-%H%M%S"
+    :type _format: string, optional
+    :return: timestamp in YYYYMMDD-hhmmss
+    :rtype: string
     """
     timeString = time.strftime(_format, time.localtime()) + "\t"
     return timeString
 
 def logfile_assert_message(s, condition, message):
+    """Function to log and assert based on condition.
+    If condition True, log message as PASS to testcase log file.
+    If condition False, Assert and Print message with status FAIL.
+
+    :param s: Instance of the class
+    :type s: Class
+    :param condition: condition to validate
+    :type condition: Condition
+    :param message: Message to log and print
+    :type message: String
+    :raise assertion: Assert on condition is FALSE
+    """
     if not condition:
         s.log_to_file += now_short() + message + ": FAIL\r\n"
         assert 0, message + ": FAIL\r\n"
@@ -33,6 +46,21 @@ def logfile_assert_message(s, condition, message):
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
+        """Magic method to create instance object reference.
+        Using this method you can customize the instance creation.
+
+        :param cls: Class to be instantiated(LoggerMeta)
+        :type cls: Class
+        :param name: name of the new Class instantiated
+        :type name: Class
+        :param bases: Tuple of base parent classes
+        :type bases: Class
+        :param attrs: Class attributes
+        :type attrs: Arguments(args)
+        :return: Return the instance object created
+        :rtype: Object
+
+        """
         for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = cls.deco(attr_value)
@@ -41,8 +69,26 @@ class LoggerMeta(type):
 
     @classmethod
     def deco(cls, func):
+        """This method writes functions calls to log file with time
+
+        :param cls: Instance of the class LoggerMeta
+        :type cls: Class
+        :param func: function called this method
+        :type func: Object
+        :return: Return of the called function
+        :rtype: string
+        """
         @wraps(func)
         def wrapper(*args, **kwargs):
+            """Wrapper function that parses the calling function arguments and send to logs with date time
+
+            :param args: any number of extra arguments
+            :type args: Arguments(args)
+            :param kwargs: arguments, where you provide a name to the variable as you pass it into the function
+            :type kwargs: Arguments(args)
+            :return: String with parent class, calling/returning of function
+            :rtype: string
+            """
             func_args_str = "%s %s" % (repr(args), repr(kwargs))
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
 
@@ -57,6 +103,7 @@ class LoggerMeta(type):
             if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[clsname]:
                 ret = err_injection_dict[clsname][func.__name__]
                 args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((datetime.now() - start).total_seconds(), to_log, repr(ret))
+
             else:
                 ret = func(*args, **kwargs)
 
@@ -66,7 +113,15 @@ class LoggerMeta(type):
         return wrapper
 
 def log_message(s, msg, header=False):
+    """Write log messages to console and to log file(with timestamp)
 
+    :param s: Instance of the class
+    :type s: Class
+    :param msg: Message to log and print
+    :type msg: String
+    :param header: True or False, defaults to False. To display message as header
+    :type header: Boolean, Optional
+    """
     line_sep = ('=' * min(len(msg), 80))
     full_msg = "\n\t\t" + line_sep + "\n\t\t" + msg + "\n\t\t" + line_sep + "\n"
     if header:
@@ -78,11 +133,28 @@ def log_message(s, msg, header=False):
 
 class o_helper(object):
     def __init__(self, parent, out, color):
+        """Constructor method to handle the output logging
+
+        :param parent: Parent class
+        :type parent: Class
+        :param out: Output stream (stdout)
+        :type out: Streams
+        :param color: text colour for the device(provided in Json)
+        :type color: String
+        """
         self.color = color
         self.out = out
         self.parent = parent
         self.first_write = True
+
     def write(self, string):
+        """Writes or stdout input messages in colored(if defined).
+        Create the file if not already present.
+        For example: <Testcase>.txt file creation
+
+        :param string: Message to write in the output file
+        :type string: String
+        """
         if self.first_write:
             self.first_write = False
             string = "\r\n" + string
@@ -100,5 +172,7 @@ class o_helper(object):
         self.parent.log += to_log
         if hasattr(self.parent, 'test_to_log'):
             self.parent.test_to_log.log += re.sub('\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
+
     def flush(self):
+        """Flushes the buffer storage in console before pexpect"""
         self.out.flush()
