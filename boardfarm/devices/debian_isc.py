@@ -598,28 +598,40 @@ EOF'''
 
     # this should be renamed to a more suitable generic name.
     def provision_board(self, board_config):
-        print_config = False
-        if not self.is_env_setup_done:
-            DebianISCProvisioner.setup_dhcp_env(self)
-            print_config = True
+        '''
+        Reprovisions current board with new CM cfg
+        '''
+        try:
+            self.take_lock('/etc/init.d/isc-dhcp-server.lock')
 
-        # this is the chunk from reprovision
-        self.update_cmts_isc_dhcp_config(board_config)
-        self.copy_cmts_provisioning_files(board_config)
-        self._restart_dhcp_with_lock()
+            print_config = False
+            if not self.is_env_setup_done:
+                DebianISCProvisioner.setup_dhcp_env(self)
+                print_config = True
+
+            # this is the chunk from reprovision
+            self.update_cmts_isc_dhcp_config(board_config)
+            self.copy_cmts_provisioning_files(board_config)
+            self._restart_dhcp()
+        except Exception as e:
+            raise e
+        finally:
+            self.sendcontrol('c')
+            self.release_lock('/etc/init.d/isc-dhcp-server.lock')
+            self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
+            self.expect(self.prompt)
 
         if print_config:
             self.print_dhcp_config()
 
-    # TODO: this needs to be removed at a later point. Keeping it for backward compatiility.
     def reprovision_board(self, board_config):
-        '''New DHCP, cfg files etc for board after it's been provisioned once'''
-        self.copy_cmts_provisioning_files(board_config)
-        self.update_cmts_isc_dhcp_config(board_config)
-        self._restart_dhcp_with_lock()
+        '''
+        This should not be used, and will go away
+        '''
+        self.provision_board(board_config)
 
     def _try_to_restart_dhcp(self, do_ipv6):
-        self.sendline('(flock -x 9; /etc/init.d/isc-dhcp-server restart; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
+        self.sendline('/etc/init.d/isc-dhcp-server restart')
         matching = ['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*']
         match_num = 1
         if do_ipv6:
@@ -634,7 +646,7 @@ EOF'''
         self.expect(self.prompt)
         return match_num
 
-    def _restart_dhcp_with_lock(self):
+    def _restart_dhcp(self):
         do_ipv6 = True
 
         try:
@@ -656,11 +668,9 @@ EOF'''
             self.sendline('cat /etc/dhcp/dhcpd6.conf')
             self.expect(self.prompt)
         assert match_num == 0, "Incorrect number of DHCP servers started, something went wrong!"
-        self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
-        self.expect(self.prompt)
 
-        self.sendline('(flock -x 9; ps aux | grep dhcpd; echo DONE; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
-        self.expect_exact('(flock -x 9; ps aux | grep dhcpd; echo DONE; flock -u 9) 9>/etc/init.d/isc-dhcp-server.lock')
+        self.sendline('ps aux | grep dhcpd; echo DONE')
+        self.expect_exact('ps aux | grep dhcpd; echo DONE')
         self.expect('DONE')
 
         assert len(re.findall('dhcpd[^\n]*-4', self.before)) == 1, "Wrong number of DHCP4 servers running"
