@@ -8,13 +8,11 @@ from collections import OrderedDict, Counter
 from boardfarm.lib.installers import install_wget, apt_install
 
 class AFTR(object):
-    '''
-    Linux based DSLite server using ISC AFTR
+    """Linux based DSLite server using ISC AFTR
 
     This profile class should be inherited along
     with a Linux Derived Class.
-    '''
-
+    """
     model = ('aftr')
     aftr_dir = '/root/aftr'
     aftr_url = 'https://downloads.isc.org/isc/lwds-lite/1.0/rt28354.tbz'
@@ -25,7 +23,8 @@ class AFTR(object):
     profile = {}
 
     def __init__(self, *args, **kwargs):
-
+        """Constructor method to initialize the container details
+        """
         self.aftr_conf = OrderedDict()
         self.is_installed = False
 
@@ -56,6 +55,8 @@ class AFTR(object):
         aftr_profile["hosts"] = {"aftr.boardfarm.com": str(self.ipv6_ep.ip)}
 
     def configure_aftr(self):
+        """Method to check the aftr exists already else configuring the same
+        """
         self.install_aftr()
         start_conf = self.generate_aftr_conf()
         start_script = self.generate_aftr_script()
@@ -108,13 +109,11 @@ class AFTR(object):
         assert str(self.get_interface_ipaddr("tun0")) == "192.0.0.1", "Failed to bring up tun0 interface."
 
     def generate_aftr_conf(self):
-        '''
-        Generates aftr.conf file.
+        """Generates aftr.conf file. Refers conf/aftr.conf template inside ds-lite package
 
-        Refers conf/aftr.conf template inside ds-lite package.
-        Returns:
-        run_conf (str): Multiline string.
-        '''
+        :return : aftr conf file
+        :rtype : multiline string
+        """
         run_conf = []
 
         # section 0 defines global paramters for NAT, PCP and tunnel.
@@ -147,12 +146,11 @@ class AFTR(object):
         return "\n".join(run_conf)
 
     def generate_aftr_script(self):
-        """
-        Generates aftr-httpserverscript.
+        """Generates aftr-httpserverscript. Refers conf/aftr-script.linux
+        template inside ds-lite package
 
-        Refers conf/aftr-script.linux template inside ds-lite package.
-        Returns:
-        script (str): Multiline string.
+        :return : aftr script
+        :rtype : multiline string
         """
         tab = "    "
 
@@ -202,6 +200,10 @@ class AFTR(object):
         return script
 
     def install_aftr(self):
+        """Method to check the aftr installation
+
+        :raise Exception : installation fails , throws exception
+        """
         # check for aftr executable
         attempt = 0
         while attempt < 2:
