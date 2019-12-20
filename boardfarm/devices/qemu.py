@@ -18,9 +18,10 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import cmd_exists
 
 class Qemu(openwrt_router.OpenWrtRouter):
-    '''
-    Emulated QEMU board
-    '''
+    """Emulated QEMU board inherits the OpenWrtRouter.
+    This class handles the operations relating to booting, reset and setup of QEMU device.
+    QEMU is used to perform few of the code validation without the use of the actual board but rather QEMU device.
+    """
     model = ("qemux86")
 
     wan_iface = "eth0"
@@ -40,19 +41,57 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  conn_cmd,
                  power_ip,
                  power_outlet,
-                 output=sys.stdout,
-                 password='bigfoot1',
-                 web_proxy=None,
-                 tftp_server=None,
-                 tftp_username=None,
-                 tftp_password=None,
-                 tftp_port=None,
-                 connection_type=None,
-                 power_username=None,
-                 power_password=None,
-                 rootfs=None,
-                 kernel=None,
+                 output = sys.stdout,
+                 password = 'bigfoot1',
+                 web_proxy = None,
+                 tftp_server = None,
+                 tftp_username = None,
+                 tftp_password = None,
+                 tftp_port = None,
+                 connection_type = None,
+                 power_username = None,
+                 power_password = None,
+                 rootfs = None,
+                 kernel = None,
                  **kwargs):
+        """This method intializes the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc.,
+
+        :param model: Model of the QEMU device.
+        :type model: string
+        :param conn_cmd: The connection command that is used to connect to QEMU device
+        :type conn_cmd: string
+        :param power_ip: IP Address of power unit to which this device is connected
+        :type power_ip: string
+        :param power_outlet: Outlet # this device is connected
+        :type power_outlet: string
+        :param output: Stores the system standard output, defaults to sys.stdout
+        :type output: string
+        :param password: The password used to connect to the device, defaults to "bigfoot1"
+        :type password: string
+        :param web_proxy: The web proxy to be used, defaults to None
+        :type web_proxy: string
+        :param tftp_server: The tftp_server ip address, defaults to None
+        :type tftp_server: string
+        :param tftp_username: The tftp server userame, defaults to None
+        :type tftp_username: string
+        :param tftp_password: The tftp server password to be used, defaults to None
+        :type tftp_password: string
+        :param tftp_port: The port number that can be used to connect to tftp, defaults to None
+        :type tftp_port: string
+        :param connection_type: The connection type to used to connect.
+        :type connection_type: string
+        :param power_username: The username to be used over power unit connection to the device, defaults to None
+        :type power_username: string
+        :param power_password: The password to be used over power unit connection to the device, defaults to None
+        :type power_password: string
+        :param rootfs: The complete url of the image to be loaded, defaults to None
+        :type rootfs: string
+        :param kernel: The kernel image path to be used to flash to the device, defaults to None
+        :type kernel: string
+        :param **kwargs: Extra set of arguements to be used if any.
+        :type **kwargs: dict
+        :raises: Exception "The QEMU device type requires specifying a rootfs"
+        """
         self.consoles = [self]
 
         assert cmd_exists('qemu-system-i386')
@@ -61,6 +100,13 @@ class Qemu(openwrt_router.OpenWrtRouter):
             raise Exception("The QEMU device type requires specifying a rootfs")
 
         def temp_download(url):
+            """This method is to download the image to the temp folder over the QEMU device.
+
+            :param url: URL where the file is location (URL path of the file to be downloaded), defaults to None
+            :type url: string
+            :returns: The filename of the downloaded file.
+            :rtype: string
+            """
             dl_console = bft_pexpect_helper.spawn("bash --noprofile --norc")
             dl_console.sendline('export PS1="prompt>>"')
             dl_console.expect_exact("prompt>>")
@@ -120,15 +166,22 @@ class Qemu(openwrt_router.OpenWrtRouter):
         atexit.register(self.kill_console_at_exit)
 
     def run_cleanup_cmd(self):
+        """This function is to remove set of files for the clean up.
+        """
         for f in self.cleanup_files:
             if os.path.isfile(f):
                 os.remove(f)
 
     def close(self, *args, **kwargs):
+        """This method exists from the console and closes the session.
+        """
         self.kill_console_at_exit()
         return super(Qemu, self).close(*args, **kwargs)
 
     def kill_console_at_exit(self):
+        """This method is to close the console over exit.
+        Exists pexpect.
+        """
         try:
             self.sendcontrol('a')
             self.send('c')
@@ -138,18 +191,38 @@ class Qemu(openwrt_router.OpenWrtRouter):
             pass
 
     def wait_for_boot(self):
+        """This method is supposed to wait for the prompt after the reboot.
+        """
         pass
 
-    def setup_uboot_network(self, tftp_server=None):
+    def setup_uboot_network(self, tftp_server = None):
+        """This method is supposed to perform a uboot of the device over the network.
+
+        :param tftp_server: Ip address of the TFTP server to be used for uboot, defaults to None
+        :type tftp_server: string
+        """
         pass
 
     def flash_rootfs(self, ROOTFS):
+        """This method flashes the QEMU board with the ROOTFS (which in general is a patch update on the firmware).
+
+        :param ROOTFS: Indicates the absolute location of the file to be used to flash.
+        :type ROOTFS: string
+        """
         pass
 
     def flash_linux(self, KERNEL):
+        """This method flashes the QEMU board by copying file to the board using TFTP protocol.
+
+        :param KERNEL: Indicates the absoulte location of the file to be used to flash.
+        :type KERNEL: string
+        """
         pass
 
     def wait_for_linux(self):
+        """This method waits for the linux menu.
+        Once the device is up will login and enter to root.
+        """
         if self.kvm:
             tout = 60
         else:
@@ -164,10 +237,20 @@ class Qemu(openwrt_router.OpenWrtRouter):
             if i >= 1:
                 break
 
-    def boot_linux(self, rootfs=None, bootargs=None):
+    def boot_linux(self, rootfs = None, bootargs = None):
+        """This method is supposed to boots qemu board.
+
+        :param rootfs: parameter to be used at later point, defaults to None.
+        :type rootfs: NA
+        :param bootargs: parameter to be used at later point, defaults to empty string "".
+        :type bootargs: string
+        """
         pass
 
     def reset(self):
+        """This method resets the qemu board.
+        Uses the system_reset command to reset.
+        """
         self.sendcontrol('a')
         self.send('c')
         self.sendline('system_reset')
