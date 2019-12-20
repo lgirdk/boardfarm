@@ -27,6 +27,9 @@ class DellSwitch(base.BaseDevice):
         self.password = password
 
     def connect(self):
+        '''
+        Connect and login to switch.
+        '''
         for i in range(10):
             self.sendline('exit')
             if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5):
@@ -41,6 +44,9 @@ class DellSwitch(base.BaseDevice):
         raise Exception("Unable to get prompt on Dell switch")
 
     def create_vlan(self, vlan):
+        '''
+        Create a Virtual LAN.
+        '''
         self.sendline('vlan database')
         self.expect(self.prompt)
         self.sendline('vlan %s' % vlan)
@@ -49,6 +55,9 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
 
     def configure_basic_settings(self):
+        '''
+        Set simple parameters.
+        '''
         self.create_vlan(4093)
         self.sendline('ip address dhcp')
         self.expect(self.prompt)
@@ -56,6 +65,9 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
 
     def configure_eth_private_port(self, port, override_vlan=None):
+        '''
+        Set given ethernet port to ignore all VLAN tags except for one.
+        '''
         if override_vlan is None:
             vlan = 100 + port
         else:
@@ -81,6 +93,9 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
 
     def configure_eth_trunk_port(self, port):
+        '''
+        Set an ethernet port to tag traffic with VLAN identifiers.
+        '''
         self.sendline('interface ethernet 1/g%s' % port)
         self.expect(self.prompt)
         self.sendline('switchport mode trunk')
@@ -95,6 +110,9 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
 
     def save_running_to_startup_config(self):
+        '''
+        Save current configuration settings.
+        '''
         self.sendline('exit')
         self.expect(self.prompt)
         self.sendline('copy running-config startup-config')
