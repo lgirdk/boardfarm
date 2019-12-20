@@ -151,6 +151,10 @@ def bf_node(cls_list, model, **kwargs):
     return ret
 
 def get_device(model, **kwargs):
+    '''
+    Create a class instance for a device. These are connected to the
+    Device Under Test (DUT) board.
+    '''
     profile = kwargs.get("profile", {})
     cls_list = []
     profile_list = []
@@ -207,6 +211,9 @@ def get_device(model, **kwargs):
     return None
 
 def board_decider(model, **kwargs):
+    '''
+    Create a class instance for the Device Under Test (DUT) board.
+    '''
     if any('conn_cmd' in s for s in kwargs):
         if any(u'kermit' in s for s in kwargs['conn_cmd']):
             check_for_cmd_on_host('kermit', "telnet equivalent command. It has lower CPU usage than telnet,\n\

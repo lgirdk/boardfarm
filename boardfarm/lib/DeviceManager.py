@@ -13,6 +13,10 @@ class DeviceNone(object):
 # by location and/or feature. E.g. wan2/lan2/etc all start to go away from this
 # short list
 class device_type(Enum):
+    '''
+    Identifiers for different kinds of devices. Useful for correctly
+    connecting to and using a device.
+    '''
     Unknown = 0
     DUT = 1
     board = 1
@@ -38,6 +42,9 @@ class device_type(Enum):
     cdrouter = 15
 
 class device_location(Enum):
+    '''
+    Identifiers for how a device is connected to the Device Under Test (DUT).
+    '''
     Unknown = 0
     Northbound = 1
     WAN = 1
@@ -46,18 +53,27 @@ class device_location(Enum):
     DUT = 3
 
 class device_os(Enum):
+    '''
+    Identifiers for the type of Operating System (OS) of a device.
+    '''
     Unknown = 0
     Linux = 1
     Windows = 2
 
 # to replace linux_boot.LinuxDevice.get_device_by_feature
 class device_feature(Enum):
+    '''
+    Identifiers for extra features a device may have.
+    '''
     Unknown = 0
     Generic = 1
     Wifi2G = 2
     Wifi5G = 3
 
 class device_descriptor(object):
+    '''
+    All identifiers about a device.
+    '''
     location = device_location.Unknown
     os = device_os.Linux
     type = device_type.Unknown
