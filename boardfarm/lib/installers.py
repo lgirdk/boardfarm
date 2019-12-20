@@ -5,7 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import re,pexpect
+import re
+import pexpect
+
 
 def apt_install(device, name, timeout=120):
     apt_update(device)
@@ -17,10 +19,12 @@ def apt_install(device, name, timeout=120):
     i = device.expect(['dpkg-query: no packages found'] + device.prompt)
     assert (i != 0)
 
+
 def apt_update(device, timeout=120):
     device.sendline('apt-get -q update')
     device.expect('Reading package')
     device.expect(device.prompt, timeout=timeout)
+
 
 def install_iperf(device):
     '''Install iPerf benchmark tool if not present.'''
@@ -35,6 +39,7 @@ def install_iperf(device):
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf')
         device.expect(device.prompt, timeout=60)
 
+
 def install_iperf3(device):
     '''Install iPerf benchmark tool if not present.'''
     device.sendline('\niperf3 -v')
@@ -48,6 +53,7 @@ def install_iperf3(device):
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
         device.expect(device.prompt, timeout=60)
 
+
 def install_tcpick(device):
     '''Install tcpick if not present.'''
     device.sendline('\ntcpick --version')
@@ -59,6 +65,7 @@ def install_tcpick(device):
         device.sendline('apt-get install tcpick -y')
         assert 0 == device.expect(['Setting up tcpick'] + device.prompt, timeout=60), "tcpick installation failed"
         device.expect(device.prompt)
+
 
 def install_upnp(device):
     '''Install miniupnpc  if not present.'''
@@ -72,6 +79,7 @@ def install_upnp(device):
         assert 0 == device.expect(['Setting up miniupnpc.*'] + device.prompt, timeout=60), "upnp installation failed"
         device.expect(device.prompt)
 
+
 def install_lighttpd(device):
     '''Install lighttpd web server if not present.'''
     device.sendline('\nlighttpd -v')
@@ -81,6 +89,7 @@ def install_lighttpd(device):
     except:
         device.expect(device.prompt)
         apt_install(device, 'lighttpd')
+
 
 def install_netperf(device):
     '''Install netperf benchmark tool if not present.'''
@@ -97,6 +106,7 @@ def install_netperf(device):
     device.sendline('/etc/init.d/netperf restart')
     device.expect('Restarting')
     device.expect(device.prompt)
+
 
 def install_endpoint(device):
     '''Install endpoint if not present.'''
@@ -116,6 +126,7 @@ def install_endpoint(device):
         device.expect('Installation of endpoint was successful.', timeout=90)
         device.expect(device.prompt, timeout=60)
 
+
 def install_hping3(device):
     '''Install hping3 if not present.'''
     device.sendline('\nhping3 --version')
@@ -127,6 +138,8 @@ def install_hping3(device):
         device.sendline('apt-get update')
         device.expect(device.prompt)
         apt_install(device, 'hping3')
+
+
 def install_python(device):
     '''Install python if not present.'''
     device.sendline('\npython --version')
@@ -139,6 +152,7 @@ def install_python(device):
         device.expect(device.prompt)
         device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb')
         device.expect(device.prompt, timeout=60)
+
 
 def install_java(device):
     '''Install java if not present.'''
@@ -172,7 +186,8 @@ def install_java(device):
             device.sendline('apt-get install oracle-java8-installer -y')
             device.expect(device.prompt, timeout=60)
 
-def install_telnet_server(device,remove=False):
+
+def install_telnet_server(device, remove=False):
     '''Install xinetd/telnetd if not present.'''
     device.sendline('\nxinetd -version')
     if remove:
@@ -215,9 +230,10 @@ def install_telnet_server(device,remove=False):
         for i in range(pty_num, 10):
             device.check_output('echo "pts/%s" >> /etc/securetty' % i)
     device.sendline("service xinetd restart")
-    device.expect(['Starting internet superserver: xinetd.'] , timeout=60)
+    device.expect(['Starting internet superserver: xinetd.'], timeout=60)
     device.expect(device.prompt)
     assert "[ + ]  xinetd" in device.check_output("service --status-all")
+
 
 def install_tcl(device):
     '''Install tcl if not present.'''
@@ -230,6 +246,7 @@ def install_tcl(device):
         device.sendline('apt-get install tcl -y')
         device.expect(device.prompt, timeout=60)
 
+
 def install_telnet_client(device):
     '''Install telnet client if not present.'''
     device.sendline('\ndpkg -l | grep telnet')
@@ -240,6 +257,7 @@ def install_telnet_client(device):
         device.expect(device.prompt)
         device.sendline('apt-get install telnet -y')
         device.expect(device.prompt, timeout=60)
+
 
 def install_expect(device):
     '''Install expect if not present.'''
@@ -252,6 +270,7 @@ def install_expect(device):
         device.sendline('apt-get install expect -y')
         device.expect(device.prompt, timeout=60)
 
+
 def install_wget(device):
     '''Install wget if not present.'''
     device.sendline('\nwget --version')
@@ -262,6 +281,7 @@ def install_wget(device):
         device.expect(device.prompt)
         device.sendline('apt-get install wget -y')
         device.expect(device.prompt, timeout=60)
+
 
 def install_ftp(device):
     '''Install ftp if not present.'''
@@ -275,6 +295,7 @@ def install_ftp(device):
         device.expect(device.prompt)
         device.sendline('apt-get install ftp -y')
         device.expect(device.prompt, timeout=60)
+
 
 def install_xampp(device):
     '''Install xampp if not present.'''
@@ -303,6 +324,7 @@ def install_xampp(device):
         device.sendline('touch /opt/lampp/htdocs/test.txt')
         device.expect(device.prompt, timeout=120)
 
+
 def install_snmpd(device, post_cmd=None):
     '''
     Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf
@@ -321,6 +343,7 @@ def install_snmpd(device, post_cmd=None):
     device.sendline('service snmpd restart')
     device.expect(device.prompt)
 
+
 def install_snmp(device):
     '''Install snmp if not present.'''
     device.sendline('\nsnmpget --version')
@@ -331,6 +354,7 @@ def install_snmp(device):
         device.expect(device.prompt)
         device.sendline('apt update && apt-get install snmp -y')
         device.expect(device.prompt, timeout=60)
+
 
 def install_vsftpd(device, remove=False):
     '''Install vsftpd if not present.'''
@@ -354,10 +378,11 @@ def install_vsftpd(device, remove=False):
         device.sendline('apt-get purge --auto-remove vsftpd -y')
         device.expect(device.prompt, timeout=30)
 
+
 def install_pysnmp(device):
     '''Install pysnmp if not present.'''
     install_flag = False
-    for i in range(1,3):
+    for i in range(1, 3):
         try:
             device.sendline('\npip freeze | grep pysnmp')
             device.expect('pysnmp==', timeout=i*(5*i))
@@ -370,7 +395,6 @@ def install_pysnmp(device):
             device.sendline('pip install -q pysnmp')
             device.expect_prompt(timeout=150)
             device.expect(pexpect.TIMEOUT, timeout=5)
-
 
     assert install_flag, "Failed to install pysnmp library"
 
@@ -385,6 +409,7 @@ def install_iw(device):
         device.expect(device.prompt)
         device.sendline('apt-get install iw -y')
         device.expect(device.prompt, timeout=90)
+
 
 def install_jmeter(device):
     '''Install jmeter if not present.'''
@@ -404,6 +429,7 @@ def install_jmeter(device):
         device.expect(device.prompt, timeout=120)
         device.sendline('rm apache-jmeter-*')
 
+
 def install_IRCserver(device):
     '''Install irc server if not present.'''
     device.sendline('inspircd --version')
@@ -417,6 +443,7 @@ def install_IRCserver(device):
         device.sendline('apt-get install inspircd -y')
         device.expect(['Setting up inspircd'], timeout=90)
         device.expect(device.prompt)
+
 
 def install_dovecot(device, remove=False):
     '''Install dovecot server if not present.'''
@@ -441,6 +468,7 @@ def install_dovecot(device, remove=False):
         device.expect_prompt()
         device.check_output("service dovecot restart")
         assert "dovecot is running" in device.check_output("service dovecot status"), "Failed to install dovecot"
+
 
 def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     '''Un/Install the OpenVPN server via a handy script'''
@@ -541,6 +569,7 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
 
     device.expect(device.prompt)
 
+
 def install_ovpn_client(device, remove=False):
     '''
     Un/Install the OpenVPN client
@@ -558,6 +587,7 @@ def install_ovpn_client(device, remove=False):
     device.expect(device.prompt)
     device.sendline('apt-get install openvpn -y')
     device.expect(device.prompt, timeout=90)
+
 
 def install_pptpd_server(device, remove=False):
     '''
@@ -582,6 +612,7 @@ def install_pptpd_server(device, remove=False):
     device.sendline("/etc/init.d/pptpd restart")
     device.expect(device.prompt, timeout=60)
 
+
 def install_pptp_client(device, remove=False):
     '''
     Un/Install the pptp-linux package
@@ -603,6 +634,7 @@ def install_pptp_client(device, remove=False):
 
     device.expect(device.prompt, timeout=60)
 
+
 def install_postfix(device):
     '''Install postfix server if not present.'''
     device.sendline("apt-get purge postfix -y")
@@ -615,7 +647,7 @@ def install_postfix(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')  # Update inetd before installation
         if 0 == device.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
-                device.expect(device.prompt, timeout=300)
+            device.expect(device.prompt, timeout=300)
         else:
             print("Failed to download packages, things might not work")
             for i in range(3):
@@ -629,7 +661,8 @@ def install_postfix(device):
         print(install_settings)
         if install_settings == 0:
             device.sendline("2")
-            assert 0 == device.expect(['System mail name:'] + device.prompt, timeout=90), "System mail name option is note received. Installaion failed"
+            assert 0 == device.expect(['System mail name:'] + device.prompt,
+                                      timeout=90), "System mail name option is note received. Installaion failed"
             device.sendline("testingsmtp.com")
             assert 0 != device.expect(['Errors were encountered'] + device.prompt, timeout=90), "Errors Encountered. Installaion failed"
 
@@ -643,6 +676,7 @@ def install_postfix(device):
         device.sendline("service postfix start")
         assert 0 != device.expect(['failed'] + device.prompt, timeout=90), "Unable to start Postfix service.Service is not properly installed"
 
+
 def check_pjsua(device):
     '''Check if softphone is present.'''
     try:
@@ -653,6 +687,7 @@ def check_pjsua(device):
         return True
     except:
         return False
+
 
 def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"):
     '''Install softphone if not present.'''
@@ -667,15 +702,15 @@ def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.t
         device.expect(device.prompt, timeout=100)
         device.sendline('tar -xjf %s' % url.split("/")[-1])
         device.expect(device.prompt, timeout=70)
-        device.sendline('rm %s'% url.split("/")[-1])
+        device.sendline('rm %s' % url.split("/")[-1])
         device.expect(device.prompt, timeout=60)
         device.sendline("ls")
         device.expect(device.prompt)
-        folder_name=re.findall('(pjproject\-[\d\.]*)\s', device.before)[0]
+        folder_name = re.findall('(pjproject\-[\d\.]*)\s', device.before)[0]
         device.sendline('cd %s' % folder_name)
         device.expect(device.prompt)
         device.sendline('./configure && make dep && make && make clean &&  make install 2>&1 & ')
-        #this takes more than 4 mins to install
+        # this takes more than 4 mins to install
         device.expect(pexpect.TIMEOUT, timeout=400)
         device.expect(device.prompt)
         device.sendline('ls pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu')
@@ -686,13 +721,14 @@ def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.t
         result = check_pjsua(device)
         assert 0 != result, "Unable to start Pjsua.Service is not installed."
 
+
 def configure_IRCserver(device, user_name):
     ''' Method to confgiure IRC server
         Purpose: To modify and configure IRC server
         Arguments: user_name(string) Eg: "IRC" '''
 
-    device.sendline ("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
-    device.expect (device.prompt)
+    device.sendline("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
+    device.expect(device.prompt)
 
     device.sendline('''cat > /etc/inspircd/inspircd.conf << EOF
 <server name="irc.boardfarm.net"
@@ -797,21 +833,22 @@ def configure_IRCserver(device, user_name):
 <badnick nick="OperServ" reason="Reserved For Services">
 <badnick nick="MemoServ" reason="Reserved For Services">
 EOF''' % (user_name, user_name))
-    device.expect (device.prompt)
+    device.expect(device.prompt)
 
-    device.sendline ("rm /etc/default/inspircd; touch /etc/default/inspircd")
-    device.expect (device.prompt)
-    device.sendline ("echo 'INSPIRCD_ENABLED=1' > /etc/default/inspircd")
-    device.expect (device.prompt)
+    device.sendline("rm /etc/default/inspircd; touch /etc/default/inspircd")
+    device.expect(device.prompt)
+    device.sendline("echo 'INSPIRCD_ENABLED=1' > /etc/default/inspircd")
+    device.expect(device.prompt)
 
     device.sendline("service inspircd restart")
-    index = device.expect (['Starting Inspircd... done.'] + device.prompt, timeout=30)
+    index = device.expect(['Starting Inspircd... done.'] + device.prompt, timeout=30)
     assert index == 0, "Start Service inspircd"
-    device.expect (device.prompt)
+    device.expect(device.prompt)
     device.sendline("netstat -tulpn | grep -i inspircd")
-    index = device.expect (['tcp6'] + device.prompt, timeout=30)
+    index = device.expect(['tcp6'] + device.prompt, timeout=30)
     assert index == 0, "Service inspircd running"
-    device.expect (device.prompt)
+    device.expect(device.prompt)
+
 
 def configure_IRCclient(device, user_name, irc_client_scriptname, client_id, irc_server_ip, socket_type):
     ''' Method to confgiure IRC client
@@ -824,9 +861,9 @@ def configure_IRCclient(device, user_name, irc_client_scriptname, client_id, irc
                    irc_server_ip(ip address)
                    socket_type: Eg ipv6 --> "6" or ipv4 --> "" '''
 
-    device.sendline ("touch %s" %irc_client_scriptname)
+    device.sendline("touch %s" % irc_client_scriptname)
     device.expect(device.prompt)
-    device.sendline ('''cat > %s << EOF
+    device.sendline('''cat > %s << EOF
 import socket
 import time
 
