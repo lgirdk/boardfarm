@@ -26,6 +26,11 @@ class ConfigHelper(dict):
             traceback.print_exc()
             raise ConfigKeyError
 
+        if key in ('station'):
+            print("ERROR: use get_station() not ['station']")
+            traceback.print_exc()
+            raise ConfigKeyError
+
         return dict.__getitem__(self, key)
 
     def get_station(self):
