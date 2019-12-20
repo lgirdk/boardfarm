@@ -16,6 +16,7 @@ import boardfarm.exceptions
 from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 
+
 class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
     _testMethodName = "UNDEFINED"
     log = ""
@@ -46,8 +47,9 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
         result = ""
         if self.attempts:
-            result = self.result_grade + "(" + str(self.attempts ) + ")"
-        lib.common.test_msg("\n==================== End %s   %s   Time: %s ==================" % (self.__class__.__name__, result, now_short(self._format)))
+            result = self.result_grade + "(" + str(self.attempts) + ")"
+        lib.common.test_msg("\n==================== End %s   %s   Time: %s ==================" %
+                            (self.__class__.__name__, result, now_short(self._format)))
 
     def run(self):
         self.startMarker()
@@ -144,13 +146,15 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         except Exception as e:
             self.stop_time = time.time()
 
-            print("\n\n=========== Test: %s failed! running Device status check! Time: %s ===========" % (self.__class__.__name__, now_short(self._format)))
+            print("\n\n=========== Test: %s failed! running Device status check! Time: %s ===========" %
+                  (self.__class__.__name__, now_short(self._format)))
             try:
                 all_devices = [board]+[getattr(self.config, name, None) for name in self.config.devices]
                 check_devices(all_devices)
             except Exception as e:
                 print(e)
-            print("\n\n=========== Test: %s failed! Device status check done! Time: %s ===========" % (self.__class__.__name__, now_short(self._format)))
+            print("\n\n=========== Test: %s failed! Device status check done! Time: %s ===========" %
+                  (self.__class__.__name__, now_short(self._format)))
 
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             if hasattr(self, 'expected_failure') and self.expected_failure:
@@ -181,7 +185,6 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             sys.exit(1)
         print("ERROR: No default recovery!")
 
-
     _log_to_file = None
 
     def x_log_to_file(self, value):
@@ -211,18 +214,19 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         '''To fetch wan hosts
         Returns a dictionary of IP(key) with hosts(value) for all Wan devices'''
         import re
-        hosts={}
+        hosts = {}
         for device in self.config.devices:
-            if  re.search("wan|sip|phone",device):
+            if re.search("wan|sip|phone", device):
                 dev = getattr(self.config, device)
                 if hasattr(dev, 'iface_dut'):
                     device_ip = dev.get_interface_ipaddr(dev.iface_dut)
-                    hosts[str(device_ip)]= device+".boardfarm.com"
+                    hosts[str(device_ip)] = device+".boardfarm.com"
         return hosts
 
     def execute_test_steps(self, prefix="", steps=[]):
         assert steps, "Please add steps to Test class before calling execute"
         for test_step in steps:
-                if prefix: test_step.name = prefix + test_step.name
-                with test_step:
-                    test_step.execute()
+            if prefix:
+                test_step.name = prefix + test_step.name
+            with test_step:
+                test_step.execute()
