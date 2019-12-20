@@ -146,22 +146,3 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.sendline('npcpu start')
         self.sendline('bootkernel -c %kernel_cmd_line%')
         self.delaybetweenchar = None
-
-    def wait_for_networkxxx(self):
-        self.sendline('ip link set %s down' % self.wan_iface)
-        self.expect(self.prompt)
-        self.sendline('ip link set %s name foobar' % self.wan_iface)
-        self.expect(self.prompt)
-        self.sendline('ip link set foobar up')
-        self.expect(self.prompt)
-        self.sendline('brctl delif brlan0 nsgmii0')
-        self.expect(self.prompt)
-        self.sendline('brctl addbr %s' % self.wan_iface)
-        self.expect(self.prompt)
-        self.sendline('brctl addif %s nsgmii0' % self.wan_iface)
-        self.expect(self.prompt)
-        self.sendline('brctl addif %s foobar' % self.wan_iface)
-        self.expect(self.prompt)
-        self.sendline('dhclient %s' % self.wan_iface)
-        self.expect(self.prompt)
-        super(CougarPark, self).wait_for_network()
