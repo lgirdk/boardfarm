@@ -8,8 +8,22 @@
 import re
 import pexpect
 
+"""
+Libraries to install linux packages
+"""
+
 
 def apt_install(device, name, timeout=120):
+    """Install a package using apt-get
+
+    :param device: Object of DebianBox
+    :type device: Instance (ex: lan or wan instance)
+    :param name: name of the package to install
+    :type name: string
+    :param timeout: timeout for expect, defaults to '120'
+    :type timeout: integer, optional
+    :raises assertion: package is not installed correctly
+    """
     apt_update(device)
     device.sendline('apt-get install -q -y %s' % name)
     device.expect('Reading package')
@@ -21,13 +35,24 @@ def apt_install(device, name, timeout=120):
 
 
 def apt_update(device, timeout=120):
+    """Update the package database with apt-get
+
+    :param device: Object of DebianBox
+    :type device: Instance (ex: lan or wan instance)
+    :param timeout: timeout for expect, defaults to '120'
+    :type timeout: integer, optional
+    """
     device.sendline('apt-get -q update')
     device.expect('Reading package')
     device.expect(device.prompt, timeout=timeout)
 
 
 def install_iperf(device):
-    '''Install iPerf benchmark tool if not present.'''
+    """Install iPerf benchmark tool if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\niperf -v')
     try:
         device.expect('iperf version', timeout=10)
@@ -41,7 +66,11 @@ def install_iperf(device):
 
 
 def install_iperf3(device):
-    '''Install iPerf benchmark tool if not present.'''
+    """Install iPerf version3 benchmark tool if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\niperf3 -v')
     try:
         device.expect('iperf 3', timeout=5)
@@ -55,7 +84,13 @@ def install_iperf3(device):
 
 
 def install_tcpick(device):
-    '''Install tcpick if not present.'''
+    """Install tcpick if not present.
+    tcpick - tcp stream sniffer and connection tracker
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: tcpick installation failed
+    """
     device.sendline('\ntcpick --version')
     try:
         device.expect('tcpick 0.2', timeout=5)
@@ -68,7 +103,13 @@ def install_tcpick(device):
 
 
 def install_upnp(device):
-    '''Install miniupnpc  if not present.'''
+    """Install miniupnpc  if not present.
+    MiniUPnPc is a client library, enabling applications to access the services provided by an UPnP "Internet Gateway Device" present on the network
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: upnp installation failed
+    """
     device.sendline('\nupnpc --version')
     try:
         device.expect('upnpc : miniupnpc', timeout=5)
@@ -81,7 +122,11 @@ def install_upnp(device):
 
 
 def install_lighttpd(device):
-    '''Install lighttpd web server if not present.'''
+    """Install lighttpd web server if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nlighttpd -v')
     try:
         device.expect('lighttpd/1', timeout=8)
@@ -92,7 +137,11 @@ def install_lighttpd(device):
 
 
 def install_netperf(device):
-    '''Install netperf benchmark tool if not present.'''
+    """Install netperf benchmark tool if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nnetperf -V')
     try:
         device.expect('Netperf version 2.4', timeout=10)
@@ -109,7 +158,11 @@ def install_netperf(device):
 
 
 def install_endpoint(device):
-    '''Install endpoint if not present.'''
+    """Install endpoint(Performance Endpoint for Linux from Ixia) if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\npgrep endpoint')
     try:
         device.expect('pgrep endpoint')
@@ -128,7 +181,12 @@ def install_endpoint(device):
 
 
 def install_hping3(device):
-    '''Install hping3 if not present.'''
+    """Install hping3 if not present.
+    hping is a command-line oriented TCP/IP packet assembler/analyzer.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nhping3 --version')
     try:
         device.expect('hping3 version', timeout=5)
@@ -141,7 +199,11 @@ def install_hping3(device):
 
 
 def install_python(device):
-    '''Install python if not present.'''
+    """Install python if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\npython --version')
     try:
         device.expect('Python 2', timeout=5)
@@ -155,7 +217,11 @@ def install_python(device):
 
 
 def install_java(device):
-    '''Install java if not present.'''
+    """Install java if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\njavac -version')
     try:
         device.expect('javac 1.8', timeout=5)
@@ -188,7 +254,15 @@ def install_java(device):
 
 
 def install_telnet_server(device, remove=False):
-    '''Install xinetd/telnetd if not present.'''
+    """Install xinetd/telnetd if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    :raises assertion: xinetd/telnetd installation failed
+    """
+
     device.sendline('\nxinetd -version')
     if remove:
         device.expect(device.prompt)
@@ -236,7 +310,11 @@ def install_telnet_server(device, remove=False):
 
 
 def install_tcl(device):
-    '''Install tcl if not present.'''
+    """Install tcl if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\necho \'puts $tcl_patchLevel\' | tclsh')
     try:
         device.expect('8.6', timeout=5)
@@ -248,7 +326,11 @@ def install_tcl(device):
 
 
 def install_telnet_client(device):
-    '''Install telnet client if not present.'''
+    """Install telnet client if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\ndpkg -l | grep telnet')
     try:
         device.expect('telnet client', timeout=5)
@@ -260,7 +342,12 @@ def install_telnet_client(device):
 
 
 def install_expect(device):
-    '''Install expect if not present.'''
+    """Install expect if not present.
+    Expect is a tool for automating interactive applications
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nexpect -version')
     try:
         device.expect('expect version 5', timeout=5)
@@ -272,7 +359,12 @@ def install_expect(device):
 
 
 def install_wget(device):
-    '''Install wget if not present.'''
+    """Install wget if not present.
+    Wget is a software package for retrieving files using HTTP, HTTPS, FTP and FTPS
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nwget --version')
     try:
         device.expect('GNU Wget 1', timeout=5)
@@ -284,7 +376,11 @@ def install_wget(device):
 
 
 def install_ftp(device):
-    '''Install ftp if not present.'''
+    """Install ftp if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('apt-get update')
     device.expect(device.prompt, timeout=90)
     device.sendline('\ndpkg -l | grep ftp')
@@ -298,7 +394,12 @@ def install_ftp(device):
 
 
 def install_xampp(device):
-    '''Install xampp if not present.'''
+    """Install xampp if not present.
+    XAMPP is a cross-platform web server solution
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\n/opt/lampp/lampp --help')
     try:
         device.expect('Usage: lampp', timeout=5)
@@ -326,10 +427,15 @@ def install_xampp(device):
 
 
 def install_snmpd(device, post_cmd=None):
-    '''
-    Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf
+    """Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf
     (or for whatever is needed just after the installation)
-    '''
+
+    :param device: lan or wan
+    :type device: Object
+    :param post_cmd: linux command to add/delete/update/replace content
+                      of a file related to snmpd, post installtion, defaults to None
+    :type post_cmd: string, optional
+    """
     device.sendline('apt update && apt install snmpd -y -q')
     device.expect(device.prompt, timeout=60)
 
@@ -345,7 +451,11 @@ def install_snmpd(device, post_cmd=None):
 
 
 def install_snmp(device):
-    '''Install snmp if not present.'''
+    """Install snmp if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('\nsnmpget --version')
     try:
         device.expect('NET-SNMP version:', timeout=5)
@@ -357,7 +467,14 @@ def install_snmp(device):
 
 
 def install_vsftpd(device, remove=False):
-    '''Install vsftpd if not present.'''
+    """Install vsftpd if not present.
+    vsftpd is a FTP server for Unix-like systems, including Linux
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    """
     if not remove:
         device.sendline('apt-get update')
         device.expect(device.prompt, timeout=90)
@@ -380,7 +497,13 @@ def install_vsftpd(device, remove=False):
 
 
 def install_pysnmp(device):
-    '''Install pysnmp if not present.'''
+    """Install pysnmp if not present.
+    Pysnmp is a pure-Python SNMP engine implementation
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: Failed to install pysnmp library
+    """
     install_flag = False
     for i in range(1, 3):
         try:
@@ -400,7 +523,12 @@ def install_pysnmp(device):
 
 
 def install_iw(device):
-    '''Install iw if not present.'''
+    """Install iw if not present.
+    iw is nl80211 based CLI configuration utility for wireless devices
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('iw --version')
     try:
         device.expect('iw version', timeout=5)
@@ -412,7 +540,13 @@ def install_iw(device):
 
 
 def install_jmeter(device):
-    '''Install jmeter if not present.'''
+    """Install jmeter if not present.
+    JMeter is an Apache project, used as a load testing tool for analyzing and
+    measuring the performance of a variety of services, with a focus on web applications
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('export PATH=$PATH:/opt/apache-jmeter-5.1.1/bin/')
     device.expect(device.prompt)
     device.sendline('jmeter --version')
@@ -431,7 +565,14 @@ def install_jmeter(device):
 
 
 def install_IRCserver(device):
-    '''Install irc server if not present.'''
+    """Install irc server if not present.
+    Internet Relay Chat (IRC) is an application layer protocol
+    that facilitates communication in the form of text.
+    The chat process works on a client/server model.
+
+    :param device: lan or wan
+    :type device: Object
+    """
     device.sendline('inspircd --version')
     try:
         device.expect('InspIRCd-', timeout=5)
@@ -446,7 +587,15 @@ def install_IRCserver(device):
 
 
 def install_dovecot(device, remove=False):
-    '''Install dovecot server if not present.'''
+    """Un/Install dovecot server if not present.
+    Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    :raises assertion: Failed to install dovecot
+    """
     if remove:
         device.check_output("killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*")
         device.check_output("rm -rf /etc/dovecot")
@@ -471,7 +620,18 @@ def install_dovecot(device, remove=False):
 
 
 def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
-    '''Un/Install the OpenVPN server via a handy script'''
+    """Un/Install the OpenVPN server via a handy script
+    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    :param _user: lan or wan, defaults to lan
+    :type _user: String, optional
+    :param _ip: ipv4 or ipv6, defaults to ipv4
+    :type _ip: string, optional
+    """
     device.sendline('cd')
     device.expect_exact('cd')
     device.expect(device.prompt)
@@ -571,11 +731,16 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
 
 
 def install_ovpn_client(device, remove=False):
-    '''
-    Un/Install the OpenVPN client
+    """Un/Install the OpenVPN client
+    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
+
     To run the client as a daemon use:
     openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
-    '''
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    """
     if remove:
         device.sendline('killall -9 openvpn')
         device.expect(device.prompt)
@@ -590,9 +755,14 @@ def install_ovpn_client(device, remove=False):
 
 
 def install_pptpd_server(device, remove=False):
-    '''
-    Un/Install the pptpd
-    '''
+    """Un/Install the pptpd
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    """
     import pexpect
     device.expect([pexpect.TIMEOUT] + device.prompt, timeout=5)
     device.sendline('ls -l /usr/sbin/pptpd')
@@ -614,9 +784,14 @@ def install_pptpd_server(device, remove=False):
 
 
 def install_pptp_client(device, remove=False):
-    '''
-    Un/Install the pptp-linux package
-    '''
+    """Un/Install the pptp-linux package
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+
+    :param device: lan or wan
+    :type device: Object
+    :param remove: True or False, defaults to False
+    :type remove: Boolean, optional
+    """
     device.sendline('pptp --version')
     index = device.expect(['pptp version'] + device.prompt, timeout=90)
 
@@ -636,7 +811,15 @@ def install_pptp_client(device, remove=False):
 
 
 def install_postfix(device):
-    '''Install postfix server if not present.'''
+    """Install postfix server if not present.
+    Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: 1. Errors Encountered during installation. Installaion failed
+                       2. System mail name option is not received. Installaion failed
+                       3. Unable to start Postfix service.Service is not properly installed
+    """
     device.sendline("apt-get purge postfix -y")
     device.expect(device.prompt, timeout=40)
     device.sendline('postconf -d | grep mail_version')
@@ -662,7 +845,7 @@ def install_postfix(device):
         if install_settings == 0:
             device.sendline("2")
             assert 0 == device.expect(['System mail name:'] + device.prompt,
-                                      timeout=90), "System mail name option is note received. Installaion failed"
+                                      timeout=90), "System mail name option is not received. Installaion failed"
             device.sendline("testingsmtp.com")
             assert 0 != device.expect(['Errors were encountered'] + device.prompt, timeout=90), "Errors Encountered. Installaion failed"
 
@@ -678,7 +861,12 @@ def install_postfix(device):
 
 
 def check_pjsua(device):
-    '''Check if softphone is present.'''
+    """Check if softphone is present.
+    pjsua is a command line SIP user agent
+
+    :param device: lan or wan
+    :type device: Object
+    """
     try:
         device.sendline('pjsua')
         device.expect(['Ready: Success'], timeout=10)
@@ -690,7 +878,16 @@ def check_pjsua(device):
 
 
 def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"):
-    '''Install softphone if not present.'''
+    """Install softphone if not present.
+    pjsua is a command line SIP user agent
+
+    :param device: lan or wan
+    :type device: Object
+    :param url: url to download pjsua package, defaults to "https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
+    :type url: String, optional
+    :raises assertion: 1. Unable to find executable
+                       2. Unable to start Pjsua.Service is not installed
+    """
     result = check_pjsua(device)
     if not result:
         apt_install(device, 'make')
@@ -723,9 +920,15 @@ def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.t
 
 
 def configure_IRCserver(device, user_name):
-    ''' Method to confgiure IRC server
-        Purpose: To modify and configure IRC server
-        Arguments: user_name(string) Eg: "IRC" '''
+    """To modify and configure IRC server.
+
+    :param device: lan or wan
+    :type device: Object
+    :param user_name: User name for admin nick name, operator name
+    :type user_name: String
+    :raises assertion: 1. Start Service inspircd failed
+                       2. Service inspircd is not running
+    """
 
     device.sendline("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
     device.expect(device.prompt)
@@ -851,15 +1054,21 @@ EOF''' % (user_name, user_name))
 
 
 def configure_IRCclient(device, user_name, irc_client_scriptname, client_id, irc_server_ip, socket_type):
-    ''' Method to confgiure IRC client
-        this function as of now tests only 2 clients
-        Purpose: To create a client python file
-        Arguments: device Eg: wan,lan
-                   user_name(string) Eg: "IRC"
-                   irc_client_scriptname(string) Eg: irc_client.py
-                   client_id(int) Eg: 1st client - 1, 2nd client - 2
-                   irc_server_ip(ip address)
-                   socket_type: Eg ipv6 --> "6" or ipv4 --> "" '''
+    """To create a python file in IRC client. The script shall be used to connect to server
+
+    :param device: lan or wan
+    :type device: Object
+    :param user_name: IRC Client user name to be used to connect
+    :type user_name: String
+    :param irc_client_scriptname: python file name to be created. Eg: irc_client_1.py
+    :type irc_client_scriptname: String
+    :param client_id: client_id Eg: 1st client: 1, 2nd client: 2
+    :type client_id: Integer
+    :param irc_server_ip: server ip for client wants to connect
+    :type irc_server_ip: String
+    :param socket_type: socket connection type. "6" for ipv6 connection and "" for ipv4 connection
+    :type socket_type: String
+    """
 
     device.sendline("touch %s" % irc_client_scriptname)
     device.expect(device.prompt)
