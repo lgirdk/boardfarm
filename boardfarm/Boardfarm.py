@@ -35,14 +35,22 @@ class Boardfarm(object):
         self.debug = debug
 
     def list_tests(self):
+        '''
+        Search for all available tests and return a dict.
+        '''
         pass
 
     def list_stations(self):
+        '''
+        Query boardfarm server for stations and return a dict.
+        '''
         for name in self.server.bf_config:
             print("%s" % name)
 
     def _supported_devices(self):
-        '''Create list of supported device names that can be used in tests.'''
+        '''
+        Create list of supported device names that can be used in tests.
+        '''
         from boardfarm import devices
         devs = []
         for f in devices.device_mappings:
