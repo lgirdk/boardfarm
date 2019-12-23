@@ -20,6 +20,12 @@ class bft_pexpect_helper(pexpect.spawn):
     Boardfarm helper for logging pexpect and making minor tweaks
     '''
 
+    def __setattr__(self, key, value):
+        if key == "name" and (type(getattr(self, 'name', None)) is str and self.name[0] != '<'):
+            return
+        else:
+            super(bft_pexpect_helper, self).__setattr__(key, value)
+
     # Clean this up when we only have to support Python 3.
     if IS_PYTHON_3:
         class spawn(pexpect.spawn):
