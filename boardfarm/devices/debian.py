@@ -747,13 +747,13 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("ip route list 0/0 | awk '{print $3}'")
             self.expect_exact("ip route list 0/0 | awk '{print $3}'")
             self.expect(self.prompt)
-            self.lan_gateway = ipaddress.IPv4Address(self.before.strip().decode())
+            self.lan_gateway = ipaddress.IPv4Address(six.text_type(self.before.strip()))
 
             ip_addr = self.get_interface_ipaddr(self.iface_dut)
             self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
-            self.lan_network = ipaddress.IPv4Network(self.before.strip().decode())
+            self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
         self.sendline('ip -6 route')
         self.expect(self.prompt)
 
