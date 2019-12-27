@@ -157,6 +157,20 @@ def run_test (loc, ts=null) {
 }
 
 loc_arr = location.tokenize(' ')
+
+def loc_selftest = [:]
+for (x in loc_arr) {
+    def loc = x
+    loc_selftest[loc] = {
+        stage("run bft in " + loc) {
+            node ('boardfarm && ' + loc) {
+                sync_code()
+                run_test(loc, "selftest")
+            }
+        }
+    }
+}
+
 def loc_jobs = [:]
 for (x in loc_arr) {
     def loc = x
@@ -169,6 +183,7 @@ for (x in loc_arr) {
         }
     }
 }
+
 def loc_cleanup = [:]
 for (x in loc_arr) {
     def loc = x
@@ -205,6 +220,14 @@ pipeline {
                 run_lint()
             }
         }
+
+	stage('run selftest') {
+            steps {
+                script {
+                    parallel loc_selftest
+                }
+            }
+	}
 
         stage('run test') {
             steps {
