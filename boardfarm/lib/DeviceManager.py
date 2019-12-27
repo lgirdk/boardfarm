@@ -144,7 +144,7 @@ class device_manager(UserList):
             matching[:] = [ d for d in matching if d.location == location ]
 
         if len(matching) > 1 and 'BFT_DEBUG' in os.environ:
-            print("multiple matches, returning first hit")
+            print("multiple matches, returning first hit (%s, %s, %s)" % (t, feature, location))
 
         if len(matching) == 0:
             return DeviceNone()
