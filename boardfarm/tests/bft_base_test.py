@@ -137,11 +137,12 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
             self.stop_time = time.time()
             self.logged['test_time'] = float(self.stop_time - self.start_time)
-        except boardfarm.exceptions.SkipTest:
+        except boardfarm.exceptions.SkipTest as e:
             self.stop_time = time.time()
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
-            print("\n\n=========== Test skipped! Moving on... =============")
+            print("\n\nSkipping test: %s" % e)
+            print("=========== Test skipped! Moving on... =============")
             return
         except Exception as e:
             self.stop_time = time.time()
