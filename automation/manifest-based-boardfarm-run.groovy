@@ -106,20 +106,31 @@ def run_lint () {
     }
 }
 
-def run_test (loc) {
+def run_test (loc, ts=null) {
     ansiColor('xterm') {
         setup_python(python_version)
 
-        sh '''
-        . venv/bin/activate
-        python --version
-        bft --version
-        export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
-        ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
-        export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
-        if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
-        cd boardfarm
-        yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
+        if (ts == null) {
+            sh '''
+            . venv/bin/activate
+            python --version
+            bft --version
+            export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
+            ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
+            export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
+            if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
+            cd boardfarm
+            yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
+        } else {
+            sh '''
+            . venv/bin/activate
+            python --version
+            bft --version
+            export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
+            if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
+            cd boardfarm
+            yes | ./bft -b ''' + board + ''' -x ''' + ts + ''' ''' + extra_args + meta_args
+        }
 
         sh '''
         mkdir -p  ''' + loc + '''/boardfarm/results
