@@ -11,6 +11,7 @@ import argparse
 import inspect
 import os
 import os.path
+import six
 import sys
 import json
 import traceback
@@ -320,10 +321,10 @@ def parse():
                                 continue
                             seen_names.append(d['name'])
 
-                            if type(d['feature']) is str or type(d['feature']) is unicode:
+                            if type(d['feature']) in (str, six.text_type):
                                 d['feature'] = [d['feature']]
                             features.extend(x for x in d['feature'] if x not in features)
-                if type(features) is str or type(features) is unicode:
+                if type(features) in (str, six.text_type):
                     features = [features]
                 if set(args.feature) != set(args.feature) & set(features):
                     continue
