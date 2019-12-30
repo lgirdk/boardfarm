@@ -403,10 +403,6 @@ def main():
             if stop_testing:
                 break
 
-        if tests_fail > 0:
-            # run this only once at end of BF test suite execution
-            library.check_devices(all_devices)
-
     except KeyboardInterrupt:
         print_bold("Run interrupted. Wrapping up...")
         if curr_test is not None:
