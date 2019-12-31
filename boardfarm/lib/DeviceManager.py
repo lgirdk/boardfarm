@@ -52,6 +52,8 @@ class device_location(Enum):
     LAN = 2
     DUT = 3
 
+
+
 class device_os(Enum):
     '''
     Identifiers for the type of Operating System (OS) of a device.
@@ -79,6 +81,16 @@ class device_descriptor(object):
     type = device_type.Unknown
     features = [device_feature.Unknown]
     obj = None
+
+    def __str__(self):
+        ret = "==== DEVICE DESCRIPTOR ====\n"
+        ret += "location = " + str(self.location) + "\n"
+        ret += "os = " + str(self.os) + "\n"
+        ret += "type = " + str(self.type) + "\n"
+        ret += "features = " + str(self.features) + "\n"
+        ret += str(self.obj)
+
+        return ret
 
 class device_manager(UserList):
     '''
@@ -145,6 +157,8 @@ class device_manager(UserList):
 
         if len(matching) > 1 and 'BFT_DEBUG' in os.environ:
             print("multiple matches, returning first hit (%s, %s, %s)" % (t, feature, location))
+            for m in matching:
+                print(m)
 
         if len(matching) == 0:
             return DeviceNone()
