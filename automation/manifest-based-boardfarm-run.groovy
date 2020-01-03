@@ -54,7 +54,7 @@ def post_gerrit_msg_from_file (file) {
     cat ''' +file
 
     sh '''
-    cat ''' + file + ''' | ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="$(</dev/fd/0)"\\\'
+    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\'--message="$(cat ''' + file + ''')"\\'
     '''
 }
 
