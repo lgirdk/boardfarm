@@ -145,7 +145,7 @@ def run_test (loc, ts=null) {
         echo "Test results in ''' + loc + '''" > message
         echo "============" >> message
         cat ''' + loc + '''/boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
-           sed -e 's/"//g' -e 's/\\\\t/\\t/g' | \
+           sed -e 's/"//g' -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
            while read -r line; do
                echo $line >> message
            done
