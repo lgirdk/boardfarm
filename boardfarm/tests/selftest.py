@@ -30,7 +30,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             msg = 'WAN device is not running ssh server, can\'t copy with this function'
             lib.common.test_msg(msg)
             self.skipTest(msg)
-        text_file = tempfile.NamedTemporaryFile()
+        text_file = tempfile.NamedTemporaryFile(mode='w')
         self.fname = fname = text_file.name
 
         letters = string.ascii_letters
