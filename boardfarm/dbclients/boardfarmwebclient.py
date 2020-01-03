@@ -45,7 +45,7 @@ class BoardfarmWebClient(object):
                              'build_url': os.environ.get('BUILD_URL', None)
                             }
         try:
-            res = requests.get(self.config_url, headers=self.headers)
+            res = requests.get(self.config_url, headers=self.headers, timeout=5)
             self.bf_config_str = res.text
             self.bf_config = res.json()
             res.raise_for_status()
@@ -57,7 +57,7 @@ class BoardfarmWebClient(object):
         try:
             # See if this is a boardfarm server by checking the root /api path
             self.server_url = re.search('http.*/api', self.config_url).group(0)
-            r = requests.get(self.server_url, headers=self.headers)
+            r = requests.get(self.server_url, headers=self.headers, timeout=5)
             data = r.json()
             self.server_version = data.get('version', None)
 
