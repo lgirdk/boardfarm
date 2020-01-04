@@ -79,14 +79,12 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
-        wan_ip = wan.get_interface_ipaddr("eth0")
-
         from boardfarm import devices
         # this should fail, as "DebianBoxNonExistent" is not (yet) a device
         try:
             kwargs ={
                     'name':"wan_test_calls_fail",
-                    'ipaddr':wan_ip,
+                    'ipaddr':wan.ipaddr,
                     'port':22,
                     'color': 'magenta'
                     }
@@ -116,7 +114,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         try:
             kwargs ={
                     'name':"wan_test_port_fail",
-                    'ipaddr':wan_ip,
+                    'ipaddr':wan.ipaddr,
                     'port':50,
                     'color': 'red'
                     }
@@ -131,7 +129,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         try:
             kwargs ={
                     'name':"wan_test_type_fail",
-                    'ipaddr':wan_ip,
+                    'ipaddr':wan.ipaddr,
                     'port':50,
                     'color': 'red'
                     }
@@ -146,8 +144,8 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         try:
             kwargs ={
                     'name':"correct_wan_parms",
-                    'ipaddr':wan_ip,
-                    'port':'22',
+                    'ipaddr':wan.ipaddr,
+                    'port': wan.port,
                     'color': 'yellow'
                     }
             self.session = devices.get_device("debian", **kwargs)
