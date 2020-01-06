@@ -88,7 +88,7 @@ class _device_helper(object):
     Will go away at some point
     '''
     def __getattr__(self, key):
-        if getattr(device_type, key, None):
+        if isinstance(getattr(device_type, key, None), device_type):
             return mgr.by_type(getattr(device_type, key))
         else:
             return getattr(_mod, key)
