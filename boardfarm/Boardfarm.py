@@ -38,7 +38,9 @@ class Boardfarm(object):
         '''
         Search for all available tests and return a dict.
         '''
-        pass
+        from boardfarm import tests, config
+        tests.init(config)
+        return tests.available_tests
 
     def list_stations(self):
         '''
