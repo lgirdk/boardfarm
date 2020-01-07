@@ -18,6 +18,12 @@ class TestSimpleBoardfarm(unittest.TestCase):
         from boardfarm import tests
         tests.init(None)
 
+    def test_import_debian_wifi(self):
+        '''
+        Verify we can import a specific device by name.
+        '''
+        import boardfarm.devices.debian_wifi
+
     def test_import_devices(self):
         '''
         Verify we can import boardfarm devices.
