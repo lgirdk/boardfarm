@@ -183,6 +183,13 @@ for (x in loc_arr) {
             node ('boardfarm && ' + loc) {
                 sync_code()
                 run_test(loc, "selftest", false)
+
+                testsuites  = sh(returnStdout: true, script: """. venv/bin/activate; python -c 'from boardfarm import find_plugins; print(" ".join([ getattr(v, "selftest_testsuite", "") for k, v in find_plugins().items() if hasattr(v, "selftest_testsuite") ]))'""")
+                println("running testsuites = " + testsuites)
+                for (ts in testsuites.trim().tokenize(' ')) {
+                    println("running testsuite  = " + ts)
+                    run_test(loc, ts, false)
+                }
             }
         }
     }
