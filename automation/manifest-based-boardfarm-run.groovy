@@ -109,7 +109,7 @@ def run_lint () {
     }
 }
 
-def run_test (loc, ts=null) {
+def run_test (loc, ts=null, post=true) {
     ansiColor('xterm') {
         setup_python(python_version)
 
@@ -141,16 +141,18 @@ def run_test (loc, ts=null) {
         '''
         archiveArtifacts artifacts: loc + "/boardfarm/results/*"
 
-        sh '''
-        echo "Test results in ''' + loc + '''" > message
-        echo "============" >> message
-        cat ''' + loc + '''/boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
-           sed -e 's/"//g' -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
-           while read -r line; do
-               echo $line >> message
-           done
-        '''
-        post_gerrit_msg_from_file("message")
+        if (post == true) {
+            sh '''
+            echo "Test results in ''' + loc + '''" > message
+            echo "============" >> message
+            cat ''' + loc + '''/boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
+            sed -e 's/"//g' -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
+               while read -r line; do
+                   echo $line >> message
+               done
+            '''
+            post_gerrit_msg_from_file("message")
+        }
 
         sh 'grep tests_fail...0, ' + loc + '/boardfarm/results/test_results.json'
     }
@@ -165,7 +167,7 @@ for (x in loc_arr) {
         stage("run bft in " + loc) {
             node ('boardfarm && ' + loc) {
                 sync_code()
-                run_test(loc, "selftest")
+                run_test(loc, ts="selftest", post=false)
             }
         }
     }
