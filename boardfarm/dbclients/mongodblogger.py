@@ -46,7 +46,9 @@ class MongodbLogger(object):
         self.db_name = db_name
         self.collection_name = collection_name
         # Connect to host
-        connect_str = "mongodb+srv://%s:%s@%s/test?retryWrites=true&w=majority" % (self.username, self.password, self.host)
+        connect_str = "mongodb://%s:%s@%s/%s?retryWrites=true&w=majority" % (self.username, self.password, self.host, db_name)
+        if 'BFT_DEBUG' in os.environ:
+            print("Mongo connect string: " + connect_str)
         self.client = pymongo.MongoClient(connect_str)
         self.db = self.client[self.db_name]
         self.collection = self.db[self.collection_name]
@@ -63,6 +65,13 @@ class MongodbLogger(object):
         }
 
     def log(self, data, debug=False):
+        def fix_dict(d):
+            if not isinstance(d, dict):
+                return d
+            return {k.replace('.', '_'): fix_dict(v) for k, v in d.items()}
+
+        data = fix_dict(data)
+
         # Put in default data
         self.default_data['timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)

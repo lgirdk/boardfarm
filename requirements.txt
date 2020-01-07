@@ -4,6 +4,7 @@ boto3
 cdrouter
 countrycode
 dlipower
+dnspython
 easysnmp
 elasticsearch>=1.0.0
 aenum
