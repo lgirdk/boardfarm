@@ -90,7 +90,7 @@ class AFTR(object):
             self.expect(self.prompt)
 
         # the replace is pretty static here, will figure out something later.
-        if Counter([i.strip().replace("\$", "$").replace("\`", "`") for i in start_script.split("\n") if i.strip() != ""]) != Counter(run_script):
+        if Counter([i.strip().replace(r"\$", "$").replace(r"\`", "`") for i in start_script.split("\n") if i.strip() != ""]) != Counter(run_script):
             to_send = "cat > /root/aftr/aftr-script << EOF\n%s\nEOF" % start_script
             self.sendline(to_send)
             self.expect(self.prompt)
@@ -170,11 +170,11 @@ class AFTR(object):
                 "ip route add %s dev tun0" % str(self.ipv4_nat.network),
                 "ip -6 route add %s dev tun0" % str(self.ipv6_ep.network),
                 "iptables -t nat -F",
-                "iptables -t nat -A POSTROUTING -s %s -j SNAT --to-source \$PUBLIC" % self.ipv4_nat_ip,
-                "iptables -t nat -A PREROUTING -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
-                "iptables -t nat -A PREROUTING -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
-                "iptables -t nat -A OUTPUT -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
-                "iptables -t nat -A OUTPUT -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip)
+                r"iptables -t nat -A POSTROUTING -s %s -j SNAT --to-source \$PUBLIC" % self.ipv4_nat_ip,
+                r"iptables -t nat -A PREROUTING -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                r"iptables -t nat -A PREROUTING -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                r"iptables -t nat -A OUTPUT -p tcp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
+                r"iptables -t nat -A OUTPUT -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s" % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip)
             ]))
 
         run_conf["aftr_stop()"] = "\n".join(map(lambda x: "%s%s" % (tab, x),
