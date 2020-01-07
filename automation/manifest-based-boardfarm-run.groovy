@@ -109,6 +109,14 @@ def run_lint () {
     }
 }
 
+def run_unittest () {
+    setup_python("3")
+    sh '''
+        . venv/bin/activate
+	./boardfarm/unittests/main.py
+    '''
+}
+
 def run_test (loc, ts=null, post=true) {
     ansiColor('xterm') {
         setup_python(python_version)
@@ -220,6 +228,12 @@ pipeline {
         stage('run linting') {
             steps {
                 run_lint()
+            }
+        }
+
+        stage('run unittests') {
+            steps {
+                run_unittest()
             }
         }
 
