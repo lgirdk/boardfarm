@@ -130,9 +130,7 @@ shared-network boardfarm {
         pool6 {
             range6 ###CM_NETWORK_V6_START### ###CM_NETWORK_V6_END###;
             allow members of "CM";
-            option docsis.tftp-servers ###PROV_IPV6###;
             option docsis.time-servers ###PROV_IPV6###;
-            option docsis.configuration-file "9_EU_CBN_IPv6_LG.cfg";
             option docsis.syslog-servers ###PROV_IPV6### ;
             option docsis.time-offset 5000;
             option docsis.PKTCBL-CCCV4 1 4 ###MTA_DHCP_SERVER1### 2 4 ###MTA_DHCP_SERVER2###;
@@ -223,7 +221,7 @@ EOF'''
         self.expect(self.prompt)
 
         # can't provision without this, so let's ignore v6 if that's the case
-        if tftp_server is None or board.cm_cfg.cm_configmode not in ('dslite', 'dual-stack', 'ipv6'):
+        if tftp_server is None or board.cm_cfg.cm_configmode == 'ipv4':
             self.sendline('rm /etc/dhcp/dhcpd6.conf.' + board_config.get_station())
             self.expect(self.prompt)
 
@@ -284,10 +282,8 @@ shared-network boardfarm {
     option dhcp-parameter-request-list 43;
     option domain-name "local";
     option time-offset ###TIMEZONE###;
-    option tftp-server-name "###DEFAULT_TFTP_SERVER###";
     option docsis-mta.dhcp-server-1 ###MTA_DHCP_SERVER1###;
     option docsis-mta.dhcp-server-2 ###MTA_DHCP_SERVER2###;
-    filename "UNLIMITCASA.cfg";
   }
   subnet ###MTA_IP### netmask ###MTA_NETMASK###
   {
@@ -372,8 +368,8 @@ EOF'''
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].items():
-            # skip all but MTA if ipv6 only
-            if board.cm_cfg.cm_configmode not in ('bridge', 'dual-stack', 'ipv4', 'dslite') and dev != 'mta':
+            # skip only erouter for ipv6/bridge only
+            if board.cm_cfg.cm_configmode in ('bridge', 'dslite', "ipv6") and dev == 'erouter':
                 continue
             self.sendline("echo 'host %s-%s {' >> %s" % (dev, board_config.get_station(), cfg_file))
             for key, value in cfg_sec.items():
