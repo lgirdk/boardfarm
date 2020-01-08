@@ -121,19 +121,15 @@ class Interact(rootfs_boot.RootFSBootTest):
             if key == str(i):
                 print("Enter python shell, press Ctrl-D to exit")
                 try:
-                    from IPython import embed
-                    embed()
+                    import readline # optional, will allow Up/Down/History in the console
+                    assert readline # silence pyflakes
+                    import code
+                    vars = globals().copy()
+                    vars.update(locals())
+                    shell = code.InteractiveConsole(vars)
+                    shell.interact()
                 except:
-                    try:
-                        import readline # optional, will allow Up/Down/History in the console
-                        assert readline # silence pyflakes
-                        import code
-                        vars = globals().copy()
-                        vars.update(locals())
-                        shell = code.InteractiveConsole(vars)
-                        shell.interact()
-                    except:
-                        print("Unable to spawn interactive shell!")
+                    print("Unable to spawn interactive shell!")
                 continue
             i += 1
 
