@@ -117,7 +117,7 @@ def run_unittest () {
     '''
 }
 
-def run_test (loc, ts=null, post=true) {
+def run_test (loc, ts, post) {
     ansiColor('xterm') {
         setup_python(python_version)
 
@@ -175,7 +175,7 @@ for (x in loc_arr) {
         stage("run bft in " + loc) {
             node ('boardfarm && ' + loc) {
                 sync_code()
-                run_test(loc, ts="selftest", post=false)
+                run_test(loc, "selftest", false)
             }
         }
     }
@@ -188,7 +188,7 @@ for (x in loc_arr) {
         stage("run bft in " + loc) {
             node ('boardfarm && ' + loc) {
                 sync_code()
-                run_test(loc)
+                run_test(loc, null, true)
             }
         }
     }
