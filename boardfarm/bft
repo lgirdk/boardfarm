@@ -133,12 +133,9 @@ def setup_dynamic_devices(config):
 
     config.board['devices'].extend(dynamic_devices)
 
-def main():
+def connect_and_run(config):
     '''Connect to devices, run tests, record results.'''
 
-    # Read command-line arguments
-    from boardfarm import arguments
-    config = arguments.parse()
     boardfarm.current_config = config
 
     from boardfarm import devices, library
@@ -644,5 +641,16 @@ def main():
                 log.write('\n\t%s test result: %s' % (type(t).__name__, t.result_grade))
                 log.write('\n\tTotal test time: %s seconds' % testtime)
                 log.write('\n\t=======================================================')
+
+
+def main():
+    '''
+    Collect arguments from the command-line and run with those.
+    '''
+    # Read command-line arguments
+    from boardfarm import arguments
+    config = arguments.parse()
+    connect_and_run(config)
+
 if __name__ == '__main__':
     main()
