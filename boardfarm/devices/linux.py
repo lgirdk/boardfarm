@@ -284,11 +284,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def get_dns_server_upstream(self):
         '''Get the IP of name server'''
-        self.sendline('cat /etc/resolv.conf')
-        self.expect('nameserver (.*)\r\n', timeout=5)
-        ret = self.match.group(1)
+        self.sendline('grep nameserver /etc/resolv.conf')
+        self.expect_exact('grep nameserver /etc/resolv.conf')
         self.expect(self.prompt)
-        return ret
+        return self.before
 
     def get_nf_conntrack_conn_count(self):
         '''Get the total number of connections in the network'''
