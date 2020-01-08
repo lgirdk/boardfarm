@@ -113,7 +113,7 @@ def run_unittest () {
     setup_python("3")
     sh '''
         . venv/bin/activate
-	./boardfarm/unittests/main.py
+        ./boardfarm/unittests/main.py
     '''
 }
 
@@ -237,13 +237,13 @@ pipeline {
             }
         }
 
-	stage('run selftest') {
+        stage('run selftest') {
             steps {
                 script {
                     parallel loc_selftest
                 }
             }
-	}
+        }
 
         stage('run test') {
             steps {
