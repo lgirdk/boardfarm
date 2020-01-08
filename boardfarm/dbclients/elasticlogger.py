@@ -14,6 +14,7 @@ import sys
 try:
     import elasticsearch
     from elasticsearch.serializer import JSONSerializer
+    from elasticsearch import RequestError
 except Exception as e:
     print(e)
     print("Please install needed module:\n"
@@ -56,7 +57,14 @@ class ElasticsearchLogger(object):
         # Put in default data
         self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
-        result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
+
+        try:
+            result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
+        except RequestError as e:
+            print("Elastic logging error:")
+            print(e.info)
+            raise
+
         if result and u'result' in result and result[u'result'] == u'created':
             doc_url = "%s%s/%s/%s" % (self.server, self.index, self.doc_type, result['_id'])
             print("Elasticsearch: Data stored at %s" % (doc_url))
