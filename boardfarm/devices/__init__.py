@@ -13,6 +13,7 @@ import pexpect
 import termcolor
 import traceback
 import types
+import importlib
 from six.moves import UserList
 
 import boardfarm
@@ -88,10 +89,12 @@ class _device_helper(types.ModuleType):
     Returns classic devices for from devices import foo
     Will go away at some point
     '''
-    def __getattr__(self, key):
+    def __getattribute__(self, key):
         if isinstance(getattr(device_type, key, None), device_type):
             return mgr.by_type(getattr(device_type, key))
-        else:
+        try:
+            return importlib.import_module('boardfarm.devices.' + key)
+        except:
             return getattr(_mod, key)
 sys.modules[__name__] = _device_helper("bft_device_helper")
 sys.modules['bft_device_helper'] = sys.modules[__name__]
