@@ -14,6 +14,7 @@ if (meta != '') {
 }
 
 def sync_code () {
+    println("Syncing code from gerrit")
     sshagent ( [ ssh_auth ] ) {
         script {
             sh "rm -rf *"
@@ -28,6 +29,7 @@ def sync_code () {
 }
 
 def setup_python (version) {
+    println("Setting up python version $version")
     if (version == "2") {
         sh '''
         rm -rf venv
@@ -50,6 +52,7 @@ def setup_python (version) {
 }
 
 def post_gerrit_msg_from_file (file) {
+    println("Posting message to gerrit from file")
     sh '''
     cat ''' +file
 
@@ -59,12 +62,14 @@ def post_gerrit_msg_from_file (file) {
 }
 
 def post_gerrit_msg (msg) {
+    println("Posting message to gerrit")
     sh '''
     ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="''' + msg + '''"\\\'
     '''
 }
 
 def run_lint () {
+    println("Running lint checks")
     sh '''
     set +e
     pwd
@@ -110,6 +115,7 @@ def run_lint () {
 }
 
 def run_unittest () {
+    println("Running unittests")
     setup_python("3")
     sh '''
         . venv/bin/activate
@@ -118,6 +124,7 @@ def run_unittest () {
 }
 
 def run_test (loc, ts, post) {
+    println("Running in location = $loc, ts = $ts, and posting results = $post")
     ansiColor('xterm') {
         setup_python(python_version)
 
@@ -260,6 +267,7 @@ pipeline {
                 parallel loc_cleanup
             }
 
+            println("cleaning up job")
             sh '''
             set +xe
             echo "Killing spawned processes..."
