@@ -247,6 +247,9 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
                 ]
 
         device.sendline("cat > snmp.py << EOF\n%s\nEOF" % "\n".join(py_steps))
+        for e in py_steps:
+            device.expect_exact(e[-40:])
+        device.expect_exact('EOF')
         device.expect_prompt()
         device.sendline("python snmp.py")
         device.expect_exact("python snmp.py")
