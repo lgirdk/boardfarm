@@ -38,7 +38,7 @@ class OpenWrtRouter(linux.LinuxDevice):
     consoles = []
 
     prompt = ['root\\@.*:.*#', '/ # ', '@R7500:/# ']
-    uprompt = ['ath>', '\(IPQ\) #', 'ar7240>', '\(IPQ40xx\)']
+    uprompt = ['ath>', r'\(IPQ\) #', 'ar7240>', r'\(IPQ40xx\)']
     uboot_eth = "eth0"
     linux_booted = False
     saveenv_safe = True
@@ -154,7 +154,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     cmd = 'tftp'
                 self.sendline("%s %s %s" % (cmd, loadaddr, filename))
                 self.expect_exact("%s %s %s" % (cmd, loadaddr, filename))
-                i = self.expect(['Bytes transferred = (\d+) (.* hex)'] + self.uprompt, timeout=timeout)
+                i = self.expect([r'Bytes transferred = (\d+) (.* hex)'] + self.uprompt, timeout=timeout)
                 if i != 0:
                     continue
                 ret = int(self.match.group(1))
@@ -261,13 +261,13 @@ class OpenWrtRouter(linux.LinuxDevice):
     def get_wan_iface(self):
         '''Return name of WAN interface.'''
         self.sendline('\nuci show network.wan.ifname')
-        self.expect("wan.ifname='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
+        self.expect(r"wan.ifname='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
         return self.match.group(1)
 
     def get_wan_proto(self):
         '''Return protocol of WAN interface, e.g. dhcp.'''
         self.sendline('\nuci show network.wan.proto')
-        self.expect("wan.proto='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
+        self.expect(r"wan.proto='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
         return self.match.group(1)
 
     def setup_uboot_network(self, tftp_server=None):
@@ -479,7 +479,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
                 idle_vals = []
                 start = datetime.now()
-                while 0 == pp.expect(['all(\s+\d+\.\d{2}){9}\r\n', pexpect.TIMEOUT] + pp.prompt):
+                while 0 == pp.expect([r'all(\s+\d+\.\d{2}){9}\r\n', pexpect.TIMEOUT] + pp.prompt):
                     idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
                     if (datetime.now() - start).seconds > 60:
                         self.touch()

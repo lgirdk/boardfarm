@@ -35,7 +35,7 @@ class BaseDevice(bft_pexpect_helper):
 
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
-        self.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){6}\r\n')
+        self.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){6}\r\n')
         idle = float(self.match.group(1))
         self.expect("Average.*rxmcst/s.*\r\n")
 
@@ -49,10 +49,10 @@ class BaseDevice(bft_pexpect_helper):
         for x in range(0, len(exp)):
             i = self.expect(exp)
             if i == 0:  # parse wan stats
-                self.expect("(\d+.\d+)\s+(\d+.\d+)")
+                self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
                 wan_pps = float(self.match.group(1)) + float(self.match.group(2))
             if i == 1:
-                self.expect("(\d+.\d+)\s+(\d+.\d+)")
+                self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
                 client_pps = float(self.match.group(1)) + float(self.match.group(2))
 
         return idle, wan_pps, client_pps
@@ -85,7 +85,7 @@ class BaseDevice(bft_pexpect_helper):
         for e in mapping:
             if e['name'] not in events:
                 continue
-            self.expect("(\d+) %s" % e['expect'])
+            self.expect(r"(\d+) %s" % e['expect'])
             e['value'] = int(self.match.group(1))
             ret.append(e)
 

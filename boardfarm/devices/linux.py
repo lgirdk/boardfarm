@@ -27,8 +27,8 @@ class LinuxDevice(base.BaseDevice):
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface'''
         self.sendline("\nifconfig %s" % interface)
-        regex = ['addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-                 'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
+        regex = [r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
+                 r'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
                  'inet (' + ValidIpv4AddressRegex + ').*netmask (' + ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex]
         self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
@@ -77,7 +77,7 @@ class LinuxDevice(base.BaseDevice):
         self.sendcontrol('c')
         self.expect(self.prompt)
         self.sendline('\ncat /proc/uptime')
-        self.expect('((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})')
+        self.expect(r'((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})')
         seconds_up = float(self.match.group(1))
         self.expect(self.prompt)
         return seconds_up
@@ -145,9 +145,9 @@ class LinuxDevice(base.BaseDevice):
         See /etc/gai.conf inline comments for more details
         """
         if pref is True:
-            self.sendline("sed -i 's/^#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+            self.sendline(r"sed -i 's/^#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         else:
-            self.sendline("sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+            self.sendline(r"sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         self.expect(self.prompt)
 
     def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
@@ -206,7 +206,7 @@ class LinuxDevice(base.BaseDevice):
             self.sendline('usermod -aG sudo %s' % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
+            self.sendline(r'sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
             self.expect(self.prompt, timeout=30)
         except:
             self.expect(self.prompt, timeout=30)
@@ -318,7 +318,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 pp.sendline('cat /proc/vmstat')
                 pp.expect_exact('cat /proc/vmstat')
                 pp.expect(pp.prompt)
-                results = re.findall('(\w+) (\d+)', pp.before)
+                results = re.findall(r'(\w+) (\d+)', pp.before)
                 ret = {}
                 for key, value in results:
                     ret[key] = int(value)
@@ -354,7 +354,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect('drop_caches')
         self.expect(self.prompt)
         self.sendline('cat /proc/meminfo | head -2')
-        self.expect('MemFree:\s+(\d+) kB')
+        self.expect(r'MemFree:\s+(\d+) kB')
         memFree = self.match.group(1)
         self.expect(self.prompt)
         return int(memFree)
