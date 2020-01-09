@@ -12,6 +12,7 @@ import inspect
 import pexpect
 import termcolor
 import traceback
+import types
 from six.moves import UserList
 
 import boardfarm
@@ -82,7 +83,7 @@ def check_for_cmd_on_host(cmd, msg=None):
         print("To install refer to your system SW app installation instructions")
 
 _mod = sys.modules[__name__]
-class _device_helper(object):
+class _device_helper(types.ModuleType):
     '''
     Returns classic devices for from devices import foo
     Will go away at some point
@@ -92,7 +93,8 @@ class _device_helper(object):
             return mgr.by_type(getattr(device_type, key))
         else:
             return getattr(_mod, key)
-sys.modules[__name__] = _device_helper()
+sys.modules[__name__] = _device_helper("bft_device_helper")
+sys.modules['bft_device_helper'] = sys.modules[__name__]
 
 class _prompt(UserList, list):
     '''
