@@ -4,6 +4,7 @@ import sys
 import time
 import termcolor
 import inspect
+import getpass
 
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
@@ -62,6 +63,9 @@ def caller_file_line(i):
 
     return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
 
+# global sudo password
+password = None
+
 class bft_pexpect_helper(pexpect.spawn):
     '''
     Boardfarm helper for logging pexpect and making minor tweaks
@@ -73,14 +77,26 @@ class bft_pexpect_helper(pexpect.spawn):
         else:
             super(bft_pexpect_helper, self).__setattr__(key, value)
 
-    # Clean this up when we only have to support Python 3.
-    if IS_PYTHON_3:
-        class spawn(pexpect.spawn):
-            def __init__(self, *args, **kwargs):
+    class spawn(pexpect.spawn):
+        def __init__(self, *args, **kwargs):
+            if IS_PYTHON_3:
                 kwargs['encoding'] = 'latin1'
-                return pexpect.spawn.__init__(self, *args, **kwargs)
-    else:
-        spawn = pexpect.spawn
+            ret = pexpect.spawn.__init__(self, *args, **kwargs)
+
+            global password
+            if (len(args) > 0 and 'sudo' in args[0]) or \
+                    'sudo' in kwargs.get('command', '') or \
+                    True in ['sudo' in x for x in kwargs.get('args', [])]:
+                print_bold("NOTE: sudo helper running")
+                if 0 != self.expect(['\[sudo\] password for [^:]*: ', pexpect.TIMEOUT, pexpect.EOF], timeout=5):
+                    return
+                if password is not None:
+                    self.sendline(password)
+                else:
+                    password = getpass.getpass(self.match.group(0))
+                    self.sendline(password)
+
+            return ret
 
     def __init__(self, *args, **kwargs):
         # Filters out boardfarm specific
