@@ -9,7 +9,6 @@
                 "cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
                 "color": "cyan",
                 "name": "wan",
-                "options": "tftpd-server",
                 "post_cmd": "ip link set enx00249b14dc6e name eth1",
                 "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
                 "pre_cmd_host": "docker build -t bft:node bft-node",
@@ -38,7 +37,6 @@
                 "color": "cyan",
                 "ipaddr": "localhost",
                 "name": "wan",
-                "options": "tftpd-server",
                 "port": "5910",
                 "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub wan-${uniq_id} 5910 9910 ${wan_iface}",
                 "type": "debian"
@@ -83,7 +81,6 @@
                         "http_proxy": "localhost:9909",
                         "img": "bft:node",
                         "name": "lan",
-                        "options": "tftpd-server",
                         "type": "debian"
                     },
                     {
