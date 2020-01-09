@@ -20,6 +20,8 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from termcolor import colored, cprint
 from nested_lookup import nested_lookup
 from boardfarm.exceptions import PexpectErrorTimeout
+from boardfarm.lib.network_helper import valid_ipv4
+from boardfarm.lib.common import retry_on_exception
 
 class DebianBox(linux.LinuxDevice):
     '''
@@ -725,10 +727,14 @@ class DebianBox(linux.LinuxDevice):
         for attempt in range(3):
             try:
                 self.sendline('dhclient -4 -v %s' % self.iface_dut)
-                self.expect('DHCPOFFER', timeout=30)
-                self.expect(self.prompt)
-                break
+                if 0 == self.expect(['DHCPOFFER'] + self.prompt, timeout=30):
+                    self.expect(self.prompt)
+                    break
+                else:
+                    retry_on_exception(valid_ipv4, (self.get_interface_ipaddr(self.iface_dut), ), retries = 5)
+                    break
             except:
+                self.sendline('killall dhclient')
                 self.sendcontrol('c')
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
