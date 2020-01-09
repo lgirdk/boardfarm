@@ -15,6 +15,7 @@ import ipaddress
 
 from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.common import cmd_exists
 
 class Qemu(openwrt_router.OpenWrtRouter):
     '''
@@ -53,6 +54,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  kernel=None,
                  **kwargs):
         self.consoles = [self]
+
+        assert cmd_exists('qemu-system-i386')
 
         if rootfs is None:
             raise Exception("The QEMU device type requires specifying a rootfs")
