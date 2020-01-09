@@ -347,10 +347,10 @@ class SnmpMibsUnitTest(object):
         """
 
         if 'y' in self.snmp_obj.dbg:
-            print(self.snmp_obj.mib_dict)
-            for k in self.snmp_obj.mib_dict:
-                print(k, ":", self.snmp_obj.mib_dict[k])
-
+            print("The SNMP mib_dict contains %s keys." % len(self.snmp_obj.mib_dict))
+            print("First 5 mib_dict keys and values alphabetically:")
+            for k in sorted(self.snmp_obj.mib_dict)[:5]:
+                print('%s: %s' % (k, self.snmp_obj.mib_dict[k]))
 
         # used in the second round of testing (i.e. the get oid without the obj)
         self.mibs1 = self.mibs[:]
