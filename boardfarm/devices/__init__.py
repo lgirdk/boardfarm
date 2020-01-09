@@ -93,9 +93,9 @@ class _device_helper(types.ModuleType):
         if isinstance(getattr(device_type, key, None), device_type):
             return mgr.by_type(getattr(device_type, key))
         try:
-            return importlib.import_module('boardfarm.devices.' + key)
-        except:
             return getattr(_mod, key)
+        except:
+            return importlib.import_module('boardfarm.devices.' + key)
 sys.modules[__name__] = _device_helper("bft_device_helper")
 sys.modules['bft_device_helper'] = sys.modules[__name__]
 
