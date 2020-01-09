@@ -109,6 +109,7 @@ def parse():
             print("Installed Plugins:")
             for key in sorted(boardfarm.plugins):
                 print("%s %s" % (key, getattr(boardfarm.plugins[key], '__version__', '')))
+            print("Python: %s" % sys.version)
         sys.exit(0)
 
     if args.list_tests:
