@@ -4,7 +4,7 @@ def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
 // TODO: fetch from jenkins in future
-python_version = "2"
+python_version = "3"
 
 def meta = env.meta ?: ''
 if (meta != '') {
@@ -116,7 +116,7 @@ def run_lint () {
 
 def run_unittest () {
     println("Running unittests")
-    setup_python("3")
+    setup_python(python_version)
     sh '''
         . venv/bin/activate
         ./boardfarm/unittests/main.py
