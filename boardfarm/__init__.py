@@ -19,4 +19,4 @@ from .plugins import find_plugins
 
 plugins = find_plugins()
 
-
+selftest_testsuite = "selftest"
