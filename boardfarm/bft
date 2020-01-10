@@ -558,6 +558,11 @@ def connect_and_run(config):
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
 
+    json.dump(info_for_remote_log,
+              open(os.path.join(config.output_dir + 'info_for_remote_log.json'), 'w'),
+              indent=4,
+              sort_keys=True)
+
     try:
         if config.logging_server is not None:
             logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)
