@@ -138,8 +138,18 @@ def run_test (loc, ts, post) {
             export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
             if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
             cd boardfarm
-            yes | ./bft -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args
-        } else {
+            for i in {1..1000}; do
+                ./bft -y -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args + ''' && exit_code=$? || exit_code=$?
+                echo bft exited with code = $exit_code
+
+                if [ "$exit_code" == 0 ]; then
+                    break
+                else
+                    sleep 60
+                fi
+            done
+            '''
+	} else {
             sh '''
             . venv/bin/activate
             python --version
@@ -147,7 +157,19 @@ def run_test (loc, ts, post) {
             export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
             if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
             cd boardfarm
-            yes | ./bft -b ''' + board + ''' -x ''' + ts + ''' ''' + extra_args + meta_args
+            for i in {1..1000}; do
+                ./bft -y -b ''' + board + ''' -x ''' + ts + ''' ''' + extra_args + meta_args + ''' && exit_code=$? || exit_code=$?
+
+                echo bft exited with code = $exit_code
+
+                if [ "$exit_code" == 0 ]; then
+                    break
+                else
+                    sleep 60
+                fi
+            done
+            '''
+
         }
 
         sh '''
