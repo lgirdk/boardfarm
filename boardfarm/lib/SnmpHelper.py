@@ -93,6 +93,9 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
     dbg = None
     mib_dict = {}
 
+    # this is to map unknown pysmi datatypes to ASN.1 datatypes
+    mib_type_map = {"OctetString": ["DisplayString"]}
+
     snmp_parser = None
 
     @classmethod
@@ -266,6 +269,11 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
 
     status, result, stype = _run_snmp()
     assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+
+    for k,v in SnmpMibs.mib_type_map.items():
+        if stype in v:
+            stype = k
+            break
 
     if value:
         status, result, stype = _run_snmp(True)
