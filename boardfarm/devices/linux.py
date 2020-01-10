@@ -206,7 +206,7 @@ class LinuxDevice(base.BaseDevice):
             self.sendline('usermod -aG sudo %s' % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline(r'sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
+            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
             self.expect(self.prompt, timeout=30)
         except:
             self.expect(self.prompt, timeout=30)
