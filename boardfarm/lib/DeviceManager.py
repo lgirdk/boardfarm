@@ -40,6 +40,7 @@ class device_type(Enum):
     wlan2 = 19
     cmts = 20
     cdrouter = 21
+    booster = 22
 
 class device_location(Enum):
     '''
