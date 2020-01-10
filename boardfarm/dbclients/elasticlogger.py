@@ -10,6 +10,7 @@ import datetime
 import os
 import socket
 import sys
+import json
 
 try:
     import elasticsearch
@@ -29,6 +30,10 @@ class Serializer(JSONSerializer):
             return str(obj)
         except:
             return "Unable to serialize"
+
+def pprint(x):
+    '''Pretty print an object'''
+    print(json.dumps(x, sort_keys=True, indent=2))
 
 class ElasticsearchLogger(object):
     '''
@@ -57,6 +62,10 @@ class ElasticsearchLogger(object):
         # Put in default data
         self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
+
+        if debug == True:
+            print("Logging this data to Elastic:")
+            pprint(data)
 
         try:
             result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
