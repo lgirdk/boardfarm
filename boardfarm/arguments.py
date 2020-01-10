@@ -15,18 +15,11 @@ import six
 import sys
 import json
 import traceback
-try:
-    from urllib.request import urlopen
-    import urllib
-except:
-    from urllib2 import urlopen
-    import urllib2 as urllib
-    assert urllib
 import re
 
+import boardfarm.lib.test_configurator
+
 from boardfarm import config
-from boardfarm.config import boardfarm_config_location
-from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient, ServerError
 from boardfarm.exceptions import TestImportError
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
@@ -147,47 +140,10 @@ def parse():
     try:
         if args.config_file is not None:
             config.boardfarm_config_location = args.config_file
-
-        if config.boardfarm_config_location.startswith("http"):
-            data = BoardfarmWebClient(config.boardfarm_config_location,
-                                      bf_version=boardfarm.__version__,
-                                      debug=os.environ.get("BFT_DEBUG", False)).bf_config_str
-        else:
-            data = open(config.boardfarm_config_location, 'r').read()
-
-        config.boardfarm_config = json.loads(data)
-
-        if "_redirect" in config.boardfarm_config and args.config_file is None:
-            print("Using boardfarm config file at %s" % config.boardfarm_config['_redirect'])
-            print("Please set your default config by doing:")
-            print('    export BFT_CONFIG="%s"' % config.boardfarm_config['_redirect'])
-            print("If you want to use local config, remove the _redirect line.")
-            data = urlopen(config.boardfarm_config['_redirect']).read().decode()
-            config.boardfarm_config_location = config.boardfarm_config['_redirect']
-            config.boardfarm_config = json.loads(data)
-
-        config.boardfarm_config.pop('_redirect', None)
-
-        if 'locations' in config.boardfarm_config:
-            location = config.boardfarm_config['locations']
-            del config.boardfarm_config['locations']
-
-            for board in config.boardfarm_config:
-                if 'location' in config.boardfarm_config[board]:
-                    board_location = config.boardfarm_config[board]['location']
-                    if board_location in location:
-                        for key, value in location[board_location].items():
-                            if type(value) == list:
-                                config.boardfarm_config[board][key].extend(value)
-                            else:
-                                config.boardfarm_config[board][key] = value
-
-    except ServerError as e:
-        print(e)
-        sys.exit(1)
+        config.boardfarm_config = boardfarm.lib.test_configurator.get_station_config(config.boardfarm_config_location)
     except Exception as e:
         print(e)
-        print('Unable to access/read boardfarm configuration from %s' % boardfarm_config_location)
+        print('Unable to access/read boardfarm configuration from %s' % config.boardfarm_config_location)
         sys.exit(1)
 
     if config.test_args_location is not None:
