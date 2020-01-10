@@ -181,6 +181,7 @@ for (x in loc_arr) {
     loc_selftest[loc] = {
         stage("run bft in " + loc) {
             node ('boardfarm && ' + loc) {
+                setup_python(python_version)
                 testsuites  = sh(returnStdout: true, script: """. venv/bin/activate; python -c 'from boardfarm import find_plugins; print(" ".join([ getattr(v, "selftest_testsuite", "") for k, v in find_plugins().items() if hasattr(v, "selftest_testsuite") ]))'""")
                 println("running testsuites = " + testsuites)
                 for (ts in testsuites.trim().tokenize(' ')) {
