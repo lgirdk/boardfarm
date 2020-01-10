@@ -11,6 +11,7 @@ import os
 import socket
 import sys
 import json
+from math import isnan
 
 try:
     import elasticsearch
@@ -62,6 +63,8 @@ class ElasticsearchLogger(object):
         # Put in default data
         self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
+
+        data = {k: data[k] for k in data if not (type(data[k]) is float and isnan(data[k]))}
 
         if debug == True:
             print("Logging this data to Elastic:")
