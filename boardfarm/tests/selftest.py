@@ -230,7 +230,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         lan.sendline("userdel test")
         lan.expect(lan.prompt)
 
-        text_file = tempfile.NamedTemporaryFile()
+        text_file = tempfile.NamedTemporaryFile(mode='w')
         letters = string.ascii_letters
         fcontent = ''.join(random.choice(letters) for i in range(50))
 
