@@ -859,7 +859,7 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     except:
         raise Exception("Failed in setting mib using pysnmp")
 
-def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, community='public'):
+def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, community='public', expect_content=None):
     """uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
     Usage: snmp_mib_bulkwalk(device, ip_address, mib_oid)
 
@@ -875,14 +875,20 @@ def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, communi
     :type retry: Integer, Optional
     :param community: SNMP Community string that allows access to DUT, defaults to 'public'
     :type community: String, optional
-    :return: 0 (Which ensures all the mib variables are read)
-    :rtype: Integer
+    :param except_sting: except string for query or wait to prompt
+    :type except_sting: String
+    :return: true or False
+    :type: bool
     """
 
-    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" % (community, time_out, retry, ip_address, mib_oid))
-    idx = device.expect(["No more variables left in this MIB View", "Timeout: No Response"], timeout=(time_out * retry) + 30)
-    device.expect(device.prompt)
-    return idx == 0
+    if expect_content != None:
+        idx = device.expect(["Timeout: No Response", expect_content], timeout=(time_out * retry) + 30)
+        device.expect(device.prompt)
+    else:
+        idx = device.expect(["Timeout: No Response"]+device.prompt, timeout=(time_out * retry) + 30)
+        if idx==0:
+            device.expect(device.prompt)
+    return idx != 0
 
 def get_file_magic(fname, num_bytes=4):
     """Return the first few bytes from a file to determine the file type.
