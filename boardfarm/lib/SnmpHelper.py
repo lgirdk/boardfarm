@@ -9,6 +9,7 @@ import os
 import json
 import pexpect
 import six
+import re
 
 import boardfarm
 from .installers import install_pysnmp
@@ -18,6 +19,7 @@ from pysmi.writer import CallbackWriter
 from pysmi.parser import SmiStarParser
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
+from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
 def find_directory_in_tree(pattern, root_dir):
     """
@@ -213,7 +215,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             raise Exception("ERROR: mib '%s' not found in mib_dict." % mib_name)
         return oid
 
-def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private"):
+def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private", walk_cmd=None):
     """
     Performs an snmp get/set on ip from device's console.
     If value is provided, action = snmpget else action = snmpset
@@ -223,6 +225,8 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         (str) ip : ip address used to perform snmp
         (str) mib_name : mib name used to perform snmp
         (int) index : index used along with mib_name
+        (str) walk_cmd : If walk_cmd is passed(eg: head -15) the walk output will be returned
+                         If walk_cmd is "walk_verify" it will verify walk is done and return True or False
 
     Returns:
         (str) result : snmp result
@@ -266,6 +270,9 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         device.sendline("rm snmp.py")
         device.expect_prompt()
         return data
+
+    if walk_cmd:
+        return snmp_asyncore_walk(device, ip, oid, read_cmd=walk_cmd)
 
     status, result, stype = _run_snmp()
     assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
@@ -404,3 +411,56 @@ if __name__ == '__main__':
 
 
     print('Done.')
+
+def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200, read_cmd='walk_verify'):
+    """Function to do a snmp walk using asyncore script
+    Python's asyncore provides an event loop that can handle transactions from multiple non-blocking sockets
+    Usage: snmp_asyncore_walk(wan, cm_ipv6, "1.3", private, 150)
+
+    :param device: device where SNMP command shall be executed
+    :type device: Object
+    :param ip_address: Management ip of the DUT
+    :type ip_address: String
+    :param mib_oid: Snmp mib to walk
+    :type mib_oid: String
+    :param community: SNMP Community string that allows access to DUT, defaults to 'public'
+    :type community: String, optional
+    :param time_out: time out for every snmp walk request, default to 200 seconds
+    :type time_out: Integer, Optional
+    :param read_cmd: linux command to raed the snmp output(Eg: head -10 snmp_output.txt)
+                     defaults to 'walk_verify'
+    :type read_cmd: string, Optional
+    :return: True or False or snmp output
+    :rtype: Boolean or string
+    """
+    if re.search(ValidIpv4AddressRegex,ip_address):
+        mode = 'ipv4'
+    elif re.search(AllValidIpv6AddressesRegex, ip_address):
+        mode = 'ipv6'
+    install_pysnmp(device)
+    asyncore_script = 'asyncore_snmp.py'
+    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/' + asyncore_script)
+    dest = asyncore_script
+    device.copy_file_to_server(fname, dest)
+    device.sendline('time python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
+    device.expect(device.prompt, timeout=time_out)
+    device.sendline('rm %s' % asyncore_script)
+    device.expect(device.prompt)
+    device.sendline('ls -l snmp_output.txt --block-size=kB')
+    device.expect(['.*\s+(\d+)kB'])
+    file_size = device.match.group(1)
+    device.expect(device.prompt)
+    if file_size == '0':
+        return False
+    if read_cmd == 'walk_verify':
+        device.sendline('tail snmp_output.txt')
+        if 0 == device.expect(["No more variables left in this MIB View", pexpect.TIMEOUT]):
+            device.expect_prompt()
+            output = True
+        else:
+            output = False
+    else:
+        output = device.check_output('{} snmp_output.txt'.format(read_cmd))
+    device.sendline('rm snmp_output.txt')
+    device.expect_prompt()
+    return output

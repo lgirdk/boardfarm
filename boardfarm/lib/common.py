@@ -37,7 +37,6 @@ except:
 from selenium import webdriver
 from selenium.webdriver.common import proxy
 from .installers import install_pysnmp
-from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 
 ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
@@ -726,51 +725,6 @@ def resolv_dict(dic, key):
     for elem in key:
         key_val = key_val[elem]
     return key_val
-
-def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200):
-    """Function to do a snmp walk using asyncore script
-    Python's asyncore provides an event loop that can handle transactions from multiple non-blocking sockets
-    Usage: snmp_asyncore_walk(wan, cm_ipv6, "1.3", private, 150)
-
-    :param device: device where SNMP command shall be executed
-    :type device: Object
-    :param ip_address: Management ip of the DUT
-    :type ip_address: String
-    :param mib_oid: Snmp mib to walk
-    :type mib_oid: String
-    :param community: SNMP Community string that allows access to DUT, defaults to 'public'
-    :type community: String, optional
-    :param time_out: time out for every snmp walk request, default to 200 seconds
-    :type time_out: Integer, Optional
-    :return: True or False
-    :rtype: Boolean
-    """
-    if re.search(ValidIpv4AddressRegex,ip_address):
-        mode = 'ipv4'
-    elif re.search(AllValidIpv6AddressesRegex, ip_address):
-        mode = 'ipv6'
-    install_pysnmp(device)
-    asyncore_script = 'asyncore_snmp.py'
-    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/' + asyncore_script)
-    dest = asyncore_script
-    device.copy_file_to_server(fname, dest)
-    device.sendline('time python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
-    device.expect(device.prompt, timeout=time_out)
-    device.sendline('rm %s' % asyncore_script)
-    device.expect(device.prompt)
-    device.sendline('ls -l snmp_output.txt --block-size=kB')
-    device.expect(['.*\s+(\d+)kB'])
-    file_size = device.match.group(1)
-    device.expect(device.prompt)
-    if file_size != '0':
-        device.sendline('tail snmp_output.txt')
-        idx = device.expect("No more variables left in this MIB View")
-        if idx == 0:
-            device.sendline('rm snmp_output.txt')
-            device.expect(device.prompt)
-            return True
-    else:
-        return False
 
 def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=100):
     """walk a mib with small mib tree
