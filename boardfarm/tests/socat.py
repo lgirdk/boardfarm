@@ -9,6 +9,7 @@ from faker import Factory
 import pexpect
 import time
 import random
+import six
 
 fake_generator = Factory.create()
 
@@ -28,8 +29,8 @@ class SoCat(rootfs_boot.RootFSBootTest):
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
-            if not ipaddress.ip_address(random_ip.decode()).is_private:
-                if (ipaddress.ip_address(random_ip.decode()), random_port) not in self.all_ips:
+            if not ipaddress.ip_address(six.text_type(random_ip)).is_private:
+                if (ipaddress.ip_address(six.text_type(random_ip)), random_port) not in self.all_ips:
                     break
             else:
                 print("Skipping ip addr: %s" % random_ip)
@@ -115,8 +116,10 @@ class SoCat(rootfs_boot.RootFSBootTest):
         seen_ips = re.findall('%s:([^:]*):' % self.socat_send, lan.before)
 
         if len(self.all_ips) > 0:
-            ips_to_cleanup = set(zip(*self.all_ips)[0]) - set(seen_ips)
+            ips_to_cleanup = zip(self.all_ips[0])
             for done_ip in ips_to_cleanup:
+                if done_ip in seen_ips:
+                    continue
                 self.cleanup_ip(done_ip)
                 self.all_ips = [e for e in self.all_ips if e[0] != done_ip ]
 
