@@ -130,6 +130,7 @@ def run_test (loc, ts, post) {
 
         if (ts == null) {
             sh '''
+            pwd
             . venv/bin/activate
             python --version
             bft --version
@@ -151,6 +152,7 @@ def run_test (loc, ts, post) {
             '''
 	} else {
             sh '''
+            pwd
             . venv/bin/activate
             python --version
             bft --version
