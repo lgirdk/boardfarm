@@ -140,7 +140,7 @@ def parse():
     try:
         if args.config_file is not None:
             config.boardfarm_config_location = args.config_file
-        config.boardfarm_config = boardfarm.lib.test_configurator.get_station_config(config.boardfarm_config_location)
+        config.boardfarm_config_location, config.boardfarm_config = boardfarm.lib.test_configurator.get_station_config(config.boardfarm_config_location)
     except Exception as e:
         print(e)
         print('Unable to access/read boardfarm configuration from %s' % config.boardfarm_config_location)
