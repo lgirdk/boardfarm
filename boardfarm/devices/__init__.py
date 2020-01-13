@@ -83,12 +83,14 @@ def check_for_cmd_on_host(cmd, msg=None):
                 exit(1)
         print("To install refer to your system SW app installation instructions")
 
+__loader__ = None
 _mod = sys.modules[__name__]
 class _device_helper(types.ModuleType):
     '''
     Returns classic devices for from devices import foo
     Will go away at some point
     '''
+
     def __getattribute__(self, key):
         if isinstance(getattr(device_type, key, None), device_type):
             return mgr.by_type(getattr(device_type, key))
