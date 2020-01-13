@@ -1,6 +1,5 @@
 #This code is sourced from http://snmplabs.com/pysnmp/_downloads/getbulk-pull-whole-mib.py
 
-import sys
 import time
 from pysnmp.proto.api import v2c
 from pysnmp.carrier.asyncore.dgram import udp, udp6
@@ -129,7 +128,3 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
         return output_list
     else:
         return
-
-SnmpwalkAsync(target_IP=str(sys.argv[1]), oid=str(sys.argv[2]), \
-              community=str(sys.argv[3]), walk_timeout=str(sys.argv[4]), \
-              mode=str(sys.argv[5]))
