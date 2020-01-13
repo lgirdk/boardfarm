@@ -11,18 +11,15 @@ import argparse
 import inspect
 import os
 import os.path
-import six
 import sys
 import json
 import traceback
-import re
 
 import boardfarm.lib.test_configurator
 
 from boardfarm import config
 from boardfarm.exceptions import TestImportError
 from boardfarm.lib.common import check_url
-from boardfarm.lib.common import print_bold
 
 
 try:
@@ -36,28 +33,6 @@ except ImportError:
     print(cmd)
     sys.exit(1)
 
-
-def filter_boards(board_config, filter, name=None):
-    """Choose boards based on the filter provided
-
-    :param board_config: board config parameters
-    :type board_config: dictionary
-    :param filter: filter type for the board
-    :type filter: string
-    :param name: board name
-    :type name: string
-    :return: True or False
-    :rtype: boolean
-    """
-    s = ""
-    for k, v in board_config.items():
-        s += "%s : %s\n" % (k, v)
-
-    if all(re.findall(f, s) for f in filter):
-        if name:
-            print("matched %s on %s, adding %s" % (filter, board_config, name))
-        return True
-    return False
 
 HELP_EPILOG = '''
 Example use:
@@ -194,7 +169,7 @@ def parse():
                             'lan_device': bf[b].get('lan_device', ''),
                             'wan_device': bf[b].get('wan_device', ''),
                             'notes': bf[b].get('notes', "")}
-                    if not args.filter or (args.filter and filter_boards(bf[b], args.filter)):
+                    if not args.filter or (args.filter and boardfarm.lib.test_configurator.filter_boards(bf[b], args.filter)):
                         print("%(name)11s  %(type)15s  %(auto)5s  %(lan_device)25s  %(wan_device)25s  %(notes)s" % info)
         print("To connect to a board by name:\n  ./bft -x connect -n NAME")
         print("To connect to any board of a given model:\n  ./bft -x connect -b MODEL")
@@ -267,49 +242,12 @@ def parse():
                     continue
         exit(0)
 
+    config.BOARD_NAMES = boardfarm.lib.test_configurator.filter_station_config(config.boardfarm_config,
+                                                                               board_type=args.board_type,
+                                                                               board_names=args.board_names,
+                                                                               board_features=args.feature,
+                                                                               board_filter=args.filter)
     if args.board_type:
-        print_bold("Selecting board from board type = %s" % args.board_type)
-        config.BOARD_NAMES = []
-        possible_names = config.boardfarm_config
-        if args.board_names:
-            print("Board names = %s" % args.board_names)
-            # Allow selection only from given set of board names
-            possible_names = set(config.boardfarm_config) & set(args.board_names)
-        for b in possible_names:
-            if len(args.board_names) != 1 and \
-               'available_for_autotests' in config.boardfarm_config[b] and \
-               config.boardfarm_config[b]['available_for_autotests'] == False:
-                # Skip this board
-                continue
-            if args.feature != [] :
-                if 'feature' not in config.boardfarm_config[b]:
-                    continue
-                features = config.boardfarm_config[b]['feature']
-                if 'devices' in config.boardfarm_config[b]:
-                    seen_names = []
-                    for d in config.boardfarm_config[b]['devices']:
-                        if 'feature' in d:
-                            # since we only connect to one type of device
-                            # we need to ignore the features on the other ones
-                            # even though they should be the same
-                            if d['name'] in seen_names:
-                                continue
-                            seen_names.append(d['name'])
-
-                            if type(d['feature']) in (str, six.text_type):
-                                d['feature'] = [d['feature']]
-                            features.extend(x for x in d['feature'] if x not in features)
-                if type(features) in (str, six.text_type):
-                    features = [features]
-                if set(args.feature) != set(args.feature) & set(features):
-                    continue
-            for t in args.board_type:
-                if config.boardfarm_config[b]['board_type'].lower() == t.lower():
-                    if args.filter:
-                        if filter_boards(config.boardfarm_config[b], args.filter, b):
-                            config.BOARD_NAMES.append(b)
-                    else:
-                        config.BOARD_NAMES.append(b)
         if not config.BOARD_NAMES:
             print("ERROR! No boards meet selection requirements and have available_for_autotests = True.")
             sys.exit(10)
@@ -320,8 +258,6 @@ def parse():
             print("./run-all.py -n 3000")
             print("That same board name must be present in boardfarm configuration.")
             sys.exit(1)
-        else:
-            config.BOARD_NAMES = args.board_names
 
     if args.err_dict:
         config.update_error_injection_dict(args.err_dict)

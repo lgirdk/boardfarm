@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import boardfarm
+import os
 import unittest
 
 class TestSimpleBoardfarm(unittest.TestCase):
@@ -32,6 +33,17 @@ class TestSimpleBoardfarm(unittest.TestCase):
         boardfarm.devices.probe_devices()
         self.assertGreater(len(boardfarm.devices.device_mappings), 10)
 
+    def test_station_filtering(self):
+        from boardfarm.lib import test_configurator
+        cur_dir = os.path.dirname(boardfarm.__file__)
+        conf = test_configurator.get_station_config(os.path.join(cur_dir, 'boardfarm_config_example.json'))
+        names = test_configurator.filter_station_config(conf,
+                                                        board_type=["qemux86"])
+        self.assertGreater(len(names), 0)
+        names = test_configurator.filter_station_config(conf,
+                                                        board_type=["qemux86"],
+                                                        board_filter="local")
+        self.assertGreater(len(names), 0)
 
 class TestSnmp(unittest.TestCase):
 
