@@ -34,6 +34,8 @@ env = {"wan_iface": "wan%s" % uniqid[:12],
 
 device_mappings = {}
 
+__all__ = []
+
 def probe_devices():
     '''
     Dynamically find all devices classes accross all boardfarm projects.
@@ -41,6 +43,8 @@ def probe_devices():
 
     all_boardfarm_modules = boardfarm.plugins
     all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
+
+    all_mods = []
 
     # Loop over all modules to import their devices
     for modname in all_boardfarm_modules:
@@ -56,6 +60,7 @@ def probe_devices():
             tmp = '%s.devices.%s' % (modname, fname)
             try:
                 module = importlib.import_module(tmp)
+                all_mods += [module]
             except Exception:
                 if 'BFT_DEBUG' in os.environ:
                     traceback.print_exc()
@@ -68,6 +73,8 @@ def probe_devices():
                 thing = getattr(module, thing_name)
                 if inspect.isclass(thing) and hasattr(thing, 'model'):
                     device_mappings[module].append(thing)
+
+    __all__ = all_mods
 
 def check_for_cmd_on_host(cmd, msg=None):
     '''Prints an error message with a suggestion on how to install the command'''
@@ -92,6 +99,9 @@ class _device_helper(types.ModuleType):
     '''
 
     def __getattribute__(self, key):
+        if 'key' == '__all__':
+            probe_devices()
+            return __all__
         if isinstance(getattr(device_type, key, None), device_type):
             return mgr.by_type(getattr(device_type, key))
         try:
