@@ -133,6 +133,20 @@ def setup_dynamic_devices(config):
 
     config.board['devices'].extend(dynamic_devices)
 
+def create_results_html(full_results, config):
+    '''Creates results.html from config and test results'''
+
+    from boardfarm import make_human_readable
+    try:
+        title_str = make_human_readable.get_title()
+        make_human_readable.xmlresults_to_html(full_results['test_results'], title=title_str,
+                                output_name=os.path.join(config.output_dir, "results.html"),
+                                board_info=config.board)
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        print("Unable to create HTML results")
+
 def connect_and_run(config):
     '''Connect to devices, run tests, record results.'''
 
@@ -615,15 +629,7 @@ def connect_and_run(config):
         print("Unable to Update results in Zephyr")
 
     # Create Pretty HTML output
-    from boardfarm import make_human_readable
-    try:
-        title_str = make_human_readable.get_title()
-        make_human_readable.xmlresults_to_html(full_results['test_results'], title=title_str,
-                                output_name=os.path.join(config.output_dir, "results.html"),
-                                board_info=config.board)
-    except Exception as e:
-        print(e)
-        print("Unable to create HTML results")
+    create_results_html(full_results, config)
 
     # Send url of pretty html results to MySQL build database
     try:
