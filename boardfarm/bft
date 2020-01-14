@@ -385,6 +385,16 @@ def connect_and_run(config):
             print_bold("Unable to find specified extra tests, aborting...")
             sys.exit(1)
 
+    # grab golden master results
+    golden = {}
+    if config.golden is not []:
+        import requests
+        for g in config.golden:
+            try:
+                golden.update(requests.get(g).json())
+            except:
+                print_bold("Failed to fetch golden master results, skipping...")
+
     print_bold('==========')
     all_devices = [getattr(config, name, None) for name in config.devices]
     try:
@@ -496,16 +506,6 @@ def connect_and_run(config):
     write_combined_log(combined_list, "all.log")
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
-
-    # grab golden master results
-    golden = {}
-    if config.golden is not []:
-        import requests
-        for g in config.golden:
-            try:
-                golden.update(requests.get(g).json())
-            except:
-                print_bold("Failed to fetch golden master results, skipping...")
 
     # Write test result messages to a file
     full_results = library.process_test_results(tests_to_run, golden)
