@@ -406,6 +406,14 @@ def connect_and_run(config):
             curr_test = test
             try:
                 test.run()
+
+                # Write test result messages to a file after each test
+                full_results = library.process_test_results(tests_to_run, golden)
+                create_results_html(full_results, config)
+                json.dump(full_results,
+                          open(os.path.join(config.output_dir + 'test_results.json'), 'w'),
+                          indent=4,
+                          sort_keys=True)
             except boardfarm.exceptions.BootFail:
                 stop_testing = True
             except Exception:
