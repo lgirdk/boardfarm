@@ -143,7 +143,7 @@ def run_test (loc, ts, post) {
                 ./bft -y -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args + ''' && exit_code=$? || exit_code=$?
                 echo bft exited with code = $exit_code
 
-                if [ "$exit_code" == 0 ]; then
+                if [ "$exit_code" = "0" ]; then
                     break
                 else
                     sleep 60
@@ -164,7 +164,7 @@ def run_test (loc, ts, post) {
 
                 echo bft exited with code = $exit_code
 
-                if [ "$exit_code" == 0 ]; then
+                if [ "$exit_code" = "0" ]; then
                     break
                 else
                     sleep 60
