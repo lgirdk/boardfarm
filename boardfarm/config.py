@@ -117,6 +117,16 @@ if 'BFT_DEBUG' in os.environ:
     print("Using disp_port:"+default_display_backend_port)
     print("Using disp_size:"+default_display_backend_size)
 
+# Default Test Config Settings
+output_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), "results", '')), '')
+WAN_PROTO = 'dhcp'  # or 'pppoe'. Protocol of the WAN interface
+setup_device_networking = True  # or False. Setup device networking during boot
+bootargs = None  # bootargs to set or append to default args (board dependant)
+golden = []  # Path to JSON results to compare against (golden master)
+features = []  # Features required for this test run
+TEST_SUITE_NOSTRICT = False  # ignores failure to import a tests from a testsuite
+regex_config = []  # Regex substitution for board config
+
 # BFT_ARGS points to json file for test args.
 # File needs to be a flat json.
 test_args_location = os.environ.get('BFT_ARGS', None)
