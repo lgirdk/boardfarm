@@ -32,21 +32,32 @@ def setup_python (version) {
     println("Setting up python version $version")
     if (version == "2") {
         sh '''
-        rm -rf venv
-        virtualenv venv
-        . venv/bin/activate
-        repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
-        repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
+
+	if grep "$BUILD_URL" pip-check-build-py2; then
+            . venv/bin/activate
+        else
+            rm -rf venv
+            virtualenv venv
+            . venv/bin/activate
+            repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
+            repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
+            echo $BUILD_URL > pip-check-build-py2
+	}
         '''
     } else {
         sh '''
-        python3 -c 'import tkinter' || sudo apt install python3-tk
-        rm -rf venv
-        python3 -m venv venv
-        . venv/bin/activate
-        pip3 install --upgrade pip
-        repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
-        repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
+	if grep "$BUILD_URL" pip-check-build-py3; then
+            . venv/bin/activate
+        else
+            rm -rf venv
+            python3 -c 'import tkinter' || sudo apt install python3-tk
+            python3 -m venv venv
+            . venv/bin/activate
+            pip3 install --upgrade pip
+            repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
+            repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
+            echo $BUILD_URL > pip-check-build-py3
+	fi
         '''
     }
 }
