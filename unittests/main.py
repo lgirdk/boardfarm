@@ -33,6 +33,20 @@ class TestSimpleBoardfarm(unittest.TestCase):
         boardfarm.devices.probe_devices()
         self.assertGreater(len(boardfarm.devices.device_mappings), 10)
 
+    def test_board_filter(self):
+        '''
+        Verify regular-expression match filter for boards works.
+        '''
+        from boardfarm.lib import test_configurator
+        # Fake station
+        conf = {'type': 'raspberrypi', 'features': 'wifi'}
+        # Should return true because it has 'wifi'
+        result = test_configurator.filter_boards(conf, 'wifi')
+        self.assertEqual(result, True)
+        # Should return false because it doesn't have 'lasers'
+        result = test_configurator.filter_boards(conf, 'lasers')
+        self.assertEqual(result, False)
+
     def test_station_filtering(self):
         from boardfarm.lib import test_configurator
         cur_dir = os.path.dirname(boardfarm.__file__)
