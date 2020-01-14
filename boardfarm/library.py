@@ -72,55 +72,55 @@ def process_test_results(raw_test_results, golden={}):
                     'unexpected_fail': 0,
                     'unexpected_pass': 0,
                     }
-    for i, x in enumerate(raw_test_results):
-        def parse_and_add_results(cls, prefix=""):
-            name = prefix + getattr(cls, 'name', cls.__class__.__name__)
-            grade = getattr(cls, 'result_grade', None)
-            try:
-                if hasattr(cls, 'elapsed_time'):
-                    elapsed_time = getattr(cls, 'elapsed_time')
+    def parse_and_add_results(cls, prefix=""):
+        name = prefix + getattr(cls, 'name', cls.__class__.__name__)
+        grade = getattr(cls, 'result_grade', None)
+        try:
+            if hasattr(cls, 'elapsed_time'):
+                elapsed_time = getattr(cls, 'elapsed_time')
+            else:
+                start_time = getattr(cls, 'start_time')
+                stop_time = getattr(cls, 'stop_time')
+                elapsed_time = stop_time - start_time
+        except:
+            elapsed_time = 0
+
+        unexpected = None
+        if '_source' in golden:
+            if name + "-result" in golden['_source']:
+                if golden['_source'][name + "-result"] != grade:
+                    unexpected = True
                 else:
-                    start_time = getattr(cls, 'start_time')
-                    stop_time = getattr(cls, 'stop_time')
-                    elapsed_time = stop_time - start_time
+                    unexpected = False
+
+        if grade == "Unexp OK" or (grade == "OK" and unexpected == True):
+            grade = "Unexp OK"
+            full_results['unexpected_pass'] += 1
+        elif grade == "Exp FAIL" or (grade == "FAIL" and unexpected == False):
+            grade = "Exp FAIL"
+            full_results['unexpected_fail'] += 1
+        elif grade == "OK":
+            full_results['tests_pass'] += 1
+        elif grade == "FAIL":
+            full_results['tests_fail'] += 1
+        elif grade == "SKIP" or grade is None:
+            full_results['tests_skip'] += 1
+
+        message = getattr(cls, 'result_message', None)
+
+        if message is None:
+            try:
+                message = cls.__doc__.split('\n')[0]
             except:
-                elapsed_time = 0
+                message = "Missing description of class (no docstring)"
+                print_bold("WARN: Please add docstring to %s." % cls)
+                pass
 
-            unexpected = None
-            if '_source' in golden:
-                if name + "-result" in golden['_source']:
-                    if golden['_source'][name + "-result"] != grade:
-                        unexpected = True
-                    else:
-                        unexpected = False
+        long_message = getattr(cls, 'long_result_message', "")
 
-            if grade == "Unexp OK" or (grade == "OK" and unexpected == True):
-                grade = "Unexp OK"
-                full_results['unexpected_pass'] += 1
-            elif grade == "Exp FAIL" or (grade == "FAIL" and unexpected == False):
-                grade = "Exp FAIL"
-                full_results['unexpected_fail'] += 1
-            elif grade == "OK":
-                full_results['tests_pass'] += 1
-            elif grade == "FAIL":
-                full_results['tests_fail'] += 1
-            elif grade == "SKIP" or grade is None:
-                full_results['tests_skip'] += 1
+        full_results['test_results'].append({"name": name, "message": message, "long_message": long_message, "grade": grade, "elapsed_time": elapsed_time})
 
-            message = getattr(cls, 'result_message', None)
-
-            if message is None:
-                try:
-                    message = cls.__doc__.split('\n')[0]
-                except:
-                    message = "Missing description of class (no docstring)"
-                    print_bold("WARN: Please add docstring to %s." % cls)
-                    pass
-
-            long_message = getattr(cls, 'long_result_message', "")
-
-            full_results['test_results'].append({"name": name, "message": message, "long_message": long_message, "grade": grade, "elapsed_time": elapsed_time})
-
+    for i, x in enumerate(raw_test_results):
         try:
             parse_and_add_results(x)
 
