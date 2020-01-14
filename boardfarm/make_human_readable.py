@@ -109,7 +109,7 @@ def xmlresults_to_html(test_results,
                   'changes': changes_to_html(os.environ.get('change_list')),
                   "board_type": "unknown",
                   "location": "unknown",
-                  "report_time" : "unknown"}
+                  "report_time" : "RUNNING or ABORTED"}
     try:
         parameters.update(board_info)
         parameters['misc'] = build_station_info(board_info)
@@ -125,8 +125,11 @@ def xmlresults_to_html(test_results,
               'SKIP': 'skip',
               None: 'skip',
               'FAIL': 'fail',
-              'Exp FAIL': 'efail'}
+              'Exp FAIL': 'efail',
+              'PENDING': 'skip'}
     for i, t in enumerate(test_results):
+        if t['grade'] is None:
+            t['grade'] = 'PENDING'
         t['num'] = i+1
         t['style'] = styles[t['grade']]
         if i % 2 == 0:
