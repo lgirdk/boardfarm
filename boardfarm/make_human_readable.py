@@ -143,7 +143,6 @@ def xmlresults_to_html(test_results,
     f = open(output_name, "w")
     f.write(s.substitute(parameters))
     f.close()
-    print("Created %s" % output_name)
 
 def get_title():
     try:
