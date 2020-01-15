@@ -64,7 +64,7 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
         :param bootargs: Indicates the boot parameters to be specified if any (parameter to be used at later point), defaults to empty string "".
         :type bootargs: string
         """
-        common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
+        common.print_bold("\n===== Booting linux for %s =====" % self.model)
         self.reset()
         self.wait_for_boot()
         self.sendline("setenv bootcmd bootipq")

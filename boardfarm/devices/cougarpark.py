@@ -141,7 +141,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt, timeout=30)
 
     def boot_linux(self, rootfs=None, bootargs=None):
-        common.print_bold("\n===== Booting linux for %s on %s =====" % (self.model, self.root_type))
+        common.print_bold("\n===== Booting linux for %s =====" % self.model)
         self.switch_to_mode(MODE_DISABLED)
         self.sendline('npcpu start')
         self.sendline('bootkernel -c %kernel_cmd_line%')
