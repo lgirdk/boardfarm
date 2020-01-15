@@ -88,7 +88,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
 
         @run_once
         def flash_meta_helper(board, meta, wan, lan):
-            board.flash_meta(self.config.META_BUILD, wan, lan)
+            board.flash_meta(meta, wan, lan)
 
         # Reflash only if at least one or more of these
         # variables are set, or else there is nothing to do in u-boot
@@ -96,14 +96,18 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         if self.config.META_BUILD and not board.flash_meta_booted:
             meta_interrupt = True
         if reflash and (meta_interrupt or self.config.ROOTFS or\
-                            self.config.KERNEL or self.config.UBOOT):
+                            self.config.KERNEL or self.config.UBOOT or \
+                            self.env_helper.has_image()):
             # Break into U-Boot, set environment variables
             board.wait_for_boot()
             board.setup_uboot_network(tftp_device.gw)
             if self.config.META_BUILD:
                 for attempt in range(3):
                     try:
-                        flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+                        if self.config.META_BUILD:
+                            flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+                        else:
+                            flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
                         break
                     except Exception as e:
                         print(e)
@@ -128,8 +132,12 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             board.pre_boot_linux(wan=wan, lan=lan)
         board.linux_booted = True
         board.wait_for_linux()
+
         if self.config.META_BUILD and board.flash_meta_booted:
             flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+        if self.env_helper.has_image() and board.flash_meta_booted:
+            flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
+
         linux_booted_seconds_up = board.get_seconds_uptime()
         # Retry setting up wan protocol
         if self.config.setup_device_networking:
