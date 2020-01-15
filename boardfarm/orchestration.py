@@ -51,6 +51,10 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.result = []
         self.prefix = prefix
         self.verify_f, self.v_msg = None, None
+        self.called_with = False
+
+        # to maintain an id for each action.
+        self.action_id = 1
 
     def log_msg(self, msg):
         self.parent_test.log_to_file += now_short() + msg + "\n\r"
@@ -69,12 +73,14 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.log_msg("{}: START".format(self.msg))
         self.log_msg("Description: {}".format(self.name))
         self.log_msg(('-' * 80))
+        self.called_with = True
         return self
 
     def __exit__(self, ex_type, ex_value, traceback):
         r = "PASS" if not traceback else "FAIL"
         self.log_msg(('-' * 80))
         self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
+        self.called_with = False
 
     # msg has to be the verification message.
     def verify(self, cond, msg):
@@ -86,12 +92,20 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
 
 
     def execute(self):
+        # enforce not to call execute without using with clause.
+        if not self.called_with:
+            raise CodeError("{} - need to execute step using 'with' clause".format(self.msg))
+
+        # enforce not to call execute without adding an action
+        if not self.actions:
+            raise CodeError("{} - no actions added before calling execute".format(self.msg))
+
         for a_id, action in enumerate(self.actions):
             prefix = "[{}]:[{} Step {}.{}]::[{}]".format(
                 self.parent_test.__class__.__name__,
                 self.prefix,
                 self.step_id,
-                a_id+1,
+                self.action_id,
                 action.action.func.__name__)
             tr = None
 
@@ -105,8 +119,11 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
                 raise(e)
             finally:
                 self.result.append(tr)
+                self.action_id += 1
         if self.verify_f:
             self.verify(self.verify_f(), self.v_msg)
+
+        self.actions = []
 
 
 class TestAction(object):
@@ -133,6 +150,10 @@ if __name__ == '__main__':
         print("\nAction 2 performed division\nWill return value: {}\n".format(a/m))
         return a/m
 
+    def add_100(a):
+        print("\nAction addition performed \nWill return value: {}\n".format(a+100))
+        return a+100
+
     class Test1(object):
         steps = []
         log_to_file = ""
@@ -154,6 +175,16 @@ if __name__ == '__main__':
                 ts.add_verify(_verify, "verify step1 output")
                 ts.execute()
 
+            # variation 2, call execute multiple times.
+            # Note: here you might need to change verification for each execute, manually
+            # Note: don't pop the output, we might need it to log step results later
+            with TestStep(self, "This is step2 of test") as ts:
+                for i in [1,2,3,4]:
+                    ts.add(add_100, i)
+                    ts.execute()
+                    ts.verify(ts.result[-1].output() == 100+i, "Verification for input: {}".format(i))
+
+            # variation 3
             # need this to reset the counter.
             with TestStep(self, "This is step2 of test") as ts:
                 ts.add(action1, 2, m=3)
