@@ -126,6 +126,12 @@ golden = []  # Path to JSON results to compare against (golden master)
 features = []  # Features required for this test run
 TEST_SUITE_NOSTRICT = False  # ignores failure to import a tests from a testsuite
 regex_config = []  # Regex substitution for board config
+# Default image files to flash
+UBOOT = None
+KERNEL = None
+ROOTFS = None
+NFSROOT = None
+META_BUILD = None
 
 # BFT_ARGS points to json file for test args.
 # File needs to be a flat json.
