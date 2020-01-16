@@ -566,39 +566,6 @@ def connect_and_run(config):
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
 
-    json.dump(info_for_remote_log,
-              open(os.path.join(config.output_dir + 'info_for_remote_log.json'), 'w'),
-              indent=4,
-              sort_keys=True)
-
-    try:
-        if config.logging_server is not None:
-            logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)
-    except Exception as e:
-        print(e)
-        print("Unable to access logging_server specified in config. "
-              "Results stored only locally.")
-
-    try:
-        if config.elasticsearch_server is not None:
-            elasticlogger.ElasticsearchLogger(config.elasticsearch_server).log(info_for_remote_log)
-        else:
-            print("No elasticsearch_server specified in config. Results stored locally")
-    except Exception as e:
-        print(e)
-        print("Unable to store results to elasticsearch_server specified in config. "
-              "Results stored locally.")
-
-    try:
-        if hasattr(config, 'mongodb') and config.mongodb['host'] is not None:
-            mongodblogger.MongodbLogger(**config.mongodb).log(info_for_remote_log)
-        else:
-            print("Needed mongodb parameters are not set, see config. Results stored locally.")
-    except Exception as e:
-        print(e)
-        print("Unable to store results to mongodb specified in config. "
-              "Results stored locally.")
-
     if set(('BFT_AWS_ACCESS_KEY', 'BFT_AWS_SECRET_ACCESS_KEY', 'BFT_AWS_BUCKET')).issubset(os.environ):
         try:
             import boto3
@@ -647,6 +614,7 @@ def connect_and_run(config):
                 log.write('\n\tTotal test time: %s seconds' % testtime)
                 log.write('\n\t=======================================================')
 
+    return info_for_remote_log
 
 def main():
     '''
@@ -655,7 +623,47 @@ def main():
     # Read command-line arguments
     from boardfarm import arguments
     config = arguments.parse()
-    connect_and_run(config)
+
+    # Run Tests
+    info_for_remote_log = connect_and_run(config)
+
+    # Save Results to file
+    json.dump(info_for_remote_log,
+              open(os.path.join(config.output_dir + 'info_for_remote_log.json'), 'w'),
+              indent=4,
+              sort_keys=True)
+
+    # Send Results to logstash, if configured
+    try:
+        if config.logging_server is not None:
+            logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)
+    except Exception as e:
+        print(e)
+        print("Unable to access logging_server specified in config. "
+              "Results stored only locally.")
+
+    # Send Results to ElasticSearch, if configured
+    try:
+        if config.elasticsearch_server is not None:
+            elasticlogger.ElasticsearchLogger(config.elasticsearch_server).log(info_for_remote_log)
+        else:
+            print("No elasticsearch_server specified in config. Results stored locally")
+    except Exception as e:
+        print(e)
+        print("Unable to store results to elasticsearch_server specified in config. "
+              "Results stored locally.")
+
+    # Send Results to MongoDB, if configured
+    try:
+        if hasattr(config, 'mongodb') and config.mongodb['host'] is not None:
+            mongodblogger.MongodbLogger(**config.mongodb).log(info_for_remote_log)
+        else:
+            print("Needed mongodb parameters are not set, see config. Results stored locally.")
+    except Exception as e:
+        print(e)
+        print("Unable to store results to mongodb specified in config. "
+              "Results stored locally.")
+
 
 if __name__ == '__main__':
     main()
