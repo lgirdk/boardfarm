@@ -20,7 +20,7 @@ def mac_to_snmp_format(mac_addr):
     :return: Mac address in snmp format (1A:2B:3C:4D:2A:3D)
     :rtype: string
     """
-    mac_tmp = re.sub("[\s\.\-]", "", mac_addr)
+    mac_tmp = re.sub(r"[\s\.\-]", "", mac_addr)
     mac = netaddr.EUI(mac_tmp, dialect=netaddr.mac_unix)
     mac_final = str(mac).upper()
 
@@ -34,7 +34,7 @@ def ipv4_to_snmp_format(ipv4_str):
     :return: ipv4 address in snmp format("192.168.1.1" is converted to "1.146.22.1")
     :rtype: string
     """
-    ipv4_tmp = re.sub("[\s\.\-]", "", ipv4_str)
+    ipv4_tmp = re.sub(r"[\s\.\-]", "", ipv4_str)
     ipv4_decimal = int(ipv4_tmp, 16)
     ipv4_format = ipaddress.IPv4Address(ipv4_decimal)
     ipv4_address = ipaddress.ip_address(u'%s' % ipv4_format)
@@ -49,7 +49,7 @@ def ipv6_to_snmp_format(ipv6_str):
     :return: ipv6 address in snmp format(ex: 1.4.16.254.128.0.2.0.0.0.0.2.224.184.255.254.48.53.45)
     :rtype: string
     """
-    ipv6_tmp = re.sub("[\s\.\-]", "", ipv6_str)
+    ipv6_tmp = re.sub(r"[\s\.\-]", "", ipv6_str)
     pattern = re.compile('.{4}')
     ipv6_tmp_ip = ':'.join(pattern.findall(ipv6_tmp))
     ipv6_address = ipaddress.ip_address(u'%s' % ipv6_tmp_ip)

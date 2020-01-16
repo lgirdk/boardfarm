@@ -107,7 +107,7 @@ def enable_all_wifi_interfaces(board):
     board.expect_prompt()
     # The following re.findall should return list of settings:
     # ['wireless.radio0.disabled', 'wireless.radio1.disabled']
-    settings = re.findall('([\w\.]+)=\d', board.before)
+    settings = re.findall(r'([\w\.]+)=\d', board.before)
     for s in settings:
         board.sendline('uci set %s=0' % s)
         board.expect_prompt()
@@ -174,7 +174,7 @@ def wifi_get_info(board, wlan_iface):
             board.sendline("iwinfo wlan0 info")
             board.expect('ESSID: "(.*)"')
             essid = board.match.group(1)
-            board.expect('Channel:\s*(\d+)\s*\(([\d\.]+)\s*GHz')
+            board.expect(r'Channel:\s*(\d+)\s*\(([\d\.]+)\s*GHz')
             channel = int(board.match.group(1))
             freq = float(board.match.group(2))
             board.expect('Bit Rate: ([^ ]+)')
