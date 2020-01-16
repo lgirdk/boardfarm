@@ -123,6 +123,7 @@ WAN_PROTO = 'dhcp'  # or 'pppoe'. Protocol of the WAN interface
 setup_device_networking = True  # or False. Setup device networking during boot
 bootargs = None  # bootargs to set or append to default args (board dependant)
 golden = []  # Path to JSON results to compare against (golden master)
+golden_master_results = {}  # Will store golden master results
 features = []  # Features required for this test run
 TEST_SUITE_NOSTRICT = False  # ignores failure to import a tests from a testsuite
 regex_config = []  # Regex substitution for board config

@@ -262,6 +262,19 @@ def parse():
     if args.err_dict:
         config.update_error_injection_dict(args.err_dict)
 
+    # grab golden master results
+    if args.golden:
+        config.golden = args.golden
+    config.golden_master_results = {}
+    if config.golden is not []:
+        import requests
+        for g in config.golden:
+            try:
+                config.golden_master_results.update(requests.get(g).json())
+            except:
+                print("Failed to fetch golden master results from %s" % g)
+                sys.exit(15)
+
     config.WAN_PROTO = args.wan
     config.setup_device_networking = not args.no_network
     config.bootargs = args.bootargs
