@@ -45,7 +45,7 @@ class SoftPhone(object):
         '''To start the soft phone
         Note: Start softphone only when asterisk server is running to avoid failure'''
         self.sendline('pjsua --config-file=' + self.config_name)
-        self.expect('registration success, status=200 \(OK\)')
+        self.expect(r'registration success, status=200 \(OK\)')
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
 
@@ -59,7 +59,7 @@ class SoftPhone(object):
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
         self.sendline('m')
-        self.expect('Make call\:')
+        self.expect(r'Make call\:')
         self.sendline('sip:' + dial_number + '@' + receiver_ip)
         self.expect('Call 0 state changed to CALLING')
         self.expect(self.pjsip_prompt)
@@ -70,7 +70,7 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
         self.expect('Press a to answer or h to reject call')
         self.sendline('a')
-        self.expect('Answer with code \(100\-699\) \(empty to cancel\)\:')
+        self.expect(r'Answer with code \(100\-699\) \(empty to cancel\)\:')
         self.sendline('200')
         self.expect('Call 0 state changed to CONFIRMED')
         self.sendline('/n')
