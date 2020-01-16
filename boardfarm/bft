@@ -557,7 +557,7 @@ def connect_and_run(config):
         info_for_remote_log.update(data)
         prefix = nice_name + "-"
         for subtest in t.subtests:
-            nice_name, data = generate_test_info_for_kibana(subtest, prefix=prefix)
+            nice_name, data = library.generate_test_info_for_kibana(subtest, prefix=prefix)
             info_for_remote_log.update(data)
 
     # Convert python objects to things that can be stored in
