@@ -312,7 +312,7 @@ class DebianBox(linux.LinuxDevice):
             # TODO: don't reference eth0, but the uplink iface
             self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
             self.expect_exact("SYNC\r\n")
-            if 0 == self.expect(['(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
+            if 0 == self.expect([r'(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
                 possible_default_gw = self.match.group(1)
                 self.sendline("ip route add default via %s" % possible_default_gw)
                 self.expect(self.prompt)
@@ -683,7 +683,7 @@ class DebianBox(linux.LinuxDevice):
             output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
             M_bit, O_bit = True, True
             if "Prefix" in output:
-                M_bit, O_bit = map(lambda x: "Yes" in x, re.findall("Stateful.*\W", output))
+                M_bit, O_bit = map(lambda x: "Yes" in x, re.findall(r"Stateful.*\W", output))
 
             # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
             if not M_bit and O_bit:

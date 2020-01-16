@@ -57,5 +57,5 @@ class KermitConnection():
         self.device.sendline('c')
         self.device.expect(self.prompt)
         self.device.sendline('q')
-        self.device.expect('OK to exit\?')
+        self.device.expect(r'OK to exit\?')
         self.device.sendline('y')

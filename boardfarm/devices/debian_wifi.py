@@ -69,7 +69,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
         self.sudo_sendline('iw %s scan | grep "SSID: %s"' % (self.iface_wifi, ssid_name))
         self.expect(self.prompt)
-        match = re.search("%s\"\s+.*(%s)" % (ssid_name, ssid_name), self.before)
+        match = re.search(r"%s\"\s+.*(%s)" % (ssid_name, ssid_name), self.before)
         if match:
             return True
         else:

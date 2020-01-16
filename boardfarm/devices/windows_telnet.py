@@ -42,7 +42,7 @@ class WindowsTelnet(base.BaseDevice):
         self.expect("(.+)>", timeout=30)
         Wifi_log = self.match.group(1)
 
-        match = re.search('IP Address:\s+([\d.]+)', str(Wifi_log))
+        match = re.search(r'IP Address:\s+([\d.]+)', str(Wifi_log))
         if match:
             return match.group(1)
         else:
@@ -78,7 +78,7 @@ class WindowsTelnet(base.BaseDevice):
         self.expect("(.+)>", timeout=30)
         Wifi_log = self.match.group(1)
 
-        match = re.search('Default Gateway:\s+([\d.]+)', str(Wifi_log))
+        match = re.search(r'Default Gateway:\s+([\d.]+)', str(Wifi_log))
         if match:
             return match.group(1)
         else:
