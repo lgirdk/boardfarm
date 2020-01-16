@@ -42,6 +42,25 @@ def printd(data):
     '''Pretty-print as a JSON data object.'''
     print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
 
+def generate_test_info_for_kibana(test, prefix=""):
+    '''
+    Given a test, returns a nice name and a dictionary of information
+    to log for that test.
+    '''
+    if hasattr(test, 'override_kibana_name'):
+        n = test.override_kibana_name
+    elif hasattr(test, 'name'):
+        n = test.name
+    else:
+        n = test.__class__.__name__
+    n = prefix + n
+    result = {}
+    for k, v in test.logged.items():
+        result[n + '-' + k] = v
+    if hasattr(test, 'result_grade'):
+        result[n + "-result"] = test.result_grade
+    return n, result
+
 def check_devices(devices, func_name='check_status'):
     '''
     For each device, run a frunction. Useful to see if devices are still

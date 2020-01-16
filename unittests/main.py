@@ -47,6 +47,17 @@ class TestSimpleBoardfarm(unittest.TestCase):
         result = test_configurator.filter_boards(conf, 'lasers')
         self.assertEqual(result, False)
 
+    def test_kibana_datagen(self):
+        from boardfarm.library import generate_test_info_for_kibana
+        class Dummy():
+            logged = {}
+            result_grade = 'OK'
+        x = Dummy()
+        x.override_kibana_name = "Testing123"
+        nice_name, data = generate_test_info_for_kibana(x, prefix="Hello")
+        self.assertEqual("HelloTesting123", nice_name)
+        self.assertIn("HelloTesting123-result", data)
+
     def test_station_filtering(self):
         from boardfarm.lib import test_configurator
         cur_dir = os.path.dirname(boardfarm.__file__)
