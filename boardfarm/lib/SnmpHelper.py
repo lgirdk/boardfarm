@@ -215,7 +215,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             raise Exception("ERROR: mib '%s' not found in mib_dict." % mib_name)
         return oid
 
-def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private", walk_cmd=None):
+def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private", walk_cmd=None, stype=None):
     """
     Performs an snmp get/set on ip from device's console.
     If value is provided, action = snmpget else action = snmpset
@@ -227,6 +227,7 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         (int) index : index used along with mib_name
         (str) walk_cmd : If walk_cmd is passed(eg: head -15) the walk output will be returned
                          If walk_cmd is "walk_verify" it will verify walk is done and return True or False
+        (str) stype: If datatype is passed pysnmp script for get method to get datatype is skipped
 
     Returns:
         (str) result : snmp result
@@ -274,13 +275,14 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
     if walk_cmd:
         return snmp_asyncore_walk(device, ip, oid, read_cmd=walk_cmd)
 
-    status, result, stype = _run_snmp()
-    assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+    if not stype:
+        status, result, stype = _run_snmp()
+        assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
 
-    for k,v in SnmpMibs.mib_type_map.items():
-        if stype in v:
-            stype = k
-            break
+        for k,v in SnmpMibs.mib_type_map.items():
+            if stype in v:
+                stype = k
+                break
 
     if value:
         status, result, stype = _run_snmp(True)
