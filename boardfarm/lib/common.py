@@ -525,7 +525,8 @@ def file_open_json(file):
     try:
         with open(file) as f:
             return json.load(f)
-    except:
+    except Exception as e:
+        print(e)
         raise Exception("Could not open the json file")
 
 def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value, timeout=10, retry=3, community='private'):
