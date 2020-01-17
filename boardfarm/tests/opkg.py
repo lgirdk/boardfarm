@@ -14,7 +14,7 @@ class OpkgList(rootfs_boot.RootFSBootTest):
     def runTest(self):
         board.sendline('\nopkg list-installed | wc -l')
         board.expect('opkg list')
-        board.expect('(\d+)\r\n')
+        board.expect(r'(\d+)\r\n')
         num_pkgs = int(board.match.group(1))
         board.expect(prompt)
         board.sendline('opkg list-installed')
