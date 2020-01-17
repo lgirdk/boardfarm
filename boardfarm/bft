@@ -39,6 +39,7 @@ from boardfarm.zephyr import zephyr_reporter
 from boardfarm import start
 import boardfarm.exceptions
 from boardfarm.devices import get_device
+from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.lib.common import check_url
 from boardfarm.lib.common import print_bold
 from boardfarm.exceptions import BftNotSupportedDevice
@@ -600,19 +601,7 @@ def connect_and_run(config):
         print("Unable to log results to mysql database.")
 
     for t in tests_to_run:
-        if t.log_to_file is not None and hasattr(t, 'stop_time'):
-            filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
-            testtime = t.stop_time - t.start_time
-            with open(os.path.join(config.output_dir, filename), 'w') as log:
-                log.write('\t=======================================================')
-                log.write('\n\tTest case ID: %s' % (type(t).__name__))
-                log.write('\n\tTest case Description: %s' % (type(t).__doc__))
-                log.write('\n\t=======================================================\n')
-                log.write(t.log_to_file)
-                log.write('\n\t=======================================================')
-                log.write('\n\t%s test result: %s' % (type(t).__name__, t.result_grade))
-                log.write('\n\tTotal test time: %s seconds' % testtime)
-                log.write('\n\t=======================================================')
+        write_test_log(t, config.output_dir)
 
     return info_for_remote_log
 

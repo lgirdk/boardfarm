@@ -5,6 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import os
 import time
 import types
 from datetime import datetime
@@ -43,6 +44,24 @@ def logfile_assert_message(s, condition, message):
         assert 0, message + ": FAIL\r\n"
     else:
         log_message(s, message+": PASS")
+
+def write_test_log(t, output_dir):
+    '''
+    Write detailed log file for given test.
+    '''
+    if t.log_to_file is not None and hasattr(t, 'stop_time'):
+        filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
+        testtime = t.stop_time - t.start_time
+        with open(os.path.join(output_dir, filename), 'w') as log:
+            log.write('\t=======================================================')
+            log.write('\n\tTest case ID: %s' % (type(t).__name__))
+            log.write('\n\tTest case Description: %s' % (type(t).__doc__))
+            log.write('\n\t=======================================================\n')
+            log.write(t.log_to_file)
+            log.write('\n\t=======================================================')
+            log.write('\n\t%s test result: %s' % (type(t).__name__, t.result_grade))
+            log.write('\n\tTotal test time: %s seconds' % testtime)
+            log.write('\n\t=======================================================')
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
