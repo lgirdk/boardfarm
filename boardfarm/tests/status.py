@@ -47,7 +47,7 @@ class UciShow(rootfs_boot.RootFSBootTest):
         board.expect('/etc/config/', timeout=5)
         board.expect(prompt)
         board.sendline('ls -l /etc/config/ | wc -l')
-        board.expect('(\d+)\r\n')
+        board.expect(r'(\d+)\r\n')
         num_files = int(board.match.group(1))
         board.expect(prompt)
         board.sendline('uci show')
@@ -84,12 +84,12 @@ class MemoryUse(rootfs_boot.RootFSBootTest):
         for i in range(2):
             try:
                 board.sendline('cat /proc/meminfo')
-                board.expect('MemTotal:\s+(\d+) kB', timeout=5)
+                board.expect(r'MemTotal:\s+(\d+) kB', timeout=5)
                 break
             except:
                 pass
         mem_total = int(board.match.group(1))
-        board.expect('MemFree:\s+(\d+) kB')
+        board.expect(r'MemFree:\s+(\d+) kB')
         mem_free = int(board.match.group(1))
         board.expect(prompt)
         mem_used = mem_total - mem_free
