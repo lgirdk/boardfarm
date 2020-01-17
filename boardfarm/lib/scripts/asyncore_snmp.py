@@ -128,3 +128,10 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
         return output_list
     else:
         return
+
+
+if __name__ == '__main__':
+    import sys
+    SnmpwalkAsync(target_IP=str(sys.argv[1]), oid=str(sys.argv[2]), \
+              community=str(sys.argv[3]), walk_timeout=str(sys.argv[4]), \
+              mode=str(sys.argv[5]))
