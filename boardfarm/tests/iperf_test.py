@@ -112,7 +112,7 @@ class iPerfTest(rootfs_boot.RootFSBootTest):
 
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
@@ -187,7 +187,7 @@ class iPerfReverseTest(iPerfTest):
         rate = self.parse_iperf(client)
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
@@ -261,7 +261,7 @@ class iPerfBiDirTest(iPerfTest):
         rate += float(self.parse_iperf(node2))
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
