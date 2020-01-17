@@ -41,6 +41,7 @@ class device_type(Enum):
     cmts = 20
     cdrouter = 21
     booster = 22
+    softphone = 23
 
 class device_location(Enum):
     '''
