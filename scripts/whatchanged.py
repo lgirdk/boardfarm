@@ -126,7 +126,7 @@ if __name__ == '__main__':
             sys.exit(1)
     # Locations of '.git' files
     git_loc = [os.path.abspath(os.path.join(d, os.pardir, ".git")) for d in all_boardfarm_dirs]
-    valid_test_types = 'rootfs_boot.RootFSBootTest'
+    valid_test_types = ('rootfs_boot.RootFSBootTest', 'BF_Test')
 
     # Get a dictionary of the form
     #     {"classname": ["parent_classname", "grandparent_classname"], ... }
@@ -153,8 +153,10 @@ if __name__ == '__main__':
     final_result = []
     for name in sorted(all_changed_classes):
         parents = all_classes.get(name, [])
-        if valid_test_types in parents:
-            final_result.append(name)
+        for v in valid_test_types:
+            if v in parents:
+                final_result.append(name)
+                break
     if args.debug:
         print("\nFinal output including directly and indirectly changed tests:")
     print(" -e ".join([''] + final_result) + " -q ".join([''] + features))
