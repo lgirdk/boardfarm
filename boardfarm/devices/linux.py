@@ -399,3 +399,28 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         '''Releases a lock taken'''
         self.sendline('flock -u %s' % fd)
         self.expect(self.prompt)
+
+    def perform_curl(self, host_ip, protocol, port=None, options=''):
+        """Performs curl action to web service running on host machine
+
+        :param dev : dev to perform curl
+        :type dev : device object
+        :param host_ip : ip address of the server device
+        :type host_ip : str
+        :param protocol : Web Protocol (http or https)
+        :type protocol : str
+        :param port : port number of server
+        :type port : str, default to None
+        :param options : Additional curl option
+        :type options : str, default to empty
+        """
+        if port:
+            web_addr = "{}://{}:{}".format(protocol, host_ip, str(port))
+        else:
+            web_addr = "{}://{}".format(protocol, host_ip)
+        command = "curl {} {}".format(options, web_addr)
+        self.sendline(command)
+        index = self.expect(['Connected to']+['DOCTYPE html PUBLIC']+['Connection timed out']+['Failed to connect to']+self.prompt,timeout=100)
+        self.sendcontrol('c')
+        self.expect(self.prompt)
+        return True if index not in [2, 3] else False
