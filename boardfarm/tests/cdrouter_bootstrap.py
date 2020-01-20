@@ -363,8 +363,8 @@ testvar wanDnsServer %s
         new_tests = []
         for mod in c.testsuites.list_modules():
             name = "CDrouter" + mod.name.replace('.', '').replace('-','_')
-            list_of_tests = [ x.encode('ascii','ignore') for x in mod.tests ]
-            new_tests.append(type(name.encode('ascii','ignore') , (CDrouterStub, ),
+            list_of_tests = [ six.text_type(x) for x in mod.tests ]
+            new_tests.append(type(six.text_type(name) , (CDrouterStub, ),
                                     {
                                         'tests': list_of_tests
                                     }))
