@@ -150,7 +150,7 @@ class LinuxDevice(base.BaseDevice):
             self.sendline(r"sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         self.expect(self.prompt)
 
-    def ping(self, ping_ip, ping_count=4, ping_interface=None, options=None):
+    def ping(self, ping_ip, ping_count=4, ping_interface=None, options=''):
         '''Check ping from any device'''
         basic_cmd = 'ping -c {} {}'.format(ping_count, ping_ip)
         if ping_interface:
