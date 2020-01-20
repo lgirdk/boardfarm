@@ -150,21 +150,32 @@ class LinuxDevice(base.BaseDevice):
             self.sendline(r"sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
         self.expect(self.prompt)
 
-    def ping(self, ping_ip, ping_count=4, ping_interface=None, options=''):
+    def ping(self, ping_ip, ping_count=4, ping_interface=None, options='', timetorun=None):
         '''Check ping from any device'''
+
+        timeout = 50
         basic_cmd = 'ping -c {} {}'.format(ping_count, ping_ip)
-        if ping_interface:
-            basic_cmd += " -I {}".format(ping_interface)
-        elif options:
+
+        if timetorun:
+            basic_cmd = 'timeout {} ping {} {}'.format(timetorun, ping_ip, options)
+            timeout = int(timetorun)+10
+        elif ping_interface:
+            basic_cmd += " -I {} {}".format(ping_interface, options)
+        else:
             basic_cmd += " {}".format(options)
         self.sendline(basic_cmd)
-        self.expect(self.prompt, timeout=50)
-        match = re.search("%s packets transmitted, %s received, 0%% packet loss" %
-                          (ping_count, ping_count), self.before)
-        if match:
+        self.expect(self.prompt, timeout=timeout)
+
+        if timetorun:
+            # Validation can be added - future note
             return 'True'
         else:
-            return 'False'
+            match = re.search("%s packets transmitted, %s received, 0%% packet loss" %
+                          (ping_count, ping_count), self.before)
+            if match:
+                return 'True'
+            else:
+                return 'False'
 
     def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
         '''Checking the interface status'''
