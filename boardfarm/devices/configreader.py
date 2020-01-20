@@ -63,13 +63,13 @@ class TestsuiteConfigReader(object):
         current_section = None
         for i, line in enumerate(s_config.split('\n')):
             try:
-                if line == '' or re.match('^\s+', line) or line.startswith('#'):
+                if line == '' or re.match(r'^\s+', line) or line.startswith('#'):
                     continue
                 if '[' in line:
-                    current_section = re.search('\[(.*)\]', line).group(1)
+                    current_section = re.search(r'\[(.*)\]', line).group(1)
                     if current_section not in self.section:
                         self.section[current_section] = []
-                elif re.match('[@\w]+', line):
+                elif re.match(r'[@\w]+', line):
                     if current_section:
                         self.section[current_section].append(line)
             except Exception as e:
