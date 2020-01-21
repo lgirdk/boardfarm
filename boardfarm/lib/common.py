@@ -268,7 +268,7 @@ def keccak512_checksum(filename, block_size=65536):
 cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
 
 
-def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
+def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
     """Starts a simple IPv4 web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop
@@ -279,11 +279,14 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
     :type ip: String, Optional
     :param port: port number on which http service to run, defaults to "9000"
     :type port: String, Optional
+    :param options: Additional options which can be used to run in background, or store the console log to a file.
+                    Example: To run the service in background, you can pass "2>&1 &"
+    :type options: String, Optional, defaults to empty
     :return: True or False
     :rtype: Boolean
     """
     http_service_kill(device, "SimpleHTTPServer")
-    device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()'" % (ip, port))
+    device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()' %s" % (ip, port, options))
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold("Faield to start service on " + ip + ":" + port)
@@ -293,7 +296,7 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000"):
             print_bold("Service started on " + ip + ":" + port)
         return True
 
-def start_ip6bound_httpservice(device, ip="::", port="9001"):
+def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
     """Starts a simple IPv6 web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -304,6 +307,9 @@ def start_ip6bound_httpservice(device, ip="::", port="9001"):
     :type ip: String, Optional
     :param port: port number on which ipv6 http service to run, defaults to "9001"
     :type port: String, Optional
+    :param options: Additional options which can be used to run in background, or store the console log to a file.
+                    Example: To run the service in background, you can pass "2>&1 &"
+    :type options: String, Optional, defaults to empty
     :return: True or False
     :rtype: Boolean
     """
@@ -319,7 +325,7 @@ HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
 EOF''' % (ip, port))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPServer6")
+    device.sendline("python -m /root/SimpleHTTPServer6 %s" %options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold('Faield to start service on [' + ip + ']:' + port)
@@ -329,7 +335,7 @@ EOF''' % (ip, port))
             print_bold("Service started on [" + ip + "]:" + port)
         return True
 
-def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/server.pem"):
+def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/server.pem", options=""):
     """Starts a simple IPv4 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -342,6 +348,9 @@ def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/ser
     :type port: String, Optional
     :param cert: SSL certificate location, defaults to "/root/server.pem"
     :type cert: String, Optional
+    :param options: Additional options which can be used to run in background, or store the console log to a file.
+                    Example: To run the service in background, you can pass "2>&1 &"
+    :type options: String, Optional, defaults to empty
     :return: True or False
     :rtype: Boolean
     """
@@ -380,7 +389,7 @@ httpd.serve_forever()
 EOF''' % (ip, port, cert))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer")
+    device.sendline("python -m /root/SimpleHTTPsServer %s" %options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
@@ -389,7 +398,7 @@ EOF''' % (ip, port, cert))
             print_bold("Service started on [" + ip + "]:" + port)
         return True
 
-def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server.pem"):
+def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server.pem", options=""):
     """Starts a simple IPv6 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -402,6 +411,9 @@ def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server
     :type port: String, Optional
     :param cert: SSL certificate location, defaults to "/root/server.pem"
     :type cert: String, Optional
+    :param options: Additional options which can be used to run in background, or store the console log to a file.
+                    Example: To run the service in background, you can pass "2>&1 &"
+    :type options: String, Optional, defaults to empty
     :return: True or False
     :rtype: Boolean
     """
@@ -436,7 +448,7 @@ https.serve_forever()
 EOF''' % (ip, port, cert))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer")
+    device.sendline("python -m /root/SimpleHTTPsServer %s" %options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
