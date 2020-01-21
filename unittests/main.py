@@ -18,6 +18,8 @@ class TestSimpleBoardfarm(unittest.TestCase):
         '''
         from boardfarm import tests
         tests.init(None)
+        # Also make sure something is in tests.available_tests
+        self.assertGreater(len(tests.available_tests), 10)
 
     def test_import_debian_wifi(self):
         '''
