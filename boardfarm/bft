@@ -554,16 +554,6 @@ def connect_and_run(config):
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
 
-
-    #Update the results in Zephyr
-    try:
-        result_data = json.load(open('./results/test_results.json'))
-        test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
-        zephyr_reporter.update_zephyr(test_cases_list)
-    except Exception as e:
-        print(e)
-        print("Unable to Update results in Zephyr")
-
     # Create Pretty HTML output
     create_results_html(full_results, config)
 
@@ -641,6 +631,15 @@ def main():
         except Exception as e:
             print("Failed to load data in AWS bucket")
             print(e)
+
+    # Update the results in Zephyr
+    try:
+        result_data = json.load(open('./results/test_results.json'))
+        test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
+        zephyr_reporter.update_zephyr(test_cases_list)
+    except Exception as e:
+        print(e)
+        print("Unable to Update results in Zephyr")
 
 
 if __name__ == '__main__':
