@@ -836,11 +836,12 @@ def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, communi
     :type: bool
     """
 
+    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" % (community, time_out, retry, ip_address, mib_oid))
     if expect_content != None:
         idx = device.expect(["Timeout: No Response", expect_content], timeout=(time_out * retry) + 30)
         device.expect(device.prompt)
     else:
-        idx = device.expect(["Timeout: No Response"]+device.prompt, timeout=(time_out * retry) + 30)
+        idx = device.expect(["Timeout: No Response"] + device.prompt, timeout=(time_out * retry) + 30)
         if idx==0:
             device.expect(device.prompt)
     return idx != 0
