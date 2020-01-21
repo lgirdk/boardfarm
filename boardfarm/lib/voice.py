@@ -53,3 +53,17 @@ def voice_devices_configure(voice_devices_list, sip_server):
     except Exception as e:
         sip_server.kill_asterisk()
         raise Exception("Unable to initialize Voice devices, failed due to the error : ", e)
+
+def dns_setup_sipserver(sip_server):
+    '''
+    To setup dns with auth records
+
+    Parameters:
+    sip_server(obj): sipserver device
+    '''
+    try:
+        if sip_server:
+            sip_server.setup_dnsmasq()
+            add_dns_auth_record(sip_server,sip_server.name)
+    except Exception as e:
+        raise Exception("Unable to initialize dns, failed due to the error : ", e)
