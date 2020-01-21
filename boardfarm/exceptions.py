@@ -56,3 +56,11 @@ class DeviceDoesNotExistError(BftBaseException):
     """Device does not exist
     """
     pass
+
+class BftEnvException(BftBaseException):
+    """Generic for Env related problems"""
+    pass
+
+class BftEnvExcKeyError(BftBaseException):
+    """Env error raised when a key is missing from ENV"""
+    pass
