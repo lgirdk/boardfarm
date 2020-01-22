@@ -121,6 +121,7 @@ def firefox_webproxy_driver(ipport, config):
         profile.set_preference("network.proxy.socks_port", int(port))
         profile.set_preference("network.proxy.socks_remote_dns", True)
         profile.set_preference("security.enterprise_roots.enabled", True)
+        profile.set_preference("network.proxy.socks_version", 5)
     else:
         profile.set_preference("network.proxy.type", 1)
         profile.set_preference("network.proxy.http", ip)
@@ -135,6 +136,8 @@ def firefox_webproxy_driver(ipport, config):
     profile.set_preference("browser.helperApps.neverAsk.openFile", "text/anytext,text/comma-separated-values,text/csv,application/octet-stream")
     profile.update_preferences()
     driver = webdriver.Firefox(firefox_profile=profile)
+    x,y = config.get_display_backend_size()
+    driver.set_window_size(x, y)
     driver.implicitly_wait(30)
     driver.set_page_load_timeout(30)
 
