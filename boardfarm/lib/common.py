@@ -838,13 +838,11 @@ def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, communi
 
     device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" % (community, time_out, retry, ip_address, mib_oid))
     if expect_content != None:
-        idx = device.expect(["Timeout: No Response", expect_content], timeout=(time_out * retry) + 30)
-        device.expect(device.prompt)
+        idx = device.expect([expect_content, "Timeout: No Response"], timeout=(time_out * retry) + 30)
     else:
-        idx = device.expect(["Timeout: No Response"] + device.prompt, timeout=(time_out * retry) + 30)
-        if idx==0:
-            device.expect(device.prompt)
-    return idx != 0
+        idx = device.expect(["It is past the end of the MIB tree", "Timeout: No Response"], timeout=(time_out * retry) + 30)
+    device.expect(device.prompt)
+    return idx == 0
 
 def get_file_magic(fname, num_bytes=4):
     """Return the first few bytes from a file to determine the file type.
