@@ -45,11 +45,13 @@ def voice_devices_configure(voice_devices_list, sip_server):
     sip_server(obj): sipserver device
     '''
     try:
-        for voice_device_name in voice_devices_list:
-            if hasattr(voice_device_name, "profile"):
-                boot_list = nested_lookup("on_boot",voice_device_name.profile.get(voice_device_name.name, {}))
+        for voice_device in voice_devices_list:
+            if hasattr(voice_device, "profile"):
+                boot_list = nested_lookup("on_boot",voice_device.profile.get(voice_device.name, {}))
                 for profile_boot in boot_list:
                     profile_boot()
+                if 'softphone' in voice_device.name:
+                    voice_device.phone_config(sip_server.ipaddr)
     except Exception as e:
         sip_server.kill_asterisk()
         raise Exception("Unable to initialize Voice devices, failed due to the error : ", e)
