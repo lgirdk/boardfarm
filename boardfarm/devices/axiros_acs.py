@@ -368,6 +368,93 @@ class AxirosACS(object):
 
         return self.Axiros_GetTicketValue(ticketid)
 
+    def rpc_AddObject(self, serial_number, param, wait=8):
+        """This method is used to add object ACS of the parameter specified i.e a remote procedure call (AddObject).
+
+        :param serial_number: the serial number of the modem through which ACS communication happens.
+        :type serial_number: string
+        :param param: parameter to be used to add
+        :type param: string
+        :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
+        :type wait: integer, optional
+        :raises assertion: rpc_AddObject failed to lookup for the param
+        :returns: ticket response on ACS
+        :rtype: dictionary
+        """
+        AddObjectClassArray_type = self.client.get_type('ns0:AddDelObjectArgumentsStruct')
+        AddObjectClassArray_data = AddObjectClassArray_type(param, '')
+
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.AddObject(AddObjectClassArray_data, \
+                                      CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+        ticketid = None
+        root = ElementTree.fromstring(response.content)
+        for value in root.iter('ticketid'):
+            ticketid = value.text
+            break
+
+        if ticketid is None:
+            return None
+
+        for i in range(wait):
+            time.sleep(1)
+            with self.client.settings(raw_response=True):
+                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+
+            root = ElementTree.fromstring(ticket_resp.content)
+            for value in root.iter('code'):
+                break
+            if (value.text != '200'):
+                continue
+            dict_value = {}
+            for key, value in zip(root.iter('key'), root.iter('value')):
+                dict_value[key.text] = value.text
+            return dict_value
+
+        assert False, "rpc_AddObject failed to lookup %s" % param
+
+    def rpc_DelObject(self, serial_number, param):
+        """This method is used to delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
+
+        :param serial_number: the serial number of the modem through which ACS communication happens.
+        :type serial_number: string
+        :param param: parameter to be used to delete
+        :type param: string
+        :returns: ticket response on ACS ('0' is returned)
+        :rtype: string
+        """
+        DelObjectClassArray_type = self.client.get_type('ns0:AddDelObjectArgumentsStruct')
+        DelObjectClassArray_data = DelObjectClassArray_type(param, '')
+
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.DeleteObject(DelObjectClassArray_data, \
+                                             CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+
+        ticketid = None
+        root = ElementTree.fromstring(response.content)
+        for value in root.iter('ticketid'):
+            ticketid = value.text
+            break
+
+        if ticketid is None:
+            return None
+
+        return self.Axiros_GetTicketValue(ticketid)
+
 if __name__ == '__main__':
     import sys
 
