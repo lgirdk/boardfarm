@@ -41,7 +41,7 @@ def randomSSIDName():
     :returns: The SSID generated randomly
     :rtype: string
     """
-    return 'WIFI-' + ''.join(random.sample(string.lowercase + string.digits, 10))
+    return 'WIFI-' + ''.join(random.sample(string.ascii_lowercase + string.digits, 10))
 
 def uciSetWifiSSID(console, ssid):
     """This method sets the WiFi SSID on the CM
