@@ -127,6 +127,7 @@ golden_master_results = {}  # Will store golden master results
 features = []  # Features required for this test run
 TEST_SUITE_NOSTRICT = False  # ignores failure to import a tests from a testsuite
 regex_config = []  # Regex substitution for board config
+retry = 0  # How many times to retry every test if it fails
 # Default image files to flash
 UBOOT = None
 KERNEL = None
