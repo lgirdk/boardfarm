@@ -20,18 +20,24 @@ import threading
 import re
 from datetime import datetime
 
+# Setup logging
+import logging
+logging.basicConfig(format='%(message)s')
+logger = logging.getLogger('bft')
+logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
 # Try to catch common mistakes: not installing boardfarm, or
 # having wrong version installed.
 try:
     import boardfarm
 except Exception as e:
-    print(e)
-    print("Please install boardfarm with the command:")
+    logger.debug(e)
+    logger.debug("Please install boardfarm with the command:")
     cmd = "pip install -e ."
     if not os.path.isfile("setup.py"):
         tmp = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
         cmd = "cd %s ; %s" % (tmp, cmd)
-    print(cmd)
+    logger.debug(cmd)
     sys.exit(1)
 
 from boardfarm.zephyr import zephyr_reporter
@@ -54,18 +60,18 @@ class FailedDevice(object):
 def threaded_device_helper(device, ret):
     s = time.time()
     if 'BFT_DEBUG' in os.environ:
-        print("Connected to %s" % device['name'])
+        logger.debug("Connected to %s" % device['name'])
 
     try:
         dyn_dev = get_device(device['type'], **device)
     except BftNotSupportedDevice:
-        print_bold("Device %s not supported in this bft release + overlays, skipping..." % device['name'])
+        logger.info("Device %s not supported in this bft release + overlays, skipping..." % device['name'])
         return
     except Exception:
         traceback.print_exc()
         failed = FailedDevice()
         if 'name' not in device:
-            print_bold("Device in JSON does not have name, please fix!")
+            logger.warning("Device in JSON does not have name, please fix!")
             failed.name = "Undefined"
             ret.put(failed)
             return
@@ -74,7 +80,7 @@ def threaded_device_helper(device, ret):
         return
 
     if 'BFT_DEBUG' in os.environ:
-        print("Time to instantiate device %s = %s" % (device['name'], time.time() - s))
+        logger.debug("Time to instantiate device %s = %s" % (device['name'], time.time() - s))
 
     dyn_dev.name = device['name']
     ret.put(dyn_dev)
@@ -102,7 +108,7 @@ def setup_dynamic_devices(config):
             raise Exception("Device does not have a proper name, please add!")
 
         if device.name in config.devices:
-            print("Skipping duplicate device type: %s" % device.name)
+            logger.debug("Skipping duplicate device type: %s" % device.name)
             device.close()
             continue
 
@@ -130,7 +136,7 @@ def setup_dynamic_devices(config):
 
         continue
 
-        print("Unknown device type for %s" % device)
+        logger.debug("Unknown device type for %s" % device)
 
     config.board['devices'].extend(dynamic_devices)
 
@@ -144,9 +150,9 @@ def create_results_html(full_results, config):
                                 output_name=os.path.join(config.output_dir, "results.html"),
                                 board_info=config.board)
     except Exception as e:
-        print(e)
+        logger.debug(e)
         traceback.print_exc()
-        print("Unable to create HTML results")
+        logger.debug("Unable to create HTML results")
 
 def connect_and_run(config):
     '''Connect to devices, run tests, record results.'''
@@ -226,7 +232,7 @@ def connect_and_run(config):
             d[k] = update_value(regex, v)
 
     for regex in config.regex_config:
-        print("WARN: running regex replacement = %s" % regex)
+        logger.debug("WARN: running regex replacement = %s" % regex)
         walk_dict(regex, config.boardfarm_config)
 
     for name in config.BOARD_NAMES:
@@ -234,11 +240,11 @@ def connect_and_run(config):
             # Use helper class to control access to configuration from tests
             config.board = boardfarm.lib.ConfigHelper(config.boardfarm_config[name])
         except Exception as e:
-            print(e)
-            print("Error reading info about board %s from board farm configuration." % name)
+            logger.debug(e)
+            logger.debug("Error reading info about board %s from board farm configuration." % name)
             break
 
-        print_bold("Connecting to board named = %s, type = %s ..." % (name, config.board['board_type']))
+        logger.info("Connecting to board named = %s, type = %s ..." % (name, config.board['board_type']))
         try:
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
             tftp_server = None
@@ -261,13 +267,13 @@ def connect_and_run(config):
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
                                                  config=config.board)
-            print_bold("dut device console = %s" % colored("black", 'grey'))
+            logger.info("dut device console = %s" % colored("black", 'grey'))
 
             # TODO: we should generically check these at one time in the future
             for x in ["UBOOT", "KERNEL", "ROOTFS", "META_BUILD"]:
                 v = getattr(config, x, "")
                 if v is not None and "mirror://" in v:
-                    print(config.board)
+                    logger.debug(config.board)
                     r = getattr(config, x).replace("mirror://", config.board[u'mirror'])
                     if not check_url(r):
                         raise Exception("Unable to reach board mirror, trying next board")
@@ -307,23 +313,23 @@ def connect_and_run(config):
                         config.console.tftp_dev = getattr(config, x.get('name'))
 
         except KeyboardInterrupt:
-            print_bold("Keyboard interrupt")
+            logger.warning("Keyboard interrupt")
             sys.exit(2)
         except Exception as e:
-            print(e)
+            logger.debug(e)
             traceback.print_exc(file=sys.stdout)
             connected_to_board = False
             continue
         connected_to_board = True
         break
     if not connected_to_board:
-        print_bold("Failed to connect to any board")
+        logger.warning("Failed to connect to any board")
         sys.exit(2)
 
     try:
-        print_bold("Using Board %s, User %s" % (name, os.environ['BUILD_USER_ID']))
+        logger.info("Using Board %s, User %s" % (name, os.environ['BUILD_USER_ID']))
     except:
-        print_bold("Using Board %s, User %s" % (name, os.environ['USER']))
+        logger.info("Using Board %s, User %s" % (name, os.environ['USER']))
 
     # Store name of station in config for convenience
     config.board['station'] = name
@@ -337,58 +343,58 @@ def connect_and_run(config):
     if hasattr(config.console, "update_config"):
         config.console.update_config()
 
-    print_bold('\n==========')
+    logger.info('\n==========')
     library.printd(config.board)
 
     # Run tests
     os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
-    print_bold('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
+    logger.info('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
     from boardfarm import tests
     tests.init(config)
     from boardfarm import testsuites
     if config.TEST_SUITE not in testsuites.list_tests:
-        print_bold("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
+        logger.warning("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
         sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
             if name not in tests.available_tests:
                 # we can either fail or ignore a missing test
                 if config.TEST_SUITE_NOSTRICT:
-                    print_bold("\tWARNING: Test %s NOT FOUND" % name)
+                    logger.warning("\tWARNING: Test %s NOT FOUND" % name)
                     # add a place holder that will show up as skipped in the results
                     name = 'selftest_fake_test' # there must be a better way of getting the name!
                 else:
                     # strict behaviour
-                    print_bold("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
+                    logger.warning("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
                     sys.exit(1)
             test = tests.available_tests[name]
         else:
             test = name
-        print_bold("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
+        logger.info("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
         tests_to_run.append(test(config))
     if hasattr(config, 'EXTRA_TESTS') and config.EXTRA_TESTS:
         if tests_to_run[-1].__class__.__name__ == "Interact":
-            print_bold("Last test is interact in testsuite, removing")
+            logger.info("Last test is interact in testsuite, removing")
             tests_to_run.pop()
 
-        print_bold("Extra tests specified on command line:")
+        logger.info("Extra tests specified on command line:")
         try:
             for name in config.EXTRA_TESTS:
                 try:
                     t = tests.available_tests[name]
                 except:
                     raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
-                print_bold("  %s" % t)
+                logger.info("  %s" % t)
                 test = t(config)
                 tests_to_run.append(test)
         except Exception as e:
-            print_bold(e)
-            print_bold("Unable to find specified extra tests, aborting...")
+            logger.warning(e)
+            logger.warning("Unable to find specified extra tests, aborting...")
             sys.exit(1)
 
-    print_bold('==========')
+    logger.info('==========')
     all_devices = [getattr(config, name, None) for name in config.devices]
     try:
         tests_pass = tests_fail = tests_skip = 0
@@ -426,11 +432,11 @@ def connect_and_run(config):
                 break
 
     except KeyboardInterrupt:
-        print_bold("Run interrupted. Wrapping up...")
+        logger.info("Run interrupted. Wrapping up...")
         if curr_test is not None:
             curr_test.recover()
 
-    print_bold("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
+    logger.info("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
 
     try:
         config.console.close()
@@ -443,8 +449,8 @@ def connect_and_run(config):
             if config.wan is not None:
                 config.wan.close()
     except Exception as e:
-        print(e)
-        print_bold("For some reason, could not close a connection.")
+        logger.debug(e)
+        logger.warning("For some reason, could not close a connection.")
     library.printd(config.board)
 
     combined_list = []
@@ -460,7 +466,7 @@ def connect_and_run(config):
                 ts, text = line.split(']', 1)
                 combined_list.append({"time": float(ts[1:-1]), "text": str(text), "name": name})
             except:
-                print("Failed to parse log line = %s" % repr(line))
+                logger.debug("Failed to parse log line = %s" % repr(line))
                 pass
 
     idx = 1
@@ -482,7 +488,7 @@ def connect_and_run(config):
                     else:
                         clog.write('%s: [%s] %s\n' % (e['name'], e['time'], repr(e['text'])))
                 except:
-                    print("failed to parse line: %s" % repr(e))
+                    logger.debug("failed to parse line: %s" % repr(e))
 
     import operator
     console_combined.sort(key=operator.itemgetter('time'))
@@ -522,15 +528,15 @@ def connect_and_run(config):
         with open(os.path.join(config.output_dir, fname), 'r') as f:
             clog = f.read()
         if not clog:
-            print("Skipping analysis because %s is empty..." % fname)
+            logger.debug("Skipping analysis because %s is empty..." % fname)
         else:
             from boardfarm import analysis
             for name in sorted(analysis.classes):
                 analysis.classes[name]().analyze(clog, config.output_dir)
     except Exception as e:
         if not issubclass(type(e), (StopIteration)):
-            print("Failed to run anaylsis:")
-            print(e)
+            logger.debug("Failed to run anaylsis:")
+            logger.debug(e)
 
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
@@ -566,8 +572,8 @@ def connect_and_run(config):
     try:
         library.send_results_to_myqsl(config.TEST_SUITE, config.output_dir)
     except Exception as e:
-        print(e)
-        print("Unable to log results to mysql database.")
+        logger.debug(e)
+        logger.debug("Unable to log results to mysql database.")
 
     for t in tests_to_run:
         write_test_log(t, config.output_dir)
@@ -596,8 +602,8 @@ def main():
         if config.logging_server is not None:
             logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)
     except Exception as e:
-        print(e)
-        print("Unable to access logging_server specified in config. "
+        logger.warning(e)
+        logger.warning("Unable to access logging_server specified in config. "
               "Results stored only locally.")
 
     # Send Results to ElasticSearch, if configured
@@ -605,10 +611,10 @@ def main():
         if config.elasticsearch_server is not None:
             elasticlogger.ElasticsearchLogger(config.elasticsearch_server).log(info_for_remote_log)
         else:
-            print("No elasticsearch_server specified in config. Results stored locally")
+            logger.debug("No elasticsearch_server specified in config. Results stored locally")
     except Exception as e:
-        print(e)
-        print("Unable to store results to elasticsearch_server specified in config. "
+        logger.warning(e)
+        logger.warning("Unable to store results to elasticsearch_server specified in config. "
               "Results stored locally.")
 
     # Send Results to MongoDB, if configured
@@ -616,10 +622,10 @@ def main():
         if hasattr(config, 'mongodb') and config.mongodb['host'] is not None:
             mongodblogger.MongodbLogger(**config.mongodb).log(info_for_remote_log)
         else:
-            print("Needed mongodb parameters are not set, see config. Results stored locally.")
+            logger.debug("Needed mongodb parameters are not set, see config. Results stored locally.")
     except Exception as e:
-        print(e)
-        print("Unable to store results to mongodb specified in config. "
+        logger.warning(e)
+        logger.warning("Unable to store results to mongodb specified in config. "
               "Results stored locally.")
 
     # Send Results to AWS, if configured
@@ -634,8 +640,8 @@ def main():
             s3object = s3.Object(os.environ['BFT_AWS_BUCKET'], filename)
             s3object.put(Body=(bytes(json.dumps(info_for_remote_log, default=str).encode('UTF-8'))))
         except Exception as e:
-            print("Failed to load data in AWS bucket")
-            print(e)
+            logger.warning("Failed to load data in AWS bucket")
+            logger.warning(e)
 
     # Update the results in Zephyr
     try:
@@ -643,8 +649,8 @@ def main():
         test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
         zephyr_reporter.update_zephyr(test_cases_list)
     except Exception as e:
-        print(e)
-        print("Unable to Update results in Zephyr")
+        logger.warning(e)
+        logger.warning("Unable to Update results in Zephyr")
 
 
 if __name__ == '__main__':
