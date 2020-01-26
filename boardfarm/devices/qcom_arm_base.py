@@ -13,29 +13,29 @@ from boardfarm.lib.randomMAC import randomMAC
 class QcomArmBase(openwrt_router.OpenWrtRouter):
 
     prompt = ['root\\@.*:.*#', ]
-    uprompt = ['\(IPQ\) #', '\(IPQ40xx\)', '\(QCA961x\) #']
+    uprompt = [r'\(IPQ\) #', r'\(IPQ40xx\)', r'\(QCA961x\) #']
 
     def check_memory_addresses(self):
         '''Before flashing, dynamically find addresses and memory size.'''
         self.sendline("smem")
-        self.expect("flash_block_size:\s+(0x[0-9A-Fa-f]+)\r")
+        self.expect(r"flash_block_size:\s+(0x[0-9A-Fa-f]+)\r")
         self.flash_block_size = int(self.match.group(1), 0)
         try:
-            self.expect("APPSBL\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
+            self.expect(r"APPSBL\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
             self.uboot_addr = self.match.group(1)
             self.uboot_size = self.match.group(2)
         except:
             self.uboot_addr = None
             self.uboot_size = None
         try:
-            self.expect("HLOS\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
+            self.expect(r"HLOS\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
             self.kernel_addr = self.match.group(1)
             self.kernel_size = self.match.group(2)
         except:
             self.kernel_addr = None
             self.kernel_size = None
         try:
-            self.expect("(rootfs|ubi)\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=5)
+            self.expect(r"(rootfs|ubi)\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=5)
             self.rootfs_addr = self.match.group(2)
             self.rootfs_size = self.match.group(3)
         except:
@@ -97,7 +97,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.readline()
         size = int(self.readline(), 16)
         self.sendline("cmp.b $fileaddr %s %s" % (src, hex(size - 1)))
-        self.expect("Total of %s byte\(s\) were the same" % (size - 1))
+        self.expect(r"Total of %s byte\(s\) were the same" % (size - 1))
         self.expect(self.uprompt)
 
     def spi_flash_bin(self, addr, size, src, esize=None):
@@ -150,10 +150,10 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
 
     def parse_perf_board(self):
         if "3.14" in self.kernel_version:
-            events = [{'expect': '\s+cycles:ku', 'name': 'cycles', 'sname': 'CPP'},
-                    {'expect': '\s+instructions:ku', 'name': 'instructions', 'sname': 'IPP'},
-                    {'expect': '\s+r3:ku', 'name': 'dcache_misses', 'sname': 'DMISS'},
-                    {'expect': '\s+r1:ku', 'name': 'icache_misses', 'sname': 'IMISS'}]
+            events = [{'expect': r'\s+cycles:ku', 'name': 'cycles', 'sname': 'CPP'},
+                    {'expect': r'\s+instructions:ku', 'name': 'instructions', 'sname': 'IPP'},
+                    {'expect': r'\s+r3:ku', 'name': 'dcache_misses', 'sname': 'DMISS'},
+                    {'expect': r'\s+r1:ku', 'name': 'icache_misses', 'sname': 'IMISS'}]
         else:
             events = [{'expect': 'cycles', 'name': 'cycles', 'sname': 'CPP'},
                     {'expect': 'instructions', 'name': 'instructions', 'sname': 'IPP'},
