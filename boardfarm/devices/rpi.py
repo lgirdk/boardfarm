@@ -55,7 +55,7 @@ class RPI(openwrt_router.OpenWrtRouter):
 
         self.sendline('mmc part')
         # get offset of ext (83) partition after a fat (0c) partition
-        self.expect('\r\n\s+\d+\s+(\d+)\s+(\d+).*0c( Boot)?\r\n')
+        self.expect(r'\r\n\s+\d+\s+(\d+)\s+(\d+).*0c( Boot)?\r\n')
         start = hex(int(self.match.groups()[0]))
         if (int(size) != int(self.match.groups()[1]) * 512):
             raise Exception("Partition size does not match, refusing to flash")
@@ -82,7 +82,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename, timeout=220)
         self.sendline('mmc part')
         # get offset of ext (83) partition after a fat (0c) partition
-        self.expect('0c( Boot)?\r\n\s+\d+\s+(\d+)\s+(\d+).*83\r\n')
+        self.expect(r'0c( Boot)?\r\n\s+\d+\s+(\d+)\s+(\d+).*83\r\n')
         start = hex(int(self.match.groups()[-2]))
         sectors = int(self.match.groups()[-1])
         self.expect(self.uprompt)
