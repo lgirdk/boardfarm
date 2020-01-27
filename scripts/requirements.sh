@@ -1,2 +1,2 @@
 # you need sudo rights for this
-sudo apt install python git iperf iperf3 libsnmp-dev snmp-mibs-downloader python-tk
+sudo apt install python git iperf iperf3 libsnmp-dev snmp-mibs-downloader python3-tk tightvncserver xtightvncviewer
