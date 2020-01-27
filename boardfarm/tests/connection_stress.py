@@ -39,7 +39,7 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         lan.sendline('\nab -dn %s -c %s %s' % (self.num_conn, self.concurrency, url))
         lan.expect('Benchmarking')
         timeout=0.05*self.num_conn
-        if 0 != lan.expect(['Requests per second:\s+(\d+)', 'apr_socket_recv: Connection reset by peer'], timeout=timeout):
+        if 0 != lan.expect([r'Requests per second:\s+(\d+)', 'apr_socket_recv: Connection reset by peer'], timeout=timeout):
             raise Exception("ab failed to run")
         self.reqs_per_sec = int(lan.match.group(1))
         lan.expect(prompt)

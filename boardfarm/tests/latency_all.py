@@ -30,7 +30,7 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     ip2 = d2.get_interface_ipaddr(d2.iface_dut)
 
                     def parse_ping_times(string):
-                        r = [float(i) for i in re.findall('time=([^\s]*) ms', string)]
+                        r = [float(i) for i in re.findall(r'time=([^\s]*) ms', string)]
                         return sum(r)/len(r)
 
                     d1.sendline("ping -c20 %s" % ip2)

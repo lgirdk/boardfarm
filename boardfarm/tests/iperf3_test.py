@@ -40,7 +40,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         self.client.sendline('iperf3 %s -c %s -P5 -t %s -i 0 -p %s' % (self.opts, self.target_ip, self.time, self.server_port))
         self.client.expect(prompt, timeout=self.time+10)
 
-        sender = re.findall('SUM.*Bytes\s*(.*/sec).*sender', self.client.before)[-1]
+        sender = re.findall(r'SUM.*Bytes\s*(.*/sec).*sender', self.client.before)[-1]
         if 'Mbits' in sender:
             s_rate = float(sender.split()[0])
         elif 'Kbits' in sender:
@@ -50,7 +50,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         else:
             raise Exception("Unknown rate in sender results")
 
-        recv = re.findall('SUM.*Bytes\s*(.*/sec).*receiver', self.client.before)[-1]
+        recv = re.findall(r'SUM.*Bytes\s*(.*/sec).*receiver', self.client.before)[-1]
         if 'Mbits' in recv:
             r_rate = float(recv.split()[0])
         elif 'Kbits' in recv:
