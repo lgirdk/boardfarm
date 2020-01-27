@@ -47,7 +47,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
         result = ""
         if self.attempts:
-            result = self.result_grade + "(" + str(self.attempts) + ")"
+            result = self.result_grade + "(" + str(self.attempts) + "/"+ str(self.config.retry) + ")"
         lib.common.test_msg("\n==================== End %s   %s   Time: %s ==================" %
                             (self.__class__.__name__, result, now_short(self._format)))
 
@@ -102,9 +102,9 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
             if self.config.retry and not self.dont_retry:
                 retry = self.config.retry
+                self.attempts = 1
             else:
-                retry = 0
-            self.attempts = retry
+                self.attempts = retry = 0
 
             while retry >= 0:
                 try:
