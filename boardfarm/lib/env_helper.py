@@ -21,12 +21,14 @@ class EnvHelper(object):
     }
     '''
 
-    def __init__(self, env):
+    def __init__(self, env, mirror=None):
         if env is None:
             return
 
         assert env['version'] == '1.0', "Unknown environment version!"
         self.env = env
+        if mirror:
+            self.mirror = mirror
 
     def get_image(self):
         '''
@@ -34,8 +36,7 @@ class EnvHelper(object):
         site mirror for automated flashing without passing args to bft
         '''
         try:
-            from boardfarm import config
-            return config.board[u'mirror'] + self.env['environment_def']['board']['software']['load_image']
+            return self.mirror + self.env['environment_def']['board']['software']['load_image']
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 

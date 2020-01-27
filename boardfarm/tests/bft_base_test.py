@@ -32,9 +32,9 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         self.subtests = []
         self.attempts = 0
         try:
-            self.env_helper = board.env_helper_type(config.test_args)
+            self.env_helper = board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
         except:
-            self.env_helper = EnvHelper(config.test_args)
+            self.env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
 
     def id(self):
         return self.__class__.__name__
