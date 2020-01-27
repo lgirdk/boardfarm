@@ -455,6 +455,70 @@ class AxirosACS(object):
 
         return self.Axiros_GetTicketValue(ticketid)
 
+    def Read_Log_Message(self, serial_number, wait=8):
+        """This method is used to read ACS log messages
+
+        :param serial_number: the serial number of the modem through which ACS communication happens.
+        :type serial_number: string
+        :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
+        :type wait: integer, optional
+        :returns: ticket response on ACS(Log message)
+        :rtype: dictionary
+        """
+        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsForCPELogStruct')
+        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetLogMessagesOfCPE(CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+
+        for i in range(wait):
+            time.sleep(1)
+            root = ElementTree.fromstring(response.content)
+            for value in root.iter('code'):
+                break
+            if (value.text != '200'):
+                continue
+            dict_value1 = {}; num = 1
+            for key, value in zip(root.iter('ts'), root.iter('message')):
+                dict_value = {}
+                dict_value['time'] = key.text; dict_value['msg'] = value.text
+                dict_value1['log_msg'+str(num)] = dict_value
+                num += 1
+            return dict_value1
+        return None
+
+    def Del_Log_Message(self, serial_number, wait=8):
+        """This method is used to delete ACS log messages
+
+        :param serial_number: the serial number of the modem through which ACS communication happens.
+        :type serial_number: string
+        :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
+        :type wait: integer, optional
+        :returns: True or None
+        :rtype: Boolean
+        """
+        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+
+        # get raw soap response (parsing error with zeep)
+        with self.client.settings(raw_response=True):
+            response = self.client.service.DeleteLogMessagesOfCPE(CPEIdentifierClassStruct_data)
+
+        for i in range(wait):
+            time.sleep(1)
+            root = ElementTree.fromstring(response.content)
+            for value in root.iter('code'):
+                break
+            if (value.text == '200'):
+                return True
+            else:
+                continue
+        return None
+
 if __name__ == '__main__':
     import sys
 
