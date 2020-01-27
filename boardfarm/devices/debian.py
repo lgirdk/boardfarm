@@ -438,7 +438,7 @@ class DebianBox(linux.LinuxDevice):
         self.install_pkgs()
         self.start_sshd_server()
         if kind == "wan_device":
-            self.setup_as_wan_gateway()
+            self.setup_as_wan_gateway(config=config)
         elif kind == "lan_device":
             self.setup_as_lan_device()
 
@@ -485,7 +485,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
         self.expect(self.prompt)
 
-    def setup_dnsmasq(self):
+    def setup_dnsmasq(self, config=None):
         self.sendline('cat > /etc/dnsmasq.conf << EOF')
         self.sendline('server=8.8.4.4')
         self.sendline('listen-address=127.0.0.1')
@@ -494,22 +494,21 @@ class DebianBox(linux.LinuxDevice):
             self.sendline('listen-address=%s' % self.gwv6)
         self.sendline('addn-hosts=/etc/dnsmasq.hosts')  # all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
-        self.add_hosts()
+        self.add_hosts(config=config)
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
         self.expect(self.prompt)
 
-    def add_hosts(self, addn_host={}):
+    def add_hosts(self, addn_host={}, config=None):
         # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
-        from boardfarm import current_config as config
         # this is a hack, the add_host should have been called from RootFs
         hosts = {}
         if hasattr(self, "profile"):
             host_dicts = nested_lookup("hosts", self.profile.get(self.name, {}))
             for host_data in host_dicts:
                 hosts.update(host_data)
-        if hasattr(config, "board"):
+        if config is not None and hasattr(config, "board"):
             for device in config.board['devices']:
                 # TODO: this should be different...
                 if 'lan' in device['name']:
@@ -544,9 +543,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
 
-    def setup_as_wan_gateway(self):
+    def setup_as_wan_gateway(self, config=None):
 
-        self.setup_dnsmasq()
+        self.setup_dnsmasq(config)
 
         self.sendline('killall iperf ab hping3')
         self.expect(self.prompt)
