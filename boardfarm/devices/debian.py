@@ -22,6 +22,7 @@ from nested_lookup import nested_lookup
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.network_helper import valid_ipv4
 from boardfarm.lib.common import retry_on_exception
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
 class DebianBox(linux.LinuxDevice):
     '''
@@ -516,7 +517,9 @@ class DebianBox(linux.LinuxDevice):
                 d = getattr(config, device['name'])
                 domain_name = device['name'] + '.boardfarm.com'
                 final = None
-                if 'ipaddr' in device:
+                if 'wan-static-ip' in str(device):
+                    final = str(re.search('wan-static-ip:'+'('+ValidIpv4AddressRegex+')',device['options']).group(1))
+                elif 'ipaddr' in device:
                     final = str(device['ipaddr'])
                 elif hasattr(d, 'ipaddr'):
                     final = str(d.ipaddr)
