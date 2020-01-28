@@ -106,7 +106,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                     try:
                         if self.config.META_BUILD:
                             flash_meta_helper(board, self.config.META_BUILD, wan, lan)
-                        else:
+                        elif not self.config.ROOTFS and not self.config.KERNEL:
                             flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
                         break
                     except Exception as e:
@@ -135,7 +135,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
 
         if self.config.META_BUILD and board.flash_meta_booted:
             flash_meta_helper(board, self.config.META_BUILD, wan, lan)
-        if self.env_helper.has_image() and board.flash_meta_booted:
+        elif self.env_helper.has_image() and board.flash_meta_booted \
+                and not self.config.ROOTFS and not self.config.KERNEL:
             flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
 
         linux_booted_seconds_up = board.get_seconds_uptime()
