@@ -195,3 +195,63 @@ class o_helper(object):
     def flush(self):
         """Flushes the buffer storage in console before pexpect"""
         self.out.flush()
+
+def create_file_logs(config, tests_to_run, logger):
+    combined_list = []
+    def add_to_combined_list(log, name, combined_list=combined_list):
+        for line in log.split('\r\n'):
+            try:
+                if line == '':
+                    continue
+                if line.startswith('\n'):
+                    line = line[1:]
+                if line.startswith(' ['):
+                    line = line[1:]
+                ts, text = line.split(']', 1)
+                combined_list.append({"time": float(ts[1:-1]), "text": str(text), "name": name})
+            except:
+                logger.debug("Failed to parse log line = %s" % repr(line))
+                pass
+
+    idx = 1
+    console_combined = []
+    for console in config.console.consoles:
+        with open(os.path.join(config.output_dir, 'console-%s.log' % idx), 'w') as clog:
+            clog.write(console.log)
+            add_to_combined_list(console.log, "console-%s" % idx)
+            add_to_combined_list(console.log_calls, "console-%s" % idx)
+            add_to_combined_list(console.log, "", console_combined)
+        idx = idx + 1
+
+    def write_combined_log(combined_list, fname):
+        with open(os.path.join(config.output_dir, fname), 'w') as clog:
+            for e in combined_list:
+                try:
+                    if e['name'] == "":
+                        clog.write('[%s]%s\r\n' % (e['time'], repr(e['text'])))
+                    else:
+                        clog.write('%s: [%s] %s\n' % (e['name'], e['time'], repr(e['text'])))
+                except:
+                    logger.debug("failed to parse line: %s" % repr(e))
+
+    import operator
+    console_combined.sort(key=operator.itemgetter('time'))
+    write_combined_log(console_combined, "console-combined.log")
+
+    for device in config.devices:
+        with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
+            d = getattr(config, device)
+            if hasattr(d, 'log'):
+                clog.write(d.log)
+                add_to_combined_list(d.log, device)
+                add_to_combined_list(d.log_calls, device)
+
+    for test in tests_to_run:
+        if hasattr(test, 'log') and test.log != "":
+            with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
+                clog.write(test.log)
+        if hasattr(test, 'log_calls'):
+            add_to_combined_list(test.log_calls, test.__class__.__name__)
+
+    combined_list.sort(key=operator.itemgetter('time'))
+    write_combined_log(combined_list, "all.log")
