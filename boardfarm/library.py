@@ -9,8 +9,11 @@ import datetime
 import ipaddress
 import json
 import os
+import traceback
 
+import boardfarm
 from boardfarm.lib.common import print_bold
+from boardfarm.lib.bft_logging import write_test_log
 
 class HelperEncoder(json.JSONEncoder):
     '''Turn some objects into a form that can be stored in JSON.'''
@@ -166,3 +169,60 @@ def send_results_to_myqsl(testsuite, output_dir):
         title = 'Board Farm Results (suite: %s)' % testsuite
         reporter = mysql.MySqlReporter()
         reporter.insert_data(build_id, build_url, title)
+
+def create_results_html(full_results, config, logger):
+    '''Creates results.html from config and test results'''
+
+    from boardfarm import make_human_readable
+    try:
+        title_str = make_human_readable.get_title()
+        make_human_readable.xmlresults_to_html(full_results['test_results'], title=title_str,
+                                output_name=os.path.join(config.output_dir, "results.html"),
+                                board_info=config.board)
+    except Exception as e:
+        logger.debug(e)
+        traceback.print_exc()
+        logger.debug("Unable to create HTML results")
+
+def create_info_for_remote_log(config, full_results, tests_to_run, logger):
+    # Try to remotely log information about this run
+    info_for_remote_log = dict(config.board)
+    info_for_remote_log.update(full_results)
+    info_for_remote_log['bft_version'] = boardfarm.__version__
+    try:
+        info_for_remote_log['duration'] = int(os.environ['TEST_END_TIME'])-int(os.environ['TEST_START_TIME'])
+    except:
+        pass
+    if hasattr(config, 'TEST_SUITE'):
+        info_for_remote_log['test_suite'] = str(config.TEST_SUITE)
+    # logstash cannot handle multi-level json, remove full test results
+    info_for_remote_log.pop('test_results', None)
+    # but we will add back specific test results data
+    for t in tests_to_run:
+        nice_name, data = generate_test_info_for_kibana(t, prefix="")
+        info_for_remote_log.update(data)
+        prefix = nice_name + "-"
+        for subtest in t.subtests:
+            nice_name, data = generate_test_info_for_kibana(subtest, prefix=prefix)
+            info_for_remote_log.update(data)
+
+    # Convert python objects to things that can be stored in
+    # JSON, like strings and numbers.
+    info_for_remote_log = clean_for_json(info_for_remote_log)
+    # Remove reserved key names
+    info_for_remote_log.pop('_id', None)
+
+    # Create Pretty HTML output
+    create_results_html(full_results, config, logger)
+
+    # Send url of pretty html results to MySQL build database
+    try:
+        send_results_to_myqsl(config.TEST_SUITE, config.output_dir)
+    except Exception as e:
+        logger.debug(e)
+        logger.debug("Unable to log results to mysql database.")
+
+    for t in tests_to_run:
+        write_test_log(t, config.output_dir)
+
+    return info_for_remote_log
