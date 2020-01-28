@@ -42,12 +42,10 @@ except Exception as e:
 
 from boardfarm.zephyr import zephyr_reporter
 
-from boardfarm import start
 import boardfarm.exceptions
 from boardfarm.devices import get_device
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.lib.common import check_url
-from boardfarm.lib.common import print_bold
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 
@@ -395,7 +393,6 @@ def connect_and_run(config):
             sys.exit(1)
 
     logger.info('==========')
-    all_devices = [getattr(config, name, None) for name in config.devices]
     try:
         tests_pass = tests_fail = tests_skip = 0
         stop_testing = False
