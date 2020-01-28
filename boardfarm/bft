@@ -47,6 +47,7 @@ from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.lib.common import check_url
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
+from boardfarm import library
 
 import matplotlib
 matplotlib.use('Agg')
@@ -157,7 +158,7 @@ def connect_and_run(config):
 
     boardfarm.current_config = config
 
-    from boardfarm import devices, library
+    from boardfarm import devices
     devices.probe_devices()
     from termcolor import colored
 
@@ -535,6 +536,9 @@ def connect_and_run(config):
             logger.debug("Failed to run anaylsis:")
             logger.debug(e)
 
+    return create_info_for_remote_log(config, full_results, tests_to_run)
+
+def create_info_for_remote_log(config, full_results, tests_to_run):
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
