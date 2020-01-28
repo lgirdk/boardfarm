@@ -5,16 +5,18 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import glob
+import os
 
-# Read simple test suite config files
-from boardfarm import config
+import boardfarm
 from boardfarm.devices import configreader
 tmp = configreader.TestsuiteConfigReader()
 
-config_files = config.testsuite_config_files
-for ovrly_name, ovrly in config.layerconfs:
-    if hasattr(ovrly, 'testsuite_config_files'):
-        config_files += ovrly.testsuite_config_files
+# Build a list of all testsuite config files. Name should match "testsuites*.cfg"
+config_files = glob.glob(os.path.join(os.path.dirname(__file__), 'testsuites*.cfg'))
+for modname in sorted(boardfarm.plugins):
+    overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
+    config_files += glob.glob(os.path.join(overlay, 'testsuites*.cfg'))
 
 tmp.read(config_files)
 
