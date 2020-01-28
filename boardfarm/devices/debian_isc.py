@@ -422,7 +422,7 @@ EOF'''
             board_config['extra_provisioning_v6'] = {}
 
         tftp_server = self.tftp_device.tftp_server_ip_int()
-
+        sip_server = [re.search('wan-static-ip:'+'('+ValidIpv4AddressRegex+')',i['options']).group(1) for i in board_config['devices'] if 'sipcenter' in i['name']][0]
         # This can be later broken down to smaller chunks to add options specific to type of device.
         mta_dhcp_options = {
                 "mta": {"hardware ethernet": board_config['mta_mac'],
@@ -430,7 +430,7 @@ EOF'''
                          "options": {"bootfile-name": "\"" + board.mta_cfg.encoded_fname + "\"",
                                       "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
                                       "domain-name": "\"sipcenter.com\"",
-                                      "domain-name-servers": "%s" % tftp_server,
+                                      "domain-name-servers": "%s" % sip_server,
                                       "routers": self.mta_gateway,
                                       "log-servers": self.prov_ip,
                                       "host-name": "\"" + board_config.get_station() + "\""
