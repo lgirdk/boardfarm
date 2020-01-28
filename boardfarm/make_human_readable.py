@@ -10,7 +10,6 @@
 import json
 import glob
 import os
-import re
 import sys
 import time
 from string import Template
@@ -20,7 +19,6 @@ except:
     from future.moves.collections import Counter
 
 import boardfarm
-from boardfarm import config
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -52,42 +50,6 @@ def pick_template_filename():
     else:
         return templates['full']
 
-def changes_to_html(changes):
-    '''
-    Input: "15408,8 17196,2 17204,1"
-    Output: String of html links, e.g.
-         <a href="https://gerrit.mysite.com/#/c/15408/">15408,8</a>,
-         <a href...
-    '''
-    if not changes:
-        return None
-
-    # TODO: compare server to GERRIT_HOST and pick the right server...
-    # but for now take the first one we find
-    base_url = config.code_change_server
-    if not base_url:
-        for ovrly_name, ovrly in config.layerconfs:
-            if hasattr(ovrly, 'code_change_server'):
-                base_url = ovrly.code_change_server
-                break
-
-        if not base_url:
-            return changes
-
-    list_changes = re.findall('\d+,\d+', changes)
-    if not list_changes:
-        return None
-    result = []
-    for c in list_changes:
-        try:
-            change_id, _ = c.split(',')
-            url = base_url + change_id
-            s = '<a href="%s">%s</a>' % (url, c)
-            result.append(s)
-        except:
-            continue
-    return ", ".join(result)
-
 def build_station_info(board_info):
     ret = ""
 
@@ -106,7 +68,6 @@ def xmlresults_to_html(test_results,
     parameters = {'build_url' : os.environ.get('BUILD_URL'),
                   'total_test_time' : 'unknown',
                   'summary_title' : title,
-                  'changes': changes_to_html(os.environ.get('change_list')),
                   "board_type": "unknown",
                   "location": "unknown",
                   "report_time" : "RUNNING or ABORTED"}
