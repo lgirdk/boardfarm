@@ -297,6 +297,9 @@ def connect_and_run(config):
                     if tftp_server == x.get('ipaddr', ""):
                         config.console.tftp_dev = getattr(config, x.get('name'))
 
+        except boardfarm.exceptions.ConnectionRefused:
+            logger.warning("Failed to connect to a board or device on %s" % name)
+            continue
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt")
             sys.exit(2)

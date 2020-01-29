@@ -25,7 +25,7 @@ mgr = device_manager()
 # TODO: this probably should not the generic device
 from . import openwrt_router
 
-from boardfarm.exceptions import BftNotSupportedDevice
+from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
 from boardfarm import uniqid
 
 env = {"wan_iface": "wan%s" % uniqid[:12],
@@ -217,6 +217,8 @@ def get_device(model, **kwargs):
         mgr._add_device(ret)
         return ret
     except BftNotSupportedDevice:
+        raise
+    except ConnectionRefused:
         raise
     except pexpect.EOF:
         msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model

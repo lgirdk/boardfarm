@@ -1,4 +1,5 @@
 import pexpect
+import boardfarm.exceptions
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 class LocalCmd():
@@ -33,7 +34,7 @@ class LocalCmd():
                                args=['-c', self.conn_cmd])
             self.device.expect(pexpect.TIMEOUT, timeout=5)
         except pexpect.EOF:
-            raise Exception("Board is in use (connection refused).")
+            raise boardfarm.exceptions.ConnectionRefused("Board is in use (connection refused).")
 
     def close(self):
         """closes the pexpect session to the device
