@@ -43,7 +43,6 @@ except Exception as e:
 from boardfarm.zephyr import zephyr_reporter
 
 import boardfarm.exceptions
-from boardfarm.devices import get_device
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.lib.common import check_url
 from boardfarm.exceptions import BftNotSupportedDevice
@@ -56,6 +55,7 @@ class FailedDevice(object):
     name = None
 
 def threaded_device_helper(device, ret):
+    from boardfarm.devices import get_device
     s = time.time()
     if 'BFT_DEBUG' in os.environ:
         logger.debug("Connected to %s" % device['name'])
