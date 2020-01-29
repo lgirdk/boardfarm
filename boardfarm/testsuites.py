@@ -9,7 +9,7 @@ import glob
 import os
 
 import boardfarm
-from boardfarm.devices import configreader
+from boardfarm.dbclients import configreader
 tmp = configreader.TestsuiteConfigReader()
 
 # Build a list of all testsuite config files. Name should match "testsuites*.cfg"
