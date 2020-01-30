@@ -28,7 +28,7 @@ def init(config):
     test_mappings = {}
 
     # Create a dictionary of all boardfarm modules
-    all_boardfarm_modules = boardfarm.plugins
+    all_boardfarm_modules = dict(boardfarm.plugins)  # use dict() to create a copy instead of a reference
     all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
 
     # Loop over all modules to import their tests
