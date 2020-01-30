@@ -46,6 +46,24 @@ class TestSimpleBoardfarm(unittest.TestCase):
         boardfarm.devices.probe_devices()
         self.assertGreater(len(boardfarm.devices.device_mappings), 10)
 
+    def test_devicemanager(self):
+        '''
+        Verify we can add devices and get one back by type.
+        '''
+        from boardfarm.lib import DeviceManager
+        class FakeDevice():
+            def __init__(self, name):
+                self.name = name
+        dev1 = FakeDevice(name='board')
+        dev2 = FakeDevice(name='lan')
+        # Add devices to DeviceManager
+        mgr = DeviceManager.device_manager()
+        mgr._add_device(dev1)
+        mgr._add_device(dev2)
+        # Get a device back
+        x = mgr.by_type(DeviceManager.device_type.lan)
+        self.assertEqual('lan', x.name)
+
     def test_board_filter(self):
         '''
         Verify regular-expression match filter for boards works.
