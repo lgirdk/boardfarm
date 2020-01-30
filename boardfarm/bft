@@ -473,6 +473,9 @@ def connect_and_run(config):
             logger.debug("Failed to run anaylsis:")
             logger.debug(e)
 
+    # run exit funcs
+    atexit._run_exitfuncs()
+
     return library.create_info_for_remote_log(config, full_results, tests_to_run, logger)
 
 
@@ -547,7 +550,6 @@ def main():
     except Exception as e:
         logger.warning(e)
         logger.warning("Unable to Update results in Zephyr")
-
 
 if __name__ == '__main__':
     main()
