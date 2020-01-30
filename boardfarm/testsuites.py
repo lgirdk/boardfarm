@@ -18,7 +18,7 @@ for modname in sorted(boardfarm.plugins):
     overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
     config_files += glob.glob(os.path.join(overlay, 'testsuites*.cfg'))
 
-tmp.read(config_files)
+tmp.read(set(config_files))
 
 list_tests = tmp.section
 
