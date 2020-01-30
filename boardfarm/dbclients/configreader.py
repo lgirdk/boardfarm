@@ -56,7 +56,8 @@ class TestsuiteConfigReader(object):
             if fname.startswith("http"):
                 s_config = urlopen(fname).read()
             else:
-                s_config = open(fname, 'r').read()
+                with open(fname, 'r') as f:
+                    s_config = f.read()
         except Exception as e:
             print(e)
             raise Exception("Warning: Unable to read/access %s" % fname)
