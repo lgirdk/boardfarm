@@ -21,6 +21,17 @@ class TestSimpleBoardfarm(unittest.TestCase):
         # Also make sure something is in tests.available_tests
         self.assertGreater(len(tests.available_tests), 10)
 
+    def test_import_testsuites(self):
+        '''
+        Verify we can import testsuites and find
+        a few needed testsuites.
+        '''
+        from boardfarm import testsuites
+        self.assertGreater(len(testsuites.list_tests), 5)
+        self.assertIn('flash', testsuites.list_tests)
+        self.assertIn('basic', testsuites.list_tests)
+        self.assertIn('connect', testsuites.list_tests)
+
     def test_import_debian_wifi(self):
         '''
         Verify we can import a specific device by name.
