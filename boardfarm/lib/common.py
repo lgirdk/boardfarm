@@ -119,7 +119,6 @@ def firefox_webproxy_driver(ipport, config):
         # socks5 section MUST be separated or it will NOT work!!!!
         profile.set_preference("network.proxy.socks", ip)
         profile.set_preference("network.proxy.socks_port", int(port))
-        profile.set_preference("network.proxy.socks_remote_dns", True)
         profile.set_preference("security.enterprise_roots.enabled", True)
         profile.set_preference("network.proxy.socks_version", 5)
     else:
