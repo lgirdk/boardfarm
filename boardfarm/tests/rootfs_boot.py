@@ -93,11 +93,11 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         # Reflash only if at least one or more of these
         # variables are set, or else there is nothing to do in u-boot
         meta_interrupt = False
-        if self.config.META_BUILD and not board.flash_meta_booted:
+        if (self.config.META_BUILD or self.env_helper.has_image()) \
+                and not board.flash_meta_booted:
             meta_interrupt = True
         if reflash and (meta_interrupt or self.config.ROOTFS or\
-                            self.config.KERNEL or self.config.UBOOT or \
-                            self.env_helper.has_image()):
+                self.config.KERNEL or self.config.UBOOT):
             # Break into U-Boot, set environment variables
             board.wait_for_boot()
             board.setup_uboot_network(tftp_device.gw)
