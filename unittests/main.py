@@ -74,6 +74,17 @@ class TestSimpleBoardfarm(unittest.TestCase):
         self.assertEqual('lan', y.name)
         self.assertIn('board', dir(mgr))
 
+    def test_devicemanager_devicenone(self):
+        '''
+        Verify we can get a default device from device manager
+        when it doesn't have a real device of that type.
+        '''
+        from boardfarm.lib import DeviceManager
+        mgr = DeviceManager.device_manager()
+        # Ask for device it doesn't have
+        x = mgr.by_type(DeviceManager.device_type.fax_modem)
+        self.assertEqual(x.__class__.__name__, 'DeviceNone')
+
     def test_board_filter(self):
         '''
         Verify regular-expression match filter for boards works.
