@@ -177,3 +177,15 @@ class device_manager(UserList):
             new_dev.type = getattr(device_type, dev.name, device_type.Unknown)
         new_dev.obj = dev
         self.devices.append(new_dev)
+
+        # For convenience, set an attribute with a name the same as the
+        # newly added device type. Example: self.lan = the device of type lan
+        attribute_name = new_dev.type.name
+        if attribute_name != 'Unknown' and getattr(self, attribute_name, None) is not None:
+            # device manager already has an attribute of this name
+            raise Exception("Device Manager already has '%s' attribute, you cannot add another." % attribute_name)
+        else:
+            setattr(self, attribute_name, new_dev.obj)
+            # Alias board to DUT
+            if attribute_name == 'DUT':
+                setattr(self, 'board', new_dev.obj)

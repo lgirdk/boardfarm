@@ -69,6 +69,10 @@ class TestSimpleBoardfarm(unittest.TestCase):
         # Get a device back
         x = mgr.by_type(DeviceManager.device_type.lan)
         self.assertEqual('lan', x.name)
+        # Get a device by the convience attribute
+        y = mgr.lan
+        self.assertEqual('lan', y.name)
+        self.assertIn('board', dir(mgr))
 
     def test_board_filter(self):
         '''
