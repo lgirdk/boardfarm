@@ -1,8 +1,9 @@
 def extra_args = env.extra_args ?: ''
 def email_results = env.email_results ?: ''
 def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
-def GERRIT_PROJECT = env.GERRIT_PROJECT ?: ''
-def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: ''
+def GERRIT_PROJECT = env.GERRIT_PROJECT ?: '.*'
+def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: 'master'
+def GERRIT_PORT= env.GERRIT_PORT ?: '29418'
 // TODO: fetch from jenkins in future
 python_version = "3"
 
