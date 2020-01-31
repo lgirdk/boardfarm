@@ -13,7 +13,6 @@ import six
 
 from boardfarm.library import check_devices
 import boardfarm.exceptions
-from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.lib.env_helper import EnvHelper
 
@@ -24,15 +23,17 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
     log_calls = ""
     _format = "%a %d %b %Y %H:%M:%S"
 
-    def __init__(self, config):
+    def __init__(self, config, device_mgr):
         self.config = config
+        self.dev = device_mgr
+        # Useful defaults
         self.reset_after_fail = True
         self.dont_retry = False
         self.logged = dict()
         self.subtests = []
         self.attempts = 0
         try:
-            self.env_helper = board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
+            self.env_helper = self.dev.board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
         except:
             self.env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
 
@@ -85,9 +86,9 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             dev.test_to_log = self
             dev.test_prefix = d.encode("utf8")
 
-        for c in board.consoles:
+        for c in self.dev.board.consoles:
             c.test_to_log = self
-            c.test_prefix = 'console-%s' % str(board.consoles.index(c) + 1)
+            c.test_prefix = 'console-%s' % str(self.dev.board.consoles.index(c) + 1)
 
             if not c.isalive():
                 self.result_grade = "SKIP"
@@ -96,11 +97,11 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                 raise
 
         try:
-            if wan and hasattr(self, 'wan_setup'):
+            if hasattr(self.dev, 'wan') and hasattr(self, 'wan_setup'):
                 self.wan_setup()
-            if lan and hasattr(self, 'lan_setup'):
+            if hasattr(self.dev, 'lan') and hasattr(self, 'lan_setup'):
                 self.lan_setup()
-            if wlan and hasattr(self, 'wlan_setup'):
+            if hasattr(self.dev, 'wlan') and hasattr(self, 'wlan_setup'):
                 self.wlan_setup()
 
             if self.config.retry and not self.dont_retry:
@@ -112,7 +113,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             while retry >= 0:
                 try:
                     self.runTest()
-                    board.touch()
+                    self.dev.board.touch()
                     break
                 except Exception as e:
                     retry = retry - 1
@@ -126,11 +127,11 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     else:
                         raise
 
-            if wan and hasattr(self, 'wan_cleanup'):
+            if hasattr(self.dev, 'wan') and hasattr(self, 'wan_cleanup'):
                 self.wan_cleanup()
-            if lan and hasattr(self, 'lan_cleanup'):
+            if hasattr(self.dev, 'lan') and hasattr(self, 'lan_cleanup'):
                 self.lan_cleanup()
-            if wlan and hasattr(self, 'wlan_cleanup'):
+            if hasattr(self.dev, 'wlan') and hasattr(self, 'wlan_cleanup'):
                 self.wlan_cleanup()
 
             if hasattr(self, 'expected_failure') and self.expected_failure:
@@ -153,7 +154,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             print("\n\n=========== Test: %s failed! running Device status check! Time: %s ===========" %
                   (self.__class__.__name__, now_short(self._format)))
             try:
-                all_devices = [board]+[getattr(self.config, name, None) for name in self.config.devices]
+                all_devices = [self.dev.board]+[getattr(self.config, name, None) for name in self.config.devices]
                 check_devices(all_devices)
             except Exception as e:
                 print(e)

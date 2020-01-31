@@ -367,7 +367,8 @@ def connect_and_run(config):
         else:
             test = name
         logger.info("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
-        tests_to_run.append(test(config))
+        # Create an instance of this test and give it a config and device manager.
+        tests_to_run.append(test(config, device_mgr))
     if hasattr(config, 'EXTRA_TESTS') and config.EXTRA_TESTS:
         if tests_to_run[-1].__class__.__name__ == "Interact":
             logger.info("Last test is interact in testsuite, removing")
