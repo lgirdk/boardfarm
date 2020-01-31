@@ -14,7 +14,7 @@ ipaddress
 jira
 marshmallow<3
 matplotlib
-nested_lookup
+nested_lookup==0.2.19
 netaddr
 pexpect
 pycryptodome
