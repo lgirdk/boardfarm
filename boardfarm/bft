@@ -145,7 +145,12 @@ def connect_and_run(config):
 
     boardfarm.current_config = config
 
+    # DeviceManager makes it easy to find devices by name, type, features...
+    from boardfarm.lib import DeviceManager
+    device_mgr = DeviceManager.device_manager()
+
     from boardfarm import devices
+    devices.set_device_manager(device_mgr)
     devices.probe_devices()
     from termcolor import colored
 

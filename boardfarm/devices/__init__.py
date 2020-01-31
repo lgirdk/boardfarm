@@ -20,7 +20,10 @@ import boardfarm
 from boardfarm.lib.DeviceManager import device_manager
 from boardfarm.lib.DeviceManager import device_type # pylint: disable=unused-import
 
-mgr = device_manager()
+# Please delete the following line when tests stop
+# doing "from boardfarm.devices import mgr"
+# Don't let mgr remain a global, pass it into functions instead.
+mgr = None
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
@@ -35,6 +38,10 @@ env = {"wan_iface": "wan%s" % uniqid[:12],
 device_mappings = {}
 
 __all__ = []
+
+def set_device_manager(device_mgr):
+    global mgr
+    mgr = device_mgr
 
 def probe_devices():
     '''

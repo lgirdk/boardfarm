@@ -16,6 +16,12 @@ class TestSimpleBoardfarm(unittest.TestCase):
         '''
         Verify we can import all boardfarm tests.
         '''
+        # unfortunately for now, we have to set the device manager
+        # in boardfarm.devices before we can import tests.
+        # Delete this part when tests no longer import from boardfarm.devices
+        from boardfarm.lib import DeviceManager
+        from boardfarm import devices
+        devices.set_device_manager(DeviceManager.device_manager())
         from boardfarm import tests
         tests.init(None)
         # Also make sure something is in tests.available_tests
