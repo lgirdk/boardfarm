@@ -151,6 +151,7 @@ def run_test (loc, ts, post) {
             export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
             ${WORKSPACE}/boardfarm/scripts/whatchanged.py --debug m/master HEAD
             export changes_args="`${WORKSPACE}/boardfarm/scripts/whatchanged.py m/master HEAD`"
+            export PATH=$PATH:/home/$USER/bin
             if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
             cd boardfarm
             for i in {1..1000}; do
