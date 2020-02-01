@@ -382,7 +382,7 @@ def connect_and_run(config):
                 except:
                     raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
                 logger.info("  %s" % t)
-                test = t(config)
+                test = t(config, device_mgr)
                 tests_to_run.append(test)
         except Exception as e:
             logger.warning(e)
