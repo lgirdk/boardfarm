@@ -480,6 +480,9 @@ def connect_and_run(config):
     # Create Pretty HTML output
     library.create_results_html(full_results, config, logger)
 
+    for t in tests_to_run:
+        write_test_log(t, config.output_dir)
+
     return library.create_info_for_remote_log(config, full_results, tests_to_run, logger)
 
 

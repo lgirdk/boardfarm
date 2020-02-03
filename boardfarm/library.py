@@ -13,7 +13,6 @@ import traceback
 
 import boardfarm
 from boardfarm.lib.common import print_bold
-from boardfarm.lib.bft_logging import write_test_log
 
 class HelperEncoder(json.JSONEncoder):
     '''Turn some objects into a form that can be stored in JSON.'''
@@ -196,9 +195,5 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger):
     info_for_remote_log = clean_for_json(info_for_remote_log)
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
-
-
-    for t in tests_to_run:
-        write_test_log(t, config.output_dir)
 
     return info_for_remote_log
