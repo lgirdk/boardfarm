@@ -195,8 +195,7 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger):
         pass
     if hasattr(config, 'TEST_SUITE'):
         info_for_remote_log['test_suite'] = str(config.TEST_SUITE)
-    # logstash cannot handle multi-level json, remove full test results
-    info_for_remote_log.pop('test_results', None)
+
     # but we will add back specific test results data
     for t in tests_to_run:
         nice_name, data = generate_test_info_for_kibana(t, prefix="")
