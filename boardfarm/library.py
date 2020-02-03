@@ -155,21 +155,6 @@ def process_test_results(raw_test_results, golden={}):
     full_results['tests_total'] = len(raw_test_results)
     return full_results
 
-def send_results_to_myqsl(testsuite, output_dir):
-    '''
-    Send url of results to a MySQL database.  Only do this if we are on
-    a build server (use the build environment variables).
-    '''
-    dir = output_dir.replace(os.getcwd(), '').strip(os.sep)
-    build_id = os.environ.get('image_build_id', '')
-    build_url = os.environ.get('BUILD_URL', '')
-    if '' not in (build_id, testsuite, build_url):
-        from boardfarm.devices import mysql
-        build_url = build_url.replace("https://", "") + "artifact/openwrt/%s/results.html" % dir
-        title = 'Board Farm Results (suite: %s)' % testsuite
-        reporter = mysql.MySqlReporter()
-        reporter.insert_data(build_id, build_url, title)
-
 def create_results_html(full_results, config, logger):
     '''Creates results.html from config and test results'''
 
@@ -211,12 +196,6 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger):
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
 
-    # Send url of pretty html results to MySQL build database
-    try:
-        send_results_to_myqsl(config.TEST_SUITE, config.output_dir)
-    except Exception as e:
-        logger.debug(e)
-        logger.debug("Unable to log results to mysql database.")
 
     for t in tests_to_run:
         write_test_log(t, config.output_dir)
