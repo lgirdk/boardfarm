@@ -108,7 +108,7 @@ class TestSimpleBoardfarm(unittest.TestCase):
         x = Dummy()
         x.override_kibana_name = "Testing123"
         data = generate_test_info_for_kibana(x, prefix="Hello")
-        self.assertEqual(x.override_kibana_name + '-', get_test_name(x))
+        self.assertEqual(x.override_kibana_name, get_test_name(x))
         self.assertIn("HelloTesting123-result", data)
 
     def test_station_filtering(self):

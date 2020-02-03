@@ -47,13 +47,13 @@ def printd(data):
 
 def get_test_name(test, override_name=None):
     if hasattr(test, 'override_kibana_name'):
-        n = test.override_kibana_name + '-'
+        n = test.override_kibana_name
     elif override_name is not None:
         n = override_name
     elif hasattr(test, 'name'):
-        n = test.name + '-'
+        n = test.name
     else:
-        n = test.__class__.__name__ + '-'
+        n = test.__class__.__name__
 
     return n
 
@@ -63,7 +63,11 @@ def generate_test_info_for_kibana(test, prefix="", override_name=None):
     to log for that test.
     '''
 
-    n = prefix + get_test_name(test)
+    if override_name is not None:
+        n = override_name
+    else:
+        n = prefix + get_test_name(test) + '-'
+
     result = {}
     for k, v in test.logged.items():
         result[n  + k] = v
@@ -182,6 +186,12 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger, env_h
     info_for_remote_log.update(full_results)
     info_for_remote_log['environment'] = getattr(env_helper, 'env', {})
     info_for_remote_log['bft_version'] = boardfarm.__version__
+    info_for_remote_log['issue'] = 'bft_execution'
+
+    if 'BUILD_URL' in os.environ:
+        info_for_remote_log['jenkins_url'] = os.environ['BUILD_URL']
+    else:
+        info_for_remote_log['jenkins_url'] = None
 
     # TODO: move duration calculation outside of this function
     if 'TEST_END_TIME' in os.environ and 'TEST_START_TIME' in os.environ:
@@ -191,13 +201,20 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger, env_h
         info_for_remote_log['test_suite'] = str(config.TEST_SUITE)
 
     # but we will add back specific test results data
+    info_for_remote_log['execution']= {}
+    idx = 0
     for t in tests_to_run:
-        data = generate_test_info_for_kibana(t, prefix="")
-        info_for_remote_log.update(data)
-        prefix = get_test_name(t) + "-"
+        data = generate_test_info_for_kibana(t, prefix="", override_name="")
+        info_for_remote_log['test_results'][idx].update(data)
         for subtest in t.subtests:
-            data = generate_test_info_for_kibana(subtest, prefix=prefix)
-            info_for_remote_log.update(data)
+            data = generate_test_info_for_kibana(subtest, prefix="", override_name="")
+            info_for_remote_log['test_results'][idx].update(data)
+            idx += 1
+        idx += 1
+
+    for item in info_for_remote_log['test_results']:
+        item.pop('row_style')
+        item.pop('style')
 
     # Convert python objects to things that can be stored in
     # JSON, like strings and numbers.
