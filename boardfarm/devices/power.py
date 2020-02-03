@@ -102,17 +102,17 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         # TODO: prioritize Ip9820 since it requires login?
         def get_with_username_password(username, password):
             # create a password manager
-            password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
             password_mgr.add_password(None, 'http://' + ip_address, username, password)
-            handler = _urllib.HTTPBasicAuthHandler(password_mgr)
-            opener = _urllib.build_opener(handler)
+            handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
+            opener = _urllib.request.build_opener(handler)
             opener.open('http://' + ip_address)
-            _urllib.install_opener(opener)
+            _urllib.request.install_opener(opener)
 
-            request = _urllib.Request('http://' + ip_address)
+            request = _urllib.request.Request('http://' + ip_address)
             response = opener.open(request)
             data = response.read()
-            return data
+            return data.decode('utf-8')
 
         # try with passed in info first
         ret = check_data(get_with_username_password(username, password))
@@ -394,12 +394,12 @@ class Ip9258(PowerDevice):
         self.port = port
 
         # create a password manager
-        password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
         password_mgr.add_password(None, 'http://' + ip_address, username, password)
-        handler = _urllib.HTTPBasicAuthHandler(password_mgr)
-        opener = _urllib.build_opener(handler)
+        handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
+        opener = _urllib.request.build_opener(handler)
         # Now all calls to urllib2.urlopen use our opener.
-        _urllib.install_opener(opener)
+        _urllib.request.install_opener(opener)
 
     def on(self):
         '''Send ON command.'''
@@ -456,12 +456,12 @@ class Ip9820(PowerDevice):
         self.port = port
 
         # create a password manager
-        password_mgr = _urllib.HTTPPasswordMgrWithDefaultRealm()
+        password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
         password_mgr.add_password(None, 'http://' + ip_address, username, password)
-        handler = _urllib.HTTPBasicAuthHandler(password_mgr)
-        opener = _urllib.build_opener(handler)
+        handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
+        opener = _urllib.request.build_opener(handler)
         # Now all calls to _urllib.urlopen use our opener.
-        _urllib.install_opener(opener)
+        _urllib.request.install_opener(opener)
 
     def on(self):
         '''Send ON command.'''
