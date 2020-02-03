@@ -174,10 +174,11 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger):
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
     info_for_remote_log['bft_version'] = boardfarm.__version__
-    try:
+
+    # TODO: move duration calculation outside of this function
+    if 'TEST_END_TIME' in os.environ and 'TEST_START_TIME' in os.environ:
         info_for_remote_log['duration'] = int(os.environ['TEST_END_TIME'])-int(os.environ['TEST_START_TIME'])
-    except:
-        pass
+
     if hasattr(config, 'TEST_SUITE'):
         info_for_remote_log['test_suite'] = str(config.TEST_SUITE)
 
