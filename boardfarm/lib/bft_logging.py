@@ -196,7 +196,7 @@ class o_helper(object):
         """Flushes the buffer storage in console before pexpect"""
         self.out.flush()
 
-def create_file_logs(config, tests_to_run, logger):
+def create_file_logs(config, board, tests_to_run, logger):
     combined_list = []
     def add_to_combined_list(log, name, combined_list=combined_list):
         for line in log.split('\r\n'):
@@ -215,7 +215,7 @@ def create_file_logs(config, tests_to_run, logger):
 
     idx = 1
     console_combined = []
-    for console in config.console.consoles:
+    for console in board.consoles:
         with open(os.path.join(config.output_dir, 'console-%s.log' % idx), 'w') as clog:
             clog.write(console.log)
             add_to_combined_list(console.log, "console-%s" % idx)
