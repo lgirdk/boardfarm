@@ -477,6 +477,9 @@ def connect_and_run(config):
     # run exit funcs
     atexit._run_exitfuncs()
 
+    # Create Pretty HTML output
+    library.create_results_html(full_results, config, logger)
+
     return library.create_info_for_remote_log(config, full_results, tests_to_run, logger)
 
 

@@ -211,9 +211,6 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger):
     # Remove reserved key names
     info_for_remote_log.pop('_id', None)
 
-    # Create Pretty HTML output
-    create_results_html(full_results, config, logger)
-
     # Send url of pretty html results to MySQL build database
     try:
         send_results_to_myqsl(config.TEST_SUITE, config.output_dir)
