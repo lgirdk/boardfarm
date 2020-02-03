@@ -44,24 +44,32 @@ def printd(data):
     '''Pretty-print as a JSON data object.'''
     print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
 
-def generate_test_info_for_kibana(test, prefix=""):
+
+def get_test_name(test, override_name=None):
+    if hasattr(test, 'override_kibana_name'):
+        n = test.override_kibana_name + '-'
+    elif override_name is not None:
+        n = override_name
+    elif hasattr(test, 'name'):
+        n = test.name + '-'
+    else:
+        n = test.__class__.__name__ + '-'
+
+    return n
+
+def generate_test_info_for_kibana(test, prefix="", override_name=None):
     '''
     Given a test, returns a nice name and a dictionary of information
     to log for that test.
     '''
-    if hasattr(test, 'override_kibana_name'):
-        n = test.override_kibana_name
-    elif hasattr(test, 'name'):
-        n = test.name
-    else:
-        n = test.__class__.__name__
-    n = prefix + n
+
+    n = prefix + get_test_name(test)
     result = {}
     for k, v in test.logged.items():
-        result[n + '-' + k] = v
+        result[n  + k] = v
     if hasattr(test, 'result_grade'):
-        result[n + "-result"] = test.result_grade
-    return n, result
+        result[n + "result"] = test.result_grade
+    return result
 
 def check_devices(devices, func_name='check_status'):
     '''
@@ -184,11 +192,11 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger, env_h
 
     # but we will add back specific test results data
     for t in tests_to_run:
-        nice_name, data = generate_test_info_for_kibana(t, prefix="")
+        data = generate_test_info_for_kibana(t, prefix="")
         info_for_remote_log.update(data)
-        prefix = nice_name + "-"
+        prefix = get_test_name(t) + "-"
         for subtest in t.subtests:
-            nice_name, data = generate_test_info_for_kibana(subtest, prefix=prefix)
+            data = generate_test_info_for_kibana(subtest, prefix=prefix)
             info_for_remote_log.update(data)
 
     # Convert python objects to things that can be stored in

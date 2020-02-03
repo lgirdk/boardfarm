@@ -101,13 +101,14 @@ class TestSimpleBoardfarm(unittest.TestCase):
 
     def test_kibana_datagen(self):
         from boardfarm.library import generate_test_info_for_kibana
+        from boardfarm.library import get_test_name
         class Dummy():
             logged = {}
             result_grade = 'OK'
         x = Dummy()
         x.override_kibana_name = "Testing123"
-        nice_name, data = generate_test_info_for_kibana(x, prefix="Hello")
-        self.assertEqual("HelloTesting123", nice_name)
+        data = generate_test_info_for_kibana(x, prefix="Hello")
+        self.assertEqual(x.override_kibana_name + '-', get_test_name(x))
         self.assertIn("HelloTesting123-result", data)
 
     def test_station_filtering(self):
