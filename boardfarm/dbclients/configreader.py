@@ -86,7 +86,7 @@ class TestsuiteConfigReader(object):
                     if ref_section in self.section:
                         new_section += self.section[ref_section]
                     else:
-                        print("Failed to find %s testsuite" % section)
+                        print("Failed to find '%s' testsuite referenced by '%s'." % (ref_section, section))
                         continue
                 else:
                     new_section.append(item)
