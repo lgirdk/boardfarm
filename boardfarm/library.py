@@ -168,10 +168,11 @@ def create_results_html(full_results, config, logger):
         traceback.print_exc()
         logger.debug("Unable to create HTML results")
 
-def create_info_for_remote_log(config, full_results, tests_to_run, logger):
+def create_info_for_remote_log(config, full_results, tests_to_run, logger, env_helper):
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
     info_for_remote_log.update(full_results)
+    info_for_remote_log['environment'] = getattr(env_helper, 'env', {})
     info_for_remote_log['bft_version'] = boardfarm.__version__
 
     # TODO: move duration calculation outside of this function

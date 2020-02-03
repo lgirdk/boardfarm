@@ -49,6 +49,7 @@ from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
 from boardfarm import library
 from boardfarm.lib.bft_logging import create_file_logs
+from boardfarm.lib.env_helper import EnvHelper
 
 import matplotlib
 matplotlib.use('Agg')
@@ -337,6 +338,11 @@ def connect_and_run(config):
     if hasattr(config.console, "update_config"):
         config.console.update_config()
 
+    if hasattr(config.console, "env_helper_type"):
+        env_helper = config.console.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
+    else:
+        env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
+
     logger.info('\n==========')
     library.printd(config.board)
 
@@ -368,7 +374,7 @@ def connect_and_run(config):
             test = name
         logger.info("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
         # Create an instance of this test and give it a config and device manager.
-        tests_to_run.append(test(config, device_mgr))
+        tests_to_run.append(test(config, device_mgr, env_helper))
     if hasattr(config, 'EXTRA_TESTS') and config.EXTRA_TESTS:
         if tests_to_run[-1].__class__.__name__ == "Interact":
             logger.info("Last test is interact in testsuite, removing")
@@ -382,7 +388,7 @@ def connect_and_run(config):
                 except:
                     raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
                 logger.info("  %s" % t)
-                test = t(config, device_mgr)
+                test = t(config, device_mgr, env_helper)
                 tests_to_run.append(test)
         except Exception as e:
             logger.warning(e)
@@ -483,7 +489,7 @@ def connect_and_run(config):
     for t in tests_to_run:
         write_test_log(t, config.output_dir)
 
-    return library.create_info_for_remote_log(config, full_results, tests_to_run, logger)
+    return library.create_info_for_remote_log(config, full_results, tests_to_run, logger, env_helper)
 
 
 def main():

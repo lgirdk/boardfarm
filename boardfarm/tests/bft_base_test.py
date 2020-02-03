@@ -14,7 +14,6 @@ import six
 from boardfarm.library import check_devices
 import boardfarm.exceptions
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
-from boardfarm.lib.env_helper import EnvHelper
 
 
 class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
@@ -23,7 +22,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
     log_calls = ""
     _format = "%a %d %b %Y %H:%M:%S"
 
-    def __init__(self, config, device_mgr):
+    def __init__(self, config, device_mgr, env_helper):
         self.config = config
         self.dev = device_mgr
         # Useful defaults
@@ -32,10 +31,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         self.logged = dict()
         self.subtests = []
         self.attempts = 0
-        try:
-            self.env_helper = self.dev.board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
-        except:
-            self.env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
+        self.env_helper = env_helper
 
     def id(self):
         return self.__class__.__name__
