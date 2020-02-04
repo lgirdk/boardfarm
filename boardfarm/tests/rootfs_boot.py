@@ -12,13 +12,15 @@ from . import bft_base_test
 from boardfarm import lib
 from boardfarm.lib.common import run_once
 import boardfarm.exceptions
-from boardfarm.devices import board, wan, lan
-from boardfarm.devices import prompt
+
 
 class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''
 
     def boot(self, reflash=True):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
         # start tftpd server on appropriate device
         tftp_servers = [ x['name'] for x in self.config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
         tftp_device = None
@@ -58,19 +60,19 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
 
                 for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
                     wan.sendline('ip route add %s via %s' % (nw, gw))
-                    wan.expect(prompt)
+                    wan.expect(wan.prompt)
 
             # TODO: don't do this and sort out two interfaces with ipv6
             wan.disable_ipv6('eth0')
 
             if hasattr(prov, 'prov_gateway_v6'):
                 wan.sendline('ip -6 route add default via %s' % str(prov.prov_gateway_v6))
-                wan.expect(prompt)
+                wan.expect(wan.prompt)
 
             wan.sendline('ip route')
-            wan.expect(prompt)
+            wan.expect(wan.prompt)
             wan.sendline('ip -6 route')
-            wan.expect(prompt)
+            wan.expect(wan.prompt)
 
         if lan:
             lan.configure(kind="lan_device")
@@ -166,14 +168,14 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             board.sendline("password")
             board.expect("password:")
             board.sendline("password")
-            board.expect(prompt)
+            board.expect(board.prompt)
         except:
             print("WARNING: Unable to set root password on router.")
 
         board.sendline('cat /proc/cmdline')
-        board.expect(prompt)
+        board.expect(board.prompt)
         board.sendline('uname -a')
-        board.expect(prompt)
+        board.expect(board.prompt)
 
         # we can't have random messsages messages
         board.set_printk()
@@ -215,6 +217,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 raise boardfarm.exceptions.BootFail
 
     def recover(self):
+        board = self.dev.board
         if self.__class__.__name__ == "RootFSBootTest":
             board.close()
             lib.common.test_msg("Unable to boot, skipping remaining tests...")
