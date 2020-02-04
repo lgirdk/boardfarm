@@ -236,6 +236,29 @@ class AxirosACS(object):
 
         return response
 
+    def Axiros_DeleteCPEs(self, serial_number):
+        """This method is used to delete a CPE on the ACS server.
+
+        :raises: NA
+        :returns: True if successful
+        :rtype: True/False
+        """
+        CPESearchOptionsClassStruct_type = self.client.get_type('ns0:CPESearchOptionsClassStruct')
+        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(cpeid=serial_number)
+
+        CommandOptionsForCPESearchStruct_type = self.client.get_type('ns0:CommandOptionsForCPESearchStruct')
+        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
+
+        response = self.client.service.DeleteCPEs(
+            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data)
+        print(response)
+        if response['code'] != 200:
+            return False
+
+        return True
+
+    delete_cpe = Axiros_DeleteCPEs
+
     def Axiros_GetTicketResponse(self, ticketid):
         """This is helper method used to get the ticket response on ACS.
 
