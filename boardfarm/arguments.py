@@ -111,7 +111,7 @@ def parse():
         except TestImportError as e:
             print(e)
             sys.exit(1)
-        for k, v in tests.available_tests.items():
+        for k, v in sorted(tests.available_tests.items()):
             try:
                 print("%20s - %s" % (k, v.__doc__.split('\n')[0]))
             except:
