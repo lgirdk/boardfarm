@@ -117,6 +117,10 @@ class FriendlyACS():
         ret = self.client.service.FTCPEStatus(devicesn=serial_number)
         return ret['Online']
 
+    def delete_cpe(self, serial_number):
+        print("WARN: not impl for this class")
+        pass
+
 if __name__ == '__main__':
     import sys
 
