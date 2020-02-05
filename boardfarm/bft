@@ -265,7 +265,7 @@ def connect_and_run(config):
                                                  config=config.board)
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
-            config.console.dev = device_mgr
+            board.dev = device_mgr
 
             logger.info("dut device console = %s" % colored("black", 'grey'))
 
