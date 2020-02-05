@@ -1200,3 +1200,28 @@ def hex_to_datetime(output):
     dt = datetime(*list(map(lambda x: int(x, 16), [mib_Hex[0]+mib_Hex[1]]+mib_Hex[2:])))
     return dt
 
+def openssl_verify(device, ip_address, port, options=""):
+    """Openssl verfication for SMTP
+
+    :param device: device in which the command has to be excuted
+    :type device: device
+    :param ip_address: ip address to be connected
+    :type ip_address: string
+    :param port: port number for the protocol
+    :type port: integer
+    :param options: extra options, defaults to ""
+    :type options: string, optional
+    :return: True or False
+    :rtype: Boolean
+    """
+    output = False
+    device.sendline("openssl s_client -connect [{}]:{} {}".format(ip_address, port, options))
+    if device.expect(["CONNECTED", pexpect.TIMEOUT]) == 0:
+        output = True
+    try:
+        device.expect_prompt()
+    except:
+        for i in range(3):
+            device.sendcontrol('c')
+            device.expect_prompt()
+    return output
