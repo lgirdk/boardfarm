@@ -86,7 +86,7 @@ def threaded_device_helper(device, ret):
     dyn_dev.name = device['name']
     ret.put(dyn_dev)
 
-def setup_dynamic_devices(config):
+def setup_dynamic_devices(config, device_mgr):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
@@ -112,6 +112,10 @@ def setup_dynamic_devices(config):
             logger.debug("Skipping duplicate device type: %s" % device.name)
             device.close()
             continue
+
+        # Make it easy for devices to access other devices by giving it
+        # a reference to the device manager
+        device.dev = device_mgr
 
         def create_device_helper(name, dev):
             setattr(config, name, dev)
@@ -259,6 +263,10 @@ def connect_and_run(config):
                                                  rootfs=config.ROOTFS,
                                                  kernel=config.KERNEL,
                                                  config=config.board)
+            # Make it easy for the board to access other devices by giving it
+            # a reference to the device manager
+            config.console.dev = device_mgr
+
             logger.info("dut device console = %s" % colored("black", 'grey'))
 
             # TODO: we should generically check these at one time in the future
@@ -272,7 +280,7 @@ def connect_and_run(config):
                     setattr(config, x, r)
 
             if 'devices' in config.board:
-                setup_dynamic_devices(config)
+                setup_dynamic_devices(config, device_mgr)
 
             def get_tftp_config(dev):
                 saved = dev.logfile_read
