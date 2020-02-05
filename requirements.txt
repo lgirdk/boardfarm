@@ -5,6 +5,7 @@ cdrouter
 countrycode
 dlipower
 dnspython
+docutils<0.16
 easysnmp
 elasticsearch>=1.0.0
 aenum
