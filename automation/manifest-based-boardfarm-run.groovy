@@ -19,7 +19,7 @@ def sync_code () {
     sshagent ( [ ssh_auth ] ) {
         script {
             sh "rm -rf *"
-            sh "repo init -u " + manifest + " -m \${GERRIT_BRANCH:-default}.xml && repo sync --force-remove-dirty -m \${GERRIT_BRANCH:-default}.xml"
+            sh "repo init -u " + manifest + " -m \${GERRIT_BRANCH:-default}.xml && repo sync --force-sync --force-remove-dirty -m \${GERRIT_BRANCH:-default}.xml"
             sh "repo forall -c 'git checkout gerrit/$GERRIT_BRANCH'"
             if (GERRIT_REFSPEC != '') {
                 sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
