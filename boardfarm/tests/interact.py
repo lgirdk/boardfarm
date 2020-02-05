@@ -9,9 +9,8 @@ from boardfarm.tests import rootfs_boot
 from boardfarm import tests
 from boardfarm import lib
 import sys
-from boardfarm.devices import board
-from boardfarm.devices import prompt
 from six.moves import input
+
 
 class Interact(rootfs_boot.RootFSBootTest):
     '''Interact with console, wan, lan, wlan connections and re-run tests'''
@@ -26,6 +25,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                 print("  %s device:    %s" % (d.name, d))
 
     def runTest(self):
+        board = self.dev.board
         lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
         try:
@@ -100,7 +100,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                     board.sendline()
                     # default are 1 1 1 7
                     board.set_printk()
-                    board.expect(prompt)
+                    board.expect(board.prompt)
                     try:
                         tests.available_tests[test](self.config).run()
                     except Exception as e:
