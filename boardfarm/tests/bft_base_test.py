@@ -111,6 +111,8 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     self.runTest()
                     self.dev.board.touch()
                     break
+                except boardfarm.exceptions.SkipTest:
+                    raise
                 except Exception as e:
                     retry = retry - 1
                     if(retry > 0):
