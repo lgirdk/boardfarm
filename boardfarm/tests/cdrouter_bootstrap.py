@@ -284,7 +284,8 @@ testvar wanDnsServer %s
 
         summary = c.results.summary_stats(j.result_id)
 
-        self.result_message += " (Failed= %s, Passed = %s, Skipped = %s)" \
+        self.result_message = six.text_type(self.result_message) + \
+                " (Failed= %s, Passed = %s, Skipped = %s)" \
                 % (summary.result_breakdown.failed, \
                    summary.result_breakdown.passed, \
                    summary.result_breakdown.skipped)
