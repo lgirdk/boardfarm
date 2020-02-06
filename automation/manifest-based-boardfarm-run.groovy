@@ -3,8 +3,10 @@ def email_results = env.email_results ?: ''
 def GERRIT_BRANCH = env.GERRIT_BRANCH ?: 'master'
 def GERRIT_PROJECT = env.GERRIT_PROJECT ?: '.*'
 def GERRIT_REFSPEC = env.GERRIT_REFSPEC ?: 'master'
-def GERRIT_PORT= env.GERRIT_PORT ?: '29418'
-// TODO: fetch from jenkins in future
+def GERRIT_PORT = env.GERRIT_PORT ?: '29418'
+def auto_user = (env.auto_user == null) ? "jenkins" : env.auto_user
+env.auto_user = auto_user
+// TODO: fetch from $auto_user in future
 python_version = "3"
 
 def meta = env.meta ?: ''
@@ -69,14 +71,14 @@ def post_gerrit_msg_from_file (file) {
     cat ''' +file
 
     sh '''
-    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\'--message="$(cat ''' + file + ''')"\\'
+    ssh $auto_user@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\'--message="$(cat ''' + file + ''')"\\'
     '''
 }
 
 def post_gerrit_msg (msg) {
     println("Posting message to gerrit")
     sh '''
-    ssh jenkins@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="''' + msg + '''"\\\'
+    ssh $auto_user@$GERRIT_HOST -p $GERRIT_PORT gerrit review $GERRIT_PATCHSET_REVISION \\\'--message="''' + msg + '''"\\\'
     '''
 }
 
