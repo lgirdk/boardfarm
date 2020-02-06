@@ -168,14 +168,14 @@ class LinuxDevice(base.BaseDevice):
 
         if timetorun:
             # Validation can be added - future note
-            return 'True'
+            return True
         else:
             match = re.search("%s packets transmitted, %s received, 0%% packet loss" %
                           (ping_count, ping_count), self.before)
             if match:
-                return 'True'
+                return True
             else:
-                return 'False'
+                return False
 
     def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
         '''Checking the interface status'''

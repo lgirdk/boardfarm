@@ -623,7 +623,7 @@ class wifi_client_stub():
         """
         raise Exception("Not implemented!")
         # this code does not execute, but rather serves as an example for the API
-        return "True or False"
+        return True or False
 
     def wifi_disconnect(self):
         """This method is WiFi client stub used to disconnect WiFi

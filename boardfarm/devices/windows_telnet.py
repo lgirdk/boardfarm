@@ -87,9 +87,9 @@ class WindowsTelnet(base.BaseDevice):
 
         match = re.search(r'Reply from .+: bytes=.+ TTL=|Reply from .* time=.*', str(Wifi_log))
         if match:
-            return 'True'
+            return True
         else:
-            return 'False'
+            return False
 
     def set_dhcp(self, wifi_interface):
         """Function to set the dhcp for the wifi interface in windows client
