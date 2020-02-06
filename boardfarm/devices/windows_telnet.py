@@ -85,7 +85,7 @@ class WindowsTelnet(base.BaseDevice):
         self.expect("(.+)>", timeout=wait_time)
         Wifi_log = self.match.group(1)
 
-        match = re.search('Reply from .+: bytes=.+ TTL=', str(Wifi_log))
+        match = re.search(r'Reply from .+: bytes=.+ TTL=|Reply from .* time=.*', str(Wifi_log))
         if match:
             return 'True'
         else:
