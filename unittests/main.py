@@ -123,6 +123,34 @@ class TestSimpleBoardfarm(unittest.TestCase):
                                                         board_filter="local")
         self.assertGreater(len(names), 0)
 
+    def test_skip_on_fail_decorator(self):
+        from boardfarm.tests_wrappers import skip_on_fail
+        from boardfarm.tests.bft_base_test import BftBaseTest
+
+        global ran
+        ran = False
+
+        class test_stub(BftBaseTest):
+            log_to_file = ""
+            def skipTest(self, msg):
+                print("skipTest() called")
+                global ran
+                ran = True
+
+                super(test_stub, self,).skipTest(msg)
+
+        @skip_on_fail
+        def test_func(test, arg1, arg2):
+            if arg1 != arg2:
+                print("skipTest() should be called")
+            assert arg1 == arg2
+
+        test_func(test_stub(None, None, None), "same", "same")
+        self.assertEqual(ran, False)
+        with self.assertRaises(boardfarm.exceptions.SkipTest):
+            test_func(test_stub(None, None, None), "not", "same")
+        self.assertEqual(ran, True)
+
 class TestSnmp(unittest.TestCase):
 
     def test_snmp_compile(self):
