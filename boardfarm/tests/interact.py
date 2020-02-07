@@ -102,7 +102,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                     board.set_printk()
                     board.expect(board.prompt)
                     try:
-                        tests.available_tests[test](self.config).run()
+                        tests.available_tests[test](self.config, self.dev, self.env_helper).run()
                     except Exception as e:
                         lib.common.test_msg("Failed to find and/or run test, continuing..")
                         print(e)
