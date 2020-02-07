@@ -96,11 +96,6 @@ class Interact(rootfs_boot.RootFSBootTest):
                     print("Type test to run: ")
                     test = sys.stdin.readline().strip()
 
-                    #try:
-                    board.sendline()
-                    # default are 1 1 1 7
-                    board.set_printk()
-                    board.expect(board.prompt)
                     try:
                         tests.available_tests[test](self.config, self.dev, self.env_helper).run()
                     except Exception as e:
