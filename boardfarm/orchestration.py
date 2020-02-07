@@ -116,6 +116,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             except Exception as e:
                 tr = TestResult(prefix, "FAIL", str(e), None)
                 self.log_msg("{} - FAIL :: {}:{}".format(prefix, e.__class__.__name__,str(e)))
+                self.actions = []
                 raise(e)
             finally:
                 self.result.append(tr)
