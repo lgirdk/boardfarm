@@ -1111,3 +1111,18 @@ while True:
         client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))
 EOF''' % (irc_client_scriptname, irc_server_ip, user_name, client_id, client_id, socket_type, client_id, client_id))
     device.expect(device.prompt)
+
+def install_tcpdump(device):
+    """Install tcpdump if not present.
+
+    :param device: lan or wan or wlan
+    :type device: Object
+    """
+    device.sudo_sendline('tcpdump --version')
+    try:
+        device.expect('tcpdump version', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sudo_sendline('apt-get install tcpdump -y')
+        device.expect(device.prompt, timeout=90)
