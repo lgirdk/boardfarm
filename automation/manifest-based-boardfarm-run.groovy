@@ -323,6 +323,7 @@ pipeline {
             for PID in $(ps -eo pid,command -u ${USER} | grep -v grep | tail -n+2 | awk '{print $1}' | grep -v ${PID_SELF} | grep -v ${PPID}); do
                 echo "Checking pid ${PID}"
                 if xargs -0 -L1 -a /proc/${PID}/environ 2>/dev/null | grep "BUILD_ID=${BUILD_ID}$"; then
+                    echo "Matched BUILD_ID=${BUILD_ID}$"
                     echo "Killing $(ps -p ${PID} | tail -1 | awk '{print $1}')"
                     sed -z 's/$/ /' /proc/$PID/cmdline; echo
                     kill ${PID}
