@@ -404,12 +404,12 @@ class Ip9258(PowerDevice):
     def on(self):
         '''Send ON command.'''
         print("Power On Port(%s)\n" % self.port)
-        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+        return _urllib.request.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
 
     def off(self):
         '''Send OFF command.'''
         print("Power Off Port(%s)\n" % self.port)
-        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+        return _urllib.request.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
     def reset(self):
         '''Turn off, wait 5 seconds, turn on.'''
@@ -466,12 +466,12 @@ class Ip9820(PowerDevice):
     def on(self):
         '''Send ON command.'''
         print("Power On Port(%s)\n" % self.port)
-        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
+        return _urllib.request.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=1')
 
     def off(self):
         '''Send OFF command.'''
         print("Power Off Port(%s)\n" % self.port)
-        return _urllib.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
+        return _urllib.request.urlopen('http://' + self._ip_address + '/set.cmd?cmd=setpower+p6' + str(self.port) + '=0')
 
     def reset(self):
         '''Send OFF command, wait 5 seconds, sned ON command.'''
