@@ -22,7 +22,7 @@ from datetime import datetime
 
 # Setup logging
 import logging
-logging.basicConfig(format='%(message)s')
+logging.basicConfig(stream=sys.stdout, format='%(message)s')
 logger = logging.getLogger('bft')
 logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
