@@ -1,4 +1,6 @@
+import pexpect
 from nested_lookup import nested_lookup
+from boardfarm.lib.common import retry_on_exception
 
 def add_dns_auth_record(dns,sipserver_name):
     '''
@@ -69,3 +71,37 @@ def dns_setup_sipserver(sip_server):
             add_dns_auth_record(sip_server,sip_server.name)
     except Exception as e:
         raise Exception("Unable to initialize dns, failed due to the error : ", e)
+
+def basic_call(sipcenter,caller,callee,board,sipserver_ip,dial_number):
+    '''
+    To make a basic call
+
+    Parameters:
+    sipcenter(object): sipcenter device
+    caller(object): caller device
+    callee(object): callee device
+    sipserver_ip(string): sipserver_ip
+    dial_number(string): number to be dialed
+
+    Return:
+    media_out(string): media output through which tones are validated
+    '''
+    #phone start
+    retry_on_exception(caller.phone_start,())
+    retry_on_exception(callee.phone_start,())
+    #phone dial
+    caller.dial(dial_number, sipserver_ip)
+    #phone answer
+    callee.answer()
+    #board verify
+    media_out = board.check_media_started()
+    #call hangup
+    board.expect(pexpect.TIMEOUT, timeout=20)
+    board.send_sip_offhook_onhook(flag="onhook")
+    #phone kill
+    caller.phone_kill()
+    callee.phone_kill()
+    return media_out
+
+
+
