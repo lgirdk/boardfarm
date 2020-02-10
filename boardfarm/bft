@@ -86,7 +86,7 @@ def threaded_device_helper(device, ret):
     dyn_dev.name = device['name']
     ret.put(dyn_dev)
 
-def setup_dynamic_devices(config, device_mgr):
+def setup_dynamic_devices(config, device_mgr, env_helper):
     '''Sets up dynamic devices from devices node in JSON config file'''
 
     config.devices = []
@@ -116,6 +116,7 @@ def setup_dynamic_devices(config, device_mgr):
         # Make it easy for devices to access other devices by giving it
         # a reference to the device manager
         device.dev = device_mgr
+        device.env_helper = env_helper
 
         def create_device_helper(name, dev):
             setattr(config, name, dev)
@@ -280,8 +281,15 @@ def connect_and_run(config):
                         raise Exception("Unable to reach board mirror, trying next board")
                     setattr(config, x, r)
 
+            if hasattr(board, "env_helper_type"):
+                env_helper = board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
+            else:
+                env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
+
+            board.env_helper = env_helper
+
             if 'devices' in config.board:
-                setup_dynamic_devices(config, device_mgr)
+                setup_dynamic_devices(config, device_mgr, env_helper)
 
             def get_tftp_config(dev):
                 saved = dev.logfile_read
@@ -346,11 +354,6 @@ def connect_and_run(config):
     # Update config from board info
     if hasattr(board, "update_config"):
         board.update_config()
-
-    if hasattr(board, "env_helper_type"):
-        env_helper = board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
-    else:
-        env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
 
     logger.info('\n==========')
     library.printd(config.board)
