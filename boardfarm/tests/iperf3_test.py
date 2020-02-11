@@ -8,12 +8,7 @@
 import re
 from boardfarm.tests import rootfs_boot
 from boardfarm.lib import installers
-from boardfarm.devices import mgr, device_type
 from boardfarm.devices import prompt
-
-board = mgr.by_type(device_type.DUT)
-wan = mgr.by_type(device_type.wan)
-lan = mgr.by_type(device_type.lan)
 
 class iPerf3Test(rootfs_boot.RootFSBootTest):
     '''iPerf3 generic performance tests'''
@@ -21,10 +16,13 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
     opts= ""
     time = 60
     server_port = "5201"
-    client = lan
     target_ip = None
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        self.client = self.dev.lan
+
         installers.install_iperf3(wan)
         installers.install_iperf3(self.client)
 
@@ -66,6 +64,9 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        wan = self.dev.wan
+
         for d in [wan, self.client]:
             d.sendcontrol('c')
             d.sendcontrol('c')
@@ -90,6 +91,7 @@ class iPerf3_v6Test(iPerf3Test):
     opts = "-6"
 
     def runTest(self):
+        wan = self.dev.wan
         self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
         super(iPerf3_v6Test, self).runTest()
 
@@ -99,6 +101,7 @@ class iPerf3R_v6Test(iPerf3Test):
     opts = "-6 -R"
 
     def runTest(self):
+        wan = self.dev.wan
         self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
         super(iPerf3R_v6Test, self).runTest()
 
