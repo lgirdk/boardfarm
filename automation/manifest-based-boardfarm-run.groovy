@@ -92,7 +92,7 @@ def run_lint () {
     touch errors.txt
     repo forall -c 'git diff --name-only HEAD m/master | sed s,^,$REPO_PATH/,g' > files_changed.txt
     echo "Running pyflakes on py files and ignoring init files:"
-    files_changed=`cat files_changed.txt | grep .py | grep -v __init`
+    files_changed=`cat files_changed.txt | grep '\\.py$' | grep -v __init`
     if [ -z "$files_changed" ]; then
         touch errors.txt
         exit 0
