@@ -11,7 +11,7 @@ from . import linux
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 # Netgear Switch Prompt
-prompt = "\(M4100-50G\) "
+prompt = r"\(M4100-50G\) "
 
 class NetgearM4100(linux.LinuxDevice):
     """A netgear switch allows for changing connections by modifying VLANs on ports extends LinuxDevice.
