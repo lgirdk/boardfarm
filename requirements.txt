@@ -23,6 +23,8 @@ pymongo
 pyserial
 pysmi
 pysnmp
+pytest
+pytest-html
 pyvirtualdisplay
 requests
 selenium
