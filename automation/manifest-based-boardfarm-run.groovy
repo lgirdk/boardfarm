@@ -135,7 +135,7 @@ def run_unittest () {
     setup_python(python_version)
     sh '''
         . venv/bin/activate
-        ./boardfarm/unittests/main.py
+        pytest boardfarm/unittests/
         bft -l
     '''
 }
