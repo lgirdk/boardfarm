@@ -1,3 +1,5 @@
+import glob
+import os
 import re
 import six
 import subprocess
@@ -87,4 +89,54 @@ def get_features(directories, start, end, debug=False):
     if debug:
         print("\nFeatures requested in git log from %s to %s:" % (start, end))
         print(" ".join(set(result)))
+    return result
+
+def get_imported_names(line):
+    '''
+    Given a string like:
+        from boardfarm.lib.common import snmp_mib_set, snmp_mib_walk
+    Return a list of strings which are the imported things:
+         ['snmp_mib_set', 'snmp_mib_walk']
+    '''
+    return line.rstrip().split('import')[1].replace(' ', '').split(',')
+
+def get_classes_lib_functions(directories, debug=False):
+    '''
+    Find all test classes in code and all lib functions they directly use.
+    Returns a dict where:
+        * key = class name
+        * value = list of lib function names
+    '''
+    result = {}
+    test_filenames = []
+    if debug:
+        print("Searching for functions imported in:")
+    for d in directories:
+        if debug:
+            print(d)
+        test_filenames += glob.glob(os.path.join(d, '*.py'))
+    library_function_names = set()
+    # Loop over every test file
+    for test_file in test_filenames:
+        with open(test_file, 'r') as f:
+            lines = f.readlines()
+        current_class_name = None
+        # Loop over every line in this file
+        for line in lines:
+            if 'from ' in line and '.lib' in line:
+                library_function_names |= set(get_imported_names(line))
+                continue
+            if line.startswith('class '):
+                search_result = re.search('class\s(\w+)\(', line)
+                if search_result:
+                    current_class_name = search_result.group(1)
+            if not current_class_name:
+                continue
+            if current_class_name not in result:
+                result[current_class_name] = set()
+            for name in library_function_names:
+                if name in line:
+                    result[current_class_name] |= set([name,])
+    for key in result:
+        result[key] = sorted(result[key])
     return result
