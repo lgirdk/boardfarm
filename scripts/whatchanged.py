@@ -7,6 +7,7 @@ import sys
 
 import boardfarm
 from boardfarm.lib.code import get_all_classes_from_code, changed_classes, get_features
+from boardfarm.lib.code import get_classes_lib_functions, changed_functions
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Prosses a "git diff" to find test changes.')
@@ -42,26 +43,47 @@ if __name__ == '__main__':
     #     {"classname": ["parent_classname", "grandparent_classname"], ... }
     all_classes = get_all_classes_from_code(test_code_loc, debug=args.debug)
 
+    # Get a dictionary with classnames as keys, and list of functions they import and use
+    #     {"classname": ['function1', 'function2', ... }
+    all_classes_and_funcs = get_classes_lib_functions(test_code_loc, debug=args.debug)
+
     # Find names of all *directly* changed classes
     all_changed_classes = changed_classes(git_loc,
                                           args.start,
                                           args.end,
                                           debug=args.debug)
+
+    # Find names of all *directly* changed functions
+    all_changed_functions = changed_functions(git_loc,
+                                              args.start,
+                                              args.end,
+                                              debug=args.debug)
+
     # Add names of *indirectly* changed classes (child classes of changed classes)
     indirectly_changed_classes = {}
     for name, parents in all_classes.items():
         if parents[0] in all_changed_classes.keys():
             indirectly_changed_classes[name] = all_classes[name]
+    # Add names of *indirectly* changed classes because functions were changed
+    for name, funcs in all_classes_and_funcs.items():
+        if set(funcs) & set(all_changed_functions):
+            indirectly_changed_classes[name] = all_classes[name]
     if args.debug:
-        print("\nAll indirectly changed classes:")
+        print("\nAll indirectly changed classes (either through a function change or subclass change):")
         print("  " + "\n  ".join(indirectly_changed_classes))
     all_changed_classes.update(indirectly_changed_classes)
 
     features = get_features(git_loc, args.start, args.end, debug=args.debug)
 
+    filter_name = '_TST_'
+    if args.debug:
+        print("\nWill filter to only test names containing '%s'." % filter_name)
+
     # Print all valid tests with a '-e ' in front of them for bft
     final_result = []
     for name in sorted(all_changed_classes):
+        if filter_name not in name:
+            continue
         parents = all_classes.get(name, [])
         for v in valid_test_types:
             if v in parents:
