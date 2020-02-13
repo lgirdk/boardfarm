@@ -15,6 +15,29 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
 
+def frame_index_out_of_file(this_file=__file__):
+    frame_count = len(inspect.stack())
+
+    for index in range(frame_count):
+        frame = inspect.stack()[index][0]
+        info = inspect.getframeinfo(frame)
+        if info.filename != this_file:
+
+            keep_going = False
+            for remaining in range(index + 1, frame_count):
+                next_frame = inspect.stack()[remaining][0]
+                next_info = inspect.getframeinfo(next_frame)
+                if next_info.filename == this_file:
+                    keep_going = True
+                    break
+
+            if keep_going:
+                continue
+
+            return index
+
+    raise Exception("This should never hit")
+
 def caller_file_line(i):
     #line = 0
     # print "##################### %s" % i
@@ -26,10 +49,6 @@ def caller_file_line(i):
     frame = caller[0]
     info = inspect.getframeinfo(frame)
 
-    # readline calls expect
-    if info.function == "readline":
-        # note: we are calling ourselves, so we have to add more than 1 here
-        return caller_file_line(i + 2)
     return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
 
 class bft_pexpect_helper(pexpect.spawn):
@@ -114,12 +133,14 @@ class bft_pexpect_helper(pexpect.spawn):
 
         return ret
 
+    # this is here for the debug parser to egress this file only
+    # when printing calling stacks
+    def sendline(self, s=''):
+        return super(bft_pexpect_helper, self).sendline(s)
+
     def send(self, s):
         if BFT_DEBUG:
-            if 'pexpect/__init__.py: sendline():' in caller_file_line(3):
-                idx = 4
-            else:
-                idx = 3
+            idx = frame_index_out_of_file()
             print_bold("%s = sending: %s" %
                               (caller_file_line(idx), repr(s)))
 
@@ -137,11 +158,7 @@ class bft_pexpect_helper(pexpect.spawn):
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
-        if 'base.py: expect():' in caller_file_line(3) or \
-                'base.py: expect_exact():' in caller_file_line(3):
-            idx = 5
-        else:
-            idx = 3
+        idx = frame_index_out_of_file()
         print_bold("%s = expecting: %s" %
                           (caller_file_line(idx), repr(pattern)))
         try:
@@ -173,7 +190,7 @@ class bft_pexpect_helper(pexpect.spawn):
     def sendcontrol(self, char):
         if BFT_DEBUG:
             print_bold("%s = sending: control-%s" %
-                              (caller_file_line(3), repr(char)))
+                              (caller_file_line(frame_index_out_of_file()), repr(char)))
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
 
