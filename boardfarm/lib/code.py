@@ -1,5 +1,4 @@
 import glob
-import os
 import re
 import six
 import subprocess
@@ -114,7 +113,7 @@ def get_classes_lib_functions(directories, debug=False):
     for d in directories:
         if debug:
             print(d)
-        test_filenames += glob.glob(os.path.join(d, '*.py'))
+        test_filenames += glob.glob(d)
     library_function_names = set()
     # Loop over every test file
     for test_file in test_filenames:
