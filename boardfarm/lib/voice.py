@@ -2,7 +2,7 @@ import pexpect
 from nested_lookup import nested_lookup
 from boardfarm.lib.common import retry_on_exception
 
-def add_dns_auth_record(dns,sipserver_name):
+def add_dns_auth_record(dns, sipserver_name):
     '''
     To add a record and srv to the dns server
 
@@ -58,7 +58,7 @@ def voice_devices_configure(voice_devices_list, sip_server):
         sip_server.kill_asterisk()
         raise Exception("Unable to initialize Voice devices, failed due to the error : ", e)
 
-def dns_setup_sipserver(sip_server):
+def dns_setup_sipserver(sip_server, config):
     '''
     To setup dns with auth records
 
@@ -67,12 +67,12 @@ def dns_setup_sipserver(sip_server):
     '''
     try:
         if sip_server:
-            sip_server.setup_dnsmasq()
-            add_dns_auth_record(sip_server,sip_server.name)
+            sip_server.setup_dnsmasq(config)
+            add_dns_auth_record(sip_server, sip_server.name)
     except Exception as e:
         raise Exception("Unable to initialize dns, failed due to the error : ", e)
 
-def basic_call(sipcenter,caller,callee,board,sipserver_ip,dial_number):
+def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number):
     '''
     To make a basic call
 
