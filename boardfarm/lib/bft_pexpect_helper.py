@@ -16,6 +16,20 @@ def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
 
 def frame_index_out_of_file(this_file=__file__):
+    '''
+    Looks for the last function called before calling something
+    from this file. For example:
+
+    -> foo1()
+    -> foo2()
+    -> dev.sendline()
+    -> wrapper()
+    -> dev.send()
+
+    It would return foo2 and the line number that it was called from
+    '''
+
+
     frame_count = len(inspect.stack())
 
     for index in range(frame_count):
@@ -39,12 +53,9 @@ def frame_index_out_of_file(this_file=__file__):
     raise Exception("This should never hit")
 
 def caller_file_line(i):
-    #line = 0
-    # print "##################### %s" % i
-    # for s in inspect.stack():
-    #    print "%s: %s" % (line, s)
-    #    line = line + 1
-    # print "##################### %s" % i
+    '''
+    Prints a simple debug line given a frame index for the file, function, and line number
+    '''
     caller = inspect.stack()[i]  # caller of spawn or pexpect
     frame = caller[0]
     info = inspect.getframeinfo(frame)
