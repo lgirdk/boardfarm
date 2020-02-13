@@ -3,10 +3,10 @@ import os
 import sys
 import time
 import termcolor
+import inspect
 
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
-from . import error_detect
 from boardfarm.lib.bft_logging import o_helper
 from boardfarm.tests_wrappers import throw_pexpect_error
 
@@ -14,6 +14,23 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
+
+def caller_file_line(i):
+    #line = 0
+    # print "##################### %s" % i
+    # for s in inspect.stack():
+    #    print "%s: %s" % (line, s)
+    #    line = line + 1
+    # print "##################### %s" % i
+    caller = inspect.stack()[i]  # caller of spawn or pexpect
+    frame = caller[0]
+    info = inspect.getframeinfo(frame)
+
+    # readline calls expect
+    if info.function == "readline":
+        # note: we are calling ourselves, so we have to add more than 1 here
+        return caller_file_line(i + 2)
+    return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
 
 class bft_pexpect_helper(pexpect.spawn):
     '''
@@ -99,12 +116,12 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def send(self, s):
         if BFT_DEBUG:
-            if 'pexpect/__init__.py: sendline():' in error_detect.caller_file_line(3):
+            if 'pexpect/__init__.py: sendline():' in caller_file_line(3):
                 idx = 4
             else:
                 idx = 3
             print_bold("%s = sending: %s" %
-                              (error_detect.caller_file_line(idx), repr(s)))
+                              (caller_file_line(idx), repr(s)))
 
         if self.delaybetweenchar is not None:
             ret = 0
@@ -120,17 +137,17 @@ class bft_pexpect_helper(pexpect.spawn):
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
-        if 'base.py: expect():' in error_detect.caller_file_line(3) or \
-                'base.py: expect_exact():' in error_detect.caller_file_line(3):
+        if 'base.py: expect():' in caller_file_line(3) or \
+                'base.py: expect_exact():' in caller_file_line(3):
             idx = 5
         else:
             idx = 3
         print_bold("%s = expecting: %s" %
-                          (error_detect.caller_file_line(idx), repr(pattern)))
+                          (caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
-            frame = error_detect.caller_file_line(idx)
+            frame = caller_file_line(idx)
 
             if hasattr(self.match, "group"):
                 print_bold("%s = matched: %s" %
@@ -156,7 +173,7 @@ class bft_pexpect_helper(pexpect.spawn):
     def sendcontrol(self, char):
         if BFT_DEBUG:
             print_bold("%s = sending: control-%s" %
-                              (error_detect.caller_file_line(3), repr(char)))
+                              (caller_file_line(3), repr(char)))
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
 
