@@ -140,3 +140,26 @@ def get_classes_lib_functions(directories, debug=False):
     for key in result:
         result[key] = sorted(result[key])
     return result
+
+def changed_functions(directories, start, end, debug=False):
+    '''
+    Return names of all changed functions in a "git diff".
+    '''
+    if debug:
+        print("\nSearching for differences:")
+    result = []
+    for d in directories:
+        try:
+            cmd = "git --git-dir %s diff %s..%s -U0" % (d, start, end)
+            if debug:
+                print(cmd)
+            diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            result = re.findall('def\s(\w+)\(', six.text_type(diff))
+        except subprocess.CalledProcessError:
+            if debug:
+                print("Warning: git diff command failed in %s" % d)
+    result = sorted(set(result))
+    if debug:
+        print("\nAll changed functions from %s to %s:" % (start, end))
+        print("  %s" % ", ".join(result))
+    return result
