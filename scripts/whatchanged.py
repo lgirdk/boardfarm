@@ -70,7 +70,3 @@ if __name__ == '__main__':
     if args.debug:
         print("\nFinal output including directly and indirectly changed tests:")
     print(" -e ".join([''] + final_result) + " -q ".join([''] + features))
-    sys.exit(0)
-
-parser.print_help()
-sys.exit(0)
