@@ -697,32 +697,33 @@ def retry(func_name, max_retry, *args):
     else:
         return None
 
+
 def retry_on_exception(method, args, retries=10, tout=5):
-    """Retries a method if an exception occurs
+    """Retry a method if any exception occurs.
+
+    Eventually, at last, throw the exception.
     NOTE: args must be a tuple, hence a 1 arg tuple is (<arg>,)
 
     :param method: name of the function to retry
     :type method: Object
     :param args: Arguments passed to the function
     :type args: args
-    :param retries: Maximum number of retries when a exception occur, defaults to 10
+    :param retries: Maximum number of retries when a exception occur,
+    defaults to 10. When negative, no retries are made.
     :type retries: Integer, Optional
     :param tout: Sleep time after every exception occur, defaults to 5
     :type tout: Integer, Optional
     :return: Output of the function
     :rtype: Any data type
     """
-    output = None
-    for not_used in range(retries + 1):
+    for not_used in range(retries):
         try:
-            output = method(*args)
-            break
-        except Exception as e:
+            return method(*args)
+        except Exception as e:    # pylint: disable=broad-except
             print_bold("method failed %d time (%s)" % ((not_used + 1), e))
             time.sleep(tout)
-            pass
+    return method(*args)
 
-    return output
 
 def resolv_dict(dic, key):
     """This function used to get the value from gui json, replacement of eval

@@ -44,7 +44,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
-assets/style.css
+**/assets/style.css
 report.html
 report.xml
 
