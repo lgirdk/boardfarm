@@ -1,8 +1,10 @@
-from boardfarm.lib.bft_logging import now_short
 from boardfarm.exceptions import TestError, CodeError
+from datetime import datetime
 from termcolor import cprint
 from functools import partial, wraps
 import six
+import textwrap
+import traceback
 
 class TestResult:
     logged = {}
@@ -56,9 +58,16 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         # to maintain an id for each action.
         self.action_id = 1
 
-    def log_msg(self, msg):
-        self.parent_test.log_to_file += now_short() + msg + "\n\r"
-        cprint(msg, None, attrs=['bold'])
+    def log_msg(self, msg, attr=['bold'], no_time=False, wrap=True):
+        time = datetime.now().strftime("%b %d %Y %H:%M:%S")
+        indent = ""
+        if not no_time:
+            indent = " "*(len(time)+1)
+            msg = "{} {}".format(time, msg)
+        if wrap:
+            msg = textwrap.TextWrapper(width=80, subsequent_indent=indent).fill(text=msg)
+        self.parent_test.log_to_file += msg + "\n\r"
+        cprint(msg, None, attrs=attr)
 
     def add_verify(self, func, v_msg):
         self.verify_f = func
@@ -68,27 +77,32 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         TestAction(self, partial(func, *args, **kwargs))
 
     def __enter__(self):
-        self.msg = "[{}]::[{} Step {}]".format(self.parent_test.__class__.__name__, self.prefix , self.step_id)
-        self.log_msg(('-' * 80))
+        self.msg = "[{}]:[{} Step {}]".format(self.parent_test.__class__.__name__, self.prefix , self.step_id)
+        print()
+        self.log_msg(('#' * 80), no_time=True)
         self.log_msg("{}: START".format(self.msg))
         self.log_msg("Description: {}".format(self.name))
-        self.log_msg(('-' * 80))
+        self.log_msg(('#' * 80), no_time=True)
         self.called_with = True
         return self
 
-    def __exit__(self, ex_type, ex_value, traceback):
-        r = "PASS" if not traceback else "FAIL"
-        self.log_msg(('-' * 80))
+    def __exit__(self, ex_type, ex_value, tb):
+        r = "PASS" if not tb else "FAIL"
+        self.log_msg(('-' * 80), no_time=True)
         self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
+        if tb:
+            trace = traceback.format_exception(ex_type, ex_value, tb)
+            self.log_msg("".join(trace).strip(), attr = [], no_time = True, wrap=False)
+        self.log_msg(('-' * 80), no_time=True)
         self.called_with = False
 
     # msg has to be the verification message.
     def verify(self, cond, msg):
         if not cond:
-            self.log_msg("{} - FAILED".format(msg))
-            raise TestError('{} verification - FAILED'.format(self.msg))
+            self.log_msg("{}::[Verification] :\n{} - FAILED".format(self.msg, msg))
+            raise TestError('{}::[Verification] :\n{} - FAILED'.format(self.msg, msg))
         else:
-            self.log_msg("{} - PASSED".format(msg))
+            self.log_msg("{}::[Verification] :\n{} - PASSED".format(self.msg, msg))
 
 
     def execute(self):
@@ -115,14 +129,17 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
                 self.log_msg("{} : PASS".format(prefix))
             except Exception as e:
                 tr = TestResult(prefix, "FAIL", str(e), None)
-                self.log_msg("{} - FAIL :: {}:{}".format(prefix, e.__class__.__name__,str(e)))
-                self.actions = []
+                self.log_msg("{} : FAIL :: {}:{}".format(prefix, e.__class__.__name__,str(e)))
                 raise(e)
             finally:
                 self.result.append(tr)
                 self.action_id += 1
         if self.verify_f:
-            self.verify(self.verify_f(), self.v_msg)
+            try:
+                cond = self.verify_f()
+            except Exception as e:
+                raise CodeError("{}::[Verification] :\n{}".format(self.msg, str(e)))
+            self.verify(cond, self.v_msg)
 
         self.actions = []
 
@@ -161,8 +178,8 @@ if __name__ == '__main__':
 
         def runTest(self):
             # this one can be used to define common test Steps
-            # note: we could assign a section to a test-step, e.g. Cleanup in this case.
-            with TestStep(self, "This is step1 of test", "Cleanup") as ts:
+            # note: we could assign a section to a test-step, e.g. Set-up in this case.
+            with TestStep(self, "This is step1 of test setup", "Test Setup") as ts:
 
                 # if you're intializing a TA, pass the function as a partial,
                 # else code will fail
@@ -179,7 +196,7 @@ if __name__ == '__main__':
             # variation 2, call execute multiple times.
             # Note: here you might need to change verification for each execute, manually
             # Note: don't pop the output, we might need it to log step results later
-            with TestStep(self, "This is step2 of test") as ts:
+            with TestStep(self, "This is step1 of execution") as ts:
                 for i in [1,2,3,4]:
                     ts.add(add_100, i)
                     ts.execute()
@@ -187,7 +204,7 @@ if __name__ == '__main__':
 
             # variation 3
             # need this to reset the counter.
-            with TestStep(self, "This is step2 of test") as ts:
+            with TestStep(self, "This is step2 of execution") as ts:
                 ts.add(action1, 2, m=3)
                 ts.add(action2, 6, m=0)
                 ts.execute()
@@ -199,4 +216,5 @@ if __name__ == '__main__':
         obj.runTest()
     except Exception as e:
         # handle retry condition for TC
-        print("{}:{}".format(type(e),e))
+        pass
+    print("\n\nHow stuff will look like in txt file:\n{}".format(obj.log_to_file))
