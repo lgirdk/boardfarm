@@ -31,7 +31,7 @@ def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap
         device.sudo_sendline("tcpdump -i %s -n -w %s &" % (interface, capture_file))
     else:
         device.sudo_sendline("tcpdump -i %s -n \'portrange %s\' -w %s &" % (interface, port, capture_file))
-    device.expect('tcpdump: listening on %s' % interface)
+    device.expect_exact('tcpdump: listening on %s' % interface)
     return device.before
 
 def kill_process(device, process="tcpdump"):
