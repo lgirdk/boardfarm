@@ -67,7 +67,8 @@ if __name__ == '__main__':
     # Add names of *indirectly* changed classes because functions were changed
     for name, funcs in all_classes_and_funcs.items():
         if set(funcs) & set(all_changed_functions):
-            indirectly_changed_classes[name] = all_classes[name]
+            if name in all_classes:
+                indirectly_changed_classes[name] = all_classes[name]
     if args.debug:
         print("\nAll indirectly changed classes (either through a function change or subclass change):")
         print("  " + "\n  ".join(indirectly_changed_classes))
