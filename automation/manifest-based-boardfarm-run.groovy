@@ -27,6 +27,7 @@ def sync_code () {
                 sh "repo forall -r ^$GERRIT_PROJECT\$ -c 'pwd && git fetch gerrit $GERRIT_REFSPEC && git checkout FETCH_HEAD && git rebase gerrit/$GERRIT_BRANCH'"
             }
             sh "repo manifest -r"
+            sh "boardfarm/scripts/parse_commit_msg.sh"
         }
     }
 }
@@ -152,6 +153,7 @@ def run_test (loc, ts, post) {
         if (ts == null) {
             sh '''
             pwd
+            . ./.env
             . venv/bin/activate
             python --version
             bft --version
