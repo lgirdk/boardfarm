@@ -45,8 +45,8 @@ coverage.xml
 *,cover
 .hypothesis/
 **/assets/style.css
-report.html
-report.xml
+**/report.html
+**/report.xml
 
 # Translations
 *.mo
