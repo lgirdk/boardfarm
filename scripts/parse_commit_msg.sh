@@ -14,6 +14,9 @@ for change_id in $(repo forall -r ^$GERRIT_PROJECT$ -c  'git log -n1' | grep 'De
 	repo forall -r ^$proj\$ -c 'pwd && git fetch gerrit '$ref' && git rebase FETCH_HEAD && git rebase m/master'
 done
 
+rm -f .env
+touch .env
+
 if repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Environment:; then
 	echo export BFT_ARGS=$(realpath $(repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Environment: | awk '{print $2}')) > .env
 	. ./.env
