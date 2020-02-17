@@ -263,7 +263,7 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         device.expect_exact("python snmp.py")
         if device.expect(["Traceback", pexpect.TIMEOUT], timeout=3) == 0:
             device.expect_prompt()
-            data = False, "Python file error :\n%s" % device.before["\n"][-1].strip(), None
+            data = False, "Python file error :\n%s" % device.before.split("\n")[-1].strip(), None
         else:
             device.expect_prompt()
             result = [i.strip() for i in device.before.split('\n') if i.strip() != ""]
@@ -284,7 +284,7 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
                 stype = k
                 break
 
-    if value:
+    if value != None: # some operations require zero as a value
         status, result, stype = _run_snmp(True)
         assert status, "SNMP SET Error:\nMIB:%s\nError:%s" % (mib_name, result)
 
