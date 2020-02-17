@@ -16,6 +16,10 @@ if (meta != '') {
     meta_args = ""
 }
 
+// board parameter is default board going forward
+default_board = env.board
+env.board = null
+
 def sync_code () {
     println("Syncing code from gerrit")
     sshagent ( [ ssh_auth ] ) {
@@ -145,7 +149,9 @@ def run_unittest () {
     '''
 }
 
-def run_test (loc, ts, post) {
+def run_test (loc, ts, post, board) {
+    env.loc = loc
+    env.board = board
     println("Running in location = $loc, ts = $ts, and posting results = $post")
     ansiColor('xterm') {
         setup_python(python_version)
@@ -170,7 +176,7 @@ def run_test (loc, ts, post) {
                 if [ "$exit_code" = "0" ]; then
                     break
                 else
-                    for x in $(seq 60); do echo -n .; sleep 1; done
+                   sleep 30 
                 fi
             done
             '''
@@ -191,24 +197,23 @@ def run_test (loc, ts, post) {
                 if [ "$exit_code" = "0" ]; then
                     break
                 else
-                    for x in $(seq 60); do echo -n .; sleep 1; done
+                    sleep 30
                 fi
             done
             '''
 
         }
 
-        sh '''
-        mkdir -p  ''' + loc + '''/boardfarm/results
-        mv boardfarm/results/* ''' + loc + '''/boardfarm/results/ || true
-        '''
-        archiveArtifacts artifacts: loc + "/boardfarm/results/*"
+	// TODO: only saves one of each board type (Board: mv1 mv1) - not a huge deal atm
+        sh "mkdir -p  ${loc}/${board}/; mv boardfarm/results/* ${loc}/${board}/ || true"
+
+        archiveArtifacts artifacts: "${loc}/${board}/*"
 
         if (post == true) {
             sh '''
             echo "Test results in ''' + loc + '''" > message
             echo "============" >> message
-            cat ''' + loc + '''/boardfarm/results/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
+            cat ''' + loc + "/" + board + '''/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
             sed -e 's/"//g' -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
                while read -r line; do
                    echo $line >> message
@@ -217,54 +222,17 @@ def run_test (loc, ts, post) {
             post_gerrit_msg_from_file("message")
         }
 
-        sh 'grep tests_fail...0, ' + loc + '/boardfarm/results/test_results.json'
+        sh "grep tests_fail...0, ${loc}/${board}/test_results.json"
     }
 }
 
 loc_arr = location.tokenize(' ')
-
-def loc_selftest = [:]
-for (x in loc_arr) {
-    def loc = x
-    loc_selftest[loc] = {
-        stage("run bft in " + loc) {
-            node ('boardfarm && ' + loc) {
-                sync_code()
-                setup_python(python_version)
-                testsuites  = sh(returnStdout: true, script: """. venv/bin/activate; python -c 'from boardfarm import find_plugins; print(" ".join([ getattr(v, "selftest_testsuite", "") for k, v in find_plugins().items() if hasattr(v, "selftest_testsuite") ]))'""")
-                println("running testsuites = " + testsuites)
-                for (ts in testsuites.trim().tokenize(' ')) {
-                    println("running testsuite  = " + ts)
-                    run_test(loc, ts, false)
-                }
-            }
-        }
-    }
-}
-
-def loc_jobs = [:]
-for (x in loc_arr) {
-    def loc = x
-    loc_jobs[loc] = {
-        stage("run bft in " + loc) {
-            node ('boardfarm && ' + loc) {
-                sync_code()
-                run_test(loc, null, true)
-            }
-        }
-    }
-}
 
 def loc_cleanup = [:]
 for (x in loc_arr) {
     def loc = x
     loc_cleanup[loc] = {
         node ('boardfarm && ' + loc) {
-            emailext body: '''${FILE, path="''' + loc + '''/boardfarm/results/results.html"}''',
-                 mimeType: 'text/html',
-                 subject: "[Jenkins] ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}",
-                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                 to: email_results
             sh 'rm -rf ' + loc
         }
     }
@@ -301,6 +269,35 @@ pipeline {
         stage('run selftest') {
             steps {
                 script {
+                    sh '''./boardfarm/scripts/parse_commit_msg.sh'''
+                    boards = sh(returnStdout: true, script: '''. ./.env; echo $boards''')
+                    if (!boards?.trim()) {
+                        boards = default_board
+                    }
+                    testsuites  = sh(returnStdout: true, script: """. venv/bin/activate; python -c 'from boardfarm import find_plugins; print(" ".join([ getattr(v, "selftest_testsuite", "") for k, v in find_plugins().items() if hasattr(v, "selftest_testsuite") ]))'""")
+		    def loc_selftest = [:]
+                    idx = 1
+                    for (board in boards.trim().tokenize(' ')) {
+	                for (x in loc_arr) {
+                            def loc = x
+		            loc_selftest["${idx}: ${board}: $loc"] = {
+			        stage("run selftest in $loc on board $board") {
+                                    script {
+			                node ('boardfarm && ' + loc) {
+	                                    sync_code()
+                                            setup_python(python_version)
+                                            println("running testsuites = " + testsuites)
+                                            for (ts in testsuites.trim().tokenize(' ')) {
+                                                println("running testsuite  = " + ts)
+                                                run_test(loc, ts, false, board)
+                                            }
+                                        }
+                                    }
+                                }
+		            }
+                            idx++
+		        }
+		    }
                     parallel loc_selftest
                 }
             }
@@ -309,6 +306,28 @@ pipeline {
         stage('run test') {
             steps {
                 script {
+                    sh '''./boardfarm/scripts/parse_commit_msg.sh'''
+                    boards = sh(returnStdout: true, script: '''. ./.env; echo $boards''')
+                    if (!boards?.trim()) {
+                        boards = default_board
+                    }
+		    def loc_jobs = [:]
+                    idx = 1
+                    for (board in boards.trim().tokenize(' ')) {
+	                for (loc in loc_arr) {
+		            loc_jobs["${idx}: ${board}: $loc"] = {
+			        stage("run bft in $loc on board $board") {
+                                    script {
+			                node ('boardfarm && ' + loc) {
+	                                    sync_code()
+					    run_test(loc, null, true, board)
+                                        }
+                                    }
+                                }
+		            }
+                            idx++
+		        }
+		    }
                     parallel loc_jobs
                 }
             }

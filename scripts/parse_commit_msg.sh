@@ -24,3 +24,9 @@ if repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep ^Environment:; then
 		exit 1
 	fi
 fi
+
+if repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Boards:; then
+	echo export boards=\"$(repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Boards: | sed 's/.*Boards: //g')\" >> .env
+else
+	export boards=$board
+fi
