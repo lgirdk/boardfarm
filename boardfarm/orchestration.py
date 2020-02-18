@@ -54,6 +54,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.prefix = prefix
         self.verify_f, self.v_msg = None, None
         self.called_with = False
+        # Device manager, for accessing devices
+        self.dev = parent_test.dev
 
         # to maintain an id for each action.
         self.action_id = 1
