@@ -584,3 +584,245 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         print("all errors have been injected")
 
         print("%s: PASS"%(self.cls_name))
+
+
+from boardfarm.lib.env_helper import EnvHelper
+from boardfarm.exceptions import BftEnvMismatch
+class selftest_env_helper(rootfs_boot.RootFSBootTest):
+    """A simple (albeit verbose) test harness to verify the EnvHelper.env_check() function"""
+
+    def runTest(self):
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image.bin'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['image.bin']
+                            },
+                        'prov_mode': 'dual'
+                        },
+                    'devices':{
+                        'lan':True,
+                        'wlan':True
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+
+        tcenv = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None'
+                            },
+                        'prov_mode': 'dual'
+                        },
+                    'devices':{'lan':True}
+                    },
+                'version': '1.0'
+                }
+
+        print("1. test env is a subset of EnvHelper")
+        try:
+            env_helper.env_check(tcenv)
+            print('1. The test env is a subset of EnvHelper. Passed')
+        except Exception as e:
+            print('1 Failed: {}'.format(e))
+            raise
+
+        # ---------------------------------------------------------------------
+        tcenv['environment_def']['devices']['lan'] = False
+        print("2. test env is NOT subset of EnvHelper ('lan' values differ)")
+        try:
+            env_helper.env_check(tcenv)
+        except BftEnvMismatch:
+            print('2 Passed')
+        except Exception as e:
+            print('2 Failed: {}'.format(e))
+            assert 0,('2 Failed: sould have received BftEnvMismatch exception')
+        else:
+            assert 0, "2 Failed, test env 'lan' has a diff lan value, the code missed it!!!!!!"
+
+        # ---------------------------------------------------------------------
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image.bin'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['image.bin']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+        tcenv = {
+                'version': '2.0'
+                }
+
+        print("3. test env is NOT subset of EnvHelper ('version' values differ)")
+        try:
+            env_helper.env_check(tcenv)
+        except BftEnvMismatch:
+            print('3 Passed')
+        except Exception as e:
+            print('3 Failed: {}'.format(e))
+            assert 0,('3 Failed: sould have received BftEnvMismatch exception')
+        else:
+            assert 0, "3 Failed, test env has a diff version value, the code missed it!!!!!!"
+
+        # ---------------------------------------------------------------------
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image1', 'image2','image3','image4'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['imageA.bin','imageB.bin']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+        tcenv = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'downgrade_images': ['image1', 'image3']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        print("4. test env is a subset of EnvHelper (and has lists values)")
+        try:
+            env_helper.env_check(tcenv)
+            print('4 Passed')
+        except Exception as e:
+            assert 0, "4 Failed, test env images {} should be contained in the env helper, the code missed it!!!!!!".format(tcenv['environment_def']['board']['downgrade_images'])
+
+        # ---------------------------------------------------------------------
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image1', 'image2','image3','image4'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['imageA.bin','imageB.bin']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+        tcenv = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'downgrade_images': ['image', 'image3']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        print("5. test env is NOT a subset of EnvHelper (and has lists values)")
+        try:
+            env_helper.env_check(tcenv)
+        except BftEnvMismatch:
+            print('5 Passed:')
+        except Exception as e:
+            print('5 Failed: '.format(e))
+            assert 0,('5 Failed: should have received a BftEnvMismatch exception')
+        else:
+            assert 0, "5 Failed, test env images {} should NOT be contained in the env helper!!!!!!".format(tcenv['environment_def']['board']['downgrade_images'])
+
+        # ---------------------------------------------------------------------
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image1', 'image2','image3','image4'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['imageA.bin','imageB.bin']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+        tcenv = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'downgrade_images': [None]
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        print("6. test env is a subset of EnvHelper ('downgrade_images' list has wildcard value)")
+        try:
+            env_helper.env_check(tcenv)
+            print('6 Passed')
+        except Exception as e:
+            assert 0, "6 Failed, test env should  contained in the env helper!!!!!!"
+
+        # ---------------------------------------------------------------------
+        env = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'bootloader_image': 'None',
+                            'downgrade_images': ['image1', 'image2','image3','image4'],
+                            'load_image': 'image.bin',
+                            'upgrade_images': ['imageA.bin','imageB.bin']
+                            },
+                        'prov_mode': 'dual'
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        env_helper = EnvHelper(env)
+        tcenv = {
+                'environment_def': {
+                    'board': {
+                        'software': {
+                            'downgrade_images': ['image3','image4']
+                            },
+                        'prov_mode': None
+                        }
+                    },
+                'version': '1.0'
+                }
+
+        print("7. test env is a subset of EnvHelper ('prov_mode' has wildcard value)")
+        try:
+            env_helper.env_check(tcenv)
+            print('7 Passed')
+        except Exception as e:
+            assert 0, "7 Failed, test env should be contained in the env helper!!!!!!"

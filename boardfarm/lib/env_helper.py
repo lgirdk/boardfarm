@@ -1,4 +1,4 @@
-from boardfarm.exceptions import BftEnvExcKeyError
+from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
 
 class EnvHelper(object):
     '''
@@ -88,3 +88,51 @@ class EnvHelper(object):
             return True
         except:
             return False
+
+    def env_check(self, test_environment):
+        '''Given an environment (in for of a dictionary) as a parameter, checks
+        if it is a subset of the environment specs contained by the EnvHelper.
+
+        :param test_environment: the environment to be checked against the EnvHelper
+        environment
+        :type test_environment: dict
+
+        .. note:: raises BftEnvMismatch  if the test_environment is not contained
+        in the env helper environment
+        .. note:: recursively checks dictionaries
+        .. note:: A value of None in the test_environment is used as a wildcard, i.e.
+        matches any values int the EnvHelper
+        '''
+        def contained(env_test, env_helper, path="root"):
+            if type(env_test) is dict:
+                for k in env_test:
+                    if not contained(env_test[k], env_helper[k], path + '->' + k):
+                        return False
+            elif type(env_test) is list:
+                # Handle case where list is [None] and we just need *some value* in the env_helper
+                if env_test[0] is None and len(env_helper) > 0:
+                    return True
+                for i in range(len(env_test)):
+                    # assumes no dicts or other structures in the list
+                    if env_test[i] not in env_helper:
+                        return False
+            else:
+                if env_test is None and env_helper is not None:
+                    return True
+                elif env_test == env_helper:
+                    return True
+                else:
+                    return False
+
+            return True
+
+        if not contained(test_environment, self.env):
+            print('---------------------')
+            print(" test case env: ")
+            print(test_environment)
+            print(" env_helper   : ")
+            print(self.env)
+            print('---------------------')
+            raise BftEnvMismatch()
+
+        return True

@@ -61,8 +61,12 @@ class BftEnvException(BftBaseException):
     """Generic for Env related problems"""
     pass
 
-class BftEnvExcKeyError(BftBaseException):
+class BftEnvExcKeyError(BftEnvException):
     """Env error raised when a key is missing from ENV"""
+    pass
+
+class BftEnvMismatch(BftEnvException):
+    """Raised when an env value is wrong for a particular key"""
     pass
 
 class ConnectionRefused(BftBaseException):
