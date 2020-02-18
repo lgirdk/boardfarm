@@ -141,6 +141,10 @@ def log_message(s, msg, header=False):
     :param header: True or False, defaults to False. To display message as header
     :type header: Boolean, Optional
     """
+
+    if s.log_to_file is None:
+        s.log_to_file = ""
+
     line_sep = ('=' * min(len(msg), 80))
     full_msg = "\n\t\t" + line_sep + "\n\t\t" + msg + "\n\t\t" + line_sep + "\n"
     if header:

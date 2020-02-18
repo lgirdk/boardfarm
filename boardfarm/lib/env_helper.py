@@ -30,13 +30,16 @@ class EnvHelper(object):
         if mirror:
             self.mirror = mirror
 
-    def get_image(self):
+    def get_image(self, mirror=True):
         '''
         returns the desired image for this to run against concatenated with the
         site mirror for automated flashing without passing args to bft
         '''
         try:
-            return self.mirror + self.env['environment_def']['board']['software']['load_image']
+            if mirror:
+                return self.mirror + self.env['environment_def']['board']['software']['load_image']
+            else:
+                return self.env['environment_def']['board']['software']['load_image']
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
