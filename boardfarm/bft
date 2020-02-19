@@ -43,6 +43,8 @@ except Exception as e:
 from boardfarm.zephyr import zephyr_reporter
 
 import boardfarm.exceptions
+from boardfarm import devices
+from boardfarm.lib import DeviceManager
 from boardfarm.lib.bft_logging import write_test_log
 from boardfarm.lib.common import check_url
 from boardfarm.exceptions import BftNotSupportedDevice
@@ -151,6 +153,9 @@ def connect_and_run(config):
 
     boardfarm.current_config = config
 
+    # Find & import all available device classes
+    devices.probe_devices()
+
     from termcolor import colored
 
     os.environ["TERM"] = "dumb"
@@ -227,12 +232,8 @@ def connect_and_run(config):
 
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
-        from boardfarm.lib import DeviceManager
         device_mgr = DeviceManager.device_manager()
-
-        from boardfarm import devices
         devices.set_device_manager(device_mgr)
-        devices.probe_devices()
 
         try:
             # Use helper class to control access to configuration from tests
