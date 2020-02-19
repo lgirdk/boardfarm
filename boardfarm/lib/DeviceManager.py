@@ -99,18 +99,24 @@ class device_manager(UserList):
     Manages all your devices, for getting and creating (if needed)
     '''
 
-    '''
-    List of current devices, which we prefer to reuse instead of creating new ones
-    '''
-    devices = []
+    def __init__(self):
+        super().__init__()
+        # List of current devices, which we prefer to reuse instead of creating new ones
+        self.devices = []
+        # Devices that can create other devices, we store them for later
+        # so we can use them to create devices that might not already exist
+        self.factories = []
 
-    data = property(lambda self: [ x.obj for x in self.devices ] , lambda *args: None)
+    @property
+    def data(self):
+        return [ x.obj for x in self.devices ]
 
-    '''
-    Devices that can create other devices, we store them for later
-    so we can use them to create devices that might not already exist
-    '''
-    factories = []
+    @data.setter
+    def data(self, x):
+        '''
+        This should only really be used to clear/initialize the list of devices.
+        '''
+        self.devices = x
 
     def by_type(self, t, num=1):
         '''Shorthand for getting device by type'''

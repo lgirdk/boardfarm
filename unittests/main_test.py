@@ -74,6 +74,16 @@ class TestSimpleBoardfarm(unittest.TestCase):
         self.assertEqual('lan', y.name)
         self.assertIn('board', dir(mgr))
 
+    def test_two_devicemanagers(self):
+        '''
+        Verify DeviceManagers have separate lists of devices.
+        '''
+        from boardfarm.lib import DeviceManager
+        a = DeviceManager.device_manager()
+        b = DeviceManager.device_manager()
+        a._add_device('foo')
+        self.assertNotEqual(len(a), len(b))
+
     def test_devicemanager_devicenone(self):
         '''
         Verify we can get a default device from device manager
