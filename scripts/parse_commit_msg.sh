@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-for change_id in $(repo forall -r ^$GERRIT_PROJECT$ -c  'git log -n1' | grep 'Depends-on: ' | awk '{print $2}'); do
+for change_id in $(repo forall -r ^$GERRIT_PROJECT$ -c  'git log -n1' | grep '^Depends-on: ' | awk '{print $2}'); do
 	raw=$(ssh $auto_user@$GERRIT_HOST -p $GERRIT_PORT gerrit query --format JSON --patch-sets $change_id | \
 		jq -r 'if .patchSets then .patchSets[-1].ref,.project else empty end')
 
@@ -17,8 +17,8 @@ done
 rm -f .env
 touch .env
 
-if repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Environment:; then
-	echo export BFT_ARGS=$(realpath $(repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep Environment: | awk '{print $2}')) > .env
+if repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep ^Environment:; then
+	echo export BFT_ARGS=$(realpath $(repo forall -r ^$GERRIT_PROJECT$ -c 'git log -n1' | grep ^Environment: | awk '{print $2}')) >> .env
 	. ./.env
 	if [ ! -f "$BFT_ARGS" ]; then
 		exit 1
