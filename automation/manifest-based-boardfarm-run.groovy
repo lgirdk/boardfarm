@@ -170,7 +170,7 @@ def run_test (loc, ts, post) {
                 if [ "$exit_code" = "0" ]; then
                     break
                 else
-                    for i in $(seq 60); do echo -n .; sleep 1; done
+                    for x in $(seq 60); do echo -n .; sleep 1; done
                 fi
             done
             '''
@@ -191,7 +191,7 @@ def run_test (loc, ts, post) {
                 if [ "$exit_code" = "0" ]; then
                     break
                 else
-                    for i in $(seq 60); do echo -n .; sleep 1; done
+                    for x in $(seq 60); do echo -n .; sleep 1; done
                 fi
             done
             '''
