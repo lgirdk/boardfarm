@@ -72,3 +72,9 @@ class BftEnvMismatch(BftEnvException):
 class ConnectionRefused(BftBaseException):
     """Raise this exception when we fail to ssh/telnet to a machine"""
     pass
+
+class ContingencyCheckError(BftBaseException):
+    """Raise this exception when a contingency check fails after env check.
+    The contingency checks occurs at beginning of each test.
+    """
+    pass
