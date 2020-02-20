@@ -56,6 +56,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.called_with = False
         # Device manager, for accessing devices
         self.dev = parent_test.dev
+        if parent_test.log_to_file is None:
+            parent_test.log_to_file = ""
 
         # to maintain an id for each action.
         self.action_id = 1
@@ -68,7 +70,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             msg = "{} {}".format(time, msg)
         if wrap:
             msg = textwrap.TextWrapper(width=80, subsequent_indent=indent).fill(text=msg)
-        self.parent_test.log_to_file += msg + "\n\r"
+        self.parent_test.log_to_file += msg + "\r\n"
         cprint(msg, None, attrs=attr)
 
     def add_verify(self, func, v_msg):
@@ -136,6 +138,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             finally:
                 self.result.append(tr)
                 self.action_id += 1
+                self.actions = []
         if self.verify_f:
             try:
                 cond = self.verify_f()
@@ -176,7 +179,8 @@ if __name__ == '__main__':
 
     class Test1(object):
         steps = []
-        log_to_file = ""
+        log_to_file = None
+        dev = None
 
         def runTest(self):
             # this one can be used to define common test Steps
