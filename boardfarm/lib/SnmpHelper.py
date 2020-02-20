@@ -20,6 +20,7 @@ from pysmi.parser import SmiStarParser
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
 from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
+from pysnmp.hlapi import ObjectIdentifier
 
 def find_directory_in_tree(pattern, root_dir):
     """
@@ -237,7 +238,11 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         install_pysnmp(device)
         setattr(device, "pysnmp_installed", True)
 
-    oid = get_mib_oid(mib_name)
+    try:
+        ObjectIdentifier(mib_name)
+        oid = mib_name
+    except Exception:
+        oid = get_mib_oid(mib_name)
 
     def _run_snmp(py_set=False):
         action = "setCmd" if py_set else "getCmd"
