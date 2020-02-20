@@ -113,6 +113,8 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     break
                 except boardfarm.exceptions.SkipTest:
                     raise
+                except boardfarm.exceptions.ContingencyCheckError as e:
+                    raise
                 except Exception as e:
                     retry = retry - 1
                     if(retry > 0):
