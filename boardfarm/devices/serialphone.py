@@ -72,8 +72,7 @@ class SerialPhone(object):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         '''
-        AT = str.encode(number)
-        self.sendline("ser.write(b'ATDT%s\\r')" % AT)
+        self.sendline("ser.write(b'ATDT%s\\r')" % number)
         self.expect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
@@ -98,7 +97,7 @@ class SerialPhone(object):
         self.mta_readlines()
         self.expect("OK")
 
-    def kill(self):
+    def phone_kill(self):
         '''
         to kill the serial port console session
         '''
