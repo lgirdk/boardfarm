@@ -38,7 +38,7 @@ from selenium import webdriver
 from selenium.webdriver.common import proxy
 from .installers import install_pysnmp
 
-ubootprompt = ['ath>', '\(IPQ\) #', 'ar7240>']
+ubootprompt = ['ath>', r'\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
 prompts = ubootprompt + linuxprompt + ['/.* # ', ]
 
@@ -574,7 +574,7 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
     extra_arg = ''
 
     if not isinstance(parser, SnmpMibs):
-        match = re.search("\d+.(.*)", parser.mib[mib_name])
+        match = re.search(r"\d+.(.*)", parser.mib[mib_name])
         mib_oid = 'iso.' + match.group(1) + '.' + index
         oid = parser.mib[mib_name]
     else:
@@ -585,7 +585,7 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
         device.sendline("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + str(set_value))
         device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + str(set_value))
         if set_type != "s":
-            idx = device.expect(['Timeout: No Response from'] + [mib_oid + '\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
+            idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
         else:
             idx = device.expect(['Timeout: No Response from'] + [mib_oid + '\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] + device.prompt, timeout=time_out)
     elif set_type == "x":
@@ -596,7 +596,7 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
             set_value = set_value[2:]
         set_value_hex = set_value.upper()
         set_value_output = ' '.join([set_value_hex[i:i + 2] for i in range(0, len(set_value_hex), 2)])
-        idx = device.expect(['Timeout: No Response from'] + [mib_oid + '\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
+        idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
     elif set_type == "t" or set_type == "b" or set_type == "o" or set_type == "n" or set_type == "d":
         idx = 0
     elif set_type == "str_with_space":
@@ -642,8 +642,8 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
 
     # this should allow for legacy behaviour (with board passed in)
     if not isinstance(parser, SnmpMibs):
-        match = re.search("\d+.(.*)", parser.mib[mib_name])
-        mib_oid = 'iso\.' + match.group(1) + '.' + index
+        match = re.search(r"\d+.(.*)", parser.mib[mib_name])
+        mib_oid = r'iso\.' + match.group(1) + '.' + index
         oid = parser.mib[mib_name]
     else:
         extra_arg = ' -On '
@@ -657,7 +657,7 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
     else:
         device.sendline("snmpget -v 2c" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
         device.expect_exact("snmpget -v 2c" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
-    idx = device.expect(['Timeout: No Response from'] + [mib_oid + '\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
+    idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
     assert idx == 1, "Getting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
@@ -1095,7 +1095,7 @@ def ftp_file_create_delete(device, create_file=None, remove_file=None):
     """
     if create_file:
         device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" % create_file)
-        device.expect(["\d{6,8}\sbytes"] + device.prompt, timeout=90)
+        device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
         device.sendline("rm %s.txt" % remove_file)
@@ -1111,7 +1111,7 @@ def ftp_device_login(device, ip_mode, device_ip):
     :param device_ip: ip address of destination device(lan/wan)
     :type device_ip: String
     """
-    match = re.search("(\d)", str(ip_mode))
+    match = re.search(r"(\d)", str(ip_mode))
     value = match.group()
     device.sendline("ftp -%s %s" % (value, device_ip))
     device.expect("Name", timeout=10)
@@ -1174,7 +1174,7 @@ def http_service_kill(device, process):
         device.expect_prompt()
     device.sendline("ps -elf | grep %s" % process)
     device.expect_prompt()
-    match = re.search(".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
+    match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
     if match:
         device.sendline("kill -9 %s" % match.group(1))
         device.expect_prompt()
