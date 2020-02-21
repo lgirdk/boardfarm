@@ -109,9 +109,16 @@ class EnvHelper(object):
         def contained(env_test, env_helper, path="root"):
             if type(env_test) is dict:
                 for k in env_test:
-                    if not contained(env_test[k], env_helper[k], path + '->' + k):
+                    if  k not in env_helper or not contained(env_test[k],
+                                                             env_helper[k],
+                                                             path + '->' + k):
                         return False
             elif type(env_test) is list:
+                # Handle case where env_test is a list and the env_helper is a value:
+                # e.g. the env helper is configured in mode A
+                # the test can run in A, B or C configuration modes
+                if not type(env_helper) is list and env_helper in env_test:
+                    return True
                 # Handle case where list is [None] and we just need *some value* in the env_helper
                 if env_test[0] is None and len(env_helper) > 0:
                     return True
