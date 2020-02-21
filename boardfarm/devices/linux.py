@@ -3,7 +3,7 @@ import ipaddress
 import os
 import re
 import six
-
+import pexpect
 from . import base
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
 from boardfarm.exceptions import PexpectErrorTimeout
@@ -176,6 +176,18 @@ class LinuxDevice(base.BaseDevice):
                 return True
             else:
                 return False
+
+    def traceroute(self, host_ip, version='', options='', timeout=60):
+        '''Traceroute returns the route that packets take to a network host'''
+        try:
+            self.sendline("traceroute%s %s %s" % (version, options, host_ip))
+            self.expect_exact("traceroute%s %s %s" % (version, options, host_ip))
+            self.expect_prompt(timeout=timeout)
+            return self.before
+        except pexpect.TIMEOUT:
+            self.sendcontrol('c')
+            self.expect(self.prompt)
+            return None
 
     def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
         '''Checking the interface status'''
