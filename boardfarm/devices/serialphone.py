@@ -1,3 +1,4 @@
+import re
 class SerialPhone(object):
     '''
     Fax modem
@@ -17,6 +18,16 @@ class SerialPhone(object):
 
     def __str__(self):
         return "serialmodem %s" % self.line
+
+    def check_tty(self):
+        """to check if tty dev exists
+
+        rvalue: TRUE/FALSE
+        rtype: Boolean
+        """
+        self.sendline("find /dev/tty%s" % (self.line))
+        self.expect(self.prompt)
+        return bool(re.search((r' find \/dev\/tty%s\\r\\n/dev/tty%s\\r\\n' % (self.line, self.line)), self.before))
 
     def phone_config(self):
         '''
