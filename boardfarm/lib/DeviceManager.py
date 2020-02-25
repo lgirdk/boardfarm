@@ -42,6 +42,7 @@ class device_type(Enum):
     cdrouter = 21
     booster = 22
     softphone = 23
+    mac_sniffer = 24
 
 class device_location(Enum):
     '''
