@@ -87,10 +87,17 @@ def check_devices(devices, func_name='check_status'):
         if hasattr(d, func_name):
             # The next line is kind of like doing: d.func_name()
             # This allows 'func_name' to be any string.
+            saved_logfile_read = None
             try:
+                if hasattr(d, 'logfile_read'):
+                    saved_logfile_read = d.logfile_read
+                    d.logfile_read = None
+                print("Checking status for " + d.__class__.__name__ + " (see log in result dir for data)")
                 getattr(d, func_name)()
             except:
                 print("Status check for %s failed." % d.__class__.__name__)
+            if saved_logfile_read is not None:
+                d.logfile_read = saved_logfile_read
         elif 'BFT_DEBUG' in os.environ:
             print("Pro Tip: Write a function %s.%s() to run between tests." %
                   (d.__class__.__name__, func_name))
