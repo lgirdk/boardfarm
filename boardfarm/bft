@@ -451,13 +451,13 @@ def connect_and_run(config):
 
     logger.info("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
 
-    # Close connections to all devices
-    device_mgr.close_all()
-
     library.printd(config.board)
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
-    create_file_logs(config, board, tests_to_run, logger)
+    create_file_logs(config, device_mgr.board, tests_to_run, logger)
+
+    # Close connections to all devices
+    device_mgr.close_all()
 
     # Write test result messages to a file
     full_results = library.process_test_results(tests_to_run, config.golden_master_results)
