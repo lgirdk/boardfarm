@@ -260,10 +260,11 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         '''Add sudo in the sendline if username is root'''
         if self.username != "root":
             self.sendline("sudo true")
-            if 0 == self.expect(["password for .*:"] + self.prompt):
-                will_prompt_for_password = True
-            else:
+            i = self.expect(["password for .*:", "Password:"] + self.prompt)
+            if i > 1:
                 will_prompt_for_password = False
+            else:
+                will_prompt_for_password = True
 
             cmd = "sudo " + cmd
             if will_prompt_for_password:
