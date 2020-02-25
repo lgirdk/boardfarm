@@ -169,7 +169,7 @@ def run_test (loc, ts, post, board) {
             export PATH=$PATH:/home/$USER/bin
             if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
             cd boardfarm
-            for i in {1..1000}; do
+            for i in $(seq 1 1000); do
                 ./bft -y -b ''' + board + ''' -x ''' + testsuite + ''' ${changes_args}''' + extra_args + meta_args + ''' && exit_code=$? || exit_code=$?
                 echo bft exited with code = $exit_code
 
@@ -189,7 +189,7 @@ def run_test (loc, ts, post, board) {
             export BFT_CONFIG="$(repo forall -c \"[ -e ''' + loc + '''.json ] && realpath ''' + loc + '''.json\")"
             if [ "$BFT_DEBUG" != "y" ]; then unset BFT_DEBUG; fi
             cd boardfarm
-            for i in {1..1000}; do
+            for i in $(seq 1 1000); do
                 ./bft -y -b ''' + board + ''' -x ''' + ts + ''' ''' + extra_args + meta_args + ''' && exit_code=$? || exit_code=$?
 
                 echo bft exited with code = $exit_code
