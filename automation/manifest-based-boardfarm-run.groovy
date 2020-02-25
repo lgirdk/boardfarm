@@ -315,8 +315,8 @@ pipeline {
                     idx = 1
                     for (board in boards.trim().tokenize(' ')) {
 	                for (x in loc_arr) {
-                        def loc = x
-		            loc_jobs["${idx}: ${board}: $loc"] = {
+                            def loc = x
+                            loc_jobs["${idx}: ${board}: $loc"] = {
 			        stage("run bft in $loc on board $board") {
                                     script {
 			                node ('boardfarm && ' + loc) {
