@@ -451,19 +451,9 @@ def connect_and_run(config):
 
     logger.info("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
 
-    try:
-        board.close()
-        if 'devices' in config.board:
-            for device in config.devices:
-                getattr(config, device).close()
-        else:
-            if config.lan is not None:
-                config.lan.close()
-            if config.wan is not None:
-                config.wan.close()
-    except Exception as e:
-        logger.debug(e)
-        logger.warning("For some reason, could not close a connection.")
+    # Close connections to all devices
+    device_mgr.close_all()
+
     library.printd(config.board)
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")

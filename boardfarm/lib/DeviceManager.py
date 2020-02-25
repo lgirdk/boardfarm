@@ -1,8 +1,15 @@
+import sys
 import os
 from aenum import Enum
 from six.moves import UserList
 
 from boardfarm.exceptions import DeviceDoesNotExistError
+
+# Setup logging
+import logging
+logging.basicConfig(stream=sys.stdout, format='%(message)s')
+logger = logging.getLogger('DeviceManager')
+logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 class DeviceNone(object):
     def __getattr__(self, key):
@@ -118,6 +125,18 @@ class device_manager(UserList):
         This should only really be used to clear/initialize the list of devices.
         '''
         self.devices = x
+
+    def close_all(self):
+        '''Close connections to all devices'''
+        for d in self.devices:
+            try:
+                logger.debug("Closing connection to '%s'." % d.type.name)
+                d.obj.close()
+            except Exception as e:
+                logger.warning(e)
+                logger.warning("Problem trying to close connection to '%s'." % d.type.name)
+        # erase device list
+        self.devices = []
 
     def by_type(self, t, num=1):
         '''Shorthand for getting device by type'''
