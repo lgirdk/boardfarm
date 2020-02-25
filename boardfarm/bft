@@ -149,7 +149,12 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
     config.board['devices'].extend(dynamic_devices)
 
 def connect_and_run(config):
-    '''Connect to devices, run tests, record results.'''
+    config, device_mgr, env_helper, bfweb = connect_to_devices(config)
+    run_tests(config, device_mgr, env_helper, bfweb)
+
+
+def connect_to_devices(config):
+    '''Connect to devices.'''
 
     boardfarm.current_config = config
 
@@ -358,8 +363,11 @@ def connect_and_run(config):
 
     logger.info('\n==========')
     library.printd(config.board)
+    return config, device_mgr, env_helper, bfweb
 
-    # Run tests
+
+def run_tests(config, device_mgr, env_helper, bfweb):
+    '''On the given devices, setup the environment and run tests.'''
     os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
