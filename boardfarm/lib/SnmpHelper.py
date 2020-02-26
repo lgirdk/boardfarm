@@ -253,9 +253,9 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
                 'from pysnmp.hlapi import *',
                  pysnmp_cmd,
                 'errorIndication, errorStatus, errorIndex, varBinds = next(cmd)',
-                'print(errorStatus == 0)',
-                'result = varBinds[0][1] if errorStatus == 0 else errorStatus',
-                'print(result.prettyPrint())',
+                'print(errorIndication == None)',
+                'if errorIndication: result=errorIndication; print(result)',
+                'else: result=varBinds[0][1]; print(result.prettyPrint())',
                 'print(result.__class__.__name__)'
                 ]
 
