@@ -86,14 +86,14 @@ class AxirosACS(object):
         """
         pass
 
-    def get_ticketId(self, serial_number, param):
+    def get_ticketId(self, cpeid, param):
         """ACS server maintains a ticket ID for all TR069 RPC calls.
 
         This method will contruct a TR069 GPV query, execute it and
         return the ticket id associated with it.
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to used
         :type param: string
         :raises: NA
@@ -107,7 +107,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -121,15 +121,15 @@ class AxirosACS(object):
             break
         return ticketid
 
-    def get(self, serial_number, param, wait=8):
+    def get(self, cpeid, param, wait=8):
         """This method is used to perform a remote procedure call (GetParameterValue)
 
         The method will query the ACS server for value against ticket_id generated
         during the GPV RPC call.
-        Example usage : acs_server.get(self.serial_number, 'Device.DeviceInfo.SoftwareVersion')
+        Example usage : acs_server.get(self.cpeid, 'Device.DeviceInfo.SoftwareVersion')
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to be used in get
         :type param: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
@@ -138,17 +138,17 @@ class AxirosACS(object):
         :returns: first value of ACS reponse for the parameter.
         :rtype: string
         """
-        ticketid = self.get_ticketId(serial_number, param)
+        ticketid = self.get_ticketId(cpeid, param)
         if ticketid is None:
             return None
         return self.Axiros_GetTicketValue(ticketid, wait=wait)
 
-    def getcurrent(self, serial_number, param, wait=8):
+    def getcurrent(self, cpeid, param, wait=8):
         """This method is used to get the key, value of the response for the given parameter from board.
-        Example usage : acs_server.getcurrent(self.serial_number, 'Device.IP.Interface.')
+        Example usage : acs_server.getcurrent(self.cpeid, 'Device.IP.Interface.')
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to be used in get
         :type param: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
@@ -157,7 +157,7 @@ class AxirosACS(object):
         :returns: dictionary with the key, value of the response for the given parameter.
         :rtype: dict
         """
-        ticketid = self.get_ticketId(serial_number, param)
+        ticketid = self.get_ticketId(cpeid, param)
         for i in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
@@ -172,16 +172,16 @@ class AxirosACS(object):
                 dict_key_value[key.text] = value.text
             return dict_key_value
 
-    def set(self, serial_number, attr, value):
+    def set(self, cpeid, attr, value):
         """This method is used to set a parameter in board via TR069 RPC call (SetParameterValue).
 
         This method constructs a SPV query and sends it to ACS server
         ACS server will generate a ticket_id and perform the RPC call.
         The method will then return the value associated with the ticket_id
-        Example usage : acs_server.set(self.serial_number, 'Device.WiFi.AccessPoint.1.AC.1.Alias', "TestSSID")
+        Example usage : acs_server.set(self.cpeid, 'Device.WiFi.AccessPoint.1.AC.1.Alias', "TestSSID")
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param attr: attribute to be used to set
         :type attr: string
         :param values: the value to be set to the attr
@@ -198,7 +198,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -236,7 +236,7 @@ class AxirosACS(object):
 
         return response
 
-    def Axiros_DeleteCPEs(self, serial_number):
+    def Axiros_DeleteCPEs(self, cpeid):
         """This method is used to delete a CPE on the ACS server.
 
         :raises: NA
@@ -244,7 +244,7 @@ class AxirosACS(object):
         :rtype: True/False
         """
         CPESearchOptionsClassStruct_type = self.client.get_type('ns0:CPESearchOptionsClassStruct')
-        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(cpeid=serial_number)
+        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(cpeid=cpeid)
 
         CommandOptionsForCPESearchStruct_type = self.client.get_type('ns0:CommandOptionsForCPESearchStruct')
         CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
@@ -300,12 +300,12 @@ class AxirosACS(object):
                 return value.text
         return None
 
-    def rpc_GetParameterAttributes(self, serial_number, param):
+    def rpc_GetParameterAttributes(self, cpeid, param):
         """This method is used to get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
         Example usage : acs_server.rpc_GetParameterAttributes('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to be used in get
         :type param: string
         :raises: NA
@@ -319,7 +319,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -353,11 +353,11 @@ class AxirosACS(object):
 
         assert False, "rpc_GetParameterAttributes failed to lookup %s" % param
 
-    def rpc_SetParameterAttributes(self, serial_number, attr, value):
+    def rpc_SetParameterAttributes(self, cpeid, attr, value):
         """This method is used to set parameter attribute on ACS of the parameter specified i.e a remote procedure call (SetParameterAttribute).
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param attr: attribute to be used to set
         :type attr: string
         :param values: the value to be set to the attr
@@ -373,7 +373,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -391,11 +391,11 @@ class AxirosACS(object):
 
         return self.Axiros_GetTicketValue(ticketid)
 
-    def rpc_AddObject(self, serial_number, param, wait=8):
+    def rpc_AddObject(self, cpeid, param, wait=8):
         """This method is used to add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to be used to add
         :type param: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
@@ -411,7 +411,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -443,11 +443,11 @@ class AxirosACS(object):
 
         assert False, "rpc_AddObject failed to lookup %s" % param
 
-    def rpc_DelObject(self, serial_number, param):
+    def rpc_DelObject(self, cpeid, param):
         """This method is used to delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param param: parameter to be used to delete
         :type param: string
         :returns: ticket response on ACS ('0' is returned)
@@ -460,7 +460,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -478,11 +478,11 @@ class AxirosACS(object):
 
         return self.Axiros_GetTicketValue(ticketid)
 
-    def Read_Log_Message(self, serial_number, wait=8):
+    def Read_Log_Message(self, cpeid, wait=8):
         """This method is used to read ACS log messages
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
         :type wait: integer, optional
         :returns: ticket response on ACS(Log message)
@@ -492,7 +492,7 @@ class AxirosACS(object):
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -514,18 +514,18 @@ class AxirosACS(object):
             return dict_value1
         return None
 
-    def Del_Log_Message(self, serial_number, wait=8):
+    def Del_Log_Message(self, cpeid, wait=8):
         """This method is used to delete ACS log messages
 
-        :param serial_number: the serial number of the modem through which ACS communication happens.
-        :type serial_number: string
+        :param cpeid: the serial number of the modem through which ACS communication happens.
+        :type cpeid: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
         :type wait: integer, optional
         :returns: True or None
         :rtype: Boolean
         """
         CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=serial_number)
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
