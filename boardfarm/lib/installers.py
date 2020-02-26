@@ -1126,3 +1126,18 @@ def install_tcpdump(device):
         device.expect(device.prompt)
         device.sudo_sendline('apt-get install tcpdump -y')
         device.expect(device.prompt, timeout=90)
+
+def install_tshark(device):
+    """Install tshark if not present.
+
+    :param device: lan or wan or wlan...
+    :type device: Object
+    """
+    device.sudo_sendline('tshark -v')
+    try:
+        device.expect('TShark (Wireshark)', timeout=5)
+        device.expect(device.prompt)
+    except:
+        device.expect(device.prompt)
+        device.sudo_sendline('apt-get install tshark -y')
+        device.expect(device.prompt, timeout=90)
