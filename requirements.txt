@@ -25,6 +25,7 @@ pysmi
 pysnmp
 pytest
 pytest-html
+pytest-randomly
 pyvirtualdisplay
 requests
 selenium
