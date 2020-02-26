@@ -5,14 +5,15 @@ from functools import partial, wraps
 import six
 import textwrap
 import traceback
+import os
 
 class TestResult:
     logged = {}
-    def __init__(self, name, grade, message, result=None):
+    def __init__(self, name, grade, message, result=(None,None)):
         self.name = name
         self.result_grade = grade
         self.result_message = message
-        self.result = result
+        self.step, self.result = result
 
     def output(self):
         """Return output of a TestAction
@@ -98,6 +99,12 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             trace = traceback.format_exception(ex_type, ex_value, tb)
             self.log_msg("".join(trace).strip(), attr = [], no_time = True, wrap=False)
         self.log_msg(('-' * 80), no_time=True)
+        if tb and 'BFT_DEBUG' in os.environ:
+            step_output = ["Logging step output:"]
+            for i in self.result:
+                step_output.append("[{}] :: {}".format(i.step, i.result))
+            self.log_msg("\n".join(step_output), no_time=True, wrap=False)
+            self.log_msg(('-' * 80), no_time=True)
         self.called_with = False
 
     # msg has to be the verification message.
@@ -119,20 +126,21 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             raise CodeError("{} - no actions added before calling execute".format(self.msg))
 
         for a_id, action in enumerate(self.actions):
+            func_name = action.action.func.__name__
             prefix = "[{}]:[{} Step {}.{}]::[{}]".format(
                 self.parent_test.__class__.__name__,
                 self.prefix,
                 self.step_id,
                 self.action_id,
-                action.action.func.__name__)
+                func_name)
             tr = None
 
             try:
                 output = action.execute()
-                tr = TestResult(prefix, "OK", "", output)
-                self.log_msg("{} : PASS".format(prefix))
+                tr = TestResult(prefix, "OK", "", (func_name, output))
+                self.log_msg("{} : DONE".format(prefix))
             except Exception as e:
-                tr = TestResult(prefix, "FAIL", str(e), None)
+                tr = TestResult(prefix, "FAIL", str(e), (func_name, str(e)))
                 self.log_msg("{} : FAIL :: {}:{}".format(prefix, e.__class__.__name__,str(e)))
                 raise(e)
             finally:
