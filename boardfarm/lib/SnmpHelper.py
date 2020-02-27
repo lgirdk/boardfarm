@@ -245,9 +245,16 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         oid = get_mib_oid(mib_name)
 
     def _run_snmp(py_set=False):
-        action = "setCmd" if py_set else "getCmd"
+        action = "getCmd"
+        set_value = ""
+        if py_set:
+            action = "setCmd"
+            if str(value).lower().startswith("0x"):
+                set_value = ', %s(hexValue="%s")' % (stype, value[2:])
+            else:
+                set_value = ', %s("%s")' % (stype, value)
         pysnmp_cmd = 'cmd = %s(SnmpEngine(), CommunityData("%s"), UdpTransportTarget(("%s", 161), timeout=%s, retries=%s), ContextData(), ObjectType(ObjectIdentity("%s.%s")%s))' % \
-                (action, community, ip, timeout, retries, oid, index, ', %s("%s")' % (stype, value) if py_set else "")
+                (action, community, ip, timeout, retries, oid, index, set_value)
 
         py_steps = [
                 'from pysnmp.hlapi import *',
