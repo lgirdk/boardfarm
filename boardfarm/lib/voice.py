@@ -72,7 +72,7 @@ def dns_setup_sipserver(sip_server, config):
     except Exception as e:
         raise Exception("Unable to initialize dns, failed due to the error : ", e)
 
-def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number):
+def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number, tcid):
     '''
     To make a basic call
 
@@ -94,10 +94,10 @@ def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number):
     #phone answer
     callee.answer()
     #board verify
-    media_out = board.check_media_started()
+    media_out = board.check_media_started(tcid)
     #call hangup
     board.expect(pexpect.TIMEOUT, timeout=20)
-    board.send_sip_offhook_onhook(flag="onhook")
+    board.send_sip_offhook_onhook(flag="onhook", tcid= tcid)
     #phone kill
     caller.phone_kill()
     callee.phone_kill()
