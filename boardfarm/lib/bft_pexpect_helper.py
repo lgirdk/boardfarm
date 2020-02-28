@@ -91,7 +91,7 @@ class bft_pexpect_helper(pexpect.spawn):
                     'tftp_server', 'config', 'power_ip', 'conn_cmd', 'power_username',
                     'start', 'tftp_password']
         for arg in bad_args:
-            kwargs.pop(arg)
+            kwargs.pop(arg, None)
         if IS_PYTHON_3:
             kwargs['encoding'] = 'latin1'
         super(bft_pexpect_helper, self).__init__(*args, **kwargs)
