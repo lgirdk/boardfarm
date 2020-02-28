@@ -1,6 +1,7 @@
 import pexpect
 from nested_lookup import nested_lookup
 from boardfarm.lib.common import retry_on_exception
+from boardfarm.lib.installers import apt_install
 
 def add_dns_auth_record(dns, sipserver_name):
     '''
@@ -67,6 +68,9 @@ def dns_setup_sipserver(sip_server, config):
     '''
     try:
         if sip_server:
+            sip_server.disable_ipv6(sip_server.iface_dut)
+            sip_server.sendline('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
+            apt_install(sip_server, 'dnsmasq')
             sip_server.setup_dnsmasq(config)
             add_dns_auth_record(sip_server, sip_server.name)
     except Exception as e:
