@@ -214,7 +214,7 @@ def run_test (loc, ts, post, board) {
             echo "Test results in ''' + loc + '''" > message
             echo "============" >> message
             cat ''' + loc + "/" + board + '''/test_results.json | jq '.test_results[] | [ .grade, .name, .message, .elapsed_time ] | @tsv' | \
-            sed -e 's/"//g' -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
+            sed -e 's/"//g' -e "s/'//g" -e 's/\\\\t/\\t/g' -e 's/\\\\n/ /g' | \
                while read -r line; do
                    echo $line >> message
                done
