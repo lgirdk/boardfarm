@@ -7,6 +7,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 from boardfarm.lib.common import retry_on_exception
+import pexpect
 import ipaddress
 import six
 
@@ -77,6 +78,30 @@ def tcpdump_read(device, capture_file, protocol='', opts=''):
     device.expect(device.prompt)
     return output
 
+def tshark_read(device, capture_file, packet_details=False, filter_str=None):
+    """Read the packets via tshark
+
+    :param device: lan or wan...
+    :type device: Object
+    :param capture_file: Filename in which the packets were captured
+    :type capture_file: String
+    :param packet_details: output of packet tree (Packet Details)
+    :type packet_details: Bool
+    :param filter_str: capture filter, ex. 'data.len == 1400'
+    :type filter_str: String
+    """
+    command_string='tshark -r {} '.format(capture_file)
+    if packet_details:
+        command_string+='-V '
+    if filter_str:
+        command_string+='\'{}\''.format(filter_str)
+
+    device.sendline(command_string)
+    device.expect(pexpect.TIMEOUT, timeout=5)
+    output = device.before
+    device.sudo_sendline("rm %s" % (capture_file))
+    device.expect(device.prompt)
+    return output
 
 def sip_read(device, capture_file):
     """Read and filter SIP packets from the captured file.
