@@ -10,7 +10,7 @@ from boardfarm.lib.common import retry_on_exception
 import ipaddress
 import six
 
-def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap'):
+def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap', filters=None):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
     The kill_process method can be used to kill the process.
@@ -23,14 +23,18 @@ def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap
     :type port: String
     :param capture_file: Filename to create in which packets shall be stored. Defaults to 'pkt_capture.pcap'
     :type capture_file: String, Optional
+    :param filters: dictionary of additional filters and filter_values as key value pair (eg: {"-v":"","-c": "4"})
+    :type filters: dict
     :return: Console ouput of tcpdump sendline command.
     :rtype: string
     """
-
-    if port == None:
-        device.sudo_sendline("tcpdump -i %s -n -w %s &" % (interface, capture_file))
+    base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
+    run_background = " &"
+    filter_str = ' '.join([' '.join(i) for i in filters.items()]) if filters else ''
+    if port:
+        device.sudo_sendline(base+ "\'portrange %s\' " % (port)+filter_str+run_background)
     else:
-        device.sudo_sendline("tcpdump -i %s -n \'portrange %s\' -w %s &" % (interface, port, capture_file))
+        device.sudo_sendline(base+filter_str+run_background)
     device.expect_exact('tcpdump: listening on %s' % interface)
     return device.before
 
