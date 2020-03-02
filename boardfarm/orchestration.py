@@ -81,6 +81,10 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
     def add(self, func, *args, **kwargs):
         TestAction(self, partial(func, *args, **kwargs))
 
+    def call(self, func, *args, **kwargs):
+        self.add(func, *args, **kwargs)
+        self.execute()
+
     def __enter__(self):
         self.msg = "[{}]:[{} Step {}]".format(self.parent_test.__class__.__name__, self.prefix , self.step_id)
         print()
@@ -193,7 +197,7 @@ if __name__ == '__main__':
         def runTest(self):
             # this one can be used to define common test Steps
             # note: we could assign a section to a test-step, e.g. Set-up in this case.
-            with TestStep(self, "This is step1 of test setup", "Test Setup") as ts:
+            with TestStep(self, "This is step1 of test setup", "Example 1") as ts:
 
                 # if you're intializing a TA, pass the function as a partial,
                 # else code will fail
@@ -210,15 +214,22 @@ if __name__ == '__main__':
             # variation 2, call execute multiple times.
             # Note: here you might need to change verification for each execute, manually
             # Note: don't pop the output, we might need it to log step results later
-            with TestStep(self, "This is step1 of execution") as ts:
+            with TestStep(self, "This is step1 of execution", "Example 2") as ts:
                 for i in [1,2,3,4]:
                     ts.add(add_100, i)
                     ts.execute()
                     ts.verify(ts.result[-1].output() == 100+i, "Verification for input: {}".format(i))
 
+            # variation 4
+            # This is to ensure that you can call and verify functions directly
+            with TestStep(self, "This is call step variation of execution", "Example 4") as ts:
+                ts.call(action1, 2, m=3)
+                ts.call(action2, 6, m=1)
+                ts.verify(ts.result[1].output() != 3, "verify variation 4 output")
+
             # variation 3
             # need this to reset the counter.
-            with TestStep(self, "This is step2 of execution") as ts:
+            with TestStep(self, "This is step2 of execution", "Example 3") as ts:
                 ts.add(action1, 2, m=3)
                 ts.add(action2, 6, m=0)
                 ts.execute()
