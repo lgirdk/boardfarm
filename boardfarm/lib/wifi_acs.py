@@ -15,9 +15,9 @@ class wifi_acs(wifi_stub):
         """
         self.wan = wan
         self.board = board
-        wan_ip = board.get_interface_ipaddr(board.wan_iface)
+        self.wan_ip = board.get_interface_ipaddr(board.wan_iface)
         self.acs_server = acs_server
-        self.cpeid = board.get_cpeid(wan, wan_ip)
+        self.cpeid = board.get_cpeid().replace('-',':')
         self.acs_data = self.board.wifi_acs_file
 
     def prepare(self):
@@ -26,7 +26,7 @@ class wifi_acs(wifi_stub):
         """
         acs_value = self.acs_server.get(self.cpeid, 'Device.DeviceInfo.SerialNumber')
         if acs_value == None:
-            self.board.restart_tr069(self)
+            self.board.restart_tr069(self.wan, self.wan_ip)
 
     def _check_acspath_spectrum(self, wifi_mode, ssid_flag=0):
         """Check and get the acs data object
