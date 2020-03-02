@@ -147,9 +147,6 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
                 self.result.append(tr)
                 self.action_id += 1
                 self.actions = []
-
-        self.parent_test.subtests = self.result
-
         if self.verify_f:
             try:
                 cond = self.verify_f()
