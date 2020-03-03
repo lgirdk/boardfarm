@@ -892,8 +892,8 @@ def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.t
     if not result:
         apt_install(device, 'make')
         apt_install(device, 'gcc')
-        apt_install(device, 'pkgconfig')
-        apt_install(device, 'libsound2dev')
+        apt_install(device, 'pkg-config')
+        apt_install(device, 'libasound2-dev')
         install_wget(device)
         device.sendline('wget %s' % url)
         device.expect(device.prompt, timeout=100)
