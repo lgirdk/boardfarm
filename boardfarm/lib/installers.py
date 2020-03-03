@@ -25,6 +25,8 @@ def apt_install(device, name, timeout=120):
     :type timeout: integer, optional
     :raises assertion: package is not installed correctly
     """
+    device.sendline('export DEBIAN_FRONTEND=noninteractive')
+    device.expect(device.prompt)
     apt_update(device)
     device.sendline('apt-get install -q -y %s' % name)
     device.expect('Reading package')
