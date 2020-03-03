@@ -2,7 +2,11 @@ import functools
 from boardfarm.lib.bft_logging import log_message
 from boardfarm.exceptions import PexpectErrorTimeout
 import pexpect
+from debtcollector import removals
+import warnings
 
+warnings.simplefilter('always',DeprecationWarning)
+@removals.remove
 def skip_on_fail(func):
     """If a test fails then it will throw a skipTest error"""
     @functools.wraps(func)

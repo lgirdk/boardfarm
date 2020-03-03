@@ -36,3 +36,4 @@ termcolor
 unittest2
 xmltodict
 zeep
+debtcollector
