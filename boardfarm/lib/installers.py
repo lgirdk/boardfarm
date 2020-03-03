@@ -7,6 +7,7 @@
 
 import re
 import pexpect
+from retry.api import retry_call
 
 """
 Libraries to install linux packages
@@ -867,13 +868,18 @@ def check_pjsua(device):
     :param device: lan or wan
     :type device: Object
     """
-    try:
-        device.sendline('pjsua')
-        device.expect(['Ready: Success'], timeout=10)
+    device.sendline('pjsua')
+    i = device.expect(['Ready: Success'] + device.prompt, timeout=10)
+
+    def recover_shell():
         device.sendcontrol('c')
-        device.expect(device.prompt)
+        device.expect(device.prompt, timeout=10)
+
+    retry_call(recover_shell, tries=5)
+
+    if i == 0:
         return True
-    except:
+    else:
         return False
 
 

@@ -28,6 +28,7 @@ pytest-html
 pytest-randomly
 pyvirtualdisplay
 requests
+retry
 selenium
 simplejson
 six
