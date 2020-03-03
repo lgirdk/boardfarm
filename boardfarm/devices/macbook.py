@@ -3,14 +3,15 @@ import sys
 import pexpect
 from boardfarm.devices import connection_decider, debian
 
+
 class Macbook(debian.DebianBox):
     """Implementation for macbook
     """
 
     model = "macbook"
     name = "mac_sniffer"
-    prompt=[r".*\$"]
-    iface_wifi='en0'
+    prompt = [r".*\$"]
+    iface_wifi = 'en0'
 
     def __init__(self, *args, **kwargs):
         """ Constructor method
@@ -21,9 +22,12 @@ class Macbook(debian.DebianBox):
         self.username = self.kwargs['username']
         self.password = self.kwargs['password']
 
-        conn_cmd = "ssh -o \"StrictHostKeyChecking no\" %s@%s" % (self.username, self.ipaddr)
+        conn_cmd = "ssh -o \"StrictHostKeyChecking no\" %s@%s" % (
+            self.username, self.ipaddr)
 
-        self.connection = connection_decider.connection("local_cmd", device=self, conn_cmd=conn_cmd)
+        self.connection = connection_decider.connection("local_cmd",
+                                                        device=self,
+                                                        conn_cmd=conn_cmd)
         self.connection.connect()
 
         if 0 == self.expect(['Password:'] + self.prompt):
@@ -44,7 +48,7 @@ class Macbook(debian.DebianBox):
         """Set sniff channel
         :rtype: string
         """
-        command = 'airport %s sniff %s' %(self.iface_wifi, channel)
+        command = 'airport %s sniff %s' % (self.iface_wifi, channel)
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=3)
         self.sendline('\x03')
@@ -55,7 +59,7 @@ class Macbook(debian.DebianBox):
         :return: List of SSID
         :rtype: string
         """
-        command = 'airport %s --scan' %self.iface_wifi
+        command = 'airport %s --scan' % self.iface_wifi
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=10)
         return self.before
@@ -86,7 +90,8 @@ class Macbook(debian.DebianBox):
         :return: Console ouput of tcpdump sendline command.
         :rtype: string
         """
-        self.sendline("tcpdump -I -n -i %s -w %s -c %d" % (self.iface_wifi, capture_file, count))
+        self.sendline("tcpdump -I -n -i %s -w %s -c %d" %
+                      (self.iface_wifi, capture_file, count))
         self.expect(self.prompt)
         return self.before
 
@@ -104,7 +109,8 @@ class Macbook(debian.DebianBox):
         :return: Output of tcpdump read command.
         :rtype: string
         """
-        self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' % (capture_file, ssid_name))
+        self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' %
+                      (capture_file, ssid_name))
         self.expect(pexpect.TIMEOUT, timeout=10)
         output = self.before
         self.sendline("rm %s" % (capture_file))

@@ -12,6 +12,7 @@ from . import base
 
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class DellSwitch(base.BaseDevice):
     '''
     Connects to and configures a Dell Switch
@@ -19,10 +20,10 @@ class DellSwitch(base.BaseDevice):
 
     prompt = ['console>', 'console#', 'console\(config.*\)#']
 
-    def __init__(self,
-                 conn_cmd,
-                 password=''):
-        bft_pexpect_helper.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
+    def __init__(self, conn_cmd, password=''):
+        bft_pexpect_helper.spawn.__init__(self,
+                                          '/bin/bash',
+                                          args=['-c', conn_cmd])
         self.logfile_read = sys.stdout
         self.password = password
 
@@ -119,6 +120,7 @@ class DellSwitch(base.BaseDevice):
         self.expect(self.prompt)
         self.sendline('config')
         self.expect(self.prompt)
+
 
 if __name__ == '__main__':
     dell_switch = DellSwitch(sys.argv[1])

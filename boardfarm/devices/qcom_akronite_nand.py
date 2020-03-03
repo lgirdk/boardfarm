@@ -15,11 +15,17 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
     model = ("ipq8066", "db149", "ap145", "ap148", "ap148-osprey",
              "ap148-beeliner", "ap160-1", "ap160-2", "ap161")
 
-    machid_table = {"db149": "125b", "ap145": "12ca",
-          "ap148": "1260", "ap148-beeliner": "1260",
-          "ap148-osprey": "1260", "ap160-1": "136b",
-          "ap160-2": "136b", "ap161": "136c",
-          "dk04": "8010001"}
+    machid_table = {
+        "db149": "125b",
+        "ap145": "12ca",
+        "ap148": "1260",
+        "ap148-beeliner": "1260",
+        "ap148-osprey": "1260",
+        "ap160-1": "136b",
+        "ap160-2": "136b",
+        "ap161": "136c",
+        "dk04": "8010001"
+    }
     uboot_ddr_addr = "0x42000000"
 
     def __init__(self, *args, **kwargs):
@@ -49,7 +55,8 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
         self.sendline('ipq_nand sbl')
         self.expect(self.uprompt)
-        self.nand_flash_bin(self.uboot_addr, self.uboot_size, self.uboot_ddr_addr)
+        self.nand_flash_bin(self.uboot_addr, self.uboot_size,
+                            self.uboot_ddr_addr)
         self.reset()
         self.wait_for_boot()
         self.setup_uboot_network()
@@ -64,7 +71,8 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         filename = self.prepare_file(ROOTFS)
 
         self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.nand_flash_bin(self.rootfs_addr, self.rootfs_size, self.uboot_ddr_addr)
+        self.nand_flash_bin(self.rootfs_addr, self.rootfs_size,
+                            self.uboot_ddr_addr)
 
     def flash_linux(self, KERNEL):
         """This method flashes the Qcom Akronite board by copying file to the board using TFTP protocol.
@@ -77,7 +85,7 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
 
         raise Exception("Kernel is in UBI rootfs, not separate")
 
-    def boot_linux(self, rootfs = None, bootargs = ""):
+    def boot_linux(self, rootfs=None, bootargs=""):
         """This method boots Qcom Akronite board.
 
         :param rootfs: Indicates the rootsfs image path if needs to be loaded (parameter to be used at later point), defaults to None.

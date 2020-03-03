@@ -1,4 +1,6 @@
 from boardfarm.lib.installers import apt_install
+
+
 class SipCenter(object):
     '''
     asterisk  server

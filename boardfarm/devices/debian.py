@@ -24,6 +24,7 @@ from boardfarm.lib.network_helper import valid_ipv4
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
+
 class DebianBox(linux.LinuxDevice):
     '''
     A linux machine running an ssh server.
@@ -52,9 +53,7 @@ class DebianBox(linux.LinuxDevice):
     gwv6 = None
     ipv6_prefix = 64
 
-    def __init__(self,
-                 *args,
-                 **kwargs):
+    def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
         name = kwargs.pop('name', None)
@@ -71,27 +70,32 @@ class DebianBox(linux.LinuxDevice):
         post_cmd_host = kwargs.pop('post_cmd_host', None)
         post_cmd = kwargs.pop('post_cmd', None)
         cleanup_cmd = kwargs.pop('cleanup_cmd', None)
-        lan_network = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_network', "192.168.1.0/24"))).network
-        lan_gateway = ipaddress.IPv4Interface(six.text_type(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
+        lan_network = ipaddress.IPv4Interface(
+            six.text_type(kwargs.pop('lan_network', "192.168.1.0/24"))).network
+        lan_gateway = ipaddress.IPv4Interface(
+            six.text_type(kwargs.pop('lan_gateway', "192.168.1.1/24"))).ip
 
         self.http_proxy = kwargs.pop('http_proxy', None)
 
         if pre_cmd_host is not None:
             sys.stdout.write("\tRunning pre_cmd_host.... ")
             sys.stdout.flush()
-            phc = bft_pexpect_helper.spawn(command='bash', args=['-c', pre_cmd_host], env=env)
+            phc = bft_pexpect_helper.spawn(command='bash',
+                                           args=['-c', pre_cmd_host],
+                                           env=env)
             phc.expect(pexpect.EOF, timeout=120)
             print("\tpre_cmd_host done")
 
         if ipaddr is not None:
-            bft_pexpect_helper.spawn.__init__(self,
-                                   command="ssh",
-                                   args=['%s@%s' % (username, ipaddr),
-                                         '-p', port,
-                                         '-o', 'StrictHostKeyChecking=no',
-                                         '-o', 'UserKnownHostsFile=/dev/null',
-                                         '-o', 'ServerAliveInterval=60',
-                                         '-o', 'ServerAliveCountMax=5'])
+            bft_pexpect_helper.spawn.__init__(
+                self,
+                command="ssh",
+                args=[
+                    '%s@%s' % (username, ipaddr), '-p', port, '-o',
+                    'StrictHostKeyChecking=no', '-o',
+                    'UserKnownHostsFile=/dev/null', '-o',
+                    'ServerAliveInterval=60', '-o', 'ServerAliveCountMax=5'
+                ])
 
             self.ipaddr = ipaddr
 
@@ -102,7 +106,10 @@ class DebianBox(linux.LinuxDevice):
         if cmd is not None:
             sys.stdout.write("\tRunning cmd.... ")
             sys.stdout.flush()
-            bft_pexpect_helper.spawn.__init__(self, command="bash", args=['-c', cmd], env=env)
+            bft_pexpect_helper.spawn.__init__(self,
+                                              command="bash",
+                                              args=['-c', cmd],
+                                              env=env)
             self.ipaddr = None
             print("\tcmd done")
 
@@ -120,7 +127,10 @@ class DebianBox(linux.LinuxDevice):
         self.tftp_device = self
 
         try:
-            i = self.expect(["yes/no", "assword:", "Last login", username + ".*'s password:"] + self.prompt, timeout=30)
+            i = self.expect([
+                "yes/no", "assword:", "Last login", username + ".*'s password:"
+            ] + self.prompt,
+                            timeout=30)
         except PexpectErrorTimeout:
             raise Exception("Unable to connect to %s." % name)
         except pexpect.EOF:
@@ -150,7 +160,8 @@ class DebianBox(linux.LinuxDevice):
             else:
                 self.gw = lan_gateway + lan_network.num_addresses
 
-        self.gw_ng = ipaddress.IPv4Interface(six.text_type(str(self.gw) + '/' + str(lan_network.prefixlen)))
+        self.gw_ng = ipaddress.IPv4Interface(
+            six.text_type(str(self.gw) + '/' + str(lan_network.prefixlen)))
         self.nw = self.gw_ng.network
         self.gw_prefixlen = self.nw.prefixlen
 
@@ -168,17 +179,21 @@ class DebianBox(linux.LinuxDevice):
                     self.gw = self.gw_ng.ip
                     self.static_ip = True
                 if opt.startswith('wan-static-ipv6:'):
-                    ipv6_address = six.text_type(opt.replace('wan-static-ipv6:', ''))
+                    ipv6_address = six.text_type(
+                        opt.replace('wan-static-ipv6:', ''))
                     if "/" not in opt:
-                        ipv6_address += "/%s" % six.text_type(str(self.ipv6_prefix))
+                        ipv6_address += "/%s" % six.text_type(
+                            str(self.ipv6_prefix))
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
                     self.ipv6_prefix = self.ipv6_interface._prefixlen
                     self.gwv6 = self.ipv6_interface.ip
                 if opt.startswith('wan-static-route:'):
-                    self.static_route = opt.replace('wan-static-route:', '').replace('-', ' via ')
+                    self.static_route = opt.replace('wan-static-route:',
+                                                    '').replace('-', ' via ')
                 # TODO: remove wan-static-route at some point above
                 if opt.startswith('static-route:'):
-                    self.static_route = opt.replace('static-route:', '').replace('-', ' via ')
+                    self.static_route = opt.replace('static-route:',
+                                                    '').replace('-', ' via ')
                 if opt == 'wan-dhcp-client':
                     self.wan_dhcp = True
                 if opt == 'wan-no-eth0':
@@ -193,7 +208,6 @@ class DebianBox(linux.LinuxDevice):
                 else:
                     self.mgmt_dns = "8.8.8.8"
 
-
         if ipaddr is None:
             self.sendline('hostname')
             self.expect('hostname')
@@ -201,12 +215,15 @@ class DebianBox(linux.LinuxDevice):
             ipaddr = self.ipaddr = self.before.strip()
 
         self.sendline('alias mgmt')
-        idx = self.expect(['alias mgmt=', 'alias: mgmt: not found', pexpect.TIMEOUT], timeout=10)
+        idx = self.expect(
+            ['alias mgmt=', 'alias: mgmt: not found', pexpect.TIMEOUT],
+            timeout=10)
         if idx == 0:
             self.expect(self.prompt)
             self.shim = "mgmt"
             self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
-            self.expect_exact('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
+            self.expect_exact(
+                'alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
         self.expect(self.prompt)
 
         cmsg = '%s ' % ipaddr
@@ -219,7 +236,9 @@ class DebianBox(linux.LinuxDevice):
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
             sys.stdout.flush()
-            phc = bft_pexpect_helper.spawn(command='bash', args=['-c', post_cmd_host], env=env)
+            phc = bft_pexpect_helper.spawn(command='bash',
+                                           args=['-c', post_cmd_host],
+                                           env=env)
             i = phc.expect([pexpect.EOF, pexpect.TIMEOUT, 'password'])
             if i > 0:
                 print("\tpost_cmd_host did not complete, it likely failed\n")
@@ -246,7 +265,8 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('ip route | grep {!s}'.format(interface))
         self.expect(self.prompt)
 
-        match = re.search('default via (.*) dev {!s}.*\r\n'.format(interface), self.before)
+        match = re.search('default via (.*) dev {!s}.*\r\n'.format(interface),
+                          self.before)
         if match:
             return match.group(1)
         else:
@@ -255,7 +275,9 @@ class DebianBox(linux.LinuxDevice):
     def run_cleanup_cmd(self):
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
         sys.stdout.flush()
-        cc = bft_pexpect_helper.spawn(command='bash', args=['-c', self.cleanup_cmd], env=env)
+        cc = bft_pexpect_helper.spawn(command='bash',
+                                      args=['-c', self.cleanup_cmd],
+                                      env=env)
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
@@ -269,34 +291,46 @@ class DebianBox(linux.LinuxDevice):
         time.sleep(15)  # Wait for the network to go down.
         for i in range(0, 20):
             try:
-                bft_pexpect_helper.spawn('ping -w 1 -c 1 ' + self.name).expect('64 bytes', timeout=1)
+                bft_pexpect_helper.spawn('ping -w 1 -c 1 ' + self.name).expect(
+                    '64 bytes', timeout=1)
             except:
                 print(self.name + " not up yet, after %s seconds." % (i + 15))
             else:
-                print("%s is back after %s seconds, waiting for network daemons to spawn." % (self.name, i + 14))
+                print(
+                    "%s is back after %s seconds, waiting for network daemons to spawn."
+                    % (self.name, i + 14))
                 time.sleep(15)
                 break
-        self.__init__(self.name, self.color,
-                      self.output, self.username,
-                      self.password, self.port,
+        self.__init__(self.name,
+                      self.color,
+                      self.output,
+                      self.username,
+                      self.password,
+                      self.port,
                       reboot=False)
 
     def install_pkgs(self):
         if self.pkgs_installed == True:
             return
 
-        self.sendline('echo "Acquire::ForceIPv4 "true";" > /etc/apt/apt.conf.d/99force-ipv4')
+        self.sendline(
+            'echo "Acquire::ForceIPv4 "true";" > /etc/apt/apt.conf.d/99force-ipv4'
+        )
         self.expect(self.prompt)
 
-        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp and not getattr(self, 'standalone_provisioner', False):
+        if not self.wan_no_eth0 and not self.wan_dhcp and not self.install_pkgs_after_dhcp and not getattr(
+                self, 'standalone_provisioner', False):
             self.sendline('ifconfig %s down' % self.iface_dut)
             self.expect(self.prompt)
 
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd"
 
         def _install_pkgs():
-            self.sendline('apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
-            if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+            self.sendline(
+                'apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s'
+                % pkgs)
+            if 0 == self.expect(['Reading package', pexpect.TIMEOUT],
+                                timeout=60):
                 self.expect(self.prompt, timeout=300)
             else:
                 print("Failed to download packages, things might not work")
@@ -308,20 +342,32 @@ class DebianBox(linux.LinuxDevice):
         # TODO: use netns for all this?
         undo_default_route = None
         self.sendline('ping -4 -c1 deb.debian.org')
-        i = self.expect(['ping: unknown host', 'connect: Network is unreachable', pexpect.TIMEOUT] + self.prompt, timeout=10)
+        i = self.expect([
+            'ping: unknown host', 'connect: Network is unreachable',
+            pexpect.TIMEOUT
+        ] + self.prompt,
+                        timeout=10)
         if 0 == i:
             # TODO: don't reference eth0, but the uplink iface
-            self.sendline("echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'")
+            self.sendline(
+                "echo SYNC; ip route list | grep 'via.*dev eth0' | awk '{print $3}'"
+            )
             self.expect_exact("SYNC\r\n")
-            if 0 == self.expect([r'(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] + self.prompt, timeout=5):
+            if 0 == self.expect([r'(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n'] +
+                                self.prompt,
+                                timeout=5):
                 possible_default_gw = self.match.group(1)
-                self.sendline("ip route add default via %s" % possible_default_gw)
+                self.sendline("ip route add default via %s" %
+                              possible_default_gw)
                 self.expect(self.prompt)
                 self.sendline('ping -c1 deb.debian.org')
                 self.expect(self.prompt)
                 undo_default_route = possible_default_gw
-                self.sendline('apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s' % pkgs)
-                if 0 == self.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+                self.sendline(
+                    'apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s'
+                    % pkgs)
+                if 0 == self.expect(['Reading package', pexpect.TIMEOUT],
+                                    timeout=60):
                     self.expect(self.prompt, timeout=300)
                 else:
                     print("Failed to download packages, things might not work")
@@ -350,7 +396,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('ms-dns 8.8.4.4')
         self.sendline('EOF')
         self.expect(self.prompt)
-        self.sendline('pppoe-server -k -I %s -L 192.168.2.1 -R 192.168.2.10 -N 4' % self.iface_dut)
+        self.sendline(
+            'pppoe-server -k -I %s -L 192.168.2.1 -R 192.168.2.10 -N 4' %
+            self.iface_dut)
         self.expect(self.prompt)
 
     def turn_off_pppoe(self):
@@ -406,7 +454,8 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('sed /TFTP_DIRECTORY/d -i /etc/default/tftpd-hpa')
         self.expect(self.prompt)
-        self.sendline('echo TFTP_DIRECTORY=\\"/srv/tftp\\" >> /etc/default/tftpd-hpa')
+        self.sendline(
+            'echo TFTP_DIRECTORY=\\"/srv/tftp\\" >> /etc/default/tftpd-hpa')
         self.expect(self.prompt)
         self.restart_tftp_server()
 
@@ -414,7 +463,9 @@ class DebianBox(linux.LinuxDevice):
     def restart_tftp_server(self, mode=None):
         self.sendline('sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa')
         self.expect(self.prompt)
-        self.sendline('echo TFTP_OPTIONS=\\"%s--secure --create\\" >> /etc/default/tftpd-hpa' % ("--%s " % mode if mode else ""))
+        self.sendline(
+            'echo TFTP_OPTIONS=\\"%s--secure --create\\" >> /etc/default/tftpd-hpa'
+            % ("--%s " % mode if mode else ""))
         self.expect(self.prompt)
         self.sendline('\n/etc/init.d/tftpd-hpa restart')
         self.expect('Restarting')
@@ -428,7 +479,9 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh start')
         self.expect(self.prompt)
-        self.sendline('sed "s/.*PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config')
+        self.sendline(
+            'sed "s/.*PermitRootLogin.*/PermitRootLogin yes/g" -i /etc/ssh/sshd_config'
+        )
         self.expect(self.prompt)
         self.sendline('/etc/init.d/ssh reload')
         self.expect(self.prompt)
@@ -446,13 +499,15 @@ class DebianBox(linux.LinuxDevice):
         # this needs to be more fine-grained controlled.
         # also it needs to have args handling.
         if hasattr(self, "profile"):
-            boot_list = nested_lookup("on_boot", self.profile.get(self.name, {}))
+            boot_list = nested_lookup("on_boot",
+                                      self.profile.get(self.name, {}))
             for profile_boot in boot_list:
                 profile_boot()
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
-            self.send('ip route del %s; ' % self.static_route.split(' via ')[0])
+            self.send('ip route del %s; ' %
+                      self.static_route.split(' via ')[0])
             self.sendline('ip route add %s' % self.static_route)
             self.expect(self.prompt)
 
@@ -463,11 +518,17 @@ class DebianBox(linux.LinuxDevice):
         # configure DHCP server
         self.sendline('/etc/init.d/isc-dhcp-server stop')
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
+        self.sendline(
+            'sed s/INTERFACES=.*/INTERFACES=\\"%s\\"/g -i /etc/default/isc-dhcp-server'
+            % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
+        self.sendline(
+            'sed s/INTERFACESv4=.*/INTERFACESv4=\\"%s\\"/g -i /etc/default/isc-dhcp-server'
+            % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline('sed s/INTERFACESv6=.*/INTERFACESv6=\\"%s\\"/g -i /etc/default/isc-dhcp-server' % self.iface_dut)
+        self.sendline(
+            'sed s/INTERFACESv6=.*/INTERFACESv6=\\"%s\\"/g -i /etc/default/isc-dhcp-server'
+            % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('cat > /etc/dhcp/dhcpd.conf << EOF')
         self.sendline('ddns-update-style none;')
@@ -476,14 +537,20 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('default-lease-time 600;')
         self.sendline('max-lease-time 7200;')
         # use the same netmask as the lan device
-        self.sendline('subnet %s netmask %s {' % (self.nw.network_address, self.nw.netmask))
-        self.sendline('          range %s %s;' % (self.nw.network_address + 10, self.nw.network_address + 100))
+        self.sendline('subnet %s netmask %s {' %
+                      (self.nw.network_address, self.nw.netmask))
+        self.sendline(
+            '          range %s %s;' %
+            (self.nw.network_address + 10, self.nw.network_address + 100))
         self.sendline('          option routers %s;' % self.gw)
         self.sendline('}')
         self.sendline('EOF')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/isc-dhcp-server start')
-        self.expect(['Starting ISC DHCP(v4)? server.*dhcpd.', 'Starting isc-dhcp-server.*'])
+        self.expect([
+            'Starting ISC DHCP(v4)? server.*dhcpd.',
+            'Starting isc-dhcp-server.*'
+        ])
         self.expect(self.prompt)
 
     def setup_dnsmasq(self, config=None):
@@ -493,7 +560,8 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('listen-address=%s' % self.gw)
         if self.gwv6 is not None:
             self.sendline('listen-address=%s' % self.gwv6)
-        self.sendline('addn-hosts=/etc/dnsmasq.hosts')  # all additional hosts will be added to dnsmasq.hosts
+        self.sendline('addn-hosts=/etc/dnsmasq.hosts'
+                      )  # all additional hosts will be added to dnsmasq.hosts
         self.sendline('EOF')
         self.add_hosts(config=config)
         self.sendline('/etc/init.d/dnsmasq restart')
@@ -506,7 +574,8 @@ class DebianBox(linux.LinuxDevice):
         # this is a hack, the add_host should have been called from RootFs
         hosts = {}
         if hasattr(self, "profile"):
-            host_dicts = nested_lookup("hosts", self.profile.get(self.name, {}))
+            host_dicts = nested_lookup("hosts",
+                                       self.profile.get(self.name, {}))
             for host_data in host_dicts:
                 hosts.update(host_data)
         if config is not None and hasattr(config, "board"):
@@ -518,7 +587,10 @@ class DebianBox(linux.LinuxDevice):
                 domain_name = device['name'] + '.boardfarm.com'
                 final = None
                 if 'wan-static-ip' in str(device):
-                    final = str(re.search('wan-static-ip:'+'('+ValidIpv4AddressRegex+')',device['options']).group(1))
+                    final = str(
+                        re.search(
+                            'wan-static-ip:' + '(' + ValidIpv4AddressRegex +
+                            ')', device['options']).group(1))
                 elif 'ipaddr' in device:
                     final = str(device['ipaddr'])
                 elif hasattr(d, 'ipaddr'):
@@ -563,7 +635,8 @@ class DebianBox(linux.LinuxDevice):
         if self.wan_dhcp:
             self.sendline('/etc/init.d/isc-dhcp-server stop')
             self.expect(self.prompt)
-            self.sendline('dhclient -r %s; dhclient %s' % (self.iface_dut, self.iface_dut))
+            self.sendline('dhclient -r %s; dhclient %s' %
+                          (self.iface_dut, self.iface_dut))
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
         elif not self.wan_no_eth0:
@@ -576,7 +649,8 @@ class DebianBox(linux.LinuxDevice):
 
         if self.wan_dhcpv6 == True:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' %
+                          self.iface_dut)
             self.expect(self.prompt)
             try:
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
@@ -590,11 +664,12 @@ class DebianBox(linux.LinuxDevice):
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
         elif self.gwv6 is not None:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' %
+                          self.iface_dut)
             self.expect(self.prompt)
-            self.sendline('ip -6 addr add %s/%s dev %s' % (self.gwv6, self.ipv6_prefix, self.iface_dut))
+            self.sendline('ip -6 addr add %s/%s dev %s' %
+                          (self.gwv6, self.ipv6_prefix, self.iface_dut))
             self.expect(self.prompt)
-
 
         # configure routing
         self.sendline('sysctl net.ipv4.ip_forward=1')
@@ -608,7 +683,9 @@ class DebianBox(linux.LinuxDevice):
             wan_uplink_iface = "eth0"
 
         wan_ip_uplink = self.get_interface_ipaddr(wan_uplink_iface)
-        self.sendline('iptables -t nat -A POSTROUTING -o %s -j SNAT --to-source %s' % (wan_uplink_iface, wan_ip_uplink))
+        self.sendline(
+            'iptables -t nat -A POSTROUTING -o %s -j SNAT --to-source %s' %
+            (wan_uplink_iface, wan_ip_uplink))
         self.expect(self.prompt)
 
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_timestamps')
@@ -634,9 +711,13 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('iptables -F; iptables -X')
         self.expect(self.prompt)
-        self.sendline('iptables -t nat -A PREROUTING -p tcp --dport 222 -j DNAT --to-destination %s:22' % self.lan_gateway)
+        self.sendline(
+            'iptables -t nat -A PREROUTING -p tcp --dport 222 -j DNAT --to-destination %s:22'
+            % self.lan_gateway)
         self.expect(self.prompt)
-        self.sendline('iptables -t nat -A POSTROUTING -o %s -p tcp --dport 22 -j MASQUERADE' % self.iface_dut)
+        self.sendline(
+            'iptables -t nat -A POSTROUTING -o %s -p tcp --dport 22 -j MASQUERADE'
+            % self.iface_dut)
         self.expect(self.prompt)
         self.sendline('echo 0 > /proc/sys/net/ipv4/tcp_timestamps')
         self.expect(self.prompt)
@@ -654,7 +735,8 @@ class DebianBox(linux.LinuxDevice):
 
     def start_lan_client(self, wan_gw=None, ipv4_only=False):
         ipv4, ipv6 = None, None
-        self.sendline('ip link set down %s && ip link set up %s' % (self.iface_dut, self.iface_dut))
+        self.sendline('ip link set down %s && ip link set up %s' %
+                      (self.iface_dut, self.iface_dut))
         self.expect(self.prompt)
 
         self.sendline("dhclient -4 -r %s" % self.iface_dut)
@@ -670,7 +752,9 @@ class DebianBox(linux.LinuxDevice):
 
         self.sendline('ps aux')
         if self.expect(['dhclient'] + self.prompt) == 0:
-            print("WARN: dhclient still running, something started rogue client!")
+            print(
+                "WARN: dhclient still running, something started rogue client!"
+            )
             self.sendline('pkill --signal 9 -f dhclient.*%s' % self.iface_dut)
             self.expect(self.prompt)
 
@@ -678,26 +762,31 @@ class DebianBox(linux.LinuxDevice):
 
             self.disable_ipv6(self.iface_dut)
             self.enable_ipv6(self.iface_dut)
-            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' % self.iface_dut)
+            self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' %
+                          self.iface_dut)
 
             # check if board is providing an RA, if yes use that detail to perform DHCPv6
             # default method used will be statefull DHCPv6
-            output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
+            output = self.check_output("rdisc6 -1 %s" % self.iface_dut,
+                                       timeout=60)
             M_bit, O_bit = True, True
             if "Prefix" in output:
-                M_bit, O_bit = map(lambda x: "Yes" in x, re.findall(r"Stateful.*\W", output))
+                M_bit, O_bit = map(lambda x: "Yes" in x,
+                                   re.findall(r"Stateful.*\W", output))
 
             # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
             if not M_bit and O_bit:
                 self.sendline("dhclient -S -v %s" % self.iface_dut)
-                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt,
+                                    timeout=15):
                     self.sendcontrol('c')
                     self.expect(self.prompt)
 
             # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
             elif M_bit and O_bit:
                 self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
-                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt,
+                                    timeout=15):
                     self.sendcontrol('c')
                     self.expect(self.prompt)
 
@@ -714,13 +803,19 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('rm /var/lib/dhcp/dhclient.leases')
         self.expect(self.prompt)
-        self.sendline("sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script")
+        self.sendline(
+            "sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script"
+        )
         self.expect(self.prompt)
 
         if self.mgmt_dns is not None:
-            self.sendline("sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf" % str(self.mgmt_dns))
+            self.sendline(
+                "sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf"
+                % str(self.mgmt_dns))
             self.expect(self.prompt)
-            self.sendline('echo "append domain-name-servers %s;" >> /etc/dhcp/dhclient.conf' % str(self.mgmt_dns))
+            self.sendline(
+                'echo "append domain-name-servers %s;" >> /etc/dhcp/dhclient.conf'
+                % str(self.mgmt_dns))
             self.expect(self.prompt)
 
         # TODO: don't hard code eth0
@@ -733,13 +828,17 @@ class DebianBox(linux.LinuxDevice):
                     self.expect(self.prompt)
                     break
                 else:
-                    retry_on_exception(valid_ipv4, (self.get_interface_ipaddr(self.iface_dut), ), retries = 5)
+                    retry_on_exception(
+                        valid_ipv4,
+                        (self.get_interface_ipaddr(self.iface_dut), ),
+                        retries=5)
                     break
             except:
                 self.sendline('killall dhclient')
                 self.sendcontrol('c')
         else:
-            raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
+            raise Exception(
+                "Error: Device on LAN couldn't obtain address via DHCP.")
 
         self.sendline('cat /etc/resolv.conf')
         self.expect(self.prompt)
@@ -748,7 +847,11 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('ip route')
         # TODO: we should verify this so other way, because the they could be the same subnets
         # in theory
-        i = self.expect(['default via %s dev %s' % (self.lan_gateway, self.iface_dut), pexpect.TIMEOUT], timeout=5)
+        i = self.expect([
+            'default via %s dev %s' %
+            (self.lan_gateway, self.iface_dut), pexpect.TIMEOUT
+        ],
+                        timeout=5)
         if i == 1:
             # bridged mode
             self.is_bridged = True
@@ -756,13 +859,16 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("ip route list 0/0 | awk '{print $3}'")
             self.expect_exact("ip route list 0/0 | awk '{print $3}'")
             self.expect(self.prompt)
-            self.lan_gateway = ipaddress.IPv4Address(six.text_type(self.before.strip()))
+            self.lan_gateway = ipaddress.IPv4Address(
+                six.text_type(self.before.strip()))
 
             ip_addr = self.get_interface_ipaddr(self.iface_dut)
             self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
-            self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
+            self.expect_exact("ip route | grep %s | awk '{print $1}'" %
+                              ip_addr)
             self.expect(self.prompt)
-            self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
+            self.lan_network = ipaddress.IPv4Network(
+                six.text_type(self.before.strip()))
         self.sendline('ip -6 route')
         self.expect(self.prompt)
 
@@ -791,12 +897,17 @@ class DebianBox(linux.LinuxDevice):
         # Copy an id to the router so people don't have to type a password to ssh or scp
         self.sendline('nc %s 22 -w 1 | cut -c1-3' % self.lan_gateway)
         self.expect_exact('nc %s 22 -w 1 | cut -c1-3' % self.lan_gateway)
-        if 0 == self.expect(['SSH'] + self.prompt, timeout=5) and not self.is_bridged:
+        if 0 == self.expect(['SSH'] + self.prompt,
+                            timeout=5) and not self.is_bridged:
             self.sendcontrol('c')
             self.expect(self.prompt)
-            self.sendline('[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa')
+            self.sendline(
+                '[ -e /root/.ssh/id_rsa ] || ssh-keygen -N "" -f /root/.ssh/id_rsa'
+            )
             if 0 != self.expect(['Protocol mismatch.'] + self.prompt):
-                self.sendline('\nscp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys' % self.lan_gateway)
+                self.sendline(
+                    '\nscp ~/.ssh/id_rsa.pub %s:/etc/dropbear/authorized_keys'
+                    % self.lan_gateway)
                 self.expect('_keys')
                 if 0 == self.expect(['assword:'] + self.prompt):
                     self.sendline('password')
@@ -810,7 +921,8 @@ class DebianBox(linux.LinuxDevice):
 
         if wan_gw is not None and 'options' in self.kwargs and \
             'lan-fixed-route-to-wan' in self.kwargs['options']:
-            self.sendline('ip route add %s via %s' % (wan_gw, self.lan_gateway))
+            self.sendline('ip route add %s via %s' %
+                          (wan_gw, self.lan_gateway))
             self.expect(self.prompt)
         ipv4 = self.get_interface_ipaddr(self.iface_dut)
 
@@ -823,6 +935,7 @@ class DebianBox(linux.LinuxDevice):
     def tftp_server_ipv6_int(self):
         '''Returns the DUT facing side tftp server ipv6'''
         return self.gwv6
+
 
 if __name__ == '__main__':
     # Example use

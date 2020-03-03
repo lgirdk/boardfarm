@@ -10,9 +10,12 @@ from . import openwrt_router
 
 from boardfarm.lib.randomMAC import randomMAC
 
+
 class QcomArmBase(openwrt_router.OpenWrtRouter):
 
-    prompt = ['root\\@.*:.*#', ]
+    prompt = [
+        'root\\@.*:.*#',
+    ]
     uprompt = [r'\(IPQ\) #', r'\(IPQ40xx\)', r'\(QCA961x\) #']
 
     def check_memory_addresses(self):
@@ -21,21 +24,27 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.expect(r"flash_block_size:\s+(0x[0-9A-Fa-f]+)\r")
         self.flash_block_size = int(self.match.group(1), 0)
         try:
-            self.expect(r"APPSBL\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
+            self.expect(
+                r"APPSBL\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
+                timeout=2)
             self.uboot_addr = self.match.group(1)
             self.uboot_size = self.match.group(2)
         except:
             self.uboot_addr = None
             self.uboot_size = None
         try:
-            self.expect(r"HLOS\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=2)
+            self.expect(
+                r"HLOS\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
+                timeout=2)
             self.kernel_addr = self.match.group(1)
             self.kernel_size = self.match.group(2)
         except:
             self.kernel_addr = None
             self.kernel_size = None
         try:
-            self.expect(r"(rootfs|ubi)\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r", timeout=5)
+            self.expect(
+                r"(rootfs|ubi)\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
+                timeout=5)
             self.rootfs_addr = self.match.group(2)
             self.rootfs_size = self.match.group(3)
         except:
@@ -62,14 +71,18 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
             self.sendline('sf probe')
             self.expect('sf probe')
             self.expect(self.uprompt)
-        self.sendline('machid=%s && imgaddr=%s && source $imgaddr:script && echo DONE' % (self.machid, self.uboot_ddr_addr))
+        self.sendline(
+            'machid=%s && imgaddr=%s && source $imgaddr:script && echo DONE' %
+            (self.machid, self.uboot_ddr_addr))
         self.expect('DONE')
         try:
             self.expect("Can't find 'script' FIT subimage", timeout=5)
         except:
             pass
         else:
-            self.sendline('machid=%s && imgaddr=%s && source $imgaddr:SCRIPT && echo DONE' % (self.machid, self.uboot_ddr_addr))
+            self.sendline(
+                'machid=%s && imgaddr=%s && source $imgaddr:SCRIPT && echo DONE'
+                % (self.machid, self.uboot_ddr_addr))
             self.expect('DONE')
         self.expect('DONE', timeout=400)
         self.expect(self.uprompt)
@@ -80,7 +93,8 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
 
     def nand_flash_bin(self, addr, size, src):
         # make sure we round writes up to the next sector size
-        hsize = hex((((int(size, 0) - 1) / self.flash_block_size) + 1) * self.flash_block_size)
+        hsize = hex((((int(size, 0) - 1) / self.flash_block_size) + 1) *
+                    self.flash_block_size)
 
         if addr == None or addr == "0x0":
             raise Exception("Refusing to flash 0x0 or None values for addr")
@@ -150,21 +164,66 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
 
     def parse_perf_board(self):
         if "3.14" in self.kernel_version:
-            events = [{'expect': r'\s+cycles:ku', 'name': 'cycles', 'sname': 'CPP'},
-                    {'expect': r'\s+instructions:ku', 'name': 'instructions', 'sname': 'IPP'},
-                    {'expect': r'\s+r3:ku', 'name': 'dcache_misses', 'sname': 'DMISS'},
-                    {'expect': r'\s+r1:ku', 'name': 'icache_misses', 'sname': 'IMISS'}]
+            events = [{
+                'expect': r'\s+cycles:ku',
+                'name': 'cycles',
+                'sname': 'CPP'
+            }, {
+                'expect': r'\s+instructions:ku',
+                'name': 'instructions',
+                'sname': 'IPP'
+            }, {
+                'expect': r'\s+r3:ku',
+                'name': 'dcache_misses',
+                'sname': 'DMISS'
+            }, {
+                'expect': r'\s+r1:ku',
+                'name': 'icache_misses',
+                'sname': 'IMISS'
+            }]
         else:
-            events = [{'expect': 'cycles', 'name': 'cycles', 'sname': 'CPP'},
-                    {'expect': 'instructions', 'name': 'instructions', 'sname': 'IPP'},
-                    {'expect': 'raw 0x3', 'name': 'dcache_misses', 'sname': 'DMISS'},
-                    {'expect': 'raw 0x1', 'name': 'icache_misses', 'sname': 'IMISS'}]
+            events = [{
+                'expect': 'cycles',
+                'name': 'cycles',
+                'sname': 'CPP'
+            }, {
+                'expect': 'instructions',
+                'name': 'instructions',
+                'sname': 'IPP'
+            }, {
+                'expect': 'raw 0x3',
+                'name': 'dcache_misses',
+                'sname': 'DMISS'
+            }, {
+                'expect': 'raw 0x1',
+                'name': 'icache_misses',
+                'sname': 'IMISS'
+            }]
 
-        events += [{'expect': 'raw 0x12013', 'name': 'load_exclusive', 'sname': 'LDREX'},
-                    {'expect': 'raw 0x12011', 'name': 'store_exclusive', 'sname': 'STREX'},
-                    {'expect': 'raw 0x12041', 'name': 'data_sync_barrier', 'sname': 'DSB'},
-                    {'expect': 'raw 0x12040', 'name': 'data_mem_barrier', 'sname': 'DBM'},
-                    {'expect': 'raw 0x12073', 'name': 'unaligned_load', 'sname': 'UNALIGNED_LD'},
-                    {'expect': 'raw 0x12071', 'name': 'unaligned_store', 'sname': 'UNALIGNED_ST'}]
+        events += [{
+            'expect': 'raw 0x12013',
+            'name': 'load_exclusive',
+            'sname': 'LDREX'
+        }, {
+            'expect': 'raw 0x12011',
+            'name': 'store_exclusive',
+            'sname': 'STREX'
+        }, {
+            'expect': 'raw 0x12041',
+            'name': 'data_sync_barrier',
+            'sname': 'DSB'
+        }, {
+            'expect': 'raw 0x12040',
+            'name': 'data_mem_barrier',
+            'sname': 'DBM'
+        }, {
+            'expect': 'raw 0x12073',
+            'name': 'unaligned_load',
+            'sname': 'UNALIGNED_LD'
+        }, {
+            'expect': 'raw 0x12071',
+            'name': 'unaligned_store',
+            'sname': 'UNALIGNED_ST'
+        }]
 
         return events

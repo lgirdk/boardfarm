@@ -1,6 +1,7 @@
 import pexpect
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class KermitConnection():
     """Wrapper for the kermit command
     kermit can be used as an alternative to telnet. On some
@@ -10,7 +11,7 @@ class KermitConnection():
     """
     prompt = "C-Kermit>"
 
-    def __init__(self, device = None, conn_cmd = None, **kwargs):
+    def __init__(self, device=None, conn_cmd=None, **kwargs):
         """This method initializes the variables used for a kermit connection.
 
         :param device: the device on which the command is to be executed, defaults to None
@@ -32,19 +33,24 @@ class KermitConnection():
         """
         try:
             bft_pexpect_helper.spawn.__init__(self.device,
-                                   command='/bin/bash',
-                                   args=['-c', "kermit"])
+                                              command='/bin/bash',
+                                              args=['-c', "kermit"])
             self.device.sendline()
             self.device.expect(self.prompt)
             # don't be strict and wait too long for the negotiations
             self.device.sendline("SET TELNET WAIT OFF")
             self.device.expect(self.prompt)
-            self.device.sendline("set host %s" % ' '.join(self.conn_cmd.split(' ')[1:]))
+            self.device.sendline("set host %s" %
+                                 ' '.join(self.conn_cmd.split(' ')[1:]))
             self.device.expect(self.prompt)
             self.device.sendline('connect')
-            self.device.expect(['----------------------------------------------------'], timeout=15)
+            self.device.expect(
+                ['----------------------------------------------------'],
+                timeout=15)
             # check if it is a Microsoft Telnet Service
-            if 0 == self.device.expect(['Welcome to Microsoft Telnet Service', pexpect.TIMEOUT], timeout=10):
+            if 0 == self.device.expect(
+                ['Welcome to Microsoft Telnet Service', pexpect.TIMEOUT],
+                    timeout=10):
                 # MS telnet server does weird things... this sendline should get the 'login:' prompt
                 self.device.sendline()
         except pexpect.EOF:

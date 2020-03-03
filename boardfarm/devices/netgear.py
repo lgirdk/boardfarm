@@ -13,14 +13,11 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 # Netgear Switch Prompt
 prompt = r"\(M4100-50G\) "
 
+
 class NetgearM4100(linux.LinuxDevice):
     """A netgear switch allows for changing connections by modifying VLANs on ports extends LinuxDevice.
     """
-
-    def __init__(self,
-                 conn_cmd,
-                 username='admin',
-                 password='bigfoot1'):
+    def __init__(self, conn_cmd, username='admin', password='bigfoot1'):
         """Constructor used to initialize variables in NetgearM4100
 
         :param self: self object
@@ -32,7 +29,9 @@ class NetgearM4100(linux.LinuxDevice):
         :param password: password to connect to device, defaults to "bigfoot1"
         :type password: string
         """
-        bft_pexpect_helper.spawn.__init__(self, '/bin/bash', args=['-c', conn_cmd])
+        bft_pexpect_helper.spawn.__init__(self,
+                                          '/bin/bash',
+                                          args=['-c', conn_cmd])
         self.logfile_read = sys.stdout
         self.username = username
         self.password = password
@@ -200,10 +199,10 @@ class NetgearM4100(linux.LinuxDevice):
             devices = [x for x in vlan_macs[vlan]]
             print("%4s %s" % (vlan, " <-> ".join(devices)))
 
+
 if __name__ == '__main__':
     switch = NetgearM4100(conn_cmd='telnet 10.0.0.64 6031',
                           username='admin',
-                          password='password'
-                          )
+                          password='password')
     switch.print_vlans()
     switch.disconnect()

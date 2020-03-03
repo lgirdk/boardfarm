@@ -2,11 +2,15 @@ import pexpect
 
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class SshConnection:
     """To use, set conn_cmd in your json to "ssh root@192.168.1.1 -i ~/.ssh/id_rsa"" and set connection_type to "ssh"
     """
-
-    def __init__(self, device=None, conn_cmd=None, ssh_password='None', **kwargs):
+    def __init__(self,
+                 device=None,
+                 conn_cmd=None,
+                 ssh_password='None',
+                 **kwargs):
         """This class in not supposed to be initialized directly.
            The device class calls connection-decider which in return
            initializes an SSH connection for the device class.
@@ -34,14 +38,16 @@ class SshConnection:
         :raises : Exception Board is in use (connection refused). / Assert Exception ssh_password is None
         """
         bft_pexpect_helper.spawn.__init__(self.device,
-                               command='/bin/bash',
-                               args=['-c', self.conn_cmd])
+                                          command='/bin/bash',
+                                          args=['-c', self.conn_cmd])
 
         try:
-            result = self.device.expect(["assword:", "passphrase", "yes/no"] + self.device.prompt)
+            result = self.device.expect(["assword:", "passphrase", "yes/no"] +
+                                        self.device.prompt)
             if result == 2:
                 self.device.sendline("yes")
-                result = self.device.expect(["assword:", "passphrase"] + self.device.prompt)
+                result = self.device.expect(["assword:", "passphrase"] +
+                                            self.device.prompt)
         except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
         if result == 0 or result == 1:

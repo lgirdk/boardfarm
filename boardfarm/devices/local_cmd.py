@@ -2,13 +2,13 @@ import pexpect
 import boardfarm.exceptions
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class LocalCmd():
     """This class is meant to be used to connect to a device
     using a custom Linux command instead of telnet/SSH.
 
     Sets connection_type to local_cmd, ignores all output for now
     """
-
     def __init__(self, device=None, conn_cmd=None, **kwargs):
         """Initializes instance of LocalCmd class
 
@@ -30,11 +30,12 @@ class LocalCmd():
         """
         try:
             bft_pexpect_helper.spawn.__init__(self.device,
-                               command='/bin/bash',
-                               args=['-c', self.conn_cmd])
+                                              command='/bin/bash',
+                                              args=['-c', self.conn_cmd])
             self.device.expect(pexpect.TIMEOUT, timeout=5)
         except pexpect.EOF:
-            raise boardfarm.exceptions.ConnectionRefused("Board is in use (connection refused).")
+            raise boardfarm.exceptions.ConnectionRefused(
+                "Board is in use (connection refused).")
 
     def close(self):
         """closes the pexpect session to the device

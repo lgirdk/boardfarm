@@ -1,6 +1,7 @@
 import pexpect, re
 from .wifi import wifi_stub
 
+
 class wifi_acs(wifi_stub):
     """Class for wifi acs methods
     Inherits the wifi stub from lib/wifi.py
@@ -17,14 +18,15 @@ class wifi_acs(wifi_stub):
         self.board = board
         self.wan_ip = board.get_interface_ipaddr(board.wan_iface)
         self.acs_server = acs_server
-        self.cpeid = board.get_cpeid().replace('-',':')
+        self.cpeid = board.get_cpeid().replace('-', ':')
         self.acs_data = self.board.wifi_acs_file
 
     def prepare(self):
         """Getting boot file name via ACS to ensure connectivity exist or not
            If it returns none , ACS connectivity happens
         """
-        acs_value = self.acs_server.get(self.cpeid, 'Device.DeviceInfo.SerialNumber')
+        acs_value = self.acs_server.get(self.cpeid,
+                                        'Device.DeviceInfo.SerialNumber')
         if acs_value == None:
             self.board.restart_tr069(self.wan, self.wan_ip)
 
@@ -43,19 +45,25 @@ class wifi_acs(wifi_stub):
         acs_path = "Device.WiFi."
         if ssid_flag == 0:
             if "2.4" in wifi_mode:
-                table_path = acs_path + "Radio." + self.acs_data['wifi_path']['Radio_2.4']
+                table_path = acs_path + "Radio." + self.acs_data['wifi_path'][
+                    'Radio_2.4']
             elif "5" in wifi_mode:
-                table_path = acs_path + "Radio." + self.acs_data['wifi_path']['Radio_5']
+                table_path = acs_path + "Radio." + self.acs_data['wifi_path'][
+                    'Radio_5']
         elif ssid_flag == 1:
             if "2.4" in wifi_mode:
-                table_path = acs_path + "SSID." + self.acs_data['wifi_path']['SSID_2.4']
+                table_path = acs_path + "SSID." + self.acs_data['wifi_path'][
+                    'SSID_2.4']
             elif "5" in wifi_mode:
-                table_path = acs_path + "SSID." + self.acs_data['wifi_path']['SSID_5']
+                table_path = acs_path + "SSID." + self.acs_data['wifi_path'][
+                    'SSID_5']
         elif ssid_flag == 2:
             if "2.4" in wifi_mode:
-                table_path = acs_path + "AccessPoint." + self.acs_data['wifi_path']['Access_Point_2.4']
+                table_path = acs_path + "AccessPoint." + self.acs_data[
+                    'wifi_path']['Access_Point_2.4']
             elif "5" in wifi_mode:
-                table_path = acs_path + "AccessPoint." + self.acs_data['wifi_path']['Access_Point_5']
+                table_path = acs_path + "AccessPoint." + self.acs_data[
+                    'wifi_path']['Access_Point_5']
         return table_path
 
     def enable_wifi(self, wifi_mode):
@@ -69,7 +77,8 @@ class wifi_acs(wifi_stub):
         """
         # importing self.acs_server for each func, because global import not working
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'Enable', 1)
+        acs_value = self.acs_server.set(self.cpeid,
+                                        table_path + '.' + 'Enable', 1)
         # timeout requires for all func as it takes time to set in acs server
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
@@ -84,7 +93,8 @@ class wifi_acs(wifi_stub):
         :rtype: string or boolean
         """
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'Enable', 0)
+        acs_value = self.acs_server.set(self.cpeid,
+                                        table_path + '.' + 'Enable', 0)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -102,9 +112,12 @@ class wifi_acs(wifi_stub):
         print("Setting the channel mode")
         table_path = self._check_acspath_spectrum(wifi_mode)
         if int(channel_number) > 0:
-            acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'Channel', int(channel_number))
+            acs_value = self.acs_server.set(self.cpeid,
+                                            table_path + '.' + 'Channel',
+                                            int(channel_number))
         else:
-            acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'AutoChannelEnable', 1)
+            acs_value = self.acs_server.set(
+                self.cpeid, table_path + '.' + 'AutoChannelEnable', 1)
         self.board.expect(pexpect.TIMEOUT, timeout=30)
         return acs_value
 
@@ -124,7 +137,9 @@ class wifi_acs(wifi_stub):
         print("setting bandwidth")
         bandwidth = re.sub(' ', '', bandwidth)
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'OperatingChannelBandwidth', bandwidth)
+        acs_value = self.acs_server.set(
+            self.cpeid, table_path + '.' + 'OperatingChannelBandwidth',
+            bandwidth)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -155,7 +170,8 @@ class wifi_acs(wifi_stub):
             elif operating_mode == "802.11a/n/ac mixed":
                 spectrummode = self.acs_data['operating_mode']['802.11a/n/ac']
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'OperatingStandards', spectrummode)
+        acs_value = self.acs_server.set(
+            self.cpeid, table_path + '.' + 'OperatingStandards', spectrummode)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -172,7 +188,8 @@ class wifi_acs(wifi_stub):
         """
         print("Setting ssid name")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=1)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'SSID', ssid_name)
+        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'SSID',
+                                        ssid_name)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -189,7 +206,9 @@ class wifi_acs(wifi_stub):
         """
         print("setting the password")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'Security' + '.' + 'KeyPassphrase', password)
+        acs_value = self.acs_server.set(
+            self.cpeid, table_path + '.' + 'Security' + '.' + 'KeyPassphrase',
+            password)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -204,7 +223,8 @@ class wifi_acs(wifi_stub):
         """
         print("setting the broadcast")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'SSIDAdvertisementEnabled', 1)
+        acs_value = self.acs_server.set(
+            self.cpeid, table_path + '.' + 'SSIDAdvertisementEnabled', 1)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -227,7 +247,9 @@ class wifi_acs(wifi_stub):
             security_value = self.acs_data['security_mode']['WPA2-PSK']
         elif security == "WPA-PSK/WPA2-PSK":
             security_value = self.acs_data['security_mode']['WPA-PSK/WPA2-PSK']
-        acs_value = self.acs_server.set(self.cpeid, table_path + '.' + 'Security' + '.' + 'ModeEnabled', security_value)
+        acs_value = self.acs_server.set(
+            self.cpeid, table_path + '.' + 'Security' + '.' + 'ModeEnabled',
+            security_value)
         self.board.expect(pexpect.TIMEOUT, timeout=20)
         return acs_value
 
@@ -241,7 +263,8 @@ class wifi_acs(wifi_stub):
         :rtype: string or boolean
         """
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'Enable')
+        acs_value = self.acs_server.get(self.cpeid,
+                                        table_path + '.' + 'Enable')
         return acs_value
 
     def get_channel_number(self, wifi_mode):
@@ -255,7 +278,8 @@ class wifi_acs(wifi_stub):
         """
         print("Getting the channel number")
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'Channel')
+        acs_value = self.acs_server.get(self.cpeid,
+                                        table_path + '.' + 'Channel')
         return acs_value
 
     def get_bandwidth(self, wifi_mode):
@@ -269,7 +293,8 @@ class wifi_acs(wifi_stub):
         """
         print("Getting bandwidth")
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'OperatingChannelBandwidth')
+        acs_value = self.acs_server.get(
+            self.cpeid, table_path + '.' + 'OperatingChannelBandwidth')
         return acs_value
 
     def get_operating_mode(self, wifi_mode):
@@ -283,7 +308,8 @@ class wifi_acs(wifi_stub):
         """
         print("Getting operating mode")
         table_path = self._check_acspath_spectrum(wifi_mode)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'OperatingStandards')
+        acs_value = self.acs_server.get(
+            self.cpeid, table_path + '.' + 'OperatingStandards')
         return acs_value
 
     def get_ssid(self, wifi_mode):
@@ -312,7 +338,8 @@ class wifi_acs(wifi_stub):
         print("Getting password")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         vendor_path = self.acs_data['password_object']['password_data']
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'Security' + '.' + vendor_path)
+        acs_value = self.acs_server.get(
+            self.cpeid, table_path + '.' + 'Security' + '.' + vendor_path)
         return acs_value
 
     def get_broadcast(self, wifi_mode):
@@ -326,7 +353,8 @@ class wifi_acs(wifi_stub):
         """
         print("Getting the broadcast")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'SSIDAdvertisementEnabled')
+        acs_value = self.acs_server.get(
+            self.cpeid, table_path + '.' + 'SSIDAdvertisementEnabled')
         return acs_value
 
     def get_security(self, wifi_mode):
@@ -340,5 +368,6 @@ class wifi_acs(wifi_stub):
         """
         print("Getting security")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
-        acs_value = self.acs_server.get(self.cpeid, table_path + '.' + 'Security' + '.' + 'ModeEnabled')
+        acs_value = self.acs_server.get(
+            self.cpeid, table_path + '.' + 'Security' + '.' + 'ModeEnabled')
         return acs_value

@@ -10,6 +10,7 @@ from boardfarm.exceptions import PexpectErrorTimeout
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
+
 class LinuxDevice(base.BaseDevice):
     '''Linux implementations '''
     tftp_dir = '/tftpboot'
@@ -19,17 +20,24 @@ class LinuxDevice(base.BaseDevice):
         A simple, safe function to check the state of the device.
         '''
         print("\n\nRunning check_status() on %s" % self.name)
-        self.sendline("\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n")
-        self.expect_exact('cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n')
+        self.sendline(
+            "\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
+        )
+        self.expect_exact(
+            'cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n'
+        )
         self.expect('version', timeout=5)
         self.expect(self.prompt, timeout=5)
 
     def get_interface_ipaddr(self, interface):
         '''Get ipv4 address of interface'''
         self.sendline("\nifconfig %s" % interface)
-        regex = [r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-                 r'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
-                 'inet (' + ValidIpv4AddressRegex + ').*netmask (' + ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex]
+        regex = [
+            r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
+            r'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
+            'inet (' + ValidIpv4AddressRegex + ').*netmask (' +
+            ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex
+        ]
         self.expect(regex, timeout=5)
         ipaddr = self.match.group(1)
         ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
@@ -44,11 +52,15 @@ class LinuxDevice(base.BaseDevice):
         # REASON: on some linux based embedded devices the console can be VERY verbose
         # and spurious debug messages can have ipv6 addresses in it
         self.sendline("\nifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
-        self.expect_exact("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
+        self.expect_exact("ifconfig %s | sed 's/inet6 /bft_inet6 /'" %
+                          interface)
         self.expect(self.prompt)
 
         # we iterate thorough the buffer grepping ONLY the lines we have tagged
-        for line in [picky for picky in self.before.split("\n") if "bft_inet6" in picky]:
+        for line in [
+                picky for picky in self.before.split("\n")
+                if "bft_inet6" in picky
+        ]:
             # in every line iterate trough its elements
             for i in [j for j in line.split(" ") if j.strip() != ""]:
                 ipv6_iface = None
@@ -91,7 +103,8 @@ class LinuxDevice(base.BaseDevice):
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
         '''set static ip of the interface'''
-        self.sendline('ifconfig {} {} netmask {} up'.format(interface, fix_ip, fix_mark))
+        self.sendline('ifconfig {} {} netmask {} up'.format(
+            interface, fix_ip, fix_mark))
         self.expect(self.prompt)
 
         ip = self.get_interface_ipaddr(interface)
@@ -120,7 +133,8 @@ class LinuxDevice(base.BaseDevice):
         if source_ip == None:
             self.sendline("curl -I {!s}".format(url))
         else:
-            self.sendline("curl --interface {!s} -I {!s}".format(source_ip, url))
+            self.sendline("curl --interface {!s} -I {!s}".format(
+                source_ip, url))
 
         self.expect(self.prompt)
         match = re.search('HTTP/1.1 200 OK', self.before)
@@ -132,7 +146,8 @@ class LinuxDevice(base.BaseDevice):
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         '''Modifies the log level in kernel'''
         try:
-            self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' % (CUR, DEF, MIN, BTDEF))
+            self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' %
+                          (CUR, DEF, MIN, BTDEF))
             self.expect('echo')
             self.expect(self.prompt, timeout=10)
         except:
@@ -145,20 +160,30 @@ class LinuxDevice(base.BaseDevice):
         See /etc/gai.conf inline comments for more details
         """
         if pref is True:
-            self.sendline(r"sed -i 's/^#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+            self.sendline(
+                r"sed -i 's/^#precedence ::ffff:0:0\/96  100/precedence ::ffff:0:0\/96  100/'  /etc/gai.conf"
+            )
         else:
-            self.sendline(r"sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf")
+            self.sendline(
+                r"sed -i 's/^precedence ::ffff:0:0\/96  100/#precedence ::ffff:0:0\/96  100/'  /etc/gai.conf"
+            )
         self.expect(self.prompt)
 
-    def ping(self, ping_ip, ping_count=4, ping_interface=None, options='', timetorun=None):
+    def ping(self,
+             ping_ip,
+             ping_count=4,
+             ping_interface=None,
+             options='',
+             timetorun=None):
         '''Check ping from any device'''
 
         timeout = 50
         basic_cmd = 'ping -c {} {}'.format(ping_count, ping_ip)
 
         if timetorun:
-            basic_cmd = 'timeout {} ping {} {}'.format(timetorun, ping_ip, options)
-            timeout = int(timetorun)+10
+            basic_cmd = 'timeout {} ping {} {}'.format(timetorun, ping_ip,
+                                                       options)
+            timeout = int(timetorun) + 10
         elif ping_interface:
             basic_cmd += " -I {} {}".format(ping_interface, options)
         else:
@@ -170,8 +195,9 @@ class LinuxDevice(base.BaseDevice):
             # Validation can be added - future note
             return True
         else:
-            match = re.search("%s packets transmitted, %s received, 0%% packet loss" %
-                          (ping_count, ping_count), self.before)
+            match = re.search(
+                "%s packets transmitted, %s received, 0%% packet loss" %
+                (ping_count, ping_count), self.before)
             if match:
                 return True
             else:
@@ -181,7 +207,8 @@ class LinuxDevice(base.BaseDevice):
         '''Traceroute returns the route that packets take to a network host'''
         try:
             self.sendline("traceroute%s %s %s" % (version, options, host_ip))
-            self.expect_exact("traceroute%s %s %s" % (version, options, host_ip))
+            self.expect_exact("traceroute%s %s %s" %
+                              (version, options, host_ip))
             self.expect_prompt(timeout=timeout)
             return self.before
         except pexpect.TIMEOUT:
@@ -229,7 +256,8 @@ class LinuxDevice(base.BaseDevice):
             self.sendline('usermod -aG sudo %s' % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' % id)
+            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' %
+                          id)
             self.expect(self.prompt, timeout=30)
         except:
             self.expect(self.prompt, timeout=30)
@@ -257,7 +285,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         self.sendline('ls %s' % dst)
         self.expect_exact('ls %s' % dst)
-        i = self.expect(['ls: cannot access %s: No such file or directory' % dst] + self.prompt)
+        i = self.expect(
+            ['ls: cannot access %s: No such file or directory' % dst] +
+            self.prompt)
         if i == 0:
             raise Exception("Failed to copy file")
         self.logfile_read = saved_logfile_read
@@ -291,13 +321,20 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def wait_for_linux(self):
         '''Verify Linux starts up.'''
-        i = self.expect(['Reset Button Push down', 'Linux version', 'Booting Linux', 'Starting kernel ...', 'Kernel command line specified:'], timeout=45)
+        i = self.expect([
+            'Reset Button Push down', 'Linux version', 'Booting Linux',
+            'Starting kernel ...', 'Kernel command line specified:'
+        ],
+                        timeout=45)
         if i == 0:
             self.expect('httpd')
             self.sendcontrol('c')
             self.expect(self.uprompt)
             self.sendline('boot')
-        i = self.expect(['U-Boot', 'login:', 'Please press Enter to activate this console'] + self.prompt, timeout=150)
+        i = self.expect([
+            'U-Boot', 'login:', 'Please press Enter to activate this console'
+        ] + self.prompt,
+                        timeout=150)
         if i == 0:
             raise Exception('U-Boot came back when booting kernel')
         elif i == 1:
@@ -320,7 +357,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         for not_used in range(5):
             try:
                 pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
-                pp.expect_exact('cat /proc/sys/net/netfilter/nf_conntrack_count', timeout=2)
+                pp.expect_exact(
+                    'cat /proc/sys/net/netfilter/nf_conntrack_count',
+                    timeout=2)
                 pp.expect(pp.prompt, timeout=15)
                 ret = int(pp.before.strip())
 
@@ -433,7 +472,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             web_addr = "{}://{}".format(protocol, host_ip)
         command = "curl {} {}".format(options, web_addr)
         self.sendline(command)
-        index = self.expect(['Connected to']+['DOCTYPE html PUBLIC']+['Connection timed out']+['Failed to connect to']+self.prompt,timeout=100)
+        index = self.expect(['Connected to'] + ['DOCTYPE html PUBLIC'] +
+                            ['Connection timed out'] +
+                            ['Failed to connect to'] + self.prompt,
+                            timeout=100)
         self.sendcontrol('c')
         self.expect(self.prompt)
         return True if index not in [2, 3] else False

@@ -9,17 +9,21 @@ import re
 import os
 import termcolor
 
+
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
 
+
 # Add this to your env if you need to disable this for some reason
 BFT_DISABLE_ERROR_DETECT = "BFT_DISABLE_ERROR_DETECT" in os.environ
+
 
 def detect_kernel_panic(console, s):
     if re.findall("Kernel panic - not syncing", s):
         console.close()
 
         raise Exception('Kernel panic detected')
+
 
 def detect_crashdump_error(console, s):
     if re.findall("Crashdump magic found", s):
@@ -44,7 +48,8 @@ def detect_crashdump_error(console, s):
             # we are done
             while i < 3:
                 i = console.expect(tftp_expect +
-                        ["Resetting with watch dog!"] + console.uprompt)
+                                   ["Resetting with watch dog!"] +
+                                   console.uprompt)
         except:
             print_bold("Crashdump upload failed")
         else:
@@ -52,6 +57,7 @@ def detect_crashdump_error(console, s):
 
         # TODO: actually parse data too?
         raise Exception('Crashdump detected')
+
 
 def detect_fatal_error(console):
     if BFT_DISABLE_ERROR_DETECT:

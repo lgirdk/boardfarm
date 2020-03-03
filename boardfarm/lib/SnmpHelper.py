@@ -22,6 +22,7 @@ from pysmi.compiler import MibCompiler
 from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 from pysnmp.hlapi import ObjectIdentifier
 
+
 def find_directory_in_tree(pattern, root_dir):
     """
     Looks for all the directories where the name matches pattern
@@ -45,6 +46,7 @@ def find_directory_in_tree(pattern, root_dir):
                 else:
                     dirs_list.append(d)
     return dirs_list
+
 
 def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
     """
@@ -74,10 +76,12 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
             file_list = list(dict.fromkeys(file_list))
     return file_list
 
+
 class SnmpMibsMeta(type):
-        @property
-        def default_mibs(self):
-            return SnmpMibs.get_mib_parser()
+    @property
+    def default_mibs(self):
+        return SnmpMibs.get_mib_parser()
+
 
 class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
     """
@@ -102,7 +106,10 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
     snmp_parser = None
 
     @classmethod
-    def get_mib_parser(cls, snmp_mib_files=None, snmp_mib_dirs=None, http_sources=None):
+    def get_mib_parser(cls,
+                       snmp_mib_files=None,
+                       snmp_mib_dirs=None,
+                       http_sources=None):
 
         if cls.snmp_parser is not None:
             return cls.snmp_parser
@@ -135,7 +142,8 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         if len(snmp_mib_files) == 0:
             # only traverses the mib dirs and compile all the files
             # /usr/share/snmp/mibs has miblist.txt which MUST be ignored
-            snmp_mib_files = find_files_in_tree(snmp_mib_dirs, ignore=['miblist.txt', '__', '.py'])
+            snmp_mib_files = find_files_in_tree(
+                snmp_mib_dirs, ignore=['miblist.txt', '__', '.py'])
         if 'BFT_DEBUG' in os.environ:
             print('Mibs file list: %s' % snmp_mib_files)
 
@@ -153,9 +161,8 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             debug.setLogger(debug.Debug('reader', 'compiler'))
 
         # Initialize compiler infrastructure
-        mibCompiler = MibCompiler(
-            SmiStarParser(), JsonCodeGen(), CallbackWriter(self.callback_func)
-        )
+        mibCompiler = MibCompiler(SmiStarParser(), JsonCodeGen(),
+                                  CallbackWriter(self.callback_func))
 
         # search for source MIBs here
         mibCompiler.addSources(*[FileReader(x) for x in src_dir_list])
@@ -173,12 +180,15 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         err = False
 
         if mib_dict is None or mib_dict == {}:
-            print("ERROR: failed on mib compilation (mibCompiler.compile returned an empty dictionary)")
+            print(
+                "ERROR: failed on mib compilation (mibCompiler.compile returned an empty dictionary)"
+            )
             err = True
 
         for key, value in mib_dict.items():
             if value == 'unprocessed':
-                print("ERROR: failed on mib compilation: " + key + ": " + value)
+                print("ERROR: failed on mib compilation: " + key + ": " +
+                      value)
                 err = True
 
         if err:
@@ -213,10 +223,21 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         try:
             oid = self.mib_dict[mib_name]['oid']
         except KeyError:
-            raise Exception("ERROR: mib '%s' not found in mib_dict." % mib_name)
+            raise Exception("ERROR: mib '%s' not found in mib_dict." %
+                            mib_name)
         return oid
 
-def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, community="private", walk_cmd=None, stype=None):
+
+def snmp_v2(device,
+            ip,
+            mib_name,
+            index=0,
+            value=None,
+            timeout=10,
+            retries=3,
+            community="private",
+            walk_cmd=None,
+            stype=None):
     """
     Performs an snmp get/set on ip from device's console.
     If value is provided, action = snmpget else action = snmpset
@@ -257,14 +278,13 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
                 (action, community, ip, timeout, retries, oid, index, set_value)
 
         py_steps = [
-                'from pysnmp.hlapi import *',
-                 pysnmp_cmd,
-                'errorIndication, errorStatus, errorIndex, varBinds = next(cmd)',
-                'print(errorIndication == None)',
-                'if errorIndication: result=errorIndication; print(result)',
-                'else: result=varBinds[0][1]; print(result.prettyPrint())',
-                'print(result.__class__.__name__)'
-                ]
+            'from pysnmp.hlapi import *', pysnmp_cmd,
+            'errorIndication, errorStatus, errorIndex, varBinds = next(cmd)',
+            'print(errorIndication == None)',
+            'if errorIndication: result=errorIndication; print(result)',
+            'else: result=varBinds[0][1]; print(result.prettyPrint())',
+            'print(result.__class__.__name__)'
+        ]
 
         device.sendline("cat > snmp.py << EOF\n%s\nEOF" % "\n".join(py_steps))
         for e in py_steps:
@@ -275,10 +295,13 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         device.expect_exact("python snmp.py")
         if device.expect(["Traceback", pexpect.TIMEOUT], timeout=3) == 0:
             device.expect_prompt()
-            data = False, "Python file error :\n%s" % device.before.split("\n")[-1].strip(), None
+            data = False, "Python file error :\n%s" % device.before.split(
+                "\n")[-1].strip(), None
         else:
             device.expect_prompt()
-            result = [i.strip() for i in device.before.split('\n') if i.strip() != ""]
+            result = [
+                i.strip() for i in device.before.split('\n') if i.strip() != ""
+            ]
             data = result[0] == "True", "\n".join(result[1:-1]), result[-1]
         device.sendline("rm snmp.py")
         device.expect_prompt()
@@ -291,16 +314,17 @@ def snmp_v2(device, ip, mib_name, index=0, value=None, timeout=10, retries=3, co
         status, result, stype = _run_snmp()
         assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
 
-        for k,v in SnmpMibs.mib_type_map.items():
+        for k, v in SnmpMibs.mib_type_map.items():
             if stype in v:
                 stype = k
                 break
 
-    if value != None: # some operations require zero as a value
+    if value != None:  # some operations require zero as a value
         status, result, stype = _run_snmp(True)
         assert status, "SNMP SET Error:\nMIB:%s\nError:%s" % (mib_name, result)
 
     return result
+
 
 def get_mib_oid(mib_name):
     """
@@ -318,11 +342,13 @@ def get_mib_oid(mib_name):
     obj = SnmpMibs.default_mibs
     return obj.get_mib_oid(mib_name)
 
+
 ##############################################################################################
 
 if __name__ == '__main__':
 
     import sys
+
     class SnmpMibsUnitTest(object):
         """
         Unit test for the SnmpMibs class to be run as a standalone module
@@ -333,18 +359,24 @@ if __name__ == '__main__':
         """
         test_singleton = False  # if True it will invoke get_mib_parser() static method
 
-        mibs = ['docsDevSwAdminStatus',
-                'snmpEngineMaxMessageSize',
-                'docsDevServerDhcp',
-                'ifCounterDiscontinuityTime',
-                'docsBpi2CmtsMulticastObjects',
-                'docsDevNmAccessIp']
+        mibs = [
+            'docsDevSwAdminStatus', 'snmpEngineMaxMessageSize',
+            'docsDevServerDhcp', 'ifCounterDiscontinuityTime',
+            'docsBpi2CmtsMulticastObjects', 'docsDevNmAccessIp'
+        ]
 
-        mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB']  # this is the list of mib/txt files to be compiled
-        srcDirectories = ['/usr/share/snmp/mibs']  # this needs to point to the mibs directory location
+        mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'
+                     ]  # this is the list of mib/txt files to be compiled
+        srcDirectories = [
+            '/usr/share/snmp/mibs'
+        ]  # this needs to point to the mibs directory location
         snmp_obj = None  # will hold an instance of the  SnmpMibs class
 
-        def __init__(self, mibs_location=None, files=None, mibs=None, err_mibs=None):
+        def __init__(self,
+                     mibs_location=None,
+                     files=None,
+                     mibs=None,
+                     err_mibs=None):
             """
             Takes:
                 mibs_location:  where the .mib files are located (can be a list of dirs)
@@ -362,14 +394,16 @@ if __name__ == '__main__':
 
             for d in self.srcDirectories:
                 if not os.path.exists(str(d)):
-                    msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(d))
+                    msg = 'No mibs directory {} found test_SnmpHelper.'.format(
+                        str(d))
                     raise Exception(msg)
 
             if files:
                 self.mib_files = files
 
             if SnmpMibsUnitTest.test_singleton:
-                self.snmp_obj = SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories)
+                self.snmp_obj = SnmpMibs.get_mib_parser(
+                    self.mib_files, self.srcDirectories)
                 print("Using class singleton: %r" % self.snmp_obj)
             else:
                 self.snmp_obj = SnmpMibs(self.mib_files, self.srcDirectories)
@@ -409,7 +443,9 @@ if __name__ == '__main__':
 
     if '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2:
         print("Usage:\n%s <path_to_mibs>  [<path_to_mibs> ...]" % sys.argv[0])
-        print("\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs " % sys.argv[0])
+        print(
+            "\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs "
+            % sys.argv[0])
         sys.exit(1)
 
     print('sys.argv=' + str(sys.argv))
@@ -423,10 +459,15 @@ if __name__ == '__main__':
     unit_test = SnmpMibsUnitTest(mibs_location=location)
     assert (unit_test.unitTest())
 
-
     print('Done.')
 
-def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=200, read_cmd='walk_verify'):
+
+def snmp_asyncore_walk(device,
+                       ip_address,
+                       mib_oid,
+                       community='public',
+                       time_out=200,
+                       read_cmd='walk_verify'):
     """Function to do a snmp walk using asyncore script
     Python's asyncore provides an event loop that can handle transactions from multiple non-blocking sockets
     Usage: snmp_asyncore_walk(wan, cm_ipv6, "1.3", private, 150)
@@ -447,16 +488,19 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
     :return: True or False or snmp output
     :rtype: Boolean or string
     """
-    if re.search(ValidIpv4AddressRegex,ip_address):
+    if re.search(ValidIpv4AddressRegex, ip_address):
         mode = 'ipv4'
     elif re.search(AllValidIpv6AddressesRegex, ip_address):
         mode = 'ipv6'
     install_pysnmp(device)
     asyncore_script = 'asyncore_snmp.py'
-    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/' + asyncore_script)
+    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         'scripts/' + asyncore_script)
     dest = asyncore_script
     device.copy_file_to_server(fname, dest)
-    device.sendline('time python %s %s %s %s %s %s > snmp_output.txt' % (asyncore_script, ip_address, mib_oid, community, time_out, mode))
+    device.sendline(
+        'time python %s %s %s %s %s %s > snmp_output.txt' %
+        (asyncore_script, ip_address, mib_oid, community, time_out, mode))
     device.expect(device.prompt, timeout=time_out)
     device.sendline('rm %s' % asyncore_script)
     device.expect(device.prompt)
@@ -468,7 +512,8 @@ def snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out
         return False
     if read_cmd == 'walk_verify':
         device.sendline('tail snmp_output.txt')
-        if 0 == device.expect(["No more variables left in this MIB View", pexpect.TIMEOUT]):
+        if 0 == device.expect(
+            ["No more variables left in this MIB View", pexpect.TIMEOUT]):
             device.expect_prompt()
             output = True
         else:

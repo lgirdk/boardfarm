@@ -1,9 +1,9 @@
 from . import linux
 
+
 class OpenEmbedded(linux.LinuxDevice):
     """OE core implementation extends LinuxDevice
     """
-
     def install_package(self, pkg):
         """Installs packages over OE
 

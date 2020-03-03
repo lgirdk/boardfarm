@@ -11,9 +11,11 @@ logging.basicConfig(stream=sys.stdout, format='%(message)s')
 logger = logging.getLogger('DeviceManager')
 logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+
 class DeviceNone(object):
     def __getattr__(self, key):
         raise DeviceDoesNotExistError
+
 
 # TODO: type + name are confusing and need to be sorted out
 # This is really to handle legacy types, you really should be requesting device
@@ -51,6 +53,7 @@ class device_type(Enum):
     softphone = 23
     mac_sniffer = 24
 
+
 class device_location(Enum):
     '''
     Identifiers for how a device is connected to the Device Under Test (DUT).
@@ -63,7 +66,6 @@ class device_location(Enum):
     DUT = 3
 
 
-
 class device_os(Enum):
     '''
     Identifiers for the type of Operating System (OS) of a device.
@@ -71,6 +73,7 @@ class device_os(Enum):
     Unknown = 0
     Linux = 1
     Windows = 2
+
 
 # to replace linux_boot.LinuxDevice.get_device_by_feature
 class device_feature(Enum):
@@ -81,6 +84,7 @@ class device_feature(Enum):
     Generic = 1
     Wifi2G = 2
     Wifi5G = 3
+
 
 class device_descriptor(object):
     '''
@@ -102,11 +106,11 @@ class device_descriptor(object):
 
         return ret
 
+
 class device_manager(UserList):
     '''
     Manages all your devices, for getting and creating (if needed)
     '''
-
     def __init__(self):
         super().__init__()
         # List of current devices, which we prefer to reuse instead of creating new ones
@@ -117,7 +121,7 @@ class device_manager(UserList):
 
     @property
     def data(self):
-        return [ x.obj for x in self.devices ]
+        return [x.obj for x in self.devices]
 
     @data.setter
     def data(self, x):
@@ -134,7 +138,8 @@ class device_manager(UserList):
                 d.obj.close()
             except Exception as e:
                 logger.warning(e)
-                logger.warning("Problem trying to close connection to '%s'." % d.type.name)
+                logger.warning("Problem trying to close connection to '%s'." %
+                               d.type.name)
         # erase device list
         self.devices = []
 
@@ -153,7 +158,7 @@ class device_manager(UserList):
     def get_devices_by_types(self, types):
         '''Get multiple devices by types'''
 
-        return [ self.by_type(t, num=1) for t in types ]
+        return [self.by_type(t, num=1) for t in types]
 
     def by_feature(self, feature, num=1):
         '''Shorthand for getting device by feature'''
@@ -177,14 +182,15 @@ class device_manager(UserList):
 
         matching = self.devices[:]
         if t is not None:
-            matching[:] = [ d for d in matching if d.type == t ]
+            matching[:] = [d for d in matching if d.type == t]
         if feature is not None:
-            matching[:] = [ d for d in matching if feature in d.features ]
+            matching[:] = [d for d in matching if feature in d.features]
         if location is not None:
-            matching[:] = [ d for d in matching if d.location == location ]
+            matching[:] = [d for d in matching if d.location == location]
 
         if len(matching) > 1 and 'BFT_DEBUG' in os.environ:
-            print("multiple matches, returning first hit (%s, %s, %s)" % (t, feature, location))
+            print("multiple matches, returning first hit (%s, %s, %s)" %
+                  (t, feature, location))
             for m in matching:
                 print(m)
 
@@ -207,9 +213,12 @@ class device_manager(UserList):
         # For convenience, set an attribute with a name the same as the
         # newly added device type. Example: self.lan = the device of type lan
         attribute_name = new_dev.type.name
-        if attribute_name != 'Unknown' and getattr(self, attribute_name, None) is not None:
+        if attribute_name != 'Unknown' and getattr(self, attribute_name,
+                                                   None) is not None:
             # device manager already has an attribute of this name
-            raise Exception("Device Manager already has '%s' attribute, you cannot add another." % attribute_name)
+            raise Exception(
+                "Device Manager already has '%s' attribute, you cannot add another."
+                % attribute_name)
         else:
             setattr(self, attribute_name, new_dev.obj)
             # Alias board to DUT

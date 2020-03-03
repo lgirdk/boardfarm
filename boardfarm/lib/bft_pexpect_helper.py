@@ -13,8 +13,10 @@ from boardfarm.tests_wrappers import throw_pexpect_error
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
+
 def print_bold(msg):
     termcolor.cprint(msg, None, attrs=['bold'])
+
 
 def frame_index_out_of_file(this_file=__file__):
     '''
@@ -29,7 +31,6 @@ def frame_index_out_of_file(this_file=__file__):
 
     It would return foo2 and the line number that it was called from
     '''
-
 
     frame_count = len(inspect.stack())
 
@@ -53,6 +54,7 @@ def frame_index_out_of_file(this_file=__file__):
 
     raise Exception("This should never hit")
 
+
 def caller_file_line(i):
     '''
     Prints a simple debug line given a frame index for the file, function, and line number
@@ -63,16 +65,18 @@ def caller_file_line(i):
 
     return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
 
+
 # global sudo password
 password = None
+
 
 class bft_pexpect_helper(pexpect.spawn):
     '''
     Boardfarm helper for logging pexpect and making minor tweaks
     '''
-
     def __setattr__(self, key, value):
-        if key == "name" and (type(getattr(self, 'name', None)) is str and self.name[0] != '<'):
+        if key == "name" and (type(getattr(self, 'name', None)) is str
+                              and self.name[0] != '<'):
             return
         else:
             super(bft_pexpect_helper, self).__setattr__(key, value)
@@ -88,7 +92,11 @@ class bft_pexpect_helper(pexpect.spawn):
                     'sudo' in kwargs.get('command', '') or \
                     True in ['sudo' in x for x in kwargs.get('args', [])]:
                 print_bold("NOTE: sudo helper running")
-                if 0 != self.expect(['\[sudo\] password for [^:]*: ', pexpect.TIMEOUT, pexpect.EOF], timeout=5):
+                if 0 != self.expect([
+                        '\[sudo\] password for [^:]*: ', pexpect.TIMEOUT,
+                        pexpect.EOF
+                ],
+                                    timeout=5):
                     return
                 if password is not None:
                     self.sendline(password)
@@ -102,16 +110,17 @@ class bft_pexpect_helper(pexpect.spawn):
         # Filters out boardfarm specific
         # Bad args that pexpext does not take, higher classes should have popped
         # them off, but we catch them all here in case
-        bad_args = ['tftp_username', 'connection_type', 'power_password', 'rootfs',
-                    'kernel', 'power_outlet', 'web_proxy', 'tftp_port', 'ssh_password',
-                    'tftp_server', 'config', 'power_ip', 'conn_cmd', 'power_username',
-                    'start', 'tftp_password']
+        bad_args = [
+            'tftp_username', 'connection_type', 'power_password', 'rootfs',
+            'kernel', 'power_outlet', 'web_proxy', 'tftp_port', 'ssh_password',
+            'tftp_server', 'config', 'power_ip', 'conn_cmd', 'power_username',
+            'start', 'tftp_password'
+        ]
         for arg in bad_args:
             kwargs.pop(arg, None)
         if IS_PYTHON_3:
             kwargs['encoding'] = 'latin1'
         super(bft_pexpect_helper, self).__init__(*args, **kwargs)
-
 
     def get_logfile_read(self):
         if hasattr(self, "_logfile_read"):
@@ -127,7 +136,8 @@ class bft_pexpect_helper(pexpect.spawn):
         if isinstance(value, o_helper):
             self._logfile_read = value
         elif value is not None:
-            self._logfile_read = o_helper(self, value, getattr(self, "color", None))
+            self._logfile_read = o_helper(self, value,
+                                          getattr(self, "color", None))
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
@@ -143,19 +153,24 @@ class bft_pexpect_helper(pexpect.spawn):
             self.expect(self.prompt, timeout=timeout)
         except Exception:
             self.sendcontrol('c')
-            raise Exception("Command did not complete within %s seconds. Prompt was not seen." % timeout)
+            raise Exception(
+                "Command did not complete within %s seconds. Prompt was not seen."
+                % timeout)
         return self.before.strip()
 
     def write(self, string):
         self._logfile_read.write(string)
 
-    def interact(self, escape_character=chr(29),
-                 input_filter=None, output_filter=None):
+    def interact(self,
+                 escape_character=chr(29),
+                 input_filter=None,
+                 output_filter=None):
 
         o = self._logfile_read
         self.logfile_read = None
-        ret = super(bft_pexpect_helper, self).interact(escape_character,
-                                               input_filter, output_filter)
+        ret = super(bft_pexpect_helper,
+                    self).interact(escape_character, input_filter,
+                                   output_filter)
         self.logfile_read = o
 
         return ret
@@ -168,8 +183,7 @@ class bft_pexpect_helper(pexpect.spawn):
     def send(self, s):
         if BFT_DEBUG:
             idx = frame_index_out_of_file()
-            print_bold("%s = sending: %s" %
-                              (caller_file_line(idx), repr(s)))
+            print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
 
         if self.delaybetweenchar is not None:
             ret = 0
@@ -187,7 +201,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
         idx = frame_index_out_of_file()
         print_bold("%s = expecting: %s" %
-                          (caller_file_line(idx), repr(pattern)))
+                   (caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
@@ -195,10 +209,9 @@ class bft_pexpect_helper(pexpect.spawn):
 
             if hasattr(self.match, "group"):
                 print_bold("%s = matched: %s" %
-                                  (frame, repr(self.match.group())))
+                           (frame, repr(self.match.group())))
             else:
-                print_bold("%s = matched: %s" %
-                                  (frame, repr(pattern)))
+                print_bold("%s = matched: %s" % (frame, repr(pattern)))
             return ret
         except:
             print_bold("expired")
@@ -216,12 +229,22 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def sendcontrol(self, char):
         if BFT_DEBUG:
-            print_bold("%s = sending: control-%s" %
-                              (caller_file_line(frame_index_out_of_file()), repr(char)))
+            print_bold(
+                "%s = sending: control-%s" %
+                (caller_file_line(frame_index_out_of_file()), repr(char)))
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
 
-def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", via=None, color=None, o=sys.stdout, extra_args=""):
+
+def spawn_ssh_pexpect(ip,
+                      user='root',
+                      pw='bigfoot1',
+                      prompt=None,
+                      port="22",
+                      via=None,
+                      color=None,
+                      o=sys.stdout,
+                      extra_args=""):
     """
     Provides a quick way to spawn an ssh session (this avoids having to import the SshConnection class from devices)
     Uses hardcoded options: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
@@ -263,11 +286,14 @@ def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", vi
     p.expect(p.prompt)
 
     from termcolor import colored
+
     class o_helper_foo():
         def __init__(self, color):
             self.color = color
+
         def write(self, string):
             o.write(colored(string, color))
+
         def flush(self):
             o.flush()
 
@@ -277,5 +303,3 @@ def spawn_ssh_pexpect(ip, user='root', pw='bigfoot1', prompt=None, port="22", vi
         p.logfile_read = o
 
     return p
-
-

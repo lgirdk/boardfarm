@@ -13,10 +13,12 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
     '''
     Board with a MIPS processor.
     '''
-    model = ("db120", "ap135", "ap143", "ap147", "ap152", "ap151",
-             "ap151-16M", "ap143", "ap152-8M", "tew-823dru")
+    model = ("db120", "ap135", "ap143", "ap147", "ap152", "ap151", "ap151-16M",
+             "ap143", "ap152-8M", "tew-823dru")
 
-    prompt = ['root\\@.*:.*#', ]
+    prompt = [
+        'root\\@.*:.*#',
+    ]
     uprompt = ['ath>', 'ar7240>']
 
     def __init__(self, *args, **kwargs):
@@ -127,9 +129,22 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
         return (':%s,' % kernel_user).join(ret) + ":%s" % kernel_user
 
     def parse_perf_board(self):
-        events = [{'expect': 'cycles', 'name': 'cycles', 'sname': 'CPP'},
-                {'expect': 'instructions', 'name': 'instructions', 'sname': 'IPP'},
-                {'expect': 'r98:ku', 'name': 'dcache_misses', 'sname': 'DMISS'},
-                {'expect': 'r86:ku', 'name': 'icache_misses', 'sname': 'IMISS'}]
+        events = [{
+            'expect': 'cycles',
+            'name': 'cycles',
+            'sname': 'CPP'
+        }, {
+            'expect': 'instructions',
+            'name': 'instructions',
+            'sname': 'IPP'
+        }, {
+            'expect': 'r98:ku',
+            'name': 'dcache_misses',
+            'sname': 'DMISS'
+        }, {
+            'expect': 'r86:ku',
+            'name': 'icache_misses',
+            'sname': 'IMISS'
+        }]
 
         return events

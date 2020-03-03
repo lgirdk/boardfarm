@@ -1,4 +1,3 @@
-
 import json
 import os
 import re
@@ -17,7 +16,8 @@ def get_station_config(location=None):
     '''
     boardfarm_config = read_station_config(location)
     if "_redirect" in boardfarm_config:
-        print("Using boardfarm config file at %s" % boardfarm_config['_redirect'])
+        print("Using boardfarm config file at %s" %
+              boardfarm_config['_redirect'])
         print("Please set your default config by doing:")
         print('    export BFT_CONFIG="%s"' % boardfarm_config['_redirect'])
         print("If you want to use local config, remove the _redirect line.")
@@ -35,7 +35,8 @@ def read_station_config(location):
     if location.startswith("http"):
         data = BoardfarmWebClient(location,
                                   bf_version=boardfarm.__version__,
-                                  debug=os.environ.get("BFT_DEBUG", False)).bf_config_str
+                                  debug=os.environ.get("BFT_DEBUG",
+                                                       False)).bf_config_str
     else:
         data = open(location, 'r').read()
 
@@ -63,6 +64,7 @@ def process_station_config(boardfarm_config):
 
     return boardfarm_config
 
+
 def filter_boards(board_config, filter, name=None):
     """Choose boards based on the filter provided
 
@@ -84,6 +86,7 @@ def filter_boards(board_config, filter, name=None):
             print("matched %s on %s, adding %s" % (filter, board_config, name))
         return True
     return False
+
 
 def filter_station_config(boardfarm_config,
                           board_type=None,
@@ -109,7 +112,7 @@ def filter_station_config(boardfarm_config,
                boardfarm_config[b]['available_for_autotests'] == False:
                 # Skip this board
                 continue
-            if board_features != [] :
+            if board_features != []:
                 if 'feature' not in boardfarm_config[b]:
                     continue
                 features = boardfarm_config[b]['feature']
@@ -126,7 +129,8 @@ def filter_station_config(boardfarm_config,
 
                             if type(d['feature']) in (str, six.text_type):
                                 d['feature'] = [d['feature']]
-                            features.extend(x for x in d['feature'] if x not in features)
+                            features.extend(x for x in d['feature']
+                                            if x not in features)
                 if type(features) in (str, six.text_type):
                     features = [features]
                 if set(board_features) != set(board_features) & set(features):

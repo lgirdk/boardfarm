@@ -8,6 +8,7 @@
 from boardfarm.lib import common
 from . import qcom_arm_base
 
+
 class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
     """QcomAkroniteRouter board loader/configuration class derived from QcomArmBase
     """
@@ -41,7 +42,8 @@ class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
         filename = self.prepare_file(ROOTFS)
 
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.spi_flash_bin("0x006b0000", size, self.uboot_ddr_addr, "0x1920000")
+        self.spi_flash_bin("0x006b0000", size, self.uboot_ddr_addr,
+                           "0x1920000")
 
     def flash_linux(self, KERNEL):
         """This method flashes the Qcom Akronite board by copying file to the board.
@@ -53,9 +55,10 @@ class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
         filename = self.prepare_file(KERNEL)
 
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.spi_flash_bin("0x0062b0000", size, self.uboot_ddr_addr, "0x400000")
+        self.spi_flash_bin("0x0062b0000", size, self.uboot_ddr_addr,
+                           "0x400000")
 
-    def boot_linux(self, rootfs = None, bootargs = ""):
+    def boot_linux(self, rootfs=None, bootargs=""):
         """This method boots Qcom Akronite board.
 
         :param rootfs: Indicates the rootsfs image path if needs to be loaded (parameter to be used at later point), defaults to None.

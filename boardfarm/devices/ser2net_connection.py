@@ -1,6 +1,7 @@
 import pexpect
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class Ser2NetConnection():
     """The ser2net daemon allows telnet and tcp sessions to be established with a unit's serial ports.
     If a board is connected serially to a server running ser2net daemon, this class can be used
@@ -29,11 +30,14 @@ class Ser2NetConnection():
         :raises: Exception Board is in use (connection refused). / Password required and not supported
         """
         bft_pexpect_helper.spawn.__init__(self.device,
-                               command='/bin/bash',
-                               args=['-c', self.conn_cmd])
+                                          command='/bin/bash',
+                                          args=['-c', self.conn_cmd])
 
         try:
-            result = self.device.expect(["assword:", "ser2net.*\r\n", "OpenGear Serial Server", "to access the port escape menu"])
+            result = self.device.expect([
+                "assword:", "ser2net.*\r\n", "OpenGear Serial Server",
+                "to access the port escape menu"
+            ])
         except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
         if result == 0:

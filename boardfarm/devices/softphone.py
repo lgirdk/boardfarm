@@ -1,4 +1,6 @@
 from boardfarm.lib.installers import install_pjsua
+
+
 class SoftPhone(object):
 
     model = "pjsip"
@@ -88,4 +90,3 @@ class SoftPhone(object):
         '''To kill the pjsip session'''
         self.sendcontrol('c')
         self.expect(self.prompt)
-

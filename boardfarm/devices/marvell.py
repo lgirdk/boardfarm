@@ -10,17 +10,20 @@ from . import openwrt_router
 import pexpect
 import time
 
+
 class WRT3200ACM(openwrt_router.OpenWrtRouter):
     """Marvell board loader/configuration class implementation extends OpenWrtRouter
     """
     model = ("wrt3200acm")
 
-    prompt = ['root\\@.*:.*#', ]
+    prompt = [
+        'root\\@.*:.*#',
+    ]
     uprompt = ['Venom>>']
     uboot_eth = "egiga1"
     wan_iface = "wan"
 
-    def reset(self, break_into_uboot = False):
+    def reset(self, break_into_uboot=False):
         """This method resets the marvell board.
         Enters into uboot menu if the param break_into_uboot is True
         else it will just power reset.
@@ -40,13 +43,13 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
 
         self.expect_exact('General initialization - Version: 1.0.0')
         for not_used in range(10):
-            self.expect(pexpect.TIMEOUT, timeout = 0.1)
+            self.expect(pexpect.TIMEOUT, timeout=0.1)
             self.sendline('echo FOO')
-            if 0 != self.expect([pexpect.TIMEOUT] + ['echo FOO'], timeout = 0.1):
+            if 0 != self.expect([pexpect.TIMEOUT] + ['echo FOO'], timeout=0.1):
                 break
-            if 0 != self.expect([pexpect.TIMEOUT] + ['FOO'], timeout = 0.1):
+            if 0 != self.expect([pexpect.TIMEOUT] + ['FOO'], timeout=0.1):
                 break
-            if 0 != self.expect([pexpect.TIMEOUT] + self.uprompt, timeout = 0.1):
+            if 0 != self.expect([pexpect.TIMEOUT] + self.uprompt, timeout=0.1):
                 break
             time.sleep(1)
 
@@ -70,7 +73,7 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         self.sendline('run update_both_images')
         self.expect(self.uprompt, timeout=90)
 
-    def boot_linux(self, rootfs = None, bootargs = ""):
+    def boot_linux(self, rootfs=None, bootargs=""):
         """This method boots marvell board.
 
         :param rootfs: parameter to be used at later point, defaults to None.

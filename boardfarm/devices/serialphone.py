@@ -1,4 +1,6 @@
 import re
+
+
 class SerialPhone(object):
     '''
     Fax modem
@@ -27,16 +29,19 @@ class SerialPhone(object):
         """
         self.sendline("find /dev/tty%s" % (self.line))
         self.expect(self.prompt)
-        return bool(re.search((r' find \/dev\/tty%s\\r\\n/dev/tty%s\\r\\n' % (self.line, self.line)), self.before))
+        return bool(
+            re.search((r' find \/dev\/tty%s\\r\\n/dev/tty%s\\r\\n' %
+                       (self.line, self.line)), self.before))
 
     def phone_config(self):
         '''
         to configure system link/soft link
         '''
         # to check whether the dev/tty exists-to be added
-        self.sendline("ln -s /dev/tty%s  /root/line-%s" % (self.line, self.line))
+        self.sendline("ln -s /dev/tty%s  /root/line-%s" %
+                      (self.line, self.line))
         self.expect(["File exists"] + self.prompt)
-    
+
     def phone_unconfig(self):
         '''
         to remove the system link
@@ -54,7 +59,8 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("import serial,time")
         self.expect(">>>")
-        self.sendline("ser = serial.Serial('/root/line-%s', %s ,timeout= %s)" % (self.line, baud, timeout))
+        self.sendline("ser = serial.Serial('/root/line-%s', %s ,timeout= %s)" %
+                      (self.line, baud, timeout))
         self.expect(">>>")
         self.sendline("ser.write(b'ATZ\\r')")
         self.expect(">>>")
@@ -77,7 +83,7 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("print(l)")
 
-    def dial(self, number, receiver_ip = None):
+    def dial(self, number, receiver_ip=None):
         '''
         to dial to another number
         number(str) : number to be called
@@ -116,4 +122,3 @@ class SerialPhone(object):
         self.expect('>>>')
         self.sendline('exit()')
         self.expect(self.prompt)
-

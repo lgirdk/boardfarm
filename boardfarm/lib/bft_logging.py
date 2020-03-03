@@ -15,6 +15,7 @@ from functools import wraps
 
 from boardfarm import start
 
+
 def now_short(_format="%Y%m%d-%H%M%S"):
     """Get current date and time string
 
@@ -25,6 +26,7 @@ def now_short(_format="%Y%m%d-%H%M%S"):
     """
     timeString = time.strftime(_format, time.localtime()) + "\t"
     return timeString
+
 
 def logfile_assert_message(s, condition, message):
     """Function to log and assert based on condition.
@@ -43,25 +45,34 @@ def logfile_assert_message(s, condition, message):
         s.log_to_file += now_short() + message + ": FAIL\r\n"
         assert 0, message + ": FAIL\r\n"
     else:
-        log_message(s, message+": PASS")
+        log_message(s, message + ": PASS")
+
 
 def write_test_log(t, output_dir):
     '''
     Write detailed log file for given test.
     '''
     if t.log_to_file is not None and hasattr(t, 'stop_time'):
-        filename = type(t).__name__ + '-' + time.strftime("%Y%m%d-%H%M%S") + ".txt"
+        filename = type(t).__name__ + '-' + time.strftime(
+            "%Y%m%d-%H%M%S") + ".txt"
         testtime = t.stop_time - t.start_time
         with open(os.path.join(output_dir, filename), 'w') as log:
-            log.write('\t=======================================================')
+            log.write(
+                '\t=======================================================')
             log.write('\n\tTest case ID: %s' % (type(t).__name__))
             log.write('\n\tTest case Description: %s' % (type(t).__doc__))
-            log.write('\n\t=======================================================\n')
+            log.write(
+                '\n\t=======================================================\n'
+            )
             log.write(t.log_to_file)
-            log.write('\n\t=======================================================')
-            log.write('\n\t%s test result: %s' % (type(t).__name__, t.result_grade))
+            log.write(
+                '\n\t=======================================================')
+            log.write('\n\t%s test result: %s' %
+                      (type(t).__name__, t.result_grade))
             log.write('\n\tTotal test time: %s seconds' % testtime)
-            log.write('\n\t=======================================================')
+            log.write(
+                '\n\t=======================================================')
+
 
 class LoggerMeta(type):
     def __new__(cls, name, bases, attrs):
@@ -109,27 +120,34 @@ class LoggerMeta(type):
             :rtype: string
             """
             func_args_str = "%s %s" % (repr(args), repr(kwargs))
-            to_log = '%s.%s ( %s )' % (func.__module__, func.__name__, func_args_str)
+            to_log = '%s.%s ( %s )' % (func.__module__, func.__name__,
+                                       func_args_str)
 
-            args[0].log_calls += '[%.6f]calling %s\r\n' % ((datetime.now() - start).total_seconds(), to_log)
+            args[0].log_calls += '[%.6f]calling %s\r\n' % (
+                (datetime.now() - start).total_seconds(), to_log)
 
             clsname = args[0].__class__.__name__
 
             # if the err_injection_dict exists, hijack the function call (if matched) and
             # return the bogus value.
-            from boardfarm.config import get_err_injection_dict # TO DO:  remove once the ConfigHelper is fixed (i.e. is a sigleton)
+            from boardfarm.config import get_err_injection_dict  # TO DO:  remove once the ConfigHelper is fixed (i.e. is a sigleton)
             err_injection_dict = get_err_injection_dict()
-            if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[clsname]:
+            if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[
+                    clsname]:
                 ret = err_injection_dict[clsname][func.__name__]
-                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((datetime.now() - start).total_seconds(), to_log, repr(ret))
+                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((
+                    datetime.now() - start).total_seconds(), to_log, repr(ret))
 
             else:
                 ret = func(*args, **kwargs)
 
-            args[0].log_calls += "[%.6f]returned %s = %s\r\n" % ((datetime.now() - start).total_seconds(), to_log, repr(ret))
+            args[0].log_calls += "[%.6f]returned %s = %s\r\n" % (
+                (datetime.now() - start).total_seconds(), to_log, repr(ret))
 
             return ret
+
         return wrapper
+
 
 def log_message(s, msg, header=False):
     """Write log messages to console and to log file(with timestamp)
@@ -153,6 +171,7 @@ def log_message(s, msg, header=False):
     else:
         print(full_msg)
         s.log_to_file += now_short() + msg + "\r\n"
+
 
 class o_helper(object):
     def __init__(self, parent, out, color):
@@ -187,21 +206,25 @@ class o_helper(object):
             self.out.write(string)
         td = datetime.now() - start
         # check for the split case
-        if len(self.parent.log) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
+        if len(self.parent.log
+               ) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
             tmp = '\n[%.6f]' % td.total_seconds()
             tmp += string[1:]
             string = tmp
         to_log = re.sub('\r\n', '\r\n[%.6f]' % td.total_seconds(), string)
         self.parent.log += to_log
         if hasattr(self.parent, 'test_to_log'):
-            self.parent.test_to_log.log += re.sub('\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
+            self.parent.test_to_log.log += re.sub(
+                '\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
 
     def flush(self):
         """Flushes the buffer storage in console before pexpect"""
         self.out.flush()
 
+
 def create_file_logs(config, board, tests_to_run, logger):
     combined_list = []
+
     def add_to_combined_list(log, name, combined_list=combined_list):
         for line in log.split('\r\n'):
             try:
@@ -212,7 +235,11 @@ def create_file_logs(config, board, tests_to_run, logger):
                 if line.startswith(' ['):
                     line = line[1:]
                 ts, text = line.split(']', 1)
-                combined_list.append({"time": float(ts[1:-1]), "text": str(text), "name": name})
+                combined_list.append({
+                    "time": float(ts[1:-1]),
+                    "text": str(text),
+                    "name": name
+                })
             except:
                 logger.debug("Failed to parse log line = %s" % repr(line))
                 pass
@@ -220,7 +247,8 @@ def create_file_logs(config, board, tests_to_run, logger):
     idx = 1
     console_combined = []
     for console in board.consoles:
-        with open(os.path.join(config.output_dir, 'console-%s.log' % idx), 'w') as clog:
+        with open(os.path.join(config.output_dir, 'console-%s.log' % idx),
+                  'w') as clog:
             clog.write(console.log)
             add_to_combined_list(console.log, "console-%s" % idx)
             add_to_combined_list(console.log_calls, "console-%s" % idx)
@@ -234,7 +262,8 @@ def create_file_logs(config, board, tests_to_run, logger):
                     if e['name'] == "":
                         clog.write('[%s]%s\r\n' % (e['time'], repr(e['text'])))
                     else:
-                        clog.write('%s: [%s] %s\n' % (e['name'], e['time'], repr(e['text'])))
+                        clog.write('%s: [%s] %s\n' %
+                                   (e['name'], e['time'], repr(e['text'])))
                 except:
                     logger.debug("failed to parse line: %s" % repr(e))
 
@@ -243,7 +272,8 @@ def create_file_logs(config, board, tests_to_run, logger):
     write_combined_log(console_combined, "console-combined.log")
 
     for device in config.devices:
-        with open(os.path.join(config.output_dir, device + ".log"), 'w') as clog:
+        with open(os.path.join(config.output_dir, device + ".log"),
+                  'w') as clog:
             d = getattr(config, device)
             if hasattr(d, 'log'):
                 clog.write(d.log)
@@ -252,7 +282,10 @@ def create_file_logs(config, board, tests_to_run, logger):
 
     for test in tests_to_run:
         if hasattr(test, 'log') and test.log != "":
-            with open(os.path.join(config.output_dir, '%s.log' % test.__class__.__name__), 'w') as clog:
+            with open(
+                    os.path.join(config.output_dir,
+                                 '%s.log' % test.__class__.__name__),
+                    'w') as clog:
                 clog.write(test.log)
         if hasattr(test, 'log_calls'):
             add_to_combined_list(test.log_calls, test.__class__.__name__)

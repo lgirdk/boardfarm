@@ -1,5 +1,6 @@
 from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
 
+
 class EnvHelper(object):
     '''
     Example env json
@@ -20,7 +21,6 @@ class EnvHelper(object):
         "version": "1.0"
     }
     '''
-
     def __init__(self, env, mirror=None):
         if env is None:
             return
@@ -37,9 +37,11 @@ class EnvHelper(object):
         '''
         try:
             if mirror:
-                return self.mirror + self.env['environment_def']['board']['software']['load_image']
+                return self.mirror + self.env['environment_def']['board'][
+                    'software']['load_image']
             else:
-                return self.env['environment_def']['board']['software']['load_image']
+                return self.env['environment_def']['board']['software'][
+                    'load_image']
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
@@ -58,7 +60,8 @@ class EnvHelper(object):
         returns the desired downgrade image to test against
         '''
         try:
-            return self.env['environment_def']['board']['software']['downgrade_images'][0]
+            return self.env['environment_def']['board']['software'][
+                'downgrade_images'][0]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
@@ -67,7 +70,8 @@ class EnvHelper(object):
         returns the desired upgrade image to test against
         '''
         try:
-            return self.env['environment_def']['board']['software']['upgrade_images'][0]
+            return self.env['environment_def']['board']['software'][
+                'upgrade_images'][0]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
@@ -80,7 +84,6 @@ class EnvHelper(object):
             return True
         except:
             return False
-
 
     def has_downgrade_image(self):
         '''
@@ -109,9 +112,8 @@ class EnvHelper(object):
         def contained(env_test, env_helper, path="root"):
             if type(env_test) is dict:
                 for k in env_test:
-                    if  k not in env_helper or not contained(env_test[k],
-                                                             env_helper[k],
-                                                             path + '->' + k):
+                    if k not in env_helper or not contained(
+                            env_test[k], env_helper[k], path + '->' + k):
                         return False
             elif type(env_test) is list:
                 # Handle case where env_test is a list and the env_helper is a value:

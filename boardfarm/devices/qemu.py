@@ -17,6 +17,7 @@ from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import cmd_exists
 
+
 class Qemu(openwrt_router.OpenWrtRouter):
     """Emulated QEMU board inherits the OpenWrtRouter.
     This class handles the operations relating to booting, reset and setup of QEMU device.
@@ -41,18 +42,18 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  conn_cmd,
                  power_ip,
                  power_outlet,
-                 output = sys.stdout,
-                 password = 'bigfoot1',
-                 web_proxy = None,
-                 tftp_server = None,
-                 tftp_username = None,
-                 tftp_password = None,
-                 tftp_port = None,
-                 connection_type = None,
-                 power_username = None,
-                 power_password = None,
-                 rootfs = None,
-                 kernel = None,
+                 output=sys.stdout,
+                 password='bigfoot1',
+                 web_proxy=None,
+                 tftp_server=None,
+                 tftp_username=None,
+                 tftp_password=None,
+                 tftp_port=None,
+                 connection_type=None,
+                 power_username=None,
+                 power_password=None,
+                 rootfs=None,
+                 kernel=None,
                  **kwargs):
         """This method intializes the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc.,
 
@@ -97,7 +98,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
         assert cmd_exists('qemu-system-i386')
 
         if rootfs is None:
-            raise Exception("The QEMU device type requires specifying a rootfs")
+            raise Exception(
+                "The QEMU device type requires specifying a rootfs")
 
         def temp_download(url):
             """This method is to download the image to the temp folder over the QEMU device.
@@ -144,8 +146,10 @@ class Qemu(openwrt_router.OpenWrtRouter):
         # TODO: add script=no,downscript=no to taps
 
         try:
-            bft_pexpect_helper.spawn.__init__(self, command='/bin/bash',
-                            args=["-c", cmd], env=env)
+            bft_pexpect_helper.spawn.__init__(self,
+                                              command='/bin/bash',
+                                              args=["-c", cmd],
+                                              env=env)
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF:
             self.pid = None
@@ -153,8 +157,10 @@ class Qemu(openwrt_router.OpenWrtRouter):
                     'failed to initialize KVM: Cannot allocate memory' in self.before:
                 cmd = cmd.replace('--enable-kvm ', '')
                 self.kvm = False
-                bft_pexpect_helper.spawn.__init__(self, command='/bin/bash',
-                            args=["-c", cmd], env=env)
+                bft_pexpect_helper.spawn.__init__(self,
+                                                  command='/bin/bash',
+                                                  args=["-c", cmd],
+                                                  env=env)
             else:
                 raise
 
@@ -195,7 +201,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         """
         pass
 
-    def setup_uboot_network(self, tftp_server = None):
+    def setup_uboot_network(self, tftp_server=None):
         """This method is supposed to perform a uboot of the device over the network.
 
         :param tftp_server: Ip address of the TFTP server to be used for uboot, defaults to None
@@ -230,14 +236,15 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
         for t in range(0, tout, 10):
             self.sendline()
-            i = self.expect([pexpect.TIMEOUT, 'login:'] + self.prompt, timeout=10)
+            i = self.expect([pexpect.TIMEOUT, 'login:'] + self.prompt,
+                            timeout=10)
             if i == 1:
                 self.sendline('root')
                 self.expect(self.prompt, timeout=tout)
             if i >= 1:
                 break
 
-    def boot_linux(self, rootfs = None, bootargs = None):
+    def boot_linux(self, rootfs=None, bootargs=None):
         """This method is supposed to boots qemu board.
 
         :param rootfs: parameter to be used at later point, defaults to None.

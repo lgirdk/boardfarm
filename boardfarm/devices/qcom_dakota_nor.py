@@ -8,6 +8,7 @@
 from boardfarm.lib import common
 from . import qcom_arm_base
 
+
 class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
     """QcomDakotaRouter board loader/configuration class derived from QcomArmBase
     """
@@ -30,7 +31,8 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
         if self.model in self.machid_table:
             self.machid = self.machid_table[self.model]
         else:
-            raise Exception("Unknown machid for %s, please add to table" % self.model)
+            raise Exception("Unknown machid for %s, please add to table" %
+                            self.model)
 
     def flash_rootfs(self, ROOTFS):
         """This method flashes the Qcom Dakota board with the ROOTFS (which in general is a patch update on the firmware).
@@ -42,7 +44,8 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
         filename = self.prepare_file(ROOTFS)
 
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.spi_flash_bin(self.rootfs_addr, size, self.uboot_ddr_addr, self.rootfs_size)
+        self.spi_flash_bin(self.rootfs_addr, size, self.uboot_ddr_addr,
+                           self.rootfs_size)
 
     def flash_linux(self, KERNEL):
         """This method flashes the Qcom Dakota board by copying file to the board.
@@ -54,9 +57,10 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
         filename = self.prepare_file(KERNEL)
 
         size = self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.spi_flash_bin(self.kernel_addr, size, self.uboot_ddr_addr, self.kernel_size)
+        self.spi_flash_bin(self.kernel_addr, size, self.uboot_ddr_addr,
+                           self.kernel_size)
 
-    def boot_linux(self, rootfs = None, bootargs = ""):
+    def boot_linux(self, rootfs=None, bootargs=""):
         """This method boots Qcom Dakota board.
 
         :param rootfs: Indicates the rootsfs image path if needs to be loaded (parameter to be used at later point), defaults to None.
@@ -79,7 +83,7 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
         # if run isn't support, we just reset u-boot and
         # let the bootcmd run that way
         try:
-            self.expect('Unknown command', timeout = 5)
+            self.expect('Unknown command', timeout=5)
         except:
             pass
         else:

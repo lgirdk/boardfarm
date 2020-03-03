@@ -32,6 +32,7 @@ if "BFT_DEBUG" in os.environ:
 
 from boardfarm.lib.bft_logging import LoggerMeta
 
+
 class FriendlyACS():
     __metaclass__ = LoggerMeta
     log = ""
@@ -45,8 +46,10 @@ class FriendlyACS():
         self.username = self.kwargs['username']
         self.password = self.kwargs['password']
         self.ipaddr = self.kwargs['ipaddr']
-        self.wsdl = "http://" + self.kwargs['ipaddr'] + "/ftacsws/acsws.asmx?WSDL"
-        self.client = Client(wsdl=self.wsdl, wsse=UsernameToken(self.username, self.password))
+        self.wsdl = "http://" + self.kwargs[
+            'ipaddr'] + "/ftacsws/acsws.asmx?WSDL"
+        self.client = Client(wsdl=self.wsdl,
+                             wsse=UsernameToken(self.username, self.password))
         self.port = self.kwargs.get('port', '80')
         self.log = ""
 
@@ -60,14 +63,17 @@ class FriendlyACS():
 
     def get(self, cpeid, param, source=0):
         # source = 0 (CPE), source = 1 (DB)
-        ret = self.client.service.FTGetDeviceParameters(devicesn=cpeid, source=source, arraynames=[param])
+        ret = self.client.service.FTGetDeviceParameters(devicesn=cpeid,
+                                                        source=source,
+                                                        arraynames=[param])
         if None == ret['Params']:
             return None
         else:
             return ret['Params']['ParamWSDL'][0]['Value']
 
     def set(self, cpeid, attr, value):
-        array_of_param = self.client.get_type('{http://www.friendly-tech.com}ArrayOfParam')
+        array_of_param = self.client.get_type(
+            '{http://www.friendly-tech.com}ArrayOfParam')
 
         arr = array_of_param([{'Name': attr, 'Value': value}])
 
@@ -80,7 +86,9 @@ class FriendlyACS():
 
     def rpc(self, cpeid, name, content):
         ''' Invoke custom RPC on specific CM'''
-        ret = self.client.service.FTRPCInvoke(devicesn=cpeid, rpcname=name, soapcontent=content)
+        ret = self.client.service.FTRPCInvoke(devicesn=cpeid,
+                                              rpcname=name,
+                                              soapcontent=content)
         return xmltodict.parse(ret['Response'])
 
     def rpc_GetParameterAttributes(self, cpeid, name):
@@ -88,20 +96,25 @@ class FriendlyACS():
 
         ret = self.rpc(cpeid, name, content)
 
-        return ret['cwmp:GetParameterAttributesResponse']['ParameterList']['ParameterAttributeStruct']
+        return ret['cwmp:GetParameterAttributesResponse']['ParameterList'][
+            'ParameterAttributeStruct']
 
     def rpc_GetParameterValues(self, cpeid, name):
         content = '<cwmp:GetParameterValues xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ParameterNames arrayType="xsd:string[1]"> <string>%s</string> </ParameterNames> </cwmp:GetParameterValues>' % name
 
         ret = self.rpc(cpeid, name, content)
 
-        return ret['cwmp:GetParameterValuesResponse']['ParameterList']['ParameterValueStruct']['Value']['#text']
+        return ret['cwmp:GetParameterValuesResponse']['ParameterList'][
+            'ParameterValueStruct']['Value']['#text']
 
     def getcurrent(self, cpeid, param, source=0):
-        self.client.service.FTGetDeviceParameters(devicesn=cpeid, source=source, arraynames=[param + '.'])
+        self.client.service.FTGetDeviceParameters(devicesn=cpeid,
+                                                  source=source,
+                                                  arraynames=[param + '.'])
 
     def rpc_SetParameterAttributes(self, cpeid, name, set_value):
-        content = '<cwmp:SetParameterAttributes xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ParameterList arrayType="cwmp:SetParameterAttributesStruct[1]"> <SetParameterAttributesStruct> <Name>%s</Name> <NotificationChange>1</NotificationChange> <Notification>%s</Notification> <AccessListChange>0</AccessListChange> <AccessList></AccessList> </SetParameterAttributesStruct> </ParameterList> </cwmp:SetParameterAttributes>' % (name, set_value)
+        content = '<cwmp:SetParameterAttributes xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <ParameterList arrayType="cwmp:SetParameterAttributesStruct[1]"> <SetParameterAttributesStruct> <Name>%s</Name> <NotificationChange>1</NotificationChange> <Notification>%s</Notification> <AccessListChange>0</AccessListChange> <AccessList></AccessList> </SetParameterAttributesStruct> </ParameterList> </cwmp:SetParameterAttributes>' % (
+            name, set_value)
 
         self.rpc(cpeid, name, content)
 
@@ -121,6 +134,7 @@ class FriendlyACS():
         print("WARN: not impl for this class")
         pass
 
+
 if __name__ == '__main__':
     import sys
 
@@ -131,9 +145,13 @@ if __name__ == '__main__':
         ip = sys.argv[1]
         port = 80
 
-    acs = FriendlyACS(ipaddr=ip, port=port, username=sys.argv[2], password=sys.argv[3])
+    acs = FriendlyACS(ipaddr=ip,
+                      port=port,
+                      username=sys.argv[2],
+                      password=sys.argv[3])
 
-    ret = acs.rpc_GetParameterAttributes('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
+    ret = acs.rpc_GetParameterAttributes('DEAP815610DA',
+                                         'Device.WiFi.SSID.1.SSID')
     print(ret['Notification'])
 
     ret = acs.get('DEAP815610DA', 'Device.DeviceInfo.SoftwareVersion')

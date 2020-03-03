@@ -8,6 +8,7 @@
 from . import qemu
 import ipaddress
 
+
 class QemuOpenWrt(qemu.Qemu):
     '''
     Emulated QEMU board

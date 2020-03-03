@@ -15,16 +15,24 @@ class QcomDakotaRouterNAND(qcom_akronite_nand.QcomAkroniteRouterNAND):
     model = ("dk07-nand", "dk04-nand")
 
     uboot_ddr_addr = "0x88000000"
-    machid_table = {"dk03": "8010100", "dk04-nand": "8010001", "dk06-nand": "8010005", "dk07-nand": "8010006", "ea8300": "8010006"}
+    machid_table = {
+        "dk03": "8010100",
+        "dk04-nand": "8010001",
+        "dk06-nand": "8010005",
+        "dk07-nand": "8010006",
+        "ea8300": "8010006"
+    }
     uboot_network_delay = 5
 
     def boot_linux_ramboot(self):
         """This method flashes the linux from initramfs.
         initramfs is a complete set of directories that you would find on a normal root filesystem.
         """
-        common.print_bold("\n===== Booting linux (ramboot) for %s =====" % self.model)
+        common.print_bold("\n===== Booting linux (ramboot) for %s =====" %
+                          self.model)
 
-        bootargs = 'console=ttyMSM0,115200 clk_ignore_unused norootfssplit mem=256M %s' % self.get_safe_mtdparts()
+        bootargs = 'console=ttyMSM0,115200 clk_ignore_unused norootfssplit mem=256M %s' % self.get_safe_mtdparts(
+        )
         if self.boot_dbg:
             bootargs += " dyndbg=\"module %s +p\"" % self.boot_dbg
 

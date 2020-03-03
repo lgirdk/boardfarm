@@ -9,6 +9,7 @@ from . import linux
 from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
+
 class DockerFactory(linux.LinuxDevice):
     '''
     A docker host that can spawn various types of images
@@ -36,14 +37,18 @@ class DockerFactory(linux.LinuxDevice):
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
-            bft_pexpect_helper.spawn.__init__(self, command="ssh",
-                                       args=['%s@%s' % (self.username, self.ipaddr),
-                                             '-o', 'StrictHostKeyChecking=no',
-                                             '-o', 'UserKnownHostsFile=/dev/null',
-                                             '-o', 'ServerAliveInterval=60',
-                                             '-o', 'ServerAliveCountMax=5'])
+            bft_pexpect_helper.spawn.__init__(
+                self,
+                command="ssh",
+                args=[
+                    '%s@%s' % (self.username, self.ipaddr), '-o',
+                    'StrictHostKeyChecking=no', '-o',
+                    'UserKnownHostsFile=/dev/null', '-o',
+                    'ServerAliveInterval=60', '-o', 'ServerAliveCountMax=5'
+                ])
         else:
-            bft_pexpect_helper.spawn.__init__(self, command='bash --noprofile --norc', env=env)
+            bft_pexpect_helper.spawn.__init__(
+                self, command='bash --noprofile --norc', env=env)
             self.ipaddr = 'localhost'
 
         self.iface = kwargs.pop('iface', None)
@@ -82,7 +87,9 @@ class DockerFactory(linux.LinuxDevice):
 
         # iface set, we need to create network
         if self.iface is not None:
-            self.sendline('docker network create -d macvlan -o parent=%s -o macvlan_mode=bridge %s' % (self.iface, self.cname))
+            self.sendline(
+                'docker network create -d macvlan -o parent=%s -o macvlan_mode=bridge %s'
+                % (self.iface, self.cname))
             self.expect(self.prompt)
             assert 'Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network' not in self.before
             if ' is already using parent interface ' in self.before:
@@ -106,18 +113,24 @@ class DockerFactory(linux.LinuxDevice):
         # TODO: check for docker image and build if needed/can
         # TODO: move default command into Dockerfile
         # TODO: list of ports to forward, http proxy port for example and ssh
-        self.sendline('docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D' % (target_cname, target_img))
+        self.sendline(
+            'docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D'
+            % (target_cname, target_img))
         self.expect(self.prompt)
         assert "Unable to find image" not in self.before, "Unable to find %s image!" % target_img
         self.expect(pexpect.TIMEOUT, timeout=1)
-        self.sendline('docker network connect %s %s' % (docker_network, target_cname))
+        self.sendline('docker network connect %s %s' %
+                      (docker_network, target_cname))
         self.expect(self.prompt)
         assert 'Error response from daemon' not in self.before, "Failed to connect docker network"
         if self.created_docker_network == True:
-            self.sendline('docker exec %s ip address flush dev eth1' % target_cname)
+            self.sendline('docker exec %s ip address flush dev eth1' %
+                          target_cname)
             self.expect(self.prompt)
-        self.sendline("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
-        self.expect_exact("docker port %s | grep '22/tcp' | sed 's/.*://g'" % target_cname)
+        self.sendline("docker port %s | grep '22/tcp' | sed 's/.*://g'" %
+                      target_cname)
+        self.expect_exact("docker port %s | grep '22/tcp' | sed 's/.*://g'" %
+                          target_cname)
         self.expect(self.prompt)
         target['port'] = self.before.strip()
         int(self.before.strip())
@@ -129,7 +142,6 @@ class DockerFactory(linux.LinuxDevice):
         self.extra_devices.append(new_device)
 
         self.target_cname.append(target_cname)
-
 
     def close(self, *args, **kwargs):
         self.clean_docker()

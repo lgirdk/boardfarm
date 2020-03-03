@@ -18,9 +18,11 @@ from selenium.common.exceptions import NoSuchElementException
 from .gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value, select_option_by_id
 from .common import resolv_dict, get_webproxy_driver
 
+
 class web_gui():
     """ webgui lib """
     prefix = ''
+
     def __init__(self,
                  output_dir=os.path.join(os.getcwd(), "results"),
                  **kwargs):
@@ -81,7 +83,7 @@ class web_gui():
         :rtype: string
         """
         key_value = self.key[value]
-        key_value = eval("self.config"+key_value)
+        key_value = eval("self.config" + key_value)
         text = get_text_value(self.driver, key_value)
         return text
 
@@ -110,8 +112,9 @@ class web_gui():
         select_id = self.key[key_id]
         select_key_value = resolv_dict(self.config, select_id)
         self.scroll_view(select_key_value)
-        select_button = select_option_by_id(self.driver, select_key_value,value)
-        assert select_button , 'Select button : %s  ' % select_button
+        select_button = select_option_by_id(self.driver, select_key_value,
+                                            value)
+        assert select_button, 'Select button : %s  ' % select_button
 
     def verify_radio(self, value):
         """Verify radio button in gui page
@@ -166,7 +169,9 @@ class web_gui():
         :param scroll_value: gui element
         :type scroll_value: string
         """
-        self.driver.execute_script("arguments[0].scrollIntoView();", self.driver.find_element_by_id(scroll_value))
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView();",
+            self.driver.find_element_by_id(scroll_value))
 
     def _enter_text(self, txt_box, txt):
         """To enter the value in the text box
@@ -195,9 +200,11 @@ class web_gui():
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                    EC.visibility_of_element_located(element))
+                EC.visibility_of_element_located(element))
         except:
-            print('check_element_visibility(%s, %s): timeout to find element\n' % element)
+            print(
+                'check_element_visibility(%s, %s): timeout to find element\n' %
+                element)
         finally:
             return query
 
@@ -214,9 +221,11 @@ class web_gui():
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                    EC.element_to_be_clickable(element))
+                EC.element_to_be_clickable(element))
         except:
-            print('check_element_clickable(%s, %s): timeout to find element\n' % element)
+            print(
+                'check_element_clickable(%s, %s): timeout to find element\n' %
+                element)
         finally:
             return query
 
@@ -233,9 +242,11 @@ class web_gui():
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                    EC.element_selection_state_to_be(element))
+                EC.element_selection_state_to_be(element))
         except:
-            print('check_element_selection_state_to_be(%s, %s): timeout to find element\n' % element)
+            print(
+                'check_element_selection_state_to_be(%s, %s): timeout to find element\n'
+                % element)
         finally:
             return query
 
@@ -256,9 +267,11 @@ class web_gui():
 
         self.driver.implicitly_wait(self.default_delay)
 
-        print('wait_for_element(): check_element_visibility(%s, %s)' % (str(by), ele_index))
+        print('wait_for_element(): check_element_visibility(%s, %s)' %
+              (str(by), ele_index))
         ele = self.check_element_visibility(by, ele_index)
-        assert ele != None, 'check_element_visibility(%s, %s)=False' % (str(by), ele_index)
+        assert ele != None, 'check_element_visibility(%s, %s)=False' % (
+            str(by), ele_index)
 
     def check_element_exists(self, text):
         """To check if the elements exist in the gui page by xpath
@@ -315,7 +328,9 @@ class web_gui():
         :rtype: boolean
         """
         try:
-            ele_botton = self.check_element_clickable(By.ID, id_value, timeout=3)
+            ele_botton = self.check_element_clickable(By.ID,
+                                                      id_value,
+                                                      timeout=3)
             if ele_botton != None:
                 ele_botton.click()
                 print("Logout clicked")

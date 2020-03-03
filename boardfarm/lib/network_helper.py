@@ -12,6 +12,7 @@ import netaddr
 import ipaddress
 import six
 
+
 def mac_to_snmp_format(mac_addr):
     """converts mac address separated with space,'.' or '-' to SNMP format
 
@@ -25,6 +26,7 @@ def mac_to_snmp_format(mac_addr):
     mac_final = str(mac).upper()
 
     return mac_final
+
 
 def ipv4_to_snmp_format(ipv4_str):
     """converts ipv4 address separated with space,'.' or '-' to SNMP format
@@ -41,6 +43,7 @@ def ipv4_to_snmp_format(ipv4_str):
 
     return ipv4_address
 
+
 def ipv6_to_snmp_format(ipv6_str):
     """converts ipv6 address separated with space,'.' or '-' to SNMP format
 
@@ -56,6 +59,7 @@ def ipv6_to_snmp_format(ipv6_str):
 
     return ipv6_address
 
+
 def valid_ipv4(ip_str):
     """Check whether IP address provided is valid ipv4 address.
     validation checks:
@@ -69,6 +73,7 @@ def valid_ipv4(ip_str):
     :type ip_str: string
     """
     ipaddress.IPv4Address(six.text_type(ip_str))
+
 
 def valid_ipv6(ip_str):
     """Check whether IP address provided is valid ipv6 address

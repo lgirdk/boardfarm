@@ -26,6 +26,7 @@ def find_subdirs(directories, name):
         if len(tmp) > 1:
             # By design there shouldn't be more than one "devices" or "tests" directory in
             # a given boardfarm project
-            print("WARNING: Multiple directories of the name %s found in %s." % (name, d))
+            print("WARNING: Multiple directories of the name %s found in %s." %
+                  (name, d))
             print("All will be used to find python classes")
     return result

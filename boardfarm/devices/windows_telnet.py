@@ -6,6 +6,7 @@ from . import base
 from . import connection_decider
 from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, WindowsMacFormat
 
+
 class WindowsTelnet(base.BaseDevice):
     """Class to connect and verify windows telnet
     """
@@ -28,7 +29,9 @@ class WindowsTelnet(base.BaseDevice):
 
         conn_cmd = "telnet %s" % self.ip
 
-        self.connection = connection_decider.connection("local_cmd", device=self, conn_cmd=conn_cmd)
+        self.connection = connection_decider.connection("local_cmd",
+                                                        device=self,
+                                                        conn_cmd=conn_cmd)
         self.connection.connect()
         self.linesep = '\r'
 
@@ -60,7 +63,12 @@ class WindowsTelnet(base.BaseDevice):
         else:
             return None
 
-    def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None, wait_time=30):
+    def ping(self,
+             ping_ip,
+             source_ip=None,
+             ping_count=4,
+             ping_interface=None,
+             wait_time=30):
         """Function to check the ping is successfull from the windows client
 
         :param ping_ip : IP to check the ping
@@ -80,12 +88,15 @@ class WindowsTelnet(base.BaseDevice):
         if source_ip == None:
             self.sendline('ping -n %s %s' % (ping_count, ping_ip))
         else:
-            self.sendline("ping -S %s -n %s %s" % (source_ip, ping_count, ping_ip))
+            self.sendline("ping -S %s -n %s %s" %
+                          (source_ip, ping_count, ping_ip))
 
         self.expect("(.+)>", timeout=wait_time)
         Wifi_log = self.match.group(1)
 
-        match = re.search(r'Reply from .+: bytes=.+ TTL=|Reply from .* time=.*', str(Wifi_log))
+        match = re.search(
+            r'Reply from .+: bytes=.+ TTL=|Reply from .* time=.*',
+            str(Wifi_log))
         if match:
             return True
         else:
@@ -97,7 +108,8 @@ class WindowsTelnet(base.BaseDevice):
         :param wifi_interface : Interface of wifi
         :type wifi_interface : string
         """
-        self.sendline('netsh interface ip set address ' + wifi_interface + " dhcp")
+        self.sendline('netsh interface ip set address ' + wifi_interface +
+                      " dhcp")
         self.expect(self.prompt)
 
     def set_static_ip(self, wifi_interface, fix_ip, fix_mark, fix_gateway):
@@ -112,7 +124,9 @@ class WindowsTelnet(base.BaseDevice):
         :param fix_gateway : gateway ip address
         :type fix_gateway :  string
         """
-        self.sendline('netsh interface ip set address ' + wifi_interface + " static " + fix_ip + " " + fix_mark + " " + fix_gateway + " 1")
+        self.sendline('netsh interface ip set address ' + wifi_interface +
+                      " static " + fix_ip + " " + fix_mark + " " +
+                      fix_gateway + " 1")
         self.expect(self.prompt)
 
     def get_default_gateway(self, wifi_interface):

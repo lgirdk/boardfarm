@@ -8,7 +8,6 @@
 import re
 import pexpect
 from retry.api import retry_call
-
 """
 Libraries to install linux packages
 """
@@ -65,7 +64,9 @@ def install_iperf(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf')
+        device.sendline(
+            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf'
+        )
         device.expect(device.prompt, timeout=60)
 
 
@@ -83,7 +84,9 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3')
+        device.sendline(
+            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3'
+        )
         device.expect(device.prompt, timeout=60)
 
 
@@ -102,7 +105,8 @@ def install_tcpick(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get install tcpick -y')
-        assert 0 == device.expect(['Setting up tcpick'] + device.prompt, timeout=60), "tcpick installation failed"
+        assert 0 == device.expect(['Setting up tcpick'] + device.prompt,
+                                  timeout=60), "tcpick installation failed"
         device.expect(device.prompt)
 
 
@@ -121,7 +125,8 @@ def install_upnp(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get install miniupnpc -y')
-        assert 0 == device.expect(['Setting up miniupnpc.*'] + device.prompt, timeout=60), "upnp installation failed"
+        assert 0 == device.expect(['Setting up miniupnpc.*'] + device.prompt,
+                                  timeout=60), "upnp installation failed"
         device.expect(device.prompt)
 
 
@@ -154,7 +159,9 @@ def install_netperf(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install netperf')
+        device.sendline(
+            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install netperf'
+        )
         device.expect(device.prompt, timeout=60)
     device.sendline('/etc/init.d/netperf restart')
     device.expect('Restarting')
@@ -174,7 +181,9 @@ def install_endpoint(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('wget http://downloads.ixiacom.com/products/ixchariot/endpoint_library/8.00/pelinux_amd64_80.tar.gz')
+        device.sendline(
+            'wget http://downloads.ixiacom.com/products/ixchariot/endpoint_library/8.00/pelinux_amd64_80.tar.gz'
+        )
         device.expect(device.prompt, timeout=120)
         device.sendline('tar xvzf pelinux_amd64_80.tar.gz')
         device.expect('endpoint.install', timeout=90)
@@ -216,7 +225,9 @@ def install_python(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb')
+        device.sendline(
+            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb'
+        )
         device.expect(device.prompt, timeout=60)
 
 
@@ -232,16 +243,23 @@ def install_java(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee /etc/apt/sources.list.d/webupd8team-java.list')
+        device.sendline(
+            'echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee /etc/apt/sources.list.d/webupd8team-java.list'
+        )
         device.expect(device.prompt)
-        device.sendline('echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list')
+        device.sendline(
+            'echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list'
+        )
         device.expect(device.prompt)
-        device.sendline('apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886')
+        device.sendline(
+            'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886'
+        )
         device.expect(device.prompt)
         device.sendline('apt-get update -y')
         device.expect(device.prompt)
         device.sendline('apt-get install oracle-java8-installer -y')
-        device.expect_exact("Do you accept the Oracle Binary Code license terms")
+        device.expect_exact(
+            "Do you accept the Oracle Binary Code license terms")
         device.sendline('yes')
         device.expect(device.prompt, timeout=60)
         device.sendline('\njavac -version')
@@ -249,10 +267,18 @@ def install_java(device):
             device.expect('javac 1.8', timeout=5)
             device.expect(device.prompt)
         except:
-            device.sendline('sed -i \'s|JAVA_VERSION=8u144|JAVA_VERSION=8u152|\' /var/lib/dpkg/info/oracle-java8-installer.*')
-            device.sendline('sed -i \'s|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/|\' /var/lib/dpkg/info/oracle-java8-installer.*')
-            device.sendline('sed -i \'s|SHA256SUM_TGZ="e8a341ce566f32c3d06f6d0f0eeea9a0f434f538d22af949ae58bc86f2eeaae4"|SHA256SUM_TGZ="218b3b340c3f6d05d940b817d0270dfe0cfd657a636bad074dcabe0c111961bf"|\' /var/lib/dpkg/info/oracle-java8-installer.*')
-            device.sendline('sed -i \'s|J_DIR=jdk1.8.0_144|J_DIR=jdk1.8.0_152|\' /var/lib/dpkg/info/oracle-java8-installer.*')
+            device.sendline(
+                'sed -i \'s|JAVA_VERSION=8u144|JAVA_VERSION=8u152|\' /var/lib/dpkg/info/oracle-java8-installer.*'
+            )
+            device.sendline(
+                'sed -i \'s|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/|PARTNER_URL=http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/|\' /var/lib/dpkg/info/oracle-java8-installer.*'
+            )
+            device.sendline(
+                'sed -i \'s|SHA256SUM_TGZ="e8a341ce566f32c3d06f6d0f0eeea9a0f434f538d22af949ae58bc86f2eeaae4"|SHA256SUM_TGZ="218b3b340c3f6d05d940b817d0270dfe0cfd657a636bad074dcabe0c111961bf"|\' /var/lib/dpkg/info/oracle-java8-installer.*'
+            )
+            device.sendline(
+                'sed -i \'s|J_DIR=jdk1.8.0_144|J_DIR=jdk1.8.0_152|\' /var/lib/dpkg/info/oracle-java8-installer.*'
+            )
             device.sendline('apt-get install oracle-java8-installer -y')
             device.expect(device.prompt, timeout=60)
 
@@ -296,14 +322,18 @@ def install_telnet_server(device, remove=False):
         device.sendline('echo "{" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"disable = no\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"flags = REUSE IPv6\" >> /etc/xinetd.d/telnet')
-        device.sendline('echo \"socket_type = stream\" >> /etc/xinetd.d/telnet')
+        device.sendline(
+            'echo \"socket_type = stream\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"wait = no\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"user = root\" >> /etc/xinetd.d/telnet')
-        device.sendline('echo \"server = /usr/sbin/in.telnetd\" >> /etc/xinetd.d/telnet')
-        device.sendline('echo \"log_on_failure += USERID\" >> /etc/xinetd.d/telnet')
+        device.sendline(
+            'echo \"server = /usr/sbin/in.telnetd\" >> /etc/xinetd.d/telnet')
+        device.sendline(
+            'echo \"log_on_failure += USERID\" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"}\" >> /etc/xinetd.d/telnet')
         device.expect(device.prompt, timeout=60)
-        pty_num = len(device.check_output("cat /etc/securetty | grep pts/").split("\n"))
+        pty_num = len(
+            device.check_output("cat /etc/securetty | grep pts/").split("\n"))
         # ensure 10 pts sessions for telnet server.
         for i in range(pty_num, 10):
             device.check_output('echo "pts/%s" >> /etc/securetty' % i)
@@ -410,7 +440,9 @@ def install_xampp(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('wget https://www.apachefriends.org/xampp-files/5.6.20/xampp-linux-x64-5.6.20-0-installer.run')
+        device.sendline(
+            'wget https://www.apachefriends.org/xampp-files/5.6.20/xampp-linux-x64-5.6.20-0-installer.run'
+        )
         device.expect(device.prompt)
         device.sendline('chmod +x xampp-linux-x64-5.6.20-0-installer.run')
         device.expect(device.prompt)
@@ -444,7 +476,9 @@ def install_snmpd(device, post_cmd=None):
     device.expect(device.prompt, timeout=60)
 
     # by default snmpd only listen to connections from localhost, comment it out
-    device.sendline("sed 's/agentAddress  udp:127.0.0.1:161/#agentAddress  udp:127.0.0.1:161/' -i /etc/snmp/snmpd.conf")
+    device.sendline(
+        "sed 's/agentAddress  udp:127.0.0.1:161/#agentAddress  udp:127.0.0.1:161/' -i /etc/snmp/snmpd.conf"
+    )
     device.expect(device.prompt)
 
     if post_cmd:
@@ -484,9 +518,12 @@ def install_vsftpd(device, remove=False):
         device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install vsftpd -y')
         device.expect(device.prompt, timeout=60)
-        device.sendline('sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf')
+        device.sendline(
+            'sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf'
+        )
         device.expect(device.prompt, timeout=5)
-        device.sendline('sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
+        device.sendline(
+            'sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
         device.expect(device.prompt, timeout=5)
         device.sendline('service vsftpd restart')
         device.expect(device.prompt, timeout=60)
@@ -512,7 +549,7 @@ def install_pysnmp(device):
     for i in range(1, 3):
         try:
             device.sendline('\npip freeze | grep pysnmp')
-            device.expect('pysnmp==', timeout=i*(5*i))
+            device.expect('pysnmp==', timeout=i * (5 * i))
             device.expect_prompt()
             install_flag = True
             break
@@ -561,7 +598,9 @@ def install_jmeter(device):
         device.expect(device.prompt)
         device.sendline('apt-get install wget openjdk-8-jre-headless -y')
         device.expect(device.prompt, timeout=90)
-        device.sendline('wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.1.tgz')
+        device.sendline(
+            'wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.1.tgz'
+        )
         device.expect(device.prompt, timeout=90)
         device.sendline('tar -C /opt -zxf apache-jmeter-5.1.1.tgz')
         device.expect(device.prompt, timeout=120)
@@ -583,7 +622,8 @@ def install_IRCserver(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install update-inetd -y')  # Update inetd before installation
+        device.sendline('apt-get install update-inetd -y'
+                        )  # Update inetd before installation
         device.expect(device.prompt, timeout=90)
         device.sendline('apt-get install inspircd -y')
         device.expect(['Setting up inspircd'], timeout=90)
@@ -601,7 +641,9 @@ def install_dovecot(device, remove=False):
     :raises assertion: Failed to install dovecot
     """
     if remove:
-        device.check_output("killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*")
+        device.check_output(
+            "killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*"
+        )
         device.check_output("rm -rf /etc/dovecot")
         return
     device.sendline('dovecot --version')
@@ -610,17 +652,24 @@ def install_dovecot(device, remove=False):
         device.expect(device.prompt)
     except:
         device.expect_prompt()
-        device.sendline('apt-get install update-inetd -y')  # Update inetd before installation
+        device.sendline('apt-get install update-inetd -y'
+                        )  # Update inetd before installation
         device.expect_prompt(timeout=90)
         device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
         device.expect(['Processing triggers for dovecot-core'], timeout=90)
         device.expect_prompt()
         device.check_output("cd /usr/share/dovecot; ./mkcert.sh; cd")
-        ssl_settings = ["ssl = yes", "ssl_cert = </etc/dovecot/dovecot.pem", "ssl_key = </etc/dovecot/private/dovecot.pem"]
-        device.sendline("cat > /etc/dovecot/conf.d/10-ssl.conf << EOF\n%s\nEOF\n" % "\n".join(ssl_settings))
+        ssl_settings = [
+            "ssl = yes", "ssl_cert = </etc/dovecot/dovecot.pem",
+            "ssl_key = </etc/dovecot/private/dovecot.pem"
+        ]
+        device.sendline(
+            "cat > /etc/dovecot/conf.d/10-ssl.conf << EOF\n%s\nEOF\n" %
+            "\n".join(ssl_settings))
         device.expect_prompt()
         device.check_output("service dovecot restart")
-        assert "dovecot is running" in device.check_output("service dovecot status"), "Failed to install dovecot"
+        assert "dovecot is running" in device.check_output(
+            "service dovecot status"), "Failed to install dovecot"
 
 
 def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
@@ -646,14 +695,17 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     #device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
     import os
     ovpn_install_script = 'openvpn-install.sh'
-    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'scripts/' + ovpn_install_script)
+    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         'scripts/' + ovpn_install_script)
     dest = '/root/' + ovpn_install_script
     device.copy_file_to_server(fname, dest)
     device.sendline('chmod +x openvpn-install.sh')
     device.expect(device.prompt)
 
     device.sendline('ls -l /etc/init.d/openvpn')
-    index = device.expect(['(\\sroot\\sroot\\s{1,}\\d{4}(.*)\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + ['No such file or directory'])
+    index = device.expect([
+        '(\\sroot\\sroot\\s{1,}\\d{4}(.*)\\s{1,}\\/etc\\/init\\.d\\/openvpn)'
+    ] + ['No such file or directory'])
     device.expect(device.prompt)
 
     # do we want to remove it?
@@ -665,7 +717,8 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
             device.sendline('./openvpn-install.sh')
             device.expect('Select an option.*: ')
             device.sendline('3')
-            device.expect_exact('Do you really want to remove OpenVPN? [y/n]: n')
+            device.expect_exact(
+                'Do you really want to remove OpenVPN? [y/n]: n')
             device.sendcontrol('h')
             device.sendline('y')
             device.expect(device.prompt, timeout=90)
@@ -714,15 +767,21 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
         device.expect(device.prompt)
         if _ip == "ipv4":
             # only add it in ipv4
-            device.sendline('echo "local ' + dev_ip + '" > /etc/openvpn/server.conf.tmp')
+            device.sendline('echo "local ' + dev_ip +
+                            '" > /etc/openvpn/server.conf.tmp')
             device.expect(device.prompt)
-            device.sendline('cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
+            device.sendline(
+                'cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp')
             device.expect(device.prompt)
-            device.sendline('mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf')
+            device.sendline(
+                'mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf')
             device.expect(device.prompt)
 
     device.sendline('/etc/init.d/openvpn status')
-    index = device.expect(["VPN 'server' is running"] + ["VPN 'server' is not running ... failed"] + device.prompt, timeout=90)
+    index = device.expect(["VPN 'server' is running"] +
+                          ["VPN 'server' is not running ... failed"] +
+                          device.prompt,
+                          timeout=90)
     if index != 0:
         device.sendline('/etc/init.d/openvpn restart')
         device.expect(["Starting virtual private network daemon: server"])
@@ -770,7 +829,10 @@ def install_pptpd_server(device, remove=False):
     import pexpect
     device.expect([pexpect.TIMEOUT] + device.prompt, timeout=5)
     device.sendline('ls -l /usr/sbin/pptpd')
-    index = device.expect(['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] + device.prompt, timeout=90)
+    index = device.expect(
+        ['(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)'] +
+        device.prompt,
+        timeout=90)
     if remove:
         if index == 0:
             device.sendline("/etc/init.d/pptpd stop")
@@ -833,7 +895,8 @@ def install_postfix(device):
     except:
         device.expect(device.prompt)
         device.sendline('apt-get update')  # Update inetd before installation
-        if 0 == device.expect(['Reading package', pexpect.TIMEOUT], timeout=60):
+        if 0 == device.expect(['Reading package', pexpect.TIMEOUT],
+                              timeout=60):
             device.expect(device.prompt, timeout=300)
         else:
             print("Failed to download packages, things might not work")
@@ -842,16 +905,23 @@ def install_postfix(device):
                 device.expect(device.prompt, timeout=10)
             device.sendline("cat /etc/resolv.conf")
             device.expect(device.prompt)
-            raise Exception("Failed to download packages, things might not work")
+            raise Exception(
+                "Failed to download packages, things might not work")
         device.sendline("apt-get install postfix -y")
-        install_settings = device.expect(['General type of mail configuration:'] + ['Errors were encountered'] + device.prompt, timeout=120)
+        install_settings = device.expect(
+            ['General type of mail configuration:'] +
+            ['Errors were encountered'] + device.prompt,
+            timeout=120)
         print(install_settings)
         if install_settings == 0:
             device.sendline("2")
-            assert 0 == device.expect(['System mail name:'] + device.prompt,
-                                      timeout=90), "System mail name option is not received. Installaion failed"
+            assert 0 == device.expect(
+                ['System mail name:'] + device.prompt, timeout=90
+            ), "System mail name option is not received. Installaion failed"
             device.sendline("testingsmtp.com")
-            assert 0 != device.expect(['Errors were encountered'] + device.prompt, timeout=90), "Errors Encountered. Installaion failed"
+            assert 0 != device.expect(
+                ['Errors were encountered'] + device.prompt,
+                timeout=90), "Errors Encountered. Installaion failed"
 
         elif install_settings == 1:
             assert 0 != 1, "Errors Encountered. Installaion failed"
@@ -861,7 +931,9 @@ def install_postfix(device):
             device.expect('mail_version =', timeout=5)
 
         device.sendline("service postfix start")
-        assert 0 != device.expect(['failed'] + device.prompt, timeout=90), "Unable to start Postfix service.Service is not properly installed"
+        assert 0 != device.expect(
+            ['failed'] + device.prompt, timeout=90
+        ), "Unable to start Postfix service.Service is not properly installed"
 
 
 def check_pjsua(device):
@@ -886,7 +958,9 @@ def check_pjsua(device):
         return False
 
 
-def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"):
+def install_pjsua(device,
+                  url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
+                  ):
     """Install softphone if not present.
     pjsua is a command line SIP user agent
 
@@ -915,14 +989,20 @@ def install_pjsua(device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.t
         folder_name = re.findall('(pjproject\-[\d\.]*)\s', device.before)[0]
         device.sendline('cd %s' % folder_name)
         device.expect(device.prompt)
-        device.sendline('./configure && make dep && make && make clean &&  make install 2>&1 & ')
+        device.sendline(
+            './configure && make dep && make && make clean &&  make install 2>&1 & '
+        )
         # this takes more than 4 mins to install
         device.expect(pexpect.TIMEOUT, timeout=400)
         device.expect(device.prompt)
         device.sendline('ls pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu')
-        assert 0 == device.expect(['pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu'] + device.prompt), "Unable to find executable"
+        assert 0 == device.expect(
+            ['pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu'] +
+            device.prompt), "Unable to find executable"
         device.expect(device.prompt)
-        device.sendline('cp pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu /usr/local/bin/pjsua')
+        device.sendline(
+            'cp pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu /usr/local/bin/pjsua'
+        )
         device.expect(device.prompt)
         result = check_pjsua(device)
         assert 0 != result, "Unable to start Pjsua.Service is not installed."
@@ -939,7 +1019,8 @@ def configure_IRCserver(device, user_name):
                        2. Service inspircd is not running
     """
 
-    device.sendline("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
+    device.sendline(
+        "rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
     device.expect(device.prompt)
 
     device.sendline('''cat > /etc/inspircd/inspircd.conf << EOF
@@ -1053,7 +1134,8 @@ EOF''' % (user_name, user_name))
     device.expect(device.prompt)
 
     device.sendline("service inspircd restart")
-    index = device.expect(['Starting Inspircd... done.'] + device.prompt, timeout=30)
+    index = device.expect(['Starting Inspircd... done.'] + device.prompt,
+                          timeout=30)
     assert index == 0, "Start Service inspircd"
     device.expect(device.prompt)
     device.sendline("netstat -tulpn | grep -i inspircd")
@@ -1062,7 +1144,8 @@ EOF''' % (user_name, user_name))
     device.expect(device.prompt)
 
 
-def configure_IRCclient(device, user_name, irc_client_scriptname, client_id, irc_server_ip, socket_type):
+def configure_IRCclient(device, user_name, irc_client_scriptname, client_id,
+                        irc_server_ip, socket_type):
     """To create a python file in IRC client. The script shall be used to connect to server
 
     :param device: lan or wan
@@ -1118,8 +1201,10 @@ while True:
         client.send('quit #channel\\r\\n')
     else:
         client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))
-EOF''' % (irc_client_scriptname, irc_server_ip, user_name, client_id, client_id, socket_type, client_id, client_id))
+EOF''' % (irc_client_scriptname, irc_server_ip, user_name, client_id,
+          client_id, socket_type, client_id, client_id))
     device.expect(device.prompt)
+
 
 def install_tcpdump(device):
     """Install tcpdump if not present.
@@ -1135,6 +1220,7 @@ def install_tcpdump(device):
         device.expect(device.prompt)
         device.sudo_sendline('apt-get install tcpdump -y')
         device.expect(device.prompt, timeout=90)
+
 
 def install_tshark(device):
     """Install tshark if not present.

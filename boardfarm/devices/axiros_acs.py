@@ -68,7 +68,8 @@ class AxirosACS(object):
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
 
-        self.client = Client(wsdl=self.wsdl, transport=Transport(session=session),
+        self.client = Client(wsdl=self.wsdl,
+                             transport=Transport(session=session),
                              wsse=UsernameToken(self.username, self.password))
 
     name = "acs_server"
@@ -100,19 +101,25 @@ class AxirosACS(object):
         :returns: ticketid
         :rtype: string
         """
-        GetParameterValuesParametersClassArray_type = self.client.get_type('ns0:GetParameterValuesParametersClassArray')
-        GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type([param])
+        GetParameterValuesParametersClassArray_type = self.client.get_type(
+            'ns0:GetParameterValuesParametersClassArray')
+        GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type(
+            [param])
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.GetParameterValues(
-                GetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+                GetParameterValuesParametersClassArray_data,
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
         ticketid = None
         root = ElementTree.fromstring(response.content)
@@ -161,7 +168,8 @@ class AxirosACS(object):
         for i in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+                ticket_resp = self.client.service.get_generic_sb_result(
+                    ticketid)
             root = ElementTree.fromstring(ticket_resp.content)
             for value in root.iter('code'):
                 break
@@ -190,20 +198,28 @@ class AxirosACS(object):
         :returns: ticketId for set.
         :rtype: string
         """
-        SetParameterValuesParametersClassArray_type = self.client.get_type('ns0:SetParameterValuesParametersClassArray')
-        SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type([
-                                                                                                  {'key': attr, 'value': value}])
+        SetParameterValuesParametersClassArray_type = self.client.get_type(
+            'ns0:SetParameterValuesParametersClassArray')
+        SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type(
+            [{
+                'key': attr,
+                'value': value
+            }])
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.SetParameterValues(
-                SetParameterValuesParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+                SetParameterValuesParametersClassArray_data,
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
         ticketid = None
         root = ElementTree.fromstring(response.content)
@@ -223,14 +239,18 @@ class AxirosACS(object):
         :returns: ACS response containing the list of CPE.
         :rtype: string
         """
-        CPESearchOptionsClassStruct_type = self.client.get_type('ns0:CPESearchOptionsClassStruct')
+        CPESearchOptionsClassStruct_type = self.client.get_type(
+            'ns0:CPESearchOptionsClassStruct')
         CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type()
 
-        CommandOptionsForCPESearchStruct_type = self.client.get_type('ns0:CommandOptionsForCPESearchStruct')
-        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
+        CommandOptionsForCPESearchStruct_type = self.client.get_type(
+            'ns0:CommandOptionsForCPESearchStruct')
+        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type(
+        )
 
         response = self.client.service.GetListOfCPEs(
-            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data)
+            CPESearchOptionsClassStruct_data,
+            CommandOptionsForCPESearchStruct_data)
         if response['code'] != 200:
             return None
 
@@ -243,14 +263,19 @@ class AxirosACS(object):
         :returns: True if successful
         :rtype: True/False
         """
-        CPESearchOptionsClassStruct_type = self.client.get_type('ns0:CPESearchOptionsClassStruct')
-        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(cpeid=cpeid)
+        CPESearchOptionsClassStruct_type = self.client.get_type(
+            'ns0:CPESearchOptionsClassStruct')
+        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(
+            cpeid=cpeid)
 
-        CommandOptionsForCPESearchStruct_type = self.client.get_type('ns0:CommandOptionsForCPESearchStruct')
-        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
+        CommandOptionsForCPESearchStruct_type = self.client.get_type(
+            'ns0:CommandOptionsForCPESearchStruct')
+        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type(
+        )
 
         response = self.client.service.DeleteCPEs(
-            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data)
+            CPESearchOptionsClassStruct_data,
+            CommandOptionsForCPESearchStruct_data)
         print(response)
         if response['code'] != 200:
             return False
@@ -289,7 +314,8 @@ class AxirosACS(object):
         for i in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+                ticket_resp = self.client.service.get_generic_sb_result(
+                    ticketid)
 
             root = ElementTree.fromstring(ticket_resp.content)
             for value in root.iter('code'):
@@ -312,19 +338,25 @@ class AxirosACS(object):
         :returns: dictionary with keys Name, Notification (0/1), AccessList indicating the GPA
         :rtype: dict
         """
-        GetParameterAttrParametersClassArray_type = self.client.get_type('ns0:GetParameterAttributesParametersClassArray')
-        GetParameterAttrParametersClassArray_data = GetParameterAttrParametersClassArray_type([param])
+        GetParameterAttrParametersClassArray_type = self.client.get_type(
+            'ns0:GetParameterAttributesParametersClassArray')
+        GetParameterAttrParametersClassArray_data = GetParameterAttrParametersClassArray_type(
+            [param])
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.GetParameterAttributes(
-                GetParameterAttrParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+                GetParameterAttrParametersClassArray_data,
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
         ticketid = None
         root = ElementTree.fromstring(response.content)
         for value in root.iter('ticketid'):
@@ -337,7 +369,8 @@ class AxirosACS(object):
         for i in range(8):
             time.sleep(1)
             with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+                ticket_resp = self.client.service.get_generic_sb_result(
+                    ticketid)
 
             root = ElementTree.fromstring(ticket_resp.content)
             for value in root.iter('code'):
@@ -366,19 +399,33 @@ class AxirosACS(object):
         :returns: ticket response on ACS.
         :rtype: string
         """
-        SetParameterAttrParametersClassArray_type = self.client.get_type('ns0:SetParameterAttributesParametersClassArray')
-        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type([{'Name': attr, 'Notification': value, 'AccessListChange': '0', 'AccessList': {'item': 'Subscriber'}, 'NotificationChange': '1'}])
+        SetParameterAttrParametersClassArray_type = self.client.get_type(
+            'ns0:SetParameterAttributesParametersClassArray')
+        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type(
+            [{
+                'Name': attr,
+                'Notification': value,
+                'AccessListChange': '0',
+                'AccessList': {
+                    'item': 'Subscriber'
+                },
+                'NotificationChange': '1'
+            }])
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.SetParameterAttributes(
-                SetParameterAttrParametersClassArray_data, CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+                SetParameterAttrParametersClassArray_data,
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
         ticketid = None
         root = ElementTree.fromstring(response.content)
@@ -404,14 +451,18 @@ class AxirosACS(object):
         :returns: ticket response on ACS
         :rtype: dictionary
         """
-        AddObjectClassArray_type = self.client.get_type('ns0:AddDelObjectArgumentsStruct')
+        AddObjectClassArray_type = self.client.get_type(
+            'ns0:AddDelObjectArgumentsStruct')
         AddObjectClassArray_data = AddObjectClassArray_type(param, '')
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -429,7 +480,8 @@ class AxirosACS(object):
         for i in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
+                ticket_resp = self.client.service.get_generic_sb_result(
+                    ticketid)
 
             root = ElementTree.fromstring(ticket_resp.content)
             for value in root.iter('code'):
@@ -453,14 +505,18 @@ class AxirosACS(object):
         :returns: ticket response on ACS ('0' is returned)
         :rtype: string
         """
-        DelObjectClassArray_type = self.client.get_type('ns0:AddDelObjectArgumentsStruct')
+        DelObjectClassArray_type = self.client.get_type(
+            'ns0:AddDelObjectArgumentsStruct')
         DelObjectClassArray_data = DelObjectClassArray_type(param, '')
 
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsTypeStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsTypeStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -488,15 +544,19 @@ class AxirosACS(object):
         :returns: ticket response on ACS(Log message)
         :rtype: dictionary
         """
-        CommandOptionsTypeStruct_type = self.client.get_type('ns0:CommandOptionsForCPELogStruct')
+        CommandOptionsTypeStruct_type = self.client.get_type(
+            'ns0:CommandOptionsForCPELogStruct')
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
-            response = self.client.service.GetLogMessagesOfCPE(CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+            response = self.client.service.GetLogMessagesOfCPE(
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
         for i in range(wait):
             time.sleep(1)
@@ -505,11 +565,13 @@ class AxirosACS(object):
                 break
             if (value.text != '200'):
                 continue
-            dict_value1 = {}; num = 1
+            dict_value1 = {}
+            num = 1
             for key, value in zip(root.iter('ts'), root.iter('message')):
                 dict_value = {}
-                dict_value['time'] = key.text; dict_value['msg'] = value.text
-                dict_value1['log_msg'+str(num)] = dict_value
+                dict_value['time'] = key.text
+                dict_value['msg'] = value.text
+                dict_value1['log_msg' + str(num)] = dict_value
                 num += 1
             return dict_value1
         return None
@@ -524,12 +586,15 @@ class AxirosACS(object):
         :returns: True or None
         :rtype: Boolean
         """
-        CPEIdentifierClassStruct_type = self.client.get_type('ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
+        CPEIdentifierClassStruct_type = self.client.get_type(
+            'ns0:CPEIdentifierClassStruct')
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
+            cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
-            response = self.client.service.DeleteLogMessagesOfCPE(CPEIdentifierClassStruct_data)
+            response = self.client.service.DeleteLogMessagesOfCPE(
+                CPEIdentifierClassStruct_data)
 
         for i in range(wait):
             time.sleep(1)
@@ -542,6 +607,7 @@ class AxirosACS(object):
                 continue
         return None
 
+
 if __name__ == '__main__':
     import sys
 
@@ -552,7 +618,10 @@ if __name__ == '__main__':
         ip = sys.argv[1]
         port = 80
 
-    acs = AxirosACS(ipaddr=ip, port=port, username=sys.argv[2], password=sys.argv[3])
+    acs = AxirosACS(ipaddr=ip,
+                    port=port,
+                    username=sys.argv[2],
+                    password=sys.argv[3])
 
     acs.Axiros_GetListOfCPEs()
 

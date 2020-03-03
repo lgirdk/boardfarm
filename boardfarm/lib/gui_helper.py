@@ -10,6 +10,7 @@ from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
 import time
 
+
 def enter_input(web_gui, input_path, input_value):
     """To enter the text box value in web page
 
@@ -31,6 +32,7 @@ def enter_input(web_gui, input_path, input_value):
     except NoSuchElementException:
         return False
 
+
 def click_button_id(web_gui, clickbutton):
     """To click the button using the element id
 
@@ -50,6 +52,7 @@ def click_button_id(web_gui, clickbutton):
     except NoSuchElementException:
         return False
 
+
 def click_button_xpath(web_gui, clickbutton):
     """To click the page button using the xpath
 
@@ -68,6 +71,7 @@ def click_button_xpath(web_gui, clickbutton):
         return True
     except NoSuchElementException:
         return False
+
 
 def select_option_by_id(web_gui, select_button, select_value):
     """To select the option from drop down using id
@@ -90,6 +94,7 @@ def select_option_by_id(web_gui, select_button, select_value):
     except NoSuchElementException:
         return None
 
+
 def select_option_by_name(web_gui, select_button, select_value):
     """To select the option from drop down using element name
 
@@ -110,6 +115,7 @@ def select_option_by_name(web_gui, select_button, select_value):
         return select
     except NoSuchElementException:
         return None
+
 
 def select_option_by_xpath(web_gui, select_button, select_value):
     """To select the option from drop down using xpath
@@ -132,6 +138,7 @@ def select_option_by_xpath(web_gui, select_button, select_value):
     except NoSuchElementException:
         return None
 
+
 def get_drop_down_value(web_gui, get_value):
     """To get the drop down value using id
 
@@ -150,6 +157,7 @@ def get_drop_down_value(web_gui, get_value):
         return selected_value
     except NoSuchElementException:
         return None
+
 
 def get_radio_button_value(web_gui, get_value):
     """To get the radio button status whether chosen or not
@@ -173,6 +181,7 @@ def get_radio_button_value(web_gui, get_value):
     except NoSuchElementException:
         return None
 
+
 def get_text_value(web_gui, get_value):
     """To get the radio button status whether chosen or not
 
@@ -190,6 +199,7 @@ def get_text_value(web_gui, get_value):
         return text_value
     except NoSuchElementException:
         return None
+
 
 def get_text_value_by_xpath(web_gui, get_value):
     """To get the text box value using xpath
@@ -209,6 +219,7 @@ def get_text_value_by_xpath(web_gui, get_value):
     except NoSuchElementException:
         return None
 
+
 def get_value_from_disabled_input(web_gui, get_value):
     """To get the value for diabled element
 
@@ -220,9 +231,11 @@ def get_value_from_disabled_input(web_gui, get_value):
     :return : text value for required element
     :rtype : string
     """
-    js = "return document.getElementById(\"{!s}\").value;".format(str(get_value))
+    js = "return document.getElementById(\"{!s}\").value;".format(
+        str(get_value))
     text_value = web_gui.execute_script(js)
     return str(text_value)
+
 
 def get_icon_check_value_by_id(web_gui, get_value):
     """To get the icon button status whether chosen or not using id
@@ -246,6 +259,7 @@ def get_icon_check_value_by_id(web_gui, get_value):
     except NoSuchElementException:
         return None
 
+
 def get_icon_check_value_by_xpath(web_gui, get_value):
     """To get the icon button status whether chosen or not using xpath
 
@@ -268,6 +282,7 @@ def get_icon_check_value_by_xpath(web_gui, get_value):
     except NoSuchElementException:
         return None
 
+
 def check_element_is_enable_by_id(web_gui, check_value):
     """To get the enabled text button value using id
 
@@ -285,6 +300,7 @@ def check_element_is_enable_by_id(web_gui, check_value):
         return text_value
     except NoSuchElementException:
         return None
+
 
 def get_check_box_value_by_id(web_gui, get_value):
     """To get the check box whether chosen or not using id
@@ -307,6 +323,7 @@ def get_check_box_value_by_id(web_gui, get_value):
                 return False
     except NoSuchElementException:
         return None
+
 
 def get_check_box_value_by_xpath(web_gui, get_value):
     """To get the check box whether chosen or not using xpath

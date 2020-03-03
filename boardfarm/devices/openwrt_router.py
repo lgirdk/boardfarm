@@ -26,6 +26,7 @@ from . import connection_decider
 from boardfarm.lib import common
 from boardfarm.lib.common import print_bold
 
+
 class OpenWrtRouter(linux.LinuxDevice):
     '''
     Args:
@@ -56,6 +57,7 @@ class OpenWrtRouter(linux.LinuxDevice):
     lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
     lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
     tmpdir = "/tmp"
+
     def __init__(self,
                  model,
                  conn_cmd,
@@ -85,11 +87,17 @@ class OpenWrtRouter(linux.LinuxDevice):
             print("\nWARNING: Unknown connection type using ser2net\n")
             connection_type = "ser2net"
 
-        self.connection = connection_decider.connection(connection_type, device=self, conn_cmd=conn_cmd, **kwargs)
+        self.connection = connection_decider.connection(connection_type,
+                                                        device=self,
+                                                        conn_cmd=conn_cmd,
+                                                        **kwargs)
         self.connection.connect()
         self.logfile_read = output
 
-        self.power = power.get_power_device(power_ip, outlet=power_outlet, username=power_username, password=power_password)
+        self.power = power.get_power_device(power_ip,
+                                            outlet=power_outlet,
+                                            username=power_username,
+                                            password=power_password)
         self.model = model
         self.web_proxy = web_proxy
         if tftp_server:
@@ -123,7 +131,8 @@ class OpenWrtRouter(linux.LinuxDevice):
         proxy = ProxyHandler({'http': self.web_proxy + ':8080'})
         opener = build_opener(proxy)
         install_opener(opener)
-        print("\nAttempting download of %s via proxy %s" % (url, self.web_proxy + ':8080'))
+        print("\nAttempting download of %s via proxy %s" %
+              (url, self.web_proxy + ':8080'))
         return urlopen(url, timeout=30)
 
     def tftp_get_file(self, host, filename, timeout=30):
@@ -154,7 +163,9 @@ class OpenWrtRouter(linux.LinuxDevice):
                     cmd = 'tftp'
                 self.sendline("%s %s %s" % (cmd, loadaddr, filename))
                 self.expect_exact("%s %s %s" % (cmd, loadaddr, filename))
-                i = self.expect([r'Bytes transferred = (\d+) (.* hex)'] + self.uprompt, timeout=timeout)
+                i = self.expect([r'Bytes transferred = (\d+) (.* hex)'] +
+                                self.uprompt,
+                                timeout=timeout)
                 if i != 0:
                     continue
                 ret = int(self.match.group(1))
@@ -166,7 +177,12 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect(self.uprompt)
         raise Exception("TFTP failed, try rebooting the board.")
 
-    def prepare_file(self, fname, tserver=None, tusername=None, tpassword=None, tport=None):
+    def prepare_file(self,
+                     fname,
+                     tserver=None,
+                     tusername=None,
+                     tpassword=None,
+                     tport=None):
         '''Copy file to tftp server, so that it it available to tftp
         to the board itself.'''
         if tserver is None:
@@ -179,15 +195,19 @@ class OpenWrtRouter(linux.LinuxDevice):
             tport = self.tftp_port
 
         if fname.startswith("http://") or fname.startswith("https://"):
-            return common.download_from_web(fname, tserver, tusername, tpassword, tport)
+            return common.download_from_web(fname, tserver, tusername,
+                                            tpassword, tport)
         else:
-            return common.scp_to_tftp_server(os.path.abspath(fname), tserver, tusername, tpassword, tport)
+            return common.scp_to_tftp_server(os.path.abspath(fname), tserver,
+                                             tusername, tpassword, tport)
 
     def install_package(self, fname):
         '''Install OpenWrt package (opkg).'''
         target_file = fname.replace('\\', '/').split('/')[-1]
         new_fname = self.prepare_file(fname)
-        local_file = self.tftp_get_file(self.tftp_server, new_fname, timeout=60)
+        local_file = self.tftp_get_file(self.tftp_server,
+                                        new_fname,
+                                        timeout=60)
         # opkg requires a correct file name
         self.sendline("mv %s %s" % (local_file, target_file))
         self.expect(self.prompt)
@@ -206,9 +226,12 @@ class OpenWrtRouter(linux.LinuxDevice):
         for attempt in range(4):
             try:
                 self.expect('U-Boot', timeout=30)
-                i = self.expect(['Hit any key ', 'gpio 17 value 1'] + self.uprompt)
+                i = self.expect(['Hit any key ', 'gpio 17 value 1'] +
+                                self.uprompt)
                 if i == 1:
-                    print("\n\nWARN: possibly need to hold down reset button to break into U-Boot\n\n")
+                    print(
+                        "\n\nWARN: possibly need to hold down reset button to break into U-Boot\n\n"
+                    )
                     self.expect('Hit any key ')
 
                 self.sendline('\n\n\n\n\n\n\n')  # try really hard
@@ -231,7 +254,10 @@ class OpenWrtRouter(linux.LinuxDevice):
 
         # save env first, so CRC is OK for later tests
         self.sendline("saveenv")
-        self.expect(["Writing to Nand... done", "Protected 1 sectors", "Saving Environment to NAND...", 'Saving Environment to FAT...'])
+        self.expect([
+            "Writing to Nand... done", "Protected 1 sectors",
+            "Saving Environment to NAND...", 'Saving Environment to FAT...'
+        ])
         self.expect(self.uprompt)
 
     def network_restart(self):
@@ -249,7 +275,11 @@ class OpenWrtRouter(linux.LinuxDevice):
         '''Restart the firewall. Return how long it took.'''
         start = datetime.now()
         self.sendline('/etc/init.d/firewall restart')
-        self.expect_exact(["Loading redirects", "* Running script '/usr/share/miniupnpd/firewall.include'", "Running script '/etc/firewall.user'"])
+        self.expect_exact([
+            "Loading redirects",
+            "* Running script '/usr/share/miniupnpd/firewall.include'",
+            "Running script '/etc/firewall.user'"
+        ])
         if 'StreamBoost' in self.before:
             print("test_msg: Sleeping for Streamboost")
             self.expect(pexpect.TIMEOUT, timeout=45)
@@ -282,9 +312,12 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.uprompt)
         self.sendline('setenv ethact %s' % self.uboot_eth)
         self.expect(self.uprompt)
-        self.expect(pexpect.TIMEOUT, timeout=self.uboot_net_delay)  # running dhcp too soon causes hang
+        self.expect(
+            pexpect.TIMEOUT,
+            timeout=self.uboot_net_delay)  # running dhcp too soon causes hang
         self.sendline('dhcp')
-        i = self.expect(['Unknown command', 'DHCP client bound to address'], timeout=60)
+        i = self.expect(['Unknown command', 'DHCP client bound to address'],
+                        timeout=60)
         self.expect(self.uprompt)
         if i == 0:
             self.sendline('setenv ipaddr 192.168.0.2')
@@ -401,7 +434,8 @@ class OpenWrtRouter(linux.LinuxDevice):
         for i in range(5):
             try:
                 board.sendline('mount')
-                board.expect_exact('overlayfs:/overlay on / type overlay', timeout=15)
+                board.expect_exact('overlayfs:/overlay on / type overlay',
+                                   timeout=15)
                 board.expect(self.prompt)
                 break
             except:
@@ -433,8 +467,12 @@ class OpenWrtRouter(linux.LinuxDevice):
                 for i in range(5):
                     try:
                         pp.sendcontrol('c')
-                        pp.sendline("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
-                        pp.expect_exact("kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`")
+                        pp.sendline(
+                            "kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`"
+                        )
+                        pp.expect_exact(
+                            "kill `ps | grep mpstat | grep -v grep | awk '{print $1}'`"
+                        )
                         pp.expect(pp.prompt)
                         break
                     except:
@@ -449,7 +487,8 @@ class OpenWrtRouter(linux.LinuxDevice):
                 if 0 == pp.expect(['mpstat: not found'] + pp.prompt):
                     self.failed_stats['mpstat'] = float('nan')
                     continue
-                elif 0 == pp.expect(['mpstat: not found', pexpect.TIMEOUT], timeout=4):
+                elif 0 == pp.expect(['mpstat: not found', pexpect.TIMEOUT],
+                                    timeout=4):
                     self.failed_stats['mpstat'] = float('nan')
                     continue
 
@@ -479,8 +518,11 @@ class OpenWrtRouter(linux.LinuxDevice):
 
                 idle_vals = []
                 start = datetime.now()
-                while 0 == pp.expect([r'all(\s+\d+\.\d{2}){9}\r\n', pexpect.TIMEOUT] + pp.prompt):
-                    idle_vals.append(float(pp.match.group().strip().split(' ')[-1]))
+                while 0 == pp.expect(
+                    [r'all(\s+\d+\.\d{2}){9}\r\n', pexpect.TIMEOUT] +
+                        pp.prompt):
+                    idle_vals.append(
+                        float(pp.match.group().strip().split(' ')[-1]))
                     if (datetime.now() - start).seconds > 60:
                         self.touch()
 
@@ -500,6 +542,7 @@ class OpenWrtRouter(linux.LinuxDevice):
             print("WARN: did not match all stats collected!")
 
         dict_to_log.update(self.failed_stats)
+
 
 if __name__ == '__main__':
     # Example use

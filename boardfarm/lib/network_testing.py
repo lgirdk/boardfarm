@@ -11,7 +11,12 @@ import pexpect
 import ipaddress
 import six
 
-def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap', filters=None):
+
+def tcpdump_capture(device,
+                    interface,
+                    port=None,
+                    capture_file='pkt_capture.pcap',
+                    filters=None):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
     The kill_process method can be used to kill the process.
@@ -31,13 +36,16 @@ def tcpdump_capture(device, interface, port=None, capture_file='pkt_capture.pcap
     """
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
     run_background = " &"
-    filter_str = ' '.join([' '.join(i) for i in filters.items()]) if filters else ''
+    filter_str = ' '.join([' '.join(i)
+                           for i in filters.items()]) if filters else ''
     if port:
-        device.sudo_sendline(base+ "\'portrange %s\' " % (port)+filter_str+run_background)
+        device.sudo_sendline(base + "\'portrange %s\' " % (port) + filter_str +
+                             run_background)
     else:
-        device.sudo_sendline(base+filter_str+run_background)
+        device.sudo_sendline(base + filter_str + run_background)
     device.expect_exact('tcpdump: listening on %s' % interface)
     return device.before
+
 
 def kill_process(device, process="tcpdump"):
     """Kill any active process
@@ -55,6 +63,7 @@ def kill_process(device, process="tcpdump"):
     device.expect(device.prompt)
     return device.before
 
+
 def tcpdump_read(device, capture_file, protocol='', opts=''):
     """Read the tcpdump packets and deletes the capture file after read
 
@@ -70,7 +79,7 @@ def tcpdump_read(device, capture_file, protocol='', opts=''):
     :rtype: string
     """
     if opts:
-        protocol = protocol+' and '+opts
+        protocol = protocol + ' and ' + opts
     device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
     device.expect(device.prompt)
     output = device.before
@@ -121,6 +130,7 @@ def sip_read(device, capture_file):
     output_sip = device.before
     return output_sip
 
+
 def rtp_read_verify(device, capture_file):
     """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
     Real-time Transport Protocol is for delivering audio and video over IP networks.
@@ -138,6 +148,7 @@ def rtp_read_verify(device, capture_file):
     device.sudo_sendline("rm rtp.txt")
     device.expect_prompt()
 
+
 def basic_call_verify(output_sip, ip_src):
     """To verify basic call flow with sip messages.
 
@@ -147,10 +158,21 @@ def basic_call_verify(output_sip, ip_src):
     :type ip_src: String
     """
     import re
-    sip_msg = re.search(".*" + ip_src + ".*INVITE.*?" + ip_src + "\s+SIP.*100\s+Trying.*?" + ip_src + "\s+SIP.*180\s+Ringing.*?" + ip_src + "\s+SIP\/SDP.*200\s+OK.*?" + ip_src + ".*ACK.*?" + ip_src + ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|", output_sip, re.DOTALL)
+    sip_msg = re.search(
+        ".*" + ip_src + ".*INVITE.*?" + ip_src + "\s+SIP.*100\s+Trying.*?" +
+        ip_src + "\s+SIP.*180\s+Ringing.*?" + ip_src +
+        "\s+SIP\/SDP.*200\s+OK.*?" + ip_src + ".*ACK.*?" + ip_src +
+        ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|", output_sip, re.DOTALL)
     assert sip_msg is not None, "SIP call failed"
 
-def nmap_cli(device, ip_address, port, protocol = None, retry = 0, timing = '', optional = ''):
+
+def nmap_cli(device,
+             ip_address,
+             port,
+             protocol=None,
+             retry=0,
+             timing='',
+             optional=''):
     """To run port scanning on the specified target.Port scan is a method for determining which ports on a interface are open.
     This method is used to perform port scanning on the specified port range of the target ip specified from the device specified.
 
@@ -175,10 +197,14 @@ def nmap_cli(device, ip_address, port, protocol = None, retry = 0, timing = '', 
 
     if not protocol:
         protocol = "both"
-    ipv6 = '-6' if 'IPv6Address' == type(ipaddress.ip_address(six.text_type(ip_address))).__name__ else ''
-    protocol_commandmap = {"tcp" : "-sT" , "udp" : "-sU", "both" : "-sT -sU"}
-    device.sudo_sendline("nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" % (ipv6, timing, protocol_commandmap[protocol], ip_address, port, retry, optional))
-    retry_on_exception(device.expect, (device.prompt,), retries = 16, tout = 30)
+    ipv6 = '-6' if 'IPv6Address' == type(
+        ipaddress.ip_address(six.text_type(ip_address))).__name__ else ''
+    protocol_commandmap = {"tcp": "-sT", "udp": "-sU", "both": "-sT -sU"}
+    device.sudo_sendline(
+        "nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" %
+        (ipv6, timing, protocol_commandmap[protocol], ip_address, port, retry,
+         optional))
+    retry_on_exception(device.expect, (device.prompt, ), retries=16, tout=30)
     device.sendline("cat nmap_logs.txt")
     device.expect(device.prompt)
     nmap_output = device.before
@@ -186,7 +212,12 @@ def nmap_cli(device, ip_address, port, protocol = None, retry = 0, timing = '', 
     device.expect(device.prompt)
     return nmap_output
 
-def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
+
+def ssh_service_verify(device,
+                       dest_device,
+                       ip,
+                       opts="",
+                       ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
     """This function will try to verify if SSH service is running on a target device.
     If the ssh connection expects key exchange, then ssh_key provided is used to add the target device to known hosts.
     If connection is accepted and SSH password of target device is provided for login.
@@ -205,10 +236,13 @@ def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithm
     """
     device.sendline("ssh %s@%s" % (dest_device.username, ip))
     try:
-        idx = device.expect(['no matching key exchange method found'] + ['(yes/no)'] + ['assword:'], timeout=60)
+        idx = device.expect(['no matching key exchange method found'] +
+                            ['(yes/no)'] + ['assword:'],
+                            timeout=60)
         if idx == 0:
             device.expect(device.prompt)
-            device.sendline("ssh %s %s@%s %s" % (ssh_key, dest_device.username, ip, opts))
+            device.sendline("ssh %s %s@%s %s" %
+                            (ssh_key, dest_device.username, ip, opts))
             idx = device.expect(['(yes/no)'] + ['assword:'], timeout=60)
             if idx == 0:
                 idx = 1
@@ -222,6 +256,7 @@ def ssh_service_verify(device, dest_device, ip, opts="", ssh_key="-oKexAlgorithm
     except Exception as e:
         print(e)
         raise Exception("Failed to connect SSH to :%s" % device.before)
+
 
 def telnet_service_verify(device, dest_device, ip, opts=""):
     """Verify telent service connection

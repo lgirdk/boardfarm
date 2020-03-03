@@ -40,7 +40,10 @@ from .installers import install_pysnmp
 
 ubootprompt = ['ath>', r'\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
-prompts = ubootprompt + linuxprompt + ['/.* # ', ]
+prompts = ubootprompt + linuxprompt + [
+    '/.* # ',
+]
+
 
 def run_once(f):
     """Decorator to run a function only once.
@@ -63,8 +66,10 @@ def run_once(f):
         if not wrapper.has_run:
             wrapper.has_run = True
             return f(*args, **kwargs)
+
     wrapper.has_run = False
     return wrapper
+
 
 def clear_buffer(console):
     """Clears buffer size of 2000 characters from the console of the device
@@ -76,6 +81,7 @@ def clear_buffer(console):
         console.read_nonblocking(size=2000, timeout=1)
     except:
         pass
+
 
 def phantom_webproxy_driver(ipport):
     """Use this if you started phantom web proxy on a machine connected to router's LAN.
@@ -97,6 +103,7 @@ def phantom_webproxy_driver(ipport):
     driver.set_window_size(1024, 768)
     driver.set_page_load_timeout(30)
     return driver
+
 
 def firefox_webproxy_driver(ipport, config):
     """Use this if you started firefox web proxy on a machine connected to router's LAN.
@@ -132,15 +139,19 @@ def firefox_webproxy_driver(ipport, config):
     # number 2 is to save the file to the above current location instead of downloads
     profile.set_preference("browser.download.folderList", 2)
     # added this line to open the file without asking any questions
-    profile.set_preference("browser.helperApps.neverAsk.openFile", "text/anytext,text/comma-separated-values,text/csv,application/octet-stream")
+    profile.set_preference(
+        "browser.helperApps.neverAsk.openFile",
+        "text/anytext,text/comma-separated-values,text/csv,application/octet-stream"
+    )
     profile.update_preferences()
     driver = webdriver.Firefox(firefox_profile=profile)
-    x,y = config.get_display_backend_size()
+    x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
     driver.implicitly_wait(30)
     driver.set_page_load_timeout(30)
 
     return driver
+
 
 def chrome_webproxy_driver(ipport, config):
     """Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
@@ -178,6 +189,7 @@ def chrome_webproxy_driver(ipport, config):
 
     return driver
 
+
 def get_webproxy_driver(ipport, config):
     """Get the web driver initialized based on the web driver configurations in config.py
 
@@ -208,6 +220,7 @@ def get_webproxy_driver(ipport, config):
 
     print("Using proxy %s, webdriver: %s" % (proxy, config.default_web_driver))
 
+
 def test_msg(msg):
     """Prints the message in Bold
 
@@ -215,6 +228,7 @@ def test_msg(msg):
     :type msg: String
     """
     cprint(msg, None, attrs=['bold'])
+
 
 def _hash_file(filename, block_size, hashobj):
     """Helper function: Initialize a hash obj and digests a file through it.
@@ -234,6 +248,7 @@ def _hash_file(filename, block_size, hashobj):
             hashobj.update(block)
     return hashobj.hexdigest()
 
+
 def sha256_checksum(filename, block_size=65536):
     """Calculates the SHA256 on a file.
     SHA-256 generates an almost-unique 256-bit signature for a text
@@ -248,6 +263,7 @@ def sha256_checksum(filename, block_size=65536):
     import hashlib
     sha256 = hashlib.sha256()
     return _hash_file(filename, block_size, sha256)
+
 
 def keccak512_checksum(filename, block_size=65536):
     """Calculates the SHA3 hash on a file.
@@ -264,7 +280,10 @@ def keccak512_checksum(filename, block_size=65536):
     keccak_hash = keccak.new(digest_bits=512)
     return _hash_file(filename, block_size, keccak_hash)
 
-cmd_exists = lambda x: any(os.access(os.path.join(path, x), os.X_OK) for path in os.environ["PATH"].split(os.pathsep))
+
+cmd_exists = lambda x: any(
+    os.access(os.path.join(path, x), os.X_OK)
+    for path in os.environ["PATH"].split(os.pathsep))
 
 
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
@@ -285,7 +304,9 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
     :rtype: Boolean
     """
     http_service_kill(device, "SimpleHTTPServer")
-    device.sendline("python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()' %s" % (ip, port, options))
+    device.sendline(
+        "python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()' %s"
+        % (ip, port, options))
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold("Faield to start service on " + ip + ":" + port)
@@ -294,6 +315,7 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
         if "BFT_DEBUG" in os.environ:
             print_bold("Service started on " + ip + ":" + port)
         return True
+
 
 def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
     """Starts a simple IPv6 web service on a specified port,
@@ -324,7 +346,7 @@ HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
 EOF''' % (ip, port))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPServer6 %s" %options)
+    device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold('Faield to start service on [' + ip + ']:' + port)
@@ -334,7 +356,12 @@ EOF''' % (ip, port))
             print_bold("Service started on [" + ip + "]:" + port)
         return True
 
-def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/server.pem", options=""):
+
+def start_ipbound_httpsservice(device,
+                               ip="0.0.0.0",
+                               port="443",
+                               cert="/root/server.pem",
+                               options=""):
     """Starts a simple IPv4 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -356,14 +383,18 @@ def start_ipbound_httpsservice(device, ip="0.0.0.0", port="443", cert="/root/ser
     import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
-    device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
+    device.sendline(
+        "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
+    )
     for i in range(10):
-        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
+        if device.expect([re.escape("]:"),
+                          re.escape("Email Address []:")]) > 0:
             device.sendline()
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" %
+                    cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         print_bold("Failed to create certificate for HTTPs service")
@@ -388,7 +419,7 @@ httpd.serve_forever()
 EOF''' % (ip, port, cert))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer %s" %options)
+    device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
@@ -397,7 +428,12 @@ EOF''' % (ip, port, cert))
             print_bold("Service started on [" + ip + "]:" + port)
         return True
 
-def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server.pem", options=""):
+
+def start_ip6bound_httpsservice(device,
+                                ip="::",
+                                port="4443",
+                                cert="/root/server.pem",
+                                options=""):
     """Starts a simple IPv6 HTTPS web service on a specified port,
     bound to a specified interface. (e.g. tun0)
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -419,14 +455,18 @@ def start_ip6bound_httpsservice(device, ip="::", port="4443", cert="/root/server
     import re
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
-    device.sendline("openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes")
+    device.sendline(
+        "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
+    )
     for i in range(10):
-        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
+        if device.expect([re.escape("]:"),
+                          re.escape("Email Address []:")]) > 0:
             device.sendline()
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" %
+                    cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         print_bold("Failed to create certificate for HTTPs service")
@@ -447,7 +487,7 @@ https.serve_forever()
 EOF''' % (ip, port, cert))
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer %s" %options)
+    device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
     if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
@@ -455,6 +495,7 @@ EOF''' % (ip, port, cert))
         if "BFT_DEBUG" in os.environ:
             print_bold("Service started on [" + ip + "]:" + port)
         return True
+
 
 def configure_postfix(device):
     """configures TSL and SSL ports to access postfix server
@@ -523,7 +564,9 @@ EOF''')
     device.sendline("service postfix start")
     device.expect(device.prompt)
     device.sendline("service postfix reload")
-    assert 0 != device.expect(['failed'] + device.prompt, timeout=20), "Unable to reolad server with new configurations"
+    assert 0 != device.expect(
+        ['failed'] + device.prompt,
+        timeout=20), "Unable to reolad server with new configurations"
 
 
 def file_open_json(file):
@@ -542,7 +585,17 @@ def file_open_json(file):
         print(e)
         raise Exception("Could not open the json file")
 
-def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value, timeout=10, retry=3, community='private'):
+
+def snmp_mib_set(device,
+                 parser,
+                 iface_ip,
+                 mib_name,
+                 index,
+                 set_type,
+                 set_value,
+                 timeout=10,
+                 retry=3,
+                 community='private'):
     """set value of mibs via snmp.
     Usage: snmp_mib_set(wan, board, board.wan_ip, "wifiMgmtBssSecurityMode", "32", "i", "1")
 
@@ -582,36 +635,78 @@ def snmp_mib_set(device, parser, iface_ip, mib_name, index, set_type, set_value,
         oid = parser.get_mib_oid(mib_name)
         mib_oid = '.' + oid + '.' + index
     if set_type == "i" or set_type == "a" or set_type == "u" or set_type == "s":
-        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + str(set_value))
-        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + str(set_value))
+        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community +
+                        " -t " + str(timeout) + " -r " + str(retry) + " " +
+                        iface_ip + " " + oid + "." + str(index) + " " +
+                        set_type + " " + str(set_value))
+        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community +
+                            " -t " + str(timeout) + " -r " + str(retry) + " " +
+                            iface_ip + " " + oid + "." + str(index) + " " +
+                            set_type + " " + str(set_value))
         if set_type != "s":
-            idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] + device.prompt, timeout=time_out)
+            idx = device.expect(
+                ['Timeout: No Response from'] +
+                [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] +
+                device.prompt,
+                timeout=time_out)
         else:
-            idx = device.expect(['Timeout: No Response from'] + [mib_oid + '\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] + device.prompt, timeout=time_out)
+            idx = device.expect(
+                ['Timeout: No Response from'] +
+                [mib_oid + '\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] +
+                device.prompt,
+                timeout=time_out)
     elif set_type == "x":
-        device.sendline("snmpset -v 2c -Ox" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + set_value)
-        device.expect_exact("snmpset -v 2c -Ox" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + set_value)
+        device.sendline("snmpset -v 2c -Ox" + extra_arg + " -c " + community +
+                        " -t " + str(timeout) + " -r " + str(retry) + " " +
+                        iface_ip + " " + oid + "." + str(index) + " " +
+                        set_type + " " + set_value)
+        device.expect_exact("snmpset -v 2c -Ox" + extra_arg + " -c " +
+                            community + " -t " + str(timeout) + " -r " +
+                            str(retry) + " " + iface_ip + " " + oid + "." +
+                            str(index) + " " + set_type + " " + set_value)
         """trimming the prefix 0x , since snmp will return in that format"""
         if "0x" in set_value.lower():
             set_value = set_value[2:]
         set_value_hex = set_value.upper()
-        set_value_output = ' '.join([set_value_hex[i:i + 2] for i in range(0, len(set_value_hex), 2)])
-        idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] + device.prompt, timeout=40)
+        set_value_output = ' '.join(
+            [set_value_hex[i:i + 2] for i in range(0, len(set_value_hex), 2)])
+        idx = device.expect(
+            ['Timeout: No Response from'] +
+            [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] +
+            device.prompt,
+            timeout=40)
     elif set_type == "t" or set_type == "b" or set_type == "o" or set_type == "n" or set_type == "d":
         idx = 0
     elif set_type == "str_with_space":
         set_type = "s"
         set_value = str(set_value)
-        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + "'%s'" % set_value)
-        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index) + " " + set_type + " " + "'%s'" % set_value)
-        idx = device.expect(['Timeout: No Response from'] + ['STRING: \"(.*)\"\r\n'] + device.prompt, timeout=10)
+        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community +
+                        " -t " + str(timeout) + " -r " + str(retry) + " " +
+                        iface_ip + " " + oid + "." + str(index) + " " +
+                        set_type + " " + "'%s'" % set_value)
+        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community +
+                            " -t " + str(timeout) + " -r " + str(retry) + " " +
+                            iface_ip + " " + oid + "." + str(index) + " " +
+                            set_type + " " + "'%s'" % set_value)
+        idx = device.expect(['Timeout: No Response from'] +
+                            ['STRING: \"(.*)\"\r\n'] + device.prompt,
+                            timeout=10)
 
     assert idx == 1, "Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
 
-def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3, community='private', opt_args=''):
+
+def snmp_mib_get(device,
+                 parser,
+                 iface_ip,
+                 mib_name,
+                 index,
+                 timeout=10,
+                 retry=3,
+                 community='private',
+                 opt_args=''):
     """Get value of mibs via snmp.
     Usage: snmp_mib_set(wan, board/snmpParser, board.wan_iface, "wifiMgmtBssSecurityMode", "32")
 
@@ -649,20 +744,32 @@ def snmp_mib_get(device, parser, iface_ip, mib_name, index, timeout=10, retry=3,
         extra_arg = ' -On '
         oid = parser.get_mib_oid(mib_name)
         mib_oid = oid + '.' + index
-
     """opt_args attribute added to get the output in hexa value using Ox option"""
     if opt_args != '':
-        device.sendline("snmpget -v 2c -Ox" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
-        device.expect_exact("snmpget -v 2c -Ox" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
+        device.sendline("snmpget -v 2c -Ox" + extra_arg + " -c " + community +
+                        " -t " + str(timeout) + " -r " + str(retry) + " " +
+                        iface_ip + " " + oid + "." + str(index))
+        device.expect_exact("snmpget -v 2c -Ox" + extra_arg + " -c " +
+                            community + " -t " + str(timeout) + " -r " +
+                            str(retry) + " " + iface_ip + " " + oid + "." +
+                            str(index))
     else:
-        device.sendline("snmpget -v 2c" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
-        device.expect_exact("snmpget -v 2c" + extra_arg + " -c " + community + " -t " + str(timeout) + " -r " + str(retry) + " " + iface_ip + " " + oid + "." + str(index))
-    idx = device.expect(['Timeout: No Response from'] + [mib_oid + r'\s+\=\s+\S+\:\s+(.*)\r\n'] + device.prompt, timeout=time_out)
+        device.sendline("snmpget -v 2c" + extra_arg + " -c " + community +
+                        " -t " + str(timeout) + " -r " + str(retry) + " " +
+                        iface_ip + " " + oid + "." + str(index))
+        device.expect_exact("snmpget -v 2c" + extra_arg + " -c " + community +
+                            " -t " + str(timeout) + " -r " + str(retry) + " " +
+                            iface_ip + " " + oid + "." + str(index))
+    idx = device.expect(['Timeout: No Response from'] +
+                        [mib_oid + r'\s+\=\s+\S+\:\s+(.*)\r\n'] +
+                        device.prompt,
+                        timeout=time_out)
     assert idx == 1, "Getting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     snmp_out = snmp_out.strip("\"").strip()
     return snmp_out
+
 
 def hex2ipv6(hexstr):
     """converts hex string to IPv6 Address
@@ -674,7 +781,9 @@ def hex2ipv6(hexstr):
     """
     hexstr = hexstr.replace(' ', '').lower()
     blocks = (''.join(block) for block in zip(*[iter(hexstr)] * 4))
-    return ipaddress.IPv6Address(':'.join(str(block) for block in blocks).decode('utf-8'))
+    return ipaddress.IPv6Address(':'.join(str(block)
+                                          for block in blocks).decode('utf-8'))
+
 
 def retry(func_name, max_retry, *args):
     """Retry a function if the output of the function is false
@@ -719,7 +828,7 @@ def retry_on_exception(method, args, retries=10, tout=5):
     for not_used in range(retries):
         try:
             return method(*args)
-        except Exception as e:    # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             print_bold("method failed %d time (%s)" % ((not_used + 1), e))
             time.sleep(tout)
     return method(*args)
@@ -741,7 +850,14 @@ def resolv_dict(dic, key):
         key_val = key_val[elem]
     return key_val
 
-def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retry=3, time_out=100):
+
+def snmp_mib_walk(device,
+                  parser,
+                  ip_address,
+                  mib_name,
+                  community='public',
+                  retry=3,
+                  time_out=100):
     """walk a mib with small mib tree
     Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
 
@@ -767,8 +883,10 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
     else:
         oid = parser.get_mib_oid(mib_name)
 
-    device.sendline("snmpwalk -v 2c -c " + community + " -t " + str(time_out) + " -r " + str(retry) + " " + ip_address + " " + oid)
-    i = device.expect([pexpect.TIMEOUT] + device.prompt, timeout=(time_out * retry) + 10)  # +10 just to be sure
+    device.sendline("snmpwalk -v 2c -c " + community + " -t " + str(time_out) +
+                    " -r " + str(retry) + " " + ip_address + " " + oid)
+    i = device.expect([pexpect.TIMEOUT] + device.prompt,
+                      timeout=(time_out * retry) + 10)  # +10 just to be sure
     if i != 0:
         # we have a prompt, so we assume the walk completed ok
         snmp_out = device.before
@@ -778,6 +896,7 @@ def snmp_mib_walk(device, parser, ip_address, mib_name, community='public', retr
         device.sendcontrol('c')  # in case the walk is frozen/stuck
         device.expect(device.prompt)
     return snmp_out
+
 
 def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     """Set snmp which has type as counter32(couldn't set it via SNMP)
@@ -803,7 +922,8 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     device.expect(">>>")
     device.sendline("f = open('" + pysnmp_file + "'" + ", 'w')")
     device.expect(">>>")
-    device.sendline("f.write('from pysnmp.entity.rfc3413.oneliner import cmdgen')")
+    device.sendline(
+        "f.write('from pysnmp.entity.rfc3413.oneliner import cmdgen')")
     device.expect(">>>")
     device.sendline("exit()")
     device.expect(device.prompt)
@@ -829,7 +949,14 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     except:
         raise Exception("Failed in setting mib using pysnmp")
 
-def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, community='public', expect_content=None):
+
+def snmp_mib_bulkwalk(device,
+                      ip_address,
+                      mib_oid,
+                      time_out=90,
+                      retry=3,
+                      community='public',
+                      expect_content=None):
     """uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
     Usage: snmp_mib_bulkwalk(device, ip_address, mib_oid)
 
@@ -851,13 +978,18 @@ def snmp_mib_bulkwalk(device, ip_address, mib_oid, time_out=90, retry=3, communi
     :type: bool
     """
 
-    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" % (community, time_out, retry, ip_address, mib_oid))
+    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" %
+                    (community, time_out, retry, ip_address, mib_oid))
     if expect_content != None:
-        idx = device.expect([expect_content, "Timeout: No Response"], timeout=(time_out * retry) + 30)
+        idx = device.expect([expect_content, "Timeout: No Response"],
+                            timeout=(time_out * retry) + 30)
     else:
-        idx = device.expect(["It is past the end of the MIB tree", "Timeout: No Response"], timeout=(time_out * retry) + 30)
+        idx = device.expect(
+            ["It is past the end of the MIB tree", "Timeout: No Response"],
+            timeout=(time_out * retry) + 30)
     device.expect(device.prompt)
     return idx == 0
+
 
 def get_file_magic(fname, num_bytes=4):
     """Return the first few bytes from a file to determine the file type.
@@ -899,13 +1031,17 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
     for attempt in range(5):
         try:
             print_bold(cmd)
-            p = bft_pexpect_helper.spawn(command='/bin/bash', args=['-c', cmd], timeout=240)
+            p = bft_pexpect_helper.spawn(command='/bin/bash',
+                                         args=['-c', cmd],
+                                         timeout=240)
             p.logfile_read = sys.stdout
 
             i = p.expect(["yes/no", "password:", "%s.*" % target])
             if i == 0:
                 p.sendline("yes")
-                i = p.expect(["not used", "password:", "%s.*" % target], timeout=45)
+                i = p.expect(["not used", "password:",
+                              "%s.*" % target],
+                             timeout=45)
 
             if i == 1:
                 p.sendline("%s" % password)
@@ -914,7 +1050,9 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
             fname = p.match.group(0).strip()
             print_bold("\nfile: %s" % fname)
         except pexpect.EOF:
-            print_bold("EOF exception: unable to extract filename (should be echoed by command)!")
+            print_bold(
+                "EOF exception: unable to extract filename (should be echoed by command)!"
+            )
             print_bold("EOF exception: command: %s" % cmd)
         except Exception as e:
             print_bold(e)
@@ -1002,7 +1140,8 @@ def scp_from(fname, server, username, password, port, dest):
     :rtype: String
     :raises Exception: Exception thrown on copy file failed
     """
-    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
+    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server,
+                                                   fname, dest)
     copy_file_to_server(cmd, password, target='DONE')
 
 
@@ -1014,6 +1153,7 @@ def print_bold(msg):
     """
     termcolor.cprint(msg, None, attrs=['bold'])
 
+
 def check_url(url):
     """validates the input URL. Parses the input URL and checks for error
 
@@ -1023,6 +1163,7 @@ def check_url(url):
     :rtype: Boolean
     """
     try:
+
         def add_basic_auth(login_str, request):
             """Adds Basic auth to http request, pass in login:password as string.
             Usage is within the function.
@@ -1032,7 +1173,8 @@ def check_url(url):
             :param request: request to upen url
             :type request: String
             """
-            encodeuser = base64.b64encode(login_str.encode('utf-8')).decode("utf-8")
+            encodeuser = base64.b64encode(
+                login_str.encode('utf-8')).decode("utf-8")
             authheader = "Basic %s" % encodeuser
             request.add_header("Authorization", authheader)
 
@@ -1054,6 +1196,7 @@ def check_url(url):
         print(e)
         print('Error trying to access %s' % url)
         return False
+
 
 def ftp_useradd(device):
     """Add ftp user to client list to grant access
@@ -1083,6 +1226,7 @@ def ftp_useradd(device):
         device.expect(device.prompt, timeout=90)
         return "failed" in device.before
 
+
 def ftp_file_create_delete(device, create_file=None, remove_file=None):
     """create and delete ftp file for upload and download
 
@@ -1094,12 +1238,14 @@ def ftp_file_create_delete(device, create_file=None, remove_file=None):
     :type remove_file: any , Optional
     """
     if create_file:
-        device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" % create_file)
+        device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" %
+                        create_file)
         device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
         device.sendline("rm %s.txt" % remove_file)
         device.expect(device.prompt, timeout=10)
+
 
 def ftp_device_login(device, ip_mode, device_ip):
     """Login to FTP device by creating credentials
@@ -1121,6 +1267,7 @@ def ftp_device_login(device, ip_mode, device_ip):
     device.expect(['230 Login successful'], timeout=10)
     device.expect("ftp>", timeout=10)
 
+
 def ftp_upload_download(device, ftp_load):
     """Upload or download file
 
@@ -1138,6 +1285,7 @@ def ftp_upload_download(device, ftp_load):
     device.sendline()
     device.expect("ftp>", timeout=10)
 
+
 def ftp_close(device):
     """Closing the FTP connection
 
@@ -1150,6 +1298,7 @@ def ftp_close(device):
         device.sendline("quit")
         device.expect(device.prompt, timeout=10)
 
+
 def postfix_install(device):
     """Add eth0 ip to hosts and Install postfix service if not present
     Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
@@ -1157,9 +1306,11 @@ def postfix_install(device):
     :param device: lan or wan
     :type device: Object
     """
-    if retry_on_exception(device.get_interface_ipaddr, ("eth0",), retries=1):
-        device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" % device.get_interface_ipaddr("eth0"))
+    if retry_on_exception(device.get_interface_ipaddr, ("eth0", ), retries=1):
+        device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" %
+                            device.get_interface_ipaddr("eth0"))
     install_postfix(device)
+
 
 def http_service_kill(device, process):
     """Method to kill the existing http service
@@ -1174,10 +1325,12 @@ def http_service_kill(device, process):
         device.expect_prompt()
     device.sendline("ps -elf | grep %s" % process)
     device.expect_prompt()
-    match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
+    match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP",
+                      device.before)
     if match:
         device.sendline("kill -9 %s" % match.group(1))
         device.expect_prompt()
+
 
 def check_prompts(device_list):
     """check to verify prompt of devices.In order to ensure, that all processes were killed by previous
@@ -1187,8 +1340,11 @@ def check_prompts(device_list):
     :type device: List
     """
     for dev in device_list:
-        assert "FOO" in dev.check_output('echo "FOO"'), "Failed to validate prompt for device: {}".format(dev.name)
+        assert "FOO" in dev.check_output(
+            'echo "FOO"'), "Failed to validate prompt for device: {}".format(
+                dev.name)
     return True
+
 
 def hex_to_datetime(output):
     """Convert hexstring format to datettime
@@ -1196,10 +1352,12 @@ def hex_to_datetime(output):
     :param output: output of the snmp output
     :type output: hexstring
     """
-    out = output.replace('0x','')
-    mib_Hex = [out[i:i+2] for i in range(0, len(out), 2)]
-    dt = datetime(*list(map(lambda x: int(x, 16), [mib_Hex[0]+mib_Hex[1]]+mib_Hex[2:])))
+    out = output.replace('0x', '')
+    mib_Hex = [out[i:i + 2] for i in range(0, len(out), 2)]
+    dt = datetime(*list(
+        map(lambda x: int(x, 16), [mib_Hex[0] + mib_Hex[1]] + mib_Hex[2:])))
     return dt
+
 
 def openssl_verify(device, ip_address, port, options=""):
     """Openssl verfication for SMTP
@@ -1216,7 +1374,8 @@ def openssl_verify(device, ip_address, port, options=""):
     :rtype: Boolean
     """
     output = False
-    device.sendline("openssl s_client -connect [{}]:{} {}".format(ip_address, port, options))
+    device.sendline("openssl s_client -connect [{}]:{} {}".format(
+        ip_address, port, options))
     if device.expect(["CONNECTED", pexpect.TIMEOUT]) == 0:
         output = True
     try:
