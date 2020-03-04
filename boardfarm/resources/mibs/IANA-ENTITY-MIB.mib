@@ -37,10 +37,10 @@ IANA-ENTITY-MIB DEFINITIONS ::= BEGIN
            RFC 6933; for full legal notices see the RFC itself."
 
        REVISION     "201507160000Z"  -- July 16, 2015
-       DESCRIPTION  "Removed space between 'battery' and '(14)'."  
+       DESCRIPTION  "Removed space between 'battery' and '(14)'."
 
        REVISION     "201507160000Z"  -- July 16, 2015
-       DESCRIPTION  "Added storageDrive(15)."  
+       DESCRIPTION  "Added storageDrive(15)."
 
        REVISION     "201304050000Z"  -- April 5, 2013
        DESCRIPTION  "Initial version of this MIB as published in
@@ -134,10 +134,10 @@ IANAPhysicalClass ::= TEXTUAL-CONVENTION
            The enumeration 'battery' is applicable if the physical
            entity class is some sort of battery.
 
-           The enumeration 'storageDrive' is applicable if the 
-           physical entity class is some sort of entity with data 
-           storage capability as main functionality, e.g. disk drive 
-           (HDD), solid state device (SSD), hybrid (SSHD), object 
+           The enumeration 'storageDrive' is applicable if the
+           physical entity class is some sort of entity with data
+           storage capability as main functionality, e.g. disk drive
+           (HDD), solid state device (SSD), hybrid (SSHD), object
            storage (OSD) or other."
     SYNTAX      INTEGER  {
        other(1),

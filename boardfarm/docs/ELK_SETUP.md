@@ -38,7 +38,7 @@ We'll just download the Elasticsearch Debian package and install it:
 You probably want Elasticsearch to automatically start every time you reboot your machine:
 
     systemctl enable elasticsearch
-    
+
 Now let's edit the Elasticsearch configuration to restrict access from anywhere except the host itself:
 
     nano /etc/elasticsearch/elasticsearch.yml

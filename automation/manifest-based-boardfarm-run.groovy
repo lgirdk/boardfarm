@@ -176,7 +176,7 @@ def run_test (loc, ts, post, board) {
                 if [ "$exit_code" = "0" ]; then
                     break
                 else
-                   sleep 30 
+                   sleep 30
                 fi
             done
             '''

@@ -71,5 +71,5 @@
                  unknown, or when none or all interfaces need to be
                  referenced."
              SYNTAX       Integer32 (0..2147483647)
-     
+
         END

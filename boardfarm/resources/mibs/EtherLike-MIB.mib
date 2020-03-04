@@ -859,7 +859,7 @@
            REFERENCE   "[IEEE 802.3 Std.], 30.3.3.5,
                        aUnsupportedOpcodesReceived"
            ::= { dot3ControlEntry 3 }
-       
+
        dot3PauseTable OBJECT-TYPE
            SYNTAX      SEQUENCE OF Dot3PauseEntry
            MAX-ACCESS  not-accessible
@@ -1435,7 +1435,7 @@
        -- { dot3 8 }, the dot3ChipSets tree, is defined in [RFC2666]
 
        -- conformance information
-       
+
        etherConformance OBJECT IDENTIFIER ::= { etherMIB 2 }
 
        etherGroups      OBJECT IDENTIFIER ::= { etherConformance 1 }
