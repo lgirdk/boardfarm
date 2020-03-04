@@ -14,19 +14,20 @@ from six.moves import input
 
 class Interact(rootfs_boot.RootFSBootTest):
     '''Interact with console, wan, lan, wlan connections and re-run tests'''
-
     def print_dynamic_devices(self):
         for device in self.config.devices:
             d = getattr(self.config, device)
             # TODO: should move all classes to use string repr
             if hasattr(d, 'username'):
-                print("  %s device:    ssh %s@%s" % (device, d.username, d.name))
+                print("  %s device:    ssh %s@%s" %
+                      (device, d.username, d.name))
             else:
                 print("  %s device:    %s" % (d.name, d))
 
     def runTest(self):
         board = self.dev.board
-        lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
+        lib.common.test_msg(
+            "Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
         try:
             board.interact()
@@ -59,7 +60,8 @@ class Interact(rootfs_boot.RootFSBootTest):
             print("  %s: Enter interactive python shell" % i)
             i += 1
             if len(self.config.devices) > 0:
-                print("  Type a device name to connect: %s" % self.config.devices)
+                print("  Type a device name to connect: %s" %
+                      self.config.devices)
             print("  x: Exit")
             key = input("Please select: ")
 
@@ -97,9 +99,11 @@ class Interact(rootfs_boot.RootFSBootTest):
                     test = sys.stdin.readline().strip()
 
                     try:
-                        tests.available_tests[test](self.config, self.dev, self.env_helper).run()
+                        tests.available_tests[test](self.config, self.dev,
+                                                    self.env_helper).run()
                     except Exception as e:
-                        lib.common.test_msg("Failed to find and/or run test, continuing..")
+                        lib.common.test_msg(
+                            "Failed to find and/or run test, continuing..")
                         print(e)
                         continue
 
@@ -116,8 +120,8 @@ class Interact(rootfs_boot.RootFSBootTest):
             if key == str(i):
                 print("Enter python shell, press Ctrl-D to exit")
                 try:
-                    import readline # optional, will allow Up/Down/History in the console
-                    assert readline # silence pyflakes
+                    import readline  # optional, will allow Up/Down/History in the console
+                    assert readline  # silence pyflakes
                     import code
                     vars = globals().copy()
                     vars.update(locals())

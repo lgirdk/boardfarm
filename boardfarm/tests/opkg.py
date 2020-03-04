@@ -9,6 +9,7 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board
 from boardfarm.devices import prompt
 
+
 class OpkgList(rootfs_boot.RootFSBootTest):
     '''Opkg list shows installed packages.'''
     def runTest(self):
@@ -22,6 +23,7 @@ class OpkgList(rootfs_boot.RootFSBootTest):
         self.result_message = '%s OpenWrt packages are installed.' % num_pkgs
         self.logged['num_installed'] = num_pkgs
 
+
 class CheckQosScripts(rootfs_boot.RootFSBootTest):
     '''Package "qos-scripts" is not installed.'''
     def runTest(self):
@@ -29,8 +31,9 @@ class CheckQosScripts(rootfs_boot.RootFSBootTest):
         try:
             board.expect('qos-scripts - ', timeout=4)
         except:
-            return   # pass if not installed
-        assert False # fail if installed
+            return  # pass if not installed
+        assert False  # fail if installed
+
 
 class OpkgUpdate(rootfs_boot.RootFSBootTest):
     '''Opkg is able to update list of packages.'''
@@ -39,4 +42,3 @@ class OpkgUpdate(rootfs_boot.RootFSBootTest):
         board.expect('Updated list of available packages')
         board.expect('All package lists updated')
         board.expect(prompt)
-

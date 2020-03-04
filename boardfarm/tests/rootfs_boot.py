@@ -16,13 +16,15 @@ import boardfarm.exceptions
 
 class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''
-
     def boot(self, reflash=True):
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
         # start tftpd server on appropriate device
-        tftp_servers = [ x['name'] for x in self.config.board['devices'] if 'tftpd-server' in x.get('options', "") ]
+        tftp_servers = [
+            x['name'] for x in self.config.board['devices']
+            if 'tftpd-server' in x.get('options', "")
+        ]
         tftp_device = None
         # start all tftp servers for now
         for tftp_server in tftp_servers:
@@ -58,7 +60,9 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             if hasattr(prov, 'prov_gateway'):
                 gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
 
-                for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
+                for nw in [
+                        prov.cm_network, prov.mta_network, prov.open_network
+                ]:
                     wan.sendline('ip route add %s via %s' % (nw, gw))
                     wan.expect(wan.prompt)
 
@@ -66,7 +70,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             wan.disable_ipv6('eth0')
 
             if hasattr(prov, 'prov_gateway_v6'):
-                wan.sendline('ip -6 route add default via %s' % str(prov.prov_gateway_v6))
+                wan.sendline('ip -6 route add default via %s' %
+                             str(prov.prov_gateway_v6))
                 wan.expect(wan.prompt)
 
             wan.sendline('ip route')
@@ -107,9 +112,12 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 for attempt in range(3):
                     try:
                         if self.config.META_BUILD:
-                            flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+                            flash_meta_helper(board, self.config.META_BUILD,
+                                              wan, lan)
                         elif not self.config.ROOTFS and not self.config.KERNEL:
-                            flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
+                            flash_meta_helper(board,
+                                              self.env_helper.get_image(), wan,
+                                              lan)
                         break
                     except Exception as e:
                         print(e)
@@ -180,7 +188,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         # we can't have random messsages messages
         board.set_printk()
 
-        if hasattr(self.config, 'INSTALL_PKGS') and self.config.INSTALL_PKGS != "":
+        if hasattr(self.config,
+                   'INSTALL_PKGS') and self.config.INSTALL_PKGS != "":
             for pkg in self.config.INSTALL_PKGS.split(' '):
                 if len(pkg) > 0:
                     board.install_package(pkg)

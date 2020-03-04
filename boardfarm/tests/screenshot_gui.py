@@ -14,20 +14,23 @@ from pyvirtualdisplay import Display
 import pexpect
 import os
 
+
 class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
     '''Bootstrap firefox running via localproxy'''
     def start_browser(self):
         try:
-            x,y=self.config.get_display_backend_size()
+            x, y = self.config.get_display_backend_size()
             # try to start vnc server
-            self.display = Display(backend=self.config.default_display_backend,
-                                   rfbport=self.config.default_display_backend_port,
-                                   visible=0,
-                                   size=(x, y))
+            self.display = Display(
+                backend=self.config.default_display_backend,
+                rfbport=self.config.default_display_backend_port,
+                visible=0,
+                size=(x, y))
             self.display.start()
 
             if "BFT_DEBUG" in os.environ:
-                print("Connect to VNC display running on localhost:"+self.config.default_display_backend_port)
+                print("Connect to VNC display running on localhost:" +
+                      self.config.default_display_backend_port)
                 raw_input("Press any key after connecting to display....")
         except:
             # fallback xvfb
@@ -49,7 +52,9 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 assert False
         except Exception as e:
             print(e)
-            raise Exception("No reasonable http proxy found, please add one to the board config")
+            raise Exception(
+                "No reasonable http proxy found, please add one to the board config"
+            )
 
         board.enable_mgmt_gui(board, wan)
 
@@ -81,6 +86,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         except:
             pass
 
+
 class ScreenshotGUI(RunBrowserViaProxy):
     '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
     def runTest(self):
@@ -99,7 +105,8 @@ class ScreenshotGUI(RunBrowserViaProxy):
         board.expect(pexpect.TIMEOUT, timeout=10)
 
         # take screenshot
-        driver.save_screenshot(self.config.output_dir + os.sep + 'lan_portal.png')
+        driver.save_screenshot(self.config.output_dir + os.sep +
+                               'lan_portal.png')
 
         driver.close()
 

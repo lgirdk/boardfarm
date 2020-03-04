@@ -9,10 +9,12 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan
 from boardfarm.devices import prompt
 
+
 class BridgedMode(rootfs_boot.RootFSBootTest):
     '''Puts router in bridged mode (other tests may not work after running this)'''
     def runTest(self):
-        board.sendline('uci set network.lan.ifname="%s %s"' % (board.wan_iface, board.lan_gmac_iface))
+        board.sendline('uci set network.lan.ifname="%s %s"' %
+                       (board.wan_iface, board.lan_gmac_iface))
         board.expect(prompt)
         board.sendline('uci set firewall.@defaults[0]=defaults')
         board.expect(prompt)

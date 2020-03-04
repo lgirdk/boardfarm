@@ -7,6 +7,7 @@ from boardfarm.lib.common import print_bold
 from boardfarm.devices import board, wan, lan
 from boardfarm.devices import prompt
 
+
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):
     '''Determine's max number of iperf connections'''
     def runTest(self):
@@ -29,12 +30,15 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 lan.sendline(cmd % (wan_ip, con_conn))
                 failed_cons = 0
                 while (datetime.now() - tstart).seconds < (time * 2):
-                    timeout=(time*2)-(datetime.now() - tstart).seconds
-                    if 0 == lan.expect(['write failed: Connection reset by peer'] + prompt, timeout=timeout):
+                    timeout = (time * 2) - (datetime.now() - tstart).seconds
+                    if 0 == lan.expect(
+                        ['write failed: Connection reset by peer'] + prompt,
+                            timeout=timeout):
                         failed_cons += 1
                     else:
                         break
-                print_bold("For iperf with %s connections, %s failed...." % (con_conn, failed_cons))
+                print_bold("For iperf with %s connections, %s failed...." %
+                           (con_conn, failed_cons))
                 lan.expect('.*')
                 wan.expect('.*')
 
@@ -45,7 +49,8 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 if con_conn == 512:
                     self.result_message = "iPerf Concurrent passed 512 connections (failed conns = %s)" % failed_cons
             except:
-                self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (prev_conn, prev_failed)
+                self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (
+                    prev_conn, prev_failed)
                 break
 
         print(self.result_message)

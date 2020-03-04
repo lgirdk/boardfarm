@@ -41,15 +41,19 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
-        lib.common.test_msg("\n==================== Begin %s    Time: %s ====================" % (self.__class__.__name__, now_short(self._format)))
+        lib.common.test_msg(
+            "\n==================== Begin %s    Time: %s ===================="
+            % (self.__class__.__name__, now_short(self._format)))
 
     def endMarker(self):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
         result = ""
         if self.attempts:
-            result = self.result_grade + "(" + str(self.attempts) + "/"+ str(self.config.retry) + ")"
-        lib.common.test_msg("\n==================== End %s   %s   Time: %s ==================" %
-                            (self.__class__.__name__, result, now_short(self._format)))
+            result = self.result_grade + "(" + str(self.attempts) + "/" + str(
+                self.config.retry) + ")"
+        lib.common.test_msg(
+            "\n==================== End %s   %s   Time: %s =================="
+            % (self.__class__.__name__, result, now_short(self._format)))
 
     def run(self):
         self.startMarker()
@@ -85,11 +89,14 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
         for c in self.dev.board.consoles:
             c.test_to_log = self
-            c.test_prefix = 'console-%s' % str(self.dev.board.consoles.index(c) + 1)
+            c.test_prefix = 'console-%s' % str(
+                self.dev.board.consoles.index(c) + 1)
 
             if not c.isalive():
                 self.result_grade = "SKIP"
-                print("\n\n=========== Test skipped! Board is not alive... =============")
+                print(
+                    "\n\n=========== Test skipped! Board is not alive... ============="
+                )
                 self.skipTest("Board is not alive")
                 raise
 
@@ -118,13 +125,17 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     raise
                 except Exception as e:
                     retry = retry - 1
-                    if(retry > 0):
+                    if (retry > 0):
                         self.attempts = self.config.retry - retry + 1
                         traceback.print_exc(file=sys.stdout)
-                        print("\n\n----------- Test failed! Retrying in 5 seconds... -------------")
+                        print(
+                            "\n\n----------- Test failed! Retrying in 5 seconds... -------------"
+                        )
                         self.recover()
                         time.sleep(5)
-                        print("=========== Retry attempt number %s of %s =============" % (self.attempts, self.config.retry))
+                        print(
+                            "=========== Retry attempt number %s of %s ============="
+                            % (self.attempts, self.config.retry))
                     else:
                         raise
 
@@ -152,22 +163,29 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         except Exception as e:
             self.stop_time = time.time()
 
-            print("\n\n=========== Test: %s failed! running Device status check! Time: %s ===========" %
-                  (self.__class__.__name__, now_short(self._format)))
+            print(
+                "\n\n=========== Test: %s failed! running Device status check! Time: %s ==========="
+                % (self.__class__.__name__, now_short(self._format)))
             try:
-                all_devices = [self.dev.board]+[getattr(self.config, name, None) for name in self.config.devices]
+                all_devices = [self.dev.board] + [
+                    getattr(self.config, name, None)
+                    for name in self.config.devices
+                ]
                 recheck_devices = check_devices(all_devices)
             except Exception as e:
                 print(e)
-            print("\n\n=========== Test: %s failed! Device status check done! Time: %s ===========" %
-                  (self.__class__.__name__, now_short(self._format)))
+            print(
+                "\n\n=========== Test: %s failed! Device status check done! Time: %s ==========="
+                % (self.__class__.__name__, now_short(self._format)))
 
             self.logged['test_time'] = float(self.stop_time - self.start_time)
             if hasattr(self, 'expected_failure') and self.expected_failure:
                 self.result_grade = "Exp FAIL"
             else:
                 self.result_grade = "FAIL"
-            print("\n\n=========== Test failed! Running recovery Time: %s ===========" % now_short(self._format))
+            print(
+                "\n\n=========== Test failed! Running recovery Time: %s ==========="
+                % now_short(self._format))
             if e.__class__.__name__ == "TIMEOUT":
                 print(e.get_trace())
             else:
@@ -227,7 +245,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                 dev = getattr(self.config, device)
                 if hasattr(dev, 'iface_dut'):
                     device_ip = dev.get_interface_ipaddr(dev.iface_dut)
-                    hosts[str(device_ip)] = device+".boardfarm.com"
+                    hosts[str(device_ip)] = device + ".boardfarm.com"
         return hosts
 
     def execute_test_steps(self, prefix="", steps=[]):

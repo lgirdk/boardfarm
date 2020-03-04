@@ -9,6 +9,7 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board
 from boardfarm.devices import prompt
 
+
 class FirewallOFF(rootfs_boot.RootFSBootTest):
     '''Turned router firewall off.'''
     def runTest(self):
@@ -24,6 +25,7 @@ class FirewallOFF(rootfs_boot.RootFSBootTest):
         board.sendline('uci commit firewall')
         board.expect(prompt)
         board.firewall_restart()
+
 
 class FirewallON(rootfs_boot.RootFSBootTest):
     '''Turned router firewall on.'''

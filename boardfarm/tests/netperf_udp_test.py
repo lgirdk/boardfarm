@@ -10,12 +10,14 @@ from boardfarm.tests import netperf_test
 from boardfarm.devices import board, lan, wan
 from boardfarm.devices import prompt
 
+
 class NetperfUdpTest(netperf_test.NetperfTest):
     @lib.common.run_once
     def runTest(self):
         super(NetperfUdpTest, self).runTest()
 
-        self.run_netperf(lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460")
+        self.run_netperf(
+            lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460")
 
         # setup port forwarding to lan netperf server
         lan_priv_ip = lan.get_interface_ipaddr(lan.iface_dut)
@@ -28,4 +30,6 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         # send at router ip, which will forward to lan client
         wan.sendline('')
         wan.expect(prompt)
-        self.run_netperf(wan, wan_ip, "-c -C -l 30 -t UDP_STREAM -- -P ,12866 -m 1460 -M 1460")
+        self.run_netperf(
+            wan, wan_ip,
+            "-c -C -l 30 -t UDP_STREAM -- -P ,12866 -m 1460 -M 1460")

@@ -10,6 +10,7 @@ from boardfarm import lib
 from boardfarm.devices import board
 from boardfarm.devices import prompt
 
+
 class Sysupgrade(rootfs_boot.RootFSBootTest):
     '''Upgrading via sysupgrade works.'''
     def runTest(self):
@@ -35,10 +36,8 @@ class Sysupgrade(rootfs_boot.RootFSBootTest):
 
         board.sendline("cd /tmp")
         filename = board.prepare_file(self.config.SYSUPGRADE_NEW)
-        new_filename = board.tftp_get_file(board.tftp_server,
-                                                filename, 240)
-        board.sendline("sysupgrade -v /tmp/%s" %
-                new_filename)
+        new_filename = board.tftp_get_file(board.tftp_server, filename, 240)
+        board.sendline("sysupgrade -v /tmp/%s" % new_filename)
         board.expect("Restarting system", timeout=180)
 
         lib.common.wait_for_boot(board)

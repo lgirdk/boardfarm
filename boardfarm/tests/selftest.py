@@ -9,12 +9,12 @@ from boardfarm.lib import SnmpHelper
 
 from boardfarm.devices import board, lan, wan
 from boardfarm.lib import common
-
 '''
     This file can be used to add unit tests that
     tests/validate the behavior of new/modified
     components.
 '''
+
 
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
     '''
@@ -39,8 +39,8 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         text_file.write(fcontent)
         text_file.flush()
 
-        fmd5 = hashlib.md5(open(fname,'rb').read()).hexdigest()
-        print("File orginal md5sum: %s"% fmd5)
+        fmd5 = hashlib.md5(open(fname, 'rb').read()).hexdigest()
+        print("File orginal md5sum: %s" % fmd5)
 
         cmd = "cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"cat - > %s\""\
               % (fname, wan.port, wan.username, wan.ipaddr, fname)
@@ -57,20 +57,22 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         try:
             common.copy_file_to_server(cmd, wan.password, "/tmp")
         except:
-            assert 0,"copy_file_to_server failed, Test failed!!!!"
+            assert 0, "copy_file_to_server failed, Test failed!!!!"
 
         # is the destination file identical to the source file
-        wan.sendline("md5sum %s"% fname)
+        wan.sendline("md5sum %s" % fname)
         wan.expect(fmd5)
         wan.expect(wan.prompt)
 
         print("Test passed")
+
 
 class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     '''
     tests the create_session function in devices/__init__.py
     '''
     session = None
+
     def runTest(self):
         if not wan:
             msg = 'No WAN Device defined, skipping test_create_session.'
@@ -80,77 +82,80 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         from boardfarm import devices
         # this should fail, as "DebianBoxNonExistent" is not (yet) a device
         try:
-            kwargs ={
-                    'name':"wan_test_calls_fail",
-                    'ipaddr':wan.ipaddr,
-                    'port':22,
-                    'color': 'magenta'
-                    }
+            kwargs = {
+                'name': "wan_test_calls_fail",
+                'ipaddr': wan.ipaddr,
+                'port': 22,
+                'color': 'magenta'
+            }
             self.session = devices.get_device("DebianBoxNonExistent", **kwargs)
         except:
             pass
         else:
-            assert self.session is None,"Test Failed on wrong class name"
-            print("Failed to create session on wrong class name (expected) PASS")
+            assert self.session is None, "Test Failed on wrong class name"
+            print(
+                "Failed to create session on wrong class name (expected) PASS")
 
         # this must fail, as "169.254.12.18" is not a valid ip
         try:
-            kwargs ={
-                    'name':"wan_test_ip_fail",
-                    'ipaddr':"169.254.12.18",
-                    'port':22,
-                    'color': 'cyan'
-                    }
+            kwargs = {
+                'name': "wan_test_ip_fail",
+                'ipaddr': "169.254.12.18",
+                'port': 22,
+                'color': 'cyan'
+            }
             self.session = devices.get_device("DebianBox", **kwargs)
         except:
             pass
         else:
-            assert self.session is None,"Test Failed on wrong IP"
+            assert self.session is None, "Test Failed on wrong IP"
             print("Failed to create session on wrong IP (expected) PASS")
 
         # this must fail, as 50 is not a valid port
         try:
-            kwargs ={
-                    'name':"wan_test_port_fail",
-                    'ipaddr':wan.ipaddr,
-                    'port':50,
-                    'color': 'red'
-                    }
+            kwargs = {
+                'name': "wan_test_port_fail",
+                'ipaddr': wan.ipaddr,
+                'port': 50,
+                'color': 'red'
+            }
             self.session = devices.get_device("DebianBox", **kwargs)
         except:
             pass
         else:
-            assert self.session is None,"Test Failed on wrong port"
+            assert self.session is None, "Test Failed on wrong port"
             print("Failed to create session on wrong port (expected) PASS")
 
         # this must fail, close but no cigar
         try:
-            kwargs ={
-                    'name':"wan_test_type_fail",
-                    'ipaddr':wan.ipaddr,
-                    'port':50,
-                    'color': 'red'
-                    }
+            kwargs = {
+                'name': "wan_test_type_fail",
+                'ipaddr': wan.ipaddr,
+                'port': 50,
+                'color': 'red'
+            }
             self.session = devices.get_device("debina", **kwargs)
         except:
             pass
         else:
-            assert self.session is None,"Test Failed on misspelled class name"
-            print("Failed to create session on misspelled class name (expected) PASS")
+            assert self.session is None, "Test Failed on misspelled class name"
+            print(
+                "Failed to create session on misspelled class name (expected) PASS"
+            )
 
         # this should pass
         try:
-            kwargs ={
-                    'name':"correct_wan_parms",
-                    'ipaddr':wan.ipaddr,
-                    'port': wan.port,
-                    'color': 'yellow'
-                    }
+            kwargs = {
+                'name': "correct_wan_parms",
+                'ipaddr': wan.ipaddr,
+                'port': wan.port,
+                'color': 'yellow'
+            }
             self.session = devices.get_device("debian", **kwargs)
         except:
             assert 0, "Failed to create session, Test FAILED!"
         else:
-            assert self.session is not None,"Test Failed on correct paramters!!"
+            assert self.session is not None, "Test Failed on correct paramters!!"
 
         print("Session created successfully")
 
@@ -180,6 +185,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         if self.session is not None:
             self.session.sendline("exit")
 
+
 class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     '''
     tests the linux functions moved to devices/linux.py
@@ -188,7 +194,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         from boardfarm.devices import lan, debian, linux
         if lan.model == "debian":
             # check that lan is derived from LinuxDevice
-            assert(issubclass(debian.DebianBox, linux.LinuxDevice))
+            assert (issubclass(debian.DebianBox, linux.LinuxDevice))
 
         #get the mac address of the interface
         lan_mac = lan.get_interface_macaddr(lan.iface_dut)
@@ -238,14 +244,13 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         text_file.flush()
 
         fmd5 = hashlib.md5(open(text_file.name, 'rb').read()).hexdigest()
-        print("File orginal md5sum: %s"% fmd5)
+        print("File orginal md5sum: %s" % fmd5)
         print('copying file to lan at /tmp/dst.txt')
         lan.copy_file_to_server(text_file.name, "/tmp/dst.txt")
         print('Copy Done. Verify the integrity of the file')
         lan.sendline('md5sum /tmp/dst.txt')
         lan.expect(fmd5)
         lan.expect(lan.prompt)
-
         '''FUnctions moved from openwrt to linux '''
         #Wait until network interfaces have IP Addresses
         board.wait_for_network()
@@ -262,14 +267,16 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
 
         #Get the total number of connections in the network
         nw_count = board.get_nf_conntrack_conn_count()
-        assert nw_count is not None , 'connections are empty'
-        print('Get the total number of connections in the network{}'.format(nw_count))
+        assert nw_count is not None, 'connections are empty'
+        print('Get the total number of connections in the network{}'.format(
+            nw_count))
 
         #Getting the DNS server upstream
         ip_addr = board.get_dns_server_upstream()
         assert ip_addr is not None, 'Getting nameserver ip is None'
         print("Got the DNS server upstream{}".format(ip_addr))
         print('Test Passed')
+
 
 class SnmpMibsUnitTest(object):
     """
@@ -281,24 +288,29 @@ class SnmpMibsUnitTest(object):
         BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and
                         mibs/oid details
     """
-    error_mibs = ['SsnmpEngineMaxMessageSize', # mispelled MUST fail
-                  'nonExistenMib',             # this one MUST fail
-                  'ifCounterDiscontinuityTimeQ']  # mispelled MUST fail
+    error_mibs = [
+        'SsnmpEngineMaxMessageSize',  # mispelled MUST fail
+        'nonExistenMib',  # this one MUST fail
+        'ifCounterDiscontinuityTimeQ'
+    ]  # mispelled MUST fail
 
-    mibs = ['docsDevSwAdminStatus',
-            'snmpEngineMaxMessageSize',
-            error_mibs[0],
-            'docsDevServerDhcp',
-            'ifCounterDiscontinuityTime',
-            error_mibs[1],
-            'docsBpi2CmtsMulticastObjects',
-            error_mibs[2]]
+    mibs = [
+        'docsDevSwAdminStatus', 'snmpEngineMaxMessageSize', error_mibs[0],
+        'docsDevServerDhcp', 'ifCounterDiscontinuityTime', error_mibs[1],
+        'docsBpi2CmtsMulticastObjects', error_mibs[2]
+    ]
 
-    mib_files      = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'] # this is the list of mib/txt files to be compiled
-    srcDirectories = ['/tmp/boardfarm-docsis/mibs'] # this needs to point to the mibs directory location
-    snmp_obj       = None  # will hold an instance of the  SnmpMibs class
+    mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'
+                 ]  # this is the list of mib/txt files to be compiled
+    srcDirectories = ['/tmp/boardfarm-docsis/mibs'
+                      ]  # this needs to point to the mibs directory location
+    snmp_obj = None  # will hold an instance of the  SnmpMibs class
 
-    def __init__(self,mibs_location=None, files=None, mibs=None, err_mibs=None):
+    def __init__(self,
+                 mibs_location=None,
+                 files=None,
+                 mibs=None,
+                 err_mibs=None):
         """
         Takes:
             mibs_location:  where the .mib files are located (can be a list of dirs)
@@ -316,18 +328,23 @@ class SnmpMibsUnitTest(object):
 
         for d in self.srcDirectories:
             if not os.path.exists(str(d)):
-                msg = 'No mibs directory {} found test_SnmpHelper.'.format(str(self.srcDirectories))
+                msg = 'No mibs directory {} found test_SnmpHelper.'.format(
+                    str(self.srcDirectories))
                 raise Exception(msg)
 
         if files:
             self.mib_files = files
 
-        self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories)
+        self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(
+            self.mib_files, self.srcDirectories)
         print("Using class singleton: %r" % self.snmp_obj)
 
         # the SAME object should be returned, NOT A NEW/DIFFERENT ONE!!!!!
-        assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(self.mib_files, self.srcDirectories), "SnmpHelper.SnmpMibs.get_mib_parser returned a NEW/different object. FAILED"
-        print("SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
+        assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(
+            self.mib_files, self.srcDirectories
+        ), "SnmpHelper.SnmpMibs.get_mib_parser returned a NEW/different object. FAILED"
+        print(
+            "SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
 
         # the same must be true when using the property method
         assert self.snmp_obj is SnmpHelper.SnmpMibs.default_mibs, "SnmpHelper.SnmpMibs.default_mibs returned a NEW/different object. FAILED"
@@ -347,7 +364,8 @@ class SnmpMibsUnitTest(object):
         """
 
         if 'y' in self.snmp_obj.dbg:
-            print("The SNMP mib_dict contains %s keys." % len(self.snmp_obj.mib_dict))
+            print("The SNMP mib_dict contains %s keys." %
+                  len(self.snmp_obj.mib_dict))
             print("First 5 mib_dict keys and values alphabetically:")
             for k in sorted(self.snmp_obj.mib_dict)[:5]:
                 print('%s: %s' % (k, self.snmp_obj.mib_dict[k]))
@@ -356,7 +374,9 @@ class SnmpMibsUnitTest(object):
         self.mibs1 = self.mibs[:]
         self.error_mibs1 = self.error_mibs[:]
 
-        print("==================================================================================")
+        print(
+            "=================================================================================="
+        )
         print("Testing getting a mib oid with method off the parser obj")
         for i in self.mibs:
             try:
@@ -366,17 +386,24 @@ class SnmpMibsUnitTest(object):
             except Exception as e:
                 print(e)
                 # we shoudl NOT find only the errored mibs, all other mibs MUST be found
-                assert(i in self.error_mibs), "Failed to get oid for mib: " + i
+                assert (
+                    i in self.error_mibs), "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
                 if (self.error_mibs is not None):
                     self.error_mibs.remove(i)
 
         # the unit test must find all the errored mibs!
         if (self.error_mibs is not None):
-            assert (self.error_mibs == []), "The test missed the following mibs: %s"%str(self.error_mibs)
+            assert (
+                self.error_mibs == []
+            ), "The test missed the following mibs: %s" % str(self.error_mibs)
 
-        print("==================================================================================")
-        print("Testing getting a mib oid with public method (without having to get the obj first)")
+        print(
+            "=================================================================================="
+        )
+        print(
+            "Testing getting a mib oid with public method (without having to get the obj first)"
+        )
         from boardfarm.lib.SnmpHelper import get_mib_oid
         for i in self.mibs1:
             try:
@@ -386,16 +413,20 @@ class SnmpMibsUnitTest(object):
             except Exception as e:
                 print(e)
                 # we shoudl NOT find only the errored mibs, all other mibs MUST be found
-                assert(i in self.error_mibs1), "Failed to get oid for mib: " + i
+                assert (
+                    i in self.error_mibs1), "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
                 if (self.error_mibs1 is not None):
                     self.error_mibs1.remove(i)
 
         # the unit test must find all the errored mibs!
         if (self.error_mibs1 is not None):
-            assert (self.error_mibs1 == []), "The test missed the following mibs: %s"%str(self.error_mibs1)
+            assert (
+                self.error_mibs1 == []
+            ), "The test missed the following mibs: %s" % str(self.error_mibs1)
 
         return True
+
 
 class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
     '''
@@ -404,7 +435,6 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
     2. performs an snmp get from the lan to the wan
        using hte compiled oids
     '''
-
     def runTest(self):
 
         from boardfarm.lib.installers import install_snmp, install_snmpd
@@ -422,14 +452,12 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                      linux_mibs[1], wrong_mibs[1],\
                      linux_mibs[2], wrong_mibs[2]]
 
-
-        unit_test = SnmpMibsUnitTest(mibs_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                                     os.pardir,
-                                                                     'resources',
-                                                                     'mibs')),
-                                     files = ['SNMPv2-MIB'],
-                                     mibs = test_mibs,
-                                     err_mibs = wrong_mibs)
+        unit_test = SnmpMibsUnitTest(mibs_location=os.path.abspath(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         os.pardir, 'resources', 'mibs')),
+                                     files=['SNMPv2-MIB'],
+                                     mibs=test_mibs,
+                                     err_mibs=wrong_mibs)
         assert (unit_test.unitTest())
 
         install_snmpd(wan)
@@ -484,17 +512,21 @@ class selftest_test_retry(rootfs_boot.RootFSBootTest):
 
         assert runs == self.fail_on, "Planned failure of test"
 
+
 class selftest_test_retry_1(selftest_test_retry):
     '''Fails 1 times before passing, to test the retry function'''
-    fail_on=1
+    fail_on = 1
+
 
 class selftest_test_retry_2(selftest_test_retry):
     '''Fails 2 times before passing, to test the retry function'''
-    fail_on=2
+    fail_on = 2
+
 
 class selftest_test_retry_3(selftest_test_retry):
     '''Fails 3 times before passing, to test the retry function'''
-    fail_on=3
+    fail_on = 3
+
 
 class selftest_always_fail(rootfs_boot.RootFSBootTest):
     '''This test always fails, for testing bft core code'''
@@ -504,6 +536,7 @@ class selftest_always_fail(rootfs_boot.RootFSBootTest):
     def runTest(self):
         print("Failing...")
         assert False
+
 
 class selftest_err_injection(rootfs_boot.RootFSBootTest):
     """Simple harness to tests that the error injection intercepts
@@ -526,7 +559,6 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         }
     }
     """
-
     def simple_bool_return(self):
         return True
 
@@ -534,7 +566,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         return dev.get_interface_ipaddr(dev.iface_dut)
 
     def testSetup(self):
-        from boardfarm.config import get_err_injection_dict # TO DO: this should come from ConfigHelper
+        from boardfarm.config import get_err_injection_dict  # TO DO: this should come from ConfigHelper
         # this si a direct ref to the dict  (not a copy!!!)
         self.config.err_injection_dict = get_err_injection_dict()
 
@@ -558,15 +590,16 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         print("simple_bool_return real value PASS")
 
         addr = self.get_dev_ip_address(lan)
-        assert addr == self.config.err_injection_dict[self.cls_name]['get_dev_ip_address'], "spoofed value not received"
+        assert addr == self.config.err_injection_dict[
+            self.cls_name]['get_dev_ip_address'], "spoofed value not received"
         print("received spoofed address: {}".format(str(addr)))
         print("get_dev_ip_address spoofed PASS")
-
 
         addr = self.get_dev_ip_address(lan)
         try:
             assert addr == lan.get_interface_ipaddr(lan.iface_dut)
-            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(str(addr)))
+            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(
+                str(addr)))
         except:
             print("get_dev_ip_address: {}, EXPECTED FAILURE".format(str(addr)))
             expected_faulures += 1
@@ -574,13 +607,15 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         assert expected_faulures, "get_dev_ip_address spoofed with EXPECTED FAILURE PASS"
 
         addr = self.get_dev_ip_address(lan)
-        assert addr == lan.get_interface_ipaddr(lan.iface_dut), "spoofed value not received"
+        assert addr == lan.get_interface_ipaddr(
+            lan.iface_dut), "spoofed value not received"
         print("received real address: {}".format(addr))
         print("get_dev_ip_address real PASS")
 
         # just  for the sake of this test we check that all the errors have been injected
         # this may not be the case a real world scenario
-        assert not self.config.err_injection_dict[self.cls_name], "Not all errors were injected"
+        assert not self.config.err_injection_dict[
+            self.cls_name], "Not all errors were injected"
         print("all errors have been injected")
 
-        print("%s: PASS"%(self.cls_name))
+        print("%s: PASS" % (self.cls_name))

@@ -9,6 +9,7 @@ import pexpect
 from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan, wan
 
+
 class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
     '''Captures traces for WAN and LAN devices'''
 
@@ -16,7 +17,8 @@ class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
 
     def runTest(self):
         for d in [wan, lan]:
-            d.sendline('tcpdump -i %s -w /tmp/tcpdump.pcap %s' % (d.iface_dut, self.opts))
+            d.sendline('tcpdump -i %s -w /tmp/tcpdump.pcap %s' %
+                       (d.iface_dut, self.opts))
 
         board.expect(pexpect.TIMEOUT, timeout=15)
 
@@ -24,6 +26,7 @@ class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
             d.sendcontrol('c')
 
         # TODO: copy dumps to results/ dir for logging
+
 
 class TCPDumpWANandLANfilterICMP(TCPDumpWANandLAN):
     opts = "icmp"

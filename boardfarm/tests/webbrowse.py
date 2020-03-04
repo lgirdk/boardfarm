@@ -11,32 +11,34 @@ from boardfarm.devices import board, lan
 from boardfarm.devices import prompt
 from boardfarm.lib import installers
 
+
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):
     '''Created light web traffic.'''
     def runTest(self):
         installers.apt_install(lan, "wget")
 
-        urls = ['www.amazon.com',
-                'www.apple.com',
-                'www.baidu.com',
-                'www.bing.com',
-                'www.cnn.com',
-                'www.ebay.com',
-                'www.facebook.com',
-                'www.google.com',
-                'www.imdb.com',
-                'www.imgur.com',
-                'www.instagram.com',
-                'www.linkedin.com',
-                'www.microsoft.com',
-                'www.nbcnews.com',
-                'www.netflix.com',
-                'www.pinterest.com',
-                'www.reddit.com',
-                'www.twitter.com',
-                'www.wikipedia.org',
-                'www.yahoo.com',
-                ]
+        urls = [
+            'www.amazon.com',
+            'www.apple.com',
+            'www.baidu.com',
+            'www.bing.com',
+            'www.cnn.com',
+            'www.ebay.com',
+            'www.facebook.com',
+            'www.google.com',
+            'www.imdb.com',
+            'www.imgur.com',
+            'www.instagram.com',
+            'www.linkedin.com',
+            'www.microsoft.com',
+            'www.nbcnews.com',
+            'www.netflix.com',
+            'www.pinterest.com',
+            'www.reddit.com',
+            'www.twitter.com',
+            'www.wikipedia.org',
+            'www.yahoo.com',
+        ]
         #urls = 2 * urls  # browse more
         random.shuffle(urls)
         user = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'

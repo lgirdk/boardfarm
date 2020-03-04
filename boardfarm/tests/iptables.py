@@ -4,17 +4,20 @@ import os
 
 from boardfarm.devices import board
 
+
 class IPTablesDump(rootfs_boot.RootFSBootTest):
     '''Dumps all IPTables rules with stats'''
     def runTest(self):
         pp = board.get_pp_dev()
-        with open(os.path.join(self.config.output_dir, 'iptables.log'), 'w') as ipt_log:
+        with open(os.path.join(self.config.output_dir, 'iptables.log'),
+                  'w') as ipt_log:
             for tbl in ['filter', 'nat', 'mangle', 'raw', 'security']:
                 pp.sendline('iptables -n -t %s -L -v; echo DONE' % tbl)
                 pp.expect_exact('echo DONE')
                 pp.expect_exact('DONE')
                 ipt_log.write(pp.before)
                 pp.expect(pp.prompt)
+
 
 class IPTablesFlushMangle(rootfs_boot.RootFSBootTest):
     '''Flushes mangle table'''

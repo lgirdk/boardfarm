@@ -9,11 +9,13 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, wan
 from boardfarm.devices import prompt
 
+
 class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
     '''Runs SNMP sysDescr on WAN iface'''
-
     def runTest(self):
-        wan.sendline('apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install snmp')
+        wan.sendline(
+            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install snmp'
+        )
         wan.expect(prompt)
 
         wan_ip = board.get_interface_ipaddr(board.wan_iface)

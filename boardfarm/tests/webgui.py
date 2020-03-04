@@ -9,12 +9,14 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan
 from boardfarm.devices import prompt
 
+
 class Webserver_Running(rootfs_boot.RootFSBootTest):
     '''Router webserver is running.'''
     def runTest(self):
         board.sendline('\nps | grep -v grep | grep http')
         board.expect('uhttpd')
         board.expect(prompt)
+
 
 class WebGUI_Access(rootfs_boot.RootFSBootTest):
     '''Router webpage available to LAN-device at http://192.168.1.1/.'''
@@ -28,6 +30,7 @@ class WebGUI_Access(rootfs_boot.RootFSBootTest):
         lan.expect('</html>')
         lan.expect(prompt)
 
+
 class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
     '''Router webpage at cgi-bin/luci contains no stack traceback.'''
     def runTest(self):
@@ -35,6 +38,7 @@ class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
         board.expect('cgi-bin/luci')
         board.expect(prompt)
         assert 'traceback' not in board.before
+
 
 class Webserver_Download(rootfs_boot.RootFSBootTest):
     '''Downloaded small file from router webserver in reasonable time.'''
@@ -50,6 +54,7 @@ class Webserver_Download(rootfs_boot.RootFSBootTest):
         board.sendline('\nrm -f /www/deleteme.txt')
         board.expect('deleteme.txt')
         board.expect(prompt)
+
     def recover(self):
         board.sendcontrol('c')
         lan.sendcontrol('c')

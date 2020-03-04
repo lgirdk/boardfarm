@@ -9,12 +9,14 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board
 from boardfarm.devices import prompt
 
+
 class IGMPv3_Running(rootfs_boot.RootFSBootTest):
     '''IGMP Proxy daemon mcproxy is up and running.'''
     def runTest(self):
         board.sendline('\nps | grep mcproxy')
         board.expect('/usr/sbin/mcproxy -f /etc/mcproxy.conf', timeout=5)
         board.expect(prompt)
+
 
 class IGMPv3_Config(rootfs_boot.RootFSBootTest):
     '''IGMP Proxy daemon mcproxy config is set correctly.'''
@@ -29,6 +31,7 @@ class IGMPv3_Config(rootfs_boot.RootFSBootTest):
         board.expect('protocol IGMPv3;', timeout=5)
         board.expect('pinstance mcproxy1: "eth0" ==> "br-lan";')
         board.expect(prompt)
+
 
 class IGMPv3_StopStart(rootfs_boot.RootFSBootTest):
     '''IGMP Proxy daemon mcproxy can be stopped and started without rebooting.'''

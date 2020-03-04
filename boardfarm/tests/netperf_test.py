@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board, lan, wan
 from boardfarm.devices import prompt
 
+
 def install_netperf(device):
     # Check version
     device.sendline('\nnetperf -V')
@@ -24,9 +25,9 @@ def install_netperf(device):
         device.sendline('apt-get install netperf')
         device.expect(device.prompt, timeout=120)
 
+
 class NetperfTest(rootfs_boot.RootFSBootTest):
     '''Setup Netperf and Run Throughput.'''
-
     @lib.common.run_once
     def lan_setup(self):
         super(NetperfTest, self).lan_setup()
@@ -60,7 +61,9 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
             device.expect('TEST.*\r\n')
 
     def run_netperf_parse(self, device, timeout=60):
-        device.expect('[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+.[0-9]+\s+([0-9]+.[0-9]+)', timeout=timeout)
+        device.expect(
+            '[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+.[0-9]+\s+([0-9]+.[0-9]+)',
+            timeout=timeout)
         ret = device.match.group(1)
         lib.common.test_msg("Speed was %s 10^6bits/sec" % ret)
         return float(ret)
@@ -82,29 +85,36 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
         speed = self.run_netperf(lan, "%s -c -C -l 30" % wan.gw)
 
         board.sendcontrol('c')
-        board.expect('Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n',timeout=60)
+        board.expect(
+            'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n',
+            timeout=60)
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
         lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
         self.kill_netserver(wan)
 
-        self.result_message = "Setup Netperf and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)" % (speed, avg_cpu)
+        self.result_message = "Setup Netperf and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)" % (
+            speed, avg_cpu)
+
 
 ###########################
+
 
 def run_netperf_tcp(device, run_time, pkt_size, direction="up"):
 
     if direction == "up":
-        cmd = "netperf -H %s -c -C -l %s -- -m %s -M %s -D" % (wan.gw, run_time, pkt_size, pkt_size)
+        cmd = "netperf -H %s -c -C -l %s -- -m %s -M %s -D" % (
+            wan.gw, run_time, pkt_size, pkt_size)
     else:
-        cmd = "netperf -H %s -c -C -l %s -t TCP_MAERTS -- -m %s -M %s -D" % (wan.gw, run_time, pkt_size, pkt_size)
+        cmd = "netperf -H %s -c -C -l %s -t TCP_MAERTS -- -m %s -M %s -D" % (
+            wan.gw, run_time, pkt_size, pkt_size)
     device.sendline(cmd)
     device.expect('TEST.*\r\n')
-    device.expect(device.prompt, timeout=run_time+4)
+    device.expect(device.prompt, timeout=run_time + 4)
+
 
 class Netperf_UpTCP256(rootfs_boot.RootFSBootTest):
     '''Netperf upload throughput (TCP, packets size 256 Bytes).'''
-
     def runTest(self):
         lib.common.test_msg("Starting netserver on wan...")
         wan.sendline('/usr/bin/netserver')
@@ -112,6 +122,7 @@ class Netperf_UpTCP256(rootfs_boot.RootFSBootTest):
         run_netperf_tcp(device=lan, run_time=15, pkt_size=256)
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
+
 
 class Netperf_UpTCP512(rootfs_boot.RootFSBootTest):
     '''Netperf upload throughput (TCP, packets size 512 Bytes).'''
@@ -123,6 +134,7 @@ class Netperf_UpTCP512(rootfs_boot.RootFSBootTest):
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
 
+
 class Netperf_UpTCP1024(rootfs_boot.RootFSBootTest):
     '''Netperf upload throughput (TCP, packets size 1024 Bytes).'''
     def runTest(self):
@@ -133,15 +145,20 @@ class Netperf_UpTCP1024(rootfs_boot.RootFSBootTest):
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
 
+
 class Netperf_DownTCP256(rootfs_boot.RootFSBootTest):
     '''Netperf download throughput (TCP, packets size 256 Bytes).'''
     def runTest(self):
         lib.common.test_msg("Starting netserver on wan...")
         wan.sendline('/usr/bin/netserver')
         wan.expect("Starting netserver with host")
-        run_netperf_tcp(device=lan, run_time=15, pkt_size=256, direction="down")
+        run_netperf_tcp(device=lan,
+                        run_time=15,
+                        pkt_size=256,
+                        direction="down")
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
+
 
 class Netperf_DownTCP512(rootfs_boot.RootFSBootTest):
     '''Netperf download throughput (TCP, packets size 512 Bytes).'''
@@ -149,9 +166,13 @@ class Netperf_DownTCP512(rootfs_boot.RootFSBootTest):
         lib.common.test_msg("Starting netserver on wan...")
         wan.sendline('/usr/bin/netserver')
         wan.expect("Starting netserver with host")
-        run_netperf_tcp(device=lan, run_time=15, pkt_size=512, direction="down")
+        run_netperf_tcp(device=lan,
+                        run_time=15,
+                        pkt_size=512,
+                        direction="down")
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
+
 
 class Netperf_DownTCP1024(rootfs_boot.RootFSBootTest):
     '''Netperf download throughput (TCP, packets size 1024 Bytes).'''
@@ -159,7 +180,9 @@ class Netperf_DownTCP1024(rootfs_boot.RootFSBootTest):
         lib.common.test_msg("Starting netserver on wan...")
         wan.sendline('/usr/bin/netserver')
         wan.expect("Starting netserver with host")
-        run_netperf_tcp(device=lan, run_time=15, pkt_size=1024, direction="down")
+        run_netperf_tcp(device=lan,
+                        run_time=15,
+                        pkt_size=1024,
+                        direction="down")
         wan.sendline("kill -9 `pidof netserver`")
         wan.expect(prompt)
-

@@ -13,6 +13,7 @@ from boardfarm.devices import board, wan, lan, wlan
 from boardfarm.devices import prompt
 from boardfarm.lib.common import run_once
 
+
 class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
     '''Set IPv6 addresses and default routes for router and devices.'''
     @run_once
@@ -43,7 +44,8 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         lan.sendline('ip -6 route add 4aaa::1 dev %s' % lan.iface_dut)
         lan.expect(prompt)
-        lan.sendline('ip -6 route add default via 4aaa::1 dev %s' % lan.iface_dut)
+        lan.sendline('ip -6 route add default via 4aaa::1 dev %s' %
+                     lan.iface_dut)
         lan.expect(prompt)
         if 'No route to host' in lan.before:
             raise Exception('Error setting ivp6 routes')
@@ -53,7 +55,8 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
         wan.sendline('ip -6 route add 5aaa::1 dev %s' % wan.iface_dut)
         wan.expect(prompt)
-        wan.sendline('ip -6 route add default via 5aaa::1 dev %s' % wan.iface_dut)
+        wan.sendline('ip -6 route add default via 5aaa::1 dev %s' %
+                     wan.iface_dut)
         wan.expect(prompt)
         if 'No route to host' in wan.before:
             raise Exception('Error setting ivp6 routes')

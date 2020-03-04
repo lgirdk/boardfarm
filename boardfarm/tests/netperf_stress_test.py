@@ -13,10 +13,12 @@ from boardfarm.tests.netperf_test import install_netperf
 from boardfarm.devices import board, lan, wan
 from boardfarm.devices import prompt
 
+
 class NetperfStressTest(netperf_test.NetperfTest):
     @lib.common.run_once
     def wan_setup(self):
         install_netperf(wan)
+
     @lib.common.run_once
     def lan_setup(self):
         install_netperf(lan)
@@ -34,11 +36,12 @@ class NetperfStressTest(netperf_test.NetperfTest):
 
         board.sendline('mpstat -P ALL %s 1' % run_time)
         print("\nStarting %s netperf tests in parallel." % num_conn)
-        opts = '192.168.0.1 -c -C -l %s -- -m %s -M %s -D' % (run_time, pkt_size, pkt_size)
+        opts = '192.168.0.1 -c -C -l %s -- -m %s -M %s -D' % (
+            run_time, pkt_size, pkt_size)
         for i in range(0, num_conn):
             self.run_netperf_cmd_nowait(lan, opts)
         # Let netperf tests run
-        time.sleep(run_time*1.5)
+        time.sleep(run_time * 1.5)
 
         board.expect('Average:\s+all.*\s+([0-9]+.[0-9]+)\r\n')
         idle_cpu = board.match.group(1)
@@ -71,7 +74,8 @@ class NetperfStressTest(netperf_test.NetperfTest):
         board.expect('([0-9]+)\r\n')
         n = board.match.group(1)
 
-        print("Stopped with %s connections, %s netperf's still running" % (conns_parsed, n))
+        print("Stopped with %s connections, %s netperf's still running" %
+              (conns_parsed, n))
         print("Mbits passed was %s" % bandwidth)
 
         # Record number of bytes and packets sent through interfaces

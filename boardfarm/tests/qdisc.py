@@ -8,10 +8,12 @@
 from boardfarm.tests import rootfs_boot
 from boardfarm.devices import board
 
+
 class DelQdisc(rootfs_boot.RootFSBootTest):
     '''Tries to remove qdisc root node'''
     def runTest(self):
         board.sendline('tc qdisc del dev eth0 root')
-        i = board.expect(['RTNETLINK answers: No such file or directory'] + board.prompt)
+        i = board.expect(['RTNETLINK answers: No such file or directory'] +
+                         board.prompt)
         if i == 0:
             raise Exception("Failed to delete all qdiscs")

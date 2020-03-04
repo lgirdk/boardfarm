@@ -9,6 +9,7 @@ from boardfarm.tests import rootfs_boot
 from boardfarm.devices import lan
 from boardfarm.devices import prompt
 
+
 class LanDevPing6Router(rootfs_boot.RootFSBootTest):
     '''Device on LAN can ping6 router.'''
     def runTest(self):
@@ -18,6 +19,7 @@ class LanDevPing6Router(rootfs_boot.RootFSBootTest):
         n = int(lan.match.group(1))
         lan.expect(prompt)
         assert n > 0
+
 
 class LanDevPing6WanDev(rootfs_boot.RootFSBootTest):
     '''Device on LAN can ping6 through router.'''

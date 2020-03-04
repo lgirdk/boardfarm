@@ -6,6 +6,7 @@ from boardfarm.lib.installers import install_hping3
 from boardfarm.devices import board, wan, lan
 from boardfarm.devices import prompt
 
+
 class hping3_basic_udp(rootfs_boot.RootFSBootTest):
     '''Floods hping3, creating lots of firewall entries in router'''
 
@@ -21,12 +22,14 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         board.collect_stats(stats=['mpstat'])
 
         # dest ip and port are fixed, random src port, fixed src ip, 100 us between
-        lan.sendline('hping3 -2 -c %s -d 120 -S -w 64 -p 445 -i %s %s' % (self.conns, self.conn_rate, wan_ip))
+        lan.sendline('hping3 -2 -c %s -d 120 -S -w 64 -p 445 -i %s %s' %
+                     (self.conns, self.conn_rate, wan_ip))
         lan.expect('HPING')
 
         self.max_conns = 0
         for not_used in range(10):
-            self.max_conns = max(self.max_conns, board.get_nf_conntrack_conn_count())
+            self.max_conns = max(self.max_conns,
+                                 board.get_nf_conntrack_conn_count())
             board.get_proc_vmstat()
             lan.expect(pexpect.TIMEOUT, timeout=3)
             board.expect(pexpect.TIMEOUT, timeout=3)

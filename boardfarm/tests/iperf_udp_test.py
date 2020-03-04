@@ -18,9 +18,9 @@ conns = 5
 opts = "-t %s -P %s -u -M 1400" % (time, conns)
 #opts="-t %s -P %s -N -m -M 100" % (time, conns)
 
+
 class iPerfUDPTest(rootfs_boot.RootFSBootTest):
     '''iPerf from LAN to WAN'''
-
     @lib.common.run_once
     def wan_setup(self):
         installers.install_iperf(wan)
@@ -45,13 +45,15 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
         if target is None:
             target = self.forward_ip()
 
-        client.sendline('iperf %s -c %s %s | grep -v SUM' % (self.client_opts(), target, opts))
+        client.sendline('iperf %s -c %s %s | grep -v SUM' %
+                        (self.client_opts(), target, opts))
         client.expect('Client connecting to')
 
     def parse_iperf(self, client, connections=conns, t=time):
         rate = 0.0
         for i in range(0, connections):
-            m = client.expect([r' (\d\S+) Mbits/sec', r'(\d\S+) Kbits/sec' ], timeout=t+30)
+            m = client.expect([r' (\d\S+) Mbits/sec', r'(\d\S+) Kbits/sec'],
+                              timeout=t + 30)
             if m == 0:
                 rate += float(client.match.group(1))
             elif m == 1:
@@ -90,7 +92,8 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
 
     def mpstat_ok(self):
         board.sendline('mpstat -V')
-        if board.expect(['sysstat version', 'BusyBox', 'not found'], timeout=5) == 0:
+        if board.expect(['sysstat version', 'BusyBox', 'not found'],
+                        timeout=5) == 0:
             mpstat_present = True
         else:
             mpstat_present = False
@@ -111,7 +114,8 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
 
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(
+                r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
@@ -133,9 +137,9 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
         client.expect(prompt)
         self.kill_iperf(server)
 
+
 class iPerfUDPTestWLAN(iPerfUDPTest):
     '''iPerf from LAN to WAN over Wifi'''
-
     def runTest(self):
         if not wlan:
             self.skipTest("skipping test no wlan")
@@ -143,9 +147,9 @@ class iPerfUDPTestWLAN(iPerfUDPTest):
         wlan.expect(prompt)
         super(iPerfUDPTestWLAN, self).runTest(client=wlan, server=wan)
 
+
 class iPerfUDPTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPTest):
     '''iPerf IPV6 from LAN to WAN'''
-
     def forward_ip(self):
         return "5aaa::6"
 
@@ -159,9 +163,9 @@ class iPerfUDPTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPTest):
         ipv6_setup.Set_IPv6_Addresses.runTest(self)
         iPerfUDPTest.runTest(self)
 
+
 class iPerfUDPNonRoutedTest(iPerfUDPTest):
     '''iPerf from LAN to Router'''
-
     def forward_ip(self):
         return board.get_interface_ipaddr(board.lan_iface)
 
@@ -171,14 +175,15 @@ class iPerfUDPNonRoutedTest(iPerfUDPTest):
     def recover(self):
         super(iPerfUDPNonRoutedTest, self).recover(client=lan, server=board)
 
+
 class iPerfUDPReverseTest(iPerfUDPTest):
     '''iPerf from WAN to LAN'''
-
     def runTest(self, client=wan, server=lan):
         mpstat_present = self.mpstat_ok()
 
         # this is running an arbitrary time, we will ctrl-c and get results
-        self.run_iperf_server(server, opts=self.server_opts_reverse(node=server))
+        self.run_iperf_server(server,
+                              opts=self.server_opts_reverse(node=server))
         if mpstat_present:
             board.sendline('mpstat -P ALL 10000 1')
             board.expect('Linux')
@@ -186,7 +191,8 @@ class iPerfUDPReverseTest(iPerfUDPTest):
         rate = self.parse_iperf(client)
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(
+                r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
@@ -208,9 +214,9 @@ class iPerfUDPReverseTest(iPerfUDPTest):
         client.expect(prompt)
         self.kill_iperf(server)
 
+
 class iPerfUDPReverseTestWLAN(iPerfUDPReverseTest):
     '''iPerf from WAN to LAN over Wifi'''
-
     def runTest(self):
         if not wlan:
             self.skipTest("skipping test no wlan")
@@ -221,7 +227,9 @@ class iPerfUDPReverseTestWLAN(iPerfUDPReverseTest):
     def recover(self):
         super(iPerfUDPReverseTestWLAN, self).recover(client=wan, server=wlan)
 
-class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPReverseTest):
+
+class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses,
+                              iPerfUDPReverseTest):
     '''iPerf IPV6 from WAN to LAN'''
     def reverse_ip(self):
         return "4aaa::6"
@@ -236,6 +244,7 @@ class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPReverseTest
     def runTest(self):
         ipv6_setup.Set_IPv6_Addresses.runTest(self)
         iPerfUDPReverseTest.runTest(self)
+
 
 class iPerfUDPBiDirTest(iPerfUDPTest):
     '''iPerf from LAN to/from WAN'''
@@ -255,7 +264,8 @@ class iPerfUDPBiDirTest(iPerfUDPTest):
         rate += float(self.parse_iperf(node2))
         if mpstat_present:
             board.sendcontrol('c')
-            board.expect(r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            board.expect(
+                r'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
             idle_cpu = float(board.match.group(1))
             avg_cpu = 100 - float(idle_cpu)
             self.logged['avg_cpu'] = float(avg_cpu)
@@ -282,9 +292,9 @@ class iPerfUDPBiDirTest(iPerfUDPTest):
         self.kill_iperf(node1)
         self.kill_iperf(node2)
 
+
 class iPerfUDPBiDirTestWLAN(iPerfUDPBiDirTest):
     '''iPerf from WAN to LAN over Wifi'''
-
     def runTest(self):
         if not wlan:
             self.skipTest("skipping test no wlan")
@@ -294,6 +304,7 @@ class iPerfUDPBiDirTestWLAN(iPerfUDPBiDirTest):
 
     def recover(self):
         super(iPerfUDPBiDirTestWLAN, self).recovery(node1=wlan, node2=wan)
+
 
 class iPerfUDPBiDirTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPBiDirTest):
     '''iPerf IPV6 from LAN to/from WAN'''
