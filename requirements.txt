@@ -1,14 +1,15 @@
+aenum
 argparse
 beautifulsoup4
 boto3
 cdrouter
 countrycode
+debtcollector
 dlipower
 dnspython
 docutils<0.16
 easysnmp
 elasticsearch>=1.0.0
-aenum
 Faker
 future
 ipaddress
@@ -36,5 +37,5 @@ sphinx
 termcolor
 unittest2
 xmltodict
+yapf
 zeep
-debtcollector
