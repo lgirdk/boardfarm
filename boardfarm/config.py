@@ -17,10 +17,13 @@ local_path = os.path.dirname(os.path.realpath(__file__))
 
 # Boardfarm configuration describes test stations - see boardfarm doc.
 # Can be local or remote file.
-boardfarm_config_location = os.environ.get('BFT_CONFIG', os.path.join(local_path, 'boardfarm_config_example.json'))
+boardfarm_config_location = os.environ.get(
+    'BFT_CONFIG', os.path.join(local_path, 'boardfarm_config_example.json'))
 
 # Test Suite config files. Standard python config file format.
-testsuite_config_files = [os.path.join(local_path, 'testsuites.cfg'), ]
+testsuite_config_files = [
+    os.path.join(local_path, 'testsuites.cfg'),
+]
 # Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
 
@@ -36,7 +39,8 @@ for modname in sorted(boardfarm.plugins):
     for f in layerconf_path:
         if os.path.isfile(f):
             location = os.path.dirname(f)
-            m = os.path.basename(location)+'.'+os.path.basename(f.strip('.py'))
+            m = os.path.basename(location) + '.' + os.path.basename(
+                f.strip('.py'))
             tmp = importlib.import_module(m)
             layerconfs.append((location, tmp))
 
@@ -50,10 +54,11 @@ logging_server = None
 elasticsearch_server = os.environ.get('BFT_ELASTICSERVER', None)
 
 # MongoDB server. Data in JSON-format can be directly sent here.
-mongodb = {"host": os.environ.get('BFT_MONGOHOST', None),
-           "username": os.environ.get('BFT_MONGOUSER', None),
-           "password": os.environ.get('BFT_MONGOPASS', None)
-           }
+mongodb = {
+    "host": os.environ.get('BFT_MONGOHOST', None),
+    "username": os.environ.get('BFT_MONGOUSER', None),
+    "password": os.environ.get('BFT_MONGOPASS', None)
+}
 
 # Code change server like gerrit, github, etc... Used only in display
 # of the results html file to list links to code changes tested.
@@ -62,36 +67,38 @@ code_change_server = None
 # creates a small dictionary of all the options
 # this  will probably grow as options are added
 option_dict = {
-        "proxy":["normal","socks5"],
-        "webdriver":["chrome","ffox"],
-        "disp":["xvfb", "xephyr", "xvnc"],
-        "disp_port":["0"],
-        "disp_size":["1366x768"]
-        }
+    "proxy": ["normal", "socks5"],
+    "webdriver": ["chrome", "ffox"],
+    "disp": ["xvfb", "xephyr", "xvnc"],
+    "disp_port": ["0"],
+    "disp_size": ["1366x768"]
+}
 
 # the syntax is
 # BFT_OPTIONS="proxy=normal webdriver=chrome"
 default_proxy_type = "normal"
 default_web_driver = "ffox"
 default_display_backend = "xvnc"
-default_display_backend_port = "0" # i.e. use any available ports
+default_display_backend_port = "0"  # i.e. use any available ports
 default_display_backend_size = "1366x768"
 
 if 'BFT_OPTIONS' in os.environ:
     for option in os.environ['BFT_OPTIONS'].split(' '):
-        k,v = option.split(':')
+        k, v = option.split(':')
         if option_dict.get(k) and (v in option_dict[k]):
             if k == "proxy":
                 default_proxy_type = v
             if k == "webdriver":
-                default_web_driver  = v
+                default_web_driver = v
             if k == "disp":
                 default_display_backend = v
         elif k == "disp_port":
             # quick validation
-            i = int(v) # if not a valid num python will throw and exception
+            i = int(v)  # if not a valid num python will throw and exception
             if i != 0 and not 1024 <= i <= 65535:
-                print("Warning: display backend port: %i not in range (1024-65535)" % i)
+                print(
+                    "Warning: display backend port: %i not in range (1024-65535)"
+                    % i)
                 exit(1)
             default_display_backend_port = v
         elif k == "disp_size":
@@ -99,26 +106,29 @@ if 'BFT_OPTIONS' in os.environ:
         else:
             print("Warning: Ignoring option: %s (misspelled?)" % option)
 
+
 def get_display_backend_size():
     """Function to get the display backend size resolution
 
     :return : display resolution size as x,y
     :rtype : integer
     """
-    xc,yc = default_display_backend_size.split('x')
+    xc, yc = default_display_backend_size.split('x')
     x = int(xc)
     y = int(yc)
-    return x,y
+    return x, y
+
 
 if 'BFT_DEBUG' in os.environ:
-    print("Using proxy:"+default_proxy_type)
-    print("Using webdriver:"+default_web_driver)
-    print("Using disp:"+default_display_backend)
-    print("Using disp_port:"+default_display_backend_port)
-    print("Using disp_size:"+default_display_backend_size)
+    print("Using proxy:" + default_proxy_type)
+    print("Using webdriver:" + default_web_driver)
+    print("Using disp:" + default_display_backend)
+    print("Using disp_port:" + default_display_backend_port)
+    print("Using disp_size:" + default_display_backend_size)
 
 # Default Test Config Settings
-output_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), "results", '')), '')
+output_dir = os.path.join(
+    os.path.abspath(os.path.join(os.getcwd(), "results", '')), '')
 WAN_PROTO = 'dhcp'  # or 'pppoe'. Protocol of the WAN interface
 setup_device_networking = True  # or False. Setup device networking during boot
 bootargs = None  # bootargs to set or append to default args (board dependant)
@@ -146,6 +156,7 @@ test_args = None
 # instead of running the actual function.
 
 err_injection_dict = {}
+
 
 def update_error_injection_dict(err_dict):
     """
@@ -182,7 +193,9 @@ def update_error_injection_dict(err_dict):
                 data = open(d, 'r').read()
                 err_injection_dict.update(json.loads(data))
         except:
-            print("Failed to fetch error dictionay at '{}', skipping...".format(d))
+            print(
+                "Failed to fetch error dictionay at '{}', skipping...".format(
+                    d))
 
     if err_injection_dict:
         print("Error injection dictionary:")

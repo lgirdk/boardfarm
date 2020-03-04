@@ -5,7 +5,9 @@ import pexpect
 from debtcollector import removals
 import warnings
 
-warnings.simplefilter('always',DeprecationWarning)
+warnings.simplefilter('always', DeprecationWarning)
+
+
 @removals.remove
 def skip_on_fail(func):
     """If a test fails then it will throw a skipTest error"""
@@ -17,7 +19,9 @@ def skip_on_fail(func):
         except Exception as e:
             log_message(instance, "Skipping Test : %s" % repr(e))
             instance.skipTest(e)
+
     return wrapper
+
 
 def throw_pexpect_error(func):
     """If a pexpect.TIMEOUT occurs throw boardfarm.PexpectError error"""
@@ -27,6 +31,5 @@ def throw_pexpect_error(func):
             return func(*args, **kwargs)
         except pexpect.TIMEOUT as e:
             raise PexpectErrorTimeout(e)
+
     return wrapper
-
-

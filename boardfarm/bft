@@ -35,7 +35,9 @@ except Exception as e:
     logger.debug("Please install boardfarm with the command:")
     cmd = "pip install -e ."
     if not os.path.isfile("setup.py"):
-        tmp = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+        tmp = os.path.abspath(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                         os.pardir))
         cmd = "cd %s ; %s" % (tmp, cmd)
     logger.debug(cmd)
     sys.exit(1)
@@ -56,8 +58,10 @@ from boardfarm.lib.env_helper import EnvHelper
 import matplotlib
 matplotlib.use('Agg')
 
+
 class FailedDevice(object):
     name = None
+
 
 def threaded_device_helper(device, ret):
     from boardfarm.devices import get_device
@@ -68,7 +72,9 @@ def threaded_device_helper(device, ret):
     try:
         dyn_dev = get_device(device['type'], **device)
     except BftNotSupportedDevice:
-        logger.info("Device %s not supported in this bft release + overlays, skipping..." % device['name'])
+        logger.info(
+            "Device %s not supported in this bft release + overlays, skipping..."
+            % device['name'])
         return
     except Exception:
         traceback.print_exc()
@@ -83,10 +89,12 @@ def threaded_device_helper(device, ret):
         return
 
     if 'BFT_DEBUG' in os.environ:
-        logger.debug("Time to instantiate device %s = %s" % (device['name'], time.time() - s))
+        logger.debug("Time to instantiate device %s = %s" %
+                     (device['name'], time.time() - s))
 
     dyn_dev.name = device['name']
     ret.put(dyn_dev)
+
 
 def setup_dynamic_devices(config, device_mgr, env_helper):
     '''Sets up dynamic devices from devices node in JSON config file'''
@@ -97,7 +105,9 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
     ret = queue.Queue()
 
     for device in config.board['devices']:
-        threads.append(threading.Thread(target=threaded_device_helper, args=(device, ret)))
+        threads.append(
+            threading.Thread(target=threaded_device_helper,
+                             args=(device, ret)))
         threads[-1].start()
 
     for t in threads:
@@ -135,18 +145,19 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
                 create_device_helper(dev.name, dev)
                 dynamic_devices.append(dev.target)
             else:
-                raise Exception("Extra device in config is not named! This is required")
+                raise Exception(
+                    "Extra device in config is not named! This is required")
 
         if not hasattr(device, 'name'):
             raise Exception("Device in config is not named! This is required")
         create_device_helper(device.name, device)
-
 
         continue
 
         logger.debug("Unknown device type for %s" % device)
 
     config.board['devices'].extend(dynamic_devices)
+
 
 def connect_and_run(config):
     config, device_mgr, env_helper, bfweb = connect_to_devices(config)
@@ -173,9 +184,10 @@ def connect_to_devices(config):
 
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
-    bfweb = boardfarmwebclient.BoardfarmWebClient(config.boardfarm_config_location,
-                                                  bf_version=boardfarm.__version__,
-                                                  debug=os.environ.get("BFT_DEBUG", False))
+    bfweb = boardfarmwebclient.BoardfarmWebClient(
+        config.boardfarm_config_location,
+        bf_version=boardfarm.__version__,
+        debug=os.environ.get("BFT_DEBUG", False))
 
     # Connect to any board in list
     connected_to_board = False
@@ -242,35 +254,40 @@ def connect_to_devices(config):
 
         try:
             # Use helper class to control access to configuration from tests
-            config.board = boardfarm.lib.ConfigHelper(config.boardfarm_config[name])
+            config.board = boardfarm.lib.ConfigHelper(
+                config.boardfarm_config[name])
         except Exception as e:
             logger.debug(e)
-            logger.debug("Error reading info about board %s from board farm configuration." % name)
+            logger.debug(
+                "Error reading info about board %s from board farm configuration."
+                % name)
             break
 
-        logger.info("Connecting to board named = %s, type = %s ..." % (name, config.board['board_type']))
+        logger.info("Connecting to board named = %s, type = %s ..." %
+                    (name, config.board['board_type']))
         try:
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
             tftp_server = None
             tftp_port = "22"
 
             # Connect to board
-            board = devices.board_decider(config.board['board_type'],
-                                                 conn_cmd=config.board['conn_cmd'],
-                                                 power_ip=config.board.get('powerip', None),
-                                                 power_outlet=config.board.get('powerport', None),
-                                                 web_proxy=config.board.get('lan_device', None),
-                                                 tftp_server=config.board.get('wan_device', tftp_server),
-                                                 tftp_username=config.board.get('wan_username', 'root'),
-                                                 tftp_password=config.board.get('wan_password', 'bigfoot1'),
-                                                 tftp_port=config.board.get('wan_port', tftp_port),
-                                                 connection_type=config.board.get('connection_type', None),
-                                                 ssh_password=config.board.get('ssh_password', None),
-                                                 power_username=config.board.get('power_username', None),
-                                                 power_password=config.board.get('power_password', None),
-                                                 rootfs=config.ROOTFS,
-                                                 kernel=config.KERNEL,
-                                                 config=config.board)
+            board = devices.board_decider(
+                config.board['board_type'],
+                conn_cmd=config.board['conn_cmd'],
+                power_ip=config.board.get('powerip', None),
+                power_outlet=config.board.get('powerport', None),
+                web_proxy=config.board.get('lan_device', None),
+                tftp_server=config.board.get('wan_device', tftp_server),
+                tftp_username=config.board.get('wan_username', 'root'),
+                tftp_password=config.board.get('wan_password', 'bigfoot1'),
+                tftp_port=config.board.get('wan_port', tftp_port),
+                connection_type=config.board.get('connection_type', None),
+                ssh_password=config.board.get('ssh_password', None),
+                power_username=config.board.get('power_username', None),
+                power_password=config.board.get('power_password', None),
+                rootfs=config.ROOTFS,
+                kernel=config.KERNEL,
+                config=config.board)
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
             board.dev = device_mgr
@@ -282,15 +299,20 @@ def connect_to_devices(config):
                 v = getattr(config, x, "")
                 if v is not None and "mirror://" in v:
                     logger.debug(config.board)
-                    r = getattr(config, x).replace("mirror://", config.board[u'mirror'])
+                    r = getattr(config, x).replace("mirror://",
+                                                   config.board[u'mirror'])
                     if not check_url(r):
-                        raise Exception("Unable to reach board mirror, trying next board")
+                        raise Exception(
+                            "Unable to reach board mirror, trying next board")
                     setattr(config, x, r)
 
             if hasattr(board, "env_helper_type"):
-                env_helper = board.env_helper_type(config.test_args, mirror=config.board.get('mirror', None))
+                env_helper = board.env_helper_type(config.test_args,
+                                                   mirror=config.board.get(
+                                                       'mirror', None))
             else:
-                env_helper = EnvHelper(config.test_args, mirror=config.board.get('mirror', None))
+                env_helper = EnvHelper(config.test_args,
+                                       mirror=config.board.get('mirror', None))
 
             board.env_helper = env_helper
 
@@ -328,7 +350,8 @@ def connect_to_devices(config):
                         board.tftp_dev = getattr(config, x.get('name'))
 
         except boardfarm.exceptions.ConnectionRefused:
-            logger.warning("Failed to connect to a board or device on %s" % name)
+            logger.warning("Failed to connect to a board or device on %s" %
+                           name)
             continue
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt")
@@ -345,7 +368,8 @@ def connect_to_devices(config):
         sys.exit(2)
 
     try:
-        logger.info("Using Board %s, User %s" % (name, os.environ['BUILD_USER_ID']))
+        logger.info("Using Board %s, User %s" %
+                    (name, os.environ['BUILD_USER_ID']))
     except:
         logger.info("Using Board %s, User %s" % (name, os.environ['USER']))
 
@@ -371,12 +395,15 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
-    logger.info('==========\nTest suite "%s" has been specified, will attempt to run tests:' % config.TEST_SUITE)
+    logger.info(
+        '==========\nTest suite "%s" has been specified, will attempt to run tests:'
+        % config.TEST_SUITE)
     from boardfarm import tests
     tests.init(config)
     from boardfarm import testsuites
     if config.TEST_SUITE not in testsuites.list_tests:
-        logger.warning("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
+        logger.warning("Unable to find testsuite %s, aborting..." %
+                       config.TEST_SUITE)
         sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
@@ -385,15 +412,18 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                 if config.TEST_SUITE_NOSTRICT:
                     logger.warning("\tWARNING: Test %s NOT FOUND" % name)
                     # add a place holder that will show up as skipped in the results
-                    name = 'selftest_fake_test' # there must be a better way of getting the name!
+                    name = 'selftest_fake_test'  # there must be a better way of getting the name!
                 else:
                     # strict behaviour
-                    logger.warning("Unable to load %s test from tests class!!!! Parsing of test via testsuite failed" % name)
+                    logger.warning(
+                        "Unable to load %s test from tests class!!!! Parsing of test via testsuite failed"
+                        % name)
                     sys.exit(1)
             test = tests.available_tests[name]
         else:
             test = name
-        logger.info("  %s %s from %s" % (i+1, test.__name__, inspect.getfile(test)))
+        logger.info("  %s %s from %s" %
+                    (i + 1, test.__name__, inspect.getfile(test)))
         # Create an instance of this test and give it a config and device manager.
         tests_to_run.append(test(config, device_mgr, env_helper))
     if hasattr(config, 'EXTRA_TESTS') and config.EXTRA_TESTS:
@@ -407,7 +437,9 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                 try:
                     t = tests.available_tests[name]
                 except:
-                    raise Exception("Unable to load %s test from tests class!!!! Parsing of test selected via -e failed" % name)
+                    raise Exception(
+                        "Unable to load %s test from tests class!!!! Parsing of test selected via -e failed"
+                        % name)
                 logger.info("  %s" % t)
                 test = t(config, device_mgr, env_helper)
                 tests_to_run.append(test)
@@ -422,18 +454,22 @@ def run_tests(config, device_mgr, env_helper, bfweb):
         stop_testing = False
         curr_test = None
         for j, test in enumerate(tests_to_run):
-            bfweb.post_temp_message("Running test %s of %s" % (j+1, len(tests_to_run)))
+            bfweb.post_temp_message("Running test %s of %s" %
+                                    (j + 1, len(tests_to_run)))
             curr_test = test
             try:
                 test.run()
 
                 # Write test result messages to a file after each test
-                full_results = library.process_test_results(tests_to_run, config.golden_master_results)
+                full_results = library.process_test_results(
+                    tests_to_run, config.golden_master_results)
                 library.create_results_html(full_results, config, logger)
-                json.dump(full_results,
-                          open(os.path.join(config.output_dir + 'test_results.json'), 'w'),
-                          indent=4,
-                          sort_keys=True)
+                json.dump(
+                    full_results,
+                    open(os.path.join(config.output_dir + 'test_results.json'),
+                         'w'),
+                    indent=4,
+                    sort_keys=True)
             except boardfarm.exceptions.BootFail:
                 stop_testing = True
             except Exception:
@@ -457,7 +493,8 @@ def run_tests(config, device_mgr, env_helper, bfweb):
         if curr_test is not None:
             curr_test.recover()
 
-    logger.info("Results run=%d failures=%d skipped=%d" % (tests_pass, tests_fail, tests_skip))
+    logger.info("Results run=%d failures=%d skipped=%d" %
+                (tests_pass, tests_fail, tests_skip))
 
     library.printd(config.board)
 
@@ -468,7 +505,8 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     device_mgr.close_all()
 
     # Write test result messages to a file
-    full_results = library.process_test_results(tests_to_run, config.golden_master_results)
+    full_results = library.process_test_results(tests_to_run,
+                                                config.golden_master_results)
     json.dump(full_results,
               open(os.path.join(config.output_dir + 'test_results.json'), 'w'),
               indent=4,
@@ -500,7 +538,8 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     for t in tests_to_run:
         write_test_log(t, config.output_dir)
 
-    return library.create_info_for_remote_log(config, full_results, tests_to_run, logger, env_helper)
+    return library.create_info_for_remote_log(config, full_results,
+                                              tests_to_run, logger, env_helper)
 
 
 def main():
@@ -516,52 +555,67 @@ def main():
 
     # Save Results to file
     json.dump(info_for_remote_log,
-              open(os.path.join(config.output_dir + 'info_for_remote_log.json'), 'w'),
+              open(
+                  os.path.join(config.output_dir + 'info_for_remote_log.json'),
+                  'w'),
               indent=4,
               sort_keys=True)
 
     # Send Results to logstash, if configured
     try:
         if config.logging_server is not None:
-            logstash.RemoteLogger(config.logging_server).log(info_for_remote_log)
+            logstash.RemoteLogger(
+                config.logging_server).log(info_for_remote_log)
     except Exception as e:
         logger.warning(e)
         logger.warning("Unable to access logging_server specified in config. "
-              "Results stored only locally.")
+                       "Results stored only locally.")
 
     # Send Results to ElasticSearch, if configured
     try:
         if config.elasticsearch_server is not None:
-            elasticlogger.ElasticsearchLogger(config.elasticsearch_server).log(info_for_remote_log)
+            elasticlogger.ElasticsearchLogger(
+                config.elasticsearch_server).log(info_for_remote_log)
         else:
-            logger.debug("No elasticsearch_server specified in config. Results stored locally")
+            logger.debug(
+                "No elasticsearch_server specified in config. Results stored locally"
+            )
     except Exception as e:
         logger.warning(e)
-        logger.warning("Unable to store results to elasticsearch_server specified in config. "
-              "Results stored locally.")
+        logger.warning(
+            "Unable to store results to elasticsearch_server specified in config. "
+            "Results stored locally.")
 
     # Send Results to MongoDB, if configured
     try:
         if hasattr(config, 'mongodb') and config.mongodb['host'] is not None:
-            mongodblogger.MongodbLogger(**config.mongodb).log(info_for_remote_log)
+            mongodblogger.MongodbLogger(
+                **config.mongodb).log(info_for_remote_log)
         else:
-            logger.debug("Needed mongodb parameters are not set, see config. Results stored locally.")
+            logger.debug(
+                "Needed mongodb parameters are not set, see config. Results stored locally."
+            )
     except Exception as e:
         logger.warning(e)
-        logger.warning("Unable to store results to mongodb specified in config. "
-              "Results stored locally.")
+        logger.warning(
+            "Unable to store results to mongodb specified in config. "
+            "Results stored locally.")
 
     # Send Results to AWS, if configured
-    if set(('BFT_AWS_ACCESS_KEY', 'BFT_AWS_SECRET_ACCESS_KEY', 'BFT_AWS_BUCKET')).issubset(os.environ):
+    if set(('BFT_AWS_ACCESS_KEY', 'BFT_AWS_SECRET_ACCESS_KEY',
+            'BFT_AWS_BUCKET')).issubset(os.environ):
         try:
             import boto3
 
-            filename = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%S.000Z") + '.json'
-            s3 = boto3.resource('s3',
-                                aws_access_key_id=os.environ['BFT_AWS_ACCESS_KEY'],
-                                aws_secret_access_key=os.environ['BFT_AWS_SECRET_ACCESS_KEY'])
+            filename = datetime.utcnow().strftime(
+                "%Y-%m-%dT%H-%M-%S.000Z") + '.json'
+            s3 = boto3.resource(
+                's3',
+                aws_access_key_id=os.environ['BFT_AWS_ACCESS_KEY'],
+                aws_secret_access_key=os.environ['BFT_AWS_SECRET_ACCESS_KEY'])
             s3object = s3.Object(os.environ['BFT_AWS_BUCKET'], filename)
-            s3object.put(Body=(bytes(json.dumps(info_for_remote_log, default=str).encode('UTF-8'))))
+            s3object.put(Body=(bytes(
+                json.dumps(info_for_remote_log, default=str).encode('UTF-8'))))
         except Exception as e:
             logger.warning("Failed to load data in AWS bucket")
             logger.warning(e)
@@ -569,11 +623,13 @@ def main():
     # Update the results in Zephyr
     try:
         result_data = json.load(open('./results/test_results.json'))
-        test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
+        test_cases_list = [[r["name"], r["grade"]]
+                           for r in result_data["test_results"]]
         zephyr_reporter.update_zephyr(test_cases_list)
     except Exception as e:
         logger.warning(e)
         logger.warning("Unable to Update results in Zephyr")
+
 
 if __name__ == '__main__':
     main()

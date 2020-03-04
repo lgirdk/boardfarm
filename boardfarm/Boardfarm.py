@@ -6,7 +6,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-
 import os
 import subprocess
 
@@ -18,19 +17,15 @@ class Boardfarm(object):
     '''
     This class makes it easy to interact with the boardfarm server, and to run tests.
     '''
-
-    def __init__(self,
-                 bfconfig_url,
-                 debug=False):
+    def __init__(self, bfconfig_url, debug=False):
         '''
         Parameters:
         bfconfig_url: location of boardfarm config file.
         debug: if True, there will be much more verbose output.
         '''
         self.bfconfig_url = bfconfig_url
-        self.server = boardfarmwebclient.BoardfarmWebClient(bfconfig_url,
-                                                            bf_version=boardfarm.__version__,
-                                                            debug=debug)
+        self.server = boardfarmwebclient.BoardfarmWebClient(
+            bfconfig_url, bf_version=boardfarm.__version__, debug=debug)
         #self.supported_devices = self._supported_devices()
         self.debug = debug
 
@@ -75,10 +70,8 @@ class Boardfarm(object):
         cmd = ""
         if self.debug:
             cmd += "export BFT_DEBUG=%s ; " % self.debug
-        cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(b=board_type,
-                                                                 t=testsuite,
-                                                                 c=self.bfconfig_url,
-                                                                 o=output_dir)
+        cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(
+            b=board_type, t=testsuite, c=self.bfconfig_url, o=output_dir)
         print(cmd)
         subprocess.check_output(cmd, shell=True)
         print("Results in %s" % output_dir)
