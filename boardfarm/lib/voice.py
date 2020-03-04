@@ -77,7 +77,7 @@ def dns_setup_sipserver(sip_server, config):
     '''
     try:
         if sip_server:
-            sip_server.disable_ipv6(sip_server.iface_dut)
+            sip_server.prefer_ipv4()
             sip_server.sendline('echo "nameserver 8.8.8.8" > /etc/resolv.conf')
             apt_install(sip_server, 'dnsmasq')
             sip_server.setup_dnsmasq(config)
