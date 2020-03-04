@@ -1822,4 +1822,3 @@ ifCompliance2 MODULE-COMPLIANCE
     ::= { ifCompliances 2 }
 
 END
-

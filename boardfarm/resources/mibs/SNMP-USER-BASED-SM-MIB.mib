@@ -901,5 +901,3 @@ usmMIBBasicGroup OBJECT-GROUP
     ::= { usmMIBGroups 1 }
 
 END
-
-

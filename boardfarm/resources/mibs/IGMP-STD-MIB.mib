@@ -524,4 +524,3 @@ igmpV2ProxyMIBGroup OBJECT-GROUP
     ::= { igmpMIBGroups 6 }
 
 END
-

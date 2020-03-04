@@ -3354,4 +3354,3 @@ logDescription OBJECT-TYPE
     ::= { logEntry 4 }
 
 END
-

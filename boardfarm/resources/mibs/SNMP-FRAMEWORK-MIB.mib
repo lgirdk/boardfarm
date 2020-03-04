@@ -530,4 +530,3 @@ snmpEngineGroup OBJECT-GROUP
     ::= { snmpFrameworkMIBGroups 1 }
 
 END
-
