@@ -23,6 +23,7 @@ class SoftPhone(object):
 
     def install_softphone(self):
         # to install softphone from local url or from internet
+        self.prefer_ipv4()
         install_pjsua(self, getattr(self, "pjsip_local_url", None))
 
     def phone_config(self, sipserver_ip):
