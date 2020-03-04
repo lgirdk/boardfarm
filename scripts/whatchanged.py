@@ -10,10 +10,12 @@ from boardfarm.lib.code import get_all_classes_from_code, changed_classes, get_f
 from boardfarm.lib.code import get_classes_lib_functions, changed_functions
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Prosses a "git diff" to find test changes.')
+    parser = argparse.ArgumentParser(
+        description='Prosses a "git diff" to find test changes.')
     parser.add_argument('start', type=str, help='Begining git hash')
     parser.add_argument('end', type=str, help='Ending git hash')
-    parser.add_argument('--debug', action='store_true',
+    parser.add_argument('--debug',
+                        action='store_true',
                         help='Display much more info')
     try:
         args = parser.parse_args()
@@ -22,7 +24,10 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # Find locations of 'tests' subdirectories
-    all_boardfarm_dirs = [os.path.dirname(boardfarm.plugins[m].__file__) for m in sorted(boardfarm.plugins)]
+    all_boardfarm_dirs = [
+        os.path.dirname(boardfarm.plugins[m].__file__)
+        for m in sorted(boardfarm.plugins)
+    ]
     all_boardfarm_dirs.append(os.path.dirname(boardfarm.__file__))
     test_code_loc = []
     for d in sorted(all_boardfarm_dirs):
@@ -32,11 +37,15 @@ if __name__ == '__main__':
             test_code_loc.append(os.path.join(tmp[0], '*.py'))
         elif len(tmp) > 1:
             print("Error in %s" % d)
-            print("  Multiple 'tests' subdirectories found. There should only be "
-                  "one 'tests' directory per project.")
+            print(
+                "  Multiple 'tests' subdirectories found. There should only be "
+                "one 'tests' directory per project.")
             sys.exit(1)
     # Locations of '.git' files
-    git_loc = [os.path.abspath(os.path.join(d, os.pardir, ".git")) for d in all_boardfarm_dirs]
+    git_loc = [
+        os.path.abspath(os.path.join(d, os.pardir, ".git"))
+        for d in all_boardfarm_dirs
+    ]
     valid_test_types = ('rootfs_boot.RootFSBootTest', 'BF_Test')
 
     # Get a dictionary of the form
@@ -45,7 +54,8 @@ if __name__ == '__main__':
 
     # Get a dictionary with classnames as keys, and list of functions they import and use
     #     {"classname": ['function1', 'function2', ... }
-    all_classes_and_funcs = get_classes_lib_functions(test_code_loc, debug=args.debug)
+    all_classes_and_funcs = get_classes_lib_functions(test_code_loc,
+                                                      debug=args.debug)
 
     # Find names of all *directly* changed classes
     all_changed_classes = changed_classes(git_loc,
@@ -73,7 +83,9 @@ if __name__ == '__main__':
                 #indirectly_changed_classes[name] = all_classes[name]
                 pass
     if args.debug:
-        print("\nAll indirectly changed classes (either through a function change or subclass change):")
+        print(
+            "\nAll indirectly changed classes (either through a function change or subclass change):"
+        )
         print("  " + "\n  ".join(indirectly_changed_classes))
     all_changed_classes.update(indirectly_changed_classes)
 
@@ -81,7 +93,8 @@ if __name__ == '__main__':
 
     filter_name = '_TST_'
     if args.debug:
-        print("\nWill filter to only test names containing '%s'." % filter_name)
+        print("\nWill filter to only test names containing '%s'." %
+              filter_name)
 
     # Print all valid tests with a '-e ' in front of them for bft
     final_result = []
@@ -94,5 +107,6 @@ if __name__ == '__main__':
                 final_result.append(name)
                 break
     if args.debug:
-        print("\nFinal output including directly and indirectly changed tests:")
+        print(
+            "\nFinal output including directly and indirectly changed tests:")
     print(" -e ".join([''] + final_result) + " -q ".join([''] + features))

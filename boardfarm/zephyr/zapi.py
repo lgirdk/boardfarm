@@ -4,23 +4,23 @@ import re
 from requests import get, put, post
 from simplejson import loads
 
-
-STATUS_CODE_DICT = {'SCHEDULED': -1,
-                    'PASS': 1,
-                    'FAIL': 2,
-                    'WORK IN PROGRESS': 3,
-                    'TEST SUSPENDED': 4,
-                    'ACCEPTED FAILED': 5,
-                    'NOT TESTED': 6,
-                    'BLOCKED': 7,
-                    'NA': 8,
-                    'DEPRECATED': 9,
-                    'PASSED WITH REMARKS': 10}
+STATUS_CODE_DICT = {
+    'SCHEDULED': -1,
+    'PASS': 1,
+    'FAIL': 2,
+    'WORK IN PROGRESS': 3,
+    'TEST SUSPENDED': 4,
+    'ACCEPTED FAILED': 5,
+    'NOT TESTED': 6,
+    'BLOCKED': 7,
+    'NA': 8,
+    'DEPRECATED': 9,
+    'PASSED WITH REMARKS': 10
+}
 
 
 class Zapi(object):
     """Zephyr API interface"""
-
     def __init__(self,
                  project_id=None,
                  version_id=None,
@@ -42,11 +42,13 @@ class Zapi(object):
 
     def create_cycle(self, name):
         """Creata a test cycle for the given projectid, versionid"""
-        data = {"name": name,
-                "projectId": self._proj_id,
-                "versionId": self._vers_id,
-                "environment": self._environment,
-                "build": self._build}
+        data = {
+            "name": name,
+            "projectId": self._proj_id,
+            "versionId": self._vers_id,
+            "environment": self._environment,
+            "build": self._build
+        }
         req_url = self._zapi_url + 'cycle'
         response = post(req_url,
                         json=data,
@@ -84,12 +86,14 @@ class Zapi(object):
     def create_execution(self, test_id, assignee=None):
         """Create a Zephyr execution of the given test in the given project and
         release"""
-        payload = {'projectId': self._proj_id,
-                   'cycleId': self._cycl_id,
-                   'issueId': test_id,
-                   'versionId': self._vers_id,
-                   'assigneeType': 'assignee',
-                   'assignee': assignee or self._usr}
+        payload = {
+            'projectId': self._proj_id,
+            'cycleId': self._cycl_id,
+            'issueId': test_id,
+            'versionId': self._vers_id,
+            'assigneeType': 'assignee',
+            'assignee': assignee or self._usr
+        }
         req_url = self._zapi_url + 'execution'
         response = post(req_url,
                         json=payload,
@@ -107,11 +111,12 @@ class Zapi(object):
     def get_executions(self, test_id=None, assignee=None):
         """Create a Zephyr execution of the given test in the given project and
         release"""
-        payload = {'projectId': self._proj_id,
-                   'cycleId': self._cycl_id,
-                   'issueId': test_id,
-                   'versionId': self._vers_id
-                   }
+        payload = {
+            'projectId': self._proj_id,
+            'cycleId': self._cycl_id,
+            'issueId': test_id,
+            'versionId': self._vers_id
+        }
         req_url = self._zapi_url + 'execution'
         response = get(req_url,
                        params=payload,
@@ -135,10 +140,13 @@ class Zapi(object):
             print(data)
         return response
 
-    def set_execution(self, exec_status, execution_id, comment="", status_code_dict=STATUS_CODE_DICT):
+    def set_execution(self,
+                      exec_status,
+                      execution_id,
+                      comment="",
+                      status_code_dict=STATUS_CODE_DICT):
         """Set the execution status of a given test's executionid"""
-        data = {"status": status_code_dict[exec_status],
-                "comment": comment}
+        data = {"status": status_code_dict[exec_status], "comment": comment}
         req_url = self._zapi_url + 'execution/' + execution_id + '/execute'
         response = put(req_url,
                        json=data,

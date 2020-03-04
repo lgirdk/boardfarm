@@ -14,6 +14,7 @@ import socket
 import ipaddress
 import pymongo
 
+
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ipaddress.IPv4Network) or \
@@ -25,19 +26,25 @@ class ComplexEncoder(json.JSONEncoder):
             try:
                 return json.JSONEncoder.default(self, obj)
             except:
-                print("WARNING: mongodblogger ComplexEncoder can't handle type %s" % type(obj))
+                print(
+                    "WARNING: mongodblogger ComplexEncoder can't handle type %s"
+                    % type(obj))
                 return ""
+
 
 def pprint(x):
     '''Pretty print an object'''
     print(json.dumps(x, sort_keys=True, indent=2, cls=ComplexEncoder))
 
+
 class MongodbLogger(object):
     '''
     Write data directly to mongodb.
     '''
-
-    def __init__(self, host, username, password,
+    def __init__(self,
+                 host,
+                 username,
+                 password,
                  db_name='boardfarm',
                  collection_name='bft_run'):
         self.host = host
@@ -46,7 +53,8 @@ class MongodbLogger(object):
         self.db_name = db_name
         self.collection_name = collection_name
         # Connect to host
-        connect_str = "mongodb://%s:%s@%s/%s?retryWrites=true&w=majority" % (self.username, self.password, self.host, db_name)
+        connect_str = "mongodb://%s:%s@%s/%s?retryWrites=true&w=majority" % (
+            self.username, self.password, self.host, db_name)
         if 'BFT_DEBUG' in os.environ:
             print("Mongo connect string: " + connect_str)
         self.client = pymongo.MongoClient(connect_str)
@@ -73,7 +81,8 @@ class MongodbLogger(object):
         data = fix_dict(data)
 
         # Put in default data
-        self.default_data['timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        self.default_data['timestamp'] = datetime.datetime.utcnow().strftime(
+            "%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
         # Handle object types that json normally can't (converts them to a string or number)
         data = json.loads(json.dumps(data, cls=ComplexEncoder))
@@ -81,5 +90,6 @@ class MongodbLogger(object):
             print("Storing into mongodb:")
             pprint(data)
         post_id = self.collection.insert_one(data).inserted_id
-        doc_url = "%s; db: %s; collection: %s; _id: %s" % (self.host, self.db_name, self.collection_name, post_id)
+        doc_url = "%s; db: %s; collection: %s; _id: %s" % (
+            self.host, self.db_name, self.collection_name, post_id)
         print("Mongodb: Data stored at %s" % (doc_url))

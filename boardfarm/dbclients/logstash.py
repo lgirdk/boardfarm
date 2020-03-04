@@ -10,10 +10,10 @@ import json
 import os
 import socket
 
+
 class RemoteLogger(object):
     """Write data to remote logging server.
     """
-
     def __init__(self, server, subtype='demo'):
         """Constructor used to remote server logging
 
@@ -22,7 +22,6 @@ class RemoteLogger(object):
         :param subtype: subtype to be used, defaults to 'demo'
         :type subtype: string
         """
-
         '''Logging server requires some default data for easy searching.'''
         username = os.environ.get('BUILD_USER_ID', None)
         if username is None:
@@ -53,8 +52,11 @@ class RemoteLogger(object):
         data.update(self.default_data)
         s = json.dumps(data)
         self.sock.sendto(s, (self.logserver_ip, self.logserver_port))
-        print("Logstash: %s bytes of data sent to %s:%s." % (len(s), self.logserver_ip, self.logserver_port))
+        print("Logstash: %s bytes of data sent to %s:%s." %
+              (len(s), self.logserver_ip, self.logserver_port))
         if len(s) > 8192:
-            print("Logstash: WARNING, Data size too large. May not have logged result.")
+            print(
+                "Logstash: WARNING, Data size too large. May not have logged result."
+            )
         if debug:
             print(data)

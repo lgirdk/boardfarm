@@ -13,6 +13,7 @@ try:
 except:
     from urllib2 import urlopen
 
+
 class TestsuiteConfigReader(object):
     """Read config file (in our case testsuite.cfg) like:
 
@@ -35,7 +36,6 @@ class TestsuiteConfigReader(object):
        'testsuiteC' : [test7, test2, test3, ...]
       }
     """
-
     def __init__(self):
         """This method initializes the self.section to empty dict.
         """
@@ -75,7 +75,8 @@ class TestsuiteConfigReader(object):
         current_section = None
         for i, line in enumerate(s_config.split('\n')):
             try:
-                if line == '' or re.match(r'^\s+', line) or line.startswith('#'):
+                if line == '' or re.match(r'^\s+',
+                                          line) or line.startswith('#'):
                     continue
                 if '[' in line:
                     current_section = re.search(r'\[(.*)\]', line).group(1)
@@ -97,7 +98,9 @@ class TestsuiteConfigReader(object):
                     if ref_section in self.section:
                         new_section += self.section[ref_section]
                     else:
-                        print("Failed to find '%s' testsuite referenced by '%s'." % (ref_section, section))
+                        print(
+                            "Failed to find '%s' testsuite referenced by '%s'."
+                            % (ref_section, section))
                         continue
                 else:
                     new_section.append(item)
@@ -112,6 +115,7 @@ class TestsuiteConfigReader(object):
             for i, x in enumerate(self.section[name]):
                 result.append(' %2s %s' % (i + 1, x))
         return "\n".join(result)
+
 
 if __name__ == '__main__':
     import os

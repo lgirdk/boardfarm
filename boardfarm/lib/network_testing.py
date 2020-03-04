@@ -87,6 +87,7 @@ def tcpdump_read(device, capture_file, protocol='', opts=''):
     device.expect(device.prompt)
     return output
 
+
 def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     """Read the packets via tshark
 
@@ -99,11 +100,11 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     :param filter_str: capture filter, ex. 'data.len == 1400'
     :type filter_str: String
     """
-    command_string='tshark -r {} '.format(capture_file)
+    command_string = 'tshark -r {} '.format(capture_file)
     if packet_details:
-        command_string+='-V '
+        command_string += '-V '
     if filter_str:
-        command_string+='\'{}\''.format(filter_str)
+        command_string += '\'{}\''.format(filter_str)
 
     device.sendline(command_string)
     device.expect(pexpect.TIMEOUT, timeout=5)
@@ -111,6 +112,7 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     device.sudo_sendline("rm %s" % (capture_file))
     device.expect(device.prompt)
     return output
+
 
 def sip_read(device, capture_file):
     """Read and filter SIP packets from the captured file.

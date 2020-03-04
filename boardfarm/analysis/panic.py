@@ -8,6 +8,7 @@
 from . import analysis
 import re
 
+
 class PanicAnalysis(analysis.Analysis):
     '''Parse logs for kernel panic events'''
     def analyze(self, console_log, output_dir):

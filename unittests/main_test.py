@@ -4,8 +4,8 @@ import boardfarm
 import os
 import unittest
 
-class TestSimpleBoardfarm(unittest.TestCase):
 
+class TestSimpleBoardfarm(unittest.TestCase):
     def test_plugins_installed(self):
         '''
         Verify some boardfarm plugins are installed.
@@ -57,9 +57,11 @@ class TestSimpleBoardfarm(unittest.TestCase):
         Verify we can add devices and get one back by type.
         '''
         from boardfarm.lib import DeviceManager
+
         class FakeDevice():
             def __init__(self, name):
                 self.name = name
+
         dev1 = FakeDevice(name='board')
         dev2 = FakeDevice(name='lan')
         # Add devices to DeviceManager
@@ -112,9 +114,11 @@ class TestSimpleBoardfarm(unittest.TestCase):
     def test_kibana_datagen(self):
         from boardfarm.library import generate_test_info_for_kibana
         from boardfarm.library import get_test_name
+
         class Dummy():
             logged = {}
             result_grade = 'OK'
+
         x = Dummy()
         x.override_kibana_name = "Testing123"
         data = generate_test_info_for_kibana(x, prefix="Hello")
@@ -124,7 +128,8 @@ class TestSimpleBoardfarm(unittest.TestCase):
     def test_station_filtering(self):
         from boardfarm.lib import test_configurator
         cur_dir = os.path.dirname(boardfarm.__file__)
-        loc, conf = test_configurator.get_station_config(os.path.join(cur_dir, 'boardfarm_config_example.json'))
+        loc, conf = test_configurator.get_station_config(
+            os.path.join(cur_dir, 'boardfarm_config_example.json'))
         names = test_configurator.filter_station_config(conf,
                                                         board_type=["qemux86"])
         self.assertGreater(len(names), 0)
@@ -142,12 +147,16 @@ class TestSimpleBoardfarm(unittest.TestCase):
 
         class test_stub(BftBaseTest):
             log_to_file = ""
+
             def skipTest(self, msg):
                 print("skipTest() called")
                 global ran
                 ran = True
 
-                super(test_stub, self,).skipTest(msg)
+                super(
+                    test_stub,
+                    self,
+                ).skipTest(msg)
 
         @skip_on_fail
         def test_func(test, arg1, arg2):
@@ -161,8 +170,8 @@ class TestSimpleBoardfarm(unittest.TestCase):
             test_func(test_stub(None, None, None), "not", "same")
         self.assertEqual(ran, True)
 
-class TestSnmp(unittest.TestCase):
 
+class TestSnmp(unittest.TestCase):
     def test_snmp_compile(self):
         '''
         Verify the Simple Network Management Protocol (SNMP) helper

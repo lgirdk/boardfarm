@@ -8,6 +8,7 @@
 from . import analysis
 import re
 
+
 class OOMAnalysis(analysis.Analysis):
     '''Parse logs for OOM kernel events'''
     def analyze(self, console_log, output_dir):

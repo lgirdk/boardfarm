@@ -6,7 +6,12 @@ from pysnmp.carrier.asyncore.dgram import udp, udp6
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 from pyasn1.codec.ber import encoder, decoder
 
-def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10, mode='ipv4'):
+
+def SnmpwalkAsync(target_IP=None,
+                  oid=None,
+                  community='public',
+                  walk_timeout=10,
+                  mode='ipv4'):
     """script to run in the remote device for snmp mib walk
        This script can be copied to the remote device eg:wan
        and can be executed directly using python for snmp mib walk
@@ -42,7 +47,7 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
     v2c.apiMessage.setPDU(reqMsg, reqPDU)
 
     startedAt = time.time()
-    output_list= []
+    output_list = []
 
     def cbTimerFun(timeNow):
         # Duration
@@ -54,14 +59,19 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
                     transportDispatcher.jobFinished(1)
 
     # noinspection PyUnusedLocal
-    def cbRecvFun(transportDispatcher, transportDomain, transportAddress,
-                      wholeMsg, reqPDU=reqPDU, headVars=headVars):
+    def cbRecvFun(transportDispatcher,
+                  transportDomain,
+                  transportAddress,
+                  wholeMsg,
+                  reqPDU=reqPDU,
+                  headVars=headVars):
         while wholeMsg:
             rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=v2c.Message())
             rspPDU = v2c.apiMessage.getPDU(rspMsg)
 
             # Match response to request
-            if v2c.apiBulkPDU.getRequestID(reqPDU) == v2c.apiBulkPDU.getRequestID(rspPDU):
+            if v2c.apiBulkPDU.getRequestID(
+                    reqPDU) == v2c.apiBulkPDU.getRequestID(rspPDU):
                 # Format var-binds table
                 varBindTable = v2c.apiBulkPDU.getVarBindTable(reqPDU, rspPDU)
 
@@ -69,8 +79,9 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
                 errorStatus = v2c.apiBulkPDU.getErrorStatus(rspPDU)
                 if errorStatus and errorStatus != 2:
                     errorIndex = v2c.apiBulkPDU.getErrorIndex(rspPDU)
-                    print('%s at %s' % (errorStatus.prettyPrint(),
-                                        errorIndex and varBindTable[int(errorIndex) - 1] or '?'))
+                    print('%s at %s' %
+                          (errorStatus.prettyPrint(), errorIndex
+                           and varBindTable[int(errorIndex) - 1] or '?'))
                     transportDispatcher.jobFinished(1)
                     break
 
@@ -78,12 +89,13 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
                 for tableRow in varBindTable:
                     for name, val in tableRow:
                         # print mib data
-                        print('from: %s, %s = %s' % (
-                             transportAddress, name.prettyPrint(), val.prettyPrint()
-                            ))
-                        output_list.append('from: %s, %s = %s\n' % (
-                             transportAddress, name.prettyPrint(), val.prettyPrint()
-                            ))
+                        print('from: %s, %s = %s' %
+                              (transportAddress, name.prettyPrint(),
+                               val.prettyPrint()))
+                        output_list.append(
+                            'from: %s, %s = %s\n' %
+                            (transportAddress, name.prettyPrint(),
+                             val.prettyPrint()))
 
                 # Stop on EOM
                 for oid, val in varBindTable[-1]:
@@ -93,13 +105,13 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
                         transportDispatcher.jobFinished(1)
 
                 # Generate request for next row
-                v2c.apiBulkPDU.setVarBinds(
-                    reqPDU, [(x, v2c.null) for x, y in varBindTable[-1]]
-                )
+                v2c.apiBulkPDU.setVarBinds(reqPDU,
+                                           [(x, v2c.null)
+                                            for x, y in varBindTable[-1]])
                 v2c.apiBulkPDU.setRequestID(reqPDU, v2c.getNextRequestID())
-                transportDispatcher.sendMessage(
-                    encoder.encode(reqMsg), transportDomain, transportAddress
-                )
+                transportDispatcher.sendMessage(encoder.encode(reqMsg),
+                                                transportDomain,
+                                                transportAddress)
         return wholeMsg
 
     transportDispatcher = AsyncoreDispatcher()
@@ -107,18 +119,16 @@ def SnmpwalkAsync(target_IP=None, oid=None, community='public', walk_timeout=10,
     transportDispatcher.registerTimerCbFun(cbTimerFun)
     if mode == 'ipv4':
         transportDispatcher.registerTransport(
-            udp.domainName, udp.UdpSocketTransport().openClientMode()
-        )
-        transportDispatcher.sendMessage(
-            encoder.encode(reqMsg), udp.domainName, (target_IP, 161)
-        )
+            udp.domainName,
+            udp.UdpSocketTransport().openClientMode())
+        transportDispatcher.sendMessage(encoder.encode(reqMsg), udp.domainName,
+                                        (target_IP, 161))
     else:
         transportDispatcher.registerTransport(
-            udp6.domainName, udp6.Udp6SocketTransport().openClientMode()
-        )
-        transportDispatcher.sendMessage(
-            encoder.encode(reqMsg), udp6.domainName, (target_IP, 161)
-        )
+            udp6.domainName,
+            udp6.Udp6SocketTransport().openClientMode())
+        transportDispatcher.sendMessage(encoder.encode(reqMsg),
+                                        udp6.domainName, (target_IP, 161))
     transportDispatcher.jobStarted(1)
     # Dispatcher will finish as job#1 counter reaches zero
     transportDispatcher.runDispatcher()

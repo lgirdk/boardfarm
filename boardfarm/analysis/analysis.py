@@ -14,10 +14,12 @@ newline_match = r"\r\n\[([^\]]+)\]"
 newline_re = r"\\r\\n\[[^\]]+\]"
 newline_re_match = r"\\r\\n\[([^\]]+)\]"
 
+
 def prepare_log(log):
     '''Strips some stuff from outside logs so we can parse'''
     # TODO: convert other timestamps into seconds since boot
     return log
+
 
 def split_results(results):
     t = [x[0] for x in results]
@@ -29,12 +31,19 @@ def split_results(results):
     # fallback to no timestamps
     return None, results
 
+
 class Analysis():
     '''Base analysis class, each child class should implement the analyze function'''
     def analyze(self, console_log, output_dir):
         pass
 
-    def make_graph(self, data, ylabel, fname, ts=None, xlabel="seconds", output_dir=None):
+    def make_graph(self,
+                   data,
+                   ylabel,
+                   fname,
+                   ts=None,
+                   xlabel="seconds",
+                   output_dir=None):
         '''Helper function to make a PNG graph'''
         if not output_dir:
             return

@@ -16,7 +16,6 @@ def throw_error():
 
 class TestRetryOnException:
     """Suite of tests for boardfarm.lib.common.retry_on_exception()."""
-
     def test_retry_on_exception_no_raise_no_retry(self):
         """A proper function call does not trigger any exception."""
         out = common.retry_on_exception(sum, [(3, 2)], 0, tout=0)

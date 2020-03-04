@@ -10,6 +10,7 @@ import re
 import collections
 import os
 
+
 class PSAnalysis(analysis.Analysis):
     '''Parse top for ps commands, and create graph of process memory usage over time'''
     def analyze(self, console_log, output_dir):
@@ -27,9 +28,12 @@ class PSAnalysis(analysis.Analysis):
                     continue
                 ts = float(e.pop(0).strip('[]'))
                 pid = e.pop(0)
-                _ = e.pop(0) # user
+                _ = e.pop(0)  # user
                 mem = e.pop(0)
-                while e[0] in ['S', 'R', 'SW', 'SW<', 'DW', 'N', '<', 'D', 'Z']: e.pop(0)
+                while e[0] in [
+                        'S', 'R', 'SW', 'SW<', 'DW', 'N', '<', 'D', 'Z'
+                ]:
+                    e.pop(0)
                 cmdline = " ".join(e)
                 if cmdline[0] == '[' and cmdline[-1] == ']':
                     cmd = cmdline
@@ -44,4 +48,8 @@ class PSAnalysis(analysis.Analysis):
                 fname = k
                 for c in r'[]/\;,><&*:%=+@!#^()|?^':
                     fname = fname.replace(c, '')
-                self.make_graph(data[k], k, fname, ts=timestamps[k], output_dir=output_dir)
+                self.make_graph(data[k],
+                                k,
+                                fname,
+                                ts=timestamps[k],
+                                output_dir=output_dir)

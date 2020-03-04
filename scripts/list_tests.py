@@ -16,8 +16,10 @@ def get_num(name):
     else:
         return 0
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Display test names in testsuite')
+    parser = argparse.ArgumentParser(
+        description='Display test names in testsuite')
     parser.add_argument('testsuite', type=str, help='name of a test suite')
     args = parser.parse_args()
     names = testsuites.list_tests[args.testsuite]

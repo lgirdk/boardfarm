@@ -4,7 +4,7 @@
 # dependencies may not be installed yet
 import os
 g, ver = {}, {}
-with open(os.path.join("boardfarm","version.py")) as f:
+with open(os.path.join("boardfarm", "version.py")) as f:
     exec(f.read(), g, ver)
 
 from setuptools import setup, find_packages
@@ -15,9 +15,8 @@ setup(name='boardfarm',
       author='Various',
       url='https://github.com/lgirdk/boardfarm',
       packages=find_packages(),
-      package_data={'': ['*.txt','*.json','*.cfg','*.md','*.tcl']},
+      package_data={'': ['*.txt', '*.json', '*.cfg', '*.md', '*.tcl']},
       include_package_data=True,
-      entry_points = {
-        'console_scripts': ['bft=boardfarm.bft:main'],
-      }
-     )
+      entry_points={
+          'console_scripts': ['bft=boardfarm.bft:main'],
+      })

@@ -23,6 +23,7 @@ except Exception as e:
           "  sudo pip install -U elasticsearch")
     sys.exit(1)
 
+
 class Serializer(JSONSerializer):
     def default(self, obj):
         try:
@@ -32,21 +33,24 @@ class Serializer(JSONSerializer):
         except:
             return "Unable to serialize"
 
+
 def pprint(x):
     '''Pretty print an object'''
     print(json.dumps(x, sort_keys=True, indent=2))
+
 
 class ElasticsearchLogger(object):
     '''
     Write data directly to an elasticsearch cluster.
     '''
-
     def __init__(self, server, index='boardfarm', doc_type='bft_run'):
         self.server = server
-        self.index = index + "-" + datetime.datetime.utcnow().strftime("%Y.%m.%d")
+        self.index = index + "-" + datetime.datetime.utcnow().strftime(
+            "%Y.%m.%d")
         self.doc_type = doc_type
         # Connect to server
-        self.es = elasticsearch.Elasticsearch([server], serializer=Serializer())
+        self.es = elasticsearch.Elasticsearch([server],
+                                              serializer=Serializer())
         # Set default data
         username = os.environ.get('BUILD_USER_ID', None)
         if username is None:
@@ -61,24 +65,31 @@ class ElasticsearchLogger(object):
 
     def log(self, data, debug=False):
         # Put in default data
-        self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime(
+            "%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
 
-        data = {k: data[k] for k in data if not (type(data[k]) is float and isnan(data[k]))}
+        data = {
+            k: data[k]
+            for k in data if not (type(data[k]) is float and isnan(data[k]))
+        }
 
         if debug == True:
             print("Logging this data to Elastic:")
             pprint(data)
 
         try:
-            result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
+            result = self.es.index(index=self.index,
+                                   doc_type=self.doc_type,
+                                   body=data)
         except RequestError as e:
             print("Elastic logging error:")
             print(e.info)
             raise
 
         if result and u'result' in result and result[u'result'] == u'created':
-            doc_url = "%s%s/%s/%s" % (self.server, self.index, self.doc_type, result['_id'])
+            doc_url = "%s%s/%s/%s" % (self.server, self.index, self.doc_type,
+                                      result['_id'])
             print("Elasticsearch: Data stored at %s" % (doc_url))
         else:
             print(result)
