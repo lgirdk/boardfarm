@@ -184,6 +184,9 @@ def chrome_webproxy_driver(ipport, config):
 
     driver = webdriver.Chrome(options=chrome_options)
 
+    x,y = config.get_display_backend_size()
+    driver.set_window_size(x, y)
+
     driver.implicitly_wait(30)
     driver.set_page_load_timeout(30)
 
