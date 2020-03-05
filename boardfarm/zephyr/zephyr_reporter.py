@@ -47,9 +47,9 @@ def parse_arguments():
                         A cycle with this name is created if not otherwise \
                         specified", default = "DemoBuild")
     parser.add_argument("--user", "-u", required=False,
-                        help="The Jira user that is publishing the results", default = USR)
+                        help="The Jira user that is publishing the results", default = 'user')
     parser.add_argument("--passwd", "-p", required=False,
-                        help="The Jira password of the given user", default = PWD)
+                        help="The Jira password of the given user", default = 'pass')
     parser.add_argument("--updateautomationstatus", "-a", required=False,
                         help="When True it marks the test automation status \
                         in Jira",
@@ -179,7 +179,3 @@ def update_zephyr(test_cases_list):
 
             if ret.status_code != requests.codes.ok:
                 raise Exception("Error = %s, when trying to set execution status" % ret)
-
-if __name__ == "__main__":
-    ARGS = parse_arguments()
-    main(ARGS)
