@@ -82,9 +82,11 @@ class BftEnvMismatch(BftEnvException):
     """Raised when an env value is wrong for a particular key"""
     pass
 
+
 class BFTypeError(BftBaseException):
     """Raise this if an invalid data type is passed"""
     pass
+
 
 class ConnectionRefused(BftBaseException):
     """Raise this exception when we fail to ssh/telnet to a machine"""
