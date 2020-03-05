@@ -101,8 +101,8 @@ def check_devices(devices, func_name='check_status'):
             saved_logfile_read = None
             try:
                 if hasattr(d, 'logfile_read'):
-                    saved_logfile_read = d.logfile_read
-                    d.logfile_read = None
+                    saved_logfile_read = d.logfile_read.out
+                    d.logfile_read.out = None
                 print("Checking status for " + d.__class__.__name__ +
                       " (see log in result dir for data)")
                 getattr(d, func_name)()
@@ -110,7 +110,7 @@ def check_devices(devices, func_name='check_status'):
                 ret.append(d)
                 print("Status check for %s failed." % d.__class__.__name__)
             if saved_logfile_read is not None:
-                d.logfile_read = saved_logfile_read
+                d.logfile_read.out = saved_logfile_read
         elif 'BFT_DEBUG' in os.environ:
             print("Pro Tip: Write a function %s.%s() to run between tests." %
                   (d.__class__.__name__, func_name))

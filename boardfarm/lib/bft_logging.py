@@ -197,13 +197,14 @@ class o_helper(object):
         :param string: Message to write in the output file
         :type string: String
         """
-        if self.first_write:
-            self.first_write = False
-            string = "\r\n" + string
-        if self.color is not None:
-            self.out.write(colored(string, self.color))
-        else:
-            self.out.write(string)
+        if self.out is not None:
+            if self.first_write:
+                self.first_write = False
+                string = "\r\n" + string
+            if self.color is not None:
+                self.out.write(colored(string, self.color))
+            else:
+                self.out.write(string)
         td = datetime.now() - start
         # check for the split case
         if len(self.parent.log
@@ -219,7 +220,8 @@ class o_helper(object):
 
     def flush(self):
         """Flushes the buffer storage in console before pexpect"""
-        self.out.flush()
+        if self.out is not None:
+            self.out.flush()
 
 
 def create_file_logs(config, board, tests_to_run, logger):
