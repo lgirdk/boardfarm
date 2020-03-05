@@ -30,7 +30,7 @@ class SerialPhone(object):
         self.sendline("find /dev/tty%s" % (self.line))
         self.expect(self.prompt)
         return bool(
-            re.search((r' find \/dev\/tty%s\\r\\n/dev/tty%s\\r\\n' %
+            re.search((r' find /dev/tty%s\r\n/dev/tty%s\r\n' %
                        (self.line, self.line)), self.before))
 
     def phone_config(self):
