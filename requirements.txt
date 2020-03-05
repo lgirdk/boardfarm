@@ -19,6 +19,7 @@ matplotlib
 nested_lookup==0.2.19
 netaddr
 pexpect
+pre-commit
 pycryptodome
 pymongo
 pyserial
