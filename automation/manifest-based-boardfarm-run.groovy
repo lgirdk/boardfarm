@@ -89,10 +89,18 @@ def post_gerrit_msg (msg) {
 
 def run_lint () {
     println("Running lint checks")
+    setup_python(python_version)
     sh '''
     set +e
     pwd
     ls
+    . venv/bin/activate
+    # Run pre-commit, but undo changes it makes
+    cd boardfarm
+    pre-commit run --origin HEAD --source m/master > ../pre-commit-results.txt
+    git reset --hard HEAD
+    cd -
+    # Run other checks
     rm -f errors.txt
     touch errors.txt
     repo forall -c 'git diff --name-only HEAD m/master | sed s,^,$REPO_PATH/,g' > files_changed.txt
@@ -116,6 +124,8 @@ def run_lint () {
     # Check for bad line endings (we want linux line endings only)
     file ${files_changed} | grep 'with CRLF line' | awk -F: '{print $1": Run dos2unix on this file please."}' >> errors.txt
     '''
+
+    post_gerrit_msg_from_file("pre-commit-results.txt")
 
     err_count = sh(returnStdout: true, script: """cat errors.txt | wc -l""") as Integer
     println("Found " + err_count + " errors in code")
