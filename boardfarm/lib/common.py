@@ -1306,7 +1306,8 @@ def postfix_install(device):
     :param device: lan or wan
     :type device: Object
     """
-    if retry_on_exception(device.get_interface_ipaddr, (device.iface_dut,), retries=1):
+    if retry_on_exception(device.get_interface_ipaddr, (device.iface_dut, ),
+                          retries=1):
         device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" %
                             device.get_interface_ipaddr(device.iface_dut))
     install_postfix(device)
