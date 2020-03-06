@@ -275,9 +275,9 @@ def parse():
                 config.test_args = json.load(fp)
         except Exception as e:
             print(e)
-            print("Warning: unable to fetch test args from %s" %
+            print("ERROR: unable to fetch test args from %s" %
                   config.test_args_location)
-            config.test_args = None
+            sys.exit(1)
 
     # Check if boardfarm configuration is empty
     if not config.boardfarm_config:
