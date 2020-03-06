@@ -1300,15 +1300,15 @@ def ftp_close(device):
 
 
 def postfix_install(device):
-    """Add eth0 ip to hosts and Install postfix service if not present
+    """Add iface_dut  to hosts and Install postfix service if not present
     Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
 
     :param device: lan or wan
     :type device: Object
     """
-    if retry_on_exception(device.get_interface_ipaddr, ("eth0", ), retries=1):
+    if retry_on_exception(device.get_interface_ipaddr, (device.iface_dut,), retries=1):
         device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" %
-                            device.get_interface_ipaddr("eth0"))
+                            device.get_interface_ipaddr(device.iface_dut))
     install_postfix(device)
 
 
