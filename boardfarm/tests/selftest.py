@@ -565,7 +565,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
     def get_dev_ip_address(self, dev):
         return dev.get_interface_ipaddr(dev.iface_dut)
 
-    def testSetup(self):
+    def setup_class(self):
         from boardfarm.config import get_err_injection_dict  # TO DO: this should come from ConfigHelper
         # this si a direct ref to the dict  (not a copy!!!)
         self.config.err_injection_dict = get_err_injection_dict()
@@ -580,7 +580,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
 
         expected_faulures = 0
 
-        self.testSetup()
+        self.setup_class()
 
         assert not self.simple_bool_return(), "error not correctly injected"
         self.config.err_injection_dict[self.cls_name].pop('simple_bool_return')
