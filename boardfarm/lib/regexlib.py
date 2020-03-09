@@ -57,12 +57,9 @@ TracerouteNoRoute = '((.[1-9]|[1-9][0-9])(\s\s\*\s\*\s\*)(\r\n|\r|\n)){30}'
 # Grep hex string format of Mac address in SNMP output
 # Matches eg:F4 6D 04 61 74 E0
 SNMPMacAddressRegex = '([0-9A-Z][0-9A-Z]\s){6}'
-'''
-This will match the follwing:
 
-Trying x.x.x.x...
-Connected to x.x.x.x.
-Escape character is '^]'.
-
-'''
+# This following will match:
+# Trying x.x.x.x...
+# Connected to x.x.x.x.
+# Escape character is '^]'.
 telnet_ipv4_conn = "Trying " + ValidIpv4AddressRegex + "\.\.\.\r\nConnected to " + ValidIpv4AddressRegex + "\.\r\nEscape character is '\^]'\.((\r\n){,2})"

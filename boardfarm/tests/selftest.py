@@ -1,3 +1,8 @@
+'''
+    This file can be used to add unit tests that
+    tests/validate the behavior of new/modified
+    components.
+'''
 from boardfarm.tests import rootfs_boot
 from boardfarm import lib
 import hashlib
@@ -9,11 +14,6 @@ from boardfarm.lib import SnmpHelper
 
 from boardfarm.devices import board, lan, wan
 from boardfarm.lib import common
-'''
-    This file can be used to add unit tests that
-    tests/validate the behavior of new/modified
-    components.
-'''
 
 
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):

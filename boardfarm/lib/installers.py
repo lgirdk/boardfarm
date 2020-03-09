@@ -4,13 +4,13 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
+"""
+Libraries to install linux packages
+"""
 
 import re
 import pexpect
 from retry.api import retry_call
-"""
-Libraries to install linux packages
-"""
 
 
 def apt_install(device, name, timeout=120):
