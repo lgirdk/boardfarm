@@ -42,7 +42,6 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     at a given IP address. Return a class that can correctly
     interact with that type of switch.
     '''
-
     login_failed = False
     all_login_defaults = []
     for name, obj in list(globals().items()):
@@ -63,7 +62,12 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
             if "cmd://" in outlet:
                 return SimpleCommandPower(outlet=outlet)
             if "px2://" in outlet:
-                return PX2(outlet=outlet)
+                kwargs = {}
+                if username:
+                    kwargs["username"] = username
+                if password:
+                    kwargs["password"] = password
+                return PX2(outlet=outlet, **kwargs)
 
         return HumanButtonPusher()
 
@@ -228,12 +232,12 @@ class PX2(PowerDevice):
 
     def do_login(self):
         pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
-        pcon.expect('Login for PX2 CLI')
+        pcon.expect('Login for PX\d CLI')
         pcon.expect('Username:')
         pcon.sendline(self.username)
         pcon.expect('Password:')
         pcon.sendline(self.password)
-        pcon.expect('Welcome to PX2 CLI!')
+        pcon.expect('Welcome to PX\d CLI!')
         pcon.expect('# ')
 
         self.pcon = pcon
