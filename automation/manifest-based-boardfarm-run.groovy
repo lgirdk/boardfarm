@@ -41,7 +41,7 @@ def setup_python (version) {
     if (version == "2") {
         sh '''
 
-	if grep "$BUILD_URL" pip-check-build-py2; then
+        if grep "$BUILD_URL" pip-check-build-py2; then
             . venv/bin/activate
         else
             rm -rf venv
@@ -50,11 +50,11 @@ def setup_python (version) {
             repo forall -c '[ -e "requirements.txt" ] && { pip install -r requirements.txt || echo failed; } || true '
             repo forall -c '[ -e "setup.py" ] && { pip install -e . || echo failed; } || true '
             echo $BUILD_URL > pip-check-build-py2
-	}
+        }
         '''
     } else {
         sh '''
-	if grep "$BUILD_URL" pip-check-build-py3; then
+        if grep "$BUILD_URL" pip-check-build-py3; then
             . venv/bin/activate
         else
             rm -rf venv
@@ -65,7 +65,7 @@ def setup_python (version) {
             repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
             repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
             echo $BUILD_URL > pip-check-build-py3
-	fi
+        fi
         '''
     }
 }
@@ -190,7 +190,7 @@ def run_test (loc, ts, post, board) {
                 fi
             done
             '''
-	} else {
+        } else {
             sh '''
             pwd
             . venv/bin/activate
@@ -214,7 +214,7 @@ def run_test (loc, ts, post, board) {
 
         }
 
-	// TODO: only saves one of each board type (Board: mv1 mv1) - not a huge deal atm
+        // TODO: only saves one of each board type (Board: mv1 mv1) - not a huge deal atm
         sh "mkdir -p  ${loc}/${board}/; mv boardfarm/results/* ${loc}/${board}/ || true"
 
         archiveArtifacts artifacts: "${loc}/${board}/*"
@@ -285,16 +285,16 @@ pipeline {
                         boards = default_board
                     }
                     testsuites  = sh(returnStdout: true, script: """. venv/bin/activate; python -c 'from boardfarm import find_plugins; print(" ".join([ getattr(v, "selftest_testsuite", "") for k, v in find_plugins().items() if hasattr(v, "selftest_testsuite") ]))'""")
-		    def loc_selftest = [:]
+                    def loc_selftest = [:]
                     idx = 1
                     for (board in boards.trim().tokenize(' ')) {
-	                for (x in loc_arr) {
+                        for (x in loc_arr) {
                             def loc = x
-		            loc_selftest["${idx}: ${board}: $loc"] = {
-			        stage("run selftest in $loc on board $board") {
+                            loc_selftest["${idx}: ${board}: $loc"] = {
+                                stage("run selftest in $loc on board $board") {
                                     script {
-			                node ('boardfarm && ' + loc) {
-	                                    sync_code()
+                                        node ('boardfarm && ' + loc) {
+                                            sync_code()
                                             setup_python(python_version)
                                             println("running testsuites = " + testsuites)
                                             for (ts in testsuites.trim().tokenize(' ')) {
@@ -304,10 +304,10 @@ pipeline {
                                         }
                                     }
                                 }
-		            }
+                            }
                             idx++
-		        }
-		    }
+                        }
+                    }
                     parallel loc_selftest
                 }
             }
@@ -321,24 +321,24 @@ pipeline {
                     if (!boards?.trim()) {
                         boards = default_board
                     }
-		    def loc_jobs = [:]
+                    def loc_jobs = [:]
                     idx = 1
                     for (board in boards.trim().tokenize(' ')) {
-	                for (x in loc_arr) {
+                        for (x in loc_arr) {
                             def loc = x
                             loc_jobs["${idx}: ${board}: $loc"] = {
-			        stage("run bft in $loc on board $board") {
+                                stage("run bft in $loc on board $board") {
                                     script {
-			                node ('boardfarm && ' + loc) {
-	                                    sync_code()
-					    run_test(loc, null, true, board)
+                                        node ('boardfarm && ' + loc) {
+                                            sync_code()
+                                            run_test(loc, null, true, board)
                                         }
                                     }
                                 }
-		            }
+                            }
                             idx++
-		        }
-		    }
+                        }
+                    }
                     parallel loc_jobs
                 }
             }
