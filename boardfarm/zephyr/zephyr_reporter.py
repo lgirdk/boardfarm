@@ -1,15 +1,16 @@
 #!/usr/bin/python2
 import argparse
-import glob
-import os
 import csv
 import datetime
+import glob
 import json
-from jira import JIRA
-from . import zapi
-import requests
+import os
 
 import boardfarm
+import requests
+from jira import JIRA
+
+from . import zapi
 
 COLUMN_SCRIPT_NAME = "TestScript Name"
 COLUMN_JIRA_TEST_ID = "Jira ID"

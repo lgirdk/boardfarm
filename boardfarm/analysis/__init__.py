@@ -5,9 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import inspect
-import importlib
 import glob
+import importlib
+import inspect
 import os
 import traceback
 

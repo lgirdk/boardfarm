@@ -1,7 +1,8 @@
 #!/usr/bin/python2
 """"Methods to interact with the Zephyr API on top of Jira"""
 import re
-from requests import get, put, post
+
+from requests import get, post, put
 from simplejson import loads
 
 STATUS_CODE_DICT = {

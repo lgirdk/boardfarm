@@ -3,11 +3,12 @@
 # Get version without importing boardfarm because
 # dependencies may not be installed yet
 import os
+
+from setuptools import find_packages, setup
+
 g, ver = {}, {}
 with open(os.path.join("boardfarm", "version.py")) as f:
     exec(f.read(), g, ver)
-
-from setuptools import setup, find_packages
 
 setup(name='boardfarm',
       version=ver['__version__'],

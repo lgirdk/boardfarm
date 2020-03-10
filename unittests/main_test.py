@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import boardfarm
 import os
 import unittest
+
+import boardfarm
 
 
 class TestSimpleBoardfarm(unittest.TestCase):

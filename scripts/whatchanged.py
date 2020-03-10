@@ -6,8 +6,9 @@ import os
 import sys
 
 import boardfarm
-from boardfarm.lib.code import get_all_classes_from_code, changed_classes, get_features
-from boardfarm.lib.code import get_classes_lib_functions, changed_functions
+from boardfarm.lib.code import (changed_classes, changed_functions,
+                                get_all_classes_from_code,
+                                get_classes_lib_functions, get_features)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """Unit tests for boardfarm.lib.env_helper.py."""
-import pytest
-
 import boardfarm.exceptions
+import pytest
 from boardfarm.lib import env_helper
 
 
