@@ -27,7 +27,6 @@ def get_default_for_arg(function, arg):
     return defaults
 
 
-
 try:
     from ouimeaux.environment import Environment as WemoEnv
     from ouimeaux.device.switch import Switch as WemoSwitch

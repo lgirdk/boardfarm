@@ -27,7 +27,6 @@ except:
     from urllib2 import build_opener, install_opener, ProxyHandler, urlopen
 
 
-
 class OpenWrtRouter(linux.LinuxDevice):
     '''
     Args:

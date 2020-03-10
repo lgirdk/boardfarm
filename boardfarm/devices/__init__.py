@@ -30,8 +30,6 @@ from . import openwrt_router
 # Don't let mgr remain a global, pass it into functions instead.
 mgr = None
 
-
-
 env = {
     "wan_iface": "wan%s" % uniqid[:12],
     "lan_iface": "lan%s" % uniqid[:12],

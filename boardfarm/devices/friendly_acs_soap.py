@@ -32,7 +32,6 @@ if "BFT_DEBUG" in os.environ:
     })
 
 
-
 class FriendlyACS():
     __metaclass__ = LoggerMeta
     log = ""

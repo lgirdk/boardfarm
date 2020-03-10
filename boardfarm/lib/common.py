@@ -38,7 +38,6 @@ except:
     from urlparse import urlparse
     from urllib2 import urlopen, Request
 
-
 ubootprompt = ['ath>', r'\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
 prompts = ubootprompt + linuxprompt + [

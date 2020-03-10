@@ -11,7 +11,6 @@ from boardfarm.tests_wrappers import throw_pexpect_error
 
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
-
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 
