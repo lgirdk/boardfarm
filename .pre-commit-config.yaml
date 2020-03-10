@@ -11,6 +11,8 @@ repos:
     -   id: check-docstring-first
     -   id: check-yaml
     -   id: check-json
+    -   id: pretty-format-json
+        args: [--autofix, --indent=4]
     -   id: requirements-txt-fixer
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.1.7
