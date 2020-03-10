@@ -210,18 +210,18 @@ All routers in a board farm need an entry in the boardfarm_config.json file like
       "board_type": "<model>",
       "conn_cmd": "telnet <server> <port>",
       "devices": [
-		{
-			"type": "debian",
-			"name": "wan",
-			"ipaddr": "port2",
-			"color": "cyan"
-		},
-		{
-			"type": "debian",
-			"name": "lan",
-			"ipaddr": "port3",
-			"color": "blue"
-		}
+                {
+                        "type": "debian",
+                        "name": "wan",
+                        "ipaddr": "port2",
+                        "color": "cyan"
+                },
+                {
+                        "type": "debian",
+                        "name": "lan",
+                        "ipaddr": "port3",
+                        "color": "blue"
+                }
       "powerip": "<powerserver>",
       "powerport": "<outlet>"
     }
