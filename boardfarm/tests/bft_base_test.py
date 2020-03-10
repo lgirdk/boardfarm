@@ -8,12 +8,17 @@
 import sys
 import time
 import traceback
+import warnings
+
+import debtcollector
+import six
 
 import boardfarm.exceptions
-import six
 from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.library import check_devices
+
+warnings.simplefilter("always", UserWarning)
 
 
 class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
@@ -131,6 +136,10 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                         print(
                             "\n\n----------- Test failed! Retrying in 5 seconds... -------------"
                         )
+                        debtcollector.deprecate(
+                            "Using function/method 'recover()' is deprecated",
+                            removal_version="> 1.1.1",
+                            category=UserWarning)
                         self.recover()
                         time.sleep(5)
                         print(
@@ -199,6 +208,10 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                     d = getattr(self.config, device)
                     print(d)
 
+            debtcollector.deprecate(
+                "Using function/method 'recover()' is deprecated",
+                removal_version="> 1.1.1",
+                category=UserWarning)
             self.recover()
             check_devices(recheck_devices)
             self.endMarker()
