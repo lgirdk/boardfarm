@@ -7,12 +7,17 @@
 
 import time
 import traceback
+import warnings
+
+from debtcollector import removals
 
 import boardfarm.exceptions
 from boardfarm import lib
 from boardfarm.lib.common import run_once
 
 from . import bft_base_test
+
+warnings.simplefilter("always", UserWarning)
 
 
 class RootFSBootTest(bft_base_test.BftBaseTest):
@@ -248,6 +253,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 traceback.print_exc()
                 raise boardfarm.exceptions.BootFail
 
+    @removals.remove(removal_version="> 1.1.1", category=UserWarning)
     def recover(self):
         board = self.dev.board
         if self.__class__.__name__ == "RootFSBootTest":
