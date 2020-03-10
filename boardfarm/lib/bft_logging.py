@@ -6,14 +6,14 @@
 # The full text can be found in LICENSE in the root directory.
 
 import os
+import re
 import time
 import types
 from datetime import datetime
-from termcolor import colored
-import re
 from functools import wraps
 
 from boardfarm import start
+from termcolor import colored
 
 
 def now_short(_format="%Y%m%d-%H%M%S"):

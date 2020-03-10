@@ -1,7 +1,8 @@
 import glob
 import re
-import six
 import subprocess
+
+import six
 
 
 def get_all_classes_from_code(directories, debug=False):

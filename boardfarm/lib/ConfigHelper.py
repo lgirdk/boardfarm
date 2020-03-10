@@ -1,4 +1,5 @@
 import traceback
+
 from boardfarm.exceptions import ConfigKeyError
 
 

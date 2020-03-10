@@ -6,10 +6,11 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from boardfarm.lib.common import retry_on_exception
-import pexpect
 import ipaddress
+
+import pexpect
 import six
+from boardfarm.lib.common import retry_on_exception
 
 
 def tcpdump_capture(device,

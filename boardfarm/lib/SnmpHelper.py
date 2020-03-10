@@ -5,22 +5,23 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import os
 import json
-import pexpect
-import six
+import os
 import re
 
 import boardfarm
-from .installers import install_pysnmp
+import pexpect
+import six
+from pysmi.codegen import JsonCodeGen
+from pysmi.compiler import MibCompiler
+from pysmi.parser import SmiStarParser
 from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
-from pysmi.parser import SmiStarParser
-from pysmi.codegen import JsonCodeGen
-from pysmi.compiler import MibCompiler
-from .regexlib import ValidIpv4AddressRegex, AllValidIpv6AddressesRegex
 from pysnmp.hlapi import ObjectIdentifier
+
+from .installers import install_pysnmp
+from .regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
 
 def find_directory_in_tree(pattern, root_dir):

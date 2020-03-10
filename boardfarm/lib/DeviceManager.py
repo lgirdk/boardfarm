@@ -1,12 +1,12 @@
-import sys
-import os
-from aenum import Enum
-from six.moves import UserList
-
-from boardfarm.exceptions import DeviceDoesNotExistError
-
 # Setup logging
 import logging
+import os
+import sys
+
+from aenum import Enum
+from boardfarm.exceptions import DeviceDoesNotExistError
+from six.moves import UserList
+
 logging.basicConfig(stream=sys.stdout, format='%(message)s')
 logger = logging.getLogger('DeviceManager')
 logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL

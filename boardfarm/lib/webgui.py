@@ -8,15 +8,17 @@
 import os
 import time
 import traceback
+
 from pyvirtualdisplay import Display
-
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
-from .gui_helper import click_button_id, enter_input, get_radio_button_value, get_text_value, get_drop_down_value, select_option_by_id
-from .common import resolv_dict, get_webproxy_driver
+from .common import get_webproxy_driver, resolv_dict
+from .gui_helper import (click_button_id, enter_input, get_drop_down_value,
+                         get_radio_button_value, get_text_value,
+                         select_option_by_id)
 
 
 class web_gui():

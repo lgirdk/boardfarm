@@ -16,15 +16,19 @@ import re
 import ssl
 import sys
 import time
-
-import termcolor
-import pexpect
-
-from termcolor import cprint
-from boardfarm.lib.SnmpHelper import SnmpMibs
-from boardfarm.lib.installers import install_postfix
-from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from datetime import datetime
+
+import pexpect
+import termcolor
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.installers import install_postfix
+from boardfarm.lib.SnmpHelper import SnmpMibs
+from selenium import webdriver
+from selenium.webdriver.common import proxy
+from termcolor import cprint
+
+from .installers import install_pysnmp
+
 try:
     # Python3
     from urllib.parse import urlparse
@@ -34,9 +38,6 @@ except:
     from urlparse import urlparse
     from urllib2 import urlopen, Request
 
-from selenium import webdriver
-from selenium.webdriver.common import proxy
-from .installers import install_pysnmp
 
 ubootprompt = ['ath>', r'\(IPQ\) #', 'ar7240>']
 linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']

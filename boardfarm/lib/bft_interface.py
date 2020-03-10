@@ -1,7 +1,9 @@
-import six
-import ipaddress, netaddr
+import ipaddress
 import re
+
+import netaddr
 import pexpect
+import six
 from boardfarm.exceptions import BFTypeError
 from boardfarm.lib.regexlib import LinuxMacFormat
 

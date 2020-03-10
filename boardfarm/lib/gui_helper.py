@@ -6,9 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from selenium.webdriver.support.select import Select
-from selenium.common.exceptions import NoSuchElementException
 import time
+
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.select import Select
 
 
 def enter_input(web_gui, input_path, input_value):

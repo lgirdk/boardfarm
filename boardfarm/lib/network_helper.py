@@ -6,10 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
+import ipaddress
 import re
 
 import netaddr
-import ipaddress
 import six
 
 

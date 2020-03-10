@@ -1,15 +1,16 @@
-import pexpect
+import getpass
+import inspect
 import os
 import sys
 import time
+
+import pexpect
 import termcolor
-import inspect
-import getpass
+from boardfarm.lib.bft_logging import o_helper
+from boardfarm.tests_wrappers import throw_pexpect_error
 
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
-from boardfarm.lib.bft_logging import o_helper
-from boardfarm.tests_wrappers import throw_pexpect_error
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 

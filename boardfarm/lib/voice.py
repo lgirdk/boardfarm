@@ -1,7 +1,7 @@
 import pexpect
-from nested_lookup import nested_lookup
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
+from nested_lookup import nested_lookup
 
 
 def add_dns_auth_record(dns, sipserver_name):

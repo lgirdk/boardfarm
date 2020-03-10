@@ -1,11 +1,11 @@
 import json
 import os
 import re
-import six
 
 import boardfarm
-from boardfarm.lib.common import print_bold
+import six
 from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient
+from boardfarm.lib.common import print_bold
 
 
 def get_station_config(location=None):

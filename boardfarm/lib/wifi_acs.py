@@ -1,4 +1,7 @@
-import pexpect, re
+import re
+
+import pexpect
+
 from .wifi import wifi_stub
 
 

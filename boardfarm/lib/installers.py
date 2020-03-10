@@ -9,6 +9,7 @@ Libraries to install linux packages
 """
 
 import re
+
 import pexpect
 from retry.api import retry_call
 
