@@ -441,6 +441,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendline('/etc/init.d/tinyproxy restart')
         self.expect('Restarting')
         self.expect(self.prompt)
+        self.sendline('sleep 3; ps auxwww')
+        self.expect('/usr/sbin/tinyproxy')
+        self.expect_prompt()
 
     def take_lock(self, file_lock, fd=9, timeout=200):
         '''Takes a file lock on file_lock'''
