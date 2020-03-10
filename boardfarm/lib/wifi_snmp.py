@@ -18,15 +18,7 @@ class wifi_snmp(wifi_stub):
         self.board = board
         self.mib_value = self.board.wifi_snmp_file
         self.parser = SnmpHelper.SnmpMibs.default_mibs
-
-    @property
-    def iface_ip(self):
-        """To fetch the interface IP
-
-        :retrun: interface ip
-        :rtype: string
-        """
-        return self.board.get_iface_addr_with_retries(self.board.wan_iface)
+        self.iface_ip = None
 
     def enable_wifi(self, wifi_mode):
         """To enable wifi network via SNMP
