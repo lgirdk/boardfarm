@@ -69,6 +69,7 @@ code_change_server = None
 option_dict = {
     "proxy": ["normal", "socks5"],
     "webdriver": ["chrome", "ffox"],
+    "headless": ["false", "true", "y", "t"],
     "disp": ["xvfb", "xephyr", "xvnc"],
     "disp_port": ["0"],
     "disp_size": ["1366x768"]
@@ -78,6 +79,7 @@ option_dict = {
 # BFT_OPTIONS="proxy=normal webdriver=chrome"
 default_proxy_type = "normal"
 default_web_driver = "ffox"
+default_headless = True
 default_display_backend = "xvnc"
 default_display_backend_port = "0"  # i.e. use any available ports
 default_display_backend_size = "1366x768"
@@ -90,6 +92,8 @@ if 'BFT_OPTIONS' in os.environ:
                 default_proxy_type = v
             if k == "webdriver":
                 default_web_driver = v
+            if k == "headless":
+                default_headless = v.lower in ['true', 't', 'y']
             if k == "disp":
                 default_display_backend = v
         elif k == "disp_port":
@@ -122,6 +126,10 @@ def get_display_backend_size():
 if 'BFT_DEBUG' in os.environ:
     print("Using proxy:" + default_proxy_type)
     print("Using webdriver:" + default_web_driver)
+    if default_headless:
+        print("Using webdriver headless")
+    else:
+        print("Webdriver WILL show GUI")
     print("Using disp:" + default_display_backend)
     print("Using disp_port:" + default_display_backend_port)
     print("Using disp_size:" + default_display_backend_size)

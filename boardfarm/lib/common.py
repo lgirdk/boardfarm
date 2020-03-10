@@ -145,7 +145,9 @@ def firefox_webproxy_driver(ipport, config):
         "text/anytext,text/comma-separated-values,text/csv,application/octet-stream"
     )
     profile.update_preferences()
-    driver = webdriver.Firefox(firefox_profile=profile)
+    opts = webdriver.FirefoxOptions()
+    opts.headless = config.default_headless
+    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=opts)
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
     driver.implicitly_wait(30)
@@ -177,10 +179,7 @@ def chrome_webproxy_driver(ipport, config):
 
     chrome_options.add_argument("--start-maximized")
 
-    if "BFT_DEBUG" in os.environ:
-        print("chrome can be connected to Xvnc")
-    else:
-        print("chrome running headless")
+    if config.default_headless:
         chrome_options.add_argument("--headless")
 
     driver = webdriver.Chrome(options=chrome_options)
