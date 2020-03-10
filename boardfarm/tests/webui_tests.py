@@ -6,10 +6,9 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
-from boardfarm.tests import rootfs_boot
 from boardfarm import lib
-from boardfarm.devices import board, lan
-from boardfarm.devices import prompt
+from boardfarm.devices import board, lan, prompt
+from boardfarm.tests import rootfs_boot
 from selenium.webdriver import ActionChains
 
 

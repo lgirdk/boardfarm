@@ -1,15 +1,14 @@
-import re
-from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, wan, lan
-from boardfarm.devices import prompt
-
-from random import randint
 import ipaddress
-from faker import Factory
-import pexpect
-import time
 import random
+import re
+import time
+from random import randint
+
+import pexpect
 import six
+from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.tests import rootfs_boot
+from faker import Factory
 
 fake_generator = Factory.create()
 

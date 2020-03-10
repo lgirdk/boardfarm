@@ -6,9 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan
 from boardfarm.tests import netperf_test
-from boardfarm.devices import board, lan, wan
-from boardfarm.devices import prompt
 
 
 class NetperfReverseTest(netperf_test.NetperfTest):

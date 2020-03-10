@@ -6,9 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 
 import re
-from boardfarm.tests import rootfs_boot
-from boardfarm.lib import installers
+
 from boardfarm.devices import prompt
+from boardfarm.lib import installers
+from boardfarm.tests import rootfs_boot
 
 
 class iPerf3Test(rootfs_boot.RootFSBootTest):

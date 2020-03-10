@@ -6,10 +6,10 @@
 # The full text can be found in LICENSE in the root directory.
 
 import random
-from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, lan
-from boardfarm.devices import prompt
+
+from boardfarm.devices import board, lan, prompt
 from boardfarm.lib import installers
+from boardfarm.tests import rootfs_boot
 
 
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):

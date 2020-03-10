@@ -6,9 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan, wlan
 from boardfarm.tests import iperf_test
-from boardfarm.devices import board, wan, lan, wlan
-from boardfarm.devices import prompt
 
 
 class PerfPerPktTest(iperf_test.iPerfTest):

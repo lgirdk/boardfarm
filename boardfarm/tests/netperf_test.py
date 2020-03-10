@@ -6,10 +6,8 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan
 from boardfarm.tests import rootfs_boot
-
-from boardfarm.devices import board, lan, wan
-from boardfarm.devices import prompt
 
 
 def install_netperf(device):

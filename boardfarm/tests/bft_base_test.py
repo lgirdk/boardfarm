@@ -5,15 +5,15 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import time
-from boardfarm import lib
 import sys
+import time
 import traceback
-import six
 
-from boardfarm.library import check_devices
 import boardfarm.exceptions
+import six
+from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
+from boardfarm.library import check_devices
 
 
 class BftBaseTest(six.with_metaclass(LoggerMeta, object)):

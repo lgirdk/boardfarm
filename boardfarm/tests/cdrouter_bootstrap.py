@@ -5,21 +5,20 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import ipaddress
+import os
+import time
+
+import pexpect
+import six
+from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.orchestration import TestResult
+from boardfarm.tests import rootfs_boot
 from cdrouter import CDRouter
 from cdrouter.configs import Config
 from cdrouter.jobs import Job
 from cdrouter.packages import Package
-
-import time
-from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board, lan, wan
-from boardfarm.devices import prompt
-from boardfarm.orchestration import TestResult
-from boardfarm import lib
-import os
-import pexpect
-import ipaddress
-import six
 
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):

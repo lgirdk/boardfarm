@@ -5,14 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
-from boardfarm import lib
-from boardfarm.devices import board, wan, lan
-from boardfarm.devices import prompt
-
-from pyvirtualdisplay import Display
-import pexpect
 import os
+
+import pexpect
+from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.tests import rootfs_boot
+from pyvirtualdisplay import Display
 
 
 class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):

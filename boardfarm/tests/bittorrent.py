@@ -5,11 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot, socat
-from boardfarm.devices import board, lan
-from boardfarm.devices import prompt
-
 import pexpect
+from boardfarm.devices import board, lan, prompt
+from boardfarm.tests import rootfs_boot, socat
 
 
 class BitTorrentBasic(socat.SoCat):

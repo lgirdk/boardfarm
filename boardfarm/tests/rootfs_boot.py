@@ -8,10 +8,11 @@
 import time
 import traceback
 
-from . import bft_base_test
+import boardfarm.exceptions
 from boardfarm import lib
 from boardfarm.lib.common import run_once
-import boardfarm.exceptions
+
+from . import bft_base_test
 
 
 class RootFSBootTest(bft_base_test.BftBaseTest):

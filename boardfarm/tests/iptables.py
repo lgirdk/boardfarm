@@ -1,8 +1,7 @@
-from boardfarm.tests import rootfs_boot
-
 import os
 
 from boardfarm.devices import board
+from boardfarm.tests import rootfs_boot
 
 
 class IPTablesDump(rootfs_boot.RootFSBootTest):

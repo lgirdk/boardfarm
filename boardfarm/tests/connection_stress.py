@@ -5,12 +5,11 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
 import time
-from boardfarm.devices import board, lan, wan
-from boardfarm.devices import prompt
 
+from boardfarm.devices import board, lan, prompt, wan
 from boardfarm.lib.installers import install_lighttpd
+from boardfarm.tests import rootfs_boot
 
 
 class Connection_Stress(rootfs_boot.RootFSBootTest):

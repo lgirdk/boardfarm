@@ -3,17 +3,16 @@
     tests/validate the behavior of new/modified
     components.
 '''
-from boardfarm.tests import rootfs_boot
-from boardfarm import lib
 import hashlib
+import os
 import random
 import string
-import os
 import tempfile
-from boardfarm.lib import SnmpHelper
 
+from boardfarm import lib
 from boardfarm.devices import board, lan, wan
-from boardfarm.lib import common
+from boardfarm.lib import SnmpHelper, common
+from boardfarm.tests import rootfs_boot
 
 
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):

@@ -1,6 +1,5 @@
+from boardfarm.devices import board, prompt
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board
-from boardfarm.devices import prompt
 
 
 class CurlSSLGood(rootfs_boot.RootFSBootTest):

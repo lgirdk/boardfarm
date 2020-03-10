@@ -6,9 +6,9 @@
 # The full text can be found in LICENSE in the root directory.
 
 import re
+
+from boardfarm.devices import board, prompt
 from boardfarm.tests import rootfs_boot
-from boardfarm.devices import board
-from boardfarm.devices import prompt
 
 
 class InterfacesShow(rootfs_boot.RootFSBootTest):

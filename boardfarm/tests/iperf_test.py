@@ -5,12 +5,10 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
-from boardfarm.tests import ipv6_setup
 from boardfarm import lib
+from boardfarm.devices import board, lan, prompt, wan, wlan
 from boardfarm.lib import installers
-from boardfarm.devices import board, wan, lan, wlan
-from boardfarm.devices import prompt
+from boardfarm.tests import ipv6_setup, rootfs_boot
 
 # change this if you want to one time tweak iperf opts
 time = 60

@@ -5,9 +5,9 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
 from boardfarm import lib
 from boardfarm.devices import board, wan
+from boardfarm.tests import rootfs_boot
 
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):

@@ -5,8 +5,8 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
 from boardfarm import lib
+from boardfarm.tests import rootfs_boot
 
 
 class RouterPingWanDev(rootfs_boot.RootFSBootTest):

@@ -1,5 +1,5 @@
-from boardfarm.tests import rootfs_boot
 from boardfarm.devices import wlan
+from boardfarm.tests import rootfs_boot
 
 
 class WifiScan(rootfs_boot.RootFSBootTest):

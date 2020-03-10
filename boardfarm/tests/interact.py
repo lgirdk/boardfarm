@@ -5,10 +5,10 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
-from boardfarm import tests
-from boardfarm import lib
 import sys
+
+from boardfarm import lib, tests
+from boardfarm.tests import rootfs_boot
 from six.moves import input
 
 

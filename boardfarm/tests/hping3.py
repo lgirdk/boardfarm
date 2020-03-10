@@ -1,10 +1,7 @@
-from boardfarm.tests import rootfs_boot
 import pexpect
-
+from boardfarm.devices import board, lan, prompt, wan
 from boardfarm.lib.installers import install_hping3
-
-from boardfarm.devices import board, wan, lan
-from boardfarm.devices import prompt
+from boardfarm.tests import rootfs_boot
 
 
 class hping3_basic_udp(rootfs_boot.RootFSBootTest):

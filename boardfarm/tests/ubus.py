@@ -5,11 +5,11 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.tests import rootfs_boot
 import json
 import time
-from boardfarm.devices import board, lan
-from boardfarm.devices import prompt
+
+from boardfarm.devices import board, lan, prompt
+from boardfarm.tests import rootfs_boot
 
 
 def ubus_call_raw(payload, ipaddr="192.168.1.1"):

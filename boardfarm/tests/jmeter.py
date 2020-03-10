@@ -1,14 +1,12 @@
 import os
 import shutil
+
 import pexpect
-
-from boardfarm.tests import rootfs_boot
-from boardfarm.lib.installers import install_jmeter
-
-from boardfarm.devices import board, lan
-from boardfarm.devices import prompt
+from boardfarm.devices import board, lan, prompt
 # To Do: Move this file or function out of the "devices" directory
 from boardfarm.lib.common import scp_from
+from boardfarm.lib.installers import install_jmeter
+from boardfarm.tests import rootfs_boot
 
 
 def rm_r(path):
