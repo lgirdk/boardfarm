@@ -6,9 +6,9 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
-from . import openwrt_router
-
 from boardfarm.lib.randomMAC import randomMAC
+
+from . import openwrt_router
 
 
 class QcomArmBase(openwrt_router.OpenWrtRouter):

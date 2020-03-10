@@ -1,6 +1,6 @@
 import pexpect
-from boardfarm.lib.regexlib import telnet_ipv4_conn
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.regexlib import telnet_ipv4_conn
 
 
 class LocalSerialConnection():

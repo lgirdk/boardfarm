@@ -6,25 +6,26 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
+import ipaddress
 import os
 import os.path
 import socket
 import sys
+from datetime import datetime
+
+import pexpect
+from boardfarm.lib import common
+from boardfarm.lib.common import print_bold
+
+from . import connection_decider, linux, power
+
 try:
     # Python 3
     from urllib.request import build_opener, install_opener, ProxyHandler, urlopen
 except:
     # Python 2
     from urllib2 import build_opener, install_opener, ProxyHandler, urlopen
-import pexpect
-from . import linux
-from datetime import datetime
-import ipaddress
 
-from . import power
-from . import connection_decider
-from boardfarm.lib import common
-from boardfarm.lib.common import print_bold
 
 
 class OpenWrtRouter(linux.LinuxDevice):

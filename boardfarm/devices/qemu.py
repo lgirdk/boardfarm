@@ -5,17 +5,18 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from . import openwrt_router
+import atexit
+import ipaddress
+import os
 import signal
 import sys
-import pexpect
-import atexit
-import os
-import ipaddress
 
+import pexpect
 from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import cmd_exists
+
+from . import openwrt_router
 
 
 class Qemu(openwrt_router.OpenWrtRouter):

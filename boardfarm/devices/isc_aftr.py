@@ -1,11 +1,11 @@
-import six
-import sys
-import os
 import ipaddress
-import pexpect
-from collections import OrderedDict, Counter
+import os
+import sys
+from collections import Counter, OrderedDict
 
-from boardfarm.lib.installers import install_wget, apt_install
+import pexpect
+import six
+from boardfarm.lib.installers import apt_install, install_wget
 
 
 class AFTR(object):

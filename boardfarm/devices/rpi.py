@@ -5,11 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.lib import common
-from . import openwrt_router
-import os
 import ipaddress
+import os
+
 import pexpect
+from boardfarm.lib import common
+
+from . import openwrt_router
 
 
 class RPI(openwrt_router.OpenWrtRouter):

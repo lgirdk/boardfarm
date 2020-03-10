@@ -4,32 +4,33 @@
     devices over a network.
 
 '''
-import os
-import sys
 import glob
 import importlib
 import inspect
-import pexpect
-import termcolor
+import os
+import sys
 import traceback
 import types
-import importlib
-from six.moves import UserList
 
 import boardfarm
+import pexpect
+import termcolor
+from boardfarm import uniqid
+from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
+from boardfarm.lib.DeviceManager import \
+    device_type  # pylint: disable=unused-import
 from boardfarm.lib.DeviceManager import device_manager
-from boardfarm.lib.DeviceManager import device_type  # pylint: disable=unused-import
+from six.moves import UserList
+
+# TODO: this probably should not the generic device
+from . import openwrt_router
 
 # Please delete the following line when tests stop
 # doing "from boardfarm.devices import mgr"
 # Don't let mgr remain a global, pass it into functions instead.
 mgr = None
 
-# TODO: this probably should not the generic device
-from . import openwrt_router
 
-from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm import uniqid
 
 env = {
     "wan_iface": "wan%s" % uniqid[:12],

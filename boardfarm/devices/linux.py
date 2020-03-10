@@ -2,11 +2,13 @@ import binascii
 import ipaddress
 import os
 import re
-import six
+
 import pexpect
-from . import base
-from boardfarm.lib.regexlib import ValidIpv4AddressRegex, LinuxMacFormat
+import six
 from boardfarm.exceptions import PexpectErrorTimeout
+from boardfarm.lib.regexlib import LinuxMacFormat, ValidIpv4AddressRegex
+
+from . import base
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
 

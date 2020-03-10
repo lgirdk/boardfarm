@@ -5,14 +5,14 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import ipaddress
+import signal
+import sys
+
 from boardfarm.lib import common
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from . import openwrt_router
-import ipaddress
-from . import connection_decider
-import signal
-from . import linux
-import sys
+
+from . import connection_decider, linux, openwrt_router
 
 KEY_ESCAPE = '\x1B'
 KEY_UP = '\x1b[A'

@@ -6,11 +6,12 @@
 # The full text can be found in LICENSE in the root directory.
 #!/usr/bin/env python
 
-import pexpect
 import sys
-from . import base
 
+import pexpect
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
+from . import base
 
 
 class DellSwitch(base.BaseDevice):

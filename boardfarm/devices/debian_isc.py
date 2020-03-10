@@ -1,15 +1,14 @@
+import glob
 import ipaddress
 import os
-import six
-import pexpect
 import re
+import traceback
 
 import boardfarm
+import pexpect
+import six
+from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
-from boardfarm.lib.common import retry_on_exception
-from boardfarm.lib.common import scp_from
-import glob
-import traceback
 
 from . import debian
 

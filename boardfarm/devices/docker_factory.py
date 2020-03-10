@@ -1,13 +1,13 @@
-import pexpect
-import sys
-import os
 import atexit
+import os
 import re
+import sys
 
-from . import linux
-
+import pexpect
 from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
+from . import linux
 
 
 class DockerFactory(linux.LinuxDevice):

@@ -1,5 +1,5 @@
-import pexpect
 import boardfarm.exceptions
+import pexpect
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 

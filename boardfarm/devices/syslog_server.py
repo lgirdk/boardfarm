@@ -1,8 +1,8 @@
 """ Syslog server method
 """
+import datetime
 import re
 import time
-import datetime
 
 
 class SyslogServer(object):

@@ -5,24 +5,25 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import six
-import sys
-import re
-import time
-import pexpect
-from . import linux
 import atexit
-import os
 import ipaddress
+import os
+import re
+import sys
+import time
 
+import pexpect
+import six
 from boardfarm.devices import env
-from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from termcolor import colored, cprint
-from nested_lookup import nested_lookup
 from boardfarm.exceptions import PexpectErrorTimeout
-from boardfarm.lib.network_helper import valid_ipv4
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import retry_on_exception
+from boardfarm.lib.network_helper import valid_ipv4
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
+from nested_lookup import nested_lookup
+from termcolor import colored, cprint
+
+from . import linux
 
 
 class DebianBox(linux.LinuxDevice):

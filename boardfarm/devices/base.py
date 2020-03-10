@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import signal
+
 from boardfarm.lib.bft_logging import LoggerMeta
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 

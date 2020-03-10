@@ -13,12 +13,13 @@ except:
     from urllib2 import urlopen, HTTPError
     import urllib2 as _urllib
 
-import pexpect
-import dlipower
-import time
 import inspect
+import time
 
+import dlipower
+import pexpect
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from easysnmp import Session
 
 
 def get_default_for_arg(function, arg):
@@ -26,7 +27,6 @@ def get_default_for_arg(function, arg):
     return defaults
 
 
-from easysnmp import Session
 
 try:
     from ouimeaux.environment import Environment as WemoEnv

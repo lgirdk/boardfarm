@@ -5,10 +5,12 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.lib import common
-from . import openwrt_router
-import pexpect
 import time
+
+import pexpect
+from boardfarm.lib import common
+
+from . import openwrt_router
 
 
 class WRT3200ACM(openwrt_router.OpenWrtRouter):

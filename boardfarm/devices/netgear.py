@@ -7,8 +7,10 @@
 #!/usr/bin/env python
 
 import sys
-from . import linux
+
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
+from . import linux
 
 # Netgear Switch Prompt
 prompt = r"\(M4100-50G\) "

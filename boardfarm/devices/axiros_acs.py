@@ -1,14 +1,12 @@
 import os
 import time
-
-from zeep import Client
-from zeep.wsse.username import UsernameToken
-from zeep.transports import Transport
+from xml.etree import ElementTree
 
 from requests import Session
 from requests.auth import HTTPBasicAuth
-
-from xml.etree import ElementTree
+from zeep import Client
+from zeep.transports import Transport
+from zeep.wsse.username import UsernameToken
 
 if "BFT_DEBUG" in os.environ:
     import logging.config

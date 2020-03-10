@@ -1,10 +1,12 @@
 """Extension of Debian class with wifi functions
 """
 import re
-from . import debian
+
 import pexpect
-from countrycode import countrycode
 from boardfarm.lib.wifi import wifi_client_stub
+from countrycode import countrycode
+
+from . import debian
 
 
 class DebianWifi(debian.DebianBox, wifi_client_stub):

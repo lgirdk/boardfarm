@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.lib import common
+
 from . import qcom_akronite_nand
 
 
