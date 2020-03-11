@@ -8,14 +8,14 @@ from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient
 from boardfarm.lib.common import print_bold
 
 
-def get_station_config(location=None):
+def get_station_config(location=None, ignore_redir=False):
     '''
     A "station config" describes what things are available to connect to
     for testing. The format of this config should be JSON.
     Here we read that configuration and add/remove some information.
     '''
     boardfarm_config = read_station_config(location)
-    if "_redirect" in boardfarm_config:
+    if "_redirect" in boardfarm_config and not ignore_redir:
         print("Using boardfarm config file at %s" %
               boardfarm_config['_redirect'])
         print("Please set your default config by doing:")
