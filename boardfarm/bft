@@ -455,7 +455,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
         curr_test = None
         for j, test in enumerate(tests_to_run):
             bfweb.post_temp_message("Running test {} of {} ({})".format(
-                                    j + 1, len(tests_to_run), test.__class__.__name__))
+                j + 1, len(tests_to_run), test.__class__.__name__))
             curr_test = test
             try:
                 test.run()
