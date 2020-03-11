@@ -18,6 +18,8 @@ from . import bft_base_test
 class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''
     def boot(self, reflash=True):
+        self.logged['boot_step'] = "start"
+
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
@@ -32,12 +34,16 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             # This is a mess, just taking the last tftpd-server?
             tftp_device = getattr(self.config, tftp_server)
 
+        self.logged['boot_step'] = "tftp_device_assigned"
+
         # start dhcp servers
         for device in self.config.board['devices']:
             if 'options' in device and 'no-dhcp-sever' in device['options']:
                 continue
             if 'options' in device and 'dhcp-server' in device['options']:
                 getattr(self.config, device['name']).setup_dhcp_server()
+
+        self.logged['boot_step'] = "dhcp_server_started"
 
         if not wan and len(tftp_servers) == 0:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
@@ -50,6 +56,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             wan.configure(kind="wan_device", config=self.config)
             if tftp_device is None:
                 tftp_device = wan
+
+        self.logged['boot_step'] = "wan_device_configured"
 
         tftp_device.start_tftp_server()
 
@@ -79,9 +87,13 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
             wan.expect(wan.prompt)
             wan.sendline('ip -6 route')
             wan.expect(wan.prompt)
+            self.logged['boot_step'] = "board_provisioned"
+        else:
+            self.logged['boot_step'] = "board_provisioned_skipped"
 
         if lan:
             lan.configure(kind="lan_device")
+        self.logged['boot_step'] = "lan_device_configured"
 
         # tftp_device is always None, so we can set it from config
         board.tftp_server = tftp_device.ipaddr
@@ -92,6 +104,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         board.tftp_password = "bigfoot1"
 
         board.reset()
+        self.logged['boot_step'] = "board_reset_ok"
         rootfs = None
 
         @run_once
@@ -139,16 +152,21 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 board.flash_linux(self.config.KERNEL)
             # Boot from U-Boot to Linux
             board.boot_linux(rootfs=rootfs, bootargs=self.config.bootargs)
+        self.logged['boot_step'] = "flash_ok"
         if hasattr(board, "pre_boot_linux"):
             board.pre_boot_linux(wan=wan, lan=lan)
         board.linux_booted = True
+        self.logged['boot_step'] = "boot_ok"
         board.wait_for_linux()
+        self.logged['boot_step'] = "linux_ok"
 
         if self.config.META_BUILD and board.flash_meta_booted:
             flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+            self.logged['boot_step'] = "late_flash_meta_ok"
         elif self.env_helper.has_image() and board.flash_meta_booted \
                 and not self.config.ROOTFS and not self.config.KERNEL:
             flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
+            self.logged['boot_step'] = "late_flash_meta_ok"
 
         linux_booted_seconds_up = board.get_seconds_uptime()
         # Retry setting up wan protocol
@@ -164,6 +182,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                     print("\nFailed to check/set the router's WAN protocol.")
             board.wait_for_network()
         board.wait_for_mounts()
+        self.logged['boot_step'] = "network_ok"
 
         # Give other daemons time to boot and settle
         if self.config.setup_device_networking:
@@ -204,6 +223,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
         if self.config.setup_device_networking:
             assert end_seconds_up > linux_booted_seconds_up
 
+        self.logged['boot_step'] = "boot_ok"
         self.logged['boot_time'] = end_seconds_up
 
         if board.routing and lan and self.config.setup_device_networking:
@@ -211,6 +231,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 lan.start_lan_client(wan_gw=wan.gw)
             else:
                 lan.start_lan_client()
+
+        self.logged['boot_step'] = "lan_ok"
 
     reflash = False
     reboot = False
