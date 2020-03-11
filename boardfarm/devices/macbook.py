@@ -96,22 +96,23 @@ class Macbook(debian.DebianBox):
         self.expect(self.prompt)
         return self.before
 
-    def tshark_wifi_read(self, capture_file, ssid_name=''):
+    def tshark_wifi_read(self, capture_file, ssid_name='', opts=''):
         """Read the tcpdump packets and deletes the capture file after read
 
-        :param device: lan or wan
-        :type device: Object
         :param capture_file: Filename in which the packets were captured
         :type capture_file: String
-        :param protocol: protocol to filter. Defaults to ''
-        :type protocol: String, Optional
+        :param ssid_name: ssid name to filter. Defaults to ''
+        :type ssid_name: String, Optional
         :param opts: can be more than one parameter but it should be joined with "and" eg: ('host '+dest_ip+' and port '+port). Defaults to ''
         :type opts: String, Optional
-        :return: Output of tcpdump read command.
+        :return: Output of tshark read command.
         :rtype: string
         """
-        self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' %
-                      (capture_file, ssid_name))
+        if opts == '':
+            self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' %
+                          (capture_file, ssid_name))
+        else:
+            self.sendline('tshark -V -r %s "%s"' % (capture_file, opts))
         self.expect(pexpect.TIMEOUT, timeout=10)
         output = self.before
         self.sendline("rm %s" % (capture_file))
