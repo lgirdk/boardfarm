@@ -104,3 +104,10 @@ class ACSFaultCode(BftBaseException):
     """Raise this exception when ACS/CPE sends a fault code.
     """
     pass
+
+
+class ContOnFailError(BftBaseException):
+    """Use this exception when a step fails to execute for continue_on_fail.
+    This exceptions is used along with a fixture to mark tests as FAIL
+    """
+    pass

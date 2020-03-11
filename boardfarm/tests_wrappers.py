@@ -1,10 +1,12 @@
 import functools
+import sys
 import warnings
 
 import pexpect
-from boardfarm.exceptions import PexpectErrorTimeout
-from boardfarm.lib.bft_logging import log_message
 from debtcollector import removals
+
+from boardfarm.exceptions import ContOnFailError, PexpectErrorTimeout
+from boardfarm.lib.bft_logging import log_message
 
 warnings.simplefilter("always", UserWarning)
 
@@ -32,5 +34,19 @@ def throw_pexpect_error(func):
             return func(*args, **kwargs)
         except pexpect.TIMEOUT as e:
             raise PexpectErrorTimeout(e)
+
+    return wrapper
+
+
+#@pytest.fixture(scope="class")
+def continue_on_fail(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            exc = ContOnFailError(str(e))
+            exc.tb = sys.exc_info()
+            return exc
 
     return wrapper
