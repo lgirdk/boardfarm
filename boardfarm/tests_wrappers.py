@@ -5,14 +5,12 @@ import pexpect
 from debtcollector import removals
 import warnings
 
+warnings.simplefilter("always", UserWarning)
 
-@removals.remove
+
+@removals.remove(category=UserWarning)
 def skip_on_fail(func):
     """If a test fails then it will throw a skipTest error"""
-    warnings.filterwarnings('module',
-                            category=DeprecationWarning,
-                            module=func.__module__)
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         instance = args[0]
