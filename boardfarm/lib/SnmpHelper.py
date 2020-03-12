@@ -520,7 +520,8 @@ def snmp_asyncore_walk(device,
         else:
             output = False
     else:
-        output = device.check_output('{} snmp_output.txt'.format(read_cmd), timeout=60)
+        output = device.check_output('{} snmp_output.txt'.format(read_cmd),
+                                     timeout=60)
     device.sendline('rm snmp_output.txt')
     device.expect_prompt()
     return output
