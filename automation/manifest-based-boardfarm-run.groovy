@@ -125,7 +125,7 @@ def run_lint () {
     file ${files_changed} | grep 'with CRLF line' | awk -F: '{print $1": Run dos2unix on this file please."}' >> errors.txt
     '''
 
-    precommit_fail_count = sh(returnStdout: true, script: """grep Failed pre-commit-results.txt | wc -l""") as Integer
+    post_gerrit_msg_from_file("pre-commit-results.txt")
 
     err_count = sh(returnStdout: true, script: """cat errors.txt | wc -l""") as Integer
     println("Found " + err_count + " errors in code")
@@ -138,12 +138,6 @@ def run_lint () {
     }
 
     archiveArtifacts artifacts: "*.txt"
-
-    if (precommit_fail_count > 0) {
-        post_gerrit_msg_from_file("pre-commit-results.txt")
-        currentBuild.result = 'FAILED'
-        error("pre-commit did not pass")
-    }
 
     if (err_count > 0) {
         currentBuild.result = 'FAILED'
