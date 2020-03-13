@@ -21,7 +21,8 @@ from datetime import datetime
 import pexpect
 import termcolor
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.installers import install_postfix
+from boardfarm.lib.installers import install_postfix, install_ovpn_server, \
+    install_ovpn_client, install_pptpd_server, install_pptp_client
 from boardfarm.lib.SnmpHelper import SnmpMibs
 from selenium import webdriver
 from selenium.webdriver.common import proxy
@@ -1389,3 +1390,129 @@ def openssl_verify(device, ip_address, port, options=""):
             device.sendcontrol('c')
             device.expect_prompt()
     return output
+
+
+############################################################
+#
+# VPN helpers
+#
+############################################################
+def copy_ovpn_config(server, client, config="lan.ovpn"):
+    """Copy config file from a device (usually the server) to another
+
+    :param server : device (Eg: VPN server)
+    :type server :  Object
+    :param client : device (Eg: VPN client)
+    :type client :  Object
+    :param config : ovpn config file
+    :type config : str, defaults to "lan.ovpn"
+    Returns: N/A
+    """
+    md5sum = {}
+    for dev in [server, client]:
+        dev.sendline("md5sum " + config)
+        index = dev.expect([
+            "([A-Fa-f0-9]{32}(\s{2,}))" + config, "No such file or directory"
+        ])
+        if dev == server:
+            assert index == 0, "File '" + config + "' not found on source device."
+        md5sum[dev.name] = dev.after
+        dev.expect(dev.prompt)
+    if md5sum[server.name] != md5sum[client.name]:
+        client.sendline(
+            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@'
+            + server.get_interface_ipaddr(server.iface_dut) + ':/root/' +
+            config + ' .')
+        index = client.expect('.*password:')
+        client.sendline('bigfoot1')
+        client.expect('100%')
+        client.expect(client.prompt)
+
+
+def add_ovpn_user(device, user):
+    """Add an OpenVPN user (assumes ovpn server is already installed)
+
+    :Param  device: device
+    :type  device: Object
+    :param user : client name (Eg: "lan")
+    :type  user : str
+    :return: addded user (eg: lan.ovpn)
+    :return type: str
+    """
+    device.sendline('./openvpn-install.sh')
+    device.expect('Select an option.*: ')
+    device.sendline('1')
+    device.expect('Client name:')
+    device.sendline(user)
+    device.expect('Select an option.*: ')
+    device.sendline()
+    device.expect(".*the configuration file is available at /root/" + user +
+                  ".ovpn")
+    device.expect(device.prompt)
+    return user + ".ovpn"
+
+
+def configure_ovpn(self, server, client, client_name, ip_version):
+    """Configure the openvpn on 2 devices, a server and 1 client
+
+    :Param server: device Eg: wan
+    :type server : Object
+    :param client : device Eg: lan
+    :type client : Object
+    :param client_name : device name
+    :type client_name : str
+    :param ip_version : "ipv4" or "ipv6"
+    :type ip_version : str
+    Returns: N/A
+    """
+    install_ovpn_server(server, _user=client_name, _ip=ip_version)
+    server.sendline('ls ./' + client_name + '.ovpn')
+    flag = False
+    for i in range(2):
+        flag = server.expect(['No such file or directory', pexpect.TIMEOUT],
+                             timeout=5) == 0
+        server.expect(server.prompt, timeout=60)
+        if flag:
+            add_ovpn_user(server, client_name)
+        else:
+            break
+    assert flag == False, "Failed to create '" + client_name + ".ovpn' configuration file on server, bailing out"
+    install_ovpn_client(client)
+    copy_ovpn_config(server, client)
+
+    # makes sure there is a <user>.ovpn file
+    client.sendline('ls ./' + client_name + '.ovpn')
+
+
+def configure_pptpd(server, client):
+    """Configure the PPTP for VPN
+
+    :Param server : device
+    :type server : Object
+    :param client : device
+    :type server : Object
+    :Returns: N/A
+    """
+
+    install_pptpd_server(server)
+    server.sendline(
+        '''echo -e 'lan * "lanclient" *\nlan2 * "lanclient2" *' > /etc/ppp/chap-secrets'''
+    )
+    server.expect(server.prompt)
+    server.sendline(
+        '''echo -e "localip 10.0.0.1\nremoteip 10.0.0.100-200" >>  /etc/pptpd.conf'''
+    )
+    server.expect(server.prompt)
+    install_pptp_client(client)
+    client.sendline("\n".join([
+        "cat > /etc/ppp/peers/pptpserver << EOF",
+        'pty "pptp %s --nolaunchpppd"' %
+        (server.get_interface_ipaddr(server.iface_dut)), "name lan",
+        "password lanclient", "remotename PPTP", "require-mppe-128",
+        "file /etc/ppp/options.pptp", "ipparam pptpserver", "EOF"
+    ]))
+    client.expect(client.prompt)
+    client.sendline(
+        "sed -i  's/#require-mppe-128/require-mppe-128/' /etc/ppp/options.pptp"
+    )
+    client.expect(client.prompt)
