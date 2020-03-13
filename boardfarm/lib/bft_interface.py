@@ -1,11 +1,9 @@
-import ipaddress
-import re
-
-import netaddr
-import pexpect
 import six
+import ipaddress, netaddr
+import re
+import pexpect
 from boardfarm.exceptions import BFTypeError
-from boardfarm.lib.regexlib import LinuxMacFormat
+from boardfarm.lib.regexlib import LinuxMacFormat, InterfaceIPv4_AddressRegex, InterfaceIPv6_AddressRegex, NetmaskIPv4_AddressRegex
 
 
 class bft_iface(object):
@@ -35,19 +33,21 @@ class bft_iface(object):
         This will return the object of ipv4 interface module.
 
         """
-        ipaddr = re.search('inet?\s([\d./\d]*).*', value)
+        ipaddr = re.search(InterfaceIPv4_AddressRegex, value)
         if ipaddr:
-            ipaddr4 = ipaddr.group(1)
-            if re.search('netmask?\s([\d./\d]*).*', value):
-                netmask = re.search('netmask?\s([\d./\d]*).*', value).group(1)
+            ipaddr4 = re.search(InterfaceIPv4_AddressRegex, value).group(2)
+            if re.search(NetmaskIPv4_AddressRegex, value):
+                netmask = re.search(NetmaskIPv4_AddressRegex, value).group(2)
                 ipaddr4 = "/".join([ipaddr4, netmask])
             try:
                 self._ipv4 = ipaddress.IPv4Interface(six.text_type(ipaddr4))
 
             except (ipaddress.AddressValueError):
                 raise BFTypeError(
-                    "Failed at calculating IP address for the given data - device: %s interface: %s"
-                    % (self.dev.name, self.iface))
+                    "Failed at calculating IP address for the given data : device and interface"
+                )
+        else:
+            pass
 
     def get_interface_ipv6addr(self, output):
         """
@@ -55,26 +55,20 @@ class bft_iface(object):
         This will return the object of ipv6 interface module.
 
         """
-        ipv6_list = re.findall('(inet6\s[0-9a-fA-F]{0,4}[:]{0,2}.*)', output)
-        if ipv6_list:
-            for var in ipv6_list:
-                ipaddr = re.search(
-                    'inet6\s(([0-9a-fA-F]{0,4}[:]{0,2}[/\d]*)*).*', var)
-                try:
-                    if 'global' in var:
-                        self.global_ipv6_list = []
-                        self.global_ipv6_list.append(
-                            ipaddress.IPv6Interface(
-                                six.text_type(ipaddr.group(1))))
-                        self._ipv6 = self.global_ipv6_list[0]
-                    if 'link' in var:
+        ip_list = re.findall(InterfaceIPv6_AddressRegex, output)
+        if ip_list:
+            try:
+                for ip in ip_list:
+                    if ip[1].startswith('fe80'):
                         self._ipv6_link_local = ipaddress.IPv6Interface(
-                            six.text_type(ipaddr.group(1)))
-
-                except (ipaddress.AddressValueError):
-                    raise BFTypeError(
-                        "Failed at calculating IP address for the given data - device: %s interface: %s"
-                        % (self.dev.name, self.iface))
+                            six.text_type(ip[1]))
+                    else:
+                        self._ipv6 = ipaddress.IPv6Interface(
+                            six.text_type(ip[1]))
+            except (ipaddress.AddressValueError):
+                raise BFTypeError(
+                    "Failed at calculating IP address for the given data - device and interface"
+                )
         else:
             pass
 

@@ -23,6 +23,13 @@ ValidIpv4AddressRegex_Nogroup = '(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25
 # Matches: FEDC:BA98:7654:3210:FEDC:BA98:7654:3210 | 1080:0:0:0:8:800:200C:417A | 0:0:0:0:0:0:0:1
 ValidIpv6AddressRegex = '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
 
+#Below regex gives the IPv4 address and Netmask address of an Interface.
+InterfaceIPv4_AddressRegex = 'inet(\saddr:)?\s*([^\s]+)'
+NetmaskIPv4_AddressRegex = 'ask(\saddr:)?\s*([^\s]+)'
+
+#Following regex gives the IPv6 address of an Interface.
+InterfaceIPv6_AddressRegex = 'inet6(\saddr:)?\s*([^\s]+)'
+
 # IPv6 text representation of addresses with compression:
 # Matches:
 #    FEDC:BA98:7654:3210:FEDC:BA98:7654:3210
