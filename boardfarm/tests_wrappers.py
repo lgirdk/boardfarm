@@ -1,9 +1,10 @@
 import functools
-from boardfarm.lib.bft_logging import log_message
-from boardfarm.exceptions import PexpectErrorTimeout
-import pexpect
-from debtcollector import removals
 import warnings
+
+import pexpect
+from boardfarm.exceptions import PexpectErrorTimeout
+from boardfarm.lib.bft_logging import log_message
+from debtcollector import removals
 
 warnings.simplefilter("always", UserWarning)
 

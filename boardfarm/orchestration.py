@@ -1,11 +1,12 @@
-from boardfarm.exceptions import TestError, CodeError
-from datetime import datetime
-from termcolor import cprint
-from functools import partial, wraps
-import six
+import os
 import textwrap
 import traceback
-import os
+from datetime import datetime
+from functools import partial, wraps
+
+import six
+from boardfarm.exceptions import CodeError, TestError
+from termcolor import cprint
 
 
 class TestResult:

@@ -7,18 +7,19 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import json
 import glob
+import json
 import os
 import sys
 import time
 from string import Template
+
+import boardfarm
+
 try:
     from collections import Counter
 except:
     from future.moves.collections import Counter
-
-import boardfarm
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
 

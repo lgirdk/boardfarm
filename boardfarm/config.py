@@ -5,13 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import importlib
 import glob
-import os
-import requests
+import importlib
 import json
+import os
 
 import boardfarm
+import requests
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 

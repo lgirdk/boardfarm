@@ -9,14 +9,13 @@
 
 import argparse
 import inspect
+import json
 import os
 import os.path
 import sys
-import json
 import traceback
 
 import boardfarm.lib.test_configurator
-
 from boardfarm import config
 from boardfarm.exceptions import TestImportError
 from boardfarm.lib.common import check_url
