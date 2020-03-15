@@ -294,12 +294,13 @@ def snmp_v2(device,
         device.expect_prompt()
         device.sendline("python snmp.py")
         device.expect_exact("python snmp.py")
+        tout = (timeout * retries) + 15
         if device.expect(["Traceback", pexpect.TIMEOUT], timeout=3) == 0:
-            device.expect_prompt()
+            device.expect_prompt(timeout=tout)
             data = False, "Python file error :\n%s" % device.before.split(
                 "\n")[-1].strip(), None
         else:
-            device.expect_prompt()
+            device.expect_prompt(timeout=tout)
             result = [
                 i.strip() for i in device.before.split('\n') if i.strip() != ""
             ]
