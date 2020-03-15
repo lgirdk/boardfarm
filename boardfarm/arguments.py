@@ -286,10 +286,13 @@ def parse():
         sys.exit(10)
     # Check if given board type(s) have any overlap with available board types from config
     if args.board_type:
-        all_board_types = [
-            config.boardfarm_config[key].get('board_type')
-            for key in config.boardfarm_config
-        ]
+        all_board_types = []
+        for key in config.boardfarm_config:
+            elem = config.boardfarm_config[key].get('board_type', None) \
+                    if type(config.boardfarm_config[key]) is dict else None
+            if elem:
+                all_board_types.append(elem)
+
         if not (set(args.board_type) & set(all_board_types)):
             print("ERROR! You specified board types: %s " %
                   " ".join(args.board_type))
