@@ -7,13 +7,14 @@
 
 import re
 
-from boardfarm.devices import board
 from boardfarm.tests import rootfs_boot
 
 
 class OpenwrtVersion(rootfs_boot.RootFSBootTest):
     '''Openwrt release file exists and contains expected data.'''
     def runTest(self):
+        board = self.dev.board
+
         board.check_output('cat /etc/openwrt_release', timeout=6)
         info = dict(
             re.findall('DISTRIB_([a-zA-Z]+)=[\'"]([^"\']+)[\'"]',
