@@ -8,6 +8,7 @@ from zeep import Client
 from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
+from boardfarm.exceptions import ACSFaultCode
 if "BFT_DEBUG" in os.environ:
     import logging.config
 
@@ -305,7 +306,7 @@ class AxirosACS(object):
         :type ticketid: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
         :type wait: int
-        :raises: NA
+        :raises: ACSFaultCode
         :returns: ACS response text / None.
         :rtype: string/None
         """
@@ -319,6 +320,11 @@ class AxirosACS(object):
             for value in root.iter('code'):
                 break
             if (value.text != '200'):
+                for message in root.iter('message'):
+                    if message.text:
+                        if 'faultcode' in message.text:
+                            raise ACSFaultCode(message.text)
+                    break
                 continue
             for value in root.iter('value'):
                 return value.text

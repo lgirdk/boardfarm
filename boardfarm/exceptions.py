@@ -98,3 +98,9 @@ class ContingencyCheckError(BftBaseException):
     The contingency checks occurs at beginning of each test.
     """
     pass
+
+
+class ACSFaultCode(BftBaseException):
+    """Raise this exception when ACS/CPE sends a fault code.
+    """
+    pass
