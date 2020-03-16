@@ -7,13 +7,15 @@
 
 import re
 
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class InterfacesShow(rootfs_boot.RootFSBootTest):
     '''Used "ip" or "ifconfig" to list interfaces.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nip link show')
         board.expect('ip link show')
         board.expect(prompt)
