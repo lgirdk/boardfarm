@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan, wlan
+from boardfarm.devices import prompt
 from boardfarm.tests import iperf_test
 
 
@@ -27,7 +27,11 @@ class PerfPerPktTest(iperf_test.iPerfTest):
     def perf_events(self):
         return ["cycles", "instructions", "dcache_misses", "icache_misses"]
 
-    def runTest(self, client=lan, client_name="br-lan"):
+    def runTest(self, client, client_name="br-lan"):
+        board = self.dev.board
+        wan = self.dev.wan
+        client = self.dev.lan
+
         if not board.check_perf():
             self.result_message = 'perf not in image. skipping test.'
             self.skipTest('perf not installed, skipping test')
@@ -158,4 +162,5 @@ class PerfPerPktTestWifi(PerfPerPktTest):
         # for wlan since it's not reporting packets properly, we just assign
         # it to None and add logic in the parse section to take the other iface
         # packet count if this is none
+        wlan = self.dev.wlan
         super(PerfPerPktTestWifi, self).runTest(client=wlan, client_name=None)
