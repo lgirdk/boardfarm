@@ -5,13 +5,16 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import board, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
     '''Runs SNMP sysDescr on WAN iface'''
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+
         wan.sendline(
             'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install snmp'
         )
