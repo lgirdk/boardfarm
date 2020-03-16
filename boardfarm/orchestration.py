@@ -4,12 +4,14 @@ import traceback
 from datetime import datetime
 from functools import partial, wraps
 
+from boardfarm.tests_wrappers import continue_on_fail
 import six
-from boardfarm.exceptions import CodeError, TestError
+from boardfarm.exceptions import CodeError, TestError, ContOnFailError
 from termcolor import cprint
 
 
 class TestResult:
+    __test__ = False
     logged = {}
 
     def __init__(self, name, grade, message, result=(None, None)):
@@ -50,6 +52,8 @@ class TestStepMeta(type):
 
 
 class TestStep(six.with_metaclass(TestStepMeta, object)):
+    __test__ = False
+
     def __init__(self, parent_test, name, prefix="Execution"):
         self.section[prefix] = self.section.get(prefix, 0) + 1
         self.step_id = self.section[prefix]
@@ -177,6 +181,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
 
 
 class TestAction(object):
+    __test__ = False
+
     def __init__(self, parent_step, func):
         self.name = func.func.__name__
         parent_step.actions.append(self)
@@ -188,6 +194,67 @@ class TestAction(object):
             return output
         except AssertionError as e:
             raise CodeError(e)
+
+
+class TearDown(TestStep):
+    __test__ = False
+
+    def __init__(self, parent_test, name, prefix="TearDown"):
+        super(TearDown, self).__init__(parent_test, name, prefix)
+        self.td_result = True
+        self.print_enter = False
+
+    def add(self, func, *args, **kwargs):
+        wrapped_func = continue_on_fail(func)
+        super(TearDown, self).add(wrapped_func, *args, **kwargs)
+
+    def enter(self):
+        self.print_enter = True
+        super(TearDown, self).__enter__()
+
+    def call(self, func, *args, **kwargs):
+        if not self.print_enter:
+            self.enter()
+        check = "exp" in kwargs
+        exp = kwargs.pop("exp", None)
+        self.add(func, *args, **kwargs)
+        self.execute()
+        if type(self.result[-1].output()) is ContOnFailError:
+            pass
+        elif check:
+            r = self.result[-1].output() == exp
+            if not r:
+                r = ContOnFailError(
+                    "Teardown Assertion FAIL :\nExp: {} Actual: {}".format(
+                        exp, self.result[-1].output()))
+                r.tb = (None, None, None)
+                self.result[-1].result = r
+
+        self.print_log(self.result[-1])
+
+    def print_log(self, i):
+        step_id = self.result.index(i) + 1
+        if issubclass(type(i.result), Exception):
+            self.log_msg(
+                "Teardown failed for Step {}.{}\n{} - Reason: {}".format(
+                    self.step_id, step_id, i.step, i.result),
+                no_time=True,
+                wrap=False)
+            self.td_result = False
+
+            if hasattr(i.result, "tb") and 'BFT_DEBUG' in os.environ:
+                trace = traceback.format_exception(*i.result.tb)
+                self.log_msg("".join(trace).strip(),
+                             attr=[],
+                             no_time=True,
+                             wrap=False)
+
+        self.log_msg(('-' * 80), no_time=True)
+        self.log_msg("[{}]:[{} Step {}.{}]\tResult: {}".format(
+            self.parent_test.__class__.__name__, self.prefix, self.step_id,
+            step_id, ["FAIL", "PASS"][self.td_result]))
+        self.log_msg("Output: {}".format(i.result), no_time=True)
+        self.log_msg(('-' * 80), no_time=True)
 
 
 if __name__ == '__main__':

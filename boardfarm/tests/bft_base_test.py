@@ -17,6 +17,7 @@ import boardfarm.exceptions
 from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.library import check_devices
+from boardfarm.orchestration import TearDown
 
 warnings.simplefilter("always", UserWarning)
 
@@ -38,6 +39,18 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         self.attempts = 0
         self.env_helper = env_helper
 
+        # initialize a step for teardown
+        # TearDown step has a hook to call a fixture : teardown
+        # this hook ensures that any action executed does not fail
+        self.td_step = TearDown(
+            self,
+            "Excuting teardown for test: {}".format(self.__class__.__name__))
+
+        # add a hook in class to call the fixture directly
+        # need to ensure that self.call is used for teardown only
+        self.__class__.call = self.td_step.call
+        self.__class__.test_obj = self
+
     def id(self):
         return self.__class__.__name__
 
@@ -52,7 +65,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
     def endMarker(self):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
-        result = ""
+        result = self.result_grade
         if self.attempts:
             result = self.result_grade + "(" + str(self.attempts) + "/" + str(
                 self.config.retry) + ")"
@@ -61,9 +74,31 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             % (self.__class__.__name__, result, now_short(self._format)))
 
     def run(self):
+        exc_to_raise = None
         self.startMarker()
-        self.testWrapper()
+        try:
+            self.executionWrapper()
+        except Exception as e:
+            exc_to_raise = e
+
+        try:
+            func = getattr(self.__class__, "teardown_class", None)
+            if func:
+                self.teardown_wrapper(func)
+        except Exception as e:
+            print(e)
+            print("This should never happen. TearDown should be fail-safe")
+            traceback.print_exc(file=sys.stdout)
+            raise
+        finally:
+            td = self.td_step
+            if not td.td_result:
+                # this could be printed as a different fail state
+                self.result_grade = "FAIL"
+
         self.endMarker()
+        if exc_to_raise:
+            raise exc_to_raise
 
     def wan_setup(self):
         None
@@ -83,7 +118,14 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
     def wlan_cleanup(self):
         None
 
-    def testWrapper(self):
+    def teardown_wrapper(self, func):
+        lib.common.test_msg(
+            "\n==================== Running Teardown %s    Time: %s ===================="
+            % (self.__class__.__name__, now_short(self._format)))
+
+        func()
+
+    def executionWrapper(self):
         self.start_time = time.time()
         recheck_devices = []
 
@@ -214,7 +256,6 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
                 category=UserWarning)
             self.recover()
             check_devices(recheck_devices)
-            self.endMarker()
             raise
 
     def recover(self):
