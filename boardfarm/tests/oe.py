@@ -5,13 +5,15 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class OEVersion(rootfs_boot.RootFSBootTest):
     '''Record OE version'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('cat /etc/os-release')
         # PRETTY_NAME=RDK (A Yocto Project 1.6 based Distro) 2.0 (krogoth)
         if 0 == board.expect([
