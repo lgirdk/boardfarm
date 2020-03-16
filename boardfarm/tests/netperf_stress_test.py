@@ -8,7 +8,7 @@
 import time
 
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import netperf_test
 from boardfarm.tests.netperf_test import install_netperf
 
@@ -16,13 +16,20 @@ from boardfarm.tests.netperf_test import install_netperf
 class NetperfStressTest(netperf_test.NetperfTest):
     @lib.common.run_once
     def wan_setup(self):
+        wan = self.dev.wan
+
         install_netperf(wan)
 
     @lib.common.run_once
     def lan_setup(self):
+        lan = self.dev.lan
+
         install_netperf(lan)
 
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         # Record number of bytes and packets sent through interfaces
         board.sendline("\nifconfig | grep 'encap\|packets\|bytes'")
         board.expect('br-lan')
