@@ -60,7 +60,8 @@ def voice_devices_configure(voice_devices_list, sip_server):
                 for profile_boot in boot_list:
                     profile_boot()
                 if 'softphone' in voice_device.name:
-                    voice_device.phone_config(sip_server.ipaddr)
+                    voice_device.phone_config(
+                        sip_server.get_interface_ipaddr(sip_server.iface_dut))
     except Exception as e:
         sip_server.kill_asterisk()
         raise Exception(
