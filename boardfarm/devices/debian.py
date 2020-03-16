@@ -127,27 +127,7 @@ class DebianBox(linux.LinuxDevice):
         self.lan_gateway = lan_gateway
         self.tftp_device = self
 
-        try:
-            i = self.expect([
-                "yes/no", "assword:", "Last login", username + ".*'s password:"
-            ] + self.prompt,
-                            timeout=30)
-        except PexpectErrorTimeout:
-            raise Exception("Unable to connect to %s." % name)
-        except pexpect.EOF:
-            if hasattr(self, "before"):
-                print(self.before)
-            raise Exception("Unable to connect to %s." % name)
-        if i == 0:
-            self.sendline("yes")
-            i = self.expect(["Last login", "assword:"])
-        if i == 1 or i == 3:
-            self.sendline(password)
-        else:
-            pass
-        # if we did initially get a prompt wait for one here
-        if i < 4:
-            self.expect(self.prompt)
+        self.check_connection(username, name, password)
 
         # attempts to fix the cli colums size
         self.set_cli_size(200)
@@ -227,12 +207,7 @@ class DebianBox(linux.LinuxDevice):
                 'alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
         self.expect(self.prompt)
 
-        cmsg = '%s ' % ipaddr
-        if self.port != 22:
-            cmsg += '%s port ' % port
-        cmsg += 'device console = '
-        cmsg += colored('%s (%s)' % (color, name), color)
-        cprint(cmsg, None, attrs=['bold'])
+        self.print_connected_console_msg(ipaddr, port, color, name)
 
         if post_cmd_host is not None:
             sys.stdout.write("\tRunning post_cmd_host.... ")
@@ -261,6 +236,58 @@ class DebianBox(linux.LinuxDevice):
             self.reset()
 
         self.logfile_read = output
+
+    def check_connection(self, username, name, password):
+        """"To check ssh connection in debian box
+
+        :param username: cli-login username
+        :type username: string
+        :param name: name of the debian device
+        :type name: string
+        :param password: cli-login password
+        :type password: string
+        :raises: Unable to connect to device exception
+        """
+        try:
+            i = self.expect([
+                "yes/no", "assword:", "Last login", username + ".*'s password:"
+            ] + self.prompt,
+                            timeout=30)
+        except PexpectErrorTimeout:
+            raise Exception("Unable to connect to %s." % name)
+        except pexpect.EOF:
+            if hasattr(self, "before"):
+                print(self.before)
+                raise Exception("Unable to connect to %s." % name)
+        if i == 0:
+            self.sendline("yes")
+            i = self.expect(["Last login", "assword:"])
+        if i == 1 or i == 3:
+            self.sendline(password)
+        else:
+            pass
+        # if we did initially get a prompt wait for one here
+        if i < 4:
+            self.expect(self.prompt)
+
+    def print_connected_console_msg(self, ipaddr, port, color, name):
+        """"To print console message if bft is connected to device
+
+        :param ipaddr: iface ipaddress of the device
+        :type ipaddr: string
+        :param port: cli-login port of the debian device
+        :type port: string
+        :param color: color
+        :type color: string
+        :param name: name of the debian device
+        :type name: string
+        """
+        cmsg = '%s ' % ipaddr
+        if self.port != 22:
+            cmsg += '%s port ' % port
+        cmsg += 'device console = '
+        cmsg += colored('%s (%s)' % (color, name), color)
+        cprint(cmsg, None, attrs=['bold'])
 
     def get_default_gateway(self, interface):
         self.sendline('ip route | grep {!s}'.format(interface))

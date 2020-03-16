@@ -1,7 +1,8 @@
 import os
 import time
 from xml.etree import ElementTree
-
+from . import base_acs
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from zeep import Client
@@ -36,10 +37,11 @@ if "BFT_DEBUG" in os.environ:
     })
 
 
-class AxirosACS(object):
+class AxirosACS(base_acs.BaseACS):
     """ACS connection class used to perform TR069 operations on stations/board
     """
     model = "axiros_acs_soap"
+    name = "acs_server"
 
     def __init__(self, *args, **kwargs):
         """This method intializes the varible that are used in establishing connection to the ACS.
@@ -56,6 +58,10 @@ class AxirosACS(object):
         self.password = self.kwargs['password']
         self.ipaddr = self.kwargs['ipaddr']
         self.port = self.kwargs.get('port', None)
+        self.cli_port = self.kwargs.pop('cli_port', '22')
+        self.cli_username = self.kwargs.pop('cli_username', None)
+        self.cli_password = self.kwargs.pop('cli_password', None)
+        self.color = self.kwargs.pop('color', None)
 
         if self.port is not None:
             target = self.ipaddr + ":" + self.port
@@ -71,7 +77,21 @@ class AxirosACS(object):
                              transport=Transport(session=session),
                              wsse=UsernameToken(self.username, self.password))
 
-    name = "acs_server"
+        #to spawn pexpect on cli
+        if all([self.ipaddr, self.cli_username, self.cli_password]):
+            bft_pexpect_helper.spawn.__init__(
+                self,
+                command="ssh",
+                args=[
+                    '%s@%s' % (self.cli_username, self.ipaddr), '-p',
+                    self.cli_port, '-o', 'StrictHostKeyChecking=no', '-o',
+                    'UserKnownHostsFile=/dev/null', '-o',
+                    'ServerAliveInterval=60', '-o', 'ServerAliveCountMax=5'
+                ])
+            self.check_connection(self.cli_username, self.name,
+                                  self.cli_password)
+            self.print_connected_console_msg(self.ipaddr, self.cli_port,
+                                             self.color, self.name)
 
     def __str__(self):
         """The method is used to format the string representation of self object (instance).
