@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
-from boardfarm.devices import board, lan, wan
 from boardfarm.tests import rootfs_boot
 
 
@@ -16,6 +15,10 @@ class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
     opts = ""
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         for d in [wan, lan]:
             d.sendline('tcpdump -i %s -w /tmp/tcpdump.pcap %s' %
                        (d.iface_dut, self.opts))
