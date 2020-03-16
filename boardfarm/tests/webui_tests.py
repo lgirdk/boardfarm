@@ -7,7 +7,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 from selenium.webdriver import ActionChains
 
@@ -15,6 +15,9 @@ from selenium.webdriver import ActionChains
 class WebTest(rootfs_boot.RootFSBootTest):
     '''Login to LuCI'''
     def setUp(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         ip = "192.168.1.1"
 
         super(WebTest, self).setUp()
