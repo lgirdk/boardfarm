@@ -1,5 +1,5 @@
 import pexpect
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.lib.installers import install_hping3
 from boardfarm.tests import rootfs_boot
 
@@ -11,6 +11,10 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
     conns = 20000
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         install_hping3(lan)
         wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
         wan.sendline('nc -lvu %s 565' % wan_ip)
@@ -35,6 +39,10 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         lan.sendcontrol('c')
         lan.expect(prompt)
         lan.sendline('pkill -9 -f hping3')
