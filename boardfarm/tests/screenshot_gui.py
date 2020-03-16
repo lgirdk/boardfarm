@@ -9,7 +9,7 @@ import os
 
 import pexpect
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 from pyvirtualdisplay import Display
 
@@ -17,6 +17,10 @@ from pyvirtualdisplay import Display
 class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
     '''Bootstrap firefox running via localproxy'''
     def start_browser(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         try:
             x, y = self.config.get_display_backend_size()
             # try to start vnc server
@@ -63,6 +67,8 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         return driver
 
     def runTest(self):
+        board = self.dev.board
+
         self.start_browser()
 
         print("Browser is running, connect and debug")
@@ -89,6 +95,8 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
 class ScreenshotGUI(RunBrowserViaProxy):
     '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
     def runTest(self):
+        board = self.dev.board
+
         driver = self.start_browser()
 
         print("taking ss of http://%s" % board.lan_gateway)
