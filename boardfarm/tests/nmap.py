@@ -9,16 +9,20 @@ import random
 import re
 
 import pexpect
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class Nmap_LAN(rootfs_boot.RootFSBootTest):
     '''Ran nmap port scanning tool on LAN interface.'''
     def recover(self):
+        lan = self.dev.lan
         lan.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         lan.sendline('nmap -sS -A -v -p 1-10000 %s' %
                      board.get_interface_ipaddr(board.lan_iface))
         lan.expect('Starting Nmap')
@@ -37,9 +41,14 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
 class Nmap_WAN(rootfs_boot.RootFSBootTest):
     '''Ran nmap port scanning tool on WAN interface.'''
     def recover(self):
+        wan = self.dev.wan
+
         wan.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+
         wan_ip_addr = board.get_interface_ipaddr(board.wan_iface)
         wan.sendline('\nnmap -sS -A -v %s' % wan_ip_addr)
         wan.expect('Starting Nmap', timeout=5)
@@ -64,6 +73,8 @@ class Nmap_WAN(rootfs_boot.RootFSBootTest):
 class UDP_Stress(rootfs_boot.RootFSBootTest):
     '''Ran nmap through router, creating hundreds of UDP connections.'''
     def runTest(self):
+        lan = self.dev.lan
+
         start_port = random.randint(1, 11000)
         lan.sendline('\nnmap --min-rate 100 -sU -p %s-%s 192.168.0.1' %
                      (start_port, start_port + 200))
@@ -72,4 +83,6 @@ class UDP_Stress(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
 
     def recover(self):
+        lan = self.dev.lan
+
         lan.sendcontrol('c')
