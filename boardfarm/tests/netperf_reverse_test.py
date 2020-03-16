@@ -6,13 +6,17 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import netperf_test
 
 
 class NetperfReverseTest(netperf_test.NetperfTest):
     '''Setup Netperf and Ran Reverse Throughput.'''
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         # setup port forwarding to lan netperf server
         lan_priv_ip = lan.get_interface_ipaddr(lan.iface_dut)
         board.uci_forward_traffic_redirect("tcp", "12865", lan_priv_ip)
