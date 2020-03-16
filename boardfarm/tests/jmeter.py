@@ -2,8 +2,8 @@ import os
 import shutil
 
 import pexpect
-from boardfarm.devices import board, lan, prompt
 # To Do: Move this file or function out of the "devices" directory
+from boardfarm.devices import prompt
 from boardfarm.lib.common import scp_from
 from boardfarm.lib.installers import install_jmeter
 from boardfarm.tests import rootfs_boot
@@ -26,6 +26,9 @@ class JMeter(rootfs_boot.RootFSBootTest):
     default_time = 600
 
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         self.dir = 'jmeter_%s' % self.shortname
         install_jmeter(lan)
 
@@ -77,6 +80,9 @@ class JMeter(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         board.touch()
         lan.sendcontrol('c')
         lan.expect(prompt)
