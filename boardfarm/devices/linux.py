@@ -145,6 +145,15 @@ class LinuxDevice(base.BaseDevice):
         else:
             return False
 
+    def set_password(self, password):
+        '''Set password using passwd command'''
+        self.sendline("passwd")
+        self.expect("password:", timeout=8)
+        self.sendline(password)
+        self.expect("password:")
+        self.sendline(password)
+        self.expect(self.prompt)
+
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         '''Modifies the log level in kernel'''
         try:

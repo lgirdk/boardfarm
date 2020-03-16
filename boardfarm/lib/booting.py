@@ -185,12 +185,7 @@ def boot(self, reflash=True):
             time.sleep(5)
 
     try:
-        board.sendline("passwd")
-        board.expect("password:", timeout=8)
-        board.sendline("password")
-        board.expect("password:")
-        board.sendline("password")
-        board.expect(board.prompt)
+        board.set_password(password='password')
     except:
         print("WARNING: Unable to set root password on router.")
 
