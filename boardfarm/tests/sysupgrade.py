@@ -6,13 +6,15 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):
     '''Upgrading via sysupgrade works.'''
     def runTest(self):
+        board = self.dev.board
+
         super(Sysupgrade, self).runTest()
 
         if not hasattr(self.config, "SYSUPGRADE_NEW"):
