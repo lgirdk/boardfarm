@@ -13,6 +13,7 @@ from boardfarm import lib
 from boardfarm.devices import board, lan, wan
 from boardfarm.lib import SnmpHelper, common
 from boardfarm.tests import rootfs_boot
+from boardfarm.orchestration import TestStep as TS
 
 
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
@@ -618,3 +619,35 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         print("all errors have been injected")
 
         print("%s: PASS" % (self.cls_name))
+
+
+class selftest_tear_down(rootfs_boot.RootFSBootTest):
+    """A sample test class to validate teardown feature.
+
+    Need to ensure that teardown marks the test as fail,
+    when an action added to teardown fails.
+    """
+    def action_1(self, arg1):
+        print(arg1)
+        print(type(arg1))
+
+    def teardown_action1(self):
+        print("This is teardown action1. This executes successfully")
+        return True
+
+    def teardown_action2(self):
+        print(
+            "This is teardown action2. This will coz an error and mark test as FAIL"
+        )
+        raise ValueError("No arguments passed to the test")
+
+    def runTest(self):
+        with TS(self, "TD selftest. Print action1 output") as ts:
+            ts.call(self.action_1, "Executed Action 1")
+
+    @classmethod
+    def teardown_class(cls):
+        obj = cls.test_obj
+        #commenting this for jenkins, as Test will be marked as FAIL
+        #cls.call(obj.teardown_action2)
+        cls.call(obj.teardown_action1)
