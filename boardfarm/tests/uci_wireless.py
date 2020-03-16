@@ -7,7 +7,7 @@
 
 import re
 
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.lib.wifi import wifi_interface
 from boardfarm.tests import rootfs_boot
 
@@ -15,6 +15,8 @@ from boardfarm.tests import rootfs_boot
 class UciShowWireless(rootfs_boot.RootFSBootTest):
     '''UCI lists wifi interfaces.'''
     def runTest(self):
+        board = self.dev.board
+
         wlan_iface = wifi_interface(board)
         if wlan_iface is None:
             self.skipTest("No wifi interfaces detected, skipping..")
