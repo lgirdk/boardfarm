@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, wan
 from boardfarm.tests import rootfs_boot
 
 
@@ -14,6 +13,9 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
     '''Can access main web GUI page.'''
     @lib.common.run_once
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+
         super(SshWanDetect, self).runTest()
 
         board.uci_allow_wan_ssh()
