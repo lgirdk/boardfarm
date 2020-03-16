@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot, socat
 
 
@@ -20,6 +20,9 @@ class BitTorrentBasic(socat.SoCat):
 class BitTorrentSingle(BitTorrentBasic):
     '''Single UDP/Bittorrent flow'''
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         #for d in [wan, lan]:
         #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
         #d.expect(prompt)
@@ -44,6 +47,9 @@ class BitTorrentSingle(BitTorrentBasic):
 class BitTorrentB2B(BitTorrentBasic):
     '''Single UDP/Bittorrent flow back-to-back'''
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         #for d in [wan, lan]:
         #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
         #d.expect(prompt)
@@ -74,6 +80,9 @@ class BitTorrentB2B(BitTorrentBasic):
 
 class BitTorrentClient(rootfs_boot.RootFSBootTest):
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         board.sendcontrol('c')
         board.expect(board.prompt)
         board.sendline('logread -f &')
@@ -105,6 +114,9 @@ class BitTorrentClient(rootfs_boot.RootFSBootTest):
             lan.expect(lan.prompt)
 
     def recover(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         lan.sendcontrol('c')
         lan.expect(lan.prompt)
         lan.sendline('rm -rf Fedora*')
