@@ -9,8 +9,8 @@ import random
 import string
 import tempfile
 
+from boardfarm.devices import debian, linux
 from boardfarm import lib
-from boardfarm.devices import board, lan, wan
 from boardfarm.lib import SnmpHelper, common
 from boardfarm.tests import rootfs_boot
 from boardfarm.orchestration import TestStep as TS
@@ -21,6 +21,8 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
     Copy a file to /tmp on the WAN device using common.copy_file_to_server
     '''
     def runTest(self):
+        wan = self.dev.wan
+
         if not wan:
             msg = 'No WAN Device defined, skipping copy file to WAN test.'
             lib.common.test_msg(msg)
@@ -74,6 +76,8 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     session = None
 
     def runTest(self):
+        wan = self.dev.wan
+
         if not wan:
             msg = 'No WAN Device defined, skipping test_create_session.'
             lib.common.test_msg(msg)
@@ -191,7 +195,9 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     tests the linux functions moved to devices/linux.py
     '''
     def runTest(self):
-        from boardfarm.devices import lan, debian, linux
+        board = self.dev.board
+        lan = self.dev.lan
+
         if lan.model == "debian":
             # check that lan is derived from LinuxDevice
             assert (issubclass(debian.DebianBox, linux.LinuxDevice))
@@ -436,6 +442,8 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
        using hte compiled oids
     '''
     def runTest(self):
+        wan = self.dev.wan
+        lan = self.dev.lan
 
         from boardfarm.lib.installers import install_snmp, install_snmpd
         from boardfarm.lib.common import snmp_mib_get
@@ -577,6 +585,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         self.cls_name = self.__class__.__name__
 
     def runTest(self):
+        lan = self.dev.lan
 
         expected_faulures = 0
 
