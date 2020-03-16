@@ -6,13 +6,17 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import netperf_test
 
 
 class NetperfUdpTest(netperf_test.NetperfTest):
     @lib.common.run_once
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         super(NetperfUdpTest, self).runTest()
 
         self.run_netperf(
