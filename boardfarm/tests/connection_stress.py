@@ -7,7 +7,7 @@
 
 import time
 
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.lib.installers import install_lighttpd
 from boardfarm.tests import rootfs_boot
 
@@ -22,6 +22,10 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
     reqs_per_sec = 0
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         install_lighttpd(wan)
         wan.sendline('/etc/init.d/lighttpd start')
         wan.expect(prompt)
@@ -52,6 +56,9 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         lan.sendcontrol('c')
         time.sleep(5)  # Give router a few seconds to recover
         board.parse_stats(dict_to_log=self.logged)
