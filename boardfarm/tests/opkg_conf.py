@@ -5,13 +5,15 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
     '''Check that opkg will overwrite old configuration files with known MD5.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ncp /etc/config/ulogd /etc/config/ulogd.bak')
         board.expect(prompt)
         board.sendline('echo boardfarmteststring > /etc/config/ulogd')
@@ -30,6 +32,8 @@ class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
     def recover(self):
+        board = self.dev.board
+
         board.sendline('\nmv /etc/config/ulogd.bak /etc/config/ulogd')
         board.expect(prompt)
 
@@ -37,6 +41,8 @@ class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
 class OpkgConfNotUpdateMD5(rootfs_boot.RootFSBootTest):
     '''Check that opkg will not overwrite old modified configuration files with known MD5.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ncp /etc/config/ulogd /etc/config/ulogd.bak')
         board.expect(prompt)
         board.sendline('echo boardfarmteststring > /etc/config/ulogd')
@@ -58,6 +64,8 @@ class OpkgConfNotUpdateMD5(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
     def recover(self):
+        board = self.dev.board
+
         board.sendline('\nmv /etc/config/ulogd.bak /etc/config/ulogd')
         board.expect(prompt)
 
@@ -65,6 +73,8 @@ class OpkgConfNotUpdateMD5(rootfs_boot.RootFSBootTest):
 class OpkgConfUpdateSHA256(rootfs_boot.RootFSBootTest):
     '''Check that opkg will overwrite old configuration files with known MD5.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ncp /etc/config/ulogd /etc/config/ulogd.bak')
         board.expect(prompt)
         board.sendline('echo boardfarmteststring > /etc/config/ulogd')
@@ -83,6 +93,8 @@ class OpkgConfUpdateSHA256(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
     def recover(self):
+        board = self.dev.board
+
         board.sendline('\nmv /etc/config/ulogd.bak /etc/config/ulogd')
         board.expect(prompt)
 
@@ -90,6 +102,8 @@ class OpkgConfUpdateSHA256(rootfs_boot.RootFSBootTest):
 class OpkgConfNotUpdateSHA256(rootfs_boot.RootFSBootTest):
     '''Check that opkg will not overwrite old modified configuration files with known MD5.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ncp /etc/config/ulogd /etc/config/ulogd.bak')
         board.expect(prompt)
         board.sendline('echo boardfarmteststring > /etc/config/ulogd')
@@ -111,5 +125,7 @@ class OpkgConfNotUpdateSHA256(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
     def recover(self):
+        board = self.dev.board
+
         board.sendline('\nmv /etc/config/ulogd.bak /etc/config/ulogd')
         board.expect(prompt)
