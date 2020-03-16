@@ -6,12 +6,14 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm import lib
-from boardfarm.devices import board, lan
 from boardfarm.tests import netperf_reverse_test
 
 
 class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         board.sendline('mpstat -P ALL 30 1')
         opts = ""
         num_conns = 1
