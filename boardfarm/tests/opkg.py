@@ -5,13 +5,15 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class OpkgList(rootfs_boot.RootFSBootTest):
     '''Opkg list shows installed packages.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nopkg list-installed | wc -l')
         board.expect('opkg list')
         board.expect(r'(\d+)\r\n')
@@ -26,6 +28,8 @@ class OpkgList(rootfs_boot.RootFSBootTest):
 class CheckQosScripts(rootfs_boot.RootFSBootTest):
     '''Package "qos-scripts" is not installed.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nopkg list | grep qos-scripts')
         try:
             board.expect('qos-scripts - ', timeout=4)
@@ -37,6 +41,8 @@ class CheckQosScripts(rootfs_boot.RootFSBootTest):
 class OpkgUpdate(rootfs_boot.RootFSBootTest):
     '''Opkg is able to update list of packages.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nopkg update && echo "All package lists updated"')
         board.expect('Updated list of available packages')
         board.expect('All package lists updated')
