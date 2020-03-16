@@ -24,7 +24,7 @@ from datetime import datetime
 
 import boardfarm.exceptions
 import matplotlib
-from boardfarm import devices, library
+from boardfarm import devices, library, tests
 from boardfarm.dbclients import (boardfarmwebclient, elasticlogger, logstash,
                                  mongodblogger)
 from boardfarm.exceptions import BftNotSupportedDevice
@@ -53,6 +53,9 @@ except Exception as e:
         cmd = "cd %s ; %s" % (tmp, cmd)
     logger.debug(cmd)
     sys.exit(1)
+
+# This is to parse tests early, and find issues here vs. after we connect to a board
+tests.init()
 
 matplotlib.use('Agg')
 
@@ -396,7 +399,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     logger.info(
         '==========\nTest suite "%s" has been specified, will attempt to run tests:'
         % config.TEST_SUITE)
-    from boardfarm import tests
+
     tests.init(config)
     from boardfarm import testsuites
     if config.TEST_SUITE not in testsuites.list_tests:
