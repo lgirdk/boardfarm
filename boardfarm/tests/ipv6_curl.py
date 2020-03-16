@@ -5,13 +5,16 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class IPv6_File_Download(rootfs_boot.RootFSBootTest):
     '''Downloaded file through router using IPv6.'''
     def runTest(self):
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         # WAN Device: create large file in web directory
         fname = "/var/www/20mb.txt"
         wan.sendline('\n[ -e "%s" ] || head -c 20971520 /dev/urandom > %s' %
