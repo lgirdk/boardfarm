@@ -1,12 +1,12 @@
 import re
 
-from boardfarm.devices import board
 from boardfarm.tests import rootfs_boot
 
 
 class LatencyAllDevices(rootfs_boot.RootFSBootTest):
     '''finds latency between all devices'''
     def runTest(self):
+        board = self.dev.board
 
         # TODO: create a get devices function?
         devs = []
