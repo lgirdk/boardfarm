@@ -8,13 +8,15 @@
 import re
 
 import pexpect
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class Logread(rootfs_boot.RootFSBootTest):
     '''Recorded syslog.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nlogread')
         board.expect('logread')
         board.expect('OpenWrt', timeout=5)
@@ -24,6 +26,8 @@ class Logread(rootfs_boot.RootFSBootTest):
 class DiskUse(rootfs_boot.RootFSBootTest):
     '''Checked disk use.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ndf -k')
         board.expect('Filesystem', timeout=5)
         board.expect(prompt)
@@ -34,6 +38,8 @@ class DiskUse(rootfs_boot.RootFSBootTest):
 class TopCheck(rootfs_boot.RootFSBootTest):
     '''Ran "top" to see current processes.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ntop -b -n 1')
         board.expect(pexpect.TIMEOUT, timeout=2)
         try:
@@ -47,6 +53,8 @@ class TopCheck(rootfs_boot.RootFSBootTest):
 class UciShow(rootfs_boot.RootFSBootTest):
     '''Dumped all current uci settings.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nls -l /etc/config/')
         board.expect('/etc/config/', timeout=5)
         board.expect(prompt)
@@ -62,6 +70,8 @@ class UciShow(rootfs_boot.RootFSBootTest):
 class DhcpLeaseCheck(rootfs_boot.RootFSBootTest):
     '''Checked dhcp.leases file.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\ncat /tmp/dhcp.leases')
         board.expect('leases')
         board.expect(prompt)
@@ -70,6 +80,8 @@ class DhcpLeaseCheck(rootfs_boot.RootFSBootTest):
 class IfconfigCheck(rootfs_boot.RootFSBootTest):
     '''Ran 'ifconfig' to check interfaces.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nifconfig')
         board.expect('ifconfig')
         board.expect(prompt)
@@ -84,6 +96,8 @@ class IfconfigCheck(rootfs_boot.RootFSBootTest):
 class MemoryUse(rootfs_boot.RootFSBootTest):
     '''Checked memory use.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\nsync; echo 3 > /proc/sys/vm/drop_caches')
         board.expect('echo 3')
         board.expect(prompt, timeout=5)
@@ -109,9 +123,13 @@ class MemoryUse(rootfs_boot.RootFSBootTest):
 class SleepHalfMinute(rootfs_boot.RootFSBootTest):
     '''Slept 30 seconds.'''
     def recover(self):
+        board = self.dev.board
+
         board.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+
         board.check_output('date')
         board.check_output('sleep 30', timeout=40)
         board.check_output('date')
@@ -120,9 +138,13 @@ class SleepHalfMinute(rootfs_boot.RootFSBootTest):
 class Sleep1Minute(rootfs_boot.RootFSBootTest):
     '''Slept 1 minute.'''
     def recover(self):
+        board = self.dev.board
+
         board.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+
         board.check_output('date')
         board.check_output('sleep 60', timeout=70)
         board.check_output('date')
@@ -131,9 +153,13 @@ class Sleep1Minute(rootfs_boot.RootFSBootTest):
 class Sleep2Minutes(rootfs_boot.RootFSBootTest):
     '''Slept 2 minutes.'''
     def recover(self):
+        board = self.dev.board
+
         board.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+
         # Connections time out after 2 minutes, so this is useful to have.
         board.sendline('\n date')
         board.expect('date')
@@ -149,9 +175,13 @@ class Sleep2Minutes(rootfs_boot.RootFSBootTest):
 class Sleep5Minutes(rootfs_boot.RootFSBootTest):
     '''Slept 5 minutes.'''
     def recover(self):
+        board = self.dev.board
+
         board.sendcontrol('c')
 
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\n date')
         board.expect('date')
         board.expect(prompt)
