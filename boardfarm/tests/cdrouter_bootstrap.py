@@ -12,7 +12,7 @@ import time
 import pexpect
 import six
 from boardfarm import lib
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.orchestration import TestResult
 from boardfarm.tests import rootfs_boot
 from cdrouter import CDRouter
@@ -31,6 +31,10 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
     cdrouter_server = None
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         from boardfarm.devices import cdrouter
         self.cdrouter_server = "http://" + cdrouter.ipaddr
         self.cdrouter_wan_iface = cdrouter.wan_iface
@@ -330,6 +334,10 @@ testvar wanDnsServer %s
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         if board.has_cmts:
             from boardfarm.devices import provisioner
             # TODO: there are more missing ones CDrouter expects
