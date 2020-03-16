@@ -6,7 +6,7 @@ from random import randint
 
 import pexpect
 import six
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 from faker import Factory
 
@@ -26,6 +26,9 @@ class SoCat(rootfs_boot.RootFSBootTest):
     payload = '"GET / HTTP/1.0\\r\\n\\r\\n"'
 
     def startSingleFlow(self, mintime=1, maxtime=60):
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
@@ -72,6 +75,10 @@ class SoCat(rootfs_boot.RootFSBootTest):
         return (random_size, random_rate, random_ip, random_port)
 
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         random.seed(99)
 
         for d in [wan, lan]:
@@ -113,6 +120,9 @@ class SoCat(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def cleanup_ip(self, ip):
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         wan.sendline('ip addr del %s/32 dev %s' % (ip, wan.iface_dut))
         wan.expect_exact('ip addr del %s/32 dev %s' % (ip, wan.iface_dut))
         wan.expect(prompt)
@@ -122,6 +132,8 @@ class SoCat(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
 
     def check_and_clean_ips(self):
+        lan = self.dev.lan
+
         if 'TCP' in self.socat_send:
             c = 'TCP'
         else:
@@ -142,6 +154,10 @@ class SoCat(rootfs_boot.RootFSBootTest):
                 self.all_ips = [e for e in self.all_ips if e[0] != done_ip]
 
     def recover(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         wan.sendcontrol('c')
         wan.expect(prompt)
         wan.sendline('killall -9 socat pv')
