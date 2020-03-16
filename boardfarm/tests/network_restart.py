@@ -7,16 +7,19 @@
 
 import time
 
-from boardfarm.devices import board
 from boardfarm.tests import rootfs_boot
 
 
 class RestartNetwork(rootfs_boot.RootFSBootTest):
     '''Restarted router network.'''
     def runTest(self):
+        board = self.dev.board
+
         board.network_restart()
         print("\nWaiting 30s to give things time to fully start...\n")
         time.sleep(30)
 
     def recover(self):
+        board = self.dev.board
+
         board.sendcontrol('c')
