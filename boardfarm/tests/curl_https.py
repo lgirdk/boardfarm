@@ -1,10 +1,12 @@
-from boardfarm.devices import board, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class CurlSSLGood(rootfs_boot.RootFSBootTest):
     '''Curl can access https and verify signature.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\n')
         board.expect(prompt)
         board.sendline('opkg install ca-certificates')
@@ -28,6 +30,8 @@ class CurlSSLGood(rootfs_boot.RootFSBootTest):
 class CurlSSLBad(rootfs_boot.RootFSBootTest):
     '''Curl can't access https with bad signature.'''
     def runTest(self):
+        board = self.dev.board
+
         board.sendline('\n')
         board.expect(prompt)
         board.sendline('opkg install ca-certificates')
