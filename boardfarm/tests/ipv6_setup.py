@@ -7,7 +7,7 @@
 
 import time
 
-from boardfarm.devices import board, lan, prompt, wan, wlan
+from boardfarm.devices import prompt
 from boardfarm.lib.common import run_once
 from boardfarm.tests import rootfs_boot
 
@@ -16,6 +16,11 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
     '''Set IPv6 addresses and default routes for router and devices.'''
     @run_once
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+        wlan = self.dev.wlan
+
         # Router
         board.sendline('uci set network.lan6=interface')
         board.expect(prompt)
@@ -84,6 +89,10 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
 class Remove_IPv6_Addresses(rootfs_boot.RootFSBootTest):
     '''Removed IPv6 addresses and default routes for router and devices.'''
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         board.sendline('\nuci delete network.lan.ip6addr')
         board.expect('uci ')
         board.expect(prompt)
