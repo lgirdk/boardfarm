@@ -7,7 +7,7 @@
 
 import random
 
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import prompt
 from boardfarm.lib import installers
 from boardfarm.tests import rootfs_boot
 
@@ -15,6 +15,9 @@ from boardfarm.tests import rootfs_boot
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):
     '''Created light web traffic.'''
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         installers.apt_install(lan, "wget")
 
         urls = [
