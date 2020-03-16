@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pexpect
-from boardfarm.devices import board, lan, prompt, wan
+from boardfarm.devices import prompt
 from boardfarm.lib.common import print_bold
 from boardfarm.tests import rootfs_boot
 
@@ -9,6 +9,10 @@ from boardfarm.tests import rootfs_boot
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):
     '''Determine's max number of iperf connections'''
     def runTest(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
         wan.sendline('iperf -s -l 1M -w 1M')
         wan.expect('Server listening on ')
@@ -56,6 +60,10 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        board = self.dev.board
+        wan = self.dev.wan
+        lan = self.dev.lan
+
         for d in [wan, lan]:
             d.sendcontrol('z')
             if 0 == d.expect([pexpect.TIMEOUT] + prompt):
