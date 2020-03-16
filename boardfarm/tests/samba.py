@@ -5,13 +5,16 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-from boardfarm.devices import board, lan, prompt
+from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 
 
 class SambaShare(rootfs_boot.RootFSBootTest):
     '''Setup and run Samba and test connection.'''
     def runTest(self):
+        board = self.dev.board
+        lan = self.dev.lan
+
         board.sendline(
             'rm -f /etc/config/samba; opkg update; opkg install --force-reinstall samba36-server samba36-client kmod-fs-cifs'
         )
