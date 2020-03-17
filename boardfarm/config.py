@@ -76,7 +76,7 @@ option_dict = {
 
 # the syntax is
 # BFT_OPTIONS="proxy=normal webdriver=chrome"
-default_proxy_type = "normal"
+default_proxy_type = "socks5"
 default_web_driver = "ffox"
 default_display_backend = "xvnc"
 default_display_backend_port = "0"  # i.e. use any available ports
