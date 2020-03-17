@@ -14,6 +14,11 @@ from boardfarm.lib.common import run_once
 warnings.simplefilter("always", UserWarning)
 
 
+@run_once
+def flash_meta_helper(board, meta, wan, lan):
+    board.flash_meta(meta, wan, lan)
+
+
 def boot(self, reflash=True):
     self.logged['boot_step'] = "start"
 
@@ -101,10 +106,6 @@ def boot(self, reflash=True):
     board.reset()
     self.logged['boot_step'] = "board_reset_ok"
     rootfs = None
-
-    @run_once
-    def flash_meta_helper(board, meta, wan, lan):
-        board.flash_meta(meta, wan, lan)
 
     # Reflash only if at least one or more of these
     # variables are set, or else there is nothing to do in u-boot
