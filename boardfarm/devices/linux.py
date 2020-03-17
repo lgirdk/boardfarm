@@ -137,9 +137,13 @@ class LinuxDevice(base.BaseDevice):
         else:
             self.sendline("curl --interface {!s} -I {!s}".format(
                 source_ip, url))
+        try:
+            self.expect(self.prompt, timeout=10)
+        except pexpect.TIMEOUT:
+            self.sendcontrol('c')
+            self.expect(self.prompt)
 
-        self.expect(self.prompt)
-        match = re.search('HTTP/1.1 200 OK', self.before)
+        match = re.search('HTTP\/.* 200', self.before)
         if match:
             return True
         else:
