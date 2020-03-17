@@ -647,9 +647,6 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def setup_as_wan_gateway(self, config=None):
-        def _dhclient_permissions(perm):
-            self.sendline('chmod {} /sbin/dhclient'.format(perm))
-            self.expect(self.prompt)
 
         self.setup_dnsmasq(config)
 
@@ -664,7 +661,6 @@ class DebianBox(linux.LinuxDevice):
 
         # set WAN ip address
         if self.wan_dhcp:
-            _dhclient_permissions('755')
             self.sendline('/etc/init.d/isc-dhcp-server stop')
             self.expect(self.prompt)
             self.sendline('dhclient -r %s; dhclient %s' %
@@ -672,24 +668,12 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
         elif not self.wan_no_eth0:
-            _dhclient_permissions('755')
-            self.sendline('dhclient -4 -r %s' % self.iface_dut)
-            self.expect(self.prompt)
-            _dhclient_permissions('000')
             self.sendline('ifconfig %s %s' % (self.iface_dut, self.gw_ng))
             self.expect(self.prompt)
             self.sendline('ifconfig %s up' % self.iface_dut)
             self.expect(self.prompt)
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
-        elif self.static_ip:
-            _dhclient_permissions('755')
-            self.sendline('dhclient -r %s; dhclient %s' %
-                          (self.iface_dut, self.iface_dut))
-            self.expect(self.prompt)
-            self.sendline('killall dhclient')
-            self.expect(self.prompt)
-            _dhclient_permissions('000')
 
         if self.wan_dhcpv6 == True:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
@@ -699,7 +683,6 @@ class DebianBox(linux.LinuxDevice):
             try:
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
             except:
-                _dhclient_permissions('755')
                 self.sendline('dhclient -6 -i -r %s' % self.iface_dut)
                 self.expect(self.prompt)
                 self.sendline('dhclient -6 -i -v %s' % self.iface_dut)
@@ -707,8 +690,6 @@ class DebianBox(linux.LinuxDevice):
                 self.sendline('ip -6 addr')
                 self.expect(self.prompt)
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
-                if not self.wan_no_eth0:
-                    _dhclient_permissions('000')
         elif self.gwv6 is not None:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
             self.sendline('sysctl -w net.ipv6.conf.%s.accept_dad=0' %
