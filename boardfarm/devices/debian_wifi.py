@@ -48,6 +48,28 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         iface = self.iface_wifi
         self.release_dhcp(iface)
 
+    def renew_wifi(self):
+        """DHCP renew of the wifi interface
+        """
+        self.sudo_sendline("dhclient {}".format(self.iface_wifi))
+        try:
+            self.expect(self.prompt, timeout=10)
+        except pexpect.TIMEOUT:
+            self.sendcontrol('c')
+            self.expect(self.prompt)
+            self.sudo_sendline("killall dhclient")
+            self.expect(self.prompt)
+            return False
+
+        match = re.search('File exist', self.before)
+        return match
+
+    def change_channel(self, channel):
+        """change wifi client scan channel
+        """
+        self.sudo_sendline('iwconfig wlan0 channel {}'.format(channel))
+        self.expect(self.prompt)
+
     def wifi_scan(self):
         """Scanning the SSID associated with the wifi interface
 
