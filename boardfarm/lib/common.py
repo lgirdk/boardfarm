@@ -27,7 +27,7 @@ from boardfarm.lib.SnmpHelper import SnmpMibs
 from selenium import webdriver
 from selenium.webdriver.common import proxy
 from termcolor import cprint
-
+from boardfarm.lib.bft_pexpect_helper import spawn_ssh_pexpect
 from .installers import install_pysnmp
 
 try:
@@ -84,6 +84,193 @@ def clear_buffer(console):
         pass
 
 
+# This could be extended to a generic proxy helper class
+class socks5_proxy_helper(object):
+    """Helper class to create a socks5 proxy tunnel.
+
+    This class opens an ssh local "dynamic" application-level port forwarding to a given device, for the SOCKS5 protocol (the SOCKS5 protocol is defined in RFC 1928). The ssh session uses the -D <port> option. The <port> value is selected at random from the IANA ephemeral port range. If the ssh connection fails (e.g. the port is already taken) the code will retry on another port. This class assumes that the device obj to connect to contians an IP, ssh port, username and password. This class depends on the boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect funciton. A typical use case for this class is creating a proxy to be used with the selenium webdriver. Ideally there should be 1 tunnnel per device (a getter method is provided).
+
+    :param device: the device the ssh need to connect to (i.e. lan or wan access)
+    :type device: device object
+    :param start_port: start of port range (default (IANA) 49152)
+    :type start_port: int
+    :param end_port: start of port range (default (IANA) 65535)
+    :type end_port: int
+    :param retries: number or retries on ssh error (default 10)
+    :type retries: int (default 5)
+    :param via_hop: (unused) can be used to pass another pexpect session (default None, i.e. proxy is from localhost)
+    :type via_hop: bft_pexpect_helper (for future use)
+
+    :Example:
+    Run from the bft python interactive console
+    >>> from boardfarm.devices import mgr,device_type
+    >>> from boardfarm.lib.common import socks5_proxy_helper
+    >>> wan  = mgr.get_device_by_type(device_type.wan)
+    >>> lan  = mgr.get_device_by_type(device_type.lan)
+    >>> lan2 = mgr.get_device_by_type(device_type.lan2) # if available, why not
+
+    Creates a tunnel to the a device by calling the "get_proxy"
+    >>> socks5_lan_1 = socks5_proxy_helper.get_proxy(lan) # Note: classmethod
+    Creating Socks5 tunnel on port 63805
+    >>> socks5_lan_2 = socks5_proxy_helper.get_proxy(lan) # this is the same obj as socks5_lan_1
+    >>> socks5_lan_3 = socks5_proxy_helper.get_proxy(lan) # this is the same obj as socks5_lan_1
+    >>> socks5_lan_1
+    <boardfarm.lib.common.socks5_proxy_helper object at 0x7f5233cc5898>
+    >>> socks5_lan_2
+    <boardfarm.lib.common.socks5_proxy_helper object at 0x7f5233cc5898>
+    >>> socks5_lan_3
+    <boardfarm.lib.common.socks5_proxy_helper object at 0x7f5233cc5898>
+
+    Creates 2 different tunnels to the same device by calling the "ctor" directly (allowed but not ideal)
+    >>> socks5_wan_tun_1 = socks5_proxy_helper(wan) # instantiated directly
+    Creating Socks5 tunnel on port 62372
+    >>> socks5_wan_tun_2 = socks5_proxy_helper(wan) # instantiated directly
+    Creating Socks5 tunnel on port 51706
+    These are 2 different tunnels to the same device (wan)
+    >>> socks5_wan_tun_1
+    <boardfarm.lib.common.socks5_proxy_helper object at 0x7f5234668e10>
+    >>> socks5_wan_tun_2
+    <boardfarm.lib.common.socks5_proxy_helper object at 0x7f5233cc54e0>
+
+
+    .. note:: throws Exception("Failed to create socks5 tunnel") on init failure
+
+        The class holds a static list of connections in case the instance is not assigned to any local variable, ueful to keep the object alive when the proxy creation is hidden within a library.
+    .. seealso:: boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect
+    """
+
+    proxy_list = []
+
+    def __str__(self):
+        return self.socks5_ip + ':' + str(self.socks5_port)
+
+    @classmethod
+    def __add(cls, s):
+        cls.proxy_list.append(s)
+
+    @classmethod
+    def __remove(cls, s):
+        if s in cls.proxy_list:
+            cls.proxy_list.remove(s)
+
+    @classmethod
+    def __get(cls, a, p):
+        # FIX ME: does not consider the via option!!!
+        l = list(
+            filter(lambda x: x.socks5_ip == a and x.socks5_port == p,
+                   cls.__proxy_list))
+        if len(l):
+            if len(l) > 1:
+                print(
+                    "WARNING: more than 1 socks5 proxy found {} returning 1st".
+                    format(l))
+            return l[0]
+        else:
+            return None
+
+    @classmethod
+    def get_proxy(cls, device):
+        """This classmethod is the getter that should be called to create a proxy object. This will look for an ssh tunnel connection already exisitng on the ssh ip:port (these are the ssh connection ip and port and NOT the socks5 ip and port). If a tunnel does not already  exist, creates one. Repeated calls to this method, with the SAME device, are an idempotent operation (you get the same tunnel obj).
+
+            :param device: the device the ssh need to connect to (i.e. lan or wan access)
+            :type device: device object
+            :return: socks5_proxy_helper object
+            :rtype: socks5_proxy_helper
+
+        """
+        p = list(
+            filter(lambda x: x.ip == device.ipaddr and x.port == device.port,
+                   cls.proxy_list))
+        if len(p):
+            if len(p) > 1:
+                # this should never happen...
+                print("WARNING: more than 1 proxy tunnel found for {}: {}".
+                      format(device.name, p))
+            return p[0]
+        else:
+            return cls(device)
+
+    def __init__(self,
+                 device,
+                 start_port=49152,
+                 end_port=65536,
+                 retries=5,
+                 via_hop=None):
+        """Initialises the object by invoking spawn_ssh_pexpect to bring up the tunnel. If spawn_ssh_pexpect throws an exception it will retry on a different port.
+
+            :param device: the device the ssh need to connect to (i.e. lan or wan access)
+            :type device: device object
+            :param start_port: start of port range (default (IANA) 49152)
+            :type start_port: int
+            :param end_port: start of port range (default (IANA) 65535)
+            :type end_port: int
+            :param retries: number or retries on ssh error (default 10)
+            :type retries: int (default 5)
+            :param via_hop: (unused) can be used to pass another pexpect session (default None, i.e. proxy is from localhost)
+            :type via_hop: bft_pexpect_helper (for future use)
+
+            .. note:: To get a proxy object the socks5_proxy_helper.get_proxy(device) class method should be used. This will reuse an already existing tunnel (if any) on the ssh device:port
+        """
+
+        from random import randrange
+        self.socks5_ip = None
+        self.socks5_pexpect = None
+        for unused in range(retries):
+            try:
+                self.socks5_port = randrange(start_port, end_port)
+                if "BFT_DEBUG" in os.environ:
+                    print("Creating Socks5 tunnel on port {}".format(
+                        self.socks5_port))
+
+                # DO NOT use -N [-v -v] as it seems to kill the tunnel,
+                # if you want to use -N you need to change the prompt expect pattern
+                # the pexpect logfile should be None
+                exargs = " -D {}".format(self.socks5_port)
+                self.socks5_pexpect = spawn_ssh_pexpect(ip=device.ipaddr,
+                                                        user=device.username,
+                                                        pw=device.password,
+                                                        port=device.port,
+                                                        via=via_hop,
+                                                        prompt=device.prompt,
+                                                        o=None,
+                                                        extra_args=exargs)
+                break
+            except Exception as e:
+                print(e)
+                if "BFT_DEBUG" in os.environ:
+                    print("Sock5 failed on port {} - retyring".format(
+                        self.socks5_port))
+                self.socks5_port = None
+        if self.socks5_port:
+            # if we have a hop the proxy will be hop:port
+            # otherwise localhost:port
+            self.socks5_ip = device.ipaddr if via_hop else '127.0.0.1'
+            self.ip = device.ipaddr
+            self.port = device.port
+            socks5_proxy_helper.__add(self)
+        else:
+            raise Exception("Failed to create socks5 tunnel")
+
+    def __del__(self):
+        socks5_proxy_helper.__remove(self)
+
+    def close(self):
+        """Closes the pexpect session"""
+        self.socks5_pexpect.close()
+
+    def get_ip(self):
+        """Gets the tunnel host IP (usually localhost/127.0.0.1, unless <via> is specified)"""
+        return self.socks5_ip
+
+    def get_port(self):
+        """Gets the tunnel port (the -D <port> value)"""
+        return self.socks5_port
+
+    def get_ip_port(self):
+        """Returns a string in the form of '<ip>:<port>'"""
+        return self.__str__()
+
+
 def phantom_webproxy_driver(ipport):
     """Use this if you started phantom web proxy on a machine connected to router's LAN.
     A proxy server sits between a client application, such as a Web browser, and a real server.
@@ -125,6 +312,7 @@ def firefox_webproxy_driver(ipport, config):
     profile = webdriver.FirefoxProfile()
     if config.default_proxy_type == 'socks5':
         # socks5 section MUST be separated or it will NOT work!!!!
+        profile.set_preference("network.proxy.type", 1)
         profile.set_preference("network.proxy.socks", ip)
         profile.set_preference("network.proxy.socks_port", int(port))
         profile.set_preference("security.enterprise_roots.enabled", True)
