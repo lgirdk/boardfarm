@@ -684,8 +684,7 @@ class DebianBox(linux.LinuxDevice):
                 self.setup_dhcp_server()
         elif self.static_ip:
             _dhclient_permissions('755')
-            self.sendline('dhclient -r %s; dhclient %s' %
-                          (self.iface_dut, self.iface_dut))
+            self.sendline('dhclient -r %s' % self.iface_dut)
             self.expect(self.prompt)
             self.sendline('killall dhclient')
             self.expect(self.prompt)
