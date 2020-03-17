@@ -17,7 +17,7 @@ from boardfarm.exceptions import TestImportError
 available_tests = {}
 
 
-def init(config):
+def init(config=None):
     '''
     Dynamically find all test classes accross all boardfarm projects.
     This creates a dictionary of "test names" to "python object of test class".
@@ -67,9 +67,10 @@ def init(config):
             if not hasattr(test, "parse"):
                 continue
             try:
-                new_tests = test.parse(config) or []
-                for new_test in new_tests:
-                    available_tests[new_test.__name__] = new_test
+                if config is not None:
+                    new_tests = test.parse(config) or []
+                    for new_test in new_tests:
+                        available_tests[new_test.__name__] = new_test
             except Exception:
                 if 'BFT_DEBUG' in os.environ:
                     traceback.print_exc()
