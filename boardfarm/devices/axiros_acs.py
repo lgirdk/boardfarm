@@ -293,13 +293,15 @@ class AxirosACS(base_acs.BaseACS):
 
         return response['code']
 
-    def Axiros_GetTicketValue(self, ticketid, wait=8):
+    def Axiros_GetTicketValue(self, ticketid, wait=8, objtype=False):
         """This is helper method used to get the text of ticket response on ACS.
 
         :param ticketid: the ticketid to be used to get the ACS response.
         :type ticketid: string
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
         :type wait: int
+        :param objtype: to get object's data type this flag must be true; defaults to false
+        :type objtype: boolean
         :raises: ACSFaultCode
         :returns: ACS response text / None.
         :rtype: string/None
@@ -321,7 +323,12 @@ class AxirosACS(base_acs.BaseACS):
                     break
                 continue
             for value in root.iter('value'):
-                return value.text
+                if all([objtype, value.text]):
+                    for key, object_type in value.attrib.items():
+                        if 'type' in key:
+                            return object_type.split(":")[1]
+                else:
+                    return value.text
         return None
 
     def rpc_GetParameterAttributes(self, cpeid, param):
