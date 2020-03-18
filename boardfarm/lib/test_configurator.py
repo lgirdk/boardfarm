@@ -107,6 +107,8 @@ def filter_station_config(boardfarm_config,
             # Allow selection only from given set of board names
             possible_names = set(boardfarm_config) & set(board_names)
         for b in possible_names:
+            if b == "_redirect":
+                continue
             if len(board_names) != 1 and \
                'available_for_autotests' in boardfarm_config[b] and \
                boardfarm_config[b]['available_for_autotests'] == False:
