@@ -19,6 +19,51 @@ def flash_meta_helper(board, meta, wan, lan):
     board.flash_meta(meta, wan, lan)
 
 
+def flash_image(self, board, lan, wan, tftp_device, reflash=True):
+    rootfs = None
+
+    # Reflash only if at least one or more of these
+    # variables are set, or else there is nothing to do in u-boot
+    meta_interrupt = False
+    if (self.config.META_BUILD or self.env_helper.has_image()) \
+            and not board.flash_meta_booted:
+        meta_interrupt = True
+    if reflash and (meta_interrupt or self.config.ROOTFS or\
+            self.config.KERNEL or self.config.UBOOT):
+        # Break into U-Boot, set environment variables
+        board.wait_for_boot()
+        board.setup_uboot_network(tftp_device.gw)
+        if self.config.META_BUILD:
+            for attempt in range(3):
+                try:
+                    if self.config.META_BUILD:
+                        flash_meta_helper(board, self.config.META_BUILD, wan,
+                                          lan)
+                    elif not self.config.ROOTFS and not self.config.KERNEL:
+                        flash_meta_helper(board, self.env_helper.get_image(),
+                                          wan, lan)
+                    break
+                except Exception as e:
+                    print(e)
+                    tftp_device.restart_tftp_server()
+                    board.reset(break_into_uboot=True)
+                    board.setup_uboot_network(tftp_device.gw)
+            else:
+                raise Exception('Error during flashing...')
+        if self.config.UBOOT:
+            board.flash_uboot(self.config.UBOOT)
+        if self.config.ROOTFS:
+            # save filename for cases where we didn't flash it
+            # but will use it later to load from memory
+            rootfs = board.flash_rootfs(self.config.ROOTFS)
+        if self.config.NFSROOT:
+            board.prepare_nfsroot(self.config.NFSROOT)
+        if self.config.KERNEL:
+            board.flash_linux(self.config.KERNEL)
+        # Boot from U-Boot to Linux
+        board.boot_linux(rootfs=rootfs, bootargs=self.config.bootargs)
+
+
 def boot(self, reflash=True):
     self.logged['boot_step'] = "start"
 
@@ -105,48 +150,7 @@ def boot(self, reflash=True):
 
     board.reset()
     self.logged['boot_step'] = "board_reset_ok"
-    rootfs = None
-
-    # Reflash only if at least one or more of these
-    # variables are set, or else there is nothing to do in u-boot
-    meta_interrupt = False
-    if (self.config.META_BUILD or self.env_helper.has_image()) \
-            and not board.flash_meta_booted:
-        meta_interrupt = True
-    if reflash and (meta_interrupt or self.config.ROOTFS or\
-            self.config.KERNEL or self.config.UBOOT):
-        # Break into U-Boot, set environment variables
-        board.wait_for_boot()
-        board.setup_uboot_network(tftp_device.gw)
-        if self.config.META_BUILD:
-            for attempt in range(3):
-                try:
-                    if self.config.META_BUILD:
-                        flash_meta_helper(board, self.config.META_BUILD, wan,
-                                          lan)
-                    elif not self.config.ROOTFS and not self.config.KERNEL:
-                        flash_meta_helper(board, self.env_helper.get_image(),
-                                          wan, lan)
-                    break
-                except Exception as e:
-                    print(e)
-                    tftp_device.restart_tftp_server()
-                    board.reset(break_into_uboot=True)
-                    board.setup_uboot_network(tftp_device.gw)
-            else:
-                raise Exception('Error during flashing...')
-        if self.config.UBOOT:
-            board.flash_uboot(self.config.UBOOT)
-        if self.config.ROOTFS:
-            # save filename for cases where we didn't flash it
-            # but will use it later to load from memory
-            rootfs = board.flash_rootfs(self.config.ROOTFS)
-        if self.config.NFSROOT:
-            board.prepare_nfsroot(self.config.NFSROOT)
-        if self.config.KERNEL:
-            board.flash_linux(self.config.KERNEL)
-        # Boot from U-Boot to Linux
-        board.boot_linux(rootfs=rootfs, bootargs=self.config.bootargs)
+    flash_image(self, board, lan, wan, tftp_device, reflash)
     self.logged['boot_step'] = "flash_ok"
     if hasattr(board, "pre_boot_linux"):
         board.pre_boot_linux(wan=wan, lan=lan)
