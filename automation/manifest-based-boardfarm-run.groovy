@@ -96,10 +96,7 @@ def run_lint () {
     ls
     . venv/bin/activate
     # Run pre-commit, but undo changes it makes
-    cd boardfarm
-    pre-commit run --origin HEAD --source m/master > ../pre-commit-results.txt
-    git reset --hard HEAD
-    cd -
+    repo forall -c '[ -e ".pre-commit-config.yaml" ] && { pwd >>../pre-commit-results.txt; } && { pre-commit run --all-files >>../pre-commit-results.txt; } && { echo "\n" >> ../pre-commit-results.txt; } && { git reset --hard HEAD; }'
     # Run other checks
     rm -f errors.txt
     touch errors.txt
