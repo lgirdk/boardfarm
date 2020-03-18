@@ -1,4 +1,3 @@
-import os
 import time
 from xml.etree import ElementTree
 from . import base_acs
@@ -10,31 +9,6 @@ from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
 from boardfarm.exceptions import ACSFaultCode
-if "BFT_DEBUG" in os.environ:
-    import logging.config
-
-    logging.config.dictConfig({
-        'version': 1,
-        'formatters': {
-            'verbose': {
-                'format': '%(name)s: %(message)s'
-            }
-        },
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'verbose',
-            },
-        },
-        'loggers': {
-            'zeep.transports': {
-                'level': 'DEBUG',
-                'propagate': True,
-                'handlers': ['console'],
-            },
-        }
-    })
 
 
 class AxirosACS(base_acs.BaseACS):
