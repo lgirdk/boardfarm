@@ -3,7 +3,6 @@ argparse
 beautifulsoup4
 boto3
 cdrouter
-countrycode
 debtcollector
 dlipower
 dnspython
@@ -20,6 +19,7 @@ nested_lookup==0.2.19
 netaddr
 pexpect
 pre-commit
+pycountry
 pycryptodome
 pymongo
 pyserial

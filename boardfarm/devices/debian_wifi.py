@@ -4,7 +4,7 @@ import re
 
 import pexpect
 from boardfarm.lib.wifi import wifi_client_stub
-from countrycode import countrycode
+import pycountry
 
 from . import debian
 
@@ -181,7 +181,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         :return: country name if matched else None
         :rtype: string or boolean
         """
-        country = countrycode(country, origin='country_name', target='iso2c')
+        country = pycountry.countries.get(name=country).alpha_2
         self.sudo_sendline("iw reg set %s" % (country))
         self.expect(self.prompt)
         self.sendline("iw reg get")
