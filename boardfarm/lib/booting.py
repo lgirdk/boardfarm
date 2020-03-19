@@ -78,6 +78,15 @@ def get_tftp(config):
     return tftp_device, tftp_servers
 
 
+def start_dhcp_servers(config):
+    # start dhcp servers
+    for device in config.board['devices']:
+        if 'options' in device and 'no-dhcp-sever' in device['options']:
+            continue
+        if 'options' in device and 'dhcp-server' in device['options']:
+            getattr(config, device['name']).setup_dhcp_server()
+
+
 def boot(self, reflash=True):
     self.logged['boot_step'] = "start"
 
@@ -88,13 +97,7 @@ def boot(self, reflash=True):
     tftp_device, tftp_servers = get_tftp(self.config)
     self.logged['boot_step'] = "tftp_device_assigned"
 
-    # start dhcp servers
-    for device in self.config.board['devices']:
-        if 'options' in device and 'no-dhcp-sever' in device['options']:
-            continue
-        if 'options' in device and 'dhcp-server' in device['options']:
-            getattr(self.config, device['name']).setup_dhcp_server()
-
+    start_dhcp_servers(self.config)
     self.logged['boot_step'] = "dhcp_server_started"
 
     if not wan and len(tftp_servers) == 0:
