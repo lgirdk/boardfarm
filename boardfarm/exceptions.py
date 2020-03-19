@@ -111,3 +111,8 @@ class ContOnFailError(BftBaseException):
     This exceptions is used along with a fixture to mark tests as FAIL
     """
     pass
+
+
+class NoTFTPServer(BftBaseException):
+    """Raise this exception when no TFTP server is found, but we need one."""
+    pass

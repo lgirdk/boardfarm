@@ -8,7 +8,7 @@
 import time
 import warnings
 
-from boardfarm import lib
+import boardfarm.exceptions
 from boardfarm.lib.common import run_once
 
 warnings.simplefilter("always", UserWarning)
@@ -126,9 +126,7 @@ def boot(self, reflash=True):
     self.logged['boot_step'] = "dhcp_server_started"
 
     if not wan and len(tftp_servers) == 0:
-        msg = 'No WAN Device or tftp_server defined, skipping flash.'
-        lib.common.test_msg(msg)
-        self.skipTest(msg)
+        raise boardfarm.exceptions.NoTFTPServer
 
     # This still needs some clean up, the fall back is to assuming the
     # WAN provides the tftpd server, but it's not always the case
