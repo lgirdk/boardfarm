@@ -1420,7 +1420,10 @@ def ftp_useradd(device):
         return "failed" in device.before
 
 
-def ftp_file_create_delete(device, create_file=None, remove_file=None):
+def ftp_file_create_delete(device,
+                           create_file=None,
+                           extension=".txt",
+                           remove_file=None):
     """create and delete ftp file for upload and download
 
     :param device: Linux device(lan/wan)
@@ -1431,12 +1434,13 @@ def ftp_file_create_delete(device, create_file=None, remove_file=None):
     :type remove_file: any , Optional
     """
     if create_file:
-        device.sendline("dd if=/dev/zero of=%s.txt count=5M bs=1" %
-                        create_file)
+        filename = create_file + extension
+        device.sendline("dd if=/dev/zero of=%s count=5M bs=1" % filename)
         device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
-        device.sendline("rm %s.txt" % remove_file)
+        filename = remove_file + extension
+        device.sendline("rm %s" % filename)
         device.expect(device.prompt, timeout=10)
 
 
