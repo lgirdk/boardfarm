@@ -218,6 +218,12 @@ class o_helper(object):
             self.parent.test_to_log.log += re.sub(
                 '\r\n\[', '\r\n%s: [' % self.parent.test_prefix, to_log)
 
+    def extra_log(self, string):
+        if hasattr(self.parent, 'log'):
+            td = datetime.now() - start
+            self.parent.log += "\r\n[%s] " % td.total_seconds()
+            self.parent.log += string + '\r\n'
+
     def flush(self):
         """Flushes the buffer storage in console before pexpect"""
         if self.out is not None:

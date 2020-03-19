@@ -59,9 +59,12 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
-        lib.common.test_msg(
-            "\n==================== Begin %s    Time: %s ===================="
-            % (self.__class__.__name__, now_short(self._format)))
+        msg = "==================== Begin %s    Time: %s ====================" \
+            % (self.__class__.__name__, now_short(self._format))
+
+        lib.common.test_msg('\n' + msg)
+        for c in self.dev.board.consoles:
+            c.logfile_read.extra_log(msg)
 
     def endMarker(self):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
@@ -69,9 +72,12 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         if self.attempts:
             result = self.result_grade + "(" + str(self.attempts) + "/" + str(
                 self.config.retry) + ")"
-        lib.common.test_msg(
-            "\n==================== End %s   %s   Time: %s =================="
-            % (self.__class__.__name__, result, now_short(self._format)))
+        msg = "==================== End %s   %s   Time: %s ==================" \
+                    % (self.__class__.__name__, result, now_short(self._format))
+
+        lib.common.test_msg('\n' + msg)
+        for c in self.dev.board.consoles:
+            c.logfile_read.extra_log(msg)
 
     def run(self):
         exc_to_raise = None
