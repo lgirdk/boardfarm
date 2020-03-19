@@ -87,6 +87,31 @@ def start_dhcp_servers(config):
             getattr(config, device['name']).setup_dhcp_server()
 
 
+def provision(board, prov, wan, tftp_device):
+    prov.tftp_device = tftp_device
+    board.reprovision(prov)
+
+    if hasattr(prov, 'prov_gateway'):
+        gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
+
+        for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
+            wan.sendline('ip route add %s via %s' % (nw, gw))
+            wan.expect(wan.prompt)
+
+    # TODO: don't do this and sort out two interfaces with ipv6
+    wan.disable_ipv6('eth0')
+
+    if hasattr(prov, 'prov_gateway_v6'):
+        wan.sendline('ip -6 route add default via %s' %
+                     str(prov.prov_gateway_v6))
+        wan.expect(wan.prompt)
+
+    wan.sendline('ip route')
+    wan.expect(wan.prompt)
+    wan.sendline('ip -6 route')
+    wan.expect(wan.prompt)
+
+
 def boot(self, reflash=True):
     self.logged['boot_step'] = "start"
 
@@ -118,28 +143,7 @@ def boot(self, reflash=True):
 
     prov = getattr(self.config, 'provisioner', None)
     if prov is not None:
-        prov.tftp_device = tftp_device
-        board.reprovision(prov)
-
-        if hasattr(prov, 'prov_gateway'):
-            gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
-
-            for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
-                wan.sendline('ip route add %s via %s' % (nw, gw))
-                wan.expect(wan.prompt)
-
-        # TODO: don't do this and sort out two interfaces with ipv6
-        wan.disable_ipv6('eth0')
-
-        if hasattr(prov, 'prov_gateway_v6'):
-            wan.sendline('ip -6 route add default via %s' %
-                         str(prov.prov_gateway_v6))
-            wan.expect(wan.prompt)
-
-        wan.sendline('ip route')
-        wan.expect(wan.prompt)
-        wan.sendline('ip -6 route')
-        wan.expect(wan.prompt)
+        provision(board, prov, wan, tftp_device)
         self.logged['boot_step'] = "board_provisioned"
     else:
         self.logged['boot_step'] = "board_provisioned_skipped"
