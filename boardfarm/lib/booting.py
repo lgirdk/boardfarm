@@ -64,23 +64,28 @@ def flash_image(self, board, lan, wan, tftp_device, reflash=True):
         board.boot_linux(rootfs=rootfs, bootargs=self.config.bootargs)
 
 
-def boot(self, reflash=True):
-    self.logged['boot_step'] = "start"
-
-    board = self.dev.board
-    wan = self.dev.wan
-    lan = self.dev.lan
+def get_tftp(config):
     # start tftpd server on appropriate device
     tftp_servers = [
-        x['name'] for x in self.config.board['devices']
+        x['name'] for x in config.board['devices']
         if 'tftpd-server' in x.get('options', "")
     ]
     tftp_device = None
     # start all tftp servers for now
     for tftp_server in tftp_servers:
         # This is a mess, just taking the last tftpd-server?
-        tftp_device = getattr(self.config, tftp_server)
+        tftp_device = getattr(config, tftp_server)
+    return tftp_device, tftp_servers
 
+
+def boot(self, reflash=True):
+    self.logged['boot_step'] = "start"
+
+    board = self.dev.board
+    wan = self.dev.wan
+    lan = self.dev.lan
+
+    tftp_device, tftp_servers = get_tftp(self.config)
     self.logged['boot_step'] = "tftp_device_assigned"
 
     # start dhcp servers
