@@ -4,9 +4,9 @@ import traceback
 from datetime import datetime
 from functools import partial, wraps
 
-from boardfarm.tests_wrappers import continue_on_fail
 import six
-from boardfarm.exceptions import CodeError, TestError, ContOnFailError
+from boardfarm.exceptions import CodeError, ContOnFailError, TestError
+from boardfarm.tests_wrappers import continue_on_fail
 from termcolor import cprint
 
 

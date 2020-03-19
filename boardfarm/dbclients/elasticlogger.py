@@ -7,10 +7,10 @@
 #!/usr/bin/env python
 
 import datetime
+import json
 import os
 import socket
 import sys
-import json
 from math import isnan
 
 try:

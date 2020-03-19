@@ -7,11 +7,11 @@
 #!/usr/bin/env python
 
 import datetime
+import ipaddress
 import json
 import os
 import socket
 
-import ipaddress
 import pymongo
 
 

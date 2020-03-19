@@ -1,5 +1,5 @@
-from boardfarm.tests.bft_base_test import BftBaseTest
 from boardfarm.orchestration import TestStep as TS
+from boardfarm.tests.bft_base_test import BftBaseTest
 from unittest2 import TestCase
 
 

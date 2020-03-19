@@ -7,8 +7,8 @@
 #!/usr/bin/env python
 
 import multiprocessing
-import platform
 import os
+import platform
 import re
 import socket
 import sys

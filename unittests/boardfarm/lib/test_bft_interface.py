@@ -1,7 +1,8 @@
-import pytest
 import ipaddress
-from boardfarm.lib.bft_interface import bft_iface
+
 import boardfarm.exceptions
+import pytest
+from boardfarm.lib.bft_interface import bft_iface
 
 
 class Dummy:
