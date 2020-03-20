@@ -82,40 +82,67 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         else:
             return False
 
-    def wifi_connect(self, ssid_name, password=None, security_mode=None):
-        """Initialise wpa supplicant file if wifi has password else
-        connect the wifi through iwconfig
+    def wifi_connect(self,
+                     ssid_name,
+                     password=None,
+                     security_mode='NONE',
+                     hotspot_id='cbn',
+                     hotspot_pwd='cbn',
+                     boardcast=True):
+        """Initialise wpa supplicant file
 
         :param ssid_name: SSID name
         :type ssid_name: string
         :param password: wifi password, defaults to None
         :type password: string, optional
-        :param security_mode: Security mode for the wifi, defaults to None
+        :param security_mode: Security mode for the wifi, [NONE|WPA-PSK|WPA-EAP]
         :type security_mode: string, optional
+        :param hotspot_id: identity of hotspot
+        :type hotspot_id: string
+        :param hotspot_pwd: password of hotspot
+        :type hotspot_pwd: string
+        :param boardcast: Enable/Disable boardcast for ssid scan
+        :type boardcast: bool
         :return: True or False
         :rtype: boolean
         """
-        if password == None:
-            self.sudo_sendline("iwconfig %s essid %s" %
-                               (self.iface_wifi, ssid_name))
-        else:
-            '''Generate WPA supplicant file and execute it'''
-            self.sudo_sendline("rm " + ssid_name + ".conf")
-            self.expect(self.prompt)
-            self.sudo_sendline("wpa_passphrase " + ssid_name + " " + password +
-                               " >> " + ssid_name + ".conf")
-            self.expect(self.prompt)
-            self.sendline("cat " + ssid_name + ".conf")
-            self.expect(self.prompt)
-            self.sudo_sendline("wpa_supplicant  -B -Dnl80211 -i" +
-                               self.iface_wifi + " -c" + ssid_name + ".conf")
-            self.expect(self.prompt)
-            match = re.search('Successfully initialized wpa_supplicant',
-                              self.before)
-            if match:
-                return True
-            else:
-                return False
+        '''Setup config of wpa_supplicant connect'''
+        config = dict()
+        config['ssid'] = ssid_name
+        config['key_mgmt'] = security_mode
+
+        if security_mode == "WPA-PSK":
+            config['psk'] = password
+        elif security_mode == "WPA-EAP":
+            config['eap'] = 'PEAP'
+            config['identity'] = hotspot_id
+            config['password'] = hotspot_pwd
+        config['scan_ssid'] = int(not boardcast)
+
+        config_str = ''
+        for k, v in config.items():
+            if k in ['ssid', 'psk', 'identity', 'password']:
+                v = '"{}"'.format(v)
+            config_str += '{}={}\n'.format(k, v)
+        final_config = 'network={{\n{}}}'.format(config_str)
+        '''Create wpa_supplicant config'''
+        self.sudo_sendline("rm {}.conf".format(ssid_name))
+        self.expect(self.prompt)
+        self.sudo_sendline("echo -e '{}' > {}.conf".format(
+            final_config, ssid_name))
+        self.expect(self.prompt)
+        self.sendline("cat {}.conf".format(ssid_name))
+        self.expect(self.prompt)
+        '''Generate WPA supplicant connect'''
+        driver_name = 'nl80211'
+        if security_mode == "WPA-EAP":
+            driver_name = 'wext'
+        self.sudo_sendline("wpa_supplicant -B -D{} -i {} -c {}.conf".format(
+            driver_name, self.iface_wifi, ssid_name))
+        self.expect(self.prompt)
+        match = re.search('Successfully initialized wpa_supplicant',
+                          self.before)
+        return bool(match)
 
     def wifi_connectivity_verify(self):
         """Verify wifi is in teh connected state
