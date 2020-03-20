@@ -45,6 +45,17 @@ class Macbook(debian.DebianBox):
         """
         return "MacBook"
 
+    def change_channel(self, channel):
+        """Change channel via airport
+        :param channel: channel number
+        :type channel: string
+        """
+        command = 'airport --ch={}'.format(channel)
+
+        self.sudo_sendline(command)
+        self.expect(self.prompt)
+        self.expect(pexpect.TIMEOUT, timeout=5)
+
     def set_sniff_channel(self, channel):
         """Set sniff channel
         :rtype: string
