@@ -112,17 +112,17 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(self, reflash=True, logged=dict()):
+def boot(self, config, reflash=True, logged=dict()):
     logged['boot_step'] = "start"
 
     board = self.dev.board
     wan = self.dev.wan
     lan = self.dev.lan
 
-    tftp_device, tftp_servers = get_tftp(self.config)
+    tftp_device, tftp_servers = get_tftp(config)
     logged['boot_step'] = "tftp_device_assigned"
 
-    start_dhcp_servers(self.config)
+    start_dhcp_servers(config)
     logged['boot_step'] = "dhcp_server_started"
 
     if not wan and len(tftp_servers) == 0:
@@ -131,7 +131,7 @@ def boot(self, reflash=True, logged=dict()):
     # This still needs some clean up, the fall back is to assuming the
     # WAN provides the tftpd server, but it's not always the case
     if wan:
-        wan.configure(kind="wan_device", config=self.config)
+        wan.configure(kind="wan_device", config=config)
         if tftp_device is None:
             tftp_device = wan
 
@@ -139,7 +139,7 @@ def boot(self, reflash=True, logged=dict()):
 
     tftp_device.start_tftp_server()
 
-    prov = getattr(self.config, 'provisioner', None)
+    prov = getattr(config, 'provisioner', None)
     if prov is not None:
         provision(board, prov, wan, tftp_device)
         logged['boot_step'] = "board_provisioned"
@@ -169,23 +169,23 @@ def boot(self, reflash=True, logged=dict()):
     board.wait_for_linux()
     logged['boot_step'] = "linux_ok"
 
-    if self.config.META_BUILD and board.flash_meta_booted:
-        flash_meta_helper(board, self.config.META_BUILD, wan, lan)
+    if config.META_BUILD and board.flash_meta_booted:
+        flash_meta_helper(board, config.META_BUILD, wan, lan)
         logged['boot_step'] = "late_flash_meta_ok"
     elif self.env_helper.has_image() and board.flash_meta_booted \
-            and not self.config.ROOTFS and not self.config.KERNEL:
+            and not config.ROOTFS and not config.KERNEL:
         flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
         logged['boot_step'] = "late_flash_meta_ok"
 
     linux_booted_seconds_up = board.get_seconds_uptime()
     # Retry setting up wan protocol
-    if self.config.setup_device_networking:
+    if config.setup_device_networking:
         for i in range(2):
             time.sleep(10)
             try:
-                if "pppoe" in self.config.WAN_PROTO:
+                if "pppoe" in config.WAN_PROTO:
                     wan.turn_on_pppoe()
-                board.config_wan_proto(self.config.WAN_PROTO)
+                board.config_wan_proto(config.WAN_PROTO)
                 break
             except:
                 print("\nFailed to check/set the router's WAN protocol.")
@@ -194,7 +194,7 @@ def boot(self, reflash=True, logged=dict()):
     logged['boot_step'] = "network_ok"
 
     # Give other daemons time to boot and settle
-    if self.config.setup_device_networking:
+    if config.setup_device_networking:
         for i in range(5):
             board.get_seconds_uptime()
             time.sleep(5)
@@ -212,8 +212,8 @@ def boot(self, reflash=True, logged=dict()):
     # we can't have random messsages messages
     board.set_printk()
 
-    if hasattr(self.config, 'INSTALL_PKGS') and self.config.INSTALL_PKGS != "":
-        for pkg in self.config.INSTALL_PKGS.split(' '):
+    if hasattr(config, 'INSTALL_PKGS') and config.INSTALL_PKGS != "":
+        for pkg in config.INSTALL_PKGS.split(' '):
             if len(pkg) > 0:
                 board.install_package(pkg)
 
@@ -223,13 +223,13 @@ def boot(self, reflash=True, logged=dict()):
     # Try to verify router has stayed up (and, say, not suddenly rebooted)
     end_seconds_up = board.get_seconds_uptime()
     print("\nThe router has been up %s seconds." % end_seconds_up)
-    if self.config.setup_device_networking:
+    if config.setup_device_networking:
         assert end_seconds_up > linux_booted_seconds_up
 
     logged['boot_step'] = "boot_ok"
     logged['boot_time'] = end_seconds_up
 
-    if board.routing and lan and self.config.setup_device_networking:
+    if board.routing and lan and config.setup_device_networking:
         if wan is not None:
             lan.start_lan_client(wan_gw=wan.gw)
         else:
