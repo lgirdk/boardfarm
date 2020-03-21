@@ -19,13 +19,19 @@ def flash_meta_helper(board, meta, wan, lan):
     board.flash_meta(meta, wan, lan)
 
 
-def flash_image(self, config, board, lan, wan, tftp_device, reflash=True):
+def flash_image(config,
+                env_helper,
+                board,
+                lan,
+                wan,
+                tftp_device,
+                reflash=True):
     rootfs = None
 
     # Reflash only if at least one or more of these
     # variables are set, or else there is nothing to do in u-boot
     meta_interrupt = False
-    if (config.META_BUILD or self.env_helper.has_image()) \
+    if (config.META_BUILD or env_helper.has_image()) \
             and not board.flash_meta_booted:
         meta_interrupt = True
     if reflash and (meta_interrupt or config.ROOTFS or\
@@ -39,8 +45,8 @@ def flash_image(self, config, board, lan, wan, tftp_device, reflash=True):
                     if config.META_BUILD:
                         flash_meta_helper(board, config.META_BUILD, wan, lan)
                     elif not config.ROOTFS and not config.KERNEL:
-                        flash_meta_helper(board, self.env_helper.get_image(),
-                                          wan, lan)
+                        flash_meta_helper(board, env_helper.get_image(), wan,
+                                          lan)
                     break
                 except Exception as e:
                     print(e)
@@ -111,7 +117,7 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(self, config, reflash=True, logged=dict()):
+def boot(self, config, env_helper, reflash=True, logged=dict()):
     logged['boot_step'] = "start"
 
     board = self.dev.board
@@ -159,7 +165,7 @@ def boot(self, config, reflash=True, logged=dict()):
 
     board.reset()
     logged['boot_step'] = "board_reset_ok"
-    flash_image(self, config, board, lan, wan, tftp_device, reflash)
+    flash_image(config, env_helper, board, lan, wan, tftp_device, reflash)
     logged['boot_step'] = "flash_ok"
     if hasattr(board, "pre_boot_linux"):
         board.pre_boot_linux(wan=wan, lan=lan)
@@ -171,9 +177,9 @@ def boot(self, config, reflash=True, logged=dict()):
     if config.META_BUILD and board.flash_meta_booted:
         flash_meta_helper(board, config.META_BUILD, wan, lan)
         logged['boot_step'] = "late_flash_meta_ok"
-    elif self.env_helper.has_image() and board.flash_meta_booted \
+    elif env_helper.has_image() and board.flash_meta_booted \
             and not config.ROOTFS and not config.KERNEL:
-        flash_meta_helper(board, self.env_helper.get_image(), wan, lan)
+        flash_meta_helper(board, env_helper.get_image(), wan, lan)
         logged['boot_step'] = "late_flash_meta_ok"
 
     linux_booted_seconds_up = board.get_seconds_uptime()

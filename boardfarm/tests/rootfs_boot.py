@@ -23,7 +23,8 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
     '''Flashed image and booted successfully.'''
     def boot(self, reflash=True):
         try:
-            boardfarm.lib.booting.boot(self, self.config, reflash, self.logged)
+            boardfarm.lib.booting.boot(self, self.config, self.env_helper,
+                                       reflash, self.logged)
         except boardfarm.exceptions.NoTFTPServer:
             msg = 'No WAN Device or tftp_server defined, skipping flash.'
             lib.common.test_msg(msg)
