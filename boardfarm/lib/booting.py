@@ -117,12 +117,12 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(self, config, env_helper, reflash=True, logged=dict()):
+def boot(config, env_helper, devices, reflash=True, logged=dict()):
     logged['boot_step'] = "start"
 
-    board = self.dev.board
-    wan = self.dev.wan
-    lan = self.dev.lan
+    board = devices.board
+    wan = devices.wan
+    lan = devices.lan
 
     tftp_device, tftp_servers = get_tftp(config)
     logged['boot_step'] = "tftp_device_assigned"
