@@ -286,3 +286,58 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
     except Exception as e:
         print(e)
         raise Exception("Failed to connect telnet to :%s" % device.before)
+
+
+def custom_telnet_service(device,
+                          dest_prompt,
+                          ip,
+                          username,
+                          password,
+                          opts="",
+                          cmd=[]):
+    """Telnet service connection
+
+    :param device: client device from which the telnet session is initiated
+    :type device: object
+    :param dest_prompt: target device prompt
+    :type dest_prompt: list of prompt
+    :param ip: ip address of the target device
+    :type ip: string
+    :param username: target device username
+    :type: string
+    :param password: target device password
+    :type: string
+    :param opts: telnet options if any, defaults to ""
+    :type opts: string, Optional
+    :param cmd: list of commands to send
+    :type: list of strings
+    :return: returns the command output
+    """
+    result = []
+    send_control = False
+    try:
+        device.sendline("telnet %s %s" % (opts, ip))
+        device.expect(["Username:"] + ["login:"], timeout=60)
+        device.sendline(username)
+        device.expect(["Password:"])
+        device.sendline(password)
+        device.expect(dest_prompt, timeout=60)
+        send_control = True
+        for cm in cmd:
+            device.sendline(cm)
+            device.expect(dest_prompt, timeout=60)
+            result.append(device.before)
+        device.sendcontrol(']')
+        device.sendline('quit')
+        send_control = False
+        device.expect(device.prompt, timeout=60)
+        return result
+    except Exception as e:
+        print(e)
+        if send_control:
+            device.sendcontrol(']')
+            device.sendline('quit')
+            device.expect(device.prompt, timeout=60)
+        else:
+            device.sendcontrol('c')
+            device.expect(device.prompt, timeout=60)
