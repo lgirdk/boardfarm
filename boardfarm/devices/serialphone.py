@@ -12,7 +12,8 @@ class SerialPhone(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-
+        self.own_number = self.kwargs.get("number", None)
+        self.tcid = self.kwargs.get("tcid", None)
         self.line = self.kwargs.get("line")
         self.profile[self.name] = self.profile.get(self.name, {})
         serialphone_profile = self.profile[self.name] = {}
