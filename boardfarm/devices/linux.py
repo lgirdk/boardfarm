@@ -105,7 +105,7 @@ class LinuxDevice(base.BaseDevice):
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
         '''set static ip of the interface'''
-        self.sendline('ifconfig {} {} netmask {} up'.format(
+        self.sudo_sendline('ifconfig {} {} netmask {} up'.format(
             interface, fix_ip, fix_mark))
         self.expect(self.prompt)
 
