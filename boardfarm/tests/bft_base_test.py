@@ -64,7 +64,8 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
         lib.common.test_msg('\n' + msg)
         for c in self.dev.board.consoles:
-            c.logfile_read.extra_log(msg)
+            if hasattr(c.logfile_read, 'extra_log'):
+                c.logfile_read.extra_log(msg)
 
     def endMarker(self):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
@@ -77,7 +78,8 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
         lib.common.test_msg('\n' + msg)
         for c in self.dev.board.consoles:
-            c.logfile_read.extra_log(msg)
+            if hasattr(c.logfile_read, 'extra_log'):
+                c.logfile_read.extra_log(msg)
 
     def run(self):
         exc_to_raise = None
