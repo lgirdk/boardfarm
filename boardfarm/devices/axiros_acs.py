@@ -10,6 +10,8 @@ from zeep.wsse.username import UsernameToken
 
 from boardfarm.exceptions import ACSFaultCode
 
+import ipaddress
+
 
 class AxirosACS(base_acs.BaseACS):
     """ACS connection class used to perform TR069 operations on stations/board
@@ -36,6 +38,17 @@ class AxirosACS(base_acs.BaseACS):
         self.cli_username = self.kwargs.pop('cli_username', None)
         self.cli_password = self.kwargs.pop('cli_password', None)
         self.color = self.kwargs.pop('color', None)
+        self.options = self.kwargs.pop('options', None)
+
+        if self.options:
+            options = [x.strip() for x in self.options.split(',')]
+            for opt in options:
+                if opt.startswith('wan-static-ipv6:'):
+                    ipv6_address = opt.replace('wan-static-ipv6:', '')
+                    if "/" not in opt:
+                        ipv6_address += "/64"
+                    self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
+                    self.gwv6 = self.ipv6_interface.ip
 
         if self.port is not None:
             target = self.ipaddr + ":" + self.port
