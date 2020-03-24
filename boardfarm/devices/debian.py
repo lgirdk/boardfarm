@@ -24,6 +24,7 @@ from nested_lookup import nested_lookup
 from termcolor import colored, cprint
 
 from . import linux
+from collections import defaultdict
 
 
 class DebianBox(linux.LinuxDevice):
@@ -590,8 +591,11 @@ class DebianBox(linux.LinuxDevice):
             self.sendline('listen-address=%s' % self.gwv6)
         self.sendline('addn-hosts=/etc/dnsmasq.hosts'
                       )  # all additional hosts will be added to dnsmasq.hosts
-        self.sendline('EOF')
+        self.check_output('EOF')
         self.add_hosts(config=config)
+        self.restart_dns_server()
+
+    def restart_dns_server(self):
         self.sendline('/etc/init.d/dnsmasq restart')
         self.expect(self.prompt)
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
@@ -600,47 +604,71 @@ class DebianBox(linux.LinuxDevice):
     def add_hosts(self, addn_host={}, config=None):
         # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         # this is a hack, the add_host should have been called from RootFs
-        hosts = {}
-        if hasattr(self, "profile"):
-            host_dicts = nested_lookup("hosts",
-                                       self.profile.get(self.name, {}))
-            for host_data in host_dicts:
-                hosts.update(host_data)
-        if config is not None and hasattr(config, "board"):
-            for device in config.board['devices']:
-                # TODO: this should be different...
-                if 'lan' in device['name']:
-                    continue
-                d = getattr(config, device['name'])
-                domain_name = device['name'] + '.boardfarm.com'
-                final = None
-                if 'wan-static-ip' in str(device):
-                    final = str(
-                        re.search(
-                            'wan-static-ip:' + '(' + ValidIpv4AddressRegex +
-                            ')', device['options']).group(1))
-                elif 'ipaddr' in device:
-                    final = str(device['ipaddr'])
-                elif hasattr(d, 'ipaddr'):
-                    final = str(d.ipaddr)
+        self.hosts = getattr(self, 'hosts', defaultdict(list))
+        restart = False
 
-                if final == 'localhost':
-                    if hasattr(d, 'gw'):
-                        final = str(d.gw)
-                    elif hasattr(d, 'iface_dut'):
-                        final = d.get_interface_ipaddr(d.iface_dut)
-                    else:
-                        final = None
-                if final is not None:
-                    hosts[domain_name] = final
-        hosts.update(addn_host)
-        if hosts is not None:
+        def _update_host_dict(host_data):
+            for host, ip in host_data.items():
+                if type(ip) is list:
+                    self.hosts[host] += ip
+                else:
+                    self.hosts[host].append(ip)
+
+        if addn_host:
+            _update_host_dict(addn_host)
+            restart = True
+        else:
+            if hasattr(self, "profile"):
+                host_dicts = nested_lookup("hosts",
+                                           self.profile.get(self.name, {}))
+                for i in host_dicts:
+                    _update_host_dict(i)
+            if config is not None and hasattr(config, "board"):
+                for device in config.board['devices']:
+                    # TODO: this should be different...
+                    if 'lan' in device['name']:
+                        continue
+                    d = getattr(config, device['name'])
+                    domain_name = device['name'] + '.boardfarm.com'
+                    final = None
+                    if 'wan-static-ip:' in str(device):
+                        final = str(
+                            re.search(
+                                'wan-static-ip:' + '(' +
+                                ValidIpv4AddressRegex + ')',
+                                device['options']).group(1))
+                    elif 'ipaddr' in device:
+                        final = str(device['ipaddr'])
+                    elif hasattr(d, 'ipaddr'):
+                        final = str(d.ipaddr)
+
+                    if final == 'localhost':
+                        if hasattr(d, 'gw'):
+                            final = str(d.gw)
+                        elif hasattr(d, 'iface_dut'):
+                            final = d.get_interface_ipaddr(d.iface_dut)
+                        else:
+                            final = None
+                    if final is not None:
+                        self.hosts[domain_name].append(final)
+
+                    # for IPv6 part:
+                    # each device should setup it's own v6 host
+                    # TODO: need to change iteration of device via device manager.
+                    if getattr(d, 'gwv6', None):
+                        self.hosts[domain_name].append(str(d.gwv6))
+        if self.hosts:
             self.sendline('cat > /etc/dnsmasq.hosts << EOF')
-            for host, ip in hosts.items():
-                self.sendline(ip + " " + host)
-            self.sendline('EOF')
+            for host, ips in self.hosts.items():
+                for ip in set(ips):
+                    self.sendline(ip + " " + host)
+            self.check_output('EOF')
+        if restart:
+            self.restart_dns_server()
 
     def remove_hosts(self):
+        # TODO: we should probably be specific here whether we want to remove
+        # everything or just few hosts.
         self.sendline('rm  /etc/dnsmasq.hosts')
         self.expect(self.prompt)
         self.sendline('/etc/init.d/dnsmasq restart')
