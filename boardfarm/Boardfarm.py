@@ -34,12 +34,6 @@ class Boardfarm(object):
         '''
         Search for all available tests and return a dict.
         '''
-        # TODO: can go away once devices are not imported
-        from boardfarm.lib import DeviceManager
-        device_mgr = DeviceManager.device_manager()
-        from boardfarm import devices
-        devices.set_device_manager(device_mgr)
-        # END
 
         from boardfarm import tests, config
         tests.init(config)

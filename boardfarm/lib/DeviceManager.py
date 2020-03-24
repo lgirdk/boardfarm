@@ -108,6 +108,9 @@ class device_descriptor(object):
         return ret
 
 
+all_device_managers = []
+
+
 class device_manager(UserList):
     '''
     Manages all your devices, for getting and creating (if needed)
@@ -128,6 +131,8 @@ class device_manager(UserList):
             "lan_iface": "lan%s" % self.uniqid[:12],
             "uniq_id": self.uniqid
         }
+
+        all_device_managers.append(self)
 
     @property
     def data(self):

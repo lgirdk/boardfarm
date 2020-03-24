@@ -238,12 +238,6 @@ def parse():
 
     if args.list_tests:
         try:
-            # TODO: can go away once devices are not imported
-            from boardfarm.lib import DeviceManager
-            device_mgr = DeviceManager.device_manager()
-            from boardfarm import devices
-            devices.set_device_manager(device_mgr)
-            # END
             from boardfarm import tests
             tests.init(config)
         except TestImportError as e:

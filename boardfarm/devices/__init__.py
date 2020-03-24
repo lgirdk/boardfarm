@@ -18,25 +18,15 @@ import termcolor
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
 from boardfarm.lib.DeviceManager import \
     device_type  # pylint: disable=unused-import
-from boardfarm.lib.DeviceManager import device_manager
+from boardfarm.lib.DeviceManager import all_device_managers
 from six.moves import UserList
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
 
-# Please delete the following line when tests stop
-# doing "from boardfarm.devices import mgr"
-# Don't let mgr remain a global, pass it into functions instead.
-mgr = None
-
 device_mappings = {}
 
 __all__ = []
-
-
-def set_device_manager(device_mgr):
-    global mgr
-    mgr = device_mgr
 
 
 def probe_devices():
@@ -111,27 +101,6 @@ __loader__ = None
 _mod = sys.modules[__name__]
 
 
-class _device_helper(types.ModuleType):
-    '''
-    Returns classic devices for from devices import foo
-    Will go away at some point
-    '''
-    def __getattribute__(self, key):
-        if 'key' == '__all__':
-            probe_devices()
-            return __all__
-        if isinstance(getattr(device_type, key, None), device_type):
-            return mgr.by_type(getattr(device_type, key))
-        try:
-            return getattr(_mod, key)
-        except:
-            return importlib.import_module('boardfarm.devices.' + key)
-
-
-sys.modules[__name__] = _device_helper("bft_device_helper")
-sys.modules['bft_device_helper'] = sys.modules[__name__]
-
-
 class _prompt(UserList, list):
     '''
     This used to be a static list, but since we track devices more closely we can
@@ -140,10 +109,12 @@ class _prompt(UserList, list):
     '''
     def get_prompts(self):
         ret = []
-        for d in mgr:
-            for p in getattr(d, 'prompt', []):
-                if p not in ret:
-                    ret.append(p)
+
+        for dm in all_device_managers:
+            for d in dm:
+                for p in getattr(d, 'prompt', []):
+                    if p not in ret:
+                        ret.append(p)
 
         return ret
 

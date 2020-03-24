@@ -261,7 +261,6 @@ def connect_to_devices(config):
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
         device_mgr = DeviceManager.device_manager()
-        devices.set_device_manager(device_mgr)
 
         try:
             # Use helper class to control access to configuration from tests
