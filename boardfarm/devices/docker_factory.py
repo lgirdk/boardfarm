@@ -4,7 +4,7 @@ import re
 import sys
 
 import pexpect
-from boardfarm.devices import env
+from boardfarm.devices import env, get_device
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 from . import linux
@@ -34,6 +34,8 @@ class DockerFactory(linux.LinuxDevice):
         self.ipaddr = kwargs.pop('ipaddr', None)
         self.username = kwargs.pop('username', 'root')
         self.password = kwargs.pop('password', 'bigfoot1')
+
+        self.dev = kwargs.pop('mgr', None)
 
         if self.ipaddr is not None:
             # TOOO: we rely on correct username and key and standard port
@@ -137,7 +139,7 @@ class DockerFactory(linux.LinuxDevice):
         self.created_docker = True
 
         target['ipaddr'] = self.ipaddr
-        from boardfarm.devices import get_device
+        target['device_mgr'] = self.dev
         new_device = get_device(target_type, **target)
         self.extra_devices.append(new_device)
 

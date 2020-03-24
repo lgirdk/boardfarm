@@ -92,7 +92,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 'port': 22,
                 'color': 'magenta'
             }
-            self.session = devices.get_device("DebianBoxNonExistent", **kwargs)
+            self.session = devices.get_device("DebianBoxNonExistent",
+                                              device_mgr=self.dev,
+                                              **kwargs)
         except:
             pass
         else:
@@ -108,7 +110,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 'port': 22,
                 'color': 'cyan'
             }
-            self.session = devices.get_device("DebianBox", **kwargs)
+            self.session = devices.get_device("DebianBox",
+                                              device_mgr=self.dev,
+                                              **kwargs)
         except:
             pass
         else:
@@ -123,7 +127,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 'port': 50,
                 'color': 'red'
             }
-            self.session = devices.get_device("DebianBox", **kwargs)
+            self.session = devices.get_device("DebianBox",
+                                              device_mgr=self.dev,
+                                              **kwargs)
         except:
             pass
         else:
@@ -138,7 +144,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 'port': 50,
                 'color': 'red'
             }
-            self.session = devices.get_device("debina", **kwargs)
+            self.session = devices.get_device("debina",
+                                              device_mgr=self.dev,
+                                              **kwargs)
         except:
             pass
         else:
@@ -155,7 +163,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 'port': wan.port,
                 'color': 'yellow'
             }
-            self.session = devices.get_device("debian", **kwargs)
+            self.session = devices.get_device("debian",
+                                              device_mgr=self.dev,
+                                              **kwargs)
         except:
             assert 0, "Failed to create session, Test FAILED!"
         else:

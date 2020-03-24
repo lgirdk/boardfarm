@@ -55,6 +55,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  power_password=None,
                  rootfs=None,
                  kernel=None,
+                 mgr=None,
                  **kwargs):
         """This method intializes the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc.,
 
@@ -95,6 +96,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         :raises: Exception "The QEMU device type requires specifying a rootfs"
         """
         self.consoles = [self]
+        self.dev = mgr
 
         assert cmd_exists('qemu-system-i386')
 

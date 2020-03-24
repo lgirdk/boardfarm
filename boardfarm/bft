@@ -64,14 +64,14 @@ class FailedDevice(object):
     name = None
 
 
-def threaded_device_helper(device, ret):
+def threaded_device_helper(device, device_mgr, ret):
     from boardfarm.devices import get_device
     s = time.time()
     if 'BFT_DEBUG' in os.environ:
         logger.debug("Connected to %s" % device['name'])
 
     try:
-        dyn_dev = get_device(device['type'], **device)
+        dyn_dev = get_device(device['type'], **device, device_mgr=device_mgr)
     except BftNotSupportedDevice:
         logger.info(
             "Device %s not supported in this bft release + overlays, skipping..."
@@ -108,7 +108,7 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
     for device in config.board['devices']:
         threads.append(
             threading.Thread(target=threaded_device_helper,
-                             args=(device, ret)))
+                             args=(device, device_mgr, ret)))
         threads[-1].start()
 
     for t in threads:
@@ -298,7 +298,8 @@ def connect_to_devices(config):
                 power_password=config.board.get('power_password', None),
                 rootfs=config.ROOTFS,
                 kernel=config.KERNEL,
-                config=config.board)
+                config=config.board,
+                device_mgr=device_mgr)
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
             board.dev = device_mgr

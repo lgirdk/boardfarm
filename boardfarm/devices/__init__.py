@@ -160,7 +160,7 @@ class _prompt(UserList, list):
 prompt = _prompt()
 
 
-def bf_node(cls_list, model, **kwargs):
+def bf_node(cls_list, model, device_mgr, **kwargs):
     '''
     Method bf_node returns an instance of a dynamically created class.
     The class is created using type(classname, superclasses, attributes_dict) method.
@@ -194,14 +194,14 @@ def bf_node(cls_list, model, **kwargs):
         for cls in cls_list:
             cls.__init__(self, *args, **kwargs)
 
-    ret = type(cls_name, tuple(cls_list), {'__init__': __init__})(model,
-                                                                  **kwargs)
+    ret = type(cls_name, tuple(cls_list),
+               {'__init__': __init__})(model, mgr=device_mgr, **kwargs)
     ret.target = kwargs
 
     return ret
 
 
-def get_device(model, **kwargs):
+def get_device(model, device_mgr, **kwargs):
     '''
     Create a class instance for a device. These are connected to the
     Device Under Test (DUT) board.
@@ -252,8 +252,8 @@ def get_device(model, **kwargs):
         if len(cls_list) == 0:
             raise BftNotSupportedDevice(
                 "Unable to spawn instance of model: %s" % model)
-        ret = bf_node(cls_list, model, **kwargs)
-        mgr._add_device(ret)
+        ret = bf_node(cls_list, model, device_mgr, **kwargs)
+        device_mgr._add_device(ret)
         return ret
     except BftNotSupportedDevice:
         raise
