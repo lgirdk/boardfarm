@@ -8,6 +8,39 @@ from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient
 from boardfarm.lib.common import print_bold
 
 
+class BoardfarmTestConfig():
+    '''
+    This class defines the location or values of high-level objects
+    used to run tests. Such as: url of the inventory server,
+    environment files, etc...
+    '''
+    def __init__(self, name='results'):
+        self.name = name
+        self.output_dir = os.path.join(
+            os.path.abspath(os.path.join(os.getcwd(), name, '')), '')
+        self.EXTRA_TESTS = []
+        self.BOARD_NAMES = []
+        self.boardfarm_config_location = None
+        self.boardfarm_config = None
+        self.UBOOT = None
+        self.KERNEL = None
+        self.ROOTFS = None
+        self.NFSROOT = None
+        self.META_BUILD = None
+        self.WAN_PROTO = 'dhcp'
+        self.setup_device_networking = True
+        self.bootargs = None
+        self.golden = []
+        self.golden_master_results = {}
+        self.features = []
+        self.TEST_SUITE_NOSTRICT = False
+        self.regex_config = []
+        self.retry = 0
+        self.test_args_location = os.environ.get('BFT_ARGS', None)
+        self.test_args = None
+        self.err_injection_dict = {}
+
+
 def get_station_config(location=None, ignore_redir=False):
     '''
     A "station config" describes what things are available to connect to
