@@ -444,3 +444,13 @@ class web_gui():
             assert button, 'Error in click %s' % path
             print("Click %s : PASS" % path)
             time.sleep(2)
+
+    def __del__(self):
+        """Destructor method.
+           Deletes the webgui object.
+           The function is called when the object references have gone.
+        """
+        try:
+            self.display.stop()
+        except Exception:
+            pass
