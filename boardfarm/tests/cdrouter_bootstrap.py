@@ -73,7 +73,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         # if we route, we need to add routes
         wandutmac = None
         if board.has_cmts:
-            from boardfarm.devices import provisioner
+            provisioner = self.dev.provisioner
             # TODO: there are more missing ones CDrouter expects
             provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
@@ -339,7 +339,7 @@ testvar wanDnsServer %s
         lan = self.dev.lan
 
         if board.has_cmts:
-            from boardfarm.devices import provisioner
+            provisioner = self.dev.provisioner
             # TODO: there are more missing ones CDrouter expects
             provisioner.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
             provisioner.expect(prompt)
