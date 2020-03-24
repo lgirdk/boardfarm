@@ -4,7 +4,7 @@ import re
 import sys
 
 import pexpect
-from boardfarm.devices import env, get_device
+from boardfarm.devices import get_device
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 from . import linux
@@ -50,13 +50,13 @@ class DockerFactory(linux.LinuxDevice):
                 ])
         else:
             bft_pexpect_helper.spawn.__init__(
-                self, command='bash --noprofile --norc', env=env)
+                self, command='bash --noprofile --norc', env=self.dev.env)
             self.ipaddr = 'localhost'
 
         self.iface = kwargs.pop('iface', None)
         self.docker_network = kwargs.pop('docker_network', None)
         self.name = kwargs.pop('name')
-        self.cname = self.name + "-" + env["uniq_id"]
+        self.cname = self.name + "-" + self.dev.env["uniq_id"]
 
         if 'BFT_DEBUG' in os.environ:
             self.logfile_read = sys.stdout
@@ -72,8 +72,8 @@ class DockerFactory(linux.LinuxDevice):
         self.expect(self.prompt)
 
         if self.ipaddr != 'localhost':
-            print(env)
-            for k, v in env.items():
+            print(self.dev.env)
+            for k, v in self.dev.env.items():
                 self.sendline('export %s=%s' % (k, v))
                 self.expect(self.prompt)
 

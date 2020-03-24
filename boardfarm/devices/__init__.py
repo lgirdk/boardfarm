@@ -15,7 +15,6 @@ import types
 import boardfarm
 import pexpect
 import termcolor
-from boardfarm import uniqid
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
 from boardfarm.lib.DeviceManager import \
     device_type  # pylint: disable=unused-import
@@ -29,12 +28,6 @@ from . import openwrt_router
 # doing "from boardfarm.devices import mgr"
 # Don't let mgr remain a global, pass it into functions instead.
 mgr = None
-
-env = {
-    "wan_iface": "wan%s" % uniqid[:12],
-    "lan_iface": "lan%s" % uniqid[:12],
-    "uniq_id": uniqid
-}
 
 device_mappings = {}
 

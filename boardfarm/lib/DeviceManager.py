@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+import uuid
 
 from aenum import Enum
 from boardfarm.exceptions import DeviceDoesNotExistError
@@ -118,6 +119,15 @@ class device_manager(UserList):
         # Devices that can create other devices, we store them for later
         # so we can use them to create devices that might not already exist
         self.factories = []
+
+        # TODO: does self.env really belong here or in device class?
+        self.uniqid = uuid.uuid4(
+        ).hex[:15]  # Random, unique ID and use first 15 bytes
+        self.env = {
+            "wan_iface": "wan%s" % self.uniqid[:12],
+            "lan_iface": "lan%s" % self.uniqid[:12],
+            "uniq_id": self.uniqid
+        }
 
     @property
     def data(self):

@@ -12,7 +12,6 @@ import signal
 import sys
 
 import pexpect
-from boardfarm.devices import env
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import cmd_exists
 
@@ -152,7 +151,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
             bft_pexpect_helper.spawn.__init__(self,
                                               command='/bin/bash',
                                               args=["-c", cmd],
-                                              env=env)
+                                              env=self.dev.env)
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF:
             self.pid = None
@@ -163,7 +162,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                 bft_pexpect_helper.spawn.__init__(self,
                                                   command='/bin/bash',
                                                   args=["-c", cmd],
-                                                  env=env)
+                                                  env=self.dev.env)
             else:
                 raise
 

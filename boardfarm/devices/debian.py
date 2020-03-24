@@ -15,7 +15,6 @@ from collections import defaultdict
 
 import pexpect
 import six
-from boardfarm.devices import env
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import retry_on_exception
@@ -84,7 +83,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.flush()
             phc = bft_pexpect_helper.spawn(command='bash',
                                            args=['-c', pre_cmd_host],
-                                           env=env)
+                                           env=self.dev.env)
             phc.expect(pexpect.EOF, timeout=120)
             print("\tpre_cmd_host done")
 
@@ -111,7 +110,7 @@ class DebianBox(linux.LinuxDevice):
             bft_pexpect_helper.spawn.__init__(self,
                                               command="bash",
                                               args=['-c', cmd],
-                                              env=env)
+                                              env=self.dev.env)
             self.ipaddr = None
             print("\tcmd done")
 
@@ -215,7 +214,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.flush()
             phc = bft_pexpect_helper.spawn(command='bash',
                                            args=['-c', post_cmd_host],
-                                           env=env)
+                                           env=self.dev.env)
             i = phc.expect([pexpect.EOF, pexpect.TIMEOUT, 'password'])
             if i > 0:
                 print("\tpost_cmd_host did not complete, it likely failed\n")
@@ -226,7 +225,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.write("\tRunning post_cmd.... ")
             sys.stdout.flush()
             env_prefix = ""
-            for k, v in env.items():
+            for k, v in self.dev.env.items():
                 env_prefix += "export %s=%s; " % (k, v)
 
             self.sendline(env_prefix + post_cmd)
@@ -306,7 +305,7 @@ class DebianBox(linux.LinuxDevice):
         sys.stdout.flush()
         cc = bft_pexpect_helper.spawn(command='bash',
                                       args=['-c', self.cleanup_cmd],
-                                      env=env)
+                                      env=self.dev.env)
         cc.expect(pexpect.EOF, timeout=120)
         print("cleanup_cmd done.")
 
