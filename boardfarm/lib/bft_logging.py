@@ -9,10 +9,8 @@ import os
 import re
 import time
 import types
-from datetime import datetime
 from functools import wraps
 
-from boardfarm import start
 from termcolor import colored
 
 
@@ -123,8 +121,8 @@ class LoggerMeta(type):
             to_log = '%s.%s ( %s )' % (func.__module__, func.__name__,
                                        func_args_str)
 
-            args[0].log_calls += '[%.6f]calling %s\r\n' % (
-                (datetime.now() - start).total_seconds(), to_log)
+            args[0].log_calls += '[%.6f]calling %s\r\n' % (time.process_time(),
+                                                           to_log)
 
             clsname = args[0].__class__.__name__
 
@@ -135,14 +133,14 @@ class LoggerMeta(type):
             if err_injection_dict and clsname in err_injection_dict and func.__name__ in err_injection_dict[
                     clsname]:
                 ret = err_injection_dict[clsname][func.__name__]
-                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % ((
-                    datetime.now() - start).total_seconds(), to_log, repr(ret))
+                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % (
+                    time.processs_time(), to_log, repr(ret))
 
             else:
                 ret = func(*args, **kwargs)
 
             args[0].log_calls += "[%.6f]returned %s = %s\r\n" % (
-                (datetime.now() - start).total_seconds(), to_log, repr(ret))
+                time.process_time(), to_log, repr(ret))
 
             return ret
 
@@ -205,14 +203,13 @@ class o_helper(object):
                 self.out.write(colored(string, self.color))
             else:
                 self.out.write(string)
-        td = datetime.now() - start
         # check for the split case
         if len(self.parent.log
                ) > 1 and self.parent.log[-1] == '\r' and string[0] == '\n':
-            tmp = '\n[%.6f]' % td.total_seconds()
+            tmp = '\n[%.6f]' % time.process_time()
             tmp += string[1:]
             string = tmp
-        to_log = re.sub('\r\n', '\r\n[%.6f]' % td.total_seconds(), string)
+        to_log = re.sub('\r\n', '\r\n[%.6f]' % time.process_time(), string)
         self.parent.log += to_log
         if hasattr(self.parent, 'test_to_log'):
             self.parent.test_to_log.log += re.sub(
@@ -220,8 +217,7 @@ class o_helper(object):
 
     def extra_log(self, string):
         if hasattr(self.parent, 'log'):
-            td = datetime.now() - start
-            self.parent.log += "\r\n[%s] " % td.total_seconds()
+            self.parent.log += "\r\n[%s] " % time.process_time()
             self.parent.log += string + '\r\n'
 
     def flush(self):
