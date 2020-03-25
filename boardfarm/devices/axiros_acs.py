@@ -44,7 +44,7 @@ class AxirosACS(base_acs.BaseACS):
             options = [x.strip() for x in self.options.split(',')]
             for opt in options:
                 if opt.startswith('wan-static-ipv6:'):
-                    ipv6_address = opt.replace('wan-static-ipv6:', '')
+                    ipv6_address = opt.replace('wan-static-ipv6:', '').strip()
                     if "/" not in opt:
                         ipv6_address += "/64"
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
