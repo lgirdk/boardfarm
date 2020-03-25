@@ -1,12 +1,16 @@
+import ast
 import ipaddress
 import time
 from xml.etree import ElementTree
 
-from boardfarm.exceptions import ACSFaultCode
+import xmltodict
+from boardfarm.exceptions import ACSFaultCode, ACSREsponseError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from requests import Session
+from nested_lookup import nested_lookup
+from requests import HTTPError, Session
 from requests.auth import HTTPBasicAuth
 from zeep import Client
+from zeep.cache import InMemoryCache
 from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
@@ -18,6 +22,10 @@ class AxirosACS(base_acs.BaseACS):
     """
     model = "axiros_acs_soap"
     name = "acs_server"
+    # should the following be dynamic?
+    namespaces = {'http://www.w3.org/2001/XMLSchema-instance': None}
+    CPE_wait_time = 60 * 50  # too long?
+    Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
         """This method intializes the varible that are used in establishing connection to the ACS.
@@ -60,11 +68,14 @@ class AxirosACS(base_acs.BaseACS):
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
 
-        self.client = Client(wsdl=self.wsdl,
-                             transport=Transport(session=session),
-                             wsse=UsernameToken(self.username, self.password))
+        self.client = Client(
+            wsdl=self.wsdl,
+            transport=Transport(session=session,
+                                cache=InMemoryCache(timeout=3600 * 3)),
+            wsse=UsernameToken(self.username, self.password),
+        )
 
-        #to spawn pexpect on cli
+        # to spawn pexpect on cli
         if all([self.ipaddr, self.cli_username, self.cli_password]):
             bft_pexpect_helper.spawn.__init__(
                 self,
@@ -87,6 +98,101 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: string
         """
         return "AxirosACS"
+
+    @staticmethod
+    def _parse_xml_response(data_values):
+        data_list = []
+        if type(data_values) is list:
+            pass
+        else:
+            data_values = [data_values]
+        for data in data_values:
+            v = data['value'].get('text', '')
+            data_list.append({
+                'key': data['key']['text'],
+                'type': data['value']['type'],
+                'value': v
+            })
+
+        return data_list
+
+    @staticmethod
+    def _parse_soap_response(response):
+        """Helper function that parses the ACS response and returns a
+        list of dictionary with {key,type,value} pairs"""
+        result = nested_lookup(
+            'Result',
+            xmltodict.parse(response.content,
+                            attr_prefix='',
+                            cdata_key='text',
+                            process_namespaces=True,
+                            namespaces=AxirosACS.namespaces))
+        if len(result) > 1:
+            raise KeyError("More than 1 Result in reply not implemented yet")
+        result = result[0]
+
+        if result['code']['text'] == '507':
+            # with 507 (timeout/expired) there seem to be NO faultcode messages
+            raise HTTPError(result['message']['text'])
+
+        # is this needed (might be overkill)?
+        if not all([
+                result.get('details'),
+                result.get('message'),
+                result.get('ticketid')
+        ]):
+            e = ACSREsponseError('ACS malformed response (issues with either '
+                                 'details/message/ticketid).')
+            e.result = result  # for inspection later
+            raise e
+        fault = 'faultcode' in result['message']['text']
+        if fault:
+            # could there be more than 1 fault in a response?
+            msg = result['message']['text']
+            e = ACSFaultCode(msg)
+            e.faultdict = \
+                ast.literal_eval(msg[msg.index('{'):msg.index('}')+1])
+            raise e
+
+        # assumes if details is present then item is too (bad?)
+        # sometimes 'item' is not in the dict, more testing required
+        return AxirosACS._parse_xml_response(result['details']['item'])
+
+    def _build_input_structs(self, cpeid, param, _action='GET', _value=None):
+        """Helper function to create the get structs used in the get param values
+        NOTE: The command option is set as Syncronous
+
+        :param cpeid: the serial number of the modem through which ACS communication
+        happens.
+        :type cpeid: string
+        :param param: parameter to used
+        :type param: string
+        :param _action: (currently unused, remove _ once in use) one of
+        GET/SET/ADD/DEL
+        :param _value:  (currently unused, remove _ once in use) SET value
+
+        :raises: NA
+        :returns: param_data, cmd_data, cpeid_data
+        """
+        if type(param) is not list:
+            param = [param]
+
+        p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
+        ParValsClassArray_type = self.client.get_type(p_arr_type)
+        ParValsParsClassArray_data = ParValsClassArray_type(param)
+
+        c_opt_type = 'ns0:CommandOptionsTypeStruct'
+        CmdOptTypeStruct_type = self.client.get_type(c_opt_type)
+        CmdOptTypeStruct_data = CmdOptTypeStruct_type(
+            Sync=True, Lifetime=AxirosACS.CPE_wait_time)
+
+        cpe__id_type = 'ns0:CPEIdentifierClassStruct'
+        CPEIdClassStruct_type = self.client.get_type(cpe__id_type)
+        CPEIdClassStruct_data = CPEIdClassStruct_type(cpeid=cpeid)
+
+        return ParValsParsClassArray_data,\
+            CmdOptTypeStruct_data,\
+            CPEIdClassStruct_data
 
     def close(self):
         """Method to be implemented to close ACS connection
@@ -484,8 +590,9 @@ class AxirosACS(base_acs.BaseACS):
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
-            response = self.client.service.AddObject(AddObjectClassArray_data, \
-                                      CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+            response = self.client.service.AddObject(
+                AddObjectClassArray_data, CommandOptionsTypeStruct_data,
+                CPEIdentifierClassStruct_data)
         ticketid = None
         root = ElementTree.fromstring(response.content)
         for value in root.iter('ticketid'):
@@ -538,8 +645,9 @@ class AxirosACS(base_acs.BaseACS):
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
-            response = self.client.service.DeleteObject(DelObjectClassArray_data, \
-                                             CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+            response = self.client.service.DeleteObject(
+                DelObjectClassArray_data, CommandOptionsTypeStruct_data,
+                CPEIdentifierClassStruct_data)
 
         ticketid = None
         root = ElementTree.fromstring(response.content)
@@ -625,9 +733,32 @@ class AxirosACS(base_acs.BaseACS):
                 continue
         return None
 
+    def GPV(self, cpeid, param):
+        """Get value from CM by ACS for a single given parameter key path synchronously
+
+        :param cpe_id: unique CPE ID
+        :param param: path to the key that assigned value will be retrieved
+        :return: value as a dictionary
+        """
+        p, cmd, cpe_id = self._build_input_structs(cpeid, param)
+
+        # get raw soap response
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetParameterValues(p, cmd, cpe_id)
+
+        return AxirosACS._parse_soap_response(response)
+
 
 if __name__ == '__main__':
+    from pprint import pprint
     import sys
+    """Good values to test:
+    Device.DeviceInfo.ModelNumber
+    Device.DeviceInfo.SoftwareVersion
+    Device.DeviceInfo.Processor
+
+    big queries may timeout
+    """
 
     if ':' in sys.argv[1]:
         ip = sys.argv[1].split(':')[0]
@@ -641,10 +772,16 @@ if __name__ == '__main__':
                     username=sys.argv[2],
                     password=sys.argv[3])
 
+    cpeid = 'DEAP82531630'
+    if len(sys.argv) > 4:
+        cpeid = sys.argv[4]
+    param = 'Device.DeviceInfo.SoftwareVersion.'
+    if len(sys.argv) > 5:
+        param = sys.argv[5]
+
     acs.Axiros_GetListOfCPEs()
-
-    ret = acs.get('DEAP805811D5', 'Device.DeviceInfo.SoftwareVersion')
-    print(ret)
-
-    ret = acs.get('DEAP805811D5', 'Device.WiFi.SSID.1.SSID')
-    print(ret)
+    try:
+        ret = acs.GPV(cpeid, param)
+        pprint(ret)
+    except ACSFaultCode as fault:
+        pprint(fault.faultdict)
