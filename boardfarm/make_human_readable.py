@@ -140,7 +140,8 @@ def xmlresults_to_html(test_results,
     try:
         test_seconds = int(os.environ.get('TEST_END_TIME')) - int(
             os.environ.get('TEST_START_TIME'))
-        parameters['total_test_time'] = "%s minutes" % (test_seconds / 60)
+        minutes = round((test_seconds / 60), 1)
+        parameters['total_test_time'] = "%s minutes" % minutes
     except:
         pass
 
