@@ -8,11 +8,10 @@
 import traceback
 import warnings
 
-from debtcollector import removals
-
-import boardfarm.lib.booting
 import boardfarm.exceptions
+import boardfarm.lib.booting
 from boardfarm import lib
+from debtcollector import removals
 
 from . import bft_base_test
 

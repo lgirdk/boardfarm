@@ -1,9 +1,13 @@
-import six
-import ipaddress, netaddr
+import ipaddress
 import re
+
+import netaddr
 import pexpect
+import six
 from boardfarm.exceptions import BFTypeError
-from boardfarm.lib.regexlib import LinuxMacFormat, InterfaceIPv4_AddressRegex, InterfaceIPv6_AddressRegex, NetmaskIPv4_AddressRegex
+from boardfarm.lib.regexlib import (InterfaceIPv4_AddressRegex,
+                                    InterfaceIPv6_AddressRegex, LinuxMacFormat,
+                                    NetmaskIPv4_AddressRegex)
 
 
 class bft_iface(object):

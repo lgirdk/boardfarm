@@ -1,10 +1,11 @@
 #This code is sourced from http://snmplabs.com/pysnmp/_downloads/getbulk-pull-whole-mib.py
 
 import time
-from pysnmp.proto.api import v2c
+
+from pyasn1.codec.ber import decoder, encoder
 from pysnmp.carrier.asyncore.dgram import udp, udp6
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
-from pyasn1.codec.ber import encoder, decoder
+from pysnmp.proto.api import v2c
 
 
 def SnmpwalkAsync(target_IP=None,

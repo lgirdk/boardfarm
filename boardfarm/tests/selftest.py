@@ -9,11 +9,11 @@ import random
 import string
 import tempfile
 
-from boardfarm.devices import debian, linux
 from boardfarm import lib
+from boardfarm.devices import debian, linux
 from boardfarm.lib import SnmpHelper, common
-from boardfarm.tests import rootfs_boot
 from boardfarm.orchestration import TestStep as TS
+from boardfarm.tests import rootfs_boot
 
 
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):

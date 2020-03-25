@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import time
+from collections import defaultdict
 
 import pexpect
 import six
@@ -24,7 +25,6 @@ from nested_lookup import nested_lookup
 from termcolor import colored, cprint
 
 from . import linux
-from collections import defaultdict
 
 
 class DebianBox(linux.LinuxDevice):

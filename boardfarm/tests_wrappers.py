@@ -3,10 +3,9 @@ import sys
 import warnings
 
 import pexpect
-from debtcollector import removals
-
 from boardfarm.exceptions import ContOnFailError, PexpectErrorTimeout
 from boardfarm.lib.bft_logging import log_message
+from debtcollector import removals
 
 warnings.simplefilter("always", UserWarning)
 

@@ -1,6 +1,8 @@
+import ipaddress
 import time
 from xml.etree import ElementTree
-from . import base_acs
+
+from boardfarm.exceptions import ACSFaultCode
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from requests import Session
 from requests.auth import HTTPBasicAuth
@@ -8,9 +10,7 @@ from zeep import Client
 from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
-from boardfarm.exceptions import ACSFaultCode
-
-import ipaddress
+from . import base_acs
 
 
 class AxirosACS(base_acs.BaseACS):

@@ -10,10 +10,9 @@ import time
 import traceback
 import warnings
 
+import boardfarm.exceptions
 import debtcollector
 import six
-
-import boardfarm.exceptions
 from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.library import check_devices

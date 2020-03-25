@@ -10,18 +10,30 @@
 import atexit
 import inspect
 import json
-import os
-import random
-import sys
-import time
-import traceback
-import queue
-import threading
-import re
-from datetime import datetime
-
 # Setup logging
 import logging
+import os
+import queue
+import random
+import re
+import sys
+import threading
+import time
+import traceback
+from datetime import datetime
+
+import boardfarm.exceptions
+import matplotlib
+from boardfarm import devices, library
+from boardfarm.dbclients import (boardfarmwebclient, elasticlogger, logstash,
+                                 mongodblogger)
+from boardfarm.exceptions import BftNotSupportedDevice
+from boardfarm.lib import DeviceManager
+from boardfarm.lib.bft_logging import create_file_logs, write_test_log
+from boardfarm.lib.common import check_url
+from boardfarm.lib.env_helper import EnvHelper
+from boardfarm.zephyr import zephyr_reporter
+
 logging.basicConfig(stream=sys.stdout, format='%(message)s')
 logger = logging.getLogger('bft')
 logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -42,20 +54,6 @@ except Exception as e:
     logger.debug(cmd)
     sys.exit(1)
 
-from boardfarm.zephyr import zephyr_reporter
-
-import boardfarm.exceptions
-from boardfarm import devices
-from boardfarm.lib import DeviceManager
-from boardfarm.lib.bft_logging import write_test_log
-from boardfarm.lib.common import check_url
-from boardfarm.exceptions import BftNotSupportedDevice
-from boardfarm.dbclients import logstash, elasticlogger, mongodblogger, boardfarmwebclient
-from boardfarm import library
-from boardfarm.lib.bft_logging import create_file_logs
-from boardfarm.lib.env_helper import EnvHelper
-
-import matplotlib
 matplotlib.use('Agg')
 
 

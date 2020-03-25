@@ -20,14 +20,16 @@ from datetime import datetime
 
 import pexpect
 import termcolor
-from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.installers import install_postfix, install_ovpn_server, \
-    install_ovpn_client, install_pptpd_server, install_pptp_client
+from boardfarm.lib.bft_pexpect_helper import (bft_pexpect_helper,
+                                              spawn_ssh_pexpect)
+from boardfarm.lib.installers import (install_ovpn_client, install_ovpn_server,
+                                      install_postfix, install_pptp_client,
+                                      install_pptpd_server)
 from boardfarm.lib.SnmpHelper import SnmpMibs
 from selenium import webdriver
 from selenium.webdriver.common import proxy
 from termcolor import cprint
-from boardfarm.lib.bft_pexpect_helper import spawn_ssh_pexpect
+
 from .installers import install_pysnmp
 
 try:
