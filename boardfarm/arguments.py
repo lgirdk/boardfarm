@@ -9,7 +9,6 @@
 
 import argparse
 import inspect
-import json
 import os
 import os.path
 import sys
@@ -267,16 +266,6 @@ def parse():
         print('Unable to access/read boardfarm configuration from %s' %
               config.boardfarm_config_location)
         sys.exit(1)
-
-    if config.test_args_location is not None:
-        try:
-            with open(config.test_args_location, "r") as fp:
-                config.test_args = json.load(fp)
-        except Exception as e:
-            print(e)
-            print("ERROR: unable to fetch test args from %s" %
-                  config.test_args_location)
-            sys.exit(1)
 
     # Check if boardfarm configuration is empty
     if not config.boardfarm_config:
