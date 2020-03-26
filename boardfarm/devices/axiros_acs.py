@@ -90,6 +90,8 @@ class AxirosACS(base_acs.BaseACS):
                                   self.cli_password)
             self.print_connected_console_msg(self.ipaddr, self.cli_port,
                                              self.color, self.name)
+        # this should be populater ONLY when using __main__
+        self.cpeid = self.kwargs.pop('cpeid', None)
 
     def __str__(self):
         """The method is used to format the string representation of self object (instance).
@@ -733,14 +735,17 @@ class AxirosACS(base_acs.BaseACS):
                 continue
         return None
 
-    def GPV(self, cpeid, param):
+    def GPV(self, param):
         """Get value from CM by ACS for a single given parameter key path synchronously
 
-        :param cpe_id: unique CPE ID
         :param param: path to the key that assigned value will be retrieved
         :return: value as a dictionary
         """
-        p, cmd, cpe_id = self._build_input_structs(cpeid, param)
+        # TO DO: ideally this should come off the environment helper
+        if self.cpeid is None:
+            self.cpeid = self.dev.board.get_cpeid()
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param)
 
         # get raw soap response
         with self.client.settings(raw_response=True):
@@ -760,6 +765,19 @@ if __name__ == '__main__':
     big queries may timeout
     """
 
+    if len(sys.argv) < 3:
+        print("Usage:")
+        print(
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "\'<parameter>\'"  NOTE: the quotes are importand'
+        )
+        print(
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "\'Device.DeviceInfo.SoftwareVersion.\']"'
+        )
+        print(
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "[\'Device.DeviceInfo.ModelNumber\', \'Device.DeviceInfo.SoftwareVersion.\']'
+        )
+        sys.exit(1)
+
     if ':' in sys.argv[1]:
         ip = sys.argv[1].split(':')[0]
         port = sys.argv[1].split(':')[1]
@@ -767,21 +785,26 @@ if __name__ == '__main__':
         ip = sys.argv[1]
         port = 80
 
+    if len(sys.argv) > 4:
+        cpe_id = sys.argv[4]
+        print("Using CPEID: {}".format(cpe_id))
+    else:
+        print('Error: missing cpeid')
+        sys.exit(1)
+
     acs = AxirosACS(ipaddr=ip,
                     port=port,
                     username=sys.argv[2],
-                    password=sys.argv[3])
+                    password=sys.argv[3],
+                    cpeid=cpe_id)
 
-    cpeid = 'DEAP82531630'
-    if len(sys.argv) > 4:
-        cpeid = sys.argv[4]
     param = 'Device.DeviceInfo.SoftwareVersion.'
     if len(sys.argv) > 5:
-        param = sys.argv[5]
+        param = ast.literal_eval(sys.argv[5])
 
     acs.Axiros_GetListOfCPEs()
     try:
-        ret = acs.GPV(cpeid, param)
+        ret = acs.GPV(param)
         pprint(ret)
     except ACSFaultCode as fault:
         pprint(fault.faultdict)
