@@ -1,6 +1,8 @@
 import ast
 import ipaddress
+import os
 import time
+import xml.dom.minidom
 from xml.etree import ElementTree
 
 import xmltodict
@@ -101,6 +103,40 @@ class AxirosACS(base_acs.BaseACS):
         """
         return "AxirosACS"
 
+    # TO DO: maybe this could be moved to a lib
+    def _data_conversion(d):
+        """Conversion type/data helper
+        """
+        def to_int(v):
+            return int(v)
+
+        def to_bool(v):
+            if v == '1':
+                return 'true'
+            elif v == '0':
+                return 'false'
+            return v
+
+        conv_table = {
+            'xsd3:string': {
+                'string': None
+            },
+            'xsd3:integer': {
+                'int': to_int
+            },
+            'xsd3:boolean': {
+                'boolean': to_bool
+            },
+        }
+
+        convdict = conv_table.get(d['type'])
+        if convdict:
+            d['type'] = next(iter(convdict))
+            if d['value'] != '' and convdict[d['type']]:
+                v = convdict[d['type']](d['value'])
+                d['value'] = v
+        return d
+
     @staticmethod
     def _parse_xml_response(data_values):
         data_list = []
@@ -110,11 +146,12 @@ class AxirosACS(base_acs.BaseACS):
             data_values = [data_values]
         for data in data_values:
             v = data['value'].get('text', '')
-            data_list.append({
-                'key': data['key']['text'],
-                'type': data['value']['type'],
-                'value': v
-            })
+            data_list.append(
+                AxirosACS._data_conversion({
+                    'key': data['key']['text'],
+                    'type': data['value']['type'],
+                    'value': v
+                }))
 
         return data_list
 
@@ -122,6 +159,11 @@ class AxirosACS(base_acs.BaseACS):
     def _parse_soap_response(response):
         """Helper function that parses the ACS response and returns a
         list of dictionary with {key,type,value} pairs"""
+
+        if 'BFT_DEBUG' in os.environ:
+            msg = xml.dom.minidom.parseString(response.text)
+            print(msg.toprettyxml(indent=' ', newl=""))
+
         result = nested_lookup(
             'Result',
             xmltodict.parse(response.content,
@@ -133,9 +175,10 @@ class AxirosACS(base_acs.BaseACS):
             raise KeyError("More than 1 Result in reply not implemented yet")
         result = result[0]
 
-        if result['code']['text'] == '507':
-            # with 507 (timeout/expired) there seem to be NO faultcode messages
-            raise HTTPError(result['message']['text'])
+        if result['code']['text'] != '200':
+            # with 507 (timeout/expired) there seem to be NO faultcode message
+            if 'faultcode' not in result['message']['text']:
+                raise HTTPError(result['message']['text'])
 
         # is this needed (might be overkill)?
         if not all([
@@ -808,3 +851,4 @@ if __name__ == '__main__':
         pprint(ret)
     except ACSFaultCode as fault:
         pprint(fault.faultdict)
+        raise
