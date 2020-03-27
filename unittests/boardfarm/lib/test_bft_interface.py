@@ -1,12 +1,12 @@
 import ipaddress
 
-import boardfarm.exceptions
 import pytest
+from boardfarm.exceptions import BftIfaceNoIpV4Addr, BftIfaceNoIpV6Addr
 from boardfarm.lib.bft_interface import bft_iface
 
 
 class Dummy:
-    def check_output(self):
+    def check_output(self, cmd):
         pass
 
     pass
@@ -62,8 +62,18 @@ erouter0  Link encap:Ethernet  HWaddr 68:02:B8:02:C5:04
 
 out_str6 = '''
 erouter0  Link encap:Ethernet  HWaddr 68:02:B8:02:C5:04
-          inet addr:10.3.0  Bcast:10.3.0.255  Mask:255.255.255.0
           bft_inet6 2002:0:c4:1::e:c0/128 Scope:Global
+          bft_inet6 fe80::6a02 Scope:Link
+          UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1500  Metric:1
+          RX packets:6208 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:81 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:432494 (422.3 KiB)  TX bytes:10636 (10.3 KiB)
+'''
+
+out_str7 = '''
+erouter0  Link encap:Ethernet  HWaddr 68:02:B8:02:C5:04
+s         inet addr:10.3.0.21 Bcast:10.3.0.255  Mask:255.255.255.0
           bft_inet6 fe80:6a02 Scope:Link
           UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1500  Metric:1
           RX packets:6208 errors:0 dropped:0 overruns:0 frame:0
@@ -74,14 +84,14 @@ erouter0  Link encap:Ethernet  HWaddr 68:02:B8:02:C5:04
 
 
 @pytest.mark.parametrize("command_output,expected",
-                         [(out_str5, "2002:0:c4:1::e:c0"),
-                          (out_str2, "::1/128")])
+                         [(out_str5, "2002:0:c4:1::e:c0"), (out_str2, "::1")])
 def test_get_ipv6(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv6addr(command_output)
     assert obj.ipv6 == ipaddress.IPv6Interface(expected).ip
 
@@ -90,11 +100,12 @@ def test_get_ipv6(mocker, command_output, expected):
                          [(out_str4, "fe80::3c73:cbff:fe6b:49ba"),
                           (out_str5, "fe80::6a02:b8ff:fe02:c504")])
 def test_get_ip_link_local_ipv6(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv6addr(command_output)
     assert obj.ipv6_link_local == ipaddress.IPv6Interface(expected).ip
 
@@ -102,11 +113,12 @@ def test_get_ip_link_local_ipv6(mocker, command_output, expected):
 @pytest.mark.parametrize("command_output,expected", [(out_str1, "10.0.2.15"),
                                                      (out_str2, "127.0.0.1")])
 def test_get_ipv4(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv4addr(command_output)
     assert obj.ipv4 == ipaddress.IPv4Interface(expected).ip
 
@@ -115,11 +127,12 @@ def test_get_ipv4(mocker, command_output, expected):
                          [(out_str4, "2001:730:1f:60a::cafe:106/64"),
                           (out_str5, "2002:0:c4:1::e:c0/128")])
 def test_get_ipv6_prefixlen(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv6addr(command_output)
     assert obj.prefixlen == ipaddress.IPv6Interface(expected)._prefixlen
 
@@ -128,11 +141,12 @@ def test_get_ipv6_prefixlen(mocker, command_output, expected):
                          [(out_str1, "10.0.2.15/24"),
                           (out_str2, "127.0.0.1/8")])
 def test_get_ipv4_netmask(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv4addr(command_output)
     assert obj.netmask == ipaddress.IPv4Interface(expected).netmask
 
@@ -141,43 +155,118 @@ def test_get_ipv4_netmask(mocker, command_output, expected):
                          [(out_str1, "10.0.2.15/24"),
                           (out_str2, "127.0.0.1/8")])
 def test_get_ipv4_network(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=command_output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     obj.get_interface_ipv4addr(command_output)
     assert obj.network == ipaddress.IPv4Interface(expected).network
 
 
-@pytest.mark.parametrize("command_output,expected",
+@pytest.mark.parametrize("output, expected",
                          [(out_str4, "2001:730:1f:60a::cafe:106/64"),
                           (out_str5, "2002:0:c4:1::e:c0/128")])
-def test_get_ipv6_network(mocker, command_output, expected):
-    mocker.patch.object(bft_iface,
-                        '__init__',
-                        return_value=None,
+def test_get_ipv6_network(mocker, output, expected):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
                         autospec=True)
-    obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
-    obj.get_interface_ipv6addr(command_output)
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
     assert obj.network_v6 == ipaddress.IPv6Interface(expected).network
 
 
-def test_get_ipv4_negative(mocker):
+@pytest.mark.parametrize("output", [(out_str6)])
+def test_get_ipv4_negative(mocker, output):
     mocker.patch.object(bft_iface,
                         '__init__',
                         return_value=None,
                         autospec=True)
     obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
-    with pytest.raises(boardfarm.exceptions.BFTypeError):
-        assert obj.get_interface_ipv4addr(out_str6)
+    with pytest.raises(BftIfaceNoIpV4Addr):
+        assert obj.get_interface_ipv4addr(output)
 
 
-def test_get_ipv6_negative(mocker):
+@pytest.mark.parametrize("output", [(out_str6)])
+def test_ipv4_negative(mocker, output):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
+                        autospec=True)
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
+
+    with pytest.raises(BftIfaceNoIpV4Addr):
+        print(obj.ipv4)
+
+
+@pytest.mark.parametrize("output, exp_ip, exp_netmask",
+                         [(out_str7, "10.3.0.21", "10.3.0.21/24")])
+def test_ipv4(mocker, output, exp_ip, exp_netmask):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
+                        autospec=True)
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
+
+    assert obj.ipv4 == ipaddress.IPv4Interface(exp_ip).ip
+    assert obj.netmask == ipaddress.IPv4Interface(exp_netmask).netmask
+
+
+@pytest.mark.parametrize("output", [(out_str7)])
+def test_get_interface_ipv6addr_negative(mocker, output):
     mocker.patch.object(bft_iface,
                         '__init__',
                         return_value=None,
                         autospec=True)
     obj = bft_iface("dummy_dev", "dummy_iface", "dummy_cmd")
-    with pytest.raises(boardfarm.exceptions.BFTypeError):
-        assert obj.get_interface_ipv6addr(out_str6)
+    with pytest.raises(BftIfaceNoIpV6Addr):
+        assert obj.get_interface_ipv6addr(output)
+
+
+@pytest.mark.parametrize("output", [(out_str7)])
+def test_ipv6_negative(mocker, output):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
+                        autospec=True)
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
+
+    with pytest.raises(BftIfaceNoIpV6Addr):
+        obj.ipv6
+
+
+@pytest.mark.parametrize(
+    "output, exp_ip, exp_net, exp_ip_link",
+    [(out_str6, "2002:0:c4:1::e:c0", "2002:0:c4:1::e:c0/128", "fe80::6a02")])
+def test_ipv6(mocker, output, exp_ip, exp_net, exp_ip_link):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
+                        autospec=True)
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
+
+    assert obj.ipv6 == ipaddress.IPv6Interface(exp_ip).ip
+    assert obj.network_v6 == ipaddress.IPv6Interface(exp_net).network
+    assert obj.ipv6_link_local == ipaddress.IPv6Interface(exp_ip_link).ip
+
+
+@pytest.mark.parametrize("output", [(out_str6), (out_str7)])
+def test_refresh(mocker, output):
+    dummy_dev = Dummy()
+    mocker.patch.object(dummy_dev,
+                        'check_output',
+                        return_value=output,
+                        autospec=True)
+    mocker.patch.object(bft_iface,
+                        'get_interface_macaddr',
+                        return_value=None,
+                        autospec=True)
+
+    obj = bft_iface(dummy_dev, "dummy_iface", "dummy_cmd")
+    obj.refresh()

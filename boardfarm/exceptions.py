@@ -123,3 +123,18 @@ class ContOnFailError(BftBaseException):
 class NoTFTPServer(BftBaseException):
     """Raise this exception when no TFTP server is found, but we need one."""
     pass
+
+
+class BftIfaceException(BftBaseException):
+    """Raise this exception related to BFT interface."""
+    pass
+
+
+class BftIfaceNoIpV4Addr(BftIfaceException):
+    """Raise this exception when there is no IPV4 address found in interface."""
+    pass
+
+
+class BftIfaceNoIpV6Addr(BftIfaceException):
+    """Raise this exception when there is no IPV6 address found in interface."""
+    pass

@@ -24,11 +24,11 @@ ValidIpv4AddressRegex_Nogroup = '(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25
 ValidIpv6AddressRegex = '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
 
 #Below regex gives the IPv4 address and Netmask address of an Interface.
-InterfaceIPv4_AddressRegex = 'inet(\saddr:)?\s*([^\s]+)'
-NetmaskIPv4_AddressRegex = 'ask(\saddr:)?\s*([^\s]+)'
+InterfaceIPv4_AddressRegex = 'inet(?:\s*addr:)?\s*([^\s]+)'
+NetmaskIPv4_AddressRegex = 'ask\s?:?\s*([^\s]+)'
 
 #Following regex gives the IPv6 address of an Interface.
-InterfaceIPv6_AddressRegex = 'inet6(\saddr:)?\s*([^\s]+)'
+InterfaceIPv6_AddressRegex = 'inet6(?:\s*addr:)?\s*([^\s]+)'
 
 # IPv6 text representation of addresses with compression:
 # Matches:
