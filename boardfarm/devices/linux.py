@@ -6,7 +6,9 @@ import re
 import pexpect
 import six
 from boardfarm.exceptions import PexpectErrorTimeout
-from boardfarm.lib.regexlib import LinuxMacFormat, ValidIpv4AddressRegex
+from boardfarm.lib.regexlib import (AllValidIpv6AddressesRegex,
+                                    InterfaceIPv6_AddressRegex, LinuxMacFormat,
+                                    ValidIpv4AddressRegex)
 
 from . import base
 
@@ -53,28 +55,18 @@ class LinuxDevice(base.BaseDevice):
         # have an ipv6 address (so we can pick them later)
         # REASON: on some linux based embedded devices the console can be VERY verbose
         # and spurious debug messages can have ipv6 addresses in it
-        self.sendline("\nifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
-        self.expect_exact("ifconfig %s | sed 's/inet6 /bft_inet6 /'" %
-                          interface)
-        self.expect(self.prompt)
-
-        # we iterate thorough the buffer grepping ONLY the lines we have tagged
-        for line in [
-                picky for picky in self.before.split("\n")
-                if "bft_inet6" in picky
-        ]:
-            # in every line iterate trough its elements
-            for i in [j for j in line.split(" ") if j.strip() != ""]:
-                ipv6_iface = None
-                try:
-                    # we use IPv6Interface for convenience (any exception will be ignored)
-                    ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
-                except:
-                    continue
-
-                # ASSUMPTION: at present we consider ONLY the 1st global IPv6 address
+        output = self.check_output("ifconfig %s | sed 's/inet6 /bft_inet6 /'" %
+                                   interface)
+        regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
+        for i in re.compile("|".join(regex), re.M | re.U).findall(output):
+            try:
+                # we use IPv6Interface for convenience (any exception will be ignored)
+                ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_global:
                     return str(ipv6_iface.ip)
+            except:
+                continue
+
         raise Exception("Did not find non-link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
