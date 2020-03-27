@@ -9,9 +9,13 @@ Libraries to install linux packages
 """
 
 import re
+import warnings
 
 import pexpect
+from debtcollector import deprecate
 from retry.api import retry_call
+
+warnings.simplefilter('always', UserWarning)
 
 
 def apt_install(device, name, timeout=120):
@@ -25,12 +29,39 @@ def apt_install(device, name, timeout=120):
     :type timeout: integer, optional
     :raises assertion: package is not installed correctly
     """
-    device.sendline('export DEBIAN_FRONTEND=noninteractive')
-    device.expect(device.prompt)
-    apt_update(device)
-    device.sendline('apt-get install -q -y %s' % name)
-    device.expect('Reading package')
-    device.expect(device.prompt, timeout=timeout)
+    def _kill_stale_apt():
+        pids = device.check_output("pgrep apt")
+        if pids:
+            print(
+                "Stale apt PIDs identified!! - {}\nKilling them before installation"
+                .format(pids.splitlines()))
+            device.check_output("pkill apt")
+
+    _kill_stale_apt()
+    for _ in range(2):
+        device.sendline('export DEBIAN_FRONTEND=noninteractive')
+        device.expect(device.prompt)
+        apt_update(device)
+        device.sendline('apt-get install -q -y %s' % name)
+        device.expect('Reading package')
+        try:
+            device.expect(device.prompt, timeout=timeout)
+        except pexpect.TIMEOUT:
+            device.sendcontrol('c')
+            device.expect(pexpect.TIMEOUT, timeout=1)
+            _kill_stale_apt()
+            raise
+
+        if "Could not get lock" in device.before:
+            lock = re.findall("Could not get lock ([^\s]+)", device.before)
+            pid = device.check_output("fuser -k {}".format(lock))
+            pid = pid.replace("{}:".format(lock), "").strip()
+            device.check_output("kill -9 {}".format(pid))
+            print("Retrying apt installation, after releasing {} lock!".format(
+                lock))
+        else:
+            break
+
     device.sendline('dpkg -l %s' % name)
     expect_string = 'dpkg -l %s' % name
     device.expect_exact(expect_string[-60:])
@@ -105,10 +136,7 @@ def install_tcpick(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install tcpick -y')
-        assert 0 == device.expect(['Setting up tcpick'] + device.prompt,
-                                  timeout=60), "tcpick installation failed"
-        device.expect(device.prompt)
+        apt_install(device, 'tcpick')
 
 
 def install_upnp(device):
@@ -125,10 +153,7 @@ def install_upnp(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install miniupnpc -y')
-        assert 0 == device.expect(['Setting up miniupnpc.*'] + device.prompt,
-                                  timeout=60), "upnp installation failed"
-        device.expect(device.prompt)
+        apt_install(device, 'miniupnpc')
 
 
 def install_lighttpd(device):
@@ -258,6 +283,10 @@ def install_java(device):
         device.expect(device.prompt)
         device.sendline('apt-get update -y')
         device.expect(device.prompt)
+        deprecate(
+            "Using apt install in sendline is deprecated! Please use apt_install",
+            removal_version="> 1.1.1",
+            category=UserWarning)
         device.sendline('apt-get install oracle-java8-installer -y')
         device.expect_exact(
             "Do you accept the Oracle Binary Code license terms")
@@ -280,6 +309,10 @@ def install_java(device):
             device.sendline(
                 'sed -i \'s|J_DIR=jdk1.8.0_144|J_DIR=jdk1.8.0_152|\' /var/lib/dpkg/info/oracle-java8-installer.*'
             )
+            deprecate(
+                "Using apt install in sendline is deprecated! Please use apt_install",
+                removal_version="> 1.1.1",
+                category=UserWarning)
             device.sendline('apt-get install oracle-java8-installer -y')
             device.expect(device.prompt, timeout=60)
 
@@ -309,16 +342,14 @@ def install_telnet_server(device, remove=False):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install xinetd -y')
-        device.expect(device.prompt)
+        apt_install(device, 'xinetd')
     device.sendline('\ndpkg -l | grep telnetd')
     try:
         device.expect('telnet server', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install telnetd -y')
-        device.expect(device.prompt)
+        apt_install(device, 'telnetd')
         device.sendline('echo \"service telnet\" > /etc/xinetd.d/telnet')
         device.sendline('echo "{" >> /etc/xinetd.d/telnet')
         device.sendline('echo \"disable = no\" >> /etc/xinetd.d/telnet')
@@ -356,8 +387,7 @@ def install_tcl(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install tcl -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'tcl')
 
 
 def install_telnet_client(device):
@@ -372,8 +402,7 @@ def install_telnet_client(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install telnet -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'telnet')
 
 
 def install_expect(device):
@@ -389,8 +418,7 @@ def install_expect(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install expect -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'expect')
 
 
 def install_wget(device):
@@ -406,8 +434,7 @@ def install_wget(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install wget -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'wget')
 
 
 def install_ftp(device):
@@ -424,8 +451,7 @@ def install_ftp(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install ftp -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'ftp')
 
 
 def install_xampp(device):
@@ -473,9 +499,7 @@ def install_snmpd(device, post_cmd=None):
                       of a file related to snmpd, post installtion, defaults to None
     :type post_cmd: string, optional
     """
-    device.sendline('apt update && apt install snmpd -y -q')
-    device.expect(device.prompt, timeout=60)
-
+    apt_install(device, 'snmpd')
     # by default snmpd only listen to connections from localhost, comment it out
     device.sendline(
         "sed 's/agentAddress  udp:127.0.0.1:161/#agentAddress  udp:127.0.0.1:161/' -i /etc/snmp/snmpd.conf"
@@ -501,8 +525,9 @@ def install_snmp(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt update && apt-get install snmp -y')
-        device.expect(device.prompt, timeout=60)
+        device.sendline('apt update')
+        device.expect(device.prompt)
+        apt_install(device, 'snmp')
 
 
 def install_vsftpd(device, remove=False):
@@ -517,8 +542,7 @@ def install_vsftpd(device, remove=False):
     if not remove:
         device.sendline('apt-get update')
         device.expect(device.prompt, timeout=90)
-        device.sendline('apt-get install vsftpd -y')
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'vsftpd')
         device.sendline(
             'sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf'
         )
@@ -577,8 +601,7 @@ def install_iw(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install iw -y')
-        device.expect(device.prompt, timeout=90)
+        apt_install(device, 'iw')
 
 
 def install_jmeter(device):
@@ -597,8 +620,8 @@ def install_jmeter(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install wget openjdk-8-jre-headless -y')
-        device.expect(device.prompt, timeout=90)
+        apt_install(device, 'wget')
+        apt_install(device, 'openjdk-8-jre-headless')
         device.sendline(
             'wget https://www-us.apache.org/dist//jmeter/binaries/apache-jmeter-5.1.1.tgz'
         )
@@ -623,12 +646,8 @@ def install_IRCserver(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sendline('apt-get install update-inetd -y'
-                        )  # Update inetd before installation
-        device.expect(device.prompt, timeout=90)
-        device.sendline('apt-get install inspircd -y')
-        device.expect(['Setting up inspircd'], timeout=90)
-        device.expect(device.prompt)
+        apt_install(device, 'update-inetd')
+        apt_install(device, 'inspircd')
 
 
 def install_dovecot(device, remove=False):
@@ -653,12 +672,8 @@ def install_dovecot(device, remove=False):
         device.expect(device.prompt)
     except:
         device.expect_prompt()
-        device.sendline('apt-get install update-inetd -y'
-                        )  # Update inetd before installation
-        device.expect_prompt(timeout=90)
-        device.sendline('apt-get install dovecot-imapd dovecot-pop3d -y')
-        device.expect(['Processing triggers for dovecot-core'], timeout=90)
-        device.expect_prompt()
+        apt_install(device, 'update-inetd')
+        apt_install(device, 'dovecot-imapd dovecot-pop3d -y')
         device.check_output("cd /usr/share/dovecot; ./mkcert.sh; cd")
         ssl_settings = [
             "ssl = yes", "ssl_cert = </etc/dovecot/dovecot.pem",
@@ -814,8 +829,7 @@ def install_ovpn_client(device, remove=False):
 
     device.sendline('apt-get update')
     device.expect(device.prompt)
-    device.sendline('apt-get install openvpn -y')
-    device.expect(device.prompt, timeout=90)
+    apt_install(device, 'openvpn')
 
 
 def install_pptpd_server(device, remove=False):
@@ -843,8 +857,7 @@ def install_pptpd_server(device, remove=False):
         return
 
     if index != 0:
-        device.sendline("apt-get install pptpd -y")
-        device.expect(device.prompt, timeout=90)
+        apt_install(device, 'pptpd')
 
     device.sendline("/etc/init.d/pptpd restart")
     device.expect(device.prompt, timeout=60)
@@ -872,9 +885,7 @@ def install_pptp_client(device, remove=False):
         return
 
     if index != 0:
-        device.sendline('apt-get install pptp-linux -y')
-
-    device.expect(device.prompt, timeout=60)
+        apt_install(device, 'pptp-linux')
 
 
 def install_postfix(device):
@@ -908,6 +919,10 @@ def install_postfix(device):
             device.expect(device.prompt)
             raise Exception(
                 "Failed to download packages, things might not work")
+        deprecate(
+            "Using apt install in sendline is deprecated! Please use apt_install",
+            removal_version="> 1.1.1",
+            category=UserWarning)
         device.sendline("apt-get install postfix -y")
         install_settings = device.expect(
             ['General type of mail configuration:'] +
@@ -1219,8 +1234,7 @@ def install_tcpdump(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sudo_sendline('apt-get install tcpdump -y')
-        device.expect(device.prompt, timeout=90)
+        apt_install(device, 'tcpdump')
 
 
 def install_tshark(device):
@@ -1235,5 +1249,4 @@ def install_tshark(device):
         device.expect(device.prompt)
     except:
         device.expect(device.prompt)
-        device.sudo_sendline('apt-get install tshark -y')
-        device.expect(device.prompt, timeout=90)
+        apt_install(device, 'tshark')
