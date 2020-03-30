@@ -389,7 +389,7 @@ def parse():
                 try:
                     c().analyze(prepare_log(console_log), config.output_dir)
                     print("DONE!")
-                except Exception as e:
+                except Exception:
                     print("FAILED!")
                     traceback.print_exc(file=sys.stdout)
                     continue

@@ -72,7 +72,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
     try:
         data = urlopen("http://" + ip_address).read().decode()
-    except UnicodeDecodeError as e:
+    except UnicodeDecodeError:
         data = urlopen("http://" + ip_address).read()
     except HTTPError as e:
         if str(e) == 'HTTP Error 401: Unauthorized':

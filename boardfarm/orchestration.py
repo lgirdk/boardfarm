@@ -332,7 +332,7 @@ if __name__ == '__main__':
     obj = Test1()
     try:
         obj.runTest()
-    except Exception as e:
+    except Exception:
         # handle retry condition for TC
         pass
     print("\n\nHow stuff will look like in txt file:\n{}".format(
