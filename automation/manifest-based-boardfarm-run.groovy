@@ -112,7 +112,7 @@ def run_lint () {
     # Check for non-ascii characters
     grep --color='auto' -P -n "[^\\x00-\\x7F]" ${files_changed} | awk '{print $1" contains non-ascii characters."}' >> errors.txt
     # Check pyflakes errors
-    python2 -m pyflakes ${files_changed} > flakes.txt 2>&1
+    python3 -m pyflakes ${files_changed} > flakes.txt 2>&1
     cat flakes.txt | grep -v 'devices\\.' | grep -v 'No such file' >> errors.txt
     # Check print errors
     grep -n -E '^\\s+print\\s' ${files_changed} | awk '{print $1" print should be function: print()"}' >> errors.txt

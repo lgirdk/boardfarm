@@ -21,6 +21,7 @@ pexpect
 pre-commit
 pycountry
 pycryptodome
+pyflakes
 pymongo
 pyserial
 pysmi
