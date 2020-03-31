@@ -1435,7 +1435,7 @@ def ftp_file_create_delete(device,
     """
     if create_file:
         filename = create_file + extension
-        device.sendline("dd if=/dev/zero of=%s count=5M bs=1" % filename)
+        device.sendline("dd if=/dev/zero of=%s count=5 bs=1M" % filename)
         device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
