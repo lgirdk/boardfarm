@@ -6,7 +6,7 @@ import xml.dom.minidom
 from xml.etree import ElementTree
 
 import xmltodict
-from boardfarm.exceptions import ACSFaultCode, ACSREsponseError
+from boardfarm.exceptions import ACSFaultCode, ACSREsponseError, CodeError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
@@ -196,25 +196,23 @@ class AxirosACS(base_acs.BaseACS):
             msg = result['message']['text']
             e = ACSFaultCode(msg)
             e.faultdict = \
-                ast.literal_eval(msg[msg.index('{'):msg.index('}')+1])
+                ast.literal_eval(msg[msg.index('{'):])
             raise e
 
         # assumes if details is present then item is too (bad?)
         # sometimes 'item' is not in the dict, more testing required
         return AxirosACS._parse_xml_response(result['details']['item'])
 
-    def _build_input_structs(self, cpeid, param, _action='GET', _value=None):
-        """Helper function to create the get structs used in the get param values
+    def _build_input_structs(self, cpeid, param, action):
+        """Helper function to create the get structs used in the get/set param values
         NOTE: The command option is set as Syncronous
 
         :param cpeid: the serial number of the modem through which ACS communication
         happens.
         :type cpeid: string
         :param param: parameter to used
-        :type param: string
-        :param _action: (currently unused, remove _ once in use) one of
-        GET/SET/ADD/DEL
-        :param _value:  (currently unused, remove _ once in use) SET value
+        :type param: string or list of strings for get, dict or list of dict for set
+        :param action: one of GPV/SPV (AO/DO-To be implemented)
 
         :raises: NA
         :returns: param_data, cmd_data, cpeid_data
@@ -222,7 +220,18 @@ class AxirosACS(base_acs.BaseACS):
         if type(param) is not list:
             param = [param]
 
-        p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
+        if action == 'SPV':
+            l = []
+            # this is a list of single k,v pairs
+            for d in param:
+                k = next(iter(d))
+                l.append({'key': k, 'value': d[k]})
+            p_arr_type = 'ns0:SetParameterValuesParametersClassArray'
+            param = l
+        elif action == 'GPV':
+            p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
+        else:
+            raise CodeError('Invalid action: ' + action)
         ParValsClassArray_type = self.client.get_type(p_arr_type)
         ParValsParsClassArray_data = ParValsClassArray_type(param)
 
@@ -788,13 +797,38 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board.get_cpeid()
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param)
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='GPV')
 
         # get raw soap response
         with self.client.settings(raw_response=True):
             response = self.client.service.GetParameterValues(p, cmd, cpe_id)
 
         return AxirosACS._parse_soap_response(response)
+
+    def SPV(self, param_value):
+        """This method is used for modification the value of one or more CPE Parameters.
+        It can take a single k,v pair or a list of k,v pairs.
+
+        :param param_value: dictionary that contains the path to the key and
+        the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
+        :return: status of the SPV as int (0/1)
+        """
+        # TO DO: ideally this should come off the environment helper
+        if self.cpeid is None:
+            self.cpeid = self.dev.board.get_cpeid()
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param_value,
+                                                   action='SPV')
+
+        # get raw soap response
+        with self.client.settings(raw_response=True):
+            response = self.client.service.SetParameterValues(p, cmd, cpe_id)
+
+        result = AxirosACS._parse_soap_response(response)
+        return int(result[0]['value'])
 
 
 if __name__ == '__main__':
@@ -805,19 +839,41 @@ if __name__ == '__main__':
     Device.DeviceInfo.SoftwareVersion
     Device.DeviceInfo.Processor
 
-    big queries may timeout
+    NOTE: big queries may timeout
+
+    To use from cmdline change:
+        from . import base_acs
+    to:
+        from boardfarm.devices import base_acs
+
+    some cmd line samples (user/passwd from json serial no from ACS gui):
+
+    # this must work
+    python3 ./axiros_acs.py ip:port user passwd serialno GVP "'Device.DeviceInfo.ModelNumber'"
+
+    # this must fail
+    python3 ./axiros_acs.py ip:port user passwd serailno GVP "'Device.DeviceInfo.ModelNumber1'"
+
+    # this must fail
+    python3 ./axiros_acs.py ip:port user passwd serialno SVP "{'Device.DeviceInfo.ModelNumber':'mik'}"
+
+    # this should work
+    python3 ./axiros_acs.py ip:port user passwod serialno SVP "[{'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}, {'Device.WiFi.AccessPoint.2.AC.1.Alias':'mik_2'}]"
+
+    # this must fail
+    python3 ./axiros_acs.py ip:port user passwd serialno SVP "[{'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}, {'Device.WiFi.AccessPoint.2.AC.1.Alias':2}]"
     """
 
     if len(sys.argv) < 3:
         print("Usage:")
         print(
-            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "\'<parameter>\'"  NOTE: the quotes are importand'
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> "\'<parameter>\'"  NOTE: the quotes are importand'
         )
         print(
-            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "\'Device.DeviceInfo.SoftwareVersion.\']"'
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> "\'Device.DeviceInfo.SoftwareVersion.\']"'
         )
         print(
-            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> "[\'Device.DeviceInfo.ModelNumber\', \'Device.DeviceInfo.SoftwareVersion.\']'
+            '\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> "[\'Device.DeviceInfo.ModelNumber\', \'Device.DeviceInfo.SoftwareVersion.\']'
         )
         sys.exit(1)
 
@@ -841,14 +897,23 @@ if __name__ == '__main__':
                     password=sys.argv[3],
                     cpeid=cpe_id)
 
+    action = acs.SPV if sys.argv[5] == 'SPV' else acs.GPV
+
     param = 'Device.DeviceInfo.SoftwareVersion.'
-    if len(sys.argv) > 5:
-        param = ast.literal_eval(sys.argv[5])
+    if len(sys.argv) > 6:
+        param = ast.literal_eval(sys.argv[6])
 
     acs.Axiros_GetListOfCPEs()
     try:
-        ret = acs.GPV(param)
+        ret = action(param)
         pprint(ret)
     except ACSFaultCode as fault:
+        print('==== Received ACSFaultCode exception:====')
         pprint(fault.faultdict)
+        print('=========================================')
+        raise
+    except Exception as e:
+        print('==== Received UNEXPECTED exception:======')
+        pprint(e)
+        print('=========================================')
         raise
