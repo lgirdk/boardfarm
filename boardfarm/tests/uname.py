@@ -15,20 +15,17 @@ class Uname(rootfs_boot.RootFSBootTest):
         board.sendline('\nuname -a')
         board.expect('uname -a', timeout=6)
         board.expect(board.prompt)
-        info = board.before.replace('\r', '').replace('\n', '')
+        info = board.before.lstrip().rstrip()
         self.result_message = info
         board.sendline('uname -m')
         board.expect('uname -m')
         board.expect(board.prompt)
-        self.logged['machine'] = board.before.replace('\r',
-                                                      '').replace('\n', '')
+        self.logged['machine'] = board.before.lstrip().rstrip()
         board.sendline('uname -r')
         board.expect('uname -r')
         board.expect(board.prompt)
-        self.logged['release'] = board.before.replace('\r',
-                                                      '').replace('\n', '')
+        self.logged['release'] = board.before.lstrip().rstrip()
         board.sendline('uname -s')
         board.expect('uname -s')
         board.expect(board.prompt)
-        self.logged['kernel'] = board.before.replace('\r',
-                                                     '').replace('\n', '')
+        self.logged['kernel'] = board.before.lstrip().rstrip()
