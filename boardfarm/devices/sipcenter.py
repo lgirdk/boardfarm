@@ -33,6 +33,7 @@ class SipCenter(object):
         apt_install(self, 'uuid-dev')
         apt_install(self, 'libxml2-dev')
         apt_install(self, 'libsqlite3-dev')
+        apt_install(self, 'tshark')
 
     def install_asterisk(self):
         '''
