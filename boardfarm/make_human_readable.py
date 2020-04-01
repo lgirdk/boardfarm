@@ -94,7 +94,8 @@ def xmlresults_to_html(test_results,
         None: 'skip',
         'FAIL': 'fail',
         'Exp FAIL': 'efail',
-        'PENDING': 'skip'
+        'PENDING': 'skip',
+        'TD FAIL': 'fail'
     }
     for i, t in enumerate(test_results):
         if t['grade'] is None:
@@ -123,7 +124,6 @@ def xmlresults_to_html(test_results,
     # process the summary counter
     results_summary_table_lines = []
     for e, v in grade_counter.items():
-        t['style'] = styles[t['grade']]
         results_summary_table_lines.append(
             '<tr><td class="%s">%s: %d</td></tr>' % (styles[e], e, v))
 

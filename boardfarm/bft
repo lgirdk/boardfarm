@@ -490,7 +490,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
             grade = getattr(test, "result_grade", None)
             if grade == "OK" or grade == "Unexp OK":
                 tests_pass += 1
-            elif grade == "FAIL" or grade == "Exp FAIL":
+            elif grade in ["FAIL", "Exp FAIL", "TD FAIL"]:
                 tests_fail += 1
                 # On failure, see status of devices
             elif grade == "SKIP" or grade is None:

@@ -100,8 +100,8 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         finally:
             td = self.td_step
             if not td.td_result:
-                # this could be printed as a different fail state
-                self.result_grade = "FAIL"
+                if 'FAIL' not in self.result_grade:
+                    self.result_grade = "TD FAIL"
 
         self.endMarker()
         if exc_to_raise:
