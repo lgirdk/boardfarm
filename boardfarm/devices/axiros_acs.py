@@ -95,6 +95,11 @@ class AxirosACS(base_acs.BaseACS):
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop('cpeid', None)
 
+    def sudo_sendline(self, cmd):
+        # overwriting linux behaviour
+        # this is under assumption that acs is having root credentials.
+        self.sendline(cmd)
+
     def __str__(self):
         """The method is used to format the string representation of self object (instance).
 
