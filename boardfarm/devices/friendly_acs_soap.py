@@ -1,7 +1,35 @@
+import os
+
 import xmltodict
 from boardfarm.lib.bft_logging import LoggerMeta
 from zeep import Client
 from zeep.wsse.username import UsernameToken
+
+if "BFT_DEBUG" in os.environ:
+    import logging.config
+
+    logging.config.dictConfig({
+        'version': 1,
+        'formatters': {
+            'verbose': {
+                'format': '%(name)s: %(message)s'
+            }
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'zeep.transports': {
+                'level': 'DEBUG',
+                'propagate': True,
+                'handlers': ['console'],
+            },
+        }
+    })
 
 
 class FriendlyACS():
