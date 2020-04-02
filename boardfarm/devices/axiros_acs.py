@@ -2,6 +2,7 @@ import ast
 import ipaddress
 import os
 import time
+import warnings
 import xml.dom.minidom
 from datetime import datetime
 from xml.etree import ElementTree
@@ -10,6 +11,7 @@ import xmltodict
 from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
                                   TR069ResponseError)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from debtcollector import moves
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
 from requests.auth import HTTPBasicAuth
@@ -19,6 +21,8 @@ from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
 from . import base_acs
+
+warnings.simplefilter('always')
 
 if "BFT_DEBUG" in os.environ:
     import logging.config
@@ -204,6 +208,17 @@ class AxirosACS(base_acs.BaseACS):
         return data_list
 
     @staticmethod
+    def _get_xml_key(resp, k='text'):
+        result = nested_lookup(
+            'Result',
+            xmltodict.parse(resp.content,
+                            attr_prefix='',
+                            cdata_key=k,
+                            process_namespaces=True,
+                            namespaces=AxirosACS.namespaces))
+        return result
+
+    @staticmethod
     def _parse_soap_response(response):
         """Helper function that parses the ACS response and returns a
         list of dictionary with {key,type,value} pairs"""
@@ -212,13 +227,7 @@ class AxirosACS(base_acs.BaseACS):
             msg = xml.dom.minidom.parseString(response.text)
             print(msg.toprettyxml(indent=' ', newl=""))
 
-        result = nested_lookup(
-            'Result',
-            xmltodict.parse(response.content,
-                            attr_prefix='',
-                            cdata_key='text',
-                            process_namespaces=True,
-                            namespaces=AxirosACS.namespaces))
+        result = AxirosACS._get_xml_key(response)
         if len(result) > 1:
             raise KeyError("More than 1 Result in reply not implemented yet")
         result = result[0]
@@ -252,6 +261,22 @@ class AxirosACS(base_acs.BaseACS):
         # sometimes 'item' is not in the dict, more testing required
         return AxirosACS._parse_xml_response(result['details']['item'])
 
+    def _get_cmd_data(self, *args, **kwagrs):
+        """Helper method that returns CmdOptTypeStruct_data
+        """
+        c_opt_type = 'ns0:CommandOptionsTypeStruct'
+        CmdOptTypeStruct_type = self.client.get_type(c_opt_type)
+        CmdOptTypeStruct_data = CmdOptTypeStruct_type(*args, **kwagrs)
+        return CmdOptTypeStruct_data
+
+    def _get_class_data(self, *args, **kwagrs):
+        """Helper method that returns CPEIdClassStruct_data
+        """
+        cpe__id_type = 'ns0:CPEIdentifierClassStruct'
+        CPEIdClassStruct_type = self.client.get_type(cpe__id_type)
+        CPEIdClassStruct_data = CPEIdClassStruct_type(*args, **kwagrs)
+        return CPEIdClassStruct_data
+
     def _build_input_structs(self, cpeid, param, action):
         """Helper function to create the get structs used in the get/set param values
         NOTE: The command option is set as Syncronous
@@ -284,14 +309,10 @@ class AxirosACS(base_acs.BaseACS):
         ParValsClassArray_type = self.client.get_type(p_arr_type)
         ParValsParsClassArray_data = ParValsClassArray_type(param)
 
-        c_opt_type = 'ns0:CommandOptionsTypeStruct'
-        CmdOptTypeStruct_type = self.client.get_type(c_opt_type)
-        CmdOptTypeStruct_data = CmdOptTypeStruct_type(
+        CmdOptTypeStruct_data = self._get_cmd_data(
             Sync=True, Lifetime=AxirosACS.CPE_wait_time)
 
-        cpe__id_type = 'ns0:CPEIdentifierClassStruct'
-        CPEIdClassStruct_type = self.client.get_type(cpe__id_type)
-        CPEIdClassStruct_data = CPEIdClassStruct_type(cpeid=cpeid)
+        CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
 
         return ParValsParsClassArray_data,\
             CmdOptTypeStruct_data,\
@@ -343,8 +364,10 @@ class AxirosACS(base_acs.BaseACS):
             break
         return ticketid
 
+    @moves.moved_method('GPV')
     def get(self, cpeid, param, wait=8):
-        """This method is used to perform a remote procedure call (GetParameterValue)
+        """This method is deprecated.
+        This method is used to perform a remote procedure call (GetParameterValue)
 
         The method will query the ACS server for value against ticket_id generated
         during the GPV RPC call.
@@ -360,10 +383,11 @@ class AxirosACS(base_acs.BaseACS):
         :returns: first value of ACS reponse for the parameter.
         :rtype: string
         """
-        ticketid = self.get_ticketId(cpeid, param)
-        if ticketid is None:
+        try:
+            return self.GPV(param)[0]['value']
+        except Exception as e:
+            print(e)
             return None
-        return self.Axiros_GetTicketValue(ticketid, wait=wait)
 
     def getcurrent(self, cpeid, param, wait=8):
         """This method is used to get the key, value of the response for the given parameter from board.
@@ -844,7 +868,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
-            self.cpeid = self.dev.board.get_cpeid()
+            self.cpeid = self.dev.board._cpeid
 
         p, cmd, cpe_id = self._build_input_structs(self.cpeid,
                                                    param,
@@ -866,7 +890,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
-            self.cpeid = self.dev.board.get_cpeid()
+            self.cpeid = self.dev.board._cpeid
 
         p, cmd, cpe_id = self._build_input_structs(self.cpeid,
                                                    param_value,
@@ -878,6 +902,38 @@ class AxirosACS(base_acs.BaseACS):
 
         result = AxirosACS._parse_soap_response(response)
         return int(result[0]['value'])
+
+    def connectivity_check(self, cpeid):
+        """This method check the connectivity between the ACS and the DUT by
+        requesting the DUT to perform a ping to it wan container.
+        NOTE: The scope of this method is to verify that the ACS and DUT can
+        communicate with eachother, and NOT wheter the ping was successful!
+
+        :param cpeid: the id to use for the ping
+        :param type: string
+
+        :return: True for a successful ping, False otherwise
+        """
+        CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=60)
+        CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
+
+        IPPingArguments_type = self.client.get_type(
+            'ns0:IPPingArgumentsStruct')
+        IPPingArguments_data = IPPingArguments_type(NumberOfRepetitions=5,
+                                                    Host='wan.boardfarm.com',
+                                                    DataBlockSize=1472,
+                                                    DSCP=0,
+                                                    Timeout=10000,
+                                                    Interface='')
+        r = None
+        with self.client.settings(raw_response=True):
+            response = self.client.service.IPPingTest(
+                CommandOptions=CmdOptTypeStruct_data,
+                CPEIdentifier=CPEIdClassStruct_data,
+                Parameters=IPPingArguments_data)
+            r = AxirosACS._get_xml_key(response)[0]['code']['text']
+        # Note the 200 is a string here!
+        return r == '200'
 
 
 if __name__ == '__main__':
