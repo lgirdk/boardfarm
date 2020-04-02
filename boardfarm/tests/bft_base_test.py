@@ -170,7 +170,11 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
 
             while retry >= 0:
                 try:
-                    self.runTest()
+                    # Pick function to run
+                    if hasattr(self, "test_main"):
+                        self.test_main()
+                    elif hasattr(self, "runTest"):
+                        self.runTest()
                     self.dev.board.touch()
                     break
                 except boardfarm.exceptions.SkipTest:
