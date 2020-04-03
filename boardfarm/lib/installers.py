@@ -18,7 +18,7 @@ from retry.api import retry_call
 warnings.simplefilter('always', UserWarning)
 
 
-def apt_install(device, name, timeout=120):
+def apt_install(device, name, timeout=120, dpkg_options=""):
     """Install a package using apt-get
 
     :param device: Object of DebianBox
@@ -42,7 +42,8 @@ def apt_install(device, name, timeout=120):
         device.sendline('export DEBIAN_FRONTEND=noninteractive')
         device.expect(device.prompt)
         apt_update(device)
-        device.sendline('apt-get install -q -y %s' % name)
+        device.sendline('apt-get install {} -q -y {}'.format(
+            dpkg_options, name))
         device.expect('Reading package')
         try:
             device.expect(device.prompt, timeout=timeout)
@@ -59,6 +60,9 @@ def apt_install(device, name, timeout=120):
             device.check_output("kill -9 {}".format(pid))
             print("Retrying apt installation, after releasing {} lock!".format(
                 lock))
+        elif "apt --fix-broken install" in device.before:
+            device.check_output('apt --fix-broken -y install', timeout=timeout)
+            print("Retrying apt installation, after fixing broken packages!")
         else:
             break
 
@@ -96,10 +100,8 @@ def install_iperf(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline(
-            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf'
-        )
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'iperf',
+                    '-o DPkg::Options::="--force-confnew" --force-yes')
 
 
 def install_iperf3(device):
@@ -116,10 +118,8 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline(
-            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install iperf3'
-        )
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'iperf',
+                    '-o DPkg::Options::="--force-confnew" --force-yes')
 
 
 def install_tcpick(device):
@@ -185,10 +185,8 @@ def install_netperf(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline(
-            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install netperf'
-        )
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'netperf',
+                    '-o DPkg::Options::="--force-confnew" --force-yes')
     device.sendline('/etc/init.d/netperf restart')
     device.expect('Restarting')
     device.expect(device.prompt)
@@ -251,10 +249,8 @@ def install_python(device):
         device.expect(device.prompt)
         device.sendline('apt-get update')
         device.expect(device.prompt)
-        device.sendline(
-            'apt-get -o DPkg::Options::="--force-confnew" -y --force-yes install python-pip python-mysqldb'
-        )
-        device.expect(device.prompt, timeout=60)
+        apt_install(device, 'python-pip python-mysqldb',
+                    '-o DPkg::Options::="--force-confnew" --force-yes')
 
 
 def install_java(device):
