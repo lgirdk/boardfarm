@@ -3,6 +3,7 @@ import ipaddress
 import os
 import time
 import xml.dom.minidom
+from datetime import datetime
 from xml.etree import ElementTree
 
 import xmltodict
@@ -149,6 +150,11 @@ class AxirosACS(base_acs.BaseACS):
                 return 'false'
             return v
 
+        def to_dateTime(v):
+            v = datetime.strptime(
+                v, '%Y %m %d %H %M %S.0').strftime('%Y-%m-%dT%H:%M:%S')
+            return v
+
         conv_table = {
             'xsd3:string': {
                 'string': None
@@ -159,8 +165,10 @@ class AxirosACS(base_acs.BaseACS):
             'xsd3:boolean': {
                 'boolean': to_bool
             },
+            'xsd3:ur-type[6]': {
+                'dateTime': to_dateTime
+            }
         }
-
         convdict = conv_table.get(d['type'])
         if convdict:
             d['type'] = next(iter(convdict))
@@ -178,10 +186,18 @@ class AxirosACS(base_acs.BaseACS):
             data_values = [data_values]
         for data in data_values:
             v = data['value'].get('text', '')
+            if v == '':
+                if 'item' in data['value']:
+                    v = " ".join(
+                        [val.get('text') for val in data['value']['item']])
+            val_type = data['value']['type']
+            if val_type == 'SOAP-ENC:Array':
+                val_type = data['value'][
+                    'http://schemas.xmlsoap.org/soap/encoding/:arrayType']
             data_list.append(
                 AxirosACS._data_conversion({
                     'key': data['key']['text'],
-                    'type': data['value']['type'],
+                    'type': val_type,
                     'value': v
                 }))
 
