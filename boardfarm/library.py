@@ -128,6 +128,7 @@ def process_test_results(raw_test_results, golden={}):
         'tests_total': 0,
         'unexpected_fail': 0,
         'unexpected_pass': 0,
+        'tests_teardown_fail': 0
     }
 
     def parse_and_add_results(cls, prefix=""):
@@ -161,6 +162,8 @@ def process_test_results(raw_test_results, golden={}):
             full_results['tests_pass'] += 1
         elif grade == "FAIL":
             full_results['tests_fail'] += 1
+        elif grade == "TD FAIL":
+            full_results['tests_teardown_fail'] += 1
         elif grade == "SKIP" or grade is None:
             full_results['tests_skip'] += 1
 
