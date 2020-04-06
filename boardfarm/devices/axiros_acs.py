@@ -6,7 +6,8 @@ import xml.dom.minidom
 from xml.etree import ElementTree
 
 import xmltodict
-from boardfarm.exceptions import ACSFaultCode, ACSREsponseError, CodeError
+from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
+                                  TR069ResponseError)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
@@ -217,15 +218,16 @@ class AxirosACS(base_acs.BaseACS):
                 result.get('message'),
                 result.get('ticketid')
         ]):
-            e = ACSREsponseError('ACS malformed response (issues with either '
-                                 'details/message/ticketid).')
+            e = TR069ResponseError(
+                'ACS malformed response (issues with either '
+                'details/message/ticketid).')
             e.result = result  # for inspection later
             raise e
         fault = 'faultcode' in result['message']['text']
         if fault:
             # could there be more than 1 fault in a response?
             msg = result['message']['text']
-            e = ACSFaultCode(msg)
+            e = TR069FaultCode(msg)
             e.faultdict = \
                 ast.literal_eval(msg[msg.index('{'):])
             raise e
@@ -938,8 +940,8 @@ if __name__ == '__main__':
     try:
         ret = action(param)
         pprint(ret)
-    except ACSFaultCode as fault:
-        print('==== Received ACSFaultCode exception:====')
+    except TR069FaultCode as fault:
+        print('==== Received TR069FaultCode exception:====')
         pprint(fault.faultdict)
         print('=========================================')
         raise

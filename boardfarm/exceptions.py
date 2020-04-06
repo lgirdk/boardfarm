@@ -100,9 +100,15 @@ class ContingencyCheckError(BftBaseException):
     pass
 
 
-class ACSREsponseError(BftBaseException):
+class TR069ResponseError(BftBaseException):
     """Raise this exception when ACS/CPE receive response has an
     unexpected error (like missing fields, malformed, etc).
+    """
+    pass
+
+
+class TR069FaultCode(BftBaseException):
+    """Raise this exception when ACS/CPE sends a fault code.
     """
     pass
 
