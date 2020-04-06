@@ -15,7 +15,7 @@ from selenium.webdriver.support.select import Select
 def enter_input(web_gui, input_path, input_value):
     """To enter the text box value in web page
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param input_path  : element id of particular box
     :type input_path : string
@@ -37,7 +37,7 @@ def enter_input(web_gui, input_path, input_value):
 def click_button_id(web_gui, clickbutton):
     """To click the button using the element id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param clickbutton : web element id of the button
     :type clickbutton : string
@@ -57,7 +57,7 @@ def click_button_id(web_gui, clickbutton):
 def click_button_xpath(web_gui, clickbutton):
     """To click the page button using the xpath
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param clickbutton : web element id of the button
     :type clickbutton : string
@@ -77,7 +77,7 @@ def click_button_xpath(web_gui, clickbutton):
 def select_option_by_id(web_gui, select_button, select_value):
     """To select the option from drop down using id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param select_button : web element id of drop down
     :type select_button : string
@@ -99,7 +99,7 @@ def select_option_by_id(web_gui, select_button, select_value):
 def select_option_by_name(web_gui, select_button, select_value):
     """To select the option from drop down using element name
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param select_button : web element id of drop down
     :type select_button : string
@@ -121,7 +121,7 @@ def select_option_by_name(web_gui, select_button, select_value):
 def select_option_by_xpath(web_gui, select_button, select_value):
     """To select the option from drop down using xpath
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param select_button : web element id of drop down
     :type select_button : string
@@ -143,7 +143,7 @@ def select_option_by_xpath(web_gui, select_button, select_value):
 def get_drop_down_value(web_gui, get_value):
     """To get the drop down value using id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : text value to check whether it exists in drop down
     :type get_value : string
@@ -163,7 +163,7 @@ def get_drop_down_value(web_gui, get_value):
 def get_radio_button_value(web_gui, get_value):
     """To get the radio button status whether chosen or not
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element id for the radio button
     :type get_value : string
@@ -186,7 +186,7 @@ def get_radio_button_value(web_gui, get_value):
 def get_text_value(web_gui, get_value):
     """To get the radio button status whether chosen or not
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element id for the radio button
     :type get_value : string
@@ -205,7 +205,7 @@ def get_text_value(web_gui, get_value):
 def get_text_value_by_xpath(web_gui, get_value):
     """To get the text box value using xpath
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element xpath for the text box
     :type get_value : string
@@ -224,7 +224,7 @@ def get_text_value_by_xpath(web_gui, get_value):
 def get_value_from_disabled_input(web_gui, get_value):
     """To get the value for diabled element
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element id for required input
     :type get_value : string
@@ -241,7 +241,7 @@ def get_value_from_disabled_input(web_gui, get_value):
 def get_icon_check_value_by_id(web_gui, get_value):
     """To get the icon button status whether chosen or not using id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element id for the icon button
     :type get_value : string
@@ -264,7 +264,7 @@ def get_icon_check_value_by_id(web_gui, get_value):
 def get_icon_check_value_by_xpath(web_gui, get_value):
     """To get the icon button status whether chosen or not using xpath
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element xpath for the icon button
     :type get_value : string
@@ -287,10 +287,10 @@ def get_icon_check_value_by_xpath(web_gui, get_value):
 def check_element_is_enable_by_id(web_gui, check_value):
     """To get the enabled text button value using id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
-    :param get_value : web element id for the enabled element
-    :type get_value : string
+    :param check_value : web element id for the enabled element
+    :type check_value : string
     :raises Exception : If error thrown returns None
     :return : enabled text button value
     :rtype : string or boolean
@@ -303,10 +303,32 @@ def check_element_is_enable_by_id(web_gui, check_value):
         return None
 
 
+def check_active_state_using_class(web_gui, get_value):
+    """To check enabled state based on the class value using id
+
+    :param web_gui: web driver after initializing page
+    :type web_gui : string
+    :param get_value : web element id for the enabled element
+    :type get_value : string
+    :raises Exception : If error thrown returns None
+    :return : boolean True/False based on state
+    :rtype : boolean or None
+    """
+    try:
+        text_button = web_gui.find_element_by_id(get_value)
+        text_value = text_button.get_attribute("class")
+        if "deactivated" in text_value:
+            return False
+        else:
+            return True
+    except NoSuchElementException:
+        return None
+
+
 def get_check_box_value_by_id(web_gui, get_value):
     """To get the check box whether chosen or not using id
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element id for the check box
     :type get_value : string
@@ -329,7 +351,7 @@ def get_check_box_value_by_id(web_gui, get_value):
 def get_check_box_value_by_xpath(web_gui, get_value):
     """To get the check box whether chosen or not using xpath
 
-    :param web_gui: web driver after initailizing page
+    :param web_gui: web driver after initializing page
     :type web_gui : string
     :param get_value : web element xpath for the check box
     :type get_value : string
