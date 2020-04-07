@@ -1453,16 +1453,24 @@ def ftp_device_login(device, ip_mode, device_ip):
     :type ip_mode: String
     :param device_ip: ip address of destination device(lan/wan)
     :type device_ip: String
+    :return: if ftp login works True else False
+    :rtype: boolean
     """
     match = re.search(r"(\d)", str(ip_mode))
     value = match.group()
     device.sendline("ftp -%s %s" % (value, device_ip))
-    device.expect("Name", timeout=10)
-    device.sendline("client")
-    device.expect("Password:", timeout=10)
-    device.sendline("client")
-    device.expect(['230 Login successful'], timeout=10)
-    device.expect("ftp>", timeout=10)
+    check = True
+    try:
+        device.expect("Name", timeout=10)
+        device.sendline("client")
+        device.expect("Password:", timeout=10)
+        device.sendline("client")
+        device.expect(['230 Login successful'], timeout=10)
+        device.expect("ftp>", timeout=10)
+    except:
+        check = False
+        ftp_close(device)
+        return check
 
 
 def ftp_upload_download(device, ftp_load):
