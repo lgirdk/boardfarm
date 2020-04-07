@@ -845,7 +845,7 @@ def snmp_mib_set(device,
         else:
             idx = device.expect(
                 ['Timeout: No Response from'] +
-                [mib_oid + '\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] +
+                [mib_oid + r'\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] +
                 device.prompt,
                 timeout=time_out)
     elif set_type == "x":
@@ -1605,7 +1605,7 @@ def copy_ovpn_config(server, client, config="lan.ovpn"):
     for dev in [server, client]:
         dev.sendline("md5sum " + config)
         index = dev.expect([
-            "([A-Fa-f0-9]{32}(\s{2,}))" + config, "No such file or directory"
+            r"([A-Fa-f0-9]{32}(\s{2,}))" + config, "No such file or directory"
         ])
         if dev == server:
             assert index == 0, "File '" + config + "' not found on source device."
