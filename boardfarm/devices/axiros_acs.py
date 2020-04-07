@@ -164,7 +164,7 @@ class AxirosACS(base_acs.BaseACS):
                 'string': None
             },
             'xsd3:integer': {
-                'int': to_int
+                'integer': to_int
             },
             'xsd3:boolean': {
                 'boolean': to_bool
