@@ -19,6 +19,7 @@ nested_lookup==0.2.19
 netaddr
 pexpect
 pre-commit
+psutil
 pycountry
 pycryptodome
 pyflakes

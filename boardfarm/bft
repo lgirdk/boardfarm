@@ -24,6 +24,7 @@ from datetime import datetime
 
 import boardfarm.exceptions
 import matplotlib
+import psutil
 from boardfarm import devices, library, tests
 from boardfarm.dbclients import (boardfarmwebclient, elasticlogger, logstash,
                                  mongodblogger)
@@ -62,6 +63,21 @@ matplotlib.use('Agg')
 
 class FailedDevice(object):
     name = None
+
+
+def bfcleanup():
+    """This method attemps to kill all the children processes under bft.
+    Reason: some processes like Xvnc, firefox, are spawned by libraries using
+    wrappers like EasyPorcess. Under certain circumstances these processes are
+    not properly cleaned up, and are left hanging under the init process.
+    """
+    pid = os.getpid()
+    for child in psutil.Process(pid).children(recursive=True):
+        try:
+            print("Killing process '{}'".format(child.name()))
+            child.kill()
+        except Exception as e:
+            print("Failed to kill '{}':  {}".format(child.name(), e))
 
 
 def threaded_device_helper(device, device_mgr, ret):
@@ -391,6 +407,8 @@ def connect_to_devices(config):
     bfweb.checkout(config.board)
     # Checkin station & devices when we exit
     atexit.register(bfweb.checkin)
+
+    atexit.register(bfcleanup)
 
     # Update config from board info
     if hasattr(board, "update_config"):
