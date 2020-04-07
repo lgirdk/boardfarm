@@ -152,11 +152,14 @@ def run_unittest () {
     println("Running unittests")
     setup_python(python_version)
     sh '''
+        set +e
         . venv/bin/activate
-        if grep pytest -r boardfarm/unittests/; then
-            pytest boardfarm/unittests/
-        else
-            ./boardfarm/unittests/main.py
+        # Run unittests, store exit codes
+        repo forall -c '[ -d "unittests" ] && { pytest unittests; echo $? >> ../unittest_results.txt; }'
+        # If any exit code was 1, let's fail
+        grep -q 1 unittest_results.txt
+        if [ $? -ne 1 ]; then
+            exit 1
         fi
         bft -l
     '''
