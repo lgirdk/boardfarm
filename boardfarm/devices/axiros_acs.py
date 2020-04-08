@@ -231,10 +231,13 @@ class AxirosACS(base_acs.BaseACS):
         if len(result) > 1:
             raise KeyError("More than 1 Result in reply not implemented yet")
         result = result[0]
-
-        if result['code']['text'] != '200':
+        httpcode = result['code']['text']
+        if httpcode != '200':
             # with 507 (timeout/expired) there seem to be NO faultcode message
-            if 'faultcode' not in result['message']['text']:
+            if httpcode == '500':
+                if 'faultcode' not in result['message']['text']:
+                    raise HTTPError(result['message']['text'])
+            else:
                 raise HTTPError(result['message']['text'])
 
         # is this needed (might be overkill)?
