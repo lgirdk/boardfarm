@@ -1470,7 +1470,7 @@ def ftp_device_login(device, ip_mode, device_ip):
     except:
         check = False
         ftp_close(device)
-        return check
+    return check
 
 
 def ftp_upload_download(device, ftp_load):
