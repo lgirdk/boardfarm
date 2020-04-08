@@ -506,7 +506,7 @@ def snmp_asyncore_walk(device,
     device.sendline('rm %s' % asyncore_script)
     device.expect(device.prompt)
     device.sendline('ls -l snmp_output.txt --block-size=kB')
-    device.expect(['.*\s+(\d+)kB'])
+    device.expect([r'.*\s+(\d+)kB'])
     file_size = device.match.group(1)
     device.expect(device.prompt)
     if file_size == '0':

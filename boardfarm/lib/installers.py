@@ -54,7 +54,7 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
             raise
 
         if "Could not get lock" in device.before:
-            lock = re.findall("Could not get lock ([^\s]+)", device.before)
+            lock = re.findall(r"Could not get lock ([^\s]+)", device.before)
             pid = device.check_output("fuser -k {}".format(lock))
             pid = pid.replace("{}:".format(lock), "").strip()
             device.check_output("kill -9 {}".format(pid))
@@ -664,7 +664,7 @@ def install_dovecot(device, remove=False):
         return
     device.sendline('dovecot --version')
     try:
-        device.expect(' \(', timeout=5)
+        device.expect(r' \(', timeout=5)
         device.expect(device.prompt)
     except:
         device.expect_prompt()
@@ -998,7 +998,7 @@ def install_pjsua(device,
         device.expect(device.prompt, timeout=60)
         device.sendline("ls")
         device.expect(device.prompt)
-        folder_name = re.findall('(pjproject\-[\d\.]*)\s', device.before)[0]
+        folder_name = re.findall(r'(pjproject\-[\d\.]*)\s', device.before)[0]
         device.sendline('cd %s' % folder_name)
         device.expect(device.prompt)
         device.sendline(
