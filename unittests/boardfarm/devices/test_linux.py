@@ -1,7 +1,9 @@
 import ipaddress
+import re
 
 import pytest
 from boardfarm.devices.linux import LinuxDevice
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
 test1_1 = """# ifconfig erouter0
 erouter0  Link encap:Ethernet  HWadr 34:2C:C4:54:2E:08
@@ -17,7 +19,7 @@ erouter0  Link encap:Ethernet  HWadr 34:2C:C4:54:2E:08
 
 test1_2 = """# ifconfig erouter0
 erouter0  Link encap:Ethernet  HWadr 34:2C:C4:54:2E:08
-          inet addr:10.15.80.16  Bcast:10.1580.127 Mask:255.255.255.128
+          inet:10.15.80.16  Bcast:10.1580.127 Mask:255.255.255.128
           bft_inet6 addr: fe80::362c:c4ff:f54:2e08/64 Scope:Link
           bft_inet6 addr: 2001:730:1f:60c:e:92/128 Scope:Global
           UP BROADCAST RUNNING PROMISC MULTICAT  MTU:1500  Metric:1
@@ -27,7 +29,7 @@ erouter0  Link encap:Ethernet  HWadr 34:2C:C4:54:2E:08
           RX bytes:5630 (5.4 KiB)  TX bytes:4158 (4.0 KiB)
 #"""
 
-test2_1 = """root@bft-node-eno1-wan-provisioner-1:~# ifconfig erouter0 | sed 's/inet6 /bft_inet6 /'
+test2_1 = """root@bft-node-eno1-wan-provisioner-1:~# ifconfig erouter0
 eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet 10.64.38.20  netmask 255.255.254.0  broadcast 0.0.0.0
         inet6 2001:730:1f:60a::cafe:20  prefixlen 64  scopeid 0x0<global>
@@ -40,7 +42,7 @@ eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 
 root@bft-node-eno1-wan-provisioner-1:~#"""
 
-test2_2 = """root@bft-node-eno1-wan-provisioner-1:~# ifconfig erouter0 | sed 's/inet6 /bft_inet6 /'
+test2_2 = """root@bft-node-eno1-wan-provisioner-1:~# ifconfig erouter0
 eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet 10.64.38.20  netmask 255.255.254.0  broadcast 0.0.0.0
         bft_inet6 2001:730:1f:60a::cafe:20  prefixlen 64  scopeid 0x0<global>
@@ -53,7 +55,7 @@ eth1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
 
 root@bft-node-eno1-wan-provisioner-1:~#"""
 
-test3_1 = """# ifconfig erouter0 | sed 's/inet6 /bft_inet6 /'
+test3_1 = """# ifconfig erouter0
 [INFO_VERBOSE] [DOCSIS.MDD(pid=550)]: MDD fragment added with fragNum=1, len=667. 1 fragments added
 erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2E:08
           inet addr:10.15.80.16  Bcast:10.15.80.127  Mask:255.255.255.128
@@ -118,6 +120,19 @@ erouter0  Link encap:Ethernet  HWaddr 38:43:7D:80:0A:D8
           RX bytes:6949 (6.7 KiB)  TX bytes:4271 (4.1 KiB)
 """
 
+test4_4 = """# ifconfig erouter0
+erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:F7
+          inet addr:10.15.80.17  Bcast:10.15./home/jenkins/workspace/Robustness_Dual_CASA/boardfarm/boardfarm/devices/linux.py: get_interface_ipaddr(): line 45 = matched: 'addr:10.15.80.17  Bcast:'
+/home/jenkins/workspace/Robustness_Dual_CASA/boardfarm/boardfarm/devices/linux.py: get_interface_ipaddr(): line 48 = expecting: ['mainMenu>', '# ']
+80.127  Mask:255.255.255.128
+          inet6 addr: 2001:730:1f:60c::e:89/128 Scope:Global
+          inet6 addr: fe80::362c:c4ff:fe54:2ff7/64 Scope:Link
+          UP BROADCAST RUNNING PROMISC MULTICAST  MTU:1500  Metric:1
+          RX packets:1322 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:657 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:146716 (143.2 KiB)  TX bytes:135837 (132.6 KiB)"""
+
 
 @pytest.mark.parametrize("output, expected_ip", [
     (test2_1, "2001:730:1f:60a::cafe:20"),
@@ -162,3 +177,42 @@ def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
     with pytest.raises(Exception) or pytest.raises(
             ipaddress.AddressValueError):
         dev.get_interface_ip6addr("erouter0")
+
+
+@pytest.mark.parametrize("output, expected_ip", [
+    (test2_1, "10.64.38.20"),
+    (test1_2, "10.15.80.16"),
+    (test2_2, "10.64.38.20"),
+    (test3_1, "10.15.80.16"),
+    (test4_1, "10.13.0.13"),
+    (test4_2, "10.3.0.12"),
+    (test4_4, "10.15.80.17"),
+])
+def test_get_interface_ipaddr(mocker, output, expected_ip):
+    mocker.patch.object(LinuxDevice,
+                        "__init__",
+                        return_value=None,
+                        autospec=True)
+    mocker.patch.object(LinuxDevice,
+                        "sendline",
+                        return_value=None,
+                        autospec=True)
+    mocker.patch.object(LinuxDevice,
+                        "check_output",
+                        return_value=None,
+                        autospec=True)
+    mocker.patch.object(LinuxDevice,
+                        "expect",
+                        return_value=None,
+                        autospec=True)
+    regex = [
+        r'inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\s*(Bcast|P-t-P|broadcast):',
+        r'inet:?(?:\s*addr:)?\s*(' + ValidIpv4AddressRegex + ').*netmask (' +
+        ValidIpv4AddressRegex + ')(.*destination ' + ValidIpv4AddressRegex +
+        ')?'
+    ]
+
+    dev = LinuxDevice()
+    dev.match = max([re.search(i, output) for i in regex], key=bool)
+    print(dev.match)
+    assert expected_ip == dev.get_interface_ipaddr("erouter0")

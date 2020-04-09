@@ -37,15 +37,16 @@ class LinuxDevice(base.BaseDevice):
         '''Get ipv4 address of interface'''
         self.sendline("\nifconfig %s" % interface)
         regex = [
-            r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-            r'inet (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P)',
-            'inet (' + ValidIpv4AddressRegex + ').*netmask (' +
-            ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex
+            r'inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P|broadcast):',
+            r'inet:?(?:\s*addr:)?\s*(' + ValidIpv4AddressRegex +
+            ').*netmask (' + ValidIpv4AddressRegex + ')(.*destination ' +
+            ValidIpv4AddressRegex + ')?'
         ]
-        self.expect(regex, timeout=5)
+        self.expect(regex)
         ipaddr = self.match.group(1)
         ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
         self.expect(self.prompt)
+        print("ifconfig {} IPV4 {}".format(interface, ipv4address))
         return ipv4address
 
     def get_interface_ip6addr(self, interface):
@@ -58,7 +59,8 @@ class LinuxDevice(base.BaseDevice):
         output = self.check_output("ifconfig %s | sed 's/inet6 /bft_inet6 /'" %
                                    interface)
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
-        for i in re.compile("|".join(regex), re.M | re.U).findall(output):
+        ips = re.compile("|".join(regex), re.M | re.U).findall(output)
+        for i in ips:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
@@ -66,7 +68,7 @@ class LinuxDevice(base.BaseDevice):
                     return str(ipv6_iface.ip)
             except:
                 continue
-
+        print("ifconfig {} IPV6 {}".format(interface, ips))
         raise Exception("Did not find non-link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
