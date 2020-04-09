@@ -49,3 +49,18 @@ def continue_on_fail(func):
             return exc
 
     return wrapper
+
+
+def run_with_lock(lock):
+    def run_with_lock_decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            lock.acquire()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                lock.release()
+
+        return wrapper
+
+    return run_with_lock_decorator
