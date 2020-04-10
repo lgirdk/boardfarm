@@ -14,6 +14,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from xvfbwrapper import Xvfb
 
 from .common import get_webproxy_driver, resolv_dict
 from .gui_helper import (click_button_id, enter_input, get_drop_down_value,
@@ -361,16 +362,24 @@ class web_gui():
         """
         from pyvirtualdisplay.randomize import Randomizer
         from boardfarm import config
-        xc, yc = config.default_display_backend_size.split('x')
-        x = int(xc)
-        y = int(yc)
-        r = Randomizer() if config.default_display_backend_port == 0 else None
-        self.display = Display(backend=config.default_display_backend,
-                               rfbport=config.default_display_backend_port,
-                               rfbauth=os.environ['HOME'] + '/.vnc/passwd',
-                               visible=0,
-                               randomizer=r,
-                               size=(x, y))
+        if config.default_display_backend == 'xvnc':
+            xc, yc = config.default_display_backend_size.split('x')
+            x = int(xc)
+            y = int(yc)
+            r = Randomizer(
+            ) if config.default_display_backend_port == 0 else None
+            self.display = Display(backend=config.default_display_backend,
+                                   rfbport=config.default_display_backend_port,
+                                   rfbauth=os.environ['HOME'] + '/.vnc/passwd',
+                                   visible=0,
+                                   randomizer=r,
+                                   size=(x, y))
+
+        elif config.default_display_backend == 'xvfb':
+            self.display = Xvfb()
+        else:
+            raise Exception("backend not yet tested!")
+
         self.display.start()
 
     def get_web_driver(self, proxy):
