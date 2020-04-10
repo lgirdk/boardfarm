@@ -80,7 +80,7 @@ option_dict = {
 default_proxy_type = "socks5"
 default_web_driver = "ffox"
 default_headless = True
-default_display_backend = "xvnc"
+default_display_backend = "xvfb"
 default_display_backend_port = "0"  # i.e. use any available ports
 default_display_backend_size = "1366x768"
 
