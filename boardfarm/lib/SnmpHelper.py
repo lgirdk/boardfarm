@@ -10,6 +10,7 @@ import os
 import re
 
 import boardfarm
+import debtcollector
 import pexpect
 import six
 from pysmi.codegen import JsonCodeGen
@@ -489,6 +490,9 @@ def snmp_asyncore_walk(device,
     :return: True or False or snmp output
     :rtype: Boolean or string
     """
+    debtcollector.deprecate(
+        "the snmp_asyncore_walk function can be slower than a simple"
+        " snmpwalk, refer to the SNMP wiki")
     if re.search(ValidIpv4AddressRegex, ip_address):
         mode = 'ipv4'
     elif re.search(AllValidIpv6AddressesRegex, ip_address):
