@@ -1,6 +1,7 @@
 import os
 import textwrap
 import traceback
+from collections.abc import Iterable
 from datetime import datetime
 from functools import partial, wraps
 
@@ -95,6 +96,9 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.add(func, *args, **kwargs)
         self.execute()
 
+    def assertRaises(self, exc, *args, **kwargs):
+        return ExpectException(self, exc, *args, **kwargs)
+
     def __enter__(self):
         self.msg = "[{}]:[{} Step {}]".format(
             self.parent_test.__class__.__name__, self.prefix, self.step_id)
@@ -148,6 +152,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             raise CodeError(
                 "{} - no actions added before calling execute".format(
                     self.msg))
+
+        self.execute_flag = True
 
         for a_id, action in enumerate(self.actions):
             func_name = action.action.func.__name__
@@ -257,6 +263,75 @@ class TearDown(TestStep):
         self.log_msg(('-' * 80), no_time=True)
 
 
+class ExpectException(object):
+    def __init__(self, ts, exc, *args, **kwargs):
+        self.called_with = False
+        if not isinstance(exc, Iterable):
+            self.exc_list = [exc]
+        else:
+            self.exc_list = exc
+        self.ts = ts
+        self.exception = None
+
+        if args:
+            if not callable(args[0]):
+                raise CodeError("{} is not a function".format(args[0]))
+            if not self.called_with:
+                self.execute_callable(*args, **kwargs)
+            else:
+                raise CodeError(
+                    "Invalid Syntax - Context Management doesn't work when"
+                    " callable-{} is passed as an arg.".format(args[0]))
+
+    def execute_callable(self, *args, **kwargs):
+        with self:
+            self.ts.call(args[0], *args[1:], **kwargs)
+
+    def decorate_add_method(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                return e
+
+        return wrapper
+
+    def add(self, func, *args, **kwargs):
+        new_func = self.decorate_add_method(func)
+        self.old_add(new_func, *args, **kwargs)
+
+    def __enter__(self):
+        self.called_with = True
+        self.old_add = self.ts.add
+        self.ts.execute_flag = False
+        setattr(self.ts, 'add', self.add)
+        return self
+
+    def __exit__(self, ex_type, ex_value, tb):
+        setattr(self.ts, 'add', self.old_add)
+        if not self.ts.execute_flag:
+            raise CodeError(
+                "TestSteps added but not executed. Cannot capture exceptions!!"
+            )
+        self.called_with = False
+        self.ts.execute_flag = False
+        for i in self.ts.result:
+            if isinstance(i.result, Exception):
+                if type(i.result) in self.exc_list:
+                    self.exception = i.result
+                    break
+                else:
+                    print(i.result)
+                    raise AssertionError(
+                        "Expected Exceptions - {} Caught - {}".format(
+                            self.exc_list, type(i.result)))
+        if not self.exception:
+            raise AssertionError(
+                "No exception caught!!\nExpected exceptions - {}".format(
+                    self.exc_list))
+
+
 if __name__ == '__main__':
 
     def action1(a, m=2):
@@ -273,6 +348,11 @@ if __name__ == '__main__':
         print("\nAction addition performed \nWill return value: {}\n".format(
             a + 100))
         return a + 100
+
+    def raise_exc(exc, code=99):
+        e = exc("Hi, this is an exception for {}".format(exc.__name__))
+        e.code = code
+        raise e
 
     class Test1(object):
         steps = []
@@ -329,11 +409,43 @@ if __name__ == '__main__':
                 # since we didn't add a verification before,we can call one directly as well
                 ts.verify(ts.result[1].output() != 3, "verify step2 output")
 
+    class Test2(object):
+        steps = []
+        log_to_file = None
+        dev = None
+
+        def test_main(self):
+            with TestStep(self, "Negative Testing Scenario",
+                          "Example 1") as ts:
+                with ts.assertRaises(ValueError) as e:
+                    ts.call(raise_exc, ValueError, 600)
+                ts.verify(e.exception.code == 600, "Verify negative scenario")
+
+            with TestStep(self, "Negative Testing Scenario",
+                          "Example 2") as ts:
+                e = ts.assertRaises(ValueError, raise_exc, ValueError, 600)
+                ts.verify(e.exception.code == 600, "Verify negative scenario")
+
+            with TestStep(self, "Negative Testing Scenario",
+                          "Example 3") as ts:
+                try:
+                    with ts.assertRaises(KeyError) as e:
+                        ts.call(action1, 2, 3)
+                        ts.call(action1, 3, 4)
+                except:
+                    print(
+                        "To show if an exception didn't occure, test will fail"
+                    )
+
     obj = Test1()
+    obj1 = Test2()
     try:
         obj.runTest()
     except Exception:
         # handle retry condition for TC
         pass
+
+    obj1.test_main()
+
     print("\n\nHow stuff will look like in txt file:\n{}".format(
         obj.log_to_file))
