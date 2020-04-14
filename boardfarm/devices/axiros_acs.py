@@ -392,6 +392,7 @@ class AxirosACS(base_acs.BaseACS):
             print(e)
             return None
 
+    @moves.moved_method('GPV')
     def getcurrent(self, cpeid, param, wait=8):
         """This method is used to get the key, value of the response for the given parameter from board.
         Example usage : acs_server.getcurrent(self.cpeid, 'Device.IP.Interface.')
@@ -422,6 +423,7 @@ class AxirosACS(base_acs.BaseACS):
                 dict_key_value[key.text] = value.text
             return dict_key_value
 
+    @moves.moved_method('SPV')
     def set(self, cpeid, attr, value):
         """This method is used to set a parameter in board via TR069 RPC call (SetParameterValue).
 
