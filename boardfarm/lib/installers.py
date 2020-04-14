@@ -73,6 +73,55 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
     assert (i != 0)
 
 
+def apt_purge(device, name, timeout=120):
+    """Remove a package using apt-get purge
+
+    :param device: Object of DebianBox
+    :type device: Instance (ex: lan or wan instance)
+    :param name: name of the package to remove
+    :type name: string
+    :param timeout: timeout for expect, defaults to '120'
+    :type timeout: integer, optional
+    :raises assertion: if package is not removed correctly
+    """
+    def _kill_stale_apt():
+        pids = device.check_output("pgrep apt")
+        if pids:
+            print(
+                "Stale apt PIDs identified!! - {}\nKilling them before installation"
+                .format(pids.splitlines()))
+            device.check_output("pkill apt")
+
+    for _ in range(2):
+        device.sendline('export DEBIAN_FRONTEND=noninteractive')
+        device.expect(device.prompt)
+        apt_update(device)
+        device.sendline('apt-get purge -q -y %s' % name)
+        device.expect('Reading package')
+        try:
+            device.expect(device.prompt, timeout=timeout)
+        except pexpect.TIMEOUT:
+            device.sendcontrol('c')
+            device.expect(pexpect.TIMEOUT, timeout=1)
+            _kill_stale_apt()
+            raise
+
+        if "Could not get lock" in device.before:
+            lock = re.findall("Could not get lock ([^\s]+)", device.before)
+            pid = device.check_output("fuser -k {}".format(lock))
+            pid = pid.replace("{}:".format(lock), "").strip()
+            device.check_output("kill -9 {}".format(pid))
+            print("Retrying apt installation, after releasing {} lock!".format(
+                lock))
+        else:
+            break
+    device.sendline('dpkg -l %s' % name)
+    expect_string = 'dpkg -l %s' % name
+    device.expect_exact(expect_string[-60:])
+    device.expect_prompt()
+    assert ('no packages found matching {}'.format(name) in device.before)
+
+
 def apt_update(device, timeout=120):
     """Update the package database with apt-get
 
@@ -330,8 +379,8 @@ def install_telnet_server(device, remove=False):
         device.expect(device.prompt, timeout=10)
         device.sendline("/etc/init.d/xinetd status")
         device.expect(device.prompt, timeout=10)
-        device.sendline('apt-get purge --auto-remove xinetd telnetd -y')
-        device.expect(device.prompt, timeout=20)
+        apt_purge(device, 'xinetd')
+        apt_purge(device, 'telnetd')
         return
     try:
         device.expect('xinetd Version 2.3', timeout=5)
@@ -554,8 +603,7 @@ def install_vsftpd(device, remove=False):
         device.expect(device.prompt, timeout=15)
         device.sendline("/etc/init.d/vsftpd status")
         device.expect(device.prompt, timeout=15)
-        device.sendline('apt-get purge --auto-remove vsftpd -y')
-        device.expect(device.prompt, timeout=30)
+        apt_purge(device, 'vsftpd')
 
 
 def install_pysnmp(device):
@@ -657,6 +705,10 @@ def install_dovecot(device, remove=False):
     :raises assertion: Failed to install dovecot
     """
     if remove:
+        deprecate(
+            "Using apt purge in sendline is deprecated! Please use apt_purge",
+            removal_version="> 1.1.1",
+            category=UserWarning)
         device.check_output(
             "killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*"
         )
@@ -819,8 +871,7 @@ def install_ovpn_client(device, remove=False):
     if remove:
         device.sendline('killall -9 openvpn')
         device.expect(device.prompt)
-        device.sendline('apt purge --auto-remove openvpn -y')
-        device.expect(device.prompt, timeout=120)
+        apt_purge(device, 'openvpn')
         return
 
     device.sendline('apt-get update')
@@ -848,8 +899,7 @@ def install_pptpd_server(device, remove=False):
         if index == 0:
             device.sendline("/etc/init.d/pptpd stop")
             device.expect(device.prompt, timeout=60)
-            device.sendline("apt-get purge --auto-remove pptpd -y")
-            device.expect(device.prompt, timeout=60)
+            apt_purge(device, 'pptpd')
         return
 
     if index != 0:
@@ -876,8 +926,7 @@ def install_pptp_client(device, remove=False):
             device.expect(device.prompt)
             device.sendline("poff pptpserver")
             device.expect(device.prompt)
-            device.sendline('apt-get purge --auto-remove pptp-linux -y')
-            device.expect(device.prompt, timeout=60)
+            apt_purge(device, 'pptp-linux')
         return
 
     if index != 0:
@@ -894,6 +943,10 @@ def install_postfix(device):
                        2. System mail name option is not received. Installaion failed
                        3. Unable to start Postfix service.Service is not properly installed
     """
+    deprecate(
+        "Using apt purge in sendline is deprecated! Please use apt_purge",
+        removal_version="> 1.1.1",
+        category=UserWarning)
     device.sendline("apt-get purge postfix -y")
     device.expect(device.prompt, timeout=40)
     device.sendline('postconf -d | grep mail_version')
