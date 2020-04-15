@@ -238,9 +238,13 @@ def create_file_logs(config, board, tests_to_run, logger):
                     line = line[1:]
                 if line.startswith(' ['):
                     line = line[1:]
-                ts, text = line.split(']', 1)
+                    ts, text = line.split(']', 1)
+                    timestamp = float(ts[1:-1])
+                else:
+                    text = line
+                    timestamp = 0.0
                 combined_list.append({
-                    "time": float(ts[1:-1]),
+                    "time": timestamp,
                     "text": str(text),
                     "name": name
                 })
