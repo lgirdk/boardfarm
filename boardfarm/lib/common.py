@@ -337,7 +337,7 @@ def firefox_webproxy_driver(ipport, config):
     profile.update_preferences()
     opts = webdriver.FirefoxOptions()
     opts.headless = config.default_headless
-    driver = webdriver.Firefox(firefox_profile=profile, firefox_options=opts)
+    driver = webdriver.Firefox(firefox_profile=profile, options=opts)
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
     driver.implicitly_wait(30)
