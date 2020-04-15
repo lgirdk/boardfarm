@@ -284,8 +284,10 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
         device.sendline("exit")
         device.expect(device.prompt, timeout=20)
     except Exception as e:
-        print(e)
-        raise Exception("Failed to connect telnet to :%s" % device.before)
+        for _ in range(2):
+            device.sendcontrol('c')
+            device.expect(device.prompt)
+        raise Exception("Failed to connect telnet due to : %s" % e)
 
 
 def custom_telnet_service(device,
