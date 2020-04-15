@@ -362,6 +362,11 @@ class web_gui():
         """
         from pyvirtualdisplay.randomize import Randomizer
         from boardfarm import config
+
+        if config.default_headless:
+            self.display = None
+            return
+
         if config.default_display_backend == 'xvnc':
             xc, yc = config.default_display_backend_size.split('x')
             x = int(xc)
