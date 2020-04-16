@@ -892,6 +892,7 @@ class AxirosACS(base_acs.BaseACS):
         :param param_value: dictionary that contains the path to the key and
         the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
         :return: status of the SPV as int (0/1)
+        :raises: TR069ResponseError if the status is not (0/1)
         """
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
@@ -906,7 +907,10 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.SetParameterValues(p, cmd, cpe_id)
 
         result = AxirosACS._parse_soap_response(response)
-        return int(result[0]['value'])
+        status = int(result[0]['value'])
+        if status not in [0, 1]:
+            raise TR069ResponseError("SPV Invalid status: " + str(status))
+        return status
 
     def connectivity_check(self, cpeid):
         """This method check the connectivity between the ACS and the DUT by
