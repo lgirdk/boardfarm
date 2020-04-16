@@ -988,8 +988,9 @@ def retry(func_name, max_retry, *args):
     :param args: Arguments passed to the function
     :type args: args
     :return: Output of the function if function is True
-    :rtype: Boolean (True) or None Type(None)
+    :rtype: Boolean (True/False) or None Type(None)
     """
+    output = None
     for i in range(max_retry):
         output = func_name(*args)
         if output and output != 'False':
@@ -997,7 +998,7 @@ def retry(func_name, max_retry, *args):
         else:
             time.sleep(5)
     else:
-        return None
+        return output
 
 
 def retry_on_exception(method, args, retries=10, tout=5):
