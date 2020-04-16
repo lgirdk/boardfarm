@@ -349,7 +349,9 @@ def connect_to_devices(config):
             def get_tftp_config(dev):
                 saved = dev.logfile_read
                 dev.logfile_read = None
-                if 'wan-no-eth0' in dev.kwargs.get('options', ""):
+                if hasattr(dev, 'gw'):
+                    board.tftp_server = dev.gw
+                elif 'wan-no-eth0' in dev.kwargs.get('options', ""):
                     board.tftp_server = dev.get_interface_ipaddr("eth1")
                 else:
                     board.tftp_server = dev.get_interface_ipaddr("eth0")
