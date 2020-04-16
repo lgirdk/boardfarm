@@ -96,7 +96,10 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             print(e)
             print("This should never happen. TearDown should be fail-safe")
             traceback.print_exc(file=sys.stdout)
-            raise
+            if type(exc_to_raise) is boardfarm.exceptions.BootFail:
+                raise exc_to_raise
+            else:
+                raise
         finally:
             td = self.td_step
             if not td.td_result:
@@ -258,15 +261,26 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             if 'BFT_DEBUG' in os.environ:
                 print(self)
                 for device in self.config.devices:
-                    d = getattr(self.config, device)
-                    print(d)
+                    try:
+                        d = getattr(self.config, device)
+                        print(d)
+                    except Exception:
+                        traceback.print_exc(file=sys.stdout)
 
             debtcollector.deprecate(
                 "Using function/method 'recover()' is deprecated",
                 removal_version="> 1.1.1",
                 category=UserWarning)
-            self.recover()
-            check_devices(recheck_devices)
+
+            try:
+                self.recover()
+                check_devices(recheck_devices)
+            except Exception:
+                print(
+                    "These are maintenance functions, these should not throw an exception"
+                )
+                traceback.print_exc(file=sys.stdout)
+
             raise
 
     def recover(self):
