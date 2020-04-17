@@ -187,6 +187,7 @@ def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
 @pytest.mark.parametrize("output, expected_ip", [
     (test2_1, "10.64.38.20"),
     (test1_2, "10.15.80.16"),
+    (test1_1, "10.15.80.16"),
     (test2_2, "10.64.38.20"),
     (test3_1, "10.15.80.16"),
     (test4_1, "10.13.0.13"),

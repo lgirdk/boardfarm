@@ -37,10 +37,10 @@ class LinuxDevice(base.BaseDevice):
         '''Get ipv4 address of interface'''
         self.sendline("\nifconfig %s" % interface)
         regex = [
-            r'inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P|broadcast):',
-            r'inet:?(?:\s*addr:)?\s*(' + ValidIpv4AddressRegex +
-            ').*netmask (' + ValidIpv4AddressRegex + ')(.*destination ' +
-            ValidIpv4AddressRegex + ')?'
+            r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
+            r'inet:?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P|Bcast)',
+            'inet (' + ValidIpv4AddressRegex + ').*netmask (' +
+            ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex
         ]
         self.expect(regex)
         ipaddr = self.match.group(1)
