@@ -56,19 +56,24 @@ class LinuxDevice(base.BaseDevice):
         # have an ipv6 address (so we can pick them later)
         # REASON: on some linux based embedded devices the console can be VERY verbose
         # and spurious debug messages can have ipv6 addresses in it
-        output = self.check_output("ifconfig %s | sed 's/inet6 /bft_inet6 /'" %
-                                   interface)
+
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
-        ips = re.compile("|".join(regex), re.M | re.U).findall(output)
+        self.expect(pexpect.TIMEOUT, timeout=1)
+        self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
+        self.expect(self.prompt)
+
+        ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
         for i in ips:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_global:
+                    print("ifconfig {} IPV6 {}".format(interface,
+                                                       str(ipv6_iface.ip)))
                     return str(ipv6_iface.ip)
             except:
                 continue
-        print("ifconfig {} IPV6 {}".format(interface, ips))
+        print("Failed ifconfig {} IPV6 {}".format(interface, ips))
         raise Exception("Did not find non-link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
