@@ -1,6 +1,7 @@
 import ast
 import ipaddress
 import os
+import re
 import time
 import warnings
 import xml.dom.minidom
@@ -155,6 +156,8 @@ class AxirosACS(base_acs.BaseACS):
             return v
 
         def to_dateTime(v):
+            if re.search('^1\s', v):
+                v = v.zfill(len(v) + 3)
             v = datetime.strptime(
                 v, '%Y %m %d %H %M %S.0').strftime('%Y-%m-%dT%H:%M:%S')
             return v
