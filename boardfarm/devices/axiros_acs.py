@@ -928,11 +928,11 @@ class AxirosACS(base_acs.BaseACS):
 
         IPPingArguments_type = self.client.get_type(
             'ns0:IPPingArgumentsStruct')
-        IPPingArguments_data = IPPingArguments_type(NumberOfRepetitions=5,
+        IPPingArguments_data = IPPingArguments_type(NumberOfRepetitions=3,
                                                     Host='wan.boardfarm.com',
                                                     DataBlockSize=1472,
                                                     DSCP=0,
-                                                    Timeout=10000,
+                                                    Timeout=5000,
                                                     Interface='')
         r = None
         with self.client.settings(raw_response=True):
