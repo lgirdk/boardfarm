@@ -445,39 +445,13 @@ class AxirosACS(base_acs.BaseACS):
         :returns: ticketId for set.
         :rtype: string
         """
-        SetParameterValuesParametersClassArray_type = self.client.get_type(
-            'ns0:SetParameterValuesParametersClassArray')
-        SetParameterValuesParametersClassArray_data = SetParameterValuesParametersClassArray_type(
-            [{
-                'key': attr,
-                'value': value
-            }])
-
-        CommandOptionsTypeStruct_type = self.client.get_type(
-            'ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
-
-        CPEIdentifierClassStruct_type = self.client.get_type(
-            'ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
-
-        # get raw soap response (parsing error with zeep)
-        with self.client.settings(raw_response=True):
-            response = self.client.service.SetParameterValues(
-                SetParameterValuesParametersClassArray_data,
-                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
-
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
-
-        if ticketid is None:
+        try:
+            param = {}
+            param[attr] = value
+            return str(self.SPV(param))
+        except Exception as e:
+            print(e)
             return None
-
-        return self.Axiros_GetTicketValue(ticketid)
 
     def Axiros_GetListOfCPEs(self):
         """This method is used to get the list of all devices registered on the ACS server.
