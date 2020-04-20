@@ -54,19 +54,11 @@ class wifi_acs(wifi_stub):
                 table_path = acs_path + "Radio." + self.acs_data['wifi_path'][
                     'Radio_5']
         elif ssid_flag == 1:
-            if "2.4" in wifi_mode:
-                table_path = acs_path + "SSID." + self.acs_data['wifi_path'][
-                    'SSID_2.4']
-            elif "5" in wifi_mode:
-                table_path = acs_path + "SSID." + self.acs_data['wifi_path'][
-                    'SSID_5']
+            table_path = acs_path + "SSID." + self.acs_data['wifi_path'][
+                wifi_mode]
         elif ssid_flag == 2:
-            if "2.4" in wifi_mode:
-                table_path = acs_path + "AccessPoint." + self.acs_data[
-                    'wifi_path']['Access_Point_2.4']
-            elif "5" in wifi_mode:
-                table_path = acs_path + "AccessPoint." + self.acs_data[
-                    'wifi_path']['Access_Point_5']
+            table_path = acs_path + "AccessPoint." + self.acs_data[
+                'wifi_path'][wifi_mode]
         return table_path
 
     def enable_wifi(self, wifi_mode):
@@ -79,7 +71,7 @@ class wifi_acs(wifi_stub):
         :rtype: string or boolean
         """
         # importing self.acs_server for each func, because global import not working
-        table_path = self._check_acspath_spectrum(wifi_mode)
+        table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=1)
         acs_value = self.acs_server.set(self.cpeid,
                                         table_path + '.' + 'Enable', 1)
         # timeout requires for all func as it takes time to set in acs server
