@@ -1,10 +1,8 @@
-import glob
 import ipaddress
 import os
 import re
 import traceback
 
-import boardfarm
 import pexpect
 import six
 from boardfarm.lib.common import retry_on_exception, scp_from
@@ -574,46 +572,6 @@ EOF'''
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
 
-    # adding a docs-string
-    # TODO: this needs to be in boardfarm-docsis.
-    def copy_cmts_provisioning_files(self, board_config):
-        """
-        This method looks for board's config file in all overlays.
-        The file is then encrypted using docsis and pushed to TFTP server.
-
-        args:
-        board_config (dict): requires tftp_cfg_files key in board config.
-        """
-        # Look in all overlays as well, and PATH as a workaround for standalone
-        paths = os.environ['PATH'].split(os.pathsep)
-        paths += [
-            os.path.dirname(boardfarm.plugins[x].__file__)
-            for x in boardfarm.plugins
-        ]
-        cfg_list = []
-
-        if 'tftp_cfg_files' in board_config:
-            for cfg in board_config['tftp_cfg_files']:
-                from boardfarm_docsis.lib.docsis import cm_cfg, mta_cfg
-                if isinstance(cfg, cm_cfg) or isinstance(cfg, mta_cfg):
-                    cfg_list.append(cfg)
-                else:
-                    for path in paths:
-                        cfg_list += glob.glob(path +
-                                              '/devices/cm-cfg/%s' % cfg)
-        else:
-            # TODO: this needs to be removed
-            for path in paths:
-                cfg_list += glob.glob(path + '/devices/cm-cfg/UNLIMITCASA.cfg')
-        cfg_set = set(cfg_list)
-
-        # Copy binary files to tftp server
-        for cfg in cfg_set:
-            from boardfarm_docsis.lib.docsis import docsis
-            d = docsis(cfg, board=self.dev.board)
-            ret = d.encode()
-            self.tftp_device.copy_file_to_server(ret)
-
     # this needs to be cleaned up a bit. Other devices should use this method to configure a dhcp server.
     # e.g. debian won't require start dhcp_server_server method. it should call this static method.
     # this will help in removing reprovision_board at a later time.
@@ -716,7 +674,6 @@ EOF'''
 
             # this is the chunk from reprovision
             self.update_cmts_isc_dhcp_config(board_config)
-            self.copy_cmts_provisioning_files(board_config)
             self._restart_dhcp()
         except Exception as e:
             raise e
