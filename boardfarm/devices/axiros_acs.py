@@ -928,21 +928,17 @@ class AxirosACS(base_acs.BaseACS):
         """
         CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=60)
         CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
+        ScheduleInformArguments_type = self.client.get_type(
+            'ns0:ScheduleInformArgumentsStruct')
+        ScheduleInformArguments_data = ScheduleInformArguments_type(
+            CommandKey='Test', DelaySeconds=20)
 
-        IPPingArguments_type = self.client.get_type(
-            'ns0:IPPingArgumentsStruct')
-        IPPingArguments_data = IPPingArguments_type(NumberOfRepetitions=3,
-                                                    Host='wan.boardfarm.com',
-                                                    DataBlockSize=1472,
-                                                    DSCP=0,
-                                                    Timeout=5000,
-                                                    Interface='')
         r = None
         with self.client.settings(raw_response=True):
-            response = self.client.service.IPPingTest(
+            response = self.client.service.ScheduleInform(
                 CommandOptions=CmdOptTypeStruct_data,
                 CPEIdentifier=CPEIdClassStruct_data,
-                Parameters=IPPingArguments_data)
+                Parameters=ScheduleInformArguments_data)
             r = AxirosACS._get_xml_key(response)[0]['code']['text']
         # Note the 200 is a string here!
         return r == '200'
