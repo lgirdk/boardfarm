@@ -664,25 +664,33 @@ EOF'''
         '''
         Reprovisions current board with new CM cfg
         '''
-        try:
-            self.take_lock('/etc/init.d/isc-dhcp-server.lock')
+        exc_to_raise = None
+        check = False
+        for i in range(3):
+            try:
+                self.take_lock('/etc/init.d/isc-dhcp-server.lock')
 
-            print_config = False
-            if not self.is_env_setup_done:
-                DebianISCProvisioner.setup_dhcp_env(self)
-                print_config = True
+                print_config = False
+                if not self.is_env_setup_done:
+                    DebianISCProvisioner.setup_dhcp_env(self)
+                    print_config = True
 
-            # this is the chunk from reprovision
-            self.update_cmts_isc_dhcp_config(board_config)
-            self._restart_dhcp()
-        except Exception as e:
-            raise e
-        finally:
-            self.sendcontrol('c')
-            self.release_lock('/etc/init.d/isc-dhcp-server.lock')
-            self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
-            self.expect(self.prompt)
-
+                # this is the chunk from reprovision
+                self.update_cmts_isc_dhcp_config(board_config)
+                self._restart_dhcp()
+                check = True
+            except Exception as e:
+                exc_to_raise = e
+                self.expect(pexpect.TIMEOUT, timeout=(i * 20))
+            finally:
+                self.sendcontrol('c')
+                self.release_lock('/etc/init.d/isc-dhcp-server.lock')
+                self.sendline('rm /etc/init.d/isc-dhcp-server.lock')
+                self.expect(self.prompt)
+            if check:
+                break
+        else:
+            raise exc_to_raise
         if print_config:
             self.print_dhcp_config()
 
