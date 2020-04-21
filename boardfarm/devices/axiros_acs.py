@@ -410,21 +410,13 @@ class AxirosACS(base_acs.BaseACS):
         :returns: dictionary with the key, value of the response for the given parameter.
         :rtype: dict
         """
-        ticketid = self.get_ticketId(cpeid, param)
-        for i in range(wait):
-            time.sleep(1)
-            with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(
-                    ticketid)
-            root = ElementTree.fromstring(ticket_resp.content)
-            for value in root.iter('code'):
-                break
-            if (value.text != '200'):
-                continue
-            dict_key_value = {}
-            for key, value in zip(root.iter('key'), root.iter('value')):
-                dict_key_value[key.text] = value.text
+        try:
+            out = self.GPV(param)
+            dict_key_value = {item['key']: item['value'] for item in out}
             return dict_key_value
+        except Exception as e:
+            print(e)
+            return {}
 
     @moves.moved_method('SPV')
     def set(self, cpeid, attr, value):
