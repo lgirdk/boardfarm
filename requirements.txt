@@ -42,5 +42,7 @@ termcolor
 unittest2
 xmltodict
 xvfbwrapper
+yamlfmt
+yamllint
 yapf
 zeep

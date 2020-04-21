@@ -1,37 +1,47 @@
+---
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
-    hooks:
-    -   id: check-ast
-    -   id: end-of-file-fixer
-    -   id: mixed-line-ending
-    -   id: trailing-whitespace
-    -   id: check-docstring-first
-    -   id: check-yaml
-    -   id: check-json
-    -   id: pretty-format-json
-        args: [--autofix, --indent=4]
-    -   id: check-added-large-files
-    -   id: requirements-txt-fixer
--   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.7
-    hooks:
-    -   id: remove-crlf
-    -   id: remove-tabs
-    -   id: forbid-crlf
-    -   id: forbid-tabs
--   repo: https://github.com/timothycrosley/isort
-    rev: '4.3.21'
-    hooks:
-    -   id: isort
-        name: isort
-        entry: isort
-        require_serial: true
-        language: python
-        types: [python]
--   repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.29.0
-    hooks:
-    -   id: yapf
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.4.0
+      hooks:
+          - id: check-ast
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+          - id: trailing-whitespace
+          - id: check-docstring-first
+          - id: check-yaml
+          - id: check-json
+          - id: pretty-format-json
+            args: [--autofix, --indent=4]
+          - id: check-added-large-files
+          - id: requirements-txt-fixer
+    - repo: https://github.com/Lucas-C/pre-commit-hooks
+      rev: v1.1.7
+      hooks:
+          - id: remove-crlf
+          - id: remove-tabs
+          - id: forbid-crlf
+          - id: forbid-tabs
+    - repo: https://github.com/timothycrosley/isort
+      rev: 4.3.21
+      hooks:
+          - id: isort
+            name: isort
+            entry: isort
+            require_serial: true
+            language: python
+            types: [python]
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.0.10
+      hooks:
+          - id: yamlfmt
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.23.0
+      hooks:
+          - id: yamllint
+            args: [--format, parsable, --strict]
+    - repo: https://github.com/pre-commit/mirrors-yapf
+      rev: v0.29.0
+      hooks:
+          - id: yapf
