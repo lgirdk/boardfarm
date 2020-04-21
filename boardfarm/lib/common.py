@@ -319,6 +319,7 @@ def firefox_webproxy_driver(ipport, config):
         profile.set_preference("network.proxy.socks_port", int(port))
         profile.set_preference("security.enterprise_roots.enabled", True)
         profile.set_preference("network.proxy.socks_version", 5)
+        profile.set_preference("network.proxy.socks_remote_dns", True)
     else:
         profile.set_preference("network.proxy.type", 1)
         profile.set_preference("network.proxy.http", ip)
