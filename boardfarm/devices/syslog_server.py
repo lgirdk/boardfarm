@@ -1,22 +1,43 @@
 """Syslog server method."""
 import datetime
 import re
+import sys
 import time
 
+from boardfarm.devices import connection_decider, debian
 
-class SyslogServer(object):
+
+class SyslogServer(debian.DebianBox):
     """Linux based syslog server."""
 
     model = ('syslog')
-    profile = {}
+    name = "syslog_server"
+    prompt = [r".*\@.*:.*\$"]
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
-
         self.syslog_ip = self.kwargs['ipaddr']
         self.syslog_path = self.kwargs.get('syslog_path', '/var/log/BF/')
+        self.username = self.kwargs['username']
+        self.password = self.kwargs['password']
+
+        conn_cmd = "ssh -o \"StrictHostKeyChecking no\" %s@%s" % (
+            self.username, self.syslog_ip)
+
+        self.connection = connection_decider.connection("local_cmd",
+                                                        device=self,
+                                                        conn_cmd=conn_cmd)
+        self.connection.connect()
+        self.linesep = '\r'
+
+        if 0 == self.expect(['assword: '] + self.prompt):
+            self.sendline(self.password)
+            self.expect(self.prompt)
+
+        # Hide login prints, resume after that's done
+        self.logfile_read = sys.stdout
 
     def __str__(self):
         """Return string format.
