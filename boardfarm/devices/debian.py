@@ -66,6 +66,7 @@ class DebianBox(linux.LinuxDevice):
         output = kwargs.pop('output', sys.stdout)
         reboot = kwargs.pop('reboot', False)
         location = kwargs.pop('location', None)
+        self.dev_array = kwargs.pop('dev_array', None)
         pre_cmd_host = kwargs.pop('pre_cmd_host', None)
         cmd = kwargs.pop('cmd', None)
         post_cmd_host = kwargs.pop('post_cmd_host', None)

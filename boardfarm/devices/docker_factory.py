@@ -5,6 +5,7 @@ import os
 import pkgutil
 import re
 import sys
+from collections import defaultdict
 from threading import Lock
 
 import pexpect
@@ -105,6 +106,8 @@ class DockerFactory(linux.LinuxDevice):
             kwargs.pop('password', '626967666f6f7431'), "hex").decode("ascii")
         self.docker_engine = None
         self.network_options = ""
+
+        self.device_counter = defaultdict(int)
 
         # In case json provides its own env, update that to boardfarm.devices.env
         # These are meant to be exported to docker-factory not to docker-engines
@@ -221,7 +224,13 @@ class DockerFactory(linux.LinuxDevice):
         """
         target_img = target['img']
         target_type = target['type']
-        target_cname = target['name'] + '-${uniq_id}'
+        name = target['name']
+
+        counter = self.device_counter
+        counter[name] += 1
+
+        target_cname = target['name'] + '-${uniq_id}' + str(counter[name])
+
         ip = getattr(self, "docker_engine", None)
         if not ip:
             ip = self.ipaddr

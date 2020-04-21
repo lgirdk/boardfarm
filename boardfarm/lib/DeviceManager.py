@@ -55,6 +55,11 @@ class device_type(Enum):
     mac_sniffer = 24
 
 
+class device_array_type(Enum):
+    wan_clients = 1
+    lan_clients = 2
+
+
 class device_location(Enum):
     '''
     Identifiers for how a device is connected to the Device Under Test (DUT).
@@ -145,6 +150,20 @@ class device_manager(UserList):
         '''
         self.devices = x
 
+    def set_device_array(self, array_name, dev):
+        if getattr(device_array_type, array_name, None):
+            dev_array = getattr(self, array_name, [])
+            for i in dev_array:
+                if i.ipaddr == dev.ipaddr:
+                    if i.port == dev.port:
+                        raise Exception(
+                            "Device manager already had a device with same port and ip details."
+                        )
+            dev_array.append(dev)
+            setattr(self, array_name, dev_array)
+        else:
+            raise Exception("Invalid device array type %s" % array_name)
+
     def close_all(self):
         '''Close connections to all devices'''
         for d in self.devices:
@@ -225,17 +244,21 @@ class device_manager(UserList):
         new_dev.obj = dev
         self.devices.append(new_dev)
 
-        # For convenience, set an attribute with a name the same as the
-        # newly added device type. Example: self.lan = the device of type lan
-        attribute_name = new_dev.type.name
-        if attribute_name != 'Unknown' and getattr(self, attribute_name,
-                                                   None) is not None:
-            # device manager already has an attribute of this name
-            raise Exception(
-                "Device Manager already has '%s' attribute, you cannot add another."
-                % attribute_name)
+        array_name = getattr(dev, 'dev_array', None)
+        if array_name:
+            self.set_device_array(array_name, dev)
         else:
-            setattr(self, attribute_name, new_dev.obj)
-            # Alias board to DUT
-            if attribute_name == 'DUT':
-                setattr(self, 'board', new_dev.obj)
+            # For convenience, set an attribute with a name the same as the
+            # newly added device type. Example: self.lan = the device of type lan
+            attribute_name = new_dev.type.name
+            if attribute_name != 'Unknown' and getattr(self, attribute_name,
+                                                       None) is not None:
+                # device manager already has an attribute of this name
+                raise Exception(
+                    "Device Manager already has '%s' attribute, you cannot add another."
+                    % attribute_name)
+            else:
+                setattr(self, attribute_name, new_dev.obj)
+                # Alias board to DUT
+                if attribute_name == 'DUT':
+                    setattr(self, 'board', new_dev.obj)
