@@ -1719,3 +1719,33 @@ def configure_pptpd(server, client):
         "sed -i  's/#require-mppe-128/require-mppe-128/' /etc/ppp/options.pptp"
     )
     client.expect(client.prompt)
+
+
+def curl_page(dev,
+              waddr,
+              opts='-s -L --insecure',
+              expected='<!doctype html>.*</body>\r\n</html>'):
+    """ Diagnostic to see if a page is accessible from a device.
+    The curl output is saved to a file (page.curl) as well as displayed to stdout.
+
+    :Param dev : device to run curl from
+    :type dev : device Object
+    :param waddr : full web address (e.g. https://somesite.com:1234)
+    :type waddr : string
+    :Returns: True (if the reply contained 'expected') or False
+    :rtype: bool
+    """
+    try:
+        dev.sendline("curl {} {} | tee page.curl".format(opts, waddr))
+        dev.expect(expected)
+        dev.expect_prompt()
+        print("Curl from device '{}' url '{}' successful".format(
+            dev.name, waddr))
+    except Exception as e:
+        dev.sendcontrol('c')
+        dev.expect_prompt()
+        print("ERROR: failed to curl from device '{}', url '{}'".format(
+            dev.name, waddr))
+        print(e)
+        return False
+    return True
