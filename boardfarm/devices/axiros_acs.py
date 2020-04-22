@@ -881,6 +881,29 @@ class AxirosACS(base_acs.BaseACS):
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
 
+    def FactoryReset(self):
+        """This method executes FactoryReset RPC.
+        Returns true if FactoryReset request is initiated.
+        Note: This method only informs if the FactoryReset request initiated or not.
+        The wait for the Reeboot of the device has to be handled in the test.
+
+        :return: True for a successful FactoryReset request, False otherwise
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=20)
+        CPEIdClassStruct_data = self._get_class_data(cpeid=self.cpeid)
+
+        r = None
+        with self.client.settings(raw_response=True):
+            response = self.client.service.FactoryReset(
+                CommandOptions=CmdOptTypeStruct_data,
+                CPEIdentifier=CPEIdClassStruct_data)
+            r = AxirosACS._get_xml_key(response)[0]['code']['text']
+        # Note the 200 is a string here!
+        return r == '200'
+
     def connectivity_check(self, cpeid):
         """This method check the connectivity between the ACS and the DUT by
         requesting the DUT to perform a ping to it wan container.
