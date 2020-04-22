@@ -88,23 +88,24 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         except Exception as e:
             exc_to_raise = e
 
-        try:
-            func = getattr(self.__class__, "teardown_class", None)
-            if func:
-                self.teardown_wrapper(func)
-        except Exception as e:
-            print(e)
-            print("This should never happen. TearDown should be fail-safe")
-            traceback.print_exc(file=sys.stdout)
-            if type(exc_to_raise) is boardfarm.exceptions.BootFail:
-                raise exc_to_raise
-            else:
-                raise
-        finally:
-            td = self.td_step
-            if not td.td_result:
-                if 'FAIL' not in self.result_grade:
-                    self.result_grade = "TD FAIL"
+        if self.result_grade != "SKIP":
+            try:
+                func = getattr(self.__class__, "teardown_class", None)
+                if func:
+                    self.teardown_wrapper(func)
+            except Exception as e:
+                print(e)
+                print("This should never happen. TearDown should be fail-safe")
+                traceback.print_exc(file=sys.stdout)
+                if type(exc_to_raise) is boardfarm.exceptions.BootFail:
+                    raise exc_to_raise
+                else:
+                    raise
+            finally:
+                td = self.td_step
+                if not td.td_result:
+                    if 'FAIL' not in self.result_grade:
+                        self.result_grade = "TD FAIL"
 
         self.endMarker()
         if exc_to_raise:
