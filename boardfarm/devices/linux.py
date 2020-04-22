@@ -78,9 +78,8 @@ class LinuxDevice(base.BaseDevice):
 
     def get_interface_macaddr(self, interface):
         '''Get the interface macaddress'''
-        self.sendline(
-            "cat /sys/class/net/%s/address | awk '{print \"bft_macaddr : \"$1}'"
-            % interface)
+        self.sendline("cat /sys/class/net/{}/address | \\".format(interface))
+        self.sendline("awk '{print \"bft_macaddr : \"$1}'")
         self.expect("bft_macaddr : {}".format(LinuxMacFormat))
         macaddr = self.match.group(1)
         self.expect(self.prompt)
