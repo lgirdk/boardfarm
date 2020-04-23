@@ -58,9 +58,12 @@ class LinuxDevice(base.BaseDevice):
         # and spurious debug messages can have ipv6 addresses in it
 
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
-        self.expect(pexpect.TIMEOUT, timeout=1)
+        self.expect(pexpect.TIMEOUT, timeout=0.5)
+        self.before = ''
+
         self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
         self.expect(self.prompt)
+        print(self.before)
 
         ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
         for i in ips:

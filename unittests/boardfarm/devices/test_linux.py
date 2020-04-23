@@ -148,19 +148,22 @@ def test_get_interface_ip6addr(mocker, output, expected_ip):
                         return_value=output,
                         autospec=True)
     mocker.patch.object(LinuxDevice,
-                        "sendline",
-                        return_value=output,
+                        "__init__",
+                        return_value=None,
                         autospec=True)
     mocker.patch.object(LinuxDevice,
                         "expect",
                         return_value=None,
                         autospec=True)
     mocker.patch.object(LinuxDevice,
-                        "__init__",
+                        "sendline",
                         return_value=None,
                         autospec=True)
+
     dev = LinuxDevice()
-    dev.before = output
+    #set mocker property
+    type(dev).before = mocker.PropertyMock(return_value=output)
+
     assert expected_ip == dev.get_interface_ip6addr("erouter0")
 
 
