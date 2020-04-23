@@ -23,8 +23,7 @@ from easysnmp import Session
 
 
 def get_default_for_arg(function, arg):
-    args, varargs, keywords, defaults = inspect.getargspec(function)
-    return defaults
+    return inspect.getfullargspec(function)[3]
 
 
 try:
