@@ -262,10 +262,12 @@ class AxirosACS(base_acs.BaseACS):
             e.faultdict = \
                 ast.literal_eval(msg[msg.index('{'):])
             raise e
-
-        # assumes if details is present then item is too (bad?)
-        # sometimes 'item' is not in the dict, more testing required
-        return AxirosACS._parse_xml_response(result['details']['item'])
+        #'item' is not present in FactoryReset RPC response
+        if 'item' in result['details']:
+            return AxirosACS._parse_xml_response(result['details']['item'])
+        else:
+            #Assumes that message is always present
+            return result['message']['text']
 
     def _get_cmd_data(self, *args, **kwagrs):
         """Helper method that returns CmdOptTypeStruct_data
@@ -887,7 +889,7 @@ class AxirosACS(base_acs.BaseACS):
         Note: This method only informs if the FactoryReset request initiated or not.
         The wait for the Reeboot of the device has to be handled in the test.
 
-        :return: True for a successful FactoryReset request, False otherwise
+        :return: returns factory reset response
         """
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
@@ -895,14 +897,11 @@ class AxirosACS(base_acs.BaseACS):
         CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=20)
         CPEIdClassStruct_data = self._get_class_data(cpeid=self.cpeid)
 
-        r = None
         with self.client.settings(raw_response=True):
             response = self.client.service.FactoryReset(
                 CommandOptions=CmdOptTypeStruct_data,
                 CPEIdentifier=CPEIdClassStruct_data)
-            r = AxirosACS._get_xml_key(response)[0]['code']['text']
-        # Note the 200 is a string here!
-        return r == '200'
+        return AxirosACS._parse_soap_response(response)
 
     def connectivity_check(self, cpeid):
         """This method check the connectivity between the ACS and the DUT by
