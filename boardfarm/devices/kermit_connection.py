@@ -59,9 +59,10 @@ class KermitConnection():
     def close(self):
         """Closes the pexpect session to the device
         """
-        self.device.sendcontrol('\\')
-        self.device.sendline('c')
-        self.device.expect(self.prompt)
-        self.device.sendline('q')
-        self.device.expect(r'OK to exit\?')
-        self.device.sendline('y')
+        self.sendcontrol('\\')
+        self.sendline('c')
+        self.expect(self.prompt)
+        self.sendline('q')
+        self.expect(r'OK to exit\?')
+        self.sendline('y')
+        super(type(self), self).close()

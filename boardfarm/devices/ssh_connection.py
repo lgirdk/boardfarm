@@ -60,4 +60,5 @@ class SshConnection:
         :param self: self object
         :type self: object
         """
-        self.device.sendline('exit')
+        self.sendline('exit')
+        super(type(self), self).close()

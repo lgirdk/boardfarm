@@ -17,24 +17,34 @@ def connection(conn_type, device, **kwargs):
     :return: :class:`Response <Response>` object of class type used for connection
     :rtype: object
     """
+    out = None
     if conn_type is None or conn_type in ("local_cmd"):
-        return local_cmd.LocalCmd(device=device, **kwargs)
+        out = local_cmd.LocalCmd(device=device, **kwargs)
 
     if conn_type in ("ser2net"):
-        return ser2net_connection.Ser2NetConnection(device=device, **kwargs)
+        out = ser2net_connection.Ser2NetConnection(device=device, **kwargs)
 
     if conn_type in ("local_serial"):
-        return local_serial_connection.LocalSerialConnection(device=device,
-                                                             **kwargs)
+        out = local_serial_connection.LocalSerialConnection(device=device,
+                                                            **kwargs)
 
     if conn_type in ("ssh"):
-        return ssh_connection.SshConnection(device=device, **kwargs)
+        out = ssh_connection.SshConnection(device=device, **kwargs)
 
     if conn_type in ("kermit_cmd"):
-        return kermit_connection.KermitConnection(device=device, **kwargs)
+        out = kermit_connection.KermitConnection(device=device, **kwargs)
 
-    # Default for all other models
-    print("\nWARNING: Unknown connection type  '%s'." % type)
-    print("Please check spelling, or write an appropriate class "
-          "to handle that kind of board.")
-    return ser2net_connection.Ser2NetConnection(**kwargs)
+    if not out:
+        # Default for all other models
+        print("\nWARNING: Unknown connection type  '%s'." % type)
+        print("Please check spelling, or write an appropriate class "
+              "to handle that kind of board.")
+        out = ser2net_connection.Ser2NetConnection(**kwargs)
+
+    if hasattr(out, 'close'):
+        unbound_method = out.close.__func__
+        bounded_method = unbound_method.__get__(out.device,
+                                                out.device.__class__)
+        setattr(out.device, 'close', bounded_method)
+
+    return out

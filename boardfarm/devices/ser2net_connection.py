@@ -19,6 +19,7 @@ class Ser2NetConnection():
         """
         self.device = device
         self.conn_cmd = conn_cmd
+        self.device.conn_cmd = conn_cmd
 
     def connect(self):
         """Connects to the board/station using telnet.
@@ -43,7 +44,16 @@ class Ser2NetConnection():
         if result == 0:
             raise Exception("Password required and not supported")
 
-    def close(self):
+    def close(self, force=True):
         """Closes the connection
         """
-        self.device.sendline("~.")
+        try:
+            if 'telnet' in self.conn_cmd:
+                self.sendcontrol(']')
+                self.sendline('q')
+            else:
+                self.sendline("~.")
+        except:
+            self.sendline("~.")
+        finally:
+            super(type(self), self).close()

@@ -21,6 +21,7 @@ class LocalCmd():
         """
         self.device = device
         self.conn_cmd = conn_cmd
+        self.device.conn_cmd = conn_cmd
 
     def connect(self):
         """This method is used to connect to the device
@@ -37,7 +38,16 @@ class LocalCmd():
             raise boardfarm.exceptions.ConnectionRefused(
                 "Board is in use (connection refused).")
 
-    def close(self):
+    def close(self, force=True):
         """closes the pexpect session to the device
         """
-        self.device.sendcontrol('c')
+        try:
+            if 'telnet' in self.conn_cmd:
+                self.sendcontrol(']')
+                self.sendline('q')
+            else:
+                self.sendcontrol('c')
+        except:
+            pass
+        finally:
+            super(type(self), self).close()

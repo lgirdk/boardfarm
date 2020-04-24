@@ -43,4 +43,5 @@ class LocalSerialConnection():
     def close(self):
         """closes the pexpect session to the device
         """
-        self.device.sendline("~.")
+        self.sendline("~.")
+        super(type(self), self).close()
