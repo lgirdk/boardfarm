@@ -440,9 +440,10 @@ EOF'''
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config['extra_provisioning'].items():
-            # skip only erouter for ipv6/bridge only
+            # skip only erouter for ipv6/disabled only
             if self.dev.board.cm_cfg.cm_configmode in (
-                    'bridge', 'dslite', "ipv6") and dev == 'erouter':
+                    'bridge', 'disabled', 'dslite',
+                    "ipv6") and dev == 'erouter':
                 continue
             self.sendline("echo 'host %s-%s {' >> %s" %
                           (dev, board_config.get_station(), cfg_file))
