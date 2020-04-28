@@ -13,6 +13,7 @@ import re
 import socket
 import sys
 import time
+import warnings
 
 import requests
 from boardfarm.lib.common import run_once
@@ -45,6 +46,15 @@ class BoardfarmWebClient(object):
                                          os.environ.get('USER', None),
                              'build_url': os.environ.get('BUILD_URL', None)
                             }
+        if self.default_data['username'] in [
+                'root', 'testuser', 'tester', 'docker-factory', 'boardfarm'
+        ]:
+            print('\x1b[6;30;42m' +
+                  '------------Username {} will be blacklisted-----------'.
+                  format(self.default_data['username']) + '\x1b[0m')
+            warnings.warn(
+                "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' will be blacklisted soon. It is recommended to use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."
+            )
         try:
             res = requests.get(self.config_url,
                                headers=self.headers,
