@@ -675,7 +675,7 @@ def install_jmeter(device):
         device.sendline('rm apache-jmeter-*')
 
 
-def install_IRCserver(device):
+def install_IRCserver(device, remove=False):
     """Install irc server if not present.
     Internet Relay Chat (IRC) is an application layer protocol
     that facilitates communication in the form of text.
@@ -683,7 +683,14 @@ def install_IRCserver(device):
 
     :param device: lan or wan
     :type device: Object
+    :param remove: If True remove inspircd application installed, defaults to False
+    :type remove: Boolean, optional
     """
+    if remove:
+        device.check_output(
+            "service inspircd stop; killall inspircd; apt-get --purge remove inspircd -y"
+        )
+        return
     device.sendline('inspircd --version')
     try:
         device.expect('InspIRCd-', timeout=5)

@@ -1749,3 +1749,46 @@ def curl_page(dev,
         print(e)
         return False
     return True
+
+
+def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
+    ''' #TODO: This method is strictly for IRC test cases.
+
+    Communicate between two IRC clients given IRC server
+    and clients are configured
+    :param client1: lan or wan or wlan
+    :type client1: Object
+    :param client2: lan or wan or wlan
+    :type client2: Object
+    :param client1_scriptname: Python script file in IRC client used to
+                               connect to server
+    :type client1_scriptname: File object
+    :param client2_scriptname: Python script file in IRC client used to
+                               connect to server
+    :type client2_scriptname: File object
+    '''
+    try:
+        for client in [client1, client2]:
+            s_name, c = ((client1_scriptname,
+                          "client1") if client == client1 else
+                         (client2_scriptname, "client2"))
+            client.sendline("python %s" % s_name)
+            index = client.expect(['JOIN :#channel'] +
+                                  ['#channel :End of /NAMES list.'] +
+                                  client.prompt,
+                                  timeout=300)
+            assert index <= 1, "Connect {} to server failed".format(c)
+        communicationstatus = client2.expect(['connection success'] +
+                                             client2.prompt,
+                                             timeout=100)
+        assert communicationstatus == 0, \
+                "Communication between the IRC clients using the IRC server: PASS"
+    except Exception as e:
+        client2.sendcontrol('c')
+        client2.expect_prompt()
+        client1.sendcontrol('c')
+        client1.expect_prompt()
+        print("IRC communicate Failed.")
+        print(e)
+        return False
+    return True
