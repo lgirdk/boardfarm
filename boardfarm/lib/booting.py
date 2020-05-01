@@ -16,7 +16,7 @@ warnings.simplefilter("always", UserWarning)
 
 @run_once
 def flash_meta_helper(board, meta, wan, lan):
-    board.flash_meta(meta, wan, lan)
+    board.flash_meta(meta, wan, lan, check_version=True)
 
 
 def flash_image(config,
@@ -123,7 +123,6 @@ def boot(config, env_helper, devices, reflash=True, logged=dict()):
     board = devices.board
     wan = devices.wan
     lan = devices.lan
-
     tftp_device, tftp_servers = get_tftp(config)
     logged['boot_step'] = "tftp_device_assigned"
 
