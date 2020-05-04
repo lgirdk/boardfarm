@@ -369,7 +369,7 @@ if __name__ == '__main__':
 
         mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'
                      ]  # this is the list of mib/txt files to be compiled
-        srcDirectories = [
+        src_directories = [
             '/usr/share/snmp/mibs'
         ]  # this needs to point to the mibs directory location
         snmp_obj = None  # will hold an instance of the  SnmpMibs class
@@ -389,12 +389,12 @@ if __name__ == '__main__':
 
             # where the .mib files are located
             if mibs_location:
-                self.srcDirectories = mibs_location
+                self.src_directories = mibs_location
 
-            if type(self.srcDirectories) != list:
-                self.srcDirectories = [self.srcDirectories]
+            if type(self.src_directories) != list:
+                self.src_directories = [self.src_directories]
 
-            for d in self.srcDirectories:
+            for d in self.src_directories:
                 if not os.path.exists(str(d)):
                     msg = 'No mibs directory {} found test_SnmpHelper.'.format(
                         str(d))
@@ -405,10 +405,10 @@ if __name__ == '__main__':
 
             if SnmpMibsUnitTest.test_singleton:
                 self.snmp_obj = SnmpMibs.get_mib_parser(
-                    self.mib_files, self.srcDirectories)
+                    self.mib_files, self.src_directories)
                 print("Using class singleton: %r" % self.snmp_obj)
             else:
-                self.snmp_obj = SnmpMibs(self.mib_files, self.srcDirectories)
+                self.snmp_obj = SnmpMibs(self.mib_files, self.src_directories)
                 print("Using object instance: %r" % self.snmp_obj)
 
             if mibs:
