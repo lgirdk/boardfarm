@@ -318,8 +318,8 @@ class SnmpMibsUnitTest(object):
 
     mib_files = ['DOCS-CABLE-DEVICE-MIB', 'DOCS-IETF-BPI2-MIB'
                  ]  # this is the list of mib/txt files to be compiled
-    srcDirectories = ['/tmp/boardfarm-docsis/mibs'
-                      ]  # this needs to point to the mibs directory location
+    src_directories = ['/tmp/boardfarm-docsis/mibs'
+                       ]  # this needs to point to the mibs directory location
     snmp_obj = None  # will hold an instance of the  SnmpMibs class
 
     def __init__(self,
@@ -337,27 +337,27 @@ class SnmpMibsUnitTest(object):
 
         # where the .mib files are located
         if mibs_location:
-            self.srcDirectories = mibs_location
+            self.src_directories = mibs_location
 
-        if type(self.srcDirectories) != list:
-            self.srcDirectories = [self.srcDirectories]
+        if type(self.src_directories) != list:
+            self.src_directories = [self.src_directories]
 
-        for d in self.srcDirectories:
+        for d in self.src_directories:
             if not os.path.exists(str(d)):
                 msg = 'No mibs directory {} found test_SnmpHelper.'.format(
-                    str(self.srcDirectories))
+                    str(self.src_directories))
                 raise Exception(msg)
 
         if files:
             self.mib_files = files
 
         self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(
-            self.mib_files, self.srcDirectories)
+            self.mib_files, self.src_directories)
         print("Using class singleton: %r" % self.snmp_obj)
 
         # the SAME object should be returned, NOT A NEW/DIFFERENT ONE!!!!!
         assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(
-            self.mib_files, self.srcDirectories
+            self.mib_files, self.src_directories
         ), "SnmpHelper.SnmpMibs.get_mib_parser returned a NEW/different object. FAILED"
         print(
             "SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
