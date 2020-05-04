@@ -250,7 +250,6 @@ def create_file_logs(config, board, tests_to_run, logger):
                 })
             except:
                 logger.debug("Failed to parse log line = %s" % repr(line))
-                pass
 
     idx = 1
     console_combined = []
