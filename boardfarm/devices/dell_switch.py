@@ -32,7 +32,7 @@ class DellSwitch(base.BaseDevice):
         '''
         Connect and login to switch.
         '''
-        for i in range(10):
+        for _ in range(10):
             self.sendline('exit')
             if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5):
                 self.sendline('enable')
