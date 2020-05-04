@@ -33,10 +33,10 @@ class AFTR(object):
         self.ipv6_ep = ipaddress.IPv6Interface(
             six.text_type(kwargs.get("ipv6_ep", "2001::1/48")))
         # Open gateway subnets need to be in this ACL.
-        self.ipv6_ACL = [
+        self.ipv6_acl = [
             str(self.ipv6_ep.network),
             str(self.ipv6_interface.network)
-        ] + kwargs.get("ipv6_ACL", ["2001:dead:beef::/48"])
+        ] + kwargs.get("ipv6_acl", ["2001:dead:beef::/48"])
 
         # this address will double NAT to WAN container's public IP
         self.ipv4_nat = ipaddress.IPv4Interface(
@@ -157,7 +157,7 @@ class AFTR(object):
             ("pcp %s tcp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
             ("pcp %s udp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
             ("#All IPv6 ACLs\n",
-             "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_ACL)))
+             "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_acl)))
         ])
 
         for k, v in self.aftr_conf.items():
