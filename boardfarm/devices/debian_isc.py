@@ -715,7 +715,7 @@ EOF'''
                 "NOTE: not starting IPv6 because this provisioner is not setup properly"
             )
 
-        for not_used in range(match_num):
+        for _ in range(match_num):
             self.expect(matching)
             match_num -= 1
         self.expect(self.prompt)
