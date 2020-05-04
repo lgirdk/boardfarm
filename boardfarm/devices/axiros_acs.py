@@ -529,7 +529,7 @@ class AxirosACS(base_acs.BaseACS):
         :returns: ACS response text / None.
         :rtype: string/None
         """
-        for i in range(wait):
+        for _ in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
                 ticket_resp = self.client.service.get_generic_sb_result(
@@ -594,7 +594,7 @@ class AxirosACS(base_acs.BaseACS):
         if ticketid is None:
             return None
 
-        for i in range(8):
+        for _ in range(8):
             time.sleep(1)
             with self.client.settings(raw_response=True):
                 ticket_resp = self.client.service.get_generic_sb_result(
@@ -706,7 +706,7 @@ class AxirosACS(base_acs.BaseACS):
         if ticketid is None:
             return None
 
-        for i in range(wait):
+        for _ in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
                 ticket_resp = self.client.service.get_generic_sb_result(
@@ -788,7 +788,7 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.GetLogMessagesOfCPE(
                 CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
 
-        for i in range(wait):
+        for _ in range(wait):
             time.sleep(1)
             root = ElementTree.fromstring(response.content)
             for value in root.iter('code'):
@@ -826,7 +826,7 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.DeleteLogMessagesOfCPE(
                 CPEIdentifierClassStruct_data)
 
-        for i in range(wait):
+        for _ in range(wait):
             time.sleep(1)
             root = ElementTree.fromstring(response.content)
             for value in root.iter('code'):
