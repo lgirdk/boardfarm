@@ -27,7 +27,7 @@ class PerfPerPktTest(iperf_test.iPerfTest):
     def perf_events(self):
         return ["cycles", "instructions", "dcache_misses", "icache_misses"]
 
-    def runTest(self, client, client_name="br-lan"):
+    def runTest(self, client=None, client_name="br-lan"):
         board = self.dev.board
         wan = self.dev.wan
         client = self.dev.lan
