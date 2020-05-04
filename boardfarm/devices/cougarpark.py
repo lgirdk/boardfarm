@@ -91,7 +91,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.send(KEY_UP)
         self.send(KEY_UP)
         self.send(KEY_UP)
-        for i in range(1, index):
+        for _ in range(1, index):
             self.send(KEY_DOWN)
         self.sendline()
         self.send(KEY_F4)
