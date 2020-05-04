@@ -191,7 +191,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         :return: True or False
         :rtype: boolean
         """
-        for i in range(5):
+        for _ in range(5):
             self.wifi_connect(ssid_name, password)
             self.expect(pexpect.TIMEOUT, timeout=10)
             verify_connect = self.wifi_connectivity_verify()
