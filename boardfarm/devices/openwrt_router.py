@@ -481,7 +481,6 @@ class OpenWrtRouter(linux.LinuxDevice):
                         if i == 4:
                             print_bold("FAILED TO KILL MPSTAT!")
                             pp.sendcontrol('c')
-                        pass
 
                 pp.sendline('mpstat -P ALL 5  > %s/mpstat &' % self.tmpdir)
                 if 0 == pp.expect(['mpstat: not found'] + pp.prompt):
