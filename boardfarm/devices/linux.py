@@ -371,7 +371,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         '''Get the total number of connections in the network'''
         pp = self.get_pp_dev()
 
-        for not_used in range(5):
+        for _ in range(5):
             try:
                 pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
                 pp.expect_exact(
@@ -392,7 +392,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         if pp is None:
             pp = self.get_pp_dev()
 
-        for not_used in range(5):
+        for _ in range(5):
             try:
                 pp.sendline('cat /proc/vmstat')
                 pp.expect_exact('cat /proc/vmstat')
@@ -412,7 +412,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
     def wait_for_network(self):
         '''Wait until network interfaces have IP Addresses.'''
         for interface in [self.wan_iface, self.lan_iface]:
-            for i in range(5):
+            for _ in range(5):
                 try:
                     if interface is not None:
                         ipaddr = self.get_interface_ipaddr(interface).strip()
