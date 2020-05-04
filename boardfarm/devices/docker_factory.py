@@ -189,7 +189,7 @@ class DockerFactory(linux.LinuxDevice):
                     (self.dev.env['DOCKER_HOST']))
 
         prefix = "ssh %s " % self.docker_engine if self.docker_engine else ""
-        for i in range(10):
+        for _ in range(10):
             self.sendline('%sifconfig %s' % (prefix, self.iface))
             self.expect(self.prompt)
             if 'error fetching interface information: Device not found' not in self.before or prefix:
