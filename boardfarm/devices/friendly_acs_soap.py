@@ -131,7 +131,6 @@ class FriendlyACS():
 
     def delete_cpe(self, cpeid):
         print("WARN: not impl for this class")
-        pass
 
 
 if __name__ == '__main__':
