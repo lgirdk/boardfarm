@@ -51,7 +51,7 @@ class BaseDevice(bft_pexpect_helper):
         else:
             exp = [wan, lan]
 
-        for x in range(0, len(exp)):
+        for _ in range(0, len(exp)):
             i = self.expect(exp)
             if i == 0:  # parse wan stats
                 self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
@@ -129,7 +129,7 @@ class BaseDevice(bft_pexpect_helper):
         if not break_into_uboot:
             self.power.reset()
             return
-        for attempt in range(3):
+        for _ in range(3):
             try:
                 self.power.reset()
                 self.expect('U-Boot', timeout=30)
