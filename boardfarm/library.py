@@ -175,7 +175,6 @@ def process_test_results(raw_test_results, golden={}):
             except:
                 message = "Missing description of class (no docstring)"
                 print_bold("WARN: Please add docstring to %s." % cls)
-                pass
 
         long_message = getattr(cls, 'long_result_message', "")
 
@@ -196,7 +195,6 @@ def process_test_results(raw_test_results, golden={}):
                                       prefix=x.__class__.__name__ + "-")
         except Exception as e:
             print("Failed to parse test result: %s" % e)
-            pass
 
     full_results['tests_total'] = len(raw_test_results)
     return full_results
