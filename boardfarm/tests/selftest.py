@@ -51,7 +51,6 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             common.copy_file_to_server(cmd, wan.password, "/tmp")
         except:
             print("Copy failed as expected")
-            pass
 
         cmd = "cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"cat - > %s; echo %s\""\
               % (fname, wan.port, wan.username, wan.ipaddr, fname, fname)
