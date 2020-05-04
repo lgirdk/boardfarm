@@ -877,7 +877,7 @@ class DebianBox(linux.LinuxDevice):
         # TODO: don't hard code eth0
         self.sendline('ip route del default dev eth0')
         self.expect(self.prompt)
-        for attempt in range(3):
+        for _ in range(3):
             try:
                 self.sendline('dhclient -4 -v %s' % self.iface_dut)
                 if 0 == self.expect(['DHCPOFFER'] + self.prompt, timeout=30):
