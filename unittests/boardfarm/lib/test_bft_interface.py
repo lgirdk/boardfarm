@@ -9,8 +9,6 @@ class Dummy:
     def check_output(self, cmd):
         pass
 
-    pass
-
 
 out_str1 = '''(venv3) testuser@sree-VirtualBox:~/Sreelekshmi/boardfarm/unittests/boardfarm/lib$ ip a show dev enp0s3
 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
