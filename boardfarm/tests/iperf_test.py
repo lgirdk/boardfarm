@@ -55,7 +55,7 @@ class iPerfTest(rootfs_boot.RootFSBootTest):
 
     def parse_iperf(self, client, connections=conns, t=time):
         rate = 0.0
-        for i in range(0, connections):
+        for _ in range(0, connections):
             m = client.expect(['Bytes([^M]*)Mbits', 'Bytes([^K]*)Kbits'],
                               timeout=t + 30)
             if m == 0:
