@@ -152,7 +152,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
     def tftp_get_file_uboot(self, loadaddr, filename, timeout=60):
         '''Within u-boot, download file from tftp server.'''
-        for attempt in range(3):
+        for _ in range(3):
             try:
                 self.sendline('help')
                 self.expect_exact('help')
@@ -223,7 +223,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         variables needed for flashing.
         '''
         # Try to break into uboot
-        for attempt in range(4):
+        for _ in range(4):
             try:
                 self.expect('U-Boot', timeout=30)
                 i = self.expect(['Hit any key ', 'gpio 17 value 1'] +
@@ -431,7 +431,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
     def wait_for_mounts(self):
         '''wait for overlay to finish mounting'''
-        for i in range(5):
+        for _ in range(5):
             try:
                 board.sendline('mount')
                 board.expect_exact('overlayfs:/overlay on / type overlay',
@@ -506,7 +506,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.stats.remove('mpstat')
 
         idx = 0
-        for not_used in range(len(self.stats)):
+        for _ in range(len(self.stats)):
             pp.sendline('fg')
             pp.expect(self.stats)
             if 'mpstat' in pp.match.group():
