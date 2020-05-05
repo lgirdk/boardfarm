@@ -225,7 +225,7 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
     :type wlan_iface: string
     :raises: Assert Exception
     """
-    for i in range(num_tries):
+    for _ in range(num_tries):
         time.sleep(sleep)
         essid, channel, rate, freq = wifi_get_info(board, wlan_iface)
         if "ath" in wlan_iface and rate > 0:
