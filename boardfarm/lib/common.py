@@ -216,7 +216,7 @@ class socks5_proxy_helper(object):
         from random import randrange
         self.socks5_ip = None
         self.socks5_pexpect = None
-        for unused in range(retries):
+        for _ in range(retries):
             try:
                 self.socks5_port = randrange(start_port, end_port)
                 if "BFT_DEBUG" in os.environ:
@@ -577,7 +577,7 @@ def start_ipbound_httpsservice(device,
     device.sendline(
         "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
     )
-    for i in range(10):
+    for _ in range(10):
         if device.expect([re.escape("]:"),
                           re.escape("Email Address []:")]) > 0:
             device.sendline()
@@ -649,7 +649,7 @@ def start_ip6bound_httpsservice(device,
     device.sendline(
         "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
     )
-    for i in range(10):
+    for _ in range(10):
         if device.expect([re.escape("]:"),
                           re.escape("Email Address []:")]) > 0:
             device.sendline()
@@ -989,7 +989,7 @@ def retry(func_name, max_retry, *args):
     :rtype: Boolean (True/False) or None Type(None)
     """
     output = None
-    for i in range(max_retry):
+    for _ in range(max_retry):
         output = func_name(*args)
         if output and output != 'False':
             return output
@@ -1220,7 +1220,7 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
     :rtype: String
     :raises Exception: Exception thrown on copy file failed
     """
-    for attempt in range(5):
+    for _ in range(5):
         try:
             print_bold(cmd)
             p = bft_pexpect_helper.spawn(command='/bin/bash',
@@ -1525,7 +1525,7 @@ def http_service_kill(device, process):
     :param process: http or https
     :type process: String
     """
-    for i in range(3):
+    for _ in range(3):
         device.sendcontrol('c')
         device.expect_prompt()
     device.sendline("ps -elf | grep %s" % process)
@@ -1586,7 +1586,7 @@ def openssl_verify(device, ip_address, port, options=""):
     try:
         device.expect_prompt()
     except:
-        for i in range(3):
+        for _ in range(3):
             device.sendcontrol('c')
             device.expect_prompt()
     return output
@@ -1668,7 +1668,7 @@ def configure_ovpn(self, server, client, client_name, ip_version):
     install_ovpn_server(server, _user=client_name, _ip=ip_version)
     server.sendline('ls ./' + client_name + '.ovpn')
     flag = False
-    for i in range(2):
+    for _ in range(2):
         flag = server.expect(['No such file or directory', pexpect.TIMEOUT],
                              timeout=5) == 0
         server.expect(server.prompt, timeout=60)
