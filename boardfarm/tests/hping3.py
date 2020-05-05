@@ -28,7 +28,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         lan.expect('HPING')
 
         self.max_conns = 0
-        for not_used in range(10):
+        for _ in range(10):
             self.max_conns = max(self.max_conns,
                                  board.get_nf_conntrack_conn_count())
             board.get_proc_vmstat()
