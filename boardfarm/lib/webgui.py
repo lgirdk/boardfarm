@@ -312,7 +312,7 @@ class web_gui():
         """
         # wait for possible redirects to settle down
         url = self.driver.current_url
-        for i in range(10):
+        for _ in range(10):
             time.sleep(5)
             if url == self.driver.current_url:
                 break
