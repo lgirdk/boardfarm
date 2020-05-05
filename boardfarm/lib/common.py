@@ -27,7 +27,6 @@ from boardfarm.lib.installers import (install_ovpn_client, install_ovpn_server,
                                       install_pptpd_server)
 from boardfarm.lib.SnmpHelper import SnmpMibs
 from selenium import webdriver
-from selenium.webdriver.common import proxy
 from termcolor import cprint
 
 from .installers import install_pysnmp
@@ -411,8 +410,6 @@ def get_webproxy_driver(ipport, config):
             # this should never happen
             msg = msg + "(no default value set, please check boardfarm/config.py)"
         raise Exception(msg)
-
-    print("Using proxy %s, webdriver: %s" % (proxy, config.default_web_driver))
 
 
 def test_msg(msg):
