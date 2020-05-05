@@ -44,7 +44,7 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         self.power.reset()
 
         self.expect_exact('General initialization - Version: 1.0.0')
-        for not_used in range(10):
+        for _ in range(10):
             self.expect(pexpect.TIMEOUT, timeout=0.1)
             self.sendline('echo FOO')
             if 0 != self.expect([pexpect.TIMEOUT] + ['echo FOO'], timeout=0.1):
