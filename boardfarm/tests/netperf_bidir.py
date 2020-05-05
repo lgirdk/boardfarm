@@ -19,12 +19,12 @@ class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
         num_conns = 1
 
         up = down = 0.0
-        for i in range(0, num_conns):
+        for _ in range(0, num_conns):
             self.run_netperf_cmd(lan, "192.168.0.1 -c -C -l 30 -- %s" % opts)
             self.run_netperf_cmd(
                 lan, "192.168.0.1 -c -C -l 30 -t TCP_MAERTS -- %s" % opts)
 
-        for i in range(0, num_conns):
+        for _ in range(0, num_conns):
             up += float(self.run_netperf_parse(lan))
             down += float(self.run_netperf_parse(lan))
 
