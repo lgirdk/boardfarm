@@ -40,7 +40,7 @@ def flash_image(config,
         board.wait_for_boot()
         board.setup_uboot_network(tftp_device.gw)
         if config.META_BUILD:
-            for attempt in range(3):
+            for _ in range(3):
                 try:
                     if config.META_BUILD:
                         flash_meta_helper(board, config.META_BUILD, wan, lan)
@@ -184,7 +184,7 @@ def boot(config, env_helper, devices, reflash=True, logged=dict()):
     linux_booted_seconds_up = board.get_seconds_uptime()
     # Retry setting up wan protocol
     if config.setup_device_networking:
-        for i in range(2):
+        for _ in range(2):
             time.sleep(10)
             try:
                 if "pppoe" in config.WAN_PROTO:
@@ -199,7 +199,7 @@ def boot(config, env_helper, devices, reflash=True, logged=dict()):
 
     # Give other daemons time to boot and settle
     if config.setup_device_networking:
-        for i in range(5):
+        for _ in range(5):
             board.get_seconds_uptime()
             time.sleep(5)
 
