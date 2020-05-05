@@ -171,8 +171,6 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
 
         continue
 
-        logger.debug("Unknown device type for %s" % device)
-
     config.board['devices'].extend(dynamic_devices)
 
 
