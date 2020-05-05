@@ -236,7 +236,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         else:
             tout = 180
 
-        for t in range(0, tout, 10):
+        for _ in range(0, tout, 10):
             self.sendline()
             i = self.expect([pexpect.TIMEOUT, 'login:'] + self.prompt,
                             timeout=10)
