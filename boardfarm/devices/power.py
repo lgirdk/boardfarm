@@ -206,7 +206,7 @@ class SentrySwitchedCDU(PowerDevice):
     def reset(self, retry_attempts=2):
         '''Connect to pdu, send reboot command.'''
         print("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
-        for attempt in range(retry_attempts):
+        for _ in range(retry_attempts):
             try:
                 pcon = self.__connect()
                 pcon.sendline('reboot .a%s' % self.outlet)
