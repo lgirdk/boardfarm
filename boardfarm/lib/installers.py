@@ -806,7 +806,7 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
         output = shim if shim else ""
         device.sendline('%s ./openvpn-install.sh' % output)
         device.expect('IP address:.*', timeout=120)
-        for i in range(20):
+        for _ in range(20):
             device.sendcontrol('h')
         device.sendline(str(dev_ip))
         device.expect('Public IPv4 address or hostname:.*')
@@ -968,7 +968,7 @@ def install_postfix(device):
             device.expect(device.prompt, timeout=300)
         else:
             print("Failed to download packages, things might not work")
-            for i in range(3):
+            for _ in range(3):
                 device.sendcontrol('c')
                 device.expect(device.prompt, timeout=10)
             device.sendline("cat /etc/resolv.conf")
