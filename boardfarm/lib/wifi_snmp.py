@@ -224,7 +224,7 @@ class wifi_snmp(wifi_stub):
             'i',
             '1',
         ))
-        for i in range(4):
+        for _ in range(4):
             self.board.expect(pexpect.TIMEOUT, timeout=20)
             try:
                 mib_out = snmp_mib_set(
