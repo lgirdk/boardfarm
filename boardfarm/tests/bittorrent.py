@@ -58,7 +58,7 @@ class BitTorrentB2B(BitTorrentBasic):
 
         board.get_nf_conntrack_conn_count()
 
-        for i in range(10000):
+        for _ in range(10000):
             sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
             print("started UDP to %s:%s sz = %s, rate = %sk" %
                   (ip, port, sz, rate))
@@ -91,7 +91,7 @@ class BitTorrentClient(rootfs_boot.RootFSBootTest):
         lan.sendline('rm -rf Fedora*')
         lan.expect(lan.prompt)
         # TODO: apt-get install bittornado
-        for i in range(10):
+        for _ in range(10):
             lan.sendline(
                 "btdownloadheadless 'https://torrent.fedoraproject.org/torrents/Fedora-Games-Live-x86_64-28_Beta.torrent'"
             )
