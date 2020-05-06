@@ -36,7 +36,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         self.fname = fname = text_file.name
 
         letters = string.ascii_letters
-        fcontent = ''.join(random.choice(letters) for i in range(50))
+        fcontent = ''.join(random.choice(letters) for _ in range(50))
 
         text_file.write(fcontent)
         text_file.flush()
@@ -253,7 +253,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
 
         text_file = tempfile.NamedTemporaryFile(mode='w')
         letters = string.ascii_letters
-        fcontent = ''.join(random.choice(letters) for i in range(50))
+        fcontent = ''.join(random.choice(letters) for _ in range(50))
 
         text_file.write(fcontent)
         text_file.flush()
