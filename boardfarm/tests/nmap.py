@@ -26,7 +26,7 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
         lan.sendline('nmap -sS -A -v -p 1-10000 %s' %
                      board.get_interface_ipaddr(board.lan_iface))
         lan.expect('Starting Nmap')
-        for i in range(12):
+        for _ in range(12):
             if 0 == lan.expect(['Nmap scan report', pexpect.TIMEOUT],
                                timeout=100):
                 break
