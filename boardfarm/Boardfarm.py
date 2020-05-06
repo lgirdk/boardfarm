@@ -27,7 +27,6 @@ class Boardfarm(object):
         self.bfconfig_url = bfconfig_url
         self.server = boardfarmwebclient.BoardfarmWebClient(
             bfconfig_url, bf_version=boardfarm.__version__, debug=debug)
-        #self.supported_devices = self._supported_devices()
         self.debug = debug
 
     def list_tests(self):

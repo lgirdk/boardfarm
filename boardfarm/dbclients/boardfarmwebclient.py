@@ -201,7 +201,6 @@ class BoardfarmWebClient(object):
 
 if __name__ == '__main__':
     bf_config = "http://boardfarm.myexamplesite.com/api/bf_config"
-    #bf_config = "../bf_config.json"
     bfweb = BoardfarmWebClient(bf_config, debug=False)
     bfweb.checkout({
         "_id": "1111",

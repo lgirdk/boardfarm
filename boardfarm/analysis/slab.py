@@ -29,10 +29,6 @@ class SlabAnalysis(analysis.Analysis):
                 ts = float(e.pop(0).strip('[]'))
                 slab_name = e.pop(0)
                 active_objs = e.pop(0)
-                #num_objs = e.pop(0)
-                #objsize = e.pop(0)
-                #objperslab = e.pop(0)
-                #pagespeslab = e.pop(0)
                 key = 'slab-' + slab_name
                 data[key].append(active_objs)
                 timestamps[key].append(ts)

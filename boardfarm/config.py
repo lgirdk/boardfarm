@@ -75,8 +75,7 @@ option_dict = {
     "disp_size": ["1366x768"]
 }
 
-# the syntax is
-# BFT_OPTIONS="proxy=normal webdriver=chrome"
+# the syntax is BFT_OPTIONS="proxy=normal webdriver=chrome"
 default_proxy_type = "socks5"
 default_web_driver = "ffox"
 default_headless = True

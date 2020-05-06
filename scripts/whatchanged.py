@@ -79,9 +79,11 @@ if __name__ == '__main__':
     for name, funcs in all_classes_and_funcs.items():
         if set(funcs) & set(all_changed_functions):
             if name in all_classes:
-                # Disable temporarily the running of tests from a function change.
-                # We need to filter to stable, short tests. Or have that option.
-                #indirectly_changed_classes[name] = all_classes[name]
+                """
+                Disable temporarily the running of tests from a function change.
+                We need to filter to stable, short tests. Or have that option.
+                indirectly_changed_classes[name] = all_classes[name]
+                """
                 pass
     if args.debug:
         print(
