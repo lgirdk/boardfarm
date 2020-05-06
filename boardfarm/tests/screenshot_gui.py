@@ -34,7 +34,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
             if "BFT_DEBUG" in os.environ:
                 print("Connect to VNC display running on localhost:" +
                       self.config.default_display_backend_port)
-                raw_input("Press any key after connecting to display....")
+                input("Press any key after connecting to display....")
         except:
             # fallback xvfb
             self.display = Display(visible=0, size=(1366, 768))
@@ -104,7 +104,7 @@ class ScreenshotGUI(RunBrowserViaProxy):
 
         # wait for possible redirects to settle down
         url = driver.current_url
-        for i in range(10):
+        for _ in range(10):
             board.expect(pexpect.TIMEOUT, timeout=5)
             if url == driver.current_url:
                 break
