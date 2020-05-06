@@ -44,7 +44,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         print("\nStarting %s netperf tests in parallel." % num_conn)
         opts = '192.168.0.1 -c -C -l %s -- -m %s -M %s -D' % (
             run_time, pkt_size, pkt_size)
-        for i in range(0, num_conn):
+        for _ in range(0, num_conn):
             self.run_netperf_cmd_nowait(lan, opts)
         # Let netperf tests run
         time.sleep(run_time * 1.5)
@@ -57,7 +57,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         # try to flush out backlog of buffer from above, we try b/c not all might start
         # correctly
         try:
-            for i in range(0, num_conn):
+            for _ in range(0, num_conn):
                 lan.exepct('TEST')
         except:
             pass
@@ -66,7 +66,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         try:
             bandwidth = 0.0
             conns_parsed = 0
-            for i in range(0, num_conn):
+            for _ in range(0, num_conn):
                 bandwidth += self.run_netperf_parse(lan, timeout=1) * run_time
                 conns_parsed += 1
         except Exception as e:
