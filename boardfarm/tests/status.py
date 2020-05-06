@@ -103,7 +103,7 @@ class MemoryUse(rootfs_boot.RootFSBootTest):
         board.expect(prompt, timeout=5)
         # There appears to be a tiny, tiny chance that
         # /proc/meminfo won't exist, so try one more time.
-        for i in range(2):
+        for _ in range(2):
             try:
                 board.sendline('cat /proc/meminfo')
                 board.expect(r'MemTotal:\s+(\d+) kB', timeout=5)
