@@ -22,7 +22,7 @@ def mac_to_snmp_format(mac_addr):
     :rtype: string
     """
     mac_tmp = re.sub(r"[\s\.\-]", "", mac_addr)
-    mac = netaddr.EUI(mac_tmp, dialect=netaddr.mac_unix)
+    mac = netaddr.EUI(mac_tmp, dialect=netaddr.mac_unix_expanded)
     mac_final = str(mac).upper()
 
     return mac_final
