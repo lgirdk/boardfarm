@@ -144,3 +144,13 @@ class BftIfaceNoIpV4Addr(BftIfaceException):
 class BftIfaceNoIpV6Addr(BftIfaceException):
     """Raise this exception when there is no IPV6 address found in interface."""
     pass
+
+
+class BftDeprecate(BftBaseException):
+    """Raise this exception when a deprecated Method is called"""
+    pass
+
+
+class BftCleanupException(BftBaseException):
+    """Raise this exception when an error occur in cleanup"""
+    pass
