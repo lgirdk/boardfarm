@@ -30,7 +30,6 @@ def get_all_classes_from_code(directories, debug=False):
     raw_text = "".join(six.text_type(raw_text))
     # Create a list of tuples (classname, parent_classname)
     result = re.findall('class\s(\w+)\(([\w\.]+)\):', raw_text)
-    #print(result)
     # Convert that list into a Python dict such that
     #    {"classname1": [parent_classname1,],
     #     "classname2": [parent_classname2,], ... etc}
@@ -47,8 +46,6 @@ def get_all_classes_from_code(directories, debug=False):
         all_classes[name].append(grandparent)
     if debug:
         print("Found %s python classes." % len(all_classes))
-        #for name in sorted(all_classes):
-        #    print("%30s: %s" % (name, ", ".join(all_classes[name])))
     return (all_classes)
 
 

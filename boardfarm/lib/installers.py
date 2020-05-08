@@ -759,11 +759,12 @@ def install_ovpn_server(device, remove=False, _user='lan', _ip="ipv4"):
     device.sendline('cd')
     device.expect_exact('cd')
     device.expect(device.prompt)
-
-    # This is where the original setup script comes from. For conveninence we shall
-    # copy the version commited in test/lib/scripts to the server (we cannot always
-    # guarantee tha the containers will have web access)
-    #device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
+    """
+    This is where the original setup script comes from. For conveninence we shall
+    copy the version commited in test/lib/scripts to the server (we cannot always
+    guarantee tha the containers will have web access)
+    device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
+    """
     import os
     ovpn_install_script = 'openvpn-install.sh'
     fname = os.path.join(os.path.dirname(os.path.realpath(__file__)),

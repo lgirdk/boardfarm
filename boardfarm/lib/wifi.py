@@ -120,8 +120,10 @@ def enable_all_wifi_interfaces(board):
     board.sendline('\nuci show wireless | grep disabled')
     board.expect('grep disabled')
     board.expect_prompt()
-    # The following re.findall should return list of settings:
-    # ['wireless.radio0.disabled', 'wireless.radio1.disabled']
+    """
+    The following re.findall should return list of settings:
+    ['wireless.radio0.disabled', 'wireless.radio1.disabled']
+    """
     settings = re.findall(r'([\w\.]+)=\d', board.before)
     for s in settings:
         board.sendline('uci set %s=0' % s)
@@ -615,8 +617,10 @@ class wifi_client_stub():
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        # this code does not execute, but rather serves as an example for the API
-        # return "SSID: <ssid_name1> SSID: <ssid_name2>.."
+        """
+        this code does not execute, but rather serves as an example for the API
+        return "SSID: <ssid_name1> SSID: <ssid_name2>.."
+        """
 
     def wifi_check_ssid(self, ssid_name):
         """This method is WiFi client stub used to scan for paticular SSID
@@ -628,9 +632,11 @@ class wifi_client_stub():
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        # this code does not execute, but rather serves as an example for the API
-        # return True  if found
-        # return False  if not found
+        """
+        this code does not execute, but rather serves as an example for the API
+        return True  if found
+        return False  if not found
+        """
 
     def wifi_connect(self, ssid_name, password, security_mode):
         """This method is WiFi client stub used to connect to wifi either with ssid name and password or with ssid name alone
@@ -655,8 +661,10 @@ class wifi_client_stub():
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        # this code does not execute, but rather serves as an example for the API
-        # return True or False
+        """
+        this code does not execute, but rather serves as an example for the API
+        return True or False
+        """
 
     def wifi_disconnect(self):
         """This method is WiFi client stub used to disconnect WiFi
@@ -677,4 +685,3 @@ class wifi_client_stub():
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        # return "DE"

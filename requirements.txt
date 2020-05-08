@@ -10,6 +10,7 @@ dnspython
 docutils<0.16
 easysnmp
 elasticsearch>=1.0.0
+eradicate
 Faker
 future
 ipaddress

@@ -422,7 +422,6 @@ class web_gui():
         assert botton != None, 'timeout: not found %s in page' % ele_index
         print('get botton value: %s' % botton.get_attribute("value"))
 
-        # check_element_clickable() and click()
         self._save_screenshot('%s_click.png' % ele_index)
         self.check_element_clickable(by, ele_index).click()
 

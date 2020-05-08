@@ -72,4 +72,3 @@ def detect_fatal_error(console):
         s += console.after
 
     detect_crashdump_error(console, s)
-    #detect_kernel_panic(console, s)
