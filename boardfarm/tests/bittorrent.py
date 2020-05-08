@@ -23,10 +23,6 @@ class BitTorrentSingle(BitTorrentBasic):
         board = self.dev.board
         lan = self.dev.lan
 
-        #for d in [wan, lan]:
-        #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
-        #d.expect(prompt)
-
         sz, rate, ip, port = self.startSingleFlow()
         print("started UDP to %s:%s sz = %s, rate = %sk" %
               (ip, port, sz, rate))
@@ -49,13 +45,7 @@ class BitTorrentB2B(BitTorrentBasic):
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
-
-        #for d in [wan, lan]:
-        #d.sendline('apt-get update && apt-get -o Dpkg::Options::="--force-confnew" -y install socat pv')
-        #d.expect(prompt)
-
         maxtime = 5
-
         board.get_nf_conntrack_conn_count()
 
         for _ in range(10000):

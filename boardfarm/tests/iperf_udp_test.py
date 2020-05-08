@@ -14,7 +14,6 @@ from boardfarm.tests import ipv6_setup, rootfs_boot
 time = 60
 conns = 5
 opts = "-t %s -P %s -u -M 1400" % (time, conns)
-#opts="-t %s -P %s -N -m -M 100" % (time, conns)
 
 
 class iPerfUDPTest(rootfs_boot.RootFSBootTest):

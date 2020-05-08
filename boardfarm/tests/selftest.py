@@ -666,6 +666,4 @@ class selftest_tear_down(rootfs_boot.RootFSBootTest):
     @classmethod
     def teardown_class(cls):
         obj = cls.test_obj
-        #commenting this for jenkins, as Test will be marked as FAIL
-        #cls.call(obj.teardown_action2)
         cls.call(obj.teardown_action1)

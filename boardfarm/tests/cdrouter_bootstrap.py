@@ -55,22 +55,6 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         c = CDRouter(self.cdrouter_server)
 
-        #try:
-        #    board.sendcontrol('c')
-        #    board.expect(prompt)
-        #    board.sendline('reboot')
-        #    board.expect('reboot: Restarting system')
-        #except:
-        #    board.reset()
-        #board.wait_for_linux()
-        #board.wait_for_network()
-
-        ## Add extra board specific delay
-        #board.expect(pexpect.TIMEOUT, timeout=getattr(board, 'cdrouter_bootdelay', 0))
-
-        # If alt mac addr is specified in config, use that..
-        # CMTS = we route so no wan mac is used
-        # if we route, we need to add routes
         wandutmac = None
         if board.has_cmts:
             provisioner = self.dev.provisioner
@@ -125,7 +109,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                     d.vlan = d.match.group(1)
                 d.expect(prompt)
 
-        # TODO: WIP
+        # TODO - WIP
         wan.vlan = "136"
         print("Using %s for WAN vlan" % wan.vlan)
         print("Using %s for LAN vlan" % lan.vlan)

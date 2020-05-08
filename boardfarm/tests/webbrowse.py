@@ -42,7 +42,6 @@ class RandomWebBrowse(rootfs_boot.RootFSBootTest):
             'www.wikipedia.org',
             'www.yahoo.com',
         ]
-        #urls = 2 * urls  # browse more
         random.shuffle(urls)
         user = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'
         cmd = "wget -Hp http://%(url)s " + \
