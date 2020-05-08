@@ -1119,9 +1119,13 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     device.expect(">>>")
     device.sendline("exit()")
     device.expect(device.prompt)
+    if not isinstance(parser, SnmpMibs):
+        oid = parser.mib[mib_set]
+    else:
+        oid = parser.get_mib_oid(mib_set)
     command = [("sed -i '1a from pysnmp.proto import rfc1902' " + pysnmp_file),
                ("sed -i '2a wan_ip = " + '"' + wan_ip + '"' + "' " + pysnmp_file),\
-               ("sed -i '3a oid = " + '"' + parser.get_mib_oid(mib_set) + '.0"' + "' " + pysnmp_file),\
+               ("sed -i '3a oid = " + '"' + oid + '.0"' + "' " + pysnmp_file),\
                ("sed -i '4a value = " + '"' + value + '"' + "' " + pysnmp_file),\
                ("sed -i '5a community = " + '"public"' + "' " + pysnmp_file),\
                ("sed -i '6a value = rfc1902.Counter32(value)' " + pysnmp_file),\
