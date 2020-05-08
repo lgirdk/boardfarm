@@ -35,9 +35,11 @@ pyserial
 pysmi
 pysnmp
 pytest==5.3.5
+pytest-cov
 pytest-html
 pytest-mock
 pytest-randomly
+pytest-xdist
 pyvirtualdisplay
 requests
 retry
