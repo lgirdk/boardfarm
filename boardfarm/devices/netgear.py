@@ -192,12 +192,10 @@ class NetgearM4100(linux.LinuxDevice):
                     if vlan not in vlan_macs:
                         vlan_macs[vlan] = []
                     vlan_macs[vlan].append(mac)
-        #print vlan_macs
         print("\n\n")
         print("VLAN Devices")
         print("---- -----------------")
         for vlan in sorted(vlan_macs):
-            #devices = [mac_to_name(x) for x in vlan_macs[vlan]]
             devices = [x for x in vlan_macs[vlan]]
             print("%4s %s" % (vlan, " <-> ".join(devices)))
 

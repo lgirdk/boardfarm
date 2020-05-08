@@ -93,9 +93,6 @@ def get_jira_release_id(rel_name, jira, proj):
 
 def update_automation_status(issue):
     """Update the Jira custom field to track that the test is automated"""
-    #if issue.fields.customfield_11640.value != 'Automated test':
-    #    issue.update(fields={'customfield_11640': {'value': 'Automated test'}})
-    #return
 
 
 def get_test_id_from_meta_file(meta_file, test_name):

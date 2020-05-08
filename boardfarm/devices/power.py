@@ -380,26 +380,25 @@ class SimpleSerialPower(PowerDevice):
 
             ser.close()
 
+    """
+    IP Power 9258 networked power switch class
 
-#
-# IP Power 9258 networked power switch class
-#
-# This work is released under the Creative Commons Zero (CC0) license.
-# See http://creativecommons.org/publicdomain/zero/1.0/
+    This work is released under the Creative Commons Zero (CC0) license.
+    See http://creativecommons.org/publicdomain/zero/1.0/
 
-# Example use:
-#
-# import time
-# from ip9258 import Ip9258
-#
-# ip9258 = Ip9258('192.168.1.10', 'admin', 'password')
-#
-# for i in range(4):
-#     ip9258.on(i)
-#     time.delay(1)
-#
-#     ip9258.off(i)
-#     time.delay(1)
+    Example use:
+
+    import time
+    from ip9258 import Ip9258
+
+    ip9258 = Ip9258('192.168.1.10', 'admin', 'password')
+
+    for i in range(4):
+        ip9258.on(i)
+        time.delay(1)
+        ip9258.off(i)
+        time.delay(1)
+    """
 
 
 class Ip9258(PowerDevice):

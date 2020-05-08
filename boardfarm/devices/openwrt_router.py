@@ -325,7 +325,6 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.sendline('setenv serverip %s' % self.tftp_server_int)
         self.expect(self.uprompt)
         if self.tftp_server_int:
-            # interfaces=['eth1','eth0']
             passed = False
             for attempt in range(5):
                 try:
@@ -343,8 +342,6 @@ class OpenWrtRouter(linux.LinuxDevice):
                     self.sendcontrol('c')
                     self.expect('<INTERRUPT>')
                     self.expect(self.uprompt)
-                    #self.sendline('setenv ethact %s' % (interfaces[attempt%2]))
-                    # self.expect(self.uprompt)
                     self.sendline('dhcp')
                     self.expect('DHCP client bound to address', timeout=60)
                     self.expect(self.uprompt)
@@ -553,8 +550,6 @@ if __name__ == '__main__':
     board.sendline('\nuname -a')
     board.expect('Linux')
     board.expect('root@[^ ]+')
-    # board.reset()
-    # board.expect('U-Boot')
     # Example downloading a file from the board
     remote_fname = '/tmp/dhcp.leases'
     local_fname = '/tmp/dhcp.leases'

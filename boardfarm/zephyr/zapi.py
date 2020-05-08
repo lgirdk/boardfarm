@@ -102,7 +102,6 @@ class Zapi(object):
                         auth=(self._usr, self._pwd))
         data = loads(response.text)
         execution_id = dict(data).keys()[0]
-        #execution_id = "442290"
         if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)
