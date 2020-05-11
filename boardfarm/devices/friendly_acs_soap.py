@@ -33,6 +33,7 @@ class FriendlyACS():
         pass
 
     def get(self, cpeid, param, source=0):
+        print("FriendlyACS.get : param = {}".format(param))
         # source = 0 (CPE), source = 1 (DB)
         ret = self.client.service.FTGetDeviceParameters(devicesn=cpeid,
                                                         source=source,
@@ -43,6 +44,7 @@ class FriendlyACS():
             return ret['Params']['ParamWSDL'][0]['Value']
 
     def set(self, cpeid, attr, value):
+        print("FriendlyACS.set : attr = {}, value = {}".format(attr, value))
         array_of_param = self.client.get_type(
             '{http://www.friendly-tech.com}ArrayOfParam')
 
@@ -56,6 +58,8 @@ class FriendlyACS():
                                                   priority=0)
 
     def rpc(self, cpeid, name, content):
+        print("FriendlyACS.rpc : name = {}, content = {}".format(
+            name, content))
         ''' Invoke custom RPC on specific CM'''
         ret = self.client.service.FTRPCInvoke(devicesn=cpeid,
                                               rpcname=name,
@@ -102,7 +106,9 @@ class FriendlyACS():
         return ret['Online']
 
     def delete_cpe(self, cpeid):
-        print("WARN: not impl for this class")
+        """This method is used to delete a CPE on the ACS server.
+        """
+        self.client.service.FTDeleteDevice(devicesn=cpeid)
 
 
 if __name__ == '__main__':
