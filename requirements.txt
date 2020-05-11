@@ -4,6 +4,7 @@ beautifulsoup4
 boto3
 cdrouter
 debtcollector
+distro
 dlipower
 dnspython
 docutils<0.16

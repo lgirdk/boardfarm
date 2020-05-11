@@ -15,6 +15,7 @@ import sys
 import time
 import warnings
 
+import distro
 import requests
 from boardfarm.lib.common import run_once
 
@@ -93,7 +94,7 @@ class BoardfarmWebClient(object):
         try:
             system = platform.system()
             if system == 'Linux':
-                s = "%s %s" % platform.linux_distribution()[:2]
+                s = "%s %s" % distro.linux_distribution()[:2]
             elif system == 'Darwin':
                 s = "MacOS %s" % platform.mac_ver()[0]
             elif system == 'Windows':
