@@ -161,9 +161,9 @@ class TestSimpleBoardfarm(unittest.TestCase):
 
         test_func(test_stub(None, None, None), "same", "same")
         self.assertEqual(ran, False)
-        with self.assertRaises(boardfarm.exceptions.SkipTest):
+        with self.assertRaises(boardfarm.exceptions.BftDeprecate):
             test_func(test_stub(None, None, None), "not", "same")
-        self.assertEqual(ran, True)
+            self.assertEqual(ran, True)
 
 
 class TestSnmp(unittest.TestCase):

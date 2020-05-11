@@ -3,7 +3,8 @@ import sys
 import warnings
 
 import pexpect
-from boardfarm.exceptions import ContOnFailError, PexpectErrorTimeout
+from boardfarm.exceptions import (BftDeprecate, ContOnFailError,
+                                  PexpectErrorTimeout)
 from boardfarm.lib.bft_logging import log_message
 from debtcollector import removals
 
@@ -19,8 +20,9 @@ def skip_on_fail(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            log_message(instance, "Skipping Test : %s" % repr(e))
-            instance.skipTest(e)
+            log_message(instance,
+                        "skip_on_fail is deprecated method %s" % repr(e))
+            raise BftDeprecate("skip_on_fail is deprecated method")
 
     return wrapper
 
