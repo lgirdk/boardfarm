@@ -45,3 +45,7 @@ repos:
       rev: v0.29.0
       hooks:
           - id: yapf
+    - repo: https://github.com/myint/eradicate
+      rev: v1.0
+      hooks:
+          - id: eradicate
