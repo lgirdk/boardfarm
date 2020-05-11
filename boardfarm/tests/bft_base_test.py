@@ -88,7 +88,7 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
         except Exception as e:
             exc_to_raise = e
 
-        if self.result_grade != "SKIP":
+        if self.result_grade not in ["SKIP", "CC FAIL"]:
             try:
                 func = getattr(self.__class__, "teardown_class", None)
                 if func:
@@ -225,6 +225,15 @@ class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
             self.result_grade = "SKIP"
             print("\n\nSkipping test: %s" % e)
             print("=========== Test skipped! Moving on... =============")
+            return
+        except boardfarm.exceptions.ContingencyCheckError as e:
+            self.stop_time = time.time()
+            self.logged['test_time'] = float(self.stop_time - self.start_time)
+            self.result_grade = "CC FAIL"
+            print("\n\nContingency check failed: %s" % e)
+            print(
+                "=========== Test skipped as contingency check failed! Moving on... ============="
+            )
             return
         except Exception as e:
             self.stop_time = time.time()

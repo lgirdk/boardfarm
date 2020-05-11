@@ -511,7 +511,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
             elif grade in ["FAIL", "Exp FAIL", "TD FAIL"]:
                 tests_fail += 1
                 # On failure, see status of devices
-            elif grade == "SKIP" or grade is None:
+            elif grade in ["SKIP", "CC FAIL"] or grade is None:
                 tests_skip += 1
 
             if stop_testing:

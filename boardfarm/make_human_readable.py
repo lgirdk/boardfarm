@@ -95,6 +95,7 @@ def xmlresults_to_html(test_results,
         'FAIL': 'fail',
         'Exp FAIL': 'efail',
         'PENDING': 'skip',
+        'CC FAIL': 'skip',
         'TD FAIL': 'fail'
     }
     for i, t in enumerate(test_results):
