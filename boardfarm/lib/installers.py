@@ -711,7 +711,11 @@ def install_dovecot(device, remove=False):
     :type remove: Boolean, optional
     :raises assertion: Failed to install dovecot
     """
-    if remove:
+    #Check if dovecot is running already and remove it before installing
+    check_output = device.check_output("service --status-all")
+    check = True if "[ + ]  dovecot" in check_output else False
+
+    if remove or check:
         deprecate(
             "Using apt purge in sendline is deprecated! Please use apt_purge",
             removal_version="> 1.1.1",
@@ -720,6 +724,7 @@ def install_dovecot(device, remove=False):
             "killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*"
         )
         device.check_output("rm -rf /etc/dovecot")
+    if remove:
         return
     device.sendline('dovecot --version')
     try:
