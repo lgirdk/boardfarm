@@ -154,3 +154,9 @@ class BftDeprecate(BftBaseException):
 class BftCleanupException(BftBaseException):
     """Raise this exception when an error occur in cleanup"""
     pass
+
+
+class BftCommandNotFound(BftBaseException):
+    """Raise this exception to notify that a command is not found and let
+    the recipient take the appropriate action
+    """
