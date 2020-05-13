@@ -210,13 +210,15 @@ class AxirosACS(base_acs.BaseACS):
             raise KeyError("More than 1 Result in reply not implemented yet")
         result = result[0]
         httpcode = result['code']['text']
+        msg = result['message']['text']
+        http_error_message = "HTTP Error code:" + httpcode + " " + msg
         if httpcode != '200':
             # with 507 (timeout/expired) there seem to be NO faultcode message
             if httpcode == '500':
                 if 'faultcode' not in result['message']['text']:
-                    raise HTTPError(result['message']['text'])
+                    raise HTTPError(http_error_message)
             else:
-                raise HTTPError(result['message']['text'])
+                raise HTTPError(http_error_message)
 
         # is this needed (might be overkill)?
         if not all([
@@ -229,10 +231,9 @@ class AxirosACS(base_acs.BaseACS):
                 'details/message/ticketid).')
             e.result = result  # for inspection later
             raise e
-        fault = 'faultcode' in result['message']['text']
+        fault = 'faultcode' in msg
         if fault:
             # could there be more than 1 fault in a response?
-            msg = result['message']['text']
             e = TR069FaultCode(msg)
             e.faultdict = \
                 ast.literal_eval(msg[msg.index('{'):])
@@ -242,7 +243,7 @@ class AxirosACS(base_acs.BaseACS):
             return AxirosACS._parse_xml_response(result['details']['item'])
         else:
             #Assumes that message is always present
-            return result['message']['text']
+            return msg
 
     def _get_cmd_data(self, *args, **kwagrs):
         """Helper method that returns CmdOptTypeStruct_data
