@@ -148,6 +148,8 @@ retry = 0  # How many times to retry every test if it fails
 # Default image files to flash
 UBOOT = None
 KERNEL = None
+ARM = None
+ATOM = None
 ROOTFS = None
 NFSROOT = None
 META_BUILD = None

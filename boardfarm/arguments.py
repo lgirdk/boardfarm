@@ -222,6 +222,18 @@ def parse():
         default=[],
         nargs='+',
         help='Path to JSON containing the error injection dictionary')
+    parser.add_argument(
+        '--arm',
+        metavar='',
+        type=str,
+        default=None,
+        help='URL or file PATH of Arm software image to flash.')
+    parser.add_argument(
+        '--atom',
+        metavar='',
+        type=str,
+        default=None,
+        help='URL or file PATH of Atom software image to flash.')
 
     args = parser.parse_args()
 
@@ -340,10 +352,13 @@ def parse():
     config.UBOOT = args.uboot
     config.KERNEL = args.kernel
     config.ROOTFS = args.rootfs
+    config.ARM = args.arm
+    config.ATOM = args.atom
     config.NFSROOT = args.nfsroot
     config.META_BUILD = args.meta_img_loc
     # Quick check to make sure file url/path arguments are reasonable
-    for x in (config.UBOOT, config.KERNEL, config.ROOTFS, config.META_BUILD):
+    for x in (config.UBOOT, config.KERNEL, config.ROOTFS, config.META_BUILD,
+              config.ARM, config.ATOM):
         if x is None:
             continue
         if 'mirror://' in x:
