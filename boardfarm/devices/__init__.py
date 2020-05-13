@@ -26,8 +26,6 @@ from . import openwrt_router
 
 device_mappings = {}
 
-__all__ = []
-
 
 def probe_devices():
     '''
@@ -72,8 +70,6 @@ def probe_devices():
                 thing = getattr(module, thing_name)
                 if inspect.isclass(thing) and hasattr(thing, 'model'):
                     device_mappings[module].append(thing)
-
-    __all__ = all_mods
 
 
 def check_for_cmd_on_host(cmd, msg=None):
