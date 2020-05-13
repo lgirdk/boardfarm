@@ -27,6 +27,7 @@ class EnvHelper(object):
 
         assert env['version'] == '1.0', "Unknown environment version!"
         self.env = env
+        self.mirror = ""
         if mirror:
             self.mirror = mirror
 
@@ -94,6 +95,29 @@ class EnvHelper(object):
             return True
         except:
             return False
+
+    def get_software(self):
+        sw = self.env['environment_def']['board'].get('software', {})
+        out = {}
+        for k, v in sw.items():
+            if k == "dependent_software":
+                continue
+            if k in ['load_image', 'image_uri']:
+                out[k] = "{}{}".format(self.mirror, v)
+            else:
+                out[k] = v
+        return out
+
+    def get_dependent_software(self):
+        d = self.env['environment_def']['board'].get('software', {})
+        sw = d.get('dependent_software', {})
+        out = {}
+        for k, v in sw.items():
+            if k in ['load_image', 'image_uri']:
+                out[k] = "{}{}".format(self.mirror, v)
+            else:
+                out[k] = v
+        return out
 
     def env_check(self, test_environment):
         '''Given an environment (in for of a dictionary) as a parameter, checks

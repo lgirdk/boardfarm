@@ -361,6 +361,7 @@ def parse():
               config.ARM, config.ATOM):
         if x is None:
             continue
+        config.from_cli = True
         if 'mirror://' in x:
             # we need to check the mirror later once the board is selected
             continue

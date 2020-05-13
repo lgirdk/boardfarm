@@ -7,8 +7,10 @@
 
 import time
 import warnings
+from collections import OrderedDict
 
 import boardfarm.exceptions
+import debtcollector
 from boardfarm.lib.common import run_once
 
 warnings.simplefilter("always", UserWarning)
@@ -69,6 +71,126 @@ def flash_image(config,
         board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
 
 
+def boot_image(config, env_helper, board, lan, wan, tftp_device):
+    def _meta_flash(img):
+        try:
+            flash_meta_helper(board, img, wan, lan)
+        except Exception as e:
+            print(e)
+            tftp_device.restart_tftp_server()
+            board.reset(break_into_uboot=True)
+            board.setup_uboot_network(tftp_device.gw)
+
+    def _all(img):
+        # TODO: since all is called first in this flash
+        # This needs to be broken down into 2 separate functions.
+        methods['atom'](img)
+
+    methods = {
+        "meta_build": _meta_flash,
+        "rootfs": board.flash_rootfs,
+        "kernel": board.flash_linux,
+        "atom": board.flash_rootfs,
+        "arm": board.flash_linux,
+        "all": _all
+    }
+
+    def _perform_flash(boot_sequence, bootloader):
+
+        if bootloader:
+            board.wait_for_boot()
+        else:
+            board.wait_for_linux()
+        board.setup_uboot_network(tftp_device.gw)
+
+        for i in boot_sequence:
+            for strategy, img in i.items():
+                out = methods[strategy](img)
+                rootfs = None
+                if strategy == "rootfs":
+                    rootfs = out
+
+        if bootloader:
+            board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
+        else:
+            board.reset()
+
+    def _check_override(strategy, img):
+        if getattr(config, strategy.upper(), None):
+            # this is the override
+            debtcollector.deprecate(
+                "Warning!!! cmd line arg has been passed."
+                "Overriding image value for {}".format(strategy),
+                removal_version="> 1.1.1",
+                category=UserWarning)
+
+            return getattr(config, strategy.upper())
+        return img
+
+    boot_sequence = []
+    stage = OrderedDict()
+    stage[1] = OrderedDict()
+    stage[2] = OrderedDict()
+    hack = False
+
+    def map_strategy(strategy):
+        if strategy == "arm":
+            debtcollector.deprecate(
+                "Passing -k option for ARM image with env is deprecated",
+                removal_version="> 1.1.1",
+                category=UserWarning)
+            strategy = 'kernel'
+        if strategy == "atom":
+            debtcollector.deprecate(
+                "Passing -r option for ARM image with env is deprecated",
+                removal_version="> 1.1.1",
+                category=UserWarning)
+            strategy = 'rootfs'
+        return strategy
+
+    if config.META_BUILD:
+        stage[2].update({"meta_build": config.META_BUILD})
+    else:
+        if config.ROOTFS:
+            stage[2]["rootfs"] = config.ROOTFS
+            hack = True
+        if config.KERNEL:
+            stage[2]["kernel"] = config.KERNEL
+            hack = True
+
+    d = env_helper.get_dependent_software()
+    if d:
+        strategy = d.get('flash_strategy')
+        if hack:
+            strategy = map_strategy(strategy)
+        img = _check_override(strategy, d.get('image_uri'))
+        stage[1][strategy] = img
+
+    d = env_helper.get_software()
+    if d:
+        if "load_image" in d:
+            strategy = "meta_build"
+            img = _check_override(strategy, d.get('load_image'))
+        else:
+            strategy = d.get('flash_strategy')
+            if hack:
+                strategy = map_strategy(strategy)
+            img = _check_override(strategy, d.get('image_uri'))
+
+        stage[2][strategy] = img
+
+    key = set(stage[1].keys()) & set(stage[2].keys())
+    for i in key:
+        stage[2].pop(i)
+    for k, v in stage[1].items():
+        boot_sequence.append({k: v})
+    for k, v in stage[2].items():
+        boot_sequence.append({k: v})
+
+    if boot_sequence:
+        _perform_flash(boot_sequence, strategy != 'meta_build')
+
+
 def get_tftp(config):
     # start tftpd server on appropriate device
     tftp_servers = [
@@ -117,8 +239,20 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(config, env_helper, devices, reflash=True, logged=dict()):
+def boot(config,
+         env_helper,
+         devices,
+         reflash=True,
+         logged=dict(),
+         flashing_image=True):
     logged['boot_step'] = "start"
+
+    # override if cmd line are given
+    if config.from_cli:
+        warnings.warn(
+            "Command line settings detected, ignoring booting from env settings"
+        )
+        flashing_image = True
 
     board = devices.board
     wan = devices.wan
@@ -164,7 +298,10 @@ def boot(config, env_helper, devices, reflash=True, logged=dict()):
 
     board.reset()
     logged['boot_step'] = "board_reset_ok"
-    flash_image(config, env_helper, board, lan, wan, tftp_device, reflash)
+    if flashing_image:
+        flash_image(config, env_helper, board, lan, wan, tftp_device, reflash)
+    else:
+        boot_image(config, env_helper, board, lan, wan, tftp_device)
     logged['boot_step'] = "flash_ok"
     if hasattr(board, "pre_boot_linux"):
         board.pre_boot_linux(wan=wan, lan=lan)
