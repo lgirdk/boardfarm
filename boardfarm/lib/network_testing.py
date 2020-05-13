@@ -105,7 +105,7 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     if packet_details:
         command_string += '-V '
     if filter_str:
-        command_string += '\'{}\''.format(filter_str)
+        command_string += '{}'.format(filter_str)
 
     device.sendline(command_string)
     device.expect(pexpect.TIMEOUT, timeout=5)
