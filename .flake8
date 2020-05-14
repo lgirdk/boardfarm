@@ -1,0 +1,9 @@
+[flake8]
+exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,unittests,*test_*,*_test*
+rst-roles =
+    class,
+    func,
+    ref,
+rst-directives =
+    envvar,
+    exception,
