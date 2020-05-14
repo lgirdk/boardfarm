@@ -497,3 +497,16 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.sendcontrol('c')
         self.expect(self.prompt)
         return True if index not in [2, 3] else False
+
+    def get_lease_time(self):
+        """Get DHCP lease time from dhclient.leases file
+
+        :return: lease_time
+        :rtype: integer
+        """
+        self.sendline(
+            '\ncat /var/lib/dhcp/dhclient.leases | grep dhcp-lease-time')
+        self.expect(r'\s+option\sdhcp-lease-time\s(\d+);')
+        lease_time = int(self.match.group(1))
+        self.expect(self.prompt)
+        return lease_time
