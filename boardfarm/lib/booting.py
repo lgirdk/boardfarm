@@ -36,8 +36,9 @@ def flash_image(config,
     if (config.META_BUILD or env_helper.has_image()) \
             and not board.flash_meta_booted:
         meta_interrupt = True
-    if reflash and (meta_interrupt or config.ROOTFS or\
-            config.KERNEL or config.UBOOT):
+    if reflash and any([meta_interrupt, config.ROOTFS, \
+            config.KERNEL, config.UBOOT, config.COMBINED, \
+            config.ATOM, config.ARM]):
         # Break into U-Boot, set environment variables
         board.wait_for_boot()
         board.setup_uboot_network(tftp_device.gw)
@@ -59,6 +60,8 @@ def flash_image(config,
                 raise Exception('Error during flashing...')
         if config.UBOOT:
             board.flash_uboot(config.UBOOT)
+        if config.COMBINED:
+            board.flash_all(config.COMBINED)
         if config.ROOTFS:
             # save filename for cases where we didn't flash it
             # but will use it later to load from memory
@@ -67,6 +70,10 @@ def flash_image(config,
             board.prepare_nfsroot(config.NFSROOT)
         if config.KERNEL:
             board.flash_linux(config.KERNEL)
+        if config.ARM:
+            board.flash_arm(config.ARM)
+        if config.ATOM:
+            board.flash_atom(config.ATOM)
         # Boot from U-Boot to Linux
         board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
 
@@ -90,9 +97,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
         "meta_build": _meta_flash,
         "rootfs": board.flash_rootfs,
         "kernel": board.flash_linux,
-        "atom": board.flash_rootfs,
-        "arm": board.flash_linux,
-        "all": _all
+        "atom": board.flash_atom,
+        "arm": board.flash_arm,
+        "all": board.flash_all
     }
 
     def _perform_flash(boot_sequence, bootloader):

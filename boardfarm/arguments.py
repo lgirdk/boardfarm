@@ -234,6 +234,12 @@ def parse():
         type=str,
         default=None,
         help='URL or file PATH of Atom software image to flash.')
+    parser.add_argument(
+        '--combined',
+        metavar='',
+        type=str,
+        default=None,
+        help='URL or file PATH of ARM&ATOM Combined software image to flash.')
 
     args = parser.parse_args()
 
@@ -354,11 +360,12 @@ def parse():
     config.ROOTFS = args.rootfs
     config.ARM = args.arm
     config.ATOM = args.atom
+    config.COMBINED = args.combined
     config.NFSROOT = args.nfsroot
     config.META_BUILD = args.meta_img_loc
     # Quick check to make sure file url/path arguments are reasonable
     for x in (config.UBOOT, config.KERNEL, config.ROOTFS, config.META_BUILD,
-              config.ARM, config.ATOM):
+              config.ARM, config.ATOM, config.COMBINED):
         if x is None:
             continue
         config.from_cli = True

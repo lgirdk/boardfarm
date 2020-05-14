@@ -150,6 +150,7 @@ UBOOT = None
 KERNEL = None
 ARM = None
 ATOM = None
+COMBINED = None
 ROOTFS = None
 NFSROOT = None
 META_BUILD = None
