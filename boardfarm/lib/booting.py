@@ -88,11 +88,6 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
             board.reset(break_into_uboot=True)
             board.setup_uboot_network(tftp_device.gw)
 
-    def _all(img):
-        # TODO: since all is called first in this flash
-        # This needs to be broken down into 2 separate functions.
-        methods['atom'](img)
-
     methods = {
         "meta_build": _meta_flash,
         "rootfs": board.flash_rootfs,
@@ -102,9 +97,8 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
         "all": board.flash_all
     }
 
-    def _perform_flash(boot_sequence, bootloader):
-
-        if bootloader:
+    def _perform_flash(boot_sequence, wait_linux):
+        if not wait_linux:
             board.wait_for_boot()
         else:
             board.wait_for_linux()
@@ -117,7 +111,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
                 if strategy == "rootfs":
                     rootfs = out
 
-        if bootloader:
+        if not wait_linux:
             board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
         else:
             board.reset()
@@ -138,53 +132,59 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     stage = OrderedDict()
     stage[1] = OrderedDict()
     stage[2] = OrderedDict()
-    hack = False
 
-    def map_strategy(strategy):
-        if strategy == "arm":
-            debtcollector.deprecate(
-                "Passing -k option for ARM image with env is deprecated",
-                removal_version="> 1.1.1",
-                category=UserWarning)
-            strategy = 'kernel'
-        if strategy == "atom":
-            debtcollector.deprecate(
-                "Passing -r option for ARM image with env is deprecated",
-                removal_version="> 1.1.1",
-                category=UserWarning)
-            strategy = 'rootfs'
-        return strategy
-
+    wait_linux = False
     if config.META_BUILD:
+        strategy = "meta_build"
         stage[2].update({"meta_build": config.META_BUILD})
+        wait_linux = True
+    elif any([config.ARM, config.ATOM, config.COMBINED]):
+        count = 0
+        if config.COMBINED:
+            strategy = "all"
+            count += 1
+            stage[2]["all"] = config.COMBINED
+        if config.ATOM:
+            strategy = "atom"
+            count += 1
+            stage[2]["atom"] = config.ATOM
+        if config.ARM:
+            count += 1
+            strategy = "arm"
+            stage[2]["arm"] = config.ARM
+
+        assert count != 3, "You can't have ARM, ATOM and COMBINED TOGETHER!!!"
     else:
         if config.ROOTFS:
+            strategy = "rootfs"
             stage[2]["rootfs"] = config.ROOTFS
-            hack = True
         if config.KERNEL:
+            strategy = "kernel"
             stage[2]["kernel"] = config.KERNEL
-            hack = True
 
-    d = env_helper.get_dependent_software()
-    if d:
-        strategy = d.get('flash_strategy')
-        if hack:
-            strategy = map_strategy(strategy)
-        img = _check_override(strategy, d.get('image_uri'))
-        stage[1][strategy] = img
-
-    d = env_helper.get_software()
-    if d:
-        if "load_image" in d:
-            strategy = "meta_build"
-            img = _check_override(strategy, d.get('load_image'))
-        else:
+    if not stage[2]:
+        d = env_helper.get_dependent_software()
+        if d:
             strategy = d.get('flash_strategy')
-            if hack:
-                strategy = map_strategy(strategy)
             img = _check_override(strategy, d.get('image_uri'))
+            stage[1][strategy] = img
 
-        stage[2][strategy] = img
+    if not stage[2]:
+        d = env_helper.get_software()
+        if d:
+            if "load_image" in d:
+                strategy = "meta_build"
+                img = _check_override(strategy, d.get('load_image'))
+            else:
+                strategy = d.get('flash_strategy')
+                img = _check_override(strategy, d.get('image_uri'))
+
+            if stage[1]:
+                assert strategy != "meta_build", "meta_build strategy needs to run alone!!!"
+
+            if strategy == "meta_build":
+                wait_linux = True
+            stage[2][strategy] = img
 
     key = set(stage[1].keys()) & set(stage[2].keys())
     for i in key:
@@ -195,7 +195,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
         boot_sequence.append({k: v})
 
     if boot_sequence:
-        _perform_flash(boot_sequence, strategy != 'meta_build')
+        _perform_flash(boot_sequence, wait_linux)
 
 
 def get_tftp(config):
@@ -254,13 +254,6 @@ def boot(config,
          flashing_image=True):
     logged['boot_step'] = "start"
 
-    # override if cmd line are given
-    if config.from_cli:
-        warnings.warn(
-            "Command line settings detected, ignoring booting from env settings"
-        )
-        flashing_image = True
-
     board = devices.board
     wan = devices.wan
     lan = devices.lan
@@ -316,14 +309,6 @@ def boot(config,
     logged['boot_step'] = "boot_ok"
     board.wait_for_linux()
     logged['boot_step'] = "linux_ok"
-
-    if config.META_BUILD and board.flash_meta_booted:
-        flash_meta_helper(board, config.META_BUILD, wan, lan)
-        logged['boot_step'] = "late_flash_meta_ok"
-    elif env_helper.has_image() and board.flash_meta_booted \
-            and not config.ROOTFS and not config.KERNEL:
-        flash_meta_helper(board, env_helper.get_image(), wan, lan)
-        logged['boot_step'] = "late_flash_meta_ok"
 
     linux_booted_seconds_up = board.get_seconds_uptime()
     # Retry setting up wan protocol
