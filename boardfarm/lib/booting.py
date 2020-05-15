@@ -88,33 +88,38 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
             board.reset(break_into_uboot=True)
             board.setup_uboot_network(tftp_device.gw)
 
+    def _factory_reset(img):
+        board.factory_reset()
+
     methods = {
         "meta_build": _meta_flash,
         "rootfs": board.flash_rootfs,
         "kernel": board.flash_linux,
         "atom": board.flash_atom,
         "arm": board.flash_arm,
-        "all": board.flash_all
+        "all": board.flash_all,
+        "factory_reset": _factory_reset,
     }
 
-    def _perform_flash(boot_sequence, wait_linux):
-        if not wait_linux:
-            board.wait_for_boot()
-        else:
-            board.wait_for_linux()
-        board.setup_uboot_network(tftp_device.gw)
-
+    def _perform_flash(boot_sequence):
         for i in boot_sequence:
             for strategy, img in i.items():
-                out = methods[strategy](img)
+                if strategy in ["factory_reset", "meta_build"]:
+                    board.wait_for_linux()
+                else:
+                    board.wait_for_boot()
+
+                board.setup_uboot_network(tftp_device.gw)
+                result = methods[strategy](img)
                 rootfs = None
                 if strategy == "rootfs":
-                    rootfs = out
+                    rootfs = result
 
-        if not wait_linux:
-            board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
-        else:
-            board.reset()
+                if strategy in ["factory_reset", "meta_build"]:
+                    if not result:
+                        board.reset()
+                else:
+                    board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
 
     def _check_override(strategy, img):
         if getattr(config, strategy.upper(), None):
@@ -133,11 +138,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     stage[1] = OrderedDict()
     stage[2] = OrderedDict()
 
-    wait_linux = False
     if config.META_BUILD:
         strategy = "meta_build"
         stage[2].update({"meta_build": config.META_BUILD})
-        wait_linux = True
     elif any([config.ARM, config.ATOM, config.COMBINED]):
         count = 0
         if config.COMBINED:
@@ -165,6 +168,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     if not stage[2]:
         d = env_helper.get_dependent_software()
         if d:
+            fr = d.get('factory_reset', False)
+            if fr:
+                stage[1]['factory_reset'] = fr
             strategy = d.get('flash_strategy')
             img = _check_override(strategy, d.get('image_uri'))
             stage[1][strategy] = img
@@ -172,6 +178,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     if not stage[2]:
         d = env_helper.get_software()
         if d:
+            fr = d.get('factory_reset', False)
+            if fr:
+                stage[2]['factory_reset'] = fr
             if "load_image" in d:
                 strategy = "meta_build"
                 img = _check_override(strategy, d.get('load_image'))
@@ -182,20 +191,15 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
             if stage[1]:
                 assert strategy != "meta_build", "meta_build strategy needs to run alone!!!"
 
-            if strategy == "meta_build":
-                wait_linux = True
             stage[2][strategy] = img
 
-    key = set(stage[1].keys()) & set(stage[2].keys())
-    for i in key:
-        stage[2].pop(i)
     for k, v in stage[1].items():
         boot_sequence.append({k: v})
     for k, v in stage[2].items():
         boot_sequence.append({k: v})
 
     if boot_sequence:
-        _perform_flash(boot_sequence, wait_linux)
+        _perform_flash(boot_sequence)
 
 
 def get_tftp(config):
