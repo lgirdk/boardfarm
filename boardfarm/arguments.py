@@ -6,7 +6,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""module: arguments: bft's command-line options."""
 import argparse
 import inspect
 import os
@@ -32,17 +32,18 @@ except ImportError:
     print(cmd)
     sys.exit(1)
 
-HELP_EPILOG = '''
+HELP_EPILOG = """
 Example use:
 
  bft -b ap148 --testsuite flash_only -m http://10.0.0.101/nand-ipq806x-single.img
 
  bft -b ap135 --testsuite preflight -r http://10.0.0.101/openwrt-ar71xx-generic-ap135-rootfs-squashfs.bin
-'''
+"""
 
 
 def parse():
-    """Read command-line arguments, parse and store all values in boardfarm_config
+    """Read command-line arguments, parse and store all values in boardfarm_config.
+
     Config can be fetched locally or remotely using HTTP.
     After parsing the config, devices from generic locations are moved inside selected
     boards.
@@ -54,228 +55,280 @@ def parse():
     """
     parser = argparse.ArgumentParser(
         description=
-        'Connect to an available board, flash image(s), and run tests.',
-        usage='bft [options...]',
+        "Connect to an available board, flash image(s), and run tests.",
+        usage="bft [options...]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=HELP_EPILOG)
-    parser.add_argument('-a',
-                        '--analysis',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='Only run post processing analysis on logs')
-    parser.add_argument('-b',
-                        '--board_type',
-                        metavar='',
-                        type=str,
-                        nargs='+',
-                        default=None,
-                        help='MODEL(s) of board to connect to')
-    parser.add_argument('-c',
-                        '--config_file',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='JSON config file for boardfarm')
-    parser.add_argument('-e',
-                        '--extend',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        action="append",
-                        help='NAME of extra test to run')
-    parser.add_argument('-f',
-                        '--filter',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        action="append",
-                        help='Regex filter off arbitrary board parameters')
+        epilog=HELP_EPILOG,
+    )
     parser.add_argument(
-        '-g',
-        '--golden',
-        metavar='',
+        "-a",
+        "--analysis",
+        metavar="",
+        type=str,
+        default=None,
+        help="Only run post processing analysis on logs",
+    )
+    parser.add_argument(
+        "-b",
+        "--board_type",
+        metavar="",
+        type=str,
+        nargs="+",
+        default=None,
+        help="MODEL(s) of board to connect to",
+    )
+    parser.add_argument(
+        "-c",
+        "--config_file",
+        metavar="",
+        type=str,
+        default=None,
+        help="JSON config file for boardfarm",
+    )
+    parser.add_argument(
+        "-e",
+        "--extend",
+        metavar="",
+        type=str,
+        default=None,
+        action="append",
+        help="NAME of extra test to run",
+    )
+    parser.add_argument(
+        "-f",
+        "--filter",
+        metavar="",
+        type=str,
+        default=None,
+        action="append",
+        help="Regex filter off arbitrary board parameters",
+    )
+    parser.add_argument(
+        "-g",
+        "--golden",
+        metavar="",
         type=str,
         default=[],
-        nargs='+',
-        help='Path to JSON results to compare against (golden master)')
-    parser.add_argument('-i',
-                        '--inventory',
-                        action='store_true',
-                        help='List available boards and exit')
-    parser.add_argument('-k',
-                        '--kernel',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='URL or file PATH of Kernel image to flash')
-    parser.add_argument('-l',
-                        '--list_tests',
-                        action='store_true',
-                        help='List available tests and exit')
-    parser.add_argument('-m',
-                        '--meta_img_loc',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='URL or file PATH to meta image to flash')
-    parser.add_argument('-n',
-                        '--board_names',
-                        metavar='',
-                        type=str,
-                        nargs='+',
-                        default=[],
-                        help='NAME(s) of boards to run on')
-    owrt_tests_dir = os.path.join(os.getcwd(), "results", '')
-    parser.add_argument('-o',
-                        '--output_dir',
-                        metavar='',
-                        type=str,
-                        default=owrt_tests_dir,
-                        help='Directory to output results files too')
-    parser.add_argument('-p',
-                        '--package',
-                        metavar='',
-                        type=str,
-                        action="append",
-                        default=None,
-                        help='URL or file PATH of ipk install after boot')
-    parser.add_argument('-q',
-                        '--feature',
-                        metavar='',
-                        type=str,
-                        default=[],
-                        nargs='+',
-                        help='Features required for this test run')
-    parser.add_argument('-r',
-                        '--rootfs',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='URL or file PATH of Rootfs image to flash')
-    parser.add_argument('-s',
-                        '--sysupgrade',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='URL or file PATH to Sysupgrade image')
-    parser.add_argument('-t',
-                        '--retry',
-                        type=int,
-                        default=0,
-                        help='How many times to retry every test if it fails')
-    parser.add_argument('-u',
-                        '--uboot',
-                        metavar='',
+        nargs="+",
+        help="Path to JSON results to compare against (golden master)",
+    )
+    parser.add_argument("-i",
+                        "--inventory",
+                        action="store_true",
+                        help="List available boards and exit")
+    parser.add_argument(
+        "-k",
+        "--kernel",
+        metavar="",
+        type=str,
+        default=None,
+        help="URL or file PATH of Kernel image to flash",
+    )
+    parser.add_argument("-l",
+                        "--list_tests",
+                        action="store_true",
+                        help="List available tests and exit")
+    parser.add_argument(
+        "-m",
+        "--meta_img_loc",
+        metavar="",
+        type=str,
+        default=None,
+        help="URL or file PATH to meta image to flash",
+    )
+    parser.add_argument(
+        "-n",
+        "--board_names",
+        metavar="",
+        type=str,
+        nargs="+",
+        default=[],
+        help="NAME(s) of boards to run on",
+    )
+    owrt_tests_dir = os.path.join(os.getcwd(), "results", "")
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        metavar="",
+        type=str,
+        default=owrt_tests_dir,
+        help="Directory to output results files too",
+    )
+    parser.add_argument(
+        "-p",
+        "--package",
+        metavar="",
+        type=str,
+        action="append",
+        default=None,
+        help="URL or file PATH of ipk install after boot",
+    )
+    parser.add_argument(
+        "-q",
+        "--feature",
+        metavar="",
+        type=str,
+        default=[],
+        nargs="+",
+        help="Features required for this test run",
+    )
+    parser.add_argument(
+        "-r",
+        "--rootfs",
+        metavar="",
+        type=str,
+        default=None,
+        help="URL or file PATH of Rootfs image to flash",
+    )
+    parser.add_argument(
+        "-s",
+        "--sysupgrade",
+        metavar="",
+        type=str,
+        default=None,
+        help="URL or file PATH to Sysupgrade image",
+    )
+    parser.add_argument(
+        "-t",
+        "--retry",
+        type=int,
+        default=0,
+        help="How many times to retry every test if it fails",
+    )
+    parser.add_argument("-u",
+                        "--uboot",
+                        metavar="",
                         type=str,
                         default=None,
                         help=argparse.SUPPRESS)
-    parser.add_argument('-w',
-                        '--wan',
-                        metavar='',
-                        type=str,
-                        default='dhcp',
-                        help='WAN protocol, dhcp (default) or pppoe')
-    parser.add_argument('-x',
-                        '--testsuite',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='NAME of test suite to run')
     parser.add_argument(
-        '-y',
-        '--batch',
-        action='store_true',
-        help='Run in unattended mode - do not spawn console on failed test')
-    parser.add_argument('-z',
-                        '--no-network',
-                        action='store_true',
-                        help='Skip basic network tests when booting')
+        "-w",
+        "--wan",
+        metavar="",
+        type=str,
+        default="dhcp",
+        help="WAN protocol, dhcp (default) or pppoe",
+    )
     parser.add_argument(
-        '--bootargs',
-        metavar='',
+        "-x",
+        "--testsuite",
+        metavar="",
         type=str,
         default=None,
-        help='bootargs to set or append to default args (board dependant)')
-    parser.add_argument('--nfsroot',
-                        metavar='',
-                        type=str,
-                        default=None,
-                        help='URL or file PATH of Rootfs image to flash')
-    parser.add_argument('--version',
-                        action='store_true',
-                        help='show version and exit')
+        help="NAME of test suite to run",
+    )
     parser.add_argument(
-        '--nostrict',
-        action='store_true',
-        help='ignores failure to import a tests from a testsuite')
-    parser.add_argument('--regex_config',
-                        metavar='',
-                        type=str,
-                        default=[],
-                        action="append",
-                        help='Regex substitution for board config')
+        "-y",
+        "--batch",
+        action="store_true",
+        help="Run in unattended mode - do not spawn console on failed test",
+    )
     parser.add_argument(
-        '--err_dict',
-        metavar='',
+        "-z",
+        "--no-network",
+        action="store_true",
+        help="Skip basic network tests when booting",
+    )
+    parser.add_argument(
+        "--bootargs",
+        metavar="",
+        type=str,
+        default=None,
+        help="bootargs to set or append to default args (board dependant)",
+    )
+    parser.add_argument(
+        "--nfsroot",
+        metavar="",
+        type=str,
+        default=None,
+        help="URL or file PATH of Rootfs image to flash",
+    )
+    parser.add_argument("--version",
+                        action="store_true",
+                        help="show version and exit")
+    parser.add_argument(
+        "--nostrict",
+        action="store_true",
+        help="ignores failure to import a tests from a testsuite",
+    )
+    parser.add_argument(
+        "--regex_config",
+        metavar="",
         type=str,
         default=[],
-        nargs='+',
-        help='Path to JSON containing the error injection dictionary')
+        action="append",
+        help="Regex substitution for board config",
+    )
     parser.add_argument(
-        '--arm',
-        metavar='',
+        "--err_dict",
+        metavar="",
+        type=str,
+        default=[],
+        nargs="+",
+        help="Path to JSON containing the error injection dictionary",
+    )
+    parser.add_argument(
+        "--arm",
+        metavar="",
         type=str,
         default=None,
-        help='URL or file PATH of Arm software image to flash.')
+        help="URL or file PATH of Arm software image to flash.",
+    )
     parser.add_argument(
-        '--atom',
-        metavar='',
+        "--atom",
+        metavar="",
         type=str,
         default=None,
-        help='URL or file PATH of Atom software image to flash.')
+        help="URL or file PATH of Atom software image to flash.",
+    )
     parser.add_argument(
-        '--combined',
-        metavar='',
+        "--combined",
+        metavar="",
         type=str,
         default=None,
-        help='URL or file PATH of ARM&ATOM Combined software image to flash.')
+        help="URL or file PATH of ARM&ATOM Combined software image to flash.",
+    )
 
     args = parser.parse_args()
 
     if args.version:
-        print('%s %s' % (os.path.basename(sys.argv[0]), boardfarm.__version__))
+        print("%s %s" % (os.path.basename(sys.argv[0]), boardfarm.__version__))
         if boardfarm.plugins:
             print("Installed Plugins:")
             for key in sorted(boardfarm.plugins):
                 print(
                     "%s %s" %
-                    (key, getattr(boardfarm.plugins[key], '__version__', '')))
+                    (key, getattr(boardfarm.plugins[key], "__version__", "")))
             print("Python: %s" % sys.version)
         sys.exit(0)
 
     if args.list_tests:
         try:
             from boardfarm import tests
+
             tests.init(config)
         except TestImportError as e:
             print(e)
             sys.exit(1)
         for k, v in sorted(tests.available_tests.items()):
             try:
-                print("%20s - %s" % (k, v.__doc__.split('\n')[0]))
-            except:
+                print("%20s - %s" % (k, v.__doc__.split("\n")[0]))
+            except Exception as error:
+                print(error)
                 print("%20s -" % k)
         sys.exit(0)
 
     try:
         if args.config_file is not None:
             config.boardfarm_config_location = args.config_file
-        config.boardfarm_config_location, config.boardfarm_config = boardfarm.lib.test_configurator.get_station_config(
+        (
+            config.boardfarm_config_location,
+            config.boardfarm_config,
+        ) = boardfarm.lib.test_configurator.get_station_config(
             config.boardfarm_config_location, bool(args.config_file))
     except Exception as e:
         print(e)
-        print('Unable to access/read boardfarm configuration from %s' %
+        print("Unable to access/read boardfarm configuration from %s" %
               config.boardfarm_config_location)
         sys.exit(1)
 
@@ -288,8 +341,8 @@ def parse():
     if args.board_type:
         all_board_types = []
         for key in config.boardfarm_config:
-            elem = config.boardfarm_config[key].get('board_type', None) \
-                    if type(config.boardfarm_config[key]) is dict else None
+            elem = (config.boardfarm_config[key].get("board_type", None)
+                    if type(config.boardfarm_config[key]) is dict else None)
             if elem:
                 all_board_types.append(elem)
 
@@ -317,21 +370,21 @@ def parse():
 
     if args.inventory:
         print("%11s  %15s  %5s  %25s  %25s  %s" %
-              ('Name', 'Model', 'Auto', 'LAN', 'WAN', 'Notes'))
+              ("Name", "Model", "Auto", "LAN", "WAN", "Notes"))
         bf = config.boardfarm_config
         for i, b in enumerate(sorted(bf)):
             if args.board_type is None or bf[b].get(
-                    'board_type') in args.board_type:
+                    "board_type") in args.board_type:
                 if not args.board_names or b in args.board_names:
                     info = {
-                        'name': b,
-                        'type': bf[b].get('board_type'),
-                        'wlan': bf[b].get('wlan_device') != None,
-                        'auto': bf[b].get('available_for_autotests', True),
-                        'conn_cmd': bf[b].get('conn_cmd'),
-                        'lan_device': bf[b].get('lan_device', ''),
-                        'wan_device': bf[b].get('wan_device', ''),
-                        'notes': bf[b].get('notes', "")
+                        "name": b,
+                        "type": bf[b].get("board_type"),
+                        "wlan": bf[b].get("wlan_device") is not None,
+                        "auto": bf[b].get("available_for_autotests", True),
+                        "conn_cmd": bf[b].get("conn_cmd"),
+                        "lan_device": bf[b].get("lan_device", ""),
+                        "wan_device": bf[b].get("wan_device", ""),
+                        "notes": bf[b].get("notes", ""),
                     }
                     if not args.filter or (
                             args.filter
@@ -346,7 +399,7 @@ def parse():
         )
         sys.exit(0)
 
-    if hasattr(config, 'INSTALL_PKGS') is False:
+    if hasattr(config, "INSTALL_PKGS") is False:
         config.INSTALL_PKGS = ""
 
     config.retry = args.retry
@@ -364,14 +417,21 @@ def parse():
     config.NFSROOT = args.nfsroot
     config.META_BUILD = args.meta_img_loc
     # Quick check to make sure file url/path arguments are reasonable
-    for x in (config.UBOOT, config.KERNEL, config.ROOTFS, config.META_BUILD,
-              config.ARM, config.ATOM, config.COMBINED):
+    for x in (
+            config.UBOOT,
+            config.KERNEL,
+            config.ROOTFS,
+            config.META_BUILD,
+            config.ARM,
+            config.ATOM,
+            config.COMBINED,
+    ):
         if x is None:
             continue
-        if 'mirror://' in x:
+        if "mirror://" in x:
             # we need to check the mirror later once the board is selected
             continue
-        if x.startswith('http://') or x.startswith('https://'):
+        if x.startswith("http://") or x.startswith("https://"):
             if not check_url(x):
                 sys.exit(1)
         else:
@@ -397,17 +457,20 @@ def parse():
     config.output_dir = os.path.abspath(args.output_dir) + os.sep
     try:
         os.mkdir(config.output_dir)
-    except:
+    except Exception as error:
+        print(error)
         pass
 
     if args.analysis:
         from boardfarm import analysis
+
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
                 sys.stdout.write("Running analysis class = %s... " % c)
-                console_log = open(args.analysis, 'r').read()
+                console_log = open(args.analysis, "r").read()
                 from boardfarm.analysis.analysis import prepare_log
+
                 try:
                     c().analyze(prepare_log(console_log), config.output_dir)
                     print("DONE!")
@@ -422,7 +485,8 @@ def parse():
         board_type=args.board_type,
         board_names=args.board_names,
         board_features=args.feature,
-        board_filter=args.filter)
+        board_filter=args.filter,
+    )
     if args.board_type:
         if not config.BOARD_NAMES:
             print(
@@ -448,10 +512,12 @@ def parse():
     config.golden_master_results = {}
     if config.golden is not []:
         import requests
+
         for g in config.golden:
             try:
                 config.golden_master_results.update(requests.get(g).json())
-            except:
+            except Exception as error:
+                print(error)
                 print("Failed to fetch golden master results from %s" % g)
                 sys.exit(15)
 
@@ -466,10 +532,10 @@ def parse():
     return config
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     configuration = parse()
     # Display configuration
     for key in sorted(dir(configuration)):
-        if key.startswith('__'):
+        if key.startswith("__"):
             continue
         print("%s: %s" % (key, getattr(configuration, key)))
