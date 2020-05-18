@@ -818,11 +818,6 @@ class AxirosACS(base_acs.BaseACS):
         :param param: path to the key that assigned value will be retrieved
         :return: value as a dictionary
         """
-        warnings.warn(
-            "Two seconds of timeout is added to compensate DUT's delay with ACS and will be removed once the issue is resolved."
-        )
-        self.expect(pexpect.TIMEOUT, timeout=2)
-
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
@@ -860,10 +855,6 @@ class AxirosACS(base_acs.BaseACS):
         :return: status of the SPV as int (0/1)
         :raises: TR069ResponseError if the status is not (0/1)
         """
-        warnings.warn(
-            "Two seconds of timeout is added to compensate DUT's delay with ACS and will be removed once the issue is resolved."
-        )
-        self.expect(pexpect.TIMEOUT, timeout=2)
 
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
