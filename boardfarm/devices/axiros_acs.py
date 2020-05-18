@@ -831,11 +831,25 @@ class AxirosACS(base_acs.BaseACS):
                                                    param,
                                                    action='GPV')
 
-        # get raw soap response
-        with self.client.settings(raw_response=True):
-            response = self.client.service.GetParameterValues(p, cmd, cpe_id)
-
-        return AxirosACS._parse_soap_response(response)
+        val = 0
+        while val <= 1:
+            try:
+                with self.client.settings(raw_response=True):
+                    response = self.client.service.GetParameterValues(
+                        p, cmd, cpe_id)
+                return AxirosACS._parse_soap_response(response)
+            except HTTPError as e:
+                if "507" not in str(e):
+                    raise (e)
+                else:
+                    #adding 10 sec timeout
+                    warnings.warn(
+                        "Ten seconds of timeout is added to compensate DOS attack."
+                    )
+                    self.expect(pexpect.TIMEOUT, timeout=10)
+                    if val == 1:
+                        raise (e)
+                    val += 1
 
     def SPV(self, param_value):
         """This method is used for modification the value of one or more CPE Parameters.
@@ -859,11 +873,25 @@ class AxirosACS(base_acs.BaseACS):
                                                    param_value,
                                                    action='SPV')
 
-        # get raw soap response
-        with self.client.settings(raw_response=True):
-            response = self.client.service.SetParameterValues(p, cmd, cpe_id)
-
-        result = AxirosACS._parse_soap_response(response)
+        val = 0
+        while val <= 1:
+            try:
+                with self.client.settings(raw_response=True):
+                    response = self.client.service.SetParameterValues(
+                        p, cmd, cpe_id)
+                result = AxirosACS._parse_soap_response(response)
+            except HTTPError as e:
+                if "507" not in str(e):
+                    raise (e)
+                else:
+                    #adding 10 sec timeout
+                    warnings.warn(
+                        "Ten seconds of timeout is added to compensate DOS attack."
+                    )
+                    self.expect(pexpect.TIMEOUT, timeout=10)
+                    if val == 1:
+                        raise (e)
+                    val += 1
         status = int(result[0]['value'])
         if status not in [0, 1]:
             raise TR069ResponseError("SPV Invalid status: " + str(status))
