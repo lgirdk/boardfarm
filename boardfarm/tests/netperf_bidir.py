@@ -14,7 +14,7 @@ class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
         board = self.dev.board
         lan = self.dev.lan
 
-        board.sendline('mpstat -P ALL 30 1')
+        board.sendline("mpstat -P ALL 30 1")
         opts = ""
         num_conns = 1
 
@@ -29,11 +29,13 @@ class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
             down += float(self.run_netperf_parse(lan))
 
         board.expect(
-            'Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n')
+            r"Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n")
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
 
         msg = "Bidir speed was %s 10^6Mbits/sec with %s average cpu" % (
-            (up + down), avg_cpu)
+            (up + down),
+            avg_cpu,
+        )
         lib.common.test_msg(msg)
         self.result_message = msg
