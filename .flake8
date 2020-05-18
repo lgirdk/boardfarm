@@ -1,6 +1,6 @@
 [flake8]
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,unittests,*test_*,*_test*
-extend-ignore=E501
+extend-ignore=E501, D100, D204
 rst-roles =
     class,
     func,
