@@ -10,8 +10,9 @@ from boardfarm.tests import rootfs_boot
 
 
 class ProcVmstat(rootfs_boot.RootFSBootTest):
-    '''Check /proc/vmstat stats.'''
+    """Check /proc/vmstat stats."""
     def runTest(self):
+        """Run vmstat status."""
         board = self.dev.board
 
         self.logged.update(board.get_proc_vmstat())

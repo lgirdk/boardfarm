@@ -11,8 +11,9 @@ from boardfarm.tests import rootfs_boot
 
 
 class KernelModules(rootfs_boot.RootFSBootTest):
-    '''lsmod shows loaded kernel modules.'''
+    """Lsmod shows loaded kernel modules."""
     def runTest(self):
+        """Run lsmod command and shows kernel modules."""
         board = self.dev.board
 
         board.check_output('lsmod | wc -l')
