@@ -19,13 +19,13 @@ warnings.simplefilter("always", UserWarning)
 
 
 class RootFSBootTest(bft_base_test.BftBaseTest):
-    '''Flashed image and booted successfully.'''
+    """Flashed image and booted successfully."""
     def boot(self, reflash=True):
         try:
             boardfarm.lib.booting.boot(self.config, self.env_helper, self.dev,
                                        reflash, self.logged)
         except boardfarm.exceptions.NoTFTPServer:
-            msg = 'No WAN Device or tftp_server defined, skipping flash.'
+            msg = "No WAN Device or tftp_server defined, skipping flash."
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
@@ -34,6 +34,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
 
     @lib.common.run_once
     def runTest(self):
+        """Start test to flash image and boot successfully."""
         if self.__class__.__name__ == "RootFSBootTest":
             try:
                 self.boot()
@@ -57,9 +58,9 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
                 board.sendline()
                 if not self.config.batch:
                     board.interact()
-            except:
-                pass
-            if self.reboot == True and self.reset_after_fail:
+            except Exception as e:
+                print(e)
+            if self.reboot and self.reset_after_fail:
                 self.boot(self.reflash)
             self.reboot = True
         except Exception as e:
