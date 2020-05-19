@@ -25,7 +25,7 @@ class Interact(rootfs_boot.RootFSBootTest):
             else:
                 print("  %s device:    %s" % (d.name, d))
 
-    def runTest(self):
+    def test_main(self):
         board = self.dev.board
         lib.common.test_msg(
             "Press Ctrl-] to stop interaction and return to menu")
