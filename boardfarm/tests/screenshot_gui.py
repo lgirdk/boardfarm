@@ -15,8 +15,9 @@ from pyvirtualdisplay import Display
 
 
 class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
-    '''Bootstrap firefox running via localproxy'''
+    """Bootstrap firefox running via local proxy."""
     def start_browser(self):
+        """Try to start vnc server."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
@@ -35,7 +36,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 print("Connect to VNC display running on localhost:" +
                       self.config.default_display_backend_port)
                 input("Press any key after connecting to display....")
-        except:
+        except Exception:
             # fallback xvfb
             self.display = Display(visible=0, size=(1366, 768))
             self.display.start()
@@ -46,7 +47,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
             elif lan.ipaddr is not None:
                 ip = lan.ipaddr
                 lan.sendline('cat /proc/net/vlan/config')
-                lan.expect('%s.*\|\s([0-9]+).*\|' % lan.iface_dut)
+                lan.expect(r'%s.*\|\s([0-9]+).*\|' % lan.iface_dut)
                 port = 8000 + int(lan.match.group(1))
                 lan.expect(prompt)
                 proxy = "%s:%s" % (ip, port)
@@ -67,6 +68,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         return driver
 
     def runTest(self):
+        """Start browser and then connect interactive mode."""
         board = self.dev.board
 
         self.start_browser()
@@ -78,23 +80,25 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        """To reset back to initial state."""
         try:
             self.display.stop()
-        except:
+        except Exception:
             pass
         try:
             self.display.sendstop()
-        except:
+        except Exception:
             pass
         try:
             self.display.popen.kill()
-        except:
+        except Exception:
             pass
 
 
 class ScreenshotGUI(RunBrowserViaProxy):
-    '''Starts Firefox via a proxy to the LAN and takes a screenshot'''
+    """Starts Firefox via a proxy to the LAN and takes a screenshot."""
     def runTest(self):
+        """Run browser and take screenshot."""
         board = self.dev.board
 
         driver = self.start_browser()
