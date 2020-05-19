@@ -11,32 +11,63 @@ import traceback
 import warnings
 
 import boardfarm.exceptions
+import boardfarm.lib.ConfigHelper
+import boardfarm.lib.DeviceManager
+import boardfarm.lib.env_helper
 import debtcollector
 import six
 from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.library import check_devices
 from boardfarm.orchestration import TearDown
+from unittest2 import TestCase as UTest
 
 warnings.simplefilter("always", UserWarning)
 
 
-class BftBaseTest(six.with_metaclass(LoggerMeta, object)):
+class _UnitTestCls(UTest):
+    def __init__(self, *args, **kwargs):
+        # This is just to ensure the pytest runs with BF
+        # this is done so that base prefixed/suffixed test method don't run
+        UTest.__init__(self, 'test_main')
+        if all([self.config, self.dev, self.env_helper]):
+            raise boardfarm.exceptions.CodeError(
+                'Args passed while running with pytest: {}'.format(
+                    [self.config, self.dev, self.env_helper]))
+
+
+if "pytest" in sys.modules:
+    inherit_class = _UnitTestCls
+else:
+    inherit_class = six.with_metaclass(LoggerMeta, object)
+
+
+class BftBaseTest(inherit_class):
     _testMethodName = "UNDEFINED"
     log = ""
     log_calls = ""
     _format = "%a %d %b %Y %H:%M:%S"
 
-    def __init__(self, config, device_mgr, env_helper):
-        self.config = config
-        self.dev = device_mgr
+    def __init__(self, *args, **kwargs):
+        self.config = self.dev = self.env_helper = None
+        if args and len(args) == 3:
+            if type(
+                    args[0]
+            ) is boardfarm.lib.test_configurator.BoardfarmTestConfig or args[
+                    0] is boardfarm.config:
+                self.config = args[0]
+            if type(args[1]) is boardfarm.lib.DeviceManager.device_manager:
+                self.dev = args[1]
+            if issubclass(type(args[2]), boardfarm.lib.env_helper.EnvHelper):
+                self.env_helper = args[2]
+
+        super(BftBaseTest, self).__init__()
         # Useful defaults
         self.reset_after_fail = True
         self.dont_retry = False
         self.logged = dict()
         self.subtests = []
         self.attempts = 0
-        self.env_helper = env_helper
 
         # initialize a step for teardown
         # TearDown step has a hook to call a fixture : teardown

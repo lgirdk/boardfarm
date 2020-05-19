@@ -33,7 +33,7 @@ class RootFSBootTest(bft_base_test.BftBaseTest):
     reboot = False
 
     @lib.common.run_once
-    def runTest(self):
+    def test_main(self):
         """Start test to flash image and boot successfully."""
         if self.__class__.__name__ == "RootFSBootTest":
             try:
