@@ -871,6 +871,7 @@ class AxirosACS(base_acs.BaseACS):
                     response = self.client.service.SetParameterValues(
                         p, cmd, cpe_id)
                 result = AxirosACS._parse_soap_response(response)
+                break
             except HTTPError as e:
                 if "507" not in str(e):
                     raise (e)
