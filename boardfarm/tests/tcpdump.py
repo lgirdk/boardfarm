@@ -10,23 +10,24 @@ from boardfarm.tests import rootfs_boot
 
 
 class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
-    '''Captures traces for WAN and LAN devices'''
+    """Captures traces for WAN and LAN devices."""
 
     opts = ""
 
     def runTest(self):
+        """Run test to Capture traces for WAN and LAN devices."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
 
         for d in [wan, lan]:
-            d.sendline('tcpdump -i %s -w /tmp/tcpdump.pcap %s' %
+            d.sendline("tcpdump -i %s -w /tmp/tcpdump.pcap %s" %
                        (d.iface_dut, self.opts))
 
         board.expect(pexpect.TIMEOUT, timeout=15)
 
         for d in [wan, lan]:
-            d.sendcontrol('c')
+            d.sendcontrol("c")
 
         # TODO: copy dumps to results/ dir for logging
 
