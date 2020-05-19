@@ -30,12 +30,14 @@ layerconfs = []
 for modname in sorted(boardfarm.plugins):
     overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
     # Find testsuite config files
-    testsuites_path = glob.glob(os.path.join(overlay, 'testsuites.cfg')) + \
-                      glob.glob(os.path.join(overlay, '*', 'testsuites.cfg'))
+    testsuites_path = glob.glob(os.path.join(
+        overlay, 'testsuites.cfg')) + glob.glob(
+            os.path.join(overlay, '*', 'testsuites.cfg'))
     testsuite_config_files += testsuites_path
     # Find layerconf files and import them
-    layerconf_path = glob.glob(os.path.join(overlay, 'layerconf.py')) + \
-                     glob.glob(os.path.join(overlay, '*', 'layerconf.py'))
+    layerconf_path = glob.glob(os.path.join(
+        overlay, 'layerconf.py')) + glob.glob(
+            os.path.join(overlay, '*', 'layerconf.py'))
     for f in layerconf_path:
         if os.path.isfile(f):
             location = os.path.dirname(f)
@@ -111,7 +113,7 @@ if 'BFT_OPTIONS' in os.environ:
 
 
 def get_display_backend_size():
-    """Function to get the display backend size resolution
+    """Get the display backend size resolution.
 
     :return : display resolution size as x,y
     :rtype : integer
@@ -169,26 +171,21 @@ err_injection_dict = {}
 
 
 def update_error_injection_dict(err_dict):
-    """
-    Updates the error injection dictionary (empty by default) from a list of json files.
+    """Update the error injection dictionary (empty by default) from a list of json files.
+
     The dictionary basic structure is
     {
-      "class_name":
-      {
-         "function_name": value_to_be_returned
-      }
+    "class_name":
+    {
+    "function_name": value_to_be_returned
     }
-
-
+    }
     :param err_dict: A list of filepaths (or http) that contains the error dictionary in json format
     :type err_dict: list, strings
-
     Returns:
-
     :return: err_injection_dict (dict) the updated error injection dictionary
     :rtype: dict
     """
-
     if type(err_dict) is not list:
         err_dict = [err_dict]
 
@@ -202,7 +199,8 @@ def update_error_injection_dict(err_dict):
             else:
                 data = open(d, 'r').read()
                 err_injection_dict.update(json.loads(data))
-        except:
+        except Exception as error:
+            print(error)
             print(
                 "Failed to fetch error dictionay at '{}', skipping...".format(
                     d))
@@ -214,8 +212,7 @@ def update_error_injection_dict(err_dict):
 
 
 def get_err_injection_dict():
-    """
-    Gets the error injection dictionary
+    """Get the error injection dictionary.
 
     :return: err_injection_dict (dict): the error injection dictionary
     :rtype: dict
