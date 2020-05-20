@@ -90,7 +90,7 @@ def ubus_system_reboot(session_id, lan):
 
 
 class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
-    '''Various UBus tests'''
+    """Various UBus tests."""
     def runTest(self):
         lan = self.dev.lan
 
@@ -107,7 +107,7 @@ class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
 
 
 class UBusTestSystemReboot(rootfs_boot.RootFSBootTest):
-    '''Various UBus tests'''
+    """Various UBus tests."""
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
