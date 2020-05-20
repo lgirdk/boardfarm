@@ -14,7 +14,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class Nmap_LAN(rootfs_boot.RootFSBootTest):
-    '''Ran nmap port scanning tool on LAN interface.'''
+    """Ran nmap port scanning tool on LAN interface."""
     def recover(self):
         lan = self.dev.lan
         lan.sendcontrol('c')
@@ -39,7 +39,7 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
 
 
 class Nmap_WAN(rootfs_boot.RootFSBootTest):
-    '''Ran nmap port scanning tool on WAN interface.'''
+    """Ran nmap port scanning tool on WAN interface."""
     def recover(self):
         wan = self.dev.wan
 
@@ -71,7 +71,7 @@ class Nmap_WAN(rootfs_boot.RootFSBootTest):
 
 
 class UDP_Stress(rootfs_boot.RootFSBootTest):
-    '''Ran nmap through router, creating hundreds of UDP connections.'''
+    """Ran nmap through router, creating hundreds of UDP connections."""
     def runTest(self):
         lan = self.dev.lan
 
