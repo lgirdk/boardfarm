@@ -22,8 +22,11 @@ from cdrouter.packages import Package
 
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
-    '''First attempt at test that runs a CDrouter job, waits for completion,
-       and grabs results'''
+    """
+    First attempt at test that runs a CDrouter job.
+
+    waits for completion and grabs results.
+    """
 
     # To be overriden by children class
     tests = None
@@ -102,7 +105,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                 d.expect_exact('cat /proc/net/vlan/config')
                 if 0 == d.expect(
                     [pexpect.TIMEOUT,
-                     '%s.*\|\s([0-9]+).*\|' % d.iface_dut],
+                     r'%s.*\|\s([0-9]+).*\|' % d.iface_dut],
                         timeout=5):
                     d.vlan = 0
                 else:
@@ -167,7 +170,7 @@ testvar lanVlanId """ + lan.vlan
                     raise exp
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
-            contents=contents + """
+            contents = (contents + """
 testvar ipv6LanIp %s%%eui64%%
 testvar ipv6LanPrefixLen 64
 testvar healthCheckEnable yes
@@ -195,16 +198,9 @@ testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s
-""" % (fixed_prefix6,
-            cdrouter.wanispip_v6, \
-       cdrouter.wanispgateway_v6, \
-       wan_ip6, \
-       cdrouter.wanispip, \
-       cdrouter.wanispgateway, \
-       wan_ip, wan_ip, \
-       cdrouter.ipv4hopcount, \
-       board.get_dns_server(), \
-       board.get_dns_server_upstream())
+""" % (fixed_prefix6, cdrouter.wanispip_v6, cdrouter.wanispgateway_v6, wan_ip6,
+            cdrouter.wanispip, cdrouter.wanispgateway, wan_ip, wan_ip, cdrouter.
+            ipv4hopcount, board.get_dns_server(), board.get_dns_server_upstream()))
 
         print("Using below for config:")
         print(contents)
@@ -241,7 +237,7 @@ testvar wanDnsServer %s
             print(r.status)
 
             # we are ready to go from boardfarm reset above
-            if r.status == "paused" and unpaused == False:
+            if r.status == "paused" and unpaused is False:
                 c.results.unpause(j.result_id)
                 unpaused = True
                 board.expect(pexpect.TIMEOUT, timeout=1)
@@ -249,7 +245,7 @@ testvar wanDnsServer %s
                 end_of_start = True
                 continue
 
-            if r.status == "paused" and end_of_start == True:
+            if r.status == "paused" and end_of_start is True:
                 end_of_start = False
                 # TODO: do we need this anymore? we have board specific cdrouter_bootdelay
                 board.expect(pexpect.TIMEOUT, timeout=60)
@@ -277,11 +273,11 @@ testvar wanDnsServer %s
 
         summary = c.results.summary_stats(j.result_id)
 
-        self.result_message = six.text_type(self.result_message) + \
-                " (Failed= %s, Passed = %s, Skipped = %s)" \
-                % (summary.result_breakdown.failed, \
-                   summary.result_breakdown.passed, \
-                   summary.result_breakdown.skipped)
+        self.result_message = (
+            six.text_type(self.result_message) +
+            " (Failed= %s, Passed = %s, Skipped = %s)" %
+            (summary.result_breakdown.failed, summary.result_breakdown.passed,
+             summary.result_breakdown.skipped))
 
         for test in summary.test_summaries:
             self.logged[test.name] = vars(test)
@@ -300,7 +296,7 @@ testvar wanDnsServer %s
                     else:
                         tr.elapsed_time = test.duration
                     self.subtests.append(tr)
-                except:
+                except Exception:
                     continue
 
             # TODO: handle skipped tests
@@ -309,7 +305,7 @@ testvar wanDnsServer %s
                 metric = c.results.get(j.result_id, test.name, "bandwidth")
                 print(vars(metric))
                 # TODO: decide how to export data to kibana
-            except:
+            except Exception:
                 # Not all tests have this metric, no other way?
                 pass
 
@@ -356,10 +352,11 @@ testvar wanDnsServer %s
     @staticmethod
     @lib.common.run_once
     def parse(config):
+        """CDRouter."""
         try:
             from boardfarm.devices import cdrouter
             url = 'http://' + cdrouter.ipaddr
-        except:
+        except Exception:
             return []
 
         c = CDRouter(url)
@@ -375,5 +372,7 @@ testvar wanDnsServer %s
 
 
 class CDrouterCustom(CDrouterStub):
+    """Initialize CDrouterCustom."""
+
     tests = os.environ.get("BFT_CDROUTER_CUSTOM", "").split(" ")
     extra_config = os.environ.get("BFT_CDROUTER_CUSTOM_CONFIG", "")
