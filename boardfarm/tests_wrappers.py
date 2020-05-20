@@ -13,7 +13,7 @@ warnings.simplefilter("always", UserWarning)
 
 @removals.remove(category=UserWarning)
 def skip_on_fail(func):
-    """If a test fails then it will throw a skipTest error"""
+    """If a test fails then it will throw a skipTest error."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         instance = args[0]
@@ -28,7 +28,7 @@ def skip_on_fail(func):
 
 
 def throw_pexpect_error(func):
-    """If a pexpect.TIMEOUT occurs throw boardfarm.PexpectError error"""
+    """If a pexpect.TIMEOUT occurs throw boardfarm.PexpectError error."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -39,8 +39,12 @@ def throw_pexpect_error(func):
     return wrapper
 
 
-#@pytest.fixture(scope="class")
+# @pytest.fixture(scope="class")
 def continue_on_fail(func):
+    """Functions wrapped in continue_on_fail will not raise.
+
+    an Exception in case of failure.
+    """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -54,6 +58,7 @@ def continue_on_fail(func):
 
 
 def run_with_lock(lock):
+    """Common thread function use for hardware critical functionalities."""
     def run_with_lock_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
