@@ -10,7 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):
-    '''Can access main web GUI page.'''
+    """Can access main web GUI page."""
     @lib.common.run_once
     def runTest(self):
         board = self.dev.board
