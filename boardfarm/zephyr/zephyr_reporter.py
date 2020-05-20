@@ -17,72 +17,92 @@ COLUMN_JIRA_TEST_ID = "Jira ID"
 
 
 def parse_arguments():
-    """Parses imput arguments and returns them to the main routine.
-        Also takes care of prompting help"""
+    """Parse imput arguments and returns them to the main routine.
+
+    Also takes care of prompting help
+    """
     parser = argparse.ArgumentParser(
-        description='Post TDK Framework execution results to Zephyr (Jira)',
-        epilog="i.e. %(prog)s")
-    parser.add_argument("--report",
-                        "-rf",
-                        help="The TDK Framework output file. \
+        description="Post TDK Framework execution results to Zephyr (Jira)",
+        epilog="i.e. %(prog)s",
+    )
+    parser.add_argument(
+        "--report",
+        "-rf",
+        help="The TDK Framework output file. \
                               Default: output.xml",
-                        default="output.xml")
+        default="output.xml",
+    )
     parser.add_argument(
         "--metafile",
         "-mf",
         help="The csv file containing TDK tests and test case IDs \
                              Default: tdktests.csv",
-        default="tdktests.csv")
-    parser.add_argument("--project",
-                        "-pr",
-                        help="The Jira project where to update the results \
+        default="tdktests.csv",
+    )
+    parser.add_argument(
+        "--project",
+        "-pr",
+        help="The Jira project where to update the results \
                               Default: RDK-B",
-                        default="RDKB")
+        default="RDKB",
+    )
     parser.add_argument("--release",
                         "-r",
                         help="The release version in Jira",
                         default="7.6.1")
-    parser.add_argument("--environment",
-                        "-e",
-                        required=False,
-                        help="A string that identifies the environment.",
-                        default="Lab 5C")
-    parser.add_argument("--cycle",
-                        "-c",
-                        required=False,
-                        help="The name of the test cycle. \
+    parser.add_argument(
+        "--environment",
+        "-e",
+        required=False,
+        help="A string that identifies the environment.",
+        default="Lab 5C",
+    )
+    parser.add_argument(
+        "--cycle",
+        "-c",
+        required=False,
+        help="The name of the test cycle. \
                         When not given, the cycle gets the name of the build",
-                        default=None)
-    parser.add_argument("--build",
-                        "-b",
-                        required=False,
-                        help="The build (software version) under test. \
+        default=None,
+    )
+    parser.add_argument(
+        "--build",
+        "-b",
+        required=False,
+        help="The build (software version) under test. \
                         A cycle with this name is created if not otherwise \
                         specified",
-                        default="DemoBuild")
-    parser.add_argument("--user",
-                        "-u",
-                        required=False,
-                        help="The Jira user that is publishing the results",
-                        default='user')
-    parser.add_argument("--passwd",
-                        "-p",
-                        required=False,
-                        help="The Jira password of the given user",
-                        default='pass')
-    parser.add_argument("--updateautomationstatus",
-                        "-a",
-                        required=False,
-                        help="When True it marks the test automation status \
+        default="DemoBuild",
+    )
+    parser.add_argument(
+        "--user",
+        "-u",
+        required=False,
+        help="The Jira user that is publishing the results",
+        default="user",
+    )
+    parser.add_argument(
+        "--passwd",
+        "-p",
+        required=False,
+        help="The Jira password of the given user",
+        default="pass",
+    )
+    parser.add_argument(
+        "--updateautomationstatus",
+        "-a",
+        required=False,
+        help="When True it marks the test automation status \
                         in Jira",
-                        action="store_true")
+        action="store_true",
+    )
 
     args = parser.parse_args()
     return args
 
 
 def get_jira_release_id(rel_name, jira, proj):
-    """Return the ID of the release in a given project"""
+    """Return the ID of the release in a given project."""
     versions = jira.project_versions(proj)
     for version in reversed(versions):
         if version.name == rel_name:
@@ -92,7 +112,7 @@ def get_jira_release_id(rel_name, jira, proj):
 
 
 def update_automation_status(issue):
-    """Update the Jira custom field to track that the test is automated"""
+    """Update the Jira custom field to track that the test is automated."""
 
 
 def get_test_id_from_meta_file(meta_file, test_name):
@@ -108,18 +128,22 @@ def parse_zapi_config():
     data = []
     for modname in sorted(boardfarm.plugins):
         overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
-        zapi_conf = glob.glob(os.path.join(overlay, '*', 'zapi_configuration.json')) + \
-                    glob.glob(os.path.join(overlay, '*', '*', 'zapi_configuration.json'))
-        metafile = glob.glob(os.path.join(overlay, '*', 'boardfarm_tc_meta_file.csv')) + \
-                   glob.glob(os.path.join(overlay, '*', '*', 'boardfarm_tc_meta_file.csv'))
+        zapi_conf = glob.glob(
+            os.path.join(overlay, "*", "zapi_configuration.json")) + glob.glob(
+                os.path.join(overlay, "*", "*", "zapi_configuration.json"))
+        metafile = glob.glob(
+            os.path.join(overlay, "*",
+                         "boardfarm_tc_meta_file.csv")) + glob.glob(
+                             os.path.join(overlay, "*", "*",
+                                          "boardfarm_tc_meta_file.csv"))
         if len(zapi_conf) > 0:
             data.append(json.load(open(zapi_conf[0])))
         if len(metafile) > 0:
-            data[-1]['metafile'] = metafile[0]
+            data[-1]["metafile"] = metafile[0]
 
     # TODO: opensource zephyr for boardfarm tests?
-    if os.path.exists('zephyr/zapi_configuration.json'):
-        data.append(json.load(open('zephyr/zapi_configuration.json')))
+    if os.path.exists("zephyr/zapi_configuration.json"):
+        data.append(json.load(open("zephyr/zapi_configuration.json")))
 
     return data
 
@@ -129,30 +153,32 @@ def update_zephyr(test_cases_list):
     if len(args) == 0:
         print("Zephyr is not configured, skipping...")
         return
-    print('Starting Zephyr Execution....')
+    print("Starting Zephyr Execution....")
 
     for z in args:
-        if "JIRA_URL" == z['jira_url'] or "JIRAPASSWORD" == z['passwd']:
+        if "JIRA_URL" == z["jira_url"] or "JIRAPASSWORD" == z["passwd"]:
             # This is not configure, skip to next
             continue
         """"Main routine"""
 
         jira = JIRA(basic_auth=(z["user"], z["passwd"]),
-                    options={'server': z["jira_url"]})
+                    options={"server": z["jira_url"]})
 
         proj = jira.project(z["project"])
-        verid = get_jira_release_id(z['release'], jira, proj)
+        verid = get_jira_release_id(z["release"], jira, proj)
         cycleName = z["cycle"]
-        cycleName = cycleName + "_" + str(
-            (datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
+        cycleName = (cycleName + "_" + str(
+            (datetime.datetime.now()).strftime("%Y%m%d%H%M%S")))
 
-        reporter = zapi.Zapi(project_id=proj.id,
-                             version_id=verid,
-                             environment=str(z["environment"]),
-                             build=z["build"],
-                             jira_url=z["jira_url"],
-                             usr=z["user"],
-                             pwd=z["passwd"])
+        reporter = zapi.Zapi(
+            project_id=proj.id,
+            version_id=verid,
+            environment=str(z["environment"]),
+            build=z["build"],
+            jira_url=z["jira_url"],
+            usr=z["user"],
+            pwd=z["passwd"],
+        )
         if z["cycle"] is None:
             z["cycle"] = z["build"]
         reporter.get_or_create_cycle(str(cycleName))
@@ -177,23 +203,23 @@ def update_zephyr(test_cases_list):
             result = test_cases_list[i][1]
             print("Test case Result: " + result)
             log_data = "sample log data"
-            if result == 'FAIL':
-                result = 'FAIL'
-            if result == 'OK':
-                result = 'PASS'
-            if result == 'None':
-                result = 'FAIL'
-            if result == 'SKIP':
-                result = 'NOT TESTED'
-            if result == 'Exp FAIL':
-                result = 'FAIL'
+            if result == "FAIL":
+                result = "FAIL"
+            if result == "OK":
+                result = "PASS"
+            if result == "None":
+                result = "FAIL"
+            if result == "SKIP":
+                result = "NOT TESTED"
+            if result == "Exp FAIL":
+                result = "FAIL"
 
-            if 'status_codes' in z:
+            if "status_codes" in z:
                 ret = reporter.set_execution(
                     result,
                     exec_id,
                     log_data,
-                    status_code_dict=z['status_codes'])
+                    status_code_dict=z["status_codes"])
             else:
                 ret = reporter.set_execution(result, exec_id, log_data)
 
