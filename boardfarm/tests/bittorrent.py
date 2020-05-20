@@ -11,15 +11,17 @@ from boardfarm.tests import rootfs_boot, socat
 
 
 class BitTorrentBasic(socat.SoCat):
-    '''Super simple simulation of BitTorrent traffic'''
+    """Super simple simulation of BitTorrent traffic."""
+
     socat_recv = "UDP4-RECVFROM"
     socat_send = "UDP4-SENDTO"
     payload = "d1:ad2:id20:"
 
 
 class BitTorrentSingle(BitTorrentBasic):
-    '''Single UDP/Bittorrent flow'''
+    """Single UDP/Bittorrent flow."""
     def runTest(self):
+        """Runtest implementation."""
         board = self.dev.board
         lan = self.dev.lan
 
@@ -29,20 +31,21 @@ class BitTorrentSingle(BitTorrentBasic):
         time = sz / (rate * 1024)
         print("time should be ~%s" % time)
         self.check_and_clean_ips()
-        lan.sendline('fg')
+        lan.sendline("fg")
         lan.expect(prompt, timeout=time + 10)
 
         # TODO: make this a function that's more robust
         board.get_pp_dev().sendline(
-            'cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' % (ip, port))
+            "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port))
         board.get_pp_dev().expect(prompt)
 
         self.recover()
 
 
 class BitTorrentB2B(BitTorrentBasic):
-    '''Single UDP/Bittorrent flow back-to-back'''
+    """Single UDP/Bittorrent flow back-to-back."""
     def runTest(self):
+        """Runtest implementation."""
         board = self.dev.board
         lan = self.dev.lan
         maxtime = 5
@@ -55,11 +58,11 @@ class BitTorrentB2B(BitTorrentBasic):
             time = sz / (rate * 1024)
             print("time should be ~%s" % time)
             self.check_and_clean_ips()
-            lan.sendline('fg')
+            lan.sendline("fg")
             lan.expect(prompt, timeout=5)
 
             board.get_pp_dev().sendline(
-                'cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s' %
+                "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" %
                 (ip, port))
             board.get_pp_dev().expect(prompt)
 
@@ -70,49 +73,50 @@ class BitTorrentB2B(BitTorrentBasic):
 
 class BitTorrentClient(rootfs_boot.RootFSBootTest):
     def runTest(self):
+        """Runtest implementation."""
         board = self.dev.board
         lan = self.dev.lan
 
-        board.sendcontrol('c')
+        board.sendcontrol("c")
         board.expect(board.prompt)
-        board.sendline('logread -f &')
+        board.sendline("logread -f &")
         board.expect(board.prompt)
 
-        lan.sendline('rm -rf Fedora*')
+        lan.sendline("rm -rf Fedora*")
         lan.expect(lan.prompt)
         # TODO: apt-get install bittornado
         for _ in range(10):
             lan.sendline(
                 "btdownloadheadless 'https://torrent.fedoraproject.org/torrents/Fedora-Games-Live-x86_64-28_Beta.torrent'"
             )
-            lan.expect('saving:')
+            lan.expect("saving:")
             done = False
             while not done:
                 lan.expect(pexpect.TIMEOUT, timeout=1)  # flush buffer
                 if 0 == lan.expect(
-                    ['time left:      Download Succeeded!', pexpect.TIMEOUT],
+                    ["time left:      Download Succeeded!", pexpect.TIMEOUT],
                         timeout=10):
                     print("Finished, restarting....")
                     done = True
                 board.expect(pexpect.TIMEOUT, timeout=5)
                 board.sendline()  # keepalive
-            lan.sendcontrol('c')
-            lan.sendcontrol('c')
-            lan.sendcontrol('c')
+            lan.sendcontrol("c")
+            lan.sendcontrol("c")
+            lan.sendcontrol("c")
             lan.expect(lan.prompt)
-            lan.sendline('rm -rf Fedora*')
+            lan.sendline("rm -rf Fedora*")
             lan.expect(lan.prompt)
 
     def recover(self):
         board = self.dev.board
         lan = self.dev.lan
 
-        lan.sendcontrol('c')
+        lan.sendcontrol("c")
         lan.expect(lan.prompt)
-        lan.sendline('rm -rf Fedora*')
+        lan.sendline("rm -rf Fedora*")
         lan.expect(lan.prompt)
-        board.sendcontrol('c')
+        board.sendcontrol("c")
         board.expect(board.prompt)
-        board.sendline('fg')
-        board.sendcontrol('c')
+        board.sendline("fg")
+        board.sendcontrol("c")
         board.expect(board.prompt)
