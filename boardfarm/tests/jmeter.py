@@ -10,6 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 
 def rm_r(path):
+    """Unlink path."""
     if not os.path.exists(path):
         return
     if os.path.isfile(path) or os.path.islink(path):
@@ -19,7 +20,7 @@ def rm_r(path):
 
 
 class JMeter(rootfs_boot.RootFSBootTest):
-    '''Runs JMeter jmx file from LAN device'''
+    """Runs JMeter jmx file from LAN device."""
 
     jmx = "https://jmeter.apache.org/demos/ForEachTest2.jmx"
     shortname = "ForEachTest2"
@@ -111,7 +112,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
 
 class JMeter_10x_10u_5t(JMeter):
-    '''Runs JMeter jmx 10x_10u_5t'''
+    """Runs JMeter jmx 10x_10u_5t."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_10x_10u_5t.jmx')
@@ -119,7 +120,7 @@ class JMeter_10x_10u_5t(JMeter):
 
 
 class JMeter_1x_9u_5t(JMeter):
-    '''Runs JMeter jmx 1x_9u_5t'''
+    """Runs JMeter jmx 1x_9u_5t."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_1x_9u_5t.jmx')
@@ -127,7 +128,7 @@ class JMeter_1x_9u_5t(JMeter):
 
 
 class JMeter_20x_9u_1t(JMeter):
-    '''Runs JMeter jmx 20x_9u_1t'''
+    """Runs JMeter jmx 20x_9u_1t."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_20x_9u_1t.jmx')
@@ -135,7 +136,7 @@ class JMeter_20x_9u_1t(JMeter):
 
 
 class JMeter_20x_9u_1t_300msdelay(JMeter):
-    '''Runs JMeter jmx 20x_9u_1t_300msdelay'''
+    """Runs JMeter jmx 20x_9u_1t_300msdelay."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_20x_9u_1t_300msdelay.jmx')
@@ -143,7 +144,7 @@ class JMeter_20x_9u_1t_300msdelay(JMeter):
 
 
 class JMeter_20x_9u_1t_500msdelay(JMeter):
-    '''Runs JMeter jmx 20x_9u_1t_500msdelay'''
+    """Runs JMeter jmx 20x_9u_1t_500msdelay."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_20x_9u_1t_500msdelay.jmx')
@@ -151,7 +152,7 @@ class JMeter_20x_9u_1t_500msdelay(JMeter):
 
 
 class JMeter_20x_9u_1t_1000msdelay(JMeter):
-    '''Runs JMeter jmx 20x_9u_1t_1000msdelay'''
+    """Runs JMeter jmx 20x_9u_1t_1000msdelay."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_20x_9u_1t_1000msdelay.jmx')
@@ -159,7 +160,7 @@ class JMeter_20x_9u_1t_1000msdelay(JMeter):
 
 
 class JMeter_20x_9u_1t_1500msdelay(JMeter):
-    '''Runs JMeter jmx 20x_9u_1t_1500msdelay'''
+    """Runs JMeter jmx 20x_9u_1t_1500msdelay."""
 
     jmx = os.path.join(os.path.dirname(__file__),
                        'jmeter/httpreq_20x_9u_1t_1500msdelay.jmx')
