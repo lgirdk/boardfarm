@@ -13,7 +13,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
-    '''Set IPv6 addresses and default routes for router and devices.'''
+    """Set IPv6 addresses and default routes for router and devices."""
     @run_once
     def runTest(self):
         board = self.dev.board
@@ -87,7 +87,7 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
 
 
 class Remove_IPv6_Addresses(rootfs_boot.RootFSBootTest):
-    '''Removed IPv6 addresses and default routes for router and devices.'''
+    """Removed IPv6 addresses and default routes for router and devices."""
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan
