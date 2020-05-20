@@ -526,6 +526,8 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                 (tests_pass, tests_fail, tests_skip))
 
     library.printd(config.board)
+    with open('results/station_name.txt', 'w') as f:
+        print(config.board.get_station(), file=f)
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
     create_file_logs(config, device_mgr.board, tests_to_run, logger)
