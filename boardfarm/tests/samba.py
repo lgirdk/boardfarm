@@ -10,7 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class SambaShare(rootfs_boot.RootFSBootTest):
-    '''Setup and run Samba and test connection.'''
+    """Setup and run Samba and test connection."""
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
