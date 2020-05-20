@@ -169,6 +169,30 @@ def basic_call_verify(output_sip, ip_src):
     assert sip_msg is not None, "SIP call failed"
 
 
+def get_mta_details(capture_file, device, mta_user=[]):
+    """This function to get call id and expires from mta line0 and line1.
+    :param capture_file: Filename where the packets captured in sipserver
+    :type output_sip: String
+    :param device: object
+    :param return: Returns the call id and expires of line0 and line1
+    :type device: Dictionary
+    """
+    import re
+    output = tcpdump_read(device, capture_file, protocol="-vvv port 5060")
+    out_rep = output.replace("\r\n", "").replace("\t", "")
+    split_out = re.compile(r"\d\d:\d\d:\d\d").split(out_rep)
+    mta_line_info = {}
+    for idx, mta in enumerate(mta_user):
+        for line in split_out:
+            regx_str = r'SIP/2.0\s+200\s+OK(.*)From:\s+' + mta + '(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)'
+            match = re.search(regx_str, line)
+            if match:
+                mta_line_info['line%s' % idx] = match.group(3)
+                mta_line_info['Expires%s' % idx] = match.group(4)
+                break
+    return mta_line_info
+
+
 def nmap_cli(device,
              ip_address,
              port,
