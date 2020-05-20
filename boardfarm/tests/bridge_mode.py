@@ -10,7 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class BridgedMode(rootfs_boot.RootFSBootTest):
-    '''Puts router in bridged mode (other tests may not work after running this)'''
+    """Puts router in bridged mode (other tests may not work after running this)."""
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
