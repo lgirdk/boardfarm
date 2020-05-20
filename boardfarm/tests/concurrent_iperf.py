@@ -7,7 +7,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class ConcurrentIperf(rootfs_boot.RootFSBootTest):
-    '''Determine's max number of iperf connections'''
+    """Determine's max number of iperf connections."""
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan
@@ -50,7 +50,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
 
                 if con_conn == 512:
                     self.result_message = "iPerf Concurrent passed 512 connections (failed conns = %s)" % failed_cons
-            except:
+            except Exception:
                 self.result_message = "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)" % (
                     prev_conn, prev_failed)
                 break
