@@ -1,3 +1,6 @@
+import re
+
+from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.installers import apt_install
 
 
@@ -12,7 +15,7 @@ class SipCenter(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-
+        self.ast_prompt = '.*>'
         self.numbers = self.kwargs.get('numbers', ["1000", "2000", "3000"])
         # local installation without internet will be added soon
         self.ast_local_url = kwargs.get("local_site", None)
@@ -104,3 +107,62 @@ EOF'''
         '''
         self.sendline('killall -9 asterisk')
         self.expect(self.prompt)
+
+    def enter_asterisk_console(self):
+        '''
+        Enter the asterisk console
+        '''
+        self.sendline('asterisk -rv')
+        self.expect(self.ast_prompt)
+
+    def exit_asterisk_console(self):
+        '''
+        Exit the asterisk console
+        '''
+        self.sendline('exit')
+        self.expect(self.prompt)
+
+    def sip_reload(self):
+        '''
+        Reload the SIP server from asterisk
+        :return: Status of reload output in boolean
+        :rtype: Boolean
+        '''
+        try:
+            self.enter_asterisk_console()
+            self.sendline('sip reload')
+            self.expect('Reloading SIP')
+            self.expect(self.ast_prompt)
+            return True
+        except PexpectErrorTimeout:
+            return False
+        finally:
+            self.exit_asterisk_console()
+
+    def peer_reg_status(self, user, mta_ip):
+        '''
+        To check the status of a user in sip server,
+        which can be either 'Registered' or 'Unregistered'
+        or 'Not Present'
+        :param user: the username of the user
+        :type user: string
+        :param mta_ip: IPv4 address of the MTA
+        :type mta_ip: string
+        :return: Registration Status for the user and will
+                be in 'Registered'/'Unregistered'/'User Unavailable'
+        :rtype: string
+        '''
+        self.enter_asterisk_console()
+        self.sendline('sip show peers')
+        self.expect(r']')
+        output = self.before
+        self.exit_asterisk_console()
+        if re.search('.*' + user + '.+' + mta_ip, output):
+            print(f"User {user} is registered")
+            return "Registered"
+        elif re.search('.*' + user + '.+\(Unspecified\)', output):
+            print(f"User {user} is unregistered")
+            return "Unregistered"
+        else:
+            print(f"User {user} unavailable")
+            return "User Unavailable"
