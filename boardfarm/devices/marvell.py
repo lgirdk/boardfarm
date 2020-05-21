@@ -14,8 +14,8 @@ from . import openwrt_router
 
 
 class WRT3200ACM(openwrt_router.OpenWrtRouter):
-    """Marvell board loader/configuration class implementation extends OpenWrtRouter
-    """
+    """Marvell board loader/configuration class implementation \
+    extends OpenWrtRouter."""
     model = ("wrt3200acm")
 
     prompt = [
@@ -26,7 +26,8 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
     wan_iface = "wan"
 
     def reset(self, break_into_uboot=False):
-        """This method resets the marvell board.
+        """Reset the marvell board.
+
         Enters into uboot menu if the param break_into_uboot is True
         else it will just power reset.
 
@@ -39,8 +40,7 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
             self.wait_for_boot()
 
     def wait_for_boot(self):
-        """This method power cycles the marvell and enters to uboot menu.
-        """
+        """Power cycle the marvell and enter to uboot menu."""
         self.power.reset()
 
         self.expect_exact('General initialization - Version: 1.0.0')
@@ -56,14 +56,13 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
             time.sleep(1)
 
     def wait_for_linux(self):
-        """This method power cycles the device waits for the linux menu.
-        """
+        """Power cycle the device wait for the linux menu."""
         self.wait_for_boot()
         self.sendline("boot")
         super(WRT3200ACM, self).wait_for_linux()
 
     def flash_linux(self, KERNEL):
-        """This method flashes the marvell board by copying file to the board.
+        """Flashe the marvell board by copying file to the board.
 
         :param KERNEL: Indicates the absoulte location of the file to be used to flash.
         :type KERNEL: string
@@ -76,7 +75,7 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt, timeout=90)
 
     def boot_linux(self, rootfs=None, bootargs=""):
-        """This method boots marvell board.
+        """Boot marvell board.
 
         :param rootfs: parameter to be used at later point, defaults to None.
         :type rootfs: NA
