@@ -13,12 +13,13 @@ from six.moves import input
 
 
 class Interact(rootfs_boot.RootFSBootTest):
-    '''Interact with console, wan, lan, wlan connections and re-run tests'''
+    """Interact with console, wan, lan, wlan connections and re-run tests."""
     def print_dynamic_devices(self):
+        """Print dynamic devices."""
         for device in self.config.devices:
             d = getattr(self.config, device)
             # TODO: should move all classes to use string repr
-            if hasattr(d, 'username'):
+            if hasattr(d, "username"):
                 print("  %s device:    ssh %s@%s" %
                       (device, d.username, d.name))
             else:
@@ -31,14 +32,15 @@ class Interact(rootfs_boot.RootFSBootTest):
         board.sendline()
         try:
             board.interact()
-        except:
+        except Exception as error:
+            print(error)
             return
 
         while True:
             print("\n\nCurrent station")
-            print("  Board console: %s" % self.config.board.get('conn_cmd'))
+            print("  Board console: %s" % self.config.board.get("conn_cmd"))
             self.print_dynamic_devices()
-            print('Pro-tip: Increase kernel message verbosity with\n'
+            print("Pro-tip: Increase kernel message verbosity with\n"
                   '    echo "7 7 7 7" > /proc/sys/kernel/printk')
             print("Menu")
             i = 2
@@ -83,7 +85,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                     print(e)
                 else:
                     print("Available tests:")
-                    print('\n'.join(tests.available_tests.keys()))
+                    print("\n".join(tests.available_tests.keys()))
                 continue
             i += 1
 
@@ -121,13 +123,16 @@ class Interact(rootfs_boot.RootFSBootTest):
                 print("Enter python shell, press Ctrl-D to exit")
                 try:
                     import readline  # optional, will allow Up/Down/History in the console
+
                     assert readline  # silence pyflakes
                     import code
+
                     vars = globals().copy()
                     vars.update(locals())
                     shell = code.InteractiveConsole(vars)
                     shell.interact()
-                except:
+                except Exception as error:
+                    print(error)
                     print("Unable to spawn interactive shell!")
                 continue
             i += 1
