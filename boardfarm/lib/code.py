@@ -6,12 +6,12 @@ import six
 
 
 def get_all_classes_from_code(directories, debug=False):
-    '''
+    """Get all classes from code using grep.
     Uses 'grep' to find all files of type '.py' in the given directories.
     Then parses those files to return a dict where:
-         * keys = class names
-         * values = list with "parent class name" and "grandparent class name"
-    '''
+    * keys = class names
+    * values = list with "parent class name" and "grandparent class name"
+    """
     if debug:
         print("Searching for classes in:")
     raw_text = []
@@ -29,7 +29,7 @@ def get_all_classes_from_code(directories, debug=False):
                 print("Warning: No tests found in %s" % d)
     raw_text = "".join(six.text_type(raw_text))
     # Create a list of tuples (classname, parent_classname)
-    result = re.findall('class\s(\w+)\(([\w\.]+)\):', raw_text)
+    result = re.findall(r"class\s(\w+)\(([\w\.]+)\):", raw_text)
     # Convert that list into a Python dict such that
     #    {"classname1": [parent_classname1,],
     #     "classname2": [parent_classname2,], ... etc}
@@ -46,13 +46,11 @@ def get_all_classes_from_code(directories, debug=False):
         all_classes[name].append(grandparent)
     if debug:
         print("Found %s python classes." % len(all_classes))
-    return (all_classes)
+    return all_classes
 
 
 def changed_classes(directories, start, end, debug=False):
-    '''
-    Return names of all changed classes in a "git diff".
-    '''
+    """Return names of all changed classes in a "git diff"."""
     if debug:
         print("\nSearching for differences:")
     result = {}
@@ -66,7 +64,7 @@ def changed_classes(directories, start, end, debug=False):
                                            shell=True)
             result.update(
                 dict(
-                    re.findall('class\s(\w+)\(([\w\.]+)\):',
+                    re.findall(r"class\s(\w+)\(([\w\.]+)\):",
                                six.text_type(diff))))
         except subprocess.CalledProcessError:
             if debug:
@@ -79,9 +77,7 @@ def changed_classes(directories, start, end, debug=False):
 
 
 def get_features(directories, start, end, debug=False):
-    '''
-    Return the list of words after 'Features:' in git log messages.
-    '''
+    """Return the list of words after 'Features:' in git log messages."""
     if debug:
         print("\nSearching for 'Features' in git log:")
     result = []
@@ -93,7 +89,7 @@ def get_features(directories, start, end, debug=False):
             text = subprocess.check_output(cmd,
                                            stderr=subprocess.STDOUT,
                                            shell=True)
-            result += re.findall('Features:\s(\w+)', six.text_type(text))
+            result += re.findall(r"Features:\s(\w+)", six.text_type(text))
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: git log command failed in %s" % d)
@@ -104,22 +100,22 @@ def get_features(directories, start, end, debug=False):
 
 
 def get_imported_names(line):
-    '''
+    """Get imported names.
     Given a string like:
-        from boardfarm.lib.common import snmp_mib_set, snmp_mib_walk
+    from boardfarm.lib.common import snmp_mib_set, snmp_mib_walk
     Return a list of strings which are the imported things:
-         ['snmp_mib_set', 'snmp_mib_walk']
-    '''
-    return line.rstrip().split('import')[1].replace(' ', '').split(',')
+    ['snmp_mib_set', 'snmp_mib_walk']
+    """
+    return line.rstrip().split("import")[1].replace(" ", "").split(",")
 
 
 def get_classes_lib_functions(directories, debug=False):
-    '''
+    """
     Find all test classes in code and all lib functions they directly use.
     Returns a dict where:
-        * key = class name
-        * value = list of lib function names
-    '''
+    * key = class name
+    * value = list of lib function names
+    """
     result = {}
     test_filenames = []
     if debug:
@@ -131,16 +127,16 @@ def get_classes_lib_functions(directories, debug=False):
     library_function_names = set()
     # Loop over every test file
     for test_file in test_filenames:
-        with open(test_file, 'r') as f:
+        with open(test_file, "r") as f:
             lines = f.readlines()
         current_class_name = None
         # Loop over every line in this file
         for line in lines:
-            if 'from ' in line and '.lib' in line:
+            if "from " in line and ".lib" in line:
                 library_function_names |= set(get_imported_names(line))
                 continue
-            if line.startswith('class '):
-                search_result = re.search('class\s(\w+)\(', line)
+            if line.startswith("class "):
+                search_result = re.search(r"class\s(\w+)\(", line)
                 if search_result:
                     current_class_name = search_result.group(1)
             if not current_class_name:
@@ -158,9 +154,7 @@ def get_classes_lib_functions(directories, debug=False):
 
 
 def changed_functions(directories, start, end, debug=False):
-    '''
-    Return names of all changed functions in a "git diff".
-    '''
+    """Return names of all changed functions in a "git diff"."""
     if debug:
         print("\nSearching for differences:")
     result = []
@@ -172,7 +166,7 @@ def changed_functions(directories, start, end, debug=False):
             diff = subprocess.check_output(cmd,
                                            stderr=subprocess.STDOUT,
                                            shell=True)
-            result = re.findall('def\s(\w+)\(', six.text_type(diff))
+            result = re.findall(r"def\s(\w+)\(", six.text_type(diff))
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: git diff command failed in %s" % d)
