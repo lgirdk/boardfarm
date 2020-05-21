@@ -12,7 +12,7 @@ from . import analysis
 
 
 class SlabAnalysis(analysis.Analysis):
-    '''Make graphs for output of /proc/slabinfo over time'''
+    """Make graphs for output of /proc/slabinfo over time."""
     def analyze(self, console_log, output_dir):
         regex = "root\\@OpenWrt:[^#]+# cat /proc/slabinfo.*?(?=root@OpenWrt)"
         results = re.findall(regex, repr(console_log))
@@ -21,23 +21,23 @@ class SlabAnalysis(analysis.Analysis):
         data = collections.defaultdict(list)
         timestamps = collections.defaultdict(list)
         for dump in results:
-            for line in dump.split('\\r\\n')[3:]:
-                line = re.sub('](?=[^\s])', '] ', line)
+            for line in dump.split("\\r\\n")[3:]:
+                line = re.sub(r'](?=[^\s])', ']', line)
                 e = line.split()
                 if len(e) < 4:
                     continue
-                ts = float(e.pop(0).strip('[]'))
+                ts = float(e.pop(0).strip("[]"))
                 slab_name = e.pop(0)
                 active_objs = e.pop(0)
-                key = 'slab-' + slab_name
+                key = "slab-" + slab_name
                 data[key].append(active_objs)
                 timestamps[key].append(ts)
 
         for k in data:
             if len(data[k]) > 1:
                 fname = k
-                for c in r'[]/\;,><&*:%=+@!#^()|?^':
-                    fname = fname.replace(c, '')
+                for c in r"[]/\;,><&*:%=+@!#^()|?^":
+                    fname = fname.replace(c, "")
                 self.make_graph(data[k],
                                 k,
                                 fname,
