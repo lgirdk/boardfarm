@@ -9,7 +9,7 @@ try:
     from urllib.request import urlopen
     from urllib.error import HTTPError
     import urllib as _urllib
-except:
+except Exception:
     from urllib2 import urlopen, HTTPError
     import urllib2 as _urllib
 
@@ -29,17 +29,17 @@ def get_default_for_arg(function, arg):
 try:
     from ouimeaux.environment import Environment as WemoEnv
     from ouimeaux.device.switch import Switch as WemoSwitch
-except:
+except Exception:
     WemoEnv = None
     WemoSwitch = None
 
 
 def get_power_device(ip_address, username=None, password=None, outlet=None):
-    '''
-    Try to determine the type of network-controlled power switch
-    at a given IP address. Return a class that can correctly
-    interact with that type of switch.
-    '''
+    """Try to determine the type of network-controlled power switch\
+    at a given IP address.
+
+    Return a class that can correctly interact with that type of switch.
+    """
     login_failed = False
     all_login_defaults = []
     for name, obj in list(globals().items()):
@@ -138,7 +138,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
             try:
                 ret = check_data(get_with_username_password(
                     username, password))
-            except:
+            except Exception:
                 continue
             else:
                 break
@@ -152,27 +152,25 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
 
 class PowerDevice():
-    '''
-    At minimum, power devices let users reset an outlet over a network.
-    '''
+    """At minimum, power devices let users reset an outlet over a network."""
     def __init__(self, ip_address, username=None, password=None):
+        """Instance initialization."""
         self.ip_address = ip_address
         self.username = username
         self.password = password
         # Maybe verify connection is working here
 
     def reset(self, outlet):
-        '''Turn an outlet OFF, maybe wait, then back ON.'''
+        """Turn an outlet OFF, maybe wait, then back ON."""
         raise Exception(
             'Code not written to reset with this type of power device at %s' %
             self.ip_address)
 
 
 class SentrySwitchedCDU(PowerDevice):
-    '''
-    Power Unit from Server Technology.
-    '''
+    """Power Unit from Server Technology."""
     def __init__(self, ip_address, outlet, username='admn', password='admn'):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
         # Verify connection
@@ -204,7 +202,7 @@ class SentrySwitchedCDU(PowerDevice):
             raise Exception("critical failure in %s" % self.power_ip)
 
     def reset(self, retry_attempts=2):
-        '''Connect to pdu, send reboot command.'''
+        """Connect to pdu, send reboot command."""
         print("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
         for _ in range(retry_attempts):
             try:
@@ -220,22 +218,21 @@ class SentrySwitchedCDU(PowerDevice):
 
 
 class PX2(PowerDevice):
-    '''
-    Power Unit from Raritan.
-    '''
+    """Power Unit from Raritan."""
     def __init__(self, outlet, username='admin', password='scripter99'):
+        """Instance initialization."""
         ip_address, self.outlet = outlet.replace("px2://", '').split(';')
         PowerDevice.__init__(self, ip_address, username, password)
         self.do_login()
 
     def do_login(self):
         pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
-        pcon.expect('Login for PX\d CLI')
+        pcon.expect(r'Login for PX\d CLI')
         pcon.expect('Username:')
         pcon.sendline(self.username)
         pcon.expect('Password:')
         pcon.sendline(self.password)
-        pcon.expect('Welcome to PX\d CLI!')
+        pcon.expect(r'Welcome to PX\d CLI!')
         pcon.expect('# ')
 
         self.pcon = pcon
@@ -256,10 +253,9 @@ class PX2(PowerDevice):
 
 
 class HumanButtonPusher(PowerDevice):
-    '''
-    Tell a person to physically reboot the router.
-    '''
+    """Tell a person to physically reboot the router."""
     def __init__(self):
+        """Instance initialization."""
         PowerDevice.__init__(self, None)
 
     def reset(self):
@@ -267,13 +263,14 @@ class HumanButtonPusher(PowerDevice):
 
 
 class APCPower(PowerDevice):
-    '''A network-managed power unit from APC.'''
+    """A network-managed power unit from APC."""
     def __init__(self, ip_address, outlet, username='apc', password='apc'):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
 
     def reset(self):
-        '''Connect, login, and send commands to reset power on an outlet.'''
+        """Connect, login, and send commands to reset power on an outlet."""
         pcon = bft_pexpect_helper.spawn('telnet %s' % self.ip_address)
         pcon.expect("User Name :")
         pcon.send(self.username + "\r\n")
@@ -297,8 +294,9 @@ class APCPower(PowerDevice):
 
 
 class DLIPowerSwitch(PowerDevice):
-    '''A network-managed power switch from Digital Loggers (DLI)'''
+    """A network-managed power switch from Digital Loggers (DLI)."""
     def __init__(self, ip_address, outlet, username, password):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.switch = dlipower.PowerSwitch(hostname=ip_address,
                                            userid=username,
@@ -306,36 +304,34 @@ class DLIPowerSwitch(PowerDevice):
         self.outlet = outlet
 
     def reset(self, outlet=None):
-        '''Turn an outlet off and then on.'''
+        """Turn an outlet off and then on."""
         if outlet is None:
             outlet = self.outlet
         self.switch.cycle(outlet)
 
 
 class WemoPowerSwitch(PowerDevice):
-    '''
-    Controls a Wemo switch given an ipaddress.
-    '''
+    """Control a Wemo switch given an ipaddress."""
     def __init__(self, outlet):
+        """Instance initialization."""
         addr = 'http://' + outlet.replace("wemo://", "") + ":49153/setup.xml"
         self.switch = WemoSwitch(addr)
 
     def reset(self):
-        '''Turn an outlet off, wait 5 seconds, turn it back on.'''
+        """Turn an outlet off, wait 5 seconds, turn it back on."""
         self.switch.off()
         time.sleep(5)
         self.switch.on()
 
 
 class SimpleCommandPower(PowerDevice):
-    '''
-    Runs a simple command to turn power on/off
-    '''
+    """Run a simple command to turn power on/off."""
 
     on_cmd = "true"
     off_cmd = "false"
 
     def __init__(self, outlet):
+        """Instance initialization."""
         parsed = outlet.replace("cmd://", '').split(';')
         for param in parsed:
             for attr in ['on_cmd', 'off_cmd']:
@@ -343,17 +339,16 @@ class SimpleCommandPower(PowerDevice):
                     setattr(self, attr, param.replace(attr + '=', '').encode())
 
     def reset(self):
-        '''Send off command, wait 5 seconds, send on command.'''
+        """Send off command, wait 5 seconds, send on command."""
         bft_pexpect_helper.spawn(self.off_cmd).expect(pexpect.EOF)
         time.sleep(5)
         bft_pexpect_helper.spawn(self.on_cmd).expect(pexpect.EOF)
 
 
 class SimpleSerialPower(PowerDevice):
-    '''
-    Simple serial based relay or power on off. Send a
-    string for "off" then "on" over serial.
-    '''
+    """Simple serial based relay or power on off. Send a\
+    string for "off" then "on" over serial."""
+
     serial_dev = '/dev/ttyACM0'
     baud = 2400
     off_cmd = b'relay on 0'
@@ -361,6 +356,7 @@ class SimpleSerialPower(PowerDevice):
     on_cmd = b'relay off 0'
 
     def __init__(self, outlet):
+        """Instance initialization."""
         parsed = outlet.replace("serial://", '').split(';')
         self.serial_dev = "/dev/" + parsed[0]
         for param in parsed[1:]:
@@ -369,7 +365,7 @@ class SimpleSerialPower(PowerDevice):
                     setattr(self, attr, param.replace(attr + '=', '').encode())
 
     def reset(self):
-        '''Send off command, wait 5 seconds, send on command.'''
+        """Send off command, wait 5 seconds, send on command."""
         import serial
         with serial.Serial(self.serial_dev, self.baud) as ser:
             if self.off_cmd is not None:
@@ -381,7 +377,7 @@ class SimpleSerialPower(PowerDevice):
             ser.close()
 
     """
-    IP Power 9258 networked power switch class
+    IP Power 9258 networked power switch class.
 
     This work is released under the Creative Commons Zero (CC0) license.
     See http://creativecommons.org/publicdomain/zero/1.0/
@@ -402,12 +398,13 @@ class SimpleSerialPower(PowerDevice):
 
 
 class Ip9258(PowerDevice):
-    '''Network Power controller, IP Power 9258.'''
+    """Network Power controller, IP Power 9258."""
     def __init__(self,
                  ip_address,
                  port,
                  username="admin",
                  password="12345678"):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self._ip_address = ip_address
         self.port = port
@@ -422,29 +419,30 @@ class Ip9258(PowerDevice):
         _urllib.request.install_opener(opener)
 
     def on(self):
-        '''Send ON command.'''
+        """Send ON command."""
         print("Power On Port(%s)\n" % self.port)
         return _urllib.request.urlopen('http://' + self._ip_address +
                                        '/set.cmd?cmd=setpower+p6' +
                                        str(self.port) + '=1')
 
     def off(self):
-        '''Send OFF command.'''
+        """Send OFF command."""
         print("Power Off Port(%s)\n" % self.port)
         return _urllib.request.urlopen('http://' + self._ip_address +
                                        '/set.cmd?cmd=setpower+p6' +
                                        str(self.port) + '=0')
 
     def reset(self):
-        '''Turn off, wait 5 seconds, turn on.'''
+        """Turn off, wait 5 seconds, turn on."""
         self.off()
         time.sleep(5)
         self.on()
 
 
 class CyberPowerPdu(PowerDevice):
-    '''Power unit from CyberPower.'''
+    """Power unit from CyberPower."""
     def __init__(self, ip_address, outlet, username='cyber', password='cyber'):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.port = outlet
         self.ip_address = ip_address
@@ -454,29 +452,30 @@ class CyberPowerPdu(PowerDevice):
                                version=2)
 
     def on(self):
-        '''Send ON command.'''
+        """Send ON command."""
         oid = self.oid_Outlet + '.' + str(self.port)
         self.session.set(oid, 1, 'i')
 
     def off(self):
-        '''Send OFF command.'''
+        """Send OFF command."""
         oid = self.oid_Outlet + '.' + str(self.port)
         self.session.set(oid, 2, 'i')
 
     def reset(self):
-        '''Send OFF command, wait 5 seconds, sned ON command.'''
+        """Send OFF command, wait 5 seconds, sned ON command."""
         self.off()
         time.sleep(5)
         self.on()
 
 
 class Ip9820(PowerDevice):
-    '''Network Power controller, IP Power 9820.'''
+    """Network Power controller, IP Power 9820."""
     def __init__(self,
                  ip_address,
                  port,
                  username="admin",
                  password="12345678"):
+        """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self._ip_address = ip_address
         self.port = port
@@ -491,21 +490,21 @@ class Ip9820(PowerDevice):
         _urllib.request.install_opener(opener)
 
     def on(self):
-        '''Send ON command.'''
+        """Send ON command."""
         print("Power On Port(%s)\n" % self.port)
         return _urllib.request.urlopen('http://' + self._ip_address +
                                        '/set.cmd?cmd=setpower+p6' +
                                        str(self.port) + '=1')
 
     def off(self):
-        '''Send OFF command.'''
+        """Send OFF command."""
         print("Power Off Port(%s)\n" % self.port)
         return _urllib.request.urlopen('http://' + self._ip_address +
                                        '/set.cmd?cmd=setpower+p6' +
                                        str(self.port) + '=0')
 
     def reset(self):
-        '''Send OFF command, wait 5 seconds, sned ON command.'''
+        """Send OFF command, wait 5 seconds, sned ON command."""
         self.off()
         time.sleep(5)
         self.on()
