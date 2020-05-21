@@ -12,9 +12,9 @@ from . import analysis
 
 
 class VmStatAnalysis(analysis.Analysis):
-    '''Make graphs from /proc/vmstat over time'''
+    """Make graphs from /proc/vmstat over time."""
     def analyze(self, console_log, output_dir):
-        results = re.findall(analysis.newline_match + 'nr_(\w+) (\d+)',
+        results = re.findall(analysis.newline_match + r"nr_(\w+) (\d+)",
                              console_log)
         data = collections.defaultdict(list)
         timestamps = collections.defaultdict(list)
@@ -42,18 +42,21 @@ class VmStatAnalysis(analysis.Analysis):
             timestamps[k] = timestamps[k][:sz]
 
         from operator import add
-        if len(data['slab_unreclaimable']) > 1:
-            self.make_graph(map(add, data['slab_unreclaimable'],
-                                data['active_anon']),
-                            'slab_unreclaimable + active_anon',
-                            'slab_unreclaimable+active_anon',
-                            ts=timestamps['slab_unreclaimable'],
-                            output_dir=output_dir)
 
-        if len(data['free_pages']) > 1:
-            self.make_graph(map(add, data['free_pages'],
-                                data['inactive_file']),
-                            'free_pages + inactive_file',
-                            'free_pages+inactive_file',
-                            ts=timestamps['free_pages'],
-                            output_dir=output_dir)
+        if len(data["slab_unreclaimable"]) > 1:
+            self.make_graph(
+                map(add, data["slab_unreclaimable"], data["active_anon"]),
+                "slab_unreclaimable + active_anon",
+                "slab_unreclaimable+active_anon",
+                ts=timestamps["slab_unreclaimable"],
+                output_dir=output_dir,
+            )
+
+        if len(data["free_pages"]) > 1:
+            self.make_graph(
+                map(add, data["free_pages"], data["inactive_file"]),
+                "free_pages + inactive_file",
+                "free_pages+inactive_file",
+                ts=timestamps["free_pages"],
+                output_dir=output_dir,
+            )
