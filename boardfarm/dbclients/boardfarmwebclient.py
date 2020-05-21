@@ -1,10 +1,10 @@
+# !/usr/bin/env python
 # Copyright (c) 2015
 #
 # All rights reserved.
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-#!/usr/bin/env python
 
 import multiprocessing
 import os
@@ -21,15 +21,18 @@ from boardfarm.lib.common import run_once
 
 
 class ServerError(Exception):
+    """Exception for server error."""
+
     pass
 
 
 class BoardfarmWebClient(object):
-    '''
-    Handles interacting with a boardfarm server. For checking out
-    stations, etc.
-    '''
+    """Handle interacting with a boardfarm server.
+
+    For checking out stations, etc.
+    """
     def __init__(self, config_url, bf_version="1.0.0", debug=False):
+        """Instance initialisation."""
         self.config_url = config_url
         self.bf_version = bf_version
         self.debug = debug
@@ -39,20 +42,28 @@ class BoardfarmWebClient(object):
         self.bf_config_str = None
         self.bf_config = None
         # If config isn't on a server, do nothing
-        if not config_url.startswith('http'):
+        if not config_url.startswith("http"):
             return
-        self.headers = {'user-agent': self._user_agent()}
-        self.default_data = {'hostname': socket.gethostname(),
-                             'username': os.environ.get('BUILD_USER_ID', None) or \
-                                         os.environ.get('USER', None),
-                             'build_url': os.environ.get('BUILD_URL', None)
-                            }
-        if self.default_data['username'] in [
-                'root', 'testuser', 'tester', 'docker-factory', 'boardfarm'
+        self.headers = {"user-agent": self._user_agent()}
+        self.default_data = {
+            "hostname":
+            socket.gethostname(),
+            "username":
+            os.environ.get("BUILD_USER_ID", None)
+            or os.environ.get("USER", None),
+            "build_url":
+            os.environ.get("BUILD_URL", None),
+        }
+        if self.default_data["username"] in [
+                "root",
+                "testuser",
+                "tester",
+                "docker-factory",
+                "boardfarm",
         ]:
-            print('\x1b[6;30;42m' +
-                  '------------Username {} will be blacklisted-----------'.
-                  format(self.default_data['username']) + '\x1b[0m')
+            print("\x1b[6;30;42m" +
+                  "------------Username {} will be blacklisted-----------".
+                  format(self.default_data["username"]) + "\x1b[0m")
             warnings.warn(
                 "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' will be blacklisted soon. It is recommended to use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."
             )
@@ -65,15 +76,15 @@ class BoardfarmWebClient(object):
             res.raise_for_status()
         except Exception as e:
             if self.bf_config:
-                raise ServerError(self.bf_config.get('message', ''))
+                raise ServerError(self.bf_config.get("message", ""))
             else:
                 raise e
         try:
             # See if this is a boardfarm server by checking the root /api path
-            self.server_url = re.search('http.*/api', self.config_url).group(0)
+            self.server_url = re.search("http.*/api", self.config_url).group(0)
             r = requests.get(self.server_url, headers=self.headers, timeout=5)
             data = r.json()
-            self.server_version = data.get('version', None)
+            self.server_version = data.get("version", None)
 
             @run_once
             def print_info():
@@ -88,27 +99,25 @@ class BoardfarmWebClient(object):
                       "boardfarm server." % self.config_url)
 
     def _user_agent(self):
-        bfversion = 'Boardfarm %s' % self.bf_version
+        bfversion = "Boardfarm %s" % self.bf_version
         s = platform.system()
         py = "Python %s.%s.%s" % (sys.version_info[:3])
         try:
             system = platform.system()
-            if system == 'Linux':
+            if system == "Linux":
                 s = "%s %s" % distro.linux_distribution()[:2]
-            elif system == 'Darwin':
+            elif system == "Darwin":
                 s = "MacOS %s" % platform.mac_ver()[0]
-            elif system == 'Windows':
+            elif system == "Windows":
                 s = "Windows %s" % platform.win32_ver()[0]
         except Exception as e:
             if self.debug:
                 print(e)
-                print('Unable to get more specific system info')
+                print("Unable to get more specific system info")
         return ";".join([bfversion, py, s])
 
     def _poll(self, done, seconds=60):
-        '''
-        Periodically let the server know we are still alive and using things.
-        '''
+        """Periodically let the server know we are still alive and using things."""
         time.sleep(seconds)
         while not done.is_set():
             url = self.server_url + "/checkout"
@@ -116,15 +125,16 @@ class BoardfarmWebClient(object):
             time.sleep(seconds)
 
     def post_temp_message(self, msg):
-        '''
+        """Post a temporary message.
+
         Use this to post a temporary message visible on the server only
         while you have a station checked out.
         The server clears these temporary messages when station is checked in.
-        '''
+        """
         if not self.server_version or not self.checked_out:
             return
         try:
-            url = self.server_url + "/stations/" + self.checked_out['name']
+            url = self.server_url + "/stations/" + self.checked_out["name"]
             requests.post(url,
                           json={"_meta.active_msg": msg},
                           headers=self.headers)
@@ -134,11 +144,12 @@ class BoardfarmWebClient(object):
                 print("Failed to notify boardfarm server with message.")
 
     def post_note(self, name, note):
-        '''
+        """Post note.
+
         If an error is encountered with a station, use this function
         to send a message to the boardfarm server. Something short
         and useful for display.
-        '''
+        """
         if not self.server_version:
             return
         try:
@@ -154,7 +165,7 @@ class BoardfarmWebClient(object):
             return
         try:
             # Gather all the '_id' keys out of the config
-            station_id = config.get('_id', None)
+            station_id = config.get("_id", None)
             device_ids = []
             if "devices" in config:
                 device_ids = [
@@ -162,7 +173,7 @@ class BoardfarmWebClient(object):
                 ]
             self.checked_out = {
                 "ids": [station_id] + device_ids,
-                "name": config.get("station", None)
+                "name": config.get("station", None),
             }
             self.checked_out.update(self.default_data)
             url = self.server_url + "/checkout"
@@ -200,7 +211,7 @@ class BoardfarmWebClient(object):
                 print("Failed to notify boardfarm server of checkin")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bf_config = "http://boardfarm.myexamplesite.com/api/bf_config"
     bfweb = BoardfarmWebClient(bf_config, debug=False)
     bfweb.checkout({
