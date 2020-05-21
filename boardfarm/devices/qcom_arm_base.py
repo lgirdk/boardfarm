@@ -19,7 +19,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
     uprompt = [r'\(IPQ\) #', r'\(IPQ40xx\)', r'\(QCA961x\) #']
 
     def check_memory_addresses(self):
-        '''Before flashing, dynamically find addresses and memory size.'''
+        """Before flashing, dynamically find addresses and memory size."""
         self.sendline("smem")
         self.expect(r"flash_block_size:\s+(0x[0-9A-Fa-f]+)\r")
         self.flash_block_size = int(self.match.group(1), 0)
@@ -29,7 +29,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
                 timeout=2)
             self.uboot_addr = self.match.group(1)
             self.uboot_size = self.match.group(2)
-        except:
+        except Exception:
             self.uboot_addr = None
             self.uboot_size = None
         try:
@@ -38,7 +38,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
                 timeout=2)
             self.kernel_addr = self.match.group(1)
             self.kernel_size = self.match.group(2)
-        except:
+        except Exception:
             self.kernel_addr = None
             self.kernel_size = None
         try:
@@ -47,7 +47,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
                 timeout=5)
             self.rootfs_addr = self.match.group(2)
             self.rootfs_size = self.match.group(3)
-        except:
+        except Exception:
             self.rootfs_addr = None
             self.rootfs_size = None
 
@@ -58,10 +58,10 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt)
 
     def flash_meta(self, META_BUILD, wan, lan):
-        '''
+        """Flash a meta image onto the board.
+
         A meta image contains several components wrapped up into one file.
-        Here we flash a meta image onto the board.
-        '''
+        """
         common.print_bold("\n===== Flashing meta =====\n")
 
         filename = self.prepare_file(META_BUILD)
@@ -77,7 +77,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.expect('DONE')
         try:
             self.expect("Can't find 'script' FIT subimage", timeout=5)
-        except:
+        except Exception:
             pass
         else:
             self.sendline(
@@ -96,7 +96,7 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         hsize = hex((((int(size, 0) - 1) / self.flash_block_size) + 1) *
                     self.flash_block_size)
 
-        if addr == None or addr == "0x0":
+        if addr is None or addr == "0x0":
             raise Exception("Refusing to flash 0x0 or None values for addr")
 
         self.sendline("nand erase %s %s" % (addr, size))
@@ -115,10 +115,10 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.expect(self.uprompt)
 
     def spi_flash_bin(self, addr, size, src, esize=None):
-        if addr == None or addr == "0x0":
+        if addr is None or addr == "0x0":
             raise Exception("Refusing to flash 0x0 or None values for addr")
 
-        if esize == None:
+        if esize is None:
             esize = size
 
         self.sendline('sf probe')
