@@ -1,10 +1,10 @@
+# !/usr/bin/env python
 # Copyright (c) 2015
 #
 # All rights reserved.
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-#!/usr/bin/env python
 
 import datetime
 import json
@@ -30,20 +30,20 @@ class Serializer(JSONSerializer):
             return JSONSerializer.default(self, obj)
         except TypeError:
             return str(obj)
-        except:
+        except Exception as error:
+            print(error)
             return "Unable to serialize"
 
 
 def pprint(x):
-    '''Pretty print an object'''
+    """Pretty print an object."""
     print(json.dumps(x, sort_keys=True, indent=2))
 
 
 class ElasticsearchLogger(object):
-    '''
-    Write data directly to an elasticsearch cluster.
-    '''
-    def __init__(self, server, index='boardfarm', doc_type='bft_run'):
+    """Write data directly to an elasticsearch cluster."""
+    def __init__(self, server, index="boardfarm", doc_type="bft_run"):
+        """Instance initialisation."""
         self.server = server
         self.index = index + "-" + datetime.datetime.utcnow().strftime(
             "%Y.%m.%d")
@@ -52,20 +52,21 @@ class ElasticsearchLogger(object):
         self.es = elasticsearch.Elasticsearch([server],
                                               serializer=Serializer())
         # Set default data
-        username = os.environ.get('BUILD_USER_ID', None)
+        username = os.environ.get("BUILD_USER_ID", None)
         if username is None:
-            username = os.environ.get('USER', '')
+            username = os.environ.get("USER", "")
         self.default_data = {
-            'hostname': socket.gethostname(),
-            'user': username,
-            'build_url': os.environ.get('BUILD_URL', 'None'),
-            'change_list': os.environ.get('change_list', 'None'),
-            'manifest': os.environ.get('manifest', 'None'),
+            "hostname": socket.gethostname(),
+            "user": username,
+            "build_url": os.environ.get("BUILD_URL", "None"),
+            "change_list": os.environ.get("change_list", "None"),
+            "manifest": os.environ.get("manifest", "None"),
         }
 
     def log(self, data, debug=False):
+        """Log data for elastic search."""
         # Put in default data
-        self.default_data['@timestamp'] = datetime.datetime.utcnow().strftime(
+        self.default_data["@timestamp"] = datetime.datetime.utcnow().strftime(
             "%Y-%m-%dT%H:%M:%S.000Z")
         data.update(self.default_data)
 
@@ -74,7 +75,7 @@ class ElasticsearchLogger(object):
             for k in data if not (type(data[k]) is float and isnan(data[k]))
         }
 
-        if debug == True:
+        if debug:
             print("Logging this data to Elastic:")
             pprint(data)
 
@@ -87,12 +88,16 @@ class ElasticsearchLogger(object):
             print(e.info)
             raise
 
-        if result and u'result' in result and result[u'result'] == u'created':
-            doc_url = "%s%s/%s/%s" % (self.server, self.index, self.doc_type,
-                                      result['_id'])
+        if result and u"result" in result and result[u"result"] == u"created":
+            doc_url = "%s%s/%s/%s" % (
+                self.server,
+                self.index,
+                self.doc_type,
+                result["_id"],
+            )
             print("Elasticsearch: Data stored at %s" % (doc_url))
         else:
             print(result)
-            raise Exception('Elasticsearch: problem storing data.')
+            raise Exception("Elasticsearch: problem storing data.")
         if debug:
             print(data)
