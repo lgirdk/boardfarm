@@ -7,6 +7,7 @@ class SoftPhone(object):
     profile = {}
 
     def __init__(self, *args, **kwargs):
+        """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
         self.own_number = self.kwargs.get('number', '3000')
@@ -22,16 +23,16 @@ class SoftPhone(object):
         return "softphone"
 
     def install_softphone(self):
-        # to install softphone from local url or from internet
+        """Install softphone from local url or from internet."""
         self.prefer_ipv4()
         install_pjsua(self, getattr(self, "pjsip_local_url", None))
 
     def phone_config(self, sipserver_ip):
-        '''
-        To configure the soft phone
+        """Configure the soft phone.
+
         Arguments:
         sipserver_ip(str): ip of sip server
-        '''
+        """
         conf = '''(
         echo --local-port=''' + self.port + '''
         echo --id=sip:''' + self.own_number + '''@''' + sipserver_ip + '''
@@ -45,20 +46,22 @@ class SoftPhone(object):
         self.expect(self.prompt)
 
     def phone_start(self):
-        '''To start the soft phone
-        Note: Start softphone only when asterisk server is running to avoid failure'''
+        """Start the soft phone.
+
+        Note: Start softphone only when asterisk server is running to avoid failure
+        """
         self.sendline('pjsua --config-file=' + self.config_name)
         self.expect(r'registration success, status=200 \(OK\)')
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
 
     def dial(self, dial_number, receiver_ip):
-        '''
-        To dial to the other phone
+        """Dial to the other phone.
+
         Arguments:
         dial_number(str): number to dial
         receiver_ip(str): ip of the reciever,it is mta ip the call is dialed to mta
-        '''
+        """
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
         self.sendline('m')
@@ -68,7 +71,7 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
 
     def answer(self):
-        '''To answer the incoming call in soft phone'''
+        """To answer the incoming call in soft phone."""
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
         self.expect('Press a to answer or h to reject call')
@@ -80,7 +83,7 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
 
     def hangup(self):
-        '''To hangup the ongoing call'''
+        """To hangup the ongoing call."""
         self.sendline('/n')
         self.expect(self.pjsip_prompt)
         self.sendline('a')
@@ -88,6 +91,6 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
 
     def phone_kill(self):
-        '''To kill the pjsip session'''
+        """To kill the pjsip session."""
         self.sendcontrol('c')
         self.expect(self.prompt)
