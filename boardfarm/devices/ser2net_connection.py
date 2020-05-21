@@ -3,26 +3,28 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 
 class Ser2NetConnection():
-    """The ser2net daemon allows telnet and tcp sessions to be established with a unit's serial ports.
+    """Allow telnet and tcp sessions to be established with a \
+    unit's serial ports by ser2net daemon.
+
     If a board is connected serially to a server running ser2net daemon, this class can be used
     to connect to the board.
     """
     def __init__(self, device=None, conn_cmd=None, **kwargs):
-        """This method initializes the class instance to open a pexpect session.
+        """Initialize the class instance to open a pexpect session.
 
         :param device: device to connect, defaults to None
         :type device: object
         :param conn_cmd: conn_cmd to connect to device, defaults to None
         :type conn_cmd: string
-        :param **kwargs: args to be used
-        :type **kwargs: dict
+        :param ``**kwargs``: args to be used
+        :type ``**kwargs``: dict
         """
         self.device = device
         self.conn_cmd = conn_cmd
         self.device.conn_cmd = conn_cmd
 
     def connect(self):
-        """Connects to the board/station using telnet.
+        """Connect to the board/station using telnet.
 
         This method spawn a pexpect session with telnet command.
         The telnet port must be as per the ser2net configuration file in order to connect to
@@ -45,15 +47,14 @@ class Ser2NetConnection():
             raise Exception("Password required and not supported")
 
     def close(self, force=True):
-        """Closes the connection
-        """
+        """Close the connection."""
         try:
             if 'telnet' in self.conn_cmd:
                 self.sendcontrol(']')
                 self.sendline('q')
             else:
                 self.sendline("~.")
-        except:
+        except Exception:
             self.sendline("~.")
         finally:
             super(type(self), self).close()
