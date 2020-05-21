@@ -6,11 +6,11 @@ from .wifi import wifi_stub
 
 
 class wifi_snmp(wifi_stub):
-    """Class for wifi settings via SNMP
+    """Class for wifi settings via SNMP.
     Inherits wifi_stub from lib/wifi.py
     """
     def __init__(self, device, board):
-        """ Constructor method to get the mib names for wifi
+        """To get the mib names for wifi.
         This mib name has to be provided via a vendor specific json file
         and initialised in the board method
         """
@@ -21,25 +21,35 @@ class wifi_snmp(wifi_stub):
         self.iface_ip = None
 
     def enable_wifi(self, wifi_mode):
-        """To enable wifi network via SNMP
+        """To enable wifi network via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_5
         :type wifi_mode: string
         :raises assertion: Mib query return value for enable wifi
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Wifi_enable"],
-                               index, "i", "1")
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Wifi_enable"],
+            index,
+            "i",
+            "1",
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Wifi_enable"],
-                                   index)
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Wifi_enable"],
+                index,
+            )
         assert mib_out == "1", "Mib query return value for enable wifi: %s" % mib_out
 
     def set_ssid(self, wifi_mode, ssid_name):
-        """To set wifi ssid via SNMP
+        """To set wifi ssid via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_5
         :type wifi_mode: string
@@ -48,18 +58,29 @@ class wifi_snmp(wifi_stub):
         :raises assertion: Mib query return value for setting the SSID
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["SSID_set"], index,
-                               "s", ssid_name)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["SSID_set"],
+            index,
+            "s",
+            ssid_name,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["SSID_set"],
-                                   index)
-        assert mib_out == ssid_name, "Mib query return value for setting the SSID: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["SSID_set"],
+                index,
+            )
+        assert mib_out == ssid_name, (
+            "Mib query return value for setting the SSID: %s" % mib_out)
 
     def set_security(self, wifi_mode, security):
-        """To set wifi security via SNMP
+        """To set wifi security via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_5
         :type wifi_mode: string
@@ -69,18 +90,30 @@ class wifi_snmp(wifi_stub):
         """
         index = self.mib_value["mib_index"][wifi_mode]
         security_mode = self.mib_value["security_mode"][security]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Security_mode"],
-                               index, "i", security_mode)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Security_mode"],
+            index,
+            "i",
+            security_mode,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Security_mode"],
-                                   index)
-        assert mib_out == security_mode, "Mib query return value for setting the security mode: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Security_mode"],
+                index,
+            )
+        assert mib_out == security_mode, (
+            "Mib query return value for setting the security mode: %s" %
+            mib_out)
 
     def set_password(self, wifi_mode, password):
-        """To set wifi password via SNMP
+        """To set wifi password via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_5
         :type wifi_mode: string
@@ -89,36 +122,59 @@ class wifi_snmp(wifi_stub):
         :raises assertion: Mib query return value for setting the password
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Password_set"],
-                               index, "s", password)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Password_set"],
+            index,
+            "s",
+            password,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Password_set"],
-                                   index)
-        assert mib_out == password, "Mib query return value for setting the password: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Password_set"],
+                index,
+            )
+        assert mib_out == password, (
+            "Mib query return value for setting the password: %s" % mib_out)
 
     def enable_channel_utilization(self, wifi_mode):
-        """To enable channel utilization via SNMP
+        """To enable channel utilization via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
         :type wifi_mode: string
         :raises assertion: Mib query return value for setting the channel utilisation
         """
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Channel_Util"], "0",
-                               "i", "2")
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Channel_Util"],
+            "0",
+            "i",
+            "2",
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Channel_Util"],
-                                   "0")
-        assert mib_out == "2", "Mib query return value for setting the channel utilisation: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Channel_Util"],
+                "0",
+            )
+        assert mib_out == "2", (
+            "Mib query return value for setting the channel utilisation: %s" %
+            mib_out)
 
     def set_operating_mode(self, wifi_mode, operating_mode):
-        """To set wifi operating mode via SNMP
+        """To set wifi operating mode via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -129,18 +185,30 @@ class wifi_snmp(wifi_stub):
         """
         index = self.mib_value["mib_index"][wifi_mode]
         operating_mode = self.mib_value["operating_mode"][operating_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Operating_mode"],
-                               index, "i", operating_mode)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Operating_mode"],
+            index,
+            "i",
+            operating_mode,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
             mib_out = snmp_mib_get(
-                self.device, self.parser, self.iface_ip,
-                self.mib_value["mib_name"]["Operating_mode"], index)
-        assert mib_out == operating_mode, "Mib query return value for setting the operating mode: %s" % mib_out
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Operating_mode"],
+                index,
+            )
+        assert mib_out == operating_mode, (
+            "Mib query return value for setting the operating mode: %s" %
+            mib_out)
 
     def set_bandwidth(self, wifi_mode, bandwidth, channel_number=0):
-        """To set wifi bandwidth via SNMP
+        """To set wifi bandwidth via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -153,18 +221,29 @@ class wifi_snmp(wifi_stub):
         """
         index = self.mib_value["mib_index"][wifi_mode]
         bandwidth = self.mib_value["bandwidth"][bandwidth]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Bandwidth"], index,
-                               "i", bandwidth)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Bandwidth"],
+            index,
+            "i",
+            bandwidth,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Bandwidth"],
-                                   index)
-        assert mib_out == bandwidth, "Mib query return value for setting the bandwidth: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Bandwidth"],
+                index,
+            )
+        assert mib_out == bandwidth, (
+            "Mib query return value for setting the bandwidth: %s" % mib_out)
 
     def set_channel_number(self, wifi_mode, channel_number):
-        """To set wifi channel number via SNMP
+        """To set wifi channel number via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -174,18 +253,30 @@ class wifi_snmp(wifi_stub):
         :raises assertion: Mib query return value for setting the channel number
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Channel_mode"],
-                               index, "u", channel_number)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Channel_mode"],
+            index,
+            "u",
+            channel_number,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Channel_mode"],
-                                   index)
-        assert mib_out == channel_number, "Mib query return value for setting the channel number: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Channel_mode"],
+                index,
+            )
+        assert mib_out == channel_number, (
+            "Mib query return value for setting the channel number: %s" %
+            mib_out)
 
     def set_broadcast(self, wifi_mode, broadcast="enable"):
-        """To set wifi broadcast via SNMP
+        """To set wifi broadcast via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -199,58 +290,90 @@ class wifi_snmp(wifi_stub):
         elif broadcast == "disable":
             broadcast_value = "1"
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_set(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Broadcast"], index,
-                               "i", broadcast_value)
+        mib_out = snmp_mib_set(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Broadcast"],
+            index,
+            "i",
+            broadcast_value,
+        )
         if self.apply_changes_no_delay:
             self.apply_changes()
-            mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                                   self.mib_value["mib_name"]["Broadcast"],
-                                   index)
-        assert mib_out == broadcast_value, "Mib query return value for setting the broadcast for SSID: %s" % mib_out
+            mib_out = snmp_mib_get(
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Broadcast"],
+                index,
+            )
+        assert mib_out == broadcast_value, (
+            "Mib query return value for setting the broadcast for SSID: %s" %
+            mib_out)
 
     def apply_changes(self):
-        """To apply changes to the wifi settings
+        """To apply changes to the wifi settings.
 
         :return: True or False
         :rtype: boolean
         """
-        retry_on_exception(snmp_mib_set, (
-            self.device,
-            self.parser,
-            self.iface_ip,
-            self.mib_value["mib_name"]["Wifi_Apply_setting"],
-            '0',
-            'i',
-            '1',
-        ))
+        retry_on_exception(
+            snmp_mib_set,
+            (
+                self.device,
+                self.parser,
+                self.iface_ip,
+                self.mib_value["mib_name"]["Wifi_Apply_setting"],
+                "0",
+                "i",
+                "1",
+            ),
+        )
         for _ in range(4):
             self.board.expect(pexpect.TIMEOUT, timeout=20)
             try:
                 mib_out = snmp_mib_set(
-                    self.device, self.parser, self.iface_ip,
-                    self.mib_value["mib_name"]["Wifi_diag_command"], '0', 's',
-                    '"echo 1"')
+                    self.device,
+                    self.parser,
+                    self.iface_ip,
+                    self.mib_value["mib_name"]["Wifi_diag_command"],
+                    "0",
+                    "s",
+                    '"echo 1"',
+                )
                 mib_out = snmp_mib_get(
-                    self.device, self.parser, self.iface_ip,
-                    self.mib_value["mib_name"]["Wifi_diag_result"], '0')
-                if mib_out != '1':
+                    self.device,
+                    self.parser,
+                    self.iface_ip,
+                    self.mib_value["mib_name"]["Wifi_diag_result"],
+                    "0",
+                )
+                if mib_out != "1":
                     continue
                 wifi_2G_channel = snmp_mib_get(
-                    self.device, self.parser, self.iface_ip,
-                    self.mib_value["mib_name"]["Current_channel"], '32')
+                    self.device,
+                    self.parser,
+                    self.iface_ip,
+                    self.mib_value["mib_name"]["Current_channel"],
+                    "32",
+                )
                 wifi_5G_channel = snmp_mib_get(
-                    self.device, self.parser, self.iface_ip,
-                    self.mib_value["mib_name"]["Current_channel"], '92')
-                if wifi_2G_channel != '0' and wifi_5G_channel != '0':
+                    self.device,
+                    self.parser,
+                    self.iface_ip,
+                    self.mib_value["mib_name"]["Current_channel"],
+                    "92",
+                )
+                if wifi_2G_channel != "0" and wifi_5G_channel != "0":
                     return True
                     break
-            except:
+            except Exception:
                 pass
         return False
 
     def get_wifi_enabled(self, wifi_mode):
-        """To verify wifi enabled via SNMP
+        """To verify wifi enabled via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -259,13 +382,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Wifi_enable"],
-                               index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Wifi_enable"],
+            index,
+        )
         return mib_out
 
     def get_ssid(self, wifi_mode):
-        """To get ssid via SNMP
+        """To get ssid via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -274,12 +401,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["SSID_set"], index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["SSID_set"],
+            index,
+        )
         return mib_out
 
     def get_security(self, wifi_mode):
-        """To get security via SNMP
+        """To get security via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -288,13 +420,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Security_mode"],
-                               index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Security_mode"],
+            index,
+        )
         return mib_out
 
     def get_password(self, wifi_mode):
-        """To get password via SNMP
+        """To get password via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -303,13 +439,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Password_set"],
-                               index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Password_set"],
+            index,
+        )
         return mib_out
 
     def get_channel_utilization(self):
-        """To get channel utilization via SNMP
+        """To get channel utilization via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -317,12 +457,17 @@ class wifi_snmp(wifi_stub):
         :return: wifi channel utilization
         :rtype: string
         """
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Channel_Util"], "0")
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Channel_Util"],
+            "0",
+        )
         return mib_out
 
     def get_operating_mode(self, wifi_mode):
-        """To get operating mode via SNMP
+        """To get operating mode via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -331,13 +476,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Operating_mode"],
-                               index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Operating_mode"],
+            index,
+        )
         return mib_out
 
     def get_bandwidth(self, wifi_mode):
-        """To get bandwidth via SNMP
+        """To get bandwidth via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -346,12 +495,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Bandwidth"], index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Bandwidth"],
+            index,
+        )
         return mib_out
 
     def get_broadcast(self, wifi_mode):
-        """To get broadcast via SNMP
+        """To get broadcast via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -360,12 +514,17 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Broadcast"], index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Broadcast"],
+            index,
+        )
         return mib_out
 
     def get_channel_number(self, wifi_mode):
-        """To get channel number via SNMP
+        """To get channel number via SNMP.
 
         :param wifi_mode: wifi network mode eg:private_2.4, guest_2.4,
                                                private_5, guest_5
@@ -374,7 +533,11 @@ class wifi_snmp(wifi_stub):
         :rtype: string
         """
         index = self.mib_value["mib_index"][wifi_mode]
-        mib_out = snmp_mib_get(self.device, self.parser, self.iface_ip,
-                               self.mib_value["mib_name"]["Current_channel"],
-                               index)
+        mib_out = snmp_mib_get(
+            self.device,
+            self.parser,
+            self.iface_ip,
+            self.mib_value["mib_name"]["Current_channel"],
+            index,
+        )
         return mib_out
