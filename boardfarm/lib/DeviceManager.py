@@ -8,13 +8,15 @@ from aenum import Enum
 from boardfarm.exceptions import DeviceDoesNotExistError
 from six.moves import UserList
 
-logging.basicConfig(stream=sys.stdout, format='%(message)s')
-logger = logging.getLogger('DeviceManager')
+logging.basicConfig(stream=sys.stdout, format="%(message)s")
+logger = logging.getLogger("DeviceManager")
 logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
 class DeviceNone(object):
+    """Check device."""
     def __getattr__(self, key):
+        """Raise DeviceDoesNotExistError."""
         raise DeviceDoesNotExistError
 
 
@@ -23,10 +25,11 @@ class DeviceNone(object):
 # by location and/or feature. E.g. wan2/lan2/etc all start to go away from this
 # short list
 class device_type(Enum):
-    '''
-    Identifiers for different kinds of devices. Useful for correctly
-    connecting to and using a device.
-    '''
+    """
+    Identifiers for different kinds of devices.
+    Useful for correctly connecting to and using a device.
+    """
+
     Unknown = 0
     DUT = 1
     board = 1
@@ -56,14 +59,14 @@ class device_type(Enum):
 
 
 class device_array_type(Enum):
+    """Identifiers for device array type."""
     wan_clients = 1
     lan_clients = 2
 
 
 class device_location(Enum):
-    '''
-    Identifiers for how a device is connected to the Device Under Test (DUT).
-    '''
+    """Identifiers for how a device is connected to the DUT."""
+
     Unknown = 0
     Northbound = 1
     WAN = 1
@@ -73,9 +76,8 @@ class device_location(Enum):
 
 
 class device_os(Enum):
-    '''
-    Identifiers for the type of Operating System (OS) of a device.
-    '''
+    """Identifiers for the type of Operating System (OS) of a device."""
+
     Unknown = 0
     Linux = 1
     Windows = 2
@@ -83,9 +85,8 @@ class device_os(Enum):
 
 # to replace linux_boot.LinuxDevice.get_device_by_feature
 class device_feature(Enum):
-    '''
-    Identifiers for extra features a device may have.
-    '''
+    """Identifiers for extra features a device may have."""
+
     Unknown = 0
     Generic = 1
     Wifi2G = 2
@@ -93,9 +94,8 @@ class device_feature(Enum):
 
 
 class device_descriptor(object):
-    '''
-    All identifiers about a device.
-    '''
+    """All identifiers about a device."""
+
     location = device_location.Unknown
     os = device_os.Linux
     type = device_type.Unknown
@@ -103,6 +103,7 @@ class device_descriptor(object):
     obj = None
 
     def __str__(self):
+        """Define device descriptor details."""
         ret = "==== DEVICE DESCRIPTOR ====\n"
         ret += "location = " + str(self.location) + "\n"
         ret += "os = " + str(self.os) + "\n"
@@ -117,10 +118,9 @@ all_device_managers = []
 
 
 class device_manager(UserList):
-    '''
-    Manages all your devices, for getting and creating (if needed)
-    '''
+    """Manages all your devices, for getting and creating (if needed)."""
     def __init__(self):
+        """Instance initialisation."""
         super().__init__()
         # List of current devices, which we prefer to reuse instead of creating new ones
         self.devices = []
@@ -134,7 +134,7 @@ class device_manager(UserList):
         self.env = {
             "wan_iface": "wan%s" % self.uniqid[:12],
             "lan_iface": "lan%s" % self.uniqid[:12],
-            "uniq_id": self.uniqid
+            "uniq_id": self.uniqid,
         }
 
         all_device_managers.append(self)
@@ -145,12 +145,11 @@ class device_manager(UserList):
 
     @data.setter
     def data(self, x):
-        '''
-        This should only really be used to clear/initialize the list of devices.
-        '''
+        """To clear/initialize the list of devices."""
         self.devices = x
 
     def set_device_array(self, array_name, dev):
+        """Set Device Array details."""
         if getattr(device_array_type, array_name, None):
             dev_array = getattr(self, array_name, [])
             for i in dev_array:
@@ -165,7 +164,7 @@ class device_manager(UserList):
             raise Exception("Invalid device array type %s" % array_name)
 
     def close_all(self):
-        '''Close connections to all devices'''
+        """Close connections to all devices."""
         for d in self.devices:
             try:
                 logger.debug("Closing connection to '%s'." % d.type.name)
@@ -178,40 +177,39 @@ class device_manager(UserList):
         self.devices = []
 
     def by_type(self, t, num=1):
-        '''Shorthand for getting device by type'''
+        """Shorthand for getting device by type."""
         return self.get_device_by_type(t, num)
 
     def by_types(self, types):
-        '''Shorthand for getting devices by types'''
+        """Shorthand for getting devices by types."""
         return self.get_devices_by_types(types)
 
     def get_device_by_type(self, t, num=1):
-        '''Get device that already exists by type'''
+        """Get device that already exists by type."""
         return self.get_device(t, None, None, num)
 
     def get_devices_by_types(self, types):
-        '''Get multiple devices by types'''
-
+        """Get multiple devices by types."""
         return [self.by_type(t, num=1) for t in types]
 
     def by_feature(self, feature, num=1):
-        '''Shorthand for getting device by feature'''
+        """Shorthand for getting device by feature."""
         return self.get_device_by_feature(feature, num)
 
     def get_device_by_feature(self, feature, num=1):
-        '''Get device that already exists by feature'''
+        """Get device that already exists by feature."""
         return self.get_device(None, feature, None, num)
 
     def by_location(self, location, num=1):
-        '''Shorthand for getting device by location'''
+        """Shorthand for getting device by location."""
         return self.get_device_by_location(location, num)
 
     def get_device_by_location(self, location, num=1):
-        '''Get device that already exists by location'''
+        """Get device that already exists by location."""
         return self.get_device(None, None, location, num)
 
     def get_device(self, t, feature, location, num=1):
-        '''Get's a new device by feature and location'''
+        """Get a new device by feature and location."""
         assert num == 1, "We don't support getting more than one device currently!"
 
         matching = self.devices[:]
@@ -222,7 +220,7 @@ class device_manager(UserList):
         if location is not None:
             matching[:] = [d for d in matching if d.location == location]
 
-        if len(matching) > 1 and 'BFT_DEBUG' in os.environ:
+        if len(matching) > 1 and "BFT_DEBUG" in os.environ:
             print("multiple matches, returning first hit (%s, %s, %s)" %
                   (t, feature, location))
             for m in matching:
@@ -234,8 +232,7 @@ class device_manager(UserList):
         return matching[0].obj
 
     def _add_device(self, dev):
-        '''Hook to add devices created via old method get_device()'''
-
+        """Hook to add devices created via old method get_device()."""
         new_dev = device_descriptor()
         if len(self.devices) == 0:
             new_dev.type = device_type.DUT
@@ -244,15 +241,15 @@ class device_manager(UserList):
         new_dev.obj = dev
         self.devices.append(new_dev)
 
-        array_name = getattr(dev, 'dev_array', None)
+        array_name = getattr(dev, "dev_array", None)
         if array_name:
             self.set_device_array(array_name, dev)
         else:
             # For convenience, set an attribute with a name the same as the
             # newly added device type. Example: self.lan = the device of type lan
             attribute_name = new_dev.type.name
-            if attribute_name != 'Unknown' and getattr(self, attribute_name,
-                                                       None) is not None:
+            if (attribute_name != "Unknown"
+                    and getattr(self, attribute_name, None) is not None):
                 # device manager already has an attribute of this name
                 raise Exception(
                     "Device Manager already has '%s' attribute, you cannot add another."
@@ -260,5 +257,5 @@ class device_manager(UserList):
             else:
                 setattr(self, attribute_name, new_dev.obj)
                 # Alias board to DUT
-                if attribute_name == 'DUT':
-                    setattr(self, 'board', new_dev.obj)
+                if attribute_name == "DUT":
+                    setattr(self, "board", new_dev.obj)
