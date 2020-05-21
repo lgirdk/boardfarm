@@ -18,6 +18,7 @@ warnings.simplefilter("always", UserWarning)
 
 @run_once
 def flash_meta_helper(board, meta, wan, lan):
+    """Flash meta helper."""
     board.flash_meta(meta, wan, lan, check_version=True)
 
 
@@ -28,6 +29,7 @@ def flash_image(config,
                 wan,
                 tftp_device,
                 reflash=True):
+    """Flash image on board."""
     rootfs = None
 
     # Reflash only if at least one or more of these
@@ -36,9 +38,10 @@ def flash_image(config,
     if (config.META_BUILD or env_helper.has_image()) \
             and not board.flash_meta_booted:
         meta_interrupt = True
-    if reflash and any([meta_interrupt, config.ROOTFS, \
-            config.KERNEL, config.UBOOT, config.COMBINED, \
-            config.ATOM, config.ARM]):
+    if reflash and any([
+            meta_interrupt, config.ROOTFS, config.KERNEL, config.UBOOT,
+            config.COMBINED, config.ATOM, config.ARM
+    ]):
         # Break into U-Boot, set environment variables
         board.wait_for_boot()
         board.setup_uboot_network(tftp_device.gw)
@@ -79,7 +82,9 @@ def flash_image(config,
 
 
 def boot_image(config, env_helper, board, lan, wan, tftp_device):
+    """Boot image."""
     def _meta_flash(img):
+        """Flash with image."""
         try:
             flash_meta_helper(board, img, wan, lan)
         except Exception as e:
@@ -89,6 +94,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
             board.setup_uboot_network(tftp_device.gw)
 
     def _factory_reset(img):
+        """Reset using factory_reset method."""
         board.factory_reset()
 
     methods = {
@@ -102,6 +108,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     }
 
     def _perform_flash(boot_sequence):
+        """Perform Flash booting."""
         for i in boot_sequence:
             for strategy, img in i.items():
                 if strategy in ["factory_reset", "meta_build"]:
@@ -122,6 +129,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
                     board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
 
     def _check_override(strategy, img):
+        """Check for Overriding image value."""
         if getattr(config, strategy.upper(), None):
             # this is the override
             debtcollector.deprecate(
@@ -203,6 +211,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
 
 
 def get_tftp(config):
+    """Get tftp server details."""
     # start tftpd server on appropriate device
     tftp_servers = [
         x['name'] for x in config.board['devices']
@@ -217,6 +226,7 @@ def get_tftp(config):
 
 
 def start_dhcp_servers(config):
+    """Start DHCP server."""
     # start dhcp servers
     for device in config.board['devices']:
         if 'options' in device and 'no-dhcp-sever' in device['options']:
@@ -226,6 +236,7 @@ def start_dhcp_servers(config):
 
 
 def provision(board, prov, wan, tftp_device):
+    """Board Provisioning."""
     prov.tftp_device = tftp_device
     board.reprovision(prov)
 
@@ -256,6 +267,7 @@ def boot(config,
          reflash=True,
          logged=dict(),
          flashing_image=True):
+    """Define Boot method for configuring to device."""
     logged['boot_step'] = "start"
 
     board = devices.board
@@ -324,7 +336,7 @@ def boot(config,
                     wan.turn_on_pppoe()
                 board.config_wan_proto(config.WAN_PROTO)
                 break
-            except:
+            except Exception:
                 print("\nFailed to check/set the router's WAN protocol.")
         board.wait_for_network()
     board.wait_for_mounts()
@@ -338,7 +350,7 @@ def boot(config,
 
     try:
         board.set_password(password='password')
-    except:
+    except Exception:
         print("WARNING: Unable to set root password on router.")
 
     board.sendline('cat /proc/cmdline')
