@@ -16,13 +16,11 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 
 class LinuxDevice(base.BaseDevice):
-    '''Linux implementations '''
+    """Linux implementations."""
     tftp_dir = '/tftpboot'
 
     def check_status(self):
-        '''
-        A simple, safe function to check the state of the device.
-        '''
+        """Check the state of the device."""
         print("\n\nRunning check_status() on %s" % self.name)
         self.sendline(
             "\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
@@ -34,7 +32,7 @@ class LinuxDevice(base.BaseDevice):
         self.expect(self.prompt, timeout=5)
 
     def get_interface_ipaddr(self, interface):
-        '''Get ipv4 address of interface'''
+        """Get ipv4 address of interface."""
         self.sendline("\nifconfig %s" % interface)
         regex = [
             r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
@@ -50,7 +48,7 @@ class LinuxDevice(base.BaseDevice):
         return ipv4address
 
     def get_interface_ip6addr(self, interface):
-        '''Get ipv6 address of interface'''
+        """Get ipv6 address of interface."""
         # to minimise the chance of getting stray ipv6 addresses from the pexpect
         # ".before" buffer tagging with bft_inet6 the lines of OUR command output that
         # have an ipv6 address (so we can pick them later)
@@ -74,13 +72,13 @@ class LinuxDevice(base.BaseDevice):
                     print("ifconfig {} IPV6 {}".format(interface,
                                                        str(ipv6_iface.ip)))
                     return str(ipv6_iface.ip)
-            except:
+            except Exception:
                 continue
         print("Failed ifconfig {} IPV6 {}".format(interface, ips))
         raise Exception("Did not find non-link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
-        '''Get the interface macaddress'''
+        """Get the interface macaddress."""
         self.sendline("cat /sys/class/net/{}/address | \\".format(interface))
         self.sendline("awk '{print \"bft_macaddr : \"$1}'")
         self.expect("bft_macaddr : {}".format(LinuxMacFormat))
@@ -89,7 +87,7 @@ class LinuxDevice(base.BaseDevice):
         return macaddr
 
     def get_seconds_uptime(self):
-        '''Return seconds since last reboot. Stored in /proc/uptime'''
+        """Return seconds since last reboot. Stored in /proc/uptime."""
         self.sendcontrol('c')
         self.expect(self.prompt)
         self.sendline('\ncat /proc/uptime')
@@ -99,14 +97,14 @@ class LinuxDevice(base.BaseDevice):
         return seconds_up
 
     def enable_ipv6(self, interface):
-        '''Enable ipv6 of the interface '''
+        """Enable ipv6 of the interface."""
         self.sendline("sysctl net.ipv6.conf." + interface + ".accept_ra=2")
         self.expect(self.prompt, timeout=30)
         self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=0")
         self.expect(self.prompt, timeout=30)
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
-        '''set static ip of the interface'''
+        """Set static ip of the interface."""
         self.sudo_sendline('ifconfig {} {} netmask {} up'.format(
             interface, fix_ip, fix_mark))
         self.expect(self.prompt)
@@ -118,23 +116,24 @@ class LinuxDevice(base.BaseDevice):
             return None
 
     def disable_ipv6(self, interface):
-        '''Disable ipv6 of the interface '''
+        """Disable ipv6 of the interface."""
         self.sendline("sysctl net.ipv6.conf." + interface + ".disable_ipv6=1")
         self.expect(self.prompt, timeout=30)
 
     def release_dhcp(self, interface):
-        '''release ip of the interface '''
+        """Release ip of the interface."""
         self.sudo_sendline("dhclient -r {!s}".format(interface))
         self.expect(self.prompt)
 
     def check_access_url(self, url, source_ip=None):
-        '''
+        """Check source_ip can access url.
+
         Name: check_access_url
         Purpose: check source_ip can access url
         Input:  url, source_ip
         Output: True or False
-        '''
-        if source_ip == None:
+        """
+        if source_ip is None:
             self.sendline("curl -I {!s}".format(url))
         else:
             self.sendline("curl --interface {!s} -I {!s}".format(
@@ -145,14 +144,14 @@ class LinuxDevice(base.BaseDevice):
             self.sendcontrol('c')
             self.expect(self.prompt)
 
-        match = re.search('HTTP\/.* 200', self.before)
+        match = re.search(r'HTTP\/.* 200', self.before)
         if match:
             return True
         else:
             return False
 
     def set_password(self, password):
-        '''Set password using passwd command'''
+        """Set password using passwd command."""
         self.sendline("passwd")
         self.expect("password:", timeout=8)
         self.sendline(password)
@@ -161,17 +160,17 @@ class LinuxDevice(base.BaseDevice):
         self.expect(self.prompt)
 
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
-        '''Modifies the log level in kernel'''
+        """Modify the log level in kernel."""
         try:
             self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' %
                           (CUR, DEF, MIN, BTDEF))
             self.expect('echo')
             self.expect(self.prompt, timeout=10)
-        except:
+        except Exception:
             pass
 
     def prefer_ipv4(self, pref=True):
-        """Edits the /etc/gai.conf file
+        """Edits the /etc/gai.conf file.
 
         This is to give/remove ipv4 preference (by default ipv6 is preferred)
         See /etc/gai.conf inline comments for more details
@@ -192,8 +191,7 @@ class LinuxDevice(base.BaseDevice):
              ping_interface=None,
              options='',
              timetorun=None):
-        '''Check ping from any device'''
-
+        """Check ping from any device."""
         timeout = 50
         basic_cmd = 'ping -c {} {}'.format(ping_count, ping_ip)
 
@@ -221,7 +219,7 @@ class LinuxDevice(base.BaseDevice):
                 return False
 
     def traceroute(self, host_ip, version='', options='', timeout=60):
-        '''Traceroute returns the route that packets take to a network host'''
+        """Traceroute returns the route that packets take to a network host."""
         try:
             self.sendline("traceroute%s %s %s" % (version, options, host_ip))
             self.expect_exact("traceroute%s %s %s" %
@@ -234,7 +232,7 @@ class LinuxDevice(base.BaseDevice):
             return None
 
     def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
-        '''Checking the interface status'''
+        """Check the interface status."""
         self.sendline("ip link show %s" % interface)
         self.expect(self.prompt)
         link_state = self.before
@@ -245,12 +243,12 @@ class LinuxDevice(base.BaseDevice):
             return None
 
     def set_link_state(self, interface, state):
-        '''Setting the interface status'''
+        """Set the interface status."""
         self.sudo_sendline("ip link set %s %s" % (interface, state))
         self.expect(self.prompt)
 
     def add_new_user(self, id, pwd):
-        '''Create new login ID. But check if already exists'''
+        """Create new login ID. But check if already exists."""
         self.sendline('\nadduser %s' % id)
         try:
             self.expect_exact("Enter new UNIX password", timeout=5)
@@ -273,14 +271,14 @@ class LinuxDevice(base.BaseDevice):
             self.sendline('usermod -aG sudo %s' % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline('sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' %
+            self.sendline(r'sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' %
                           id)
             self.expect(self.prompt, timeout=30)
-        except:
+        except Exception:
             self.expect(self.prompt, timeout=30)
 
     def copy_file_to_server(self, src, dst=None):
-        '''Copy the file from source to destination '''
+        """Copy the file from source to destination."""
         def gzip_str(string_):
             import gzip
             import io
@@ -310,13 +308,13 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.logfile_read = saved_logfile_read
 
     def ip_neigh_flush(self):
-        '''Removes entries in the neighbour table '''
+        """Remove entries in the neighbour table."""
         self.sendline('\nip -s neigh flush all')
         self.expect('flush all')
         self.expect(self.prompt)
 
     def sudo_sendline(self, cmd):
-        '''Add sudo in the sendline if username is root'''
+        """Add sudo in the sendline if username is root."""
         if self.username != "root":
             self.sendline("sudo true")
             i = self.expect(["password for .*:", "Password:"] + self.prompt)
@@ -332,12 +330,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         super(LinuxDevice, self).sendline(cmd)
 
     def set_cli_size(self, columns):
-        '''Set the terminal colums value'''
+        """Set the terminal colums value."""
         self.sendline('stty columns %s' % str(columns))
         self.expect(self.prompt)
 
     def wait_for_linux(self):
-        '''Verify Linux starts up.'''
+        """Verify Linux starts up."""
         i = self.expect([
             'Reset Button Push down', 'Linux version', 'Booting Linux',
             'Starting kernel ...', 'Kernel command line specified:'
@@ -361,14 +359,14 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 self.expect(self.prompt)
 
     def get_dns_server_upstream(self):
-        '''Get the IP of name server'''
+        """Get the IP of name server."""
         self.sendline('grep nameserver /etc/resolv.conf')
         self.expect_exact('grep nameserver /etc/resolv.conf')
         self.expect(self.prompt)
         return self.before
 
     def get_nf_conntrack_conn_count(self):
-        '''Get the total number of connections in the network'''
+        """Get the total number of connections in the network."""
         pp = self.get_pp_dev()
 
         for _ in range(5):
@@ -382,13 +380,13 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
                 self.touch()
                 return ret
-            except:
+            except Exception:
                 continue
             else:
                 raise Exception("Unable to extract nf_conntrack_count!")
 
     def get_proc_vmstat(self, pp=None):
-        '''Get the virtual machine status '''
+        """Get the virtual machine status."""
         if pp is None:
             pp = self.get_pp_dev()
 
@@ -410,7 +408,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                 raise Exception("Unable to parse /proc/vmstat!")
 
     def wait_for_network(self):
-        '''Wait until network interfaces have IP Addresses.'''
+        """Wait until network interfaces have IP Addresses."""
         for interface in [self.wan_iface, self.lan_iface]:
             for _ in range(5):
                 try:
@@ -427,7 +425,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                     break
 
     def get_memfree(self):
-        '''Return the kB of free memory.'''
+        """Return the kB of free memory."""
         # free pagecache, dentries and inodes for higher accuracy
         self.sendline('\nsync; echo 3 > /proc/sys/vm/drop_caches')
         self.expect('drop_caches')
@@ -461,19 +459,19 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect_prompt()
 
     def take_lock(self, file_lock, fd=9, timeout=200):
-        '''Takes a file lock on file_lock'''
+        """Take a file lock on file_lock."""
         self.sendline('exec %s>%s' % (fd, file_lock))
         self.expect(self.prompt)
         self.sendline('flock -x %s' % fd)
         self.expect(self.prompt, timeout=timeout)
 
     def release_lock(self, file_lock, fd=9):
-        '''Releases a lock taken'''
+        """Releases a lock taken."""
         self.sendline('flock -u %s' % fd)
         self.expect(self.prompt)
 
     def perform_curl(self, host_ip, protocol, port=None, options=''):
-        """Performs curl action to web service running on host machine
+        """Perform curl action to web service running on host machine.
 
         :param dev : dev to perform curl
         :type dev : device object
