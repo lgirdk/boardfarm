@@ -16,12 +16,13 @@ newline_re_match = r"\\r\\n\[([^\]]+)\]"
 
 
 def prepare_log(log):
-    '''Strips some stuff from outside logs so we can parse'''
+    """Strip some stuff from outside logs so we can parse."""
     # TODO: convert other timestamps into seconds since boot
     return log
 
 
 def split_results(results):
+    """Implement split_results."""
     t = [x[0] for x in results]
     r = [x[1] for x in results]
 
@@ -32,8 +33,8 @@ def split_results(results):
     return None, results
 
 
-class Analysis():
-    '''Base analysis class, each child class should implement the analyze function'''
+class Analysis:
+    """Base analysis class, each child class should implement the analyze function."""
     def analyze(self, console_log, output_dir):
         pass
 
@@ -44,7 +45,7 @@ class Analysis():
                    ts=None,
                    xlabel="seconds",
                    output_dir=None):
-        '''Helper function to make a PNG graph'''
+        """Make a PNG graph."""
         if not output_dir:
             return
 
@@ -52,7 +53,8 @@ class Analysis():
         ts = [float(i) for i in ts]
         try:
             data = [float(i) for i in data]
-        except:
+        except Exception as error:
+            print(error)
             data = [int(i) for i in data]
 
         import matplotlib.pyplot as plt
@@ -60,7 +62,7 @@ class Analysis():
         if ts is None:
             plt.plot(data)
         else:
-            plt.plot(ts, data, marker='o')
+            plt.plot(ts, data, marker="o")
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.gcf().set_size_inches(12, 8)
