@@ -4,7 +4,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 import json
 import os
@@ -12,10 +12,9 @@ import socket
 
 
 class RemoteLogger(object):
-    """Write data to remote logging server.
-    """
+    """Write data to remote logging server."""
     def __init__(self, server, subtype='demo'):
-        """Constructor used to remote server logging
+        """Remote server logging.
 
         :param server: remote server to log
         :type server: string
@@ -41,7 +40,7 @@ class RemoteLogger(object):
         self.logserver_port = int(port)
 
     def log(self, data, debug=False):
-        """Logs the data to remote server
+        """Log the data to remote server.
 
         :param data: data to log to remote server
         :type data: dict
