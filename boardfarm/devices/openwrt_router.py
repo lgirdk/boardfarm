@@ -22,19 +22,19 @@ from . import connection_decider, linux, power
 try:
     # Python 3
     from urllib.request import build_opener, install_opener, ProxyHandler, urlopen
-except:
+except Exception:
     # Python 2
     from urllib2 import build_opener, install_opener, ProxyHandler, urlopen
 
 
 class OpenWrtRouter(linux.LinuxDevice):
-    '''
+    """
     Args:
       model: Examples include "ap148" and "ap135".
       conn_cmd: Command to connect to device such as "ssh -p 3003 root@10.0.0.202"
       power_ip: IP Address of power unit to which this device is connected
       power_outlet: Outlet # this device is connected
-    '''
+    """
     conn_list = None
     consoles = []
 
@@ -75,7 +75,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                  power_password=None,
                  config=None,
                  **kwargs):
-
+        """Instance initialization."""
         self.config = config
         self.consoles = [self]
 
@@ -109,17 +109,17 @@ class OpenWrtRouter(linux.LinuxDevice):
                     self.tftp_password = tftp_password
                 if tftp_port:
                     self.tftp_port = tftp_port
-            except:
+            except Exception:
                 pass
         else:
             self.tftp_server = None
         atexit.register(self.kill_console_at_exit)
 
     def get_file(self, fname, lan_ip=lan_gateway):
-        '''
-        OpenWrt routers have a webserver, so we use that to download
-        the file via a webproxy (e.g. a device on the board's LAN).
-        '''
+        """Download the file via a webproxy from webserver of OpenWrt routers.
+
+        E.g. A device on the board's LAN
+        """
         if not self.web_proxy:
             raise Exception('No web proxy defined to access board.')
         url = 'http://%s/TEMP' % lan_ip
@@ -136,7 +136,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         return urlopen(url, timeout=30)
 
     def tftp_get_file(self, host, filename, timeout=30):
-        '''Download file from tftp server.'''
+        """Download file from tftp server."""
         self.sendline("tftp-hpa %s" % host)
         self.expect("tftp>")
         self.sendline("get %s" % filename)
@@ -151,7 +151,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         return new_fname
 
     def tftp_get_file_uboot(self, loadaddr, filename, timeout=60):
-        '''Within u-boot, download file from tftp server.'''
+        """Within u-boot, download file from tftp server."""
         for _ in range(3):
             try:
                 self.sendline('help')
@@ -171,7 +171,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 ret = int(self.match.group(1))
                 self.expect(self.uprompt)
                 return ret
-            except:
+            except Exception:
                 print("\nTFTP failed, let us try that again")
                 self.sendcontrol('c')
                 self.expect(self.uprompt)
@@ -183,8 +183,8 @@ class OpenWrtRouter(linux.LinuxDevice):
                      tusername=None,
                      tpassword=None,
                      tport=None):
-        '''Copy file to tftp server, so that it it available to tftp
-        to the board itself.'''
+        """Copy file to tftp server, so that it it available to tftp\
+        to the board itself."""
         if tserver is None:
             tserver = self.tftp_server
         if tusername is None:
@@ -202,7 +202,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                                              tusername, tpassword, tport)
 
     def install_package(self, fname):
-        '''Install OpenWrt package (opkg).'''
+        """Install OpenWrt package (opkg)."""
         target_file = fname.replace('\\', '/').split('/')[-1]
         new_fname = self.prepare_file(fname)
         local_file = self.tftp_get_file(self.tftp_server,
@@ -218,10 +218,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def wait_for_boot(self):
-        '''
-        Break into U-Boot. Check memory locations and sizes, and set
-        variables needed for flashing.
-        '''
+        """Break into U-Boot, heck memory locations and sizes and, set variables needed for flashing."""
         # Try to break into uboot
         for _ in range(4):
             try:
@@ -243,7 +240,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect('FOO')
                 self.expect(self.uprompt, timeout=4)
                 break
-            except:
+            except Exception:
                 print('\n\nFailed to break into uboot, try again.')
                 self.reset()
         else:
@@ -261,7 +258,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.uprompt)
 
     def network_restart(self):
-        '''Restart networking.'''
+        """Restart networking."""
         self.sendline('\nifconfig')
         self.expect('HWaddr', timeout=10)
         self.expect(self.prompt)
@@ -272,7 +269,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.wait_for_network()
 
     def firewall_restart(self):
-        '''Restart the firewall. Return how long it took.'''
+        """Restart the firewall. Return how long it took."""
         start = datetime.now()
         self.sendline('/etc/init.d/firewall restart')
         self.expect_exact([
@@ -289,13 +286,13 @@ class OpenWrtRouter(linux.LinuxDevice):
         return int((datetime.now() - start).seconds)
 
     def get_wan_iface(self):
-        '''Return name of WAN interface.'''
+        """Return name of WAN interface."""
         self.sendline('\nuci show network.wan.ifname')
         self.expect(r"wan.ifname='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
         return self.match.group(1)
 
     def get_wan_proto(self):
-        '''Return protocol of WAN interface, e.g. dhcp.'''
+        """Return protocol of WAN interface, e.g. dhcp."""
         self.sendline('\nuci show network.wan.proto')
         self.expect(r"wan.proto='?([a-zA-Z0-9\.-]*)'?\r\n", timeout=5)
         return self.match.group(1)
@@ -305,8 +302,8 @@ class OpenWrtRouter(linux.LinuxDevice):
             if tftp_server is None:
                 raise Exception("Error in TFTP server configuration")
             self.tftp_server_int = tftp_server
-        '''Within U-boot, request IP Address,
-        set server IP, and other networking tasks.'''
+        """Within U-boot, request IP Address,
+        set server IP, and other networking tasks."""
         # Use standard eth1 address of wan-side computer
         self.sendline('setenv autoload no')
         self.expect(self.uprompt)
@@ -336,7 +333,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     self.expect(self.uprompt)
                     passed = True
                     break
-                except:
+                except Exception:
                     print("ping failed, trying again")
                     # Try other interface
                     self.sendcontrol('c')
@@ -354,7 +351,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.uprompt)
 
     def config_wan_proto(self, proto):
-        '''Set protocol for WAN interface.'''
+        """Set protocol for WAN interface."""
         if "dhcp" in proto:
             if self.get_wan_proto() != "dhcp":
                 self.sendline("uci set network.wan.proto=dhcp")
@@ -372,22 +369,22 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect(pexpect.TIMEOUT, timeout=10)
 
     def enable_mgmt_gui(self):
-        '''Allow access to webgui from devices on WAN interface '''
+        """Allow access to webgui from devices on WAN interface."""
         self.uci_allow_wan_http(self.lan_gateway)
 
     def enable_ssh(self):
-        '''Allow ssh on wan interface '''
+        """Allow ssh on wan interface."""
         self.uci_allow_wan_ssh(self.lan_gateway)
 
     def uci_allow_wan_http(self, lan_ip="192.168.1.1"):
-        '''Allow access to webgui from devices on WAN interface.'''
+        """Allow access to webgui from devices on WAN interface."""
         self.uci_forward_traffic_redirect("tcp", "80", lan_ip)
 
     def uci_allow_wan_ssh(self, lan_ip="192.168.1.1"):
         self.uci_forward_traffic_redirect("tcp", "22", lan_ip)
 
     def uci_allow_wan_https(self):
-        '''Allow access to webgui from devices on WAN interface.'''
+        """Allow access to webgui from devices on WAN interface."""
         self.uci_forward_traffic_redirect("tcp", "443", "192.168.1.1")
 
     def uci_forward_traffic_redirect(self, tcp_udp, port_wan, ip_lan):
@@ -427,7 +424,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.firewall_restart()
 
     def wait_for_mounts(self):
-        '''wait for overlay to finish mounting'''
+        """Wait for overlay to finish mounting."""
         for _ in range(5):
             try:
                 board.sendline('mount')
@@ -435,13 +432,13 @@ class OpenWrtRouter(linux.LinuxDevice):
                                    timeout=15)
                 board.expect(self.prompt)
                 break
-            except:
+            except Exception:
                 pass
         else:
             print("WARN: Overlay still not mounted")
 
     def get_dns_server(self):
-        '''Getting dns server ip address '''
+        """Get dns server ip address."""
         return "%s" % self.lan_gateway
 
     def get_user_id(self, user_id):
@@ -472,7 +469,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                         )
                         pp.expect(pp.prompt)
                         break
-                    except:
+                    except Exception:
                         pp.sendcontrol('d')
                         pp = self.get_pp_dev()
                         if i == 4:
