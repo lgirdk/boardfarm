@@ -1,9 +1,6 @@
-'''
+"""This directory contains classes for connecting to and controlling \
+devices over a network."""
 
-    This directory contains classes for connecting to and controlling
-    devices over a network.
-
-'''
 import glob
 import importlib
 import inspect
@@ -28,10 +25,7 @@ device_mappings = {}
 
 
 def probe_devices():
-    '''
-    Dynamically find all devices classes accross all boardfarm projects.
-    '''
-
+    """Dynamically find all devices classes accross all boardfarm projects."""
     all_boardfarm_modules = boardfarm.plugins
     all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
 
@@ -45,7 +39,7 @@ def probe_devices():
             'devices')
         file_names = glob.glob(os.path.join(location, '*.py'))
         file_names = [
-            os.path.basename(x)[:-3] for x in file_names if not "__" in x
+            os.path.basename(x)[:-3] for x in file_names if "__" not in x
         ]
         # Find sub modules too
         sub_mod = glob.glob(os.path.join(location, '*', '__init__.py'))
@@ -73,7 +67,7 @@ def probe_devices():
 
 
 def check_for_cmd_on_host(cmd, msg=None):
-    '''Prints an error message with a suggestion on how to install the command'''
+    """Print an error message with a suggestion on how to install the command."""
     from boardfarm.lib.common import cmd_exists
     if not cmd_exists(cmd):
         termcolor.cprint(
@@ -81,7 +75,8 @@ def check_for_cmd_on_host(cmd, msg=None):
             "' is NOT installed on your system. Please install it.",
             None,
             attrs=['bold'])
-        if msg is not None: print(cmd + ": " + msg)
+        if msg is not None:
+            print(cmd + ": " + msg)
         import sys
         if sys.platform == "linux2":
             import platform
@@ -98,11 +93,12 @@ _mod = sys.modules[__name__]
 
 
 class _prompt(UserList, list):
-    '''
+    """Check all currently instantiated devices and returns a read-only list.
+
     This used to be a static list, but since we track devices more closely we can
     now dynamically create this list of prompts. It checks all currently instanstiated
     devices and returns a read-only list
-    '''
+    """
     def get_prompts(self):
         ret = []
 
@@ -121,17 +117,20 @@ prompt = _prompt()
 
 
 def bf_node(cls_list, model, device_mgr, **kwargs):
-    '''
-    Method bf_node returns an instance of a dynamically created class.
-    The class is created using type(classname, superclasses, attributes_dict) method.
-    Parameters:
-    cls_list (list): Superclasses for the dynamically created class.
-    model (str), **kwargs: used for defining attributes of the dynamic class.
-    '''
+    """Return an instance of a dynamically created class.
+
+    ...
+    The class is created using type of classname, superclasses, attributes_dict method
+    :param cls_list: Superclasses for the dynamically created class
+    :type cls_list: list
+    :param ``**kwargs``: used for defining attributes of the dynamic class
+
+    ...
+    """
     cls_name = "_".join([cls.__name__ for cls in cls_list])
     cls_members = []
-    '''Need to ensure that profile does not have members which override
-    the base_cls implementation.'''
+    """Need to ensure that profile does not have members which override
+    the base_cls implementation."""
     temp = []
     for cls in cls_list:
         members = [
@@ -162,10 +161,10 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
 
 
 def get_device(model, device_mgr, **kwargs):
-    '''
-    Create a class instance for a device. These are connected to the
-    Device Under Test (DUT) board.
-    '''
+    """Create a class instance for a device.
+
+    These are connected to the device Under Test (DUT) board.
+    """
     profile = kwargs.get("profile", {})
     cls_list = []
     profile_list = []
@@ -230,9 +229,7 @@ def get_device(model, device_mgr, **kwargs):
 
 
 def board_decider(model, **kwargs):
-    '''
-    Create a class instance for the Device Under Test (DUT) board.
-    '''
+    """Create class instance for the Device Under Test (DUT) board."""
     if any('conn_cmd' in s for s in kwargs):
         if any(u'kermit' in s for s in kwargs['conn_cmd']):
             check_for_cmd_on_host(
