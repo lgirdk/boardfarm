@@ -11,7 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):
-    '''Upgrading via sysupgrade works.'''
+    """Upgrading via sysupgrade works."""
     def runTest(self):
         board = self.dev.board
 
@@ -22,17 +22,17 @@ class Sysupgrade(rootfs_boot.RootFSBootTest):
 
         # output some stuff before we kill all the logs in the system, just
         # to be able to review these logs later
-        board.sendline('logread')
+        board.sendline("logread")
         board.expect(prompt, timeout=120)
-        board.sendline('dmesg')
+        board.sendline("dmesg")
         board.expect(prompt)
 
         # This test can damage flash, so to properly recover we need
         # to reflash upon recovery
         self.reflash = True
 
-        board.sendline('touch /etc/config/TEST')
-        board.expect('/etc/config/TEST')
+        board.sendline("touch /etc/config/TEST")
+        board.expect("/etc/config/TEST")
         board.expect(prompt)
 
         board.sendline("cd /tmp")
@@ -45,6 +45,6 @@ class Sysupgrade(rootfs_boot.RootFSBootTest):
         board.boot_linux()
         board.wait_for_linux()
 
-        board.sendline('ls -alh /etc/config/TEST')
-        board.expect('/etc/config/TEST\r\n')
+        board.sendline("ls -alh /etc/config/TEST")
+        board.expect("/etc/config/TEST\r\n")
         board.expect(prompt)
