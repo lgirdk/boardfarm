@@ -10,7 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
-    '''Runs SNMP sysDescr on WAN iface'''
+    """Runs SNMP sysDescr on WAN iface."""
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan
@@ -22,8 +22,8 @@ class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
 
         wan_ip = board.get_interface_ipaddr(board.wan_iface)
 
-        wan.sendline('snmpget -v2c -c public %s 1.3.6.1.2.1.1.1.0' % wan_ip)
-        wan.expect('iso.3.6.1.2.1.1.1.0 = STRING: ')
+        wan.sendline("snmpget -v2c -c public %s 1.3.6.1.2.1.1.1.0" % wan_ip)
+        wan.expect("iso.3.6.1.2.1.1.1.0 = STRING: ")
         wan.expect(prompt)
 
         self.result_message = wan.before
