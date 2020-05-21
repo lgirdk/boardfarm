@@ -4,7 +4,7 @@ from boardfarm.tests import rootfs_boot
 
 
 class LatencyAllDevices(rootfs_boot.RootFSBootTest):
-    '''finds latency between all devices'''
+    """finds latency between all devices."""
     def runTest(self):
         board = self.dev.board
 
@@ -33,7 +33,7 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     def parse_ping_times(string):
                         r = [
                             float(i)
-                            for i in re.findall(r'time=([^\s]*) ms', string)
+                            for i in re.findall(r"time=([^\s]*) ms", string)
                         ]
                         return sum(r) / len(r)
 
@@ -42,8 +42,8 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     d1.expect(d1.prompt)
 
                     result = parse_ping_times(d1.before)
-                    if result is not float('nan'):
-                        results.append('latency from %s to %s = %s ms' %
+                    if result is not float("nan"):
+                        results.append("latency from %s to %s = %s ms" %
                                        (d1.name, d2.name, str(result)))
 
                     d2.sendline("ping -c20 %s" % ip1)
@@ -51,10 +51,11 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     d2.expect(d2.prompt)
 
                     result = parse_ping_times(d2.before)
-                    if result is not float('nan'):
-                        results.append('latency from %s to %s = %s ms' %
+                    if result is not float("nan"):
+                        results.append("latency from %s to %s = %s ms" %
                                        (d2.name, d1.name, str(result)))
-                except:
+                except Exception as error:
+                    print(error)
                     print("failed to ping " + d1.name + " to " + d2.name)
                     continue
 
