@@ -14,7 +14,7 @@ import six
 
 
 def mac_to_snmp_format(mac_addr):
-    """converts mac address separated with space,'.' or '-' to SNMP format
+    """Convert mac address separated with space,'.' or '-' to SNMP format.
 
     :param mac_addr: mac address to change format
     :type mac_addr: string
@@ -29,7 +29,7 @@ def mac_to_snmp_format(mac_addr):
 
 
 def ipv4_to_snmp_format(ipv4_str):
-    """converts ipv4 address separated with space,'.' or '-' to SNMP format
+    """Convert ipv4 address separated with space,'.' or '-' to SNMP format.
 
     :param ipv4_str: ipv4 address to change format
     :type ipv4_str: string
@@ -39,13 +39,13 @@ def ipv4_to_snmp_format(ipv4_str):
     ipv4_tmp = re.sub(r"[\s\.\-]", "", ipv4_str)
     ipv4_decimal = int(ipv4_tmp, 16)
     ipv4_format = ipaddress.IPv4Address(ipv4_decimal)
-    ipv4_address = ipaddress.ip_address(u'%s' % ipv4_format)
+    ipv4_address = ipaddress.ip_address(u"%s" % ipv4_format)
 
     return ipv4_address
 
 
 def ipv6_to_snmp_format(ipv6_str):
-    """converts ipv6 address separated with space,'.' or '-' to SNMP format
+    """Convert ipv6 address separated with space,'.' or '-' to SNMP format.
 
     :param ipv6_str: ipv6 address to change format
     :type ipv6_str: string
@@ -53,15 +53,16 @@ def ipv6_to_snmp_format(ipv6_str):
     :rtype: string
     """
     ipv6_tmp = re.sub(r"[\s\.\-]", "", ipv6_str)
-    pattern = re.compile('.{4}')
-    ipv6_tmp_ip = ':'.join(pattern.findall(ipv6_tmp))
-    ipv6_address = ipaddress.ip_address(u'%s' % ipv6_tmp_ip)
+    pattern = re.compile(".{4}")
+    ipv6_tmp_ip = ":".join(pattern.findall(ipv6_tmp))
+    ipv6_address = ipaddress.ip_address(u"%s" % ipv6_tmp_ip)
 
     return ipv6_address
 
 
 def valid_ipv4(ip_str):
     """Check whether IP address provided is valid ipv4 address.
+
     validation checks:
     1. A string in decimal-dot notation, consisting of four decimal integers in the inclusive range 0 to 255, separated by dots (e.g. 192.168.0.1).
     -  Each integer represents an octet (byte) in the address.
@@ -76,7 +77,8 @@ def valid_ipv4(ip_str):
 
 
 def valid_ipv6(ip_str):
-    """Check whether IP address provided is valid ipv6 address
+    """Check whether IP address provided is valid ipv6 address.
+
     validation Checks
     1. A string consisting of eight groups of four hexadecimal digits, each group representing 16 bits.
     -  The groups are separated by colons. This describes an exploded (longhand) notation.
