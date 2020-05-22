@@ -18,9 +18,10 @@ class bft_iface(object):
     _mac = None
 
     def __str__(self):
-        return (str(self.dev.name))
+        return str(self.dev.name)
 
     def __init__(self, device, iface, ip_cmd="ifconfig"):
+        """Instance initialisation."""
         self.dev = device
         self.iface = iface
         self.ip_cmd = ip_cmd
@@ -41,7 +42,8 @@ class bft_iface(object):
 
     def get_interface_ipv4addr(self, output=None):
         """
-        Function to get the ipv4 interface address.
+        Get the ipv4 interface address.
+
         This will return the object of ipv4 interface module.
 
         """
@@ -64,7 +66,8 @@ class bft_iface(object):
 
     def get_interface_ipv6addr(self, output=None):
         """
-        Function to get the ipv6 interface address.
+        Get the ipv6 interface address.
+
         This will return the object of ipv6 interface module.
         """
         if output is None:
@@ -73,7 +76,7 @@ class bft_iface(object):
         ip_list = re.findall(InterfaceIPv6_AddressRegex, output)
         for ip in ip_list:
             try:
-                if ip.startswith('fe80'):
+                if ip.startswith("fe80"):
                     self._ipv6_link_local = ipaddress.IPv6Interface(
                         six.text_type(ip))
                 else:
@@ -86,12 +89,13 @@ class bft_iface(object):
 
     def get_interface_macaddr(self):
         """
-        Function to get the interface mac address.
+        Get the interface mac address.
+
         This will return the object of mac interface module.
 
         """
-        self.dev.sendline('cat /sys/class/net/%s/address' % self.iface)
-        self.dev.expect_exact('cat /sys/class/net/%s/address' % self.iface)
+        self.dev.sendline("cat /sys/class/net/%s/address" % self.iface)
+        self.dev.expect_exact("cat /sys/class/net/%s/address" % self.iface)
         self.dev.expect(LinuxMacFormat)
         self._mac = netaddr.EUI(self.dev.after)
         self.dev.expect(pexpect.TIMEOUT, timeout=1)
@@ -133,6 +137,7 @@ class bft_iface(object):
 
     @property
     def prefixlen(self):
+        """Get interface ipv6 prefix length."""
         if not getattr(self, "_ipv6", None):
             self.get_interface_ipv6addr()
 
@@ -140,6 +145,7 @@ class bft_iface(object):
 
     @property
     def ipv6_link_local(self):
+        """Get interface ipv6 address."""
         if not getattr(self, "_ipv6_link_local", None):
             self.get_interface_ipv6addr()
 
@@ -147,20 +153,23 @@ class bft_iface(object):
 
     @property
     def mac_address(self):
+        """Get interface mac address."""
         if not getattr(self, "_mac", None):
             self.get_interface_macaddr()
 
         return self._mac
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
     from boardfarm.devices.base import BaseDevice
 
     class DummyDevice(BaseDevice):
+        """Dummy Device."""
         def __init__(self):
+            """Instance initialisation."""
             super().__init__(command="bash --noprofile --norc",
-                             encoding='utf-8')
+                             encoding="utf-8")
             self.sendline('export PS1="dummy>"')
             self.expect_exact('export PS1="dummy>"')
             self.prompt = ["dummy>"]
