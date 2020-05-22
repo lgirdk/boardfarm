@@ -2,14 +2,13 @@ import re
 
 
 class SerialPhone(object):
-    '''
-    Fax modem
-    '''
+    """Fax modem."""
 
-    model = ('serialmodem')
+    model = "serialmodem"
     profile = {}
 
     def __init__(self, *args, **kwargs):
+        """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
         self.own_number = self.kwargs.get("number", None)
@@ -23,7 +22,7 @@ class SerialPhone(object):
         return "serialmodem %s" % self.line
 
     def check_tty(self):
-        """to check if tty dev exists
+        """To check if tty dev exists.
 
         rvalue: TRUE/FALSE
         rtype: Boolean
@@ -31,29 +30,26 @@ class SerialPhone(object):
         self.sendline("find /dev/tty%s" % (self.line))
         self.expect(self.prompt)
         return bool(
-            re.search((r' find /dev/tty%s\r\n/dev/tty%s\r\n' %
-                       (self.line, self.line)), self.before))
+            re.search(
+                (r" find /dev/tty%s\r\n/dev/tty%s\r\n" %
+                 (self.line, self.line)),
+                self.before,
+            ))
 
     def phone_config(self):
-        '''
-        to configure system link/soft link
-        '''
+        """To configure system link/soft link."""
         # to check whether the dev/tty exists-to be added
         self.sendline("ln -s /dev/tty%s  /root/line-%s" %
                       (self.line, self.line))
         self.expect(["File exists"] + self.prompt)
 
     def phone_unconfig(self):
-        '''
-        to remove the system link
-        '''
+        """To remove the system link."""
         self.sendline("rm  /root/line-%s" % self.line)
         self.expect(self.prompt)
 
     def phone_start(self, baud="115200", timeout="1"):
-        '''
-        to start the softphone session
-        '''
+        """To start the softphone session."""
         self.sendline("pip install pyserial")
         self.expect(self.prompt)
         self.sendline("python")
@@ -72,10 +68,8 @@ class SerialPhone(object):
         self.mta_readlines()
         self.expect("OK")
 
-    def mta_readlines(self, time='3'):
-        '''
-        to readlines from serial console
-        '''
+    def mta_readlines(self, time="3"):
+        """To readlines from serial console."""
         self.sendline("ser.flush()")
         self.expect(">>>")
         self.sendline("time.sleep(%s)" % time)
@@ -85,21 +79,18 @@ class SerialPhone(object):
         self.sendline("print(l)")
 
     def dial(self, number, receiver_ip=None):
-        '''
-        to dial to another number
+        """To dial to another number.
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
-        '''
+        """
         self.sendline("ser.write(b'ATDT%s\\r')" % number)
         self.expect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
 
     def answer(self):
-        '''
-        to answer the incoming call
-        '''
-        self.mta_readlines(time='10')
+        """To answer the incoming call."""
+        self.mta_readlines(time="10")
         self.expect("RING")
         self.sendline("ser.write(b'ATA\\r')")
         self.expect(">>>")
@@ -107,19 +98,15 @@ class SerialPhone(object):
         self.expect("ATA")
 
     def hangup(self):
-        '''
-        to hangup the ongoing call
-        '''
+        """To hangup the ongoing call."""
         self.sendline("ser.write(b'ATH\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
     def phone_kill(self):
-        '''
-        to kill the serial port console session
-        '''
-        self.sendline('ser.close()')
-        self.expect('>>>')
-        self.sendline('exit()')
+        """To kill the serial port console session."""
+        self.sendline("ser.close()")
+        self.expect(">>>")
+        self.sendline("exit()")
         self.expect(self.prompt)
