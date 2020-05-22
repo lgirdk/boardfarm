@@ -15,7 +15,7 @@ wlan_iface = None
 
 
 def wifi_interface(console):
-    """This method returns the wifi interface
+    """wifi_interface : Returns the wifi interface.
 
     :param console: CM console object
     :type console: object
@@ -25,7 +25,7 @@ def wifi_interface(console):
     global wlan_iface
 
     if wlan_iface is None:
-        console.sendline('uci show wireless | grep wireless.*0.*type=')
+        console.sendline("uci show wireless | grep wireless.*0.*type=")
         i = console.expect(["type='?mac80211'?", "type='?qcawifi'?"])
         if i == 0:
             wlan_iface = "wlan0"
@@ -38,17 +38,17 @@ def wifi_interface(console):
 
 
 def randomSSIDName():
-    """This method returns the random SSID name used to set on CM
+    """Return the random SSID name used to set on CM.
 
     :returns: The SSID generated randomly
     :rtype: string
     """
-    return 'WIFI-' + ''.join(
+    return "WIFI-" + "".join(
         random.sample(string.ascii_lowercase + string.digits, 10))
 
 
 def uciSetWifiSSID(console, ssid):
-    """This method sets the WiFi SSID on the CM
+    """Set the WiFi SSID on the CM.
 
     :param console: CM console object
     :type console: object
@@ -56,13 +56,13 @@ def uciSetWifiSSID(console, ssid):
     :type ssid: string
     """
     console.sendline(
-        'uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi' %
+        "uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi" %
         ssid)
     console.expect_prompt()
 
 
 def uciSetWifiMode(console, radio, hwmode):
-    """This method sets the WiFi hwmode as per the radio over CM
+    """Set the WiFi hwmode as per the radio over CM.
 
     :param console: CM console object
     :type console: object
@@ -71,13 +71,13 @@ def uciSetWifiMode(console, radio, hwmode):
     :param hwmode: hwmode to be set over the CM
     :type hwmode: string
     """
-    console.sendline('uci set wireless.wifi%s.hwmode=%s; uci commit wireless' %
+    console.sendline("uci set wireless.wifi%s.hwmode=%s; uci commit wireless" %
                      (radio, hwmode))
     console.expect_prompt()
 
 
 def uciSetChannel(console, radio, channel):
-    """This method sets the channel as per the radio over CM
+    """Set the channel as per the radio over CM.
 
     :param console: CM console object
     :type console: object
@@ -87,13 +87,13 @@ def uciSetChannel(console, radio, channel):
     :type channel: string
     """
     console.sendline(
-        'uci set wireless.wifi%s.channel=%s; uci commit wireless' %
+        "uci set wireless.wifi%s.channel=%s; uci commit wireless" %
         (radio, channel))
     console.expect_prompt()
 
 
 def enable_wifi(board, index=0):
-    """This method enables the WiFi as per the index specified.
+    """Enable the WiFi as per the index specified.
 
     :param board: board object
     :type board: object
@@ -101,41 +101,41 @@ def enable_wifi(board, index=0):
     :type index: int
     """
     board.sendline(
-        '\nuci set wireless.@wifi-device[%s].disabled=0; uci commit wireless' %
+        "\nuci set wireless.@wifi-device[%s].disabled=0; uci commit wireless" %
         index)
-    board.expect('uci set')
+    board.expect("uci set")
     board.expect_prompt()
-    board.sendline('wifi')
-    board.expect('wifi')
+    board.sendline("wifi")
+    board.expect("wifi")
     board.expect_prompt(timeout=50)
     time.sleep(20)
 
 
 def enable_all_wifi_interfaces(board):
-    """This method enables all the WiFi interface available over the board
+    """Enable all the WiFi interface available over the board.
 
     :param board: board object
     :type board: object
     """
-    board.sendline('\nuci show wireless | grep disabled')
-    board.expect('grep disabled')
+    board.sendline("\nuci show wireless | grep disabled")
+    board.expect("grep disabled")
     board.expect_prompt()
     """
     The following re.findall should return list of settings:
     ['wireless.radio0.disabled', 'wireless.radio1.disabled']
     """
-    settings = re.findall(r'([\w\.]+)=\d', board.before)
+    settings = re.findall(r"([\w\.]+)=\d", board.before)
     for s in settings:
-        board.sendline('uci set %s=0' % s)
+        board.sendline("uci set %s=0" % s)
         board.expect_prompt()
-    board.sendline('uci commit wireless')
+    board.sendline("uci commit wireless")
     board.expect_prompt()
-    board.sendline('wifi')
+    board.sendline("wifi")
     board.expect_prompt(timeout=50)
 
 
 def disable_wifi(board, wlan_iface="ath0"):
-    """This method disables the WiFi over the interface specified
+    """Disables the WiFi over the interface specified.
 
     :param board: board object
     :type board: object
@@ -143,34 +143,36 @@ def disable_wifi(board, wlan_iface="ath0"):
     :type wlan_iface: string
     """
     board.sendline(
-        'uci set wireless.@wifi-device[0].disabled=1; uci commit wireless')
-    board.expect('uci set')
+        "uci set wireless.@wifi-device[0].disabled=1; uci commit wireless")
+    board.expect("uci set")
     board.expect_prompt()
-    board.sendline('wifi')
+    board.sendline("wifi")
     board.expect_prompt()
-    board.sendline('iwconfig %s' % wlan_iface)
+    board.sendline("iwconfig %s" % wlan_iface)
     board.expect_prompt()
 
 
 def wifi_on(board):
-    """This method returns the WiFi enabled status over the CM True if enabled else False
+    """Return the WiFi enabled status over the CM.
+    True if enabled else False.
 
     :param board: board object
     :type board: object
     :returns: The WiFi enabled status of the CM
     :rtype: boolean
     """
-    board.sendline('\nuci show wireless.@wifi-device[0].disabled')
+    board.sendline("\nuci show wireless.@wifi-device[0].disabled")
     try:
-        board.expect('disabled=0', timeout=5)
+        board.expect("disabled=0", timeout=5)
         board.expect_prompt()
         return True
-    except:
+    except Exception:
         return False
 
 
 def wifi_get_info(board, wlan_iface):
-    """This method gets the WiFi information about the board like essid, channel, rate, freq
+    """Get the WiFi information about the board.
+     like essid, channel, rate, freq
 
     :param board: board object
     :type board: object
@@ -180,13 +182,13 @@ def wifi_get_info(board, wlan_iface):
     """
     try:
         if "ath" in wlan_iface:
-            board.sendline('iwconfig %s' % wlan_iface)
+            board.sendline("iwconfig %s" % wlan_iface)
             board.expect('ESSID:"(.*)"')
             essid = board.match.group(1)
             board.expect("Frequency:([^ ]+)")
             freq = board.match.group(1)
             essid = board.match.group(1)
-            board.expect('Bit Rate[:=]([^ ]+) ')
+            board.expect("Bit Rate[:=]([^ ]+) ")
             rate = float(board.match.group(1))
             board.expect_prompt()
             # TODO: determine channel
@@ -195,19 +197,19 @@ def wifi_get_info(board, wlan_iface):
             board.sendline("iwinfo wlan0 info")
             board.expect('ESSID: "(.*)"')
             essid = board.match.group(1)
-            board.expect(r'Channel:\s*(\d+)\s*\(([\d\.]+)\s*GHz')
+            board.expect(r"Channel:\s*(\d+)\s*\(([\d\.]+)\s*GHz")
             channel = int(board.match.group(1))
             freq = float(board.match.group(2))
-            board.expect('Bit Rate: ([^ ]+)')
+            board.expect("Bit Rate: ([^ ]+)")
             try:
                 rate = float(board.match.group(1))
-            except:
+            except Exception:
                 rate = -1.0
             board.expect_prompt()
         else:
             print("Unknown wireless type")
-    except:
-        board.sendline('dmesg')
+    except Exception:
+        board.sendline("dmesg")
         board.expect_prompt()
         raise
 
@@ -215,7 +217,8 @@ def wifi_get_info(board, wlan_iface):
 
 
 def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
-    """This method waits for the WiFi Bit Rate to be != 0 default 10 trials with a wait of 15 seconds for each trial.
+    """Wait for the WiFi Bit Rate to be != 0.
+     default 10 trials with a wait of 15 seconds for each trial.
 
     :param board: board object
     :type board: object
@@ -232,7 +235,8 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
         essid, channel, rate, freq = wifi_get_info(board, wlan_iface)
         if "ath" in wlan_iface and rate > 0:
             return
-        if "wlan" in wlan_iface == "wlan0" and essid != "" and channel != 0 and freq != 0.0:
+        if ("wlan" in wlan_iface == "wlan0" and essid != "" and channel != 0
+                and freq != 0.0):
             return
 
     if rate == 0:
@@ -241,7 +245,8 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
 
 
 def wifi_add_vap(console, phy, ssid):
-    """This method adds virtual access point on the interface specified as per the ssid provided.
+    """Add virtual access point on the interface.
+     specified as per the ssid provided.
 
     :param console: console object
     :type console: object
@@ -250,7 +255,7 @@ def wifi_add_vap(console, phy, ssid):
     :param ssid: ssid to be set for VAP
     :type ssid: string
     """
-    console.sendline('uci add wireless wifi-iface')
+    console.sendline("uci add wireless wifi-iface")
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].device="%s"' % phy)
     console.expect_prompt()
@@ -262,26 +267,26 @@ def wifi_add_vap(console, phy, ssid):
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].encryption="none"')
     console.expect_prompt()
-    console.sendline('uci commit')
+    console.sendline("uci commit")
     console.expect_prompt()
 
 
 def wifi_del_vap(console, index):
-    """This method deletes virtual access point on the interface specified as per the index provided.
+    """Delete virtual access point on the interface specified as per the index provided.
 
     :param console: console object
     :type console: object
     :param index: index to be used
     :type index: int
     """
-    console.sendline('uci delete wireless.@wifi-iface[%s]' % index)
+    console.sendline("uci delete wireless.@wifi-iface[%s]" % index)
     console.expect_prompt()
-    console.sendline('uci commit')
+    console.sendline("uci commit")
     console.expect_prompt()
 
 
 def uciSetWifiSecurity(board, vap_iface, security):
-    """This method sets the WiFi security on the VAP interface on the board
+    """Set the WiFi security on the VAP interface on the board.
 
     :param board: board object
     :type board: object
@@ -290,40 +295,41 @@ def uciSetWifiSecurity(board, vap_iface, security):
     :param security: security to be set
     :type security: string
     """
-    if security.lower() in ['none']:
+    if security.lower() in ["none"]:
         print("Setting security to none.")
-        board.sendline('uci set wireless.@wifi-iface[%s].encryption=none' %
+        board.sendline("uci set wireless.@wifi-iface[%s].encryption=none" %
                        vap_iface)
         board.expect_prompt()
-    elif security.lower() in ['wpa-psk']:
+    elif security.lower() in ["wpa-psk"]:
         print("Setting security to WPA-PSK.")
-        board.sendline('uci set wireless.@wifi-iface[%s].encryption=psk+tkip' %
+        board.sendline("uci set wireless.@wifi-iface[%s].encryption=psk+tkip" %
                        vap_iface)
         board.expect_prompt()
         board.sendline(
-            'uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz' %
+            "uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz" %
             vap_iface)
         board.expect_prompt()
-    elif security.lower() in ['wpa2-psk']:
+    elif security.lower() in ["wpa2-psk"]:
         print("Setting security to WPA2-PSK.")
         board.sendline(
-            'uci set wireless.@wifi-iface[%s].encryption=psk2+ccmp' %
+            "uci set wireless.@wifi-iface[%s].encryption=psk2+ccmp" %
             vap_iface)
         board.expect_prompt()
         board.sendline(
-            'uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz' %
+            "uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz" %
             vap_iface)
         board.expect_prompt()
 
 
-class wifi_stub():
+class wifi_stub:
+    """Wifi_stub."""
     apply_changes_no_delay = True
 
     # The above variable can tweak the behavior of the below functions
     # If it is set to True, it will apply the changes after setting wifi parameters
     # If it is set to False, it will not save any changes & apply_changes() will be skipped
     def enable_wifi(self, *args, **kwargs):
-        """This method is stub for enabling wifi on CM
+        """Stub for enabling wifi on CM.
 
         :param self: self object
         :type self: object
@@ -336,7 +342,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_ssid(self, *args, **kwargs):
-        """This method is stub to set SSID
+        """Stub to set SSID.
 
         :param self: self object
         :type self: object
@@ -349,7 +355,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_broadcast(self, *args, **kwargs):
-        """This method is stub to set boardcast
+        """Stub to set boardcast.
 
         :param self: self object
         :type self: object
@@ -362,7 +368,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_security(self, *args, **kwargs):
-        """This method is stub to set security
+        """Stub to set security.
 
         :param self: self object
         :type self: object
@@ -375,7 +381,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_password(self, *args, **kwargs):
-        """This method is stub to set password
+        """Stub to set password.
 
         :param self: self object
         :type self: object
@@ -388,7 +394,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def enable_channel_utilization(self, *args, **kwargs):
-        """This method is stub to enable channel utilization
+        """Stub to enable channel utilization.
 
         :param self: self object
         :type self: object
@@ -401,7 +407,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_operating_mode(self, *args, **kwargs):
-        """This method is stub to set operating mode
+        """Stub to set operating mode.
 
         :param self: self object
         :type self: object
@@ -414,7 +420,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_bandwidth(self, *args, **kwargs):
-        """This method is stub to set bandwidth
+        """Stub to set bandwidth.
 
         :param self: self object
         :type self: object
@@ -427,7 +433,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def set_channel_number(self, *args, **kwargs):
-        """This method is stub to enable channel utilization
+        """Stub to enable channel utilization.
 
         :param self: self object
         :type self: object
@@ -440,7 +446,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_wifi_enabled(self, *args, **kwargs):
-        """This method is stub to get WiFi enabled
+        """Stub to get WiFi enabled.
 
         :param self: self object
         :type self: object
@@ -453,7 +459,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_ssid(self, *args, **kwargs):
-        """This method is stub to get SSID
+        """Stub to get SSID.
 
         :param self: self object
         :type self: object
@@ -466,7 +472,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_security(self, *args, **kwargs):
-        """This method is stub to get security mode
+        """Stub to get security mode.
 
         :param self: self object
         :type self: object
@@ -479,7 +485,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_password(self, *args, **kwargs):
-        """This method is stub to get password
+        """Stub to get password.
 
         :param self: self object
         :type self: object
@@ -492,7 +498,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_channel_utilization(self, *args, **kwargs):
-        """This method is stub to get channel utilization
+        """Stub to get channel utilization.
 
         :param self: self object
         :type self: object
@@ -505,7 +511,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_operating_mode(self, *args, **kwargs):
-        """This method is stub to get operating mode
+        """Stub to get operating mode.
 
         :param self: self object
         :type self: object
@@ -518,7 +524,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_bandwidth(self, *args, **kwargs):
-        """This method is stub to get bandwidth
+        """Stub to get bandwidth.
 
         :param self: self object
         :type self: object
@@ -531,7 +537,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_broadcast(self, *args, **kwargs):
-        """This method is stub to get the broadcast
+        """Stub to get the broadcast.
 
         :param self: self object
         :type self: object
@@ -544,7 +550,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def get_channel_number(self, *args, **kwargs):
-        """This method is stub to get the channel number
+        """Stub to get the channel number.
 
         :param self: self object
         :type self: object
@@ -557,7 +563,7 @@ class wifi_stub():
         raise Exception("Not implemented!")
 
     def prepare(self):
-        """This method is stub
+        """Stub to prepare.
 
         :param self: self object
         :type self: object
@@ -565,7 +571,7 @@ class wifi_stub():
         pass
 
     def cleanup(self):
-        """This method is stub
+        """Stub to cleanup.
 
         :param self: self object
         :type self: object
@@ -573,7 +579,7 @@ class wifi_stub():
         pass
 
     def apply_changes(self):
-        """This method is stub used to save the configs to be modified
+        """Stub used to save the configs to be modified.
 
         :param self: self object
         :type self: object
@@ -581,9 +587,10 @@ class wifi_stub():
         pass
 
 
-class wifi_client_stub():
+class wifi_client_stub:
+    """Wifi client stub."""
     def enable_wifi(self):
-        """This method is WiFi client stub used to enable WiFi/ make the WiFi interface UP
+        """Wifi client stub used to enable WiFi/ make the WiFi interface UP.
 
         :param self: self object
         :type self: object
@@ -592,7 +599,7 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
 
     def disable_wifi(self):
-        """This method is WiFi client stub used to enable WiFi/ make the WiFi interface DOWN
+        """Wifi client stub used to enable WiFi/ make the WiFi interface DOWN.
 
         :param self: self object
         :type self: object
@@ -601,7 +608,8 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
 
     def disable_and_enable_wifi(self):
-        """This method is WiFi client stub used to disbale and enable WiFi/ make the WiFi interface DOWN and UP
+        """Wifi client stub used to disbale and enable WiFi/.
+         make the WiFi interface DOWN and UP
 
         :param self: self object
         :type self: object
@@ -610,7 +618,8 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
 
     def wifi_scan(self):
-        """This method is WiFi client stub used to scan for SSIDs on a particular radio, and return a list of SSID
+        """Wifi client stub used to scan for SSIDs on a particular radio.
+         and return a list of SSID
 
         :param self: self object
         :type self: object
@@ -623,7 +632,7 @@ class wifi_client_stub():
         """
 
     def wifi_check_ssid(self, ssid_name):
-        """This method is WiFi client stub used to scan for paticular SSID
+        """Wifi client stub used to scan for paticular SSID.
 
         :param self: self object
         :type self: object
@@ -639,7 +648,8 @@ class wifi_client_stub():
         """
 
     def wifi_connect(self, ssid_name, password, security_mode):
-        """This method is WiFi client stub used to connect to wifi either with ssid name and password or with ssid name alone
+        """Wifi client stub used to connect to wifi.
+         either with ssid name and password or with ssid name alone.
 
         :param self: self object
         :type self: object
@@ -654,7 +664,7 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
 
     def wifi_connectivity_verify(self):
-        """This method is WiFi client stub used to verify wifi connectivity
+        """Wifi client stub used to verify wifi connectivity.
 
         :param self: self object
         :type self: object
@@ -667,7 +677,7 @@ class wifi_client_stub():
         """
 
     def wifi_disconnect(self):
-        """This method is WiFi client stub used to disconnect WiFi
+        """Wifi client stub used to disconnect WiFi.
 
         :param self: self object
         :type self: object
@@ -676,7 +686,7 @@ class wifi_client_stub():
         raise Exception("Not implemented!")
 
     def wifi_change_region(self, country):
-        """This method is WiFi client stub used to change the country
+        """Wifi client stub used to change the country.
 
         :param self: self object
         :type self: object
