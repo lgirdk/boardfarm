@@ -3,7 +3,8 @@ from . import (kermit_connection, local_cmd, local_serial_connection,
 
 
 def connection(conn_type, device, **kwargs):
-    """This method return an object of the appropriate class type depending on the given connection type
+    """Return an object of the appropriate class type.
+    Depending on the given connection type
     Method initializes the connection specific parameters
     the connection type include ser2net, local_serial, ssh or kermit
 
@@ -11,8 +12,8 @@ def connection(conn_type, device, **kwargs):
     :type conn_type: string
     :param device: the device to which connection to be established
     :type device: object
-    :param **kwargs: extra set of arguements to be used if any
-    :type **kwargs: dict
+    :param ``**kwargs``: extra set of arguements to be used if any
+    :type ``**kwargs``: dict
     :raises: NA
     :return: :class:`Response <Response>` object of class type used for connection
     :rtype: object
@@ -41,10 +42,10 @@ def connection(conn_type, device, **kwargs):
               "to handle that kind of board.")
         out = ser2net_connection.Ser2NetConnection(**kwargs)
 
-    if hasattr(out, 'close'):
+    if hasattr(out, "close"):
         unbound_method = out.close.__func__
         bounded_method = unbound_method.__get__(out.device,
                                                 out.device.__class__)
-        setattr(out.device, 'close', bounded_method)
+        setattr(out.device, "close", bounded_method)
 
     return out
