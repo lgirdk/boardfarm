@@ -3,38 +3,37 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 
 class SshConnection:
-    """To use, set conn_cmd in your json to "ssh root@192.168.1.1 -i ~/.ssh/id_rsa"" and set connection_type to "ssh"
-    """
+    """To use, set conn_cmd in your json to "ssh root@192.168.1.1 -i ~/.ssh/id_rsa" and set connection_type to ssh."""
     def __init__(self,
                  device=None,
                  conn_cmd=None,
                  ssh_password='None',
                  **kwargs):
-        """This class in not supposed to be initialized directly.
-           The device class calls connection-decider which in return
-           initializes an SSH connection for the device class.
+        """Call connection-decider from device class which in return\
+           initialize an SSH connection for the device class.
 
+        This class in not supposed to be initialized directly.
         :param device: device to connect, defaults to None
         :type device: object
         :param conn_cmd: conn_cmd to connect to device, defaults to None
         :type conn_cmd: string
         :param ssh_password: ssh_password to connect to device, defaults to 'None'
         :type ssh_password: string
-        :param **kwargs: args to be used
-        :type **kwargs: dict
+        :param ``**kwargs``: args to be used
+        :type ``**kwargs``: dict
         """
         self.device = device
         self.conn_cmd = conn_cmd
         self.ssh_password = ssh_password
 
     def connect(self):
-        """Connects to the device via ssh using credentials
-        spawns the device to check the availability and expects
-        for password/passphrase raises exeception if we are not getting prompt for password.
+        """Connect to the device via ssh using credentials\
+        spawn the device to check the availability and expect\
+        for password/passphrase raise exeception if we are not getting prompt for password.
 
         :param self: self object
         :type self: object
-        :raises : Exception Board is in use (connection refused). / Assert Exception ssh_password is None
+        :raises: Exception Board is in use (connection refused). / Assert Exception ssh_password is None
         """
         bft_pexpect_helper.spawn.__init__(self.device,
                                           command='/bin/bash',
@@ -55,7 +54,7 @@ class SshConnection:
             self.device.expect(self.device.prompt)
 
     def close(self):
-        """closes the pexpect session to the device
+        """Close the pexpect session to the device.
 
         :param self: self object
         :type self: object
