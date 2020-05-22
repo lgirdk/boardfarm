@@ -2,8 +2,8 @@ from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
 
 
 class EnvHelper(object):
-    '''
-    Example env json
+    """
+    Example env json.
     {
         "environment_def": {
             "board": {
@@ -20,8 +20,9 @@ class EnvHelper(object):
         },
         "version": "1.0"
     }
-    '''
+    """
     def __init__(self, env, mirror=None):
+        """Instance initialization."""
         if env is None:
             return
 
@@ -32,10 +33,10 @@ class EnvHelper(object):
             self.mirror = mirror
 
     def get_image(self, mirror=True):
-        '''
+        """Get image.
         returns the desired image for this to run against concatenated with the
         site mirror for automated flashing without passing args to bft
-        '''
+        """
         try:
             if mirror:
                 return self.mirror + self.env['environment_def']['board'][
@@ -47,19 +48,15 @@ class EnvHelper(object):
             raise BftEnvExcKeyError
 
     def has_image(self):
-        '''
-        returns true or false if the env has specified an image to load
-        '''
+        """Return true or false if the env has specified an image to load."""
         try:
             self.get_image()
             return True
-        except:
+        except Exception:
             return False
 
     def get_downgrade_image(self):
-        '''
-        returns the desired downgrade image to test against
-        '''
+        """Return the desired downgrade image to test against."""
         try:
             return self.env['environment_def']['board']['software'][
                 'downgrade_images'][0]
@@ -67,9 +64,7 @@ class EnvHelper(object):
             raise BftEnvExcKeyError
 
     def get_upgrade_image(self):
-        '''
-        returns the desired upgrade image to test against
-        '''
+        """Return the desired upgrade image to test against."""
         try:
             return self.env['environment_def']['board']['software'][
                 'upgrade_images'][0]
@@ -77,26 +72,27 @@ class EnvHelper(object):
             raise BftEnvExcKeyError
 
     def has_upgrade_image(self):
-        '''
-        returns true or false if the env has specified an upgrade image to load
-        '''
+        """Return true or false.
+        if the env has specified an upgrade image to load
+        """
         try:
             self.get_upgrade_image()
             return True
-        except:
+        except Exception:
             return False
 
     def has_downgrade_image(self):
-        '''
-        returns true or false if the env has specified an downgrade image to load
-        '''
+        """Return true or false.
+        if the env has specified an downgrade image to load
+        """
         try:
             self.get_downgrade_image()
             return True
-        except:
+        except Exception:
             return False
 
     def get_software(self):
+        """Get software."""
         sw = self.env['environment_def']['board'].get('software', {})
         out = {}
         for k, v in sw.items():
@@ -109,6 +105,7 @@ class EnvHelper(object):
         return out
 
     def get_dependent_software(self):
+        """Get dependent software."""
         d = self.env['environment_def']['board'].get('software', {})
         sw = d.get('dependent_software', {})
         out = {}
@@ -120,7 +117,7 @@ class EnvHelper(object):
         return out
 
     def env_check(self, test_environment):
-        '''Given an environment (in for of a dictionary) as a parameter, checks
+        """Given an environment (in for of a dictionary) as a parameter, checks.
         if it is a subset of the environment specs contained by the EnvHelper.
 
         :param test_environment: the environment to be checked against the EnvHelper
@@ -132,7 +129,7 @@ class EnvHelper(object):
         .. note:: recursively checks dictionaries
         .. note:: A value of None in the test_environment is used as a wildcard, i.e.
         matches any values int the EnvHelper
-        '''
+        """
         def contained(env_test, env_helper, path="root"):
             if type(env_test) is dict:
                 for k in env_test:
