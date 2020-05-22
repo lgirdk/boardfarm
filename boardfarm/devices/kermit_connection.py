@@ -3,7 +3,8 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 
 class KermitConnection():
-    """Wrapper for the kermit command
+    """Wrapper for the kermit command.
+
     kermit can be used as an alternative to telnet. On some
     platform telnet can hog the cpu to 100% for no apparent
     reason. kermit seems to be more stable, but to work properly
@@ -12,22 +13,22 @@ class KermitConnection():
     prompt = "C-Kermit>"
 
     def __init__(self, device=None, conn_cmd=None, **kwargs):
-        """This method initializes the variables used for a kermit connection.
+        """Initialize the variables used for a kermit connection.
 
         :param device: the device on which the command is to be executed, defaults to None
         :type device: object
         :param conn_cmd: the command to be used to connect to the device, defaults to None
         :type conn_cmd: string
-        :param **kwargs: extra args to be used if any
-        :type **kwargs: dict
+        :param ``**kwargs``: extra args to be used if any
+        :type ``**kwargs``: dict
         """
         self.device = device
         self.conn_cmd = conn_cmd
 
     def connect(self):
-        """This method initializes a pexpect session with kermit command as argument.
-        This will result in a telnet connection to the device.
-        Note: This function only works on password-less devices
+        """Initialize a pexpect session with kermit command as argument.\
+        This will result in a telnet connection to the device.\
+        Note: This function only works on password-less devices.
 
         :raises: Exception Board is in use (connection refused).
         """
@@ -57,8 +58,7 @@ class KermitConnection():
             raise Exception("Board is in use (connection refused).")
 
     def close(self):
-        """Closes the pexpect session to the device
-        """
+        """Close the pexpect session to the device."""
         self.sendcontrol('\\')
         self.sendline('c')
         self.expect(self.prompt)
