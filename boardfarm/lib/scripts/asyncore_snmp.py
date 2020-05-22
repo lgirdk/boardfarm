@@ -1,4 +1,4 @@
-#This code is sourced from http://snmplabs.com/pysnmp/_downloads/getbulk-pull-whole-mib.py
+# This code is sourced from http://snmplabs.com/pysnmp/_downloads/getbulk-pull-whole-mib.py
 
 import time
 
@@ -13,7 +13,7 @@ def SnmpwalkAsync(target_IP=None,
                   community='public',
                   walk_timeout=10,
                   mode='ipv4'):
-    """script to run in the remote device for snmp mib walk
+    """Script to run in the remote device for snmp mib walk.
        This script can be copied to the remote device eg:wan
        and can be executed directly using python for snmp mib walk
        The walk can done for both ipv6 and ipv4
@@ -143,6 +143,8 @@ def SnmpwalkAsync(target_IP=None,
 
 if __name__ == '__main__':
     import sys
-    SnmpwalkAsync(target_IP=str(sys.argv[1]), oid=str(sys.argv[2]), \
-              community=str(sys.argv[3]), walk_timeout=str(sys.argv[4]), \
-              mode=str(sys.argv[5]))
+    SnmpwalkAsync(target_IP=str(sys.argv[1]),
+                  oid=str(sys.argv[2]),
+                  community=str(sys.argv[3]),
+                  walk_timeout=str(sys.argv[4]),
+                  mode=str(sys.argv[5]))
