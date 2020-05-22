@@ -35,20 +35,21 @@ try:
     # Python3
     from urllib.parse import urlparse
     from urllib.request import urlopen, Request
-except:
+except Exception as error:
+    print(error)
     # Python2
     from urlparse import urlparse
     from urllib2 import urlopen, Request
 
-ubootprompt = ['ath>', r'\(IPQ\) #', 'ar7240>']
-linuxprompt = ['root\\@.*:.*#', '@R7500:/# ']
-prompts = ubootprompt + linuxprompt + [
-    '/.* # ',
-]
+ubootprompt = ["ath>", r"\(IPQ\) #", "ar7240>"]
+linuxprompt = ["root\\@.*:.*#", "@R7500:/# "]
+prompts = (ubootprompt + linuxprompt + [
+    "/.* # ",
+])
 
 
 def run_once(f):
-    """Decorator to run a function only once.
+    """Run a function only once.
 
     :param f: function name to run only once
     :type f: Object
@@ -56,7 +57,7 @@ def run_once(f):
     :rtype: Any(for first run), None for Other calls
     """
     def wrapper(*args, **kwargs):
-        """Wrapper function that caches the result for all future arguments and will not run the function again.
+        """Cache the result for all future arguments and will not run the function again.
 
         :param args: any number of extra arguments
         :type args: Arguments(args)
@@ -74,14 +75,15 @@ def run_once(f):
 
 
 def clear_buffer(console):
-    """Clears buffer size of 2000 characters from the console of the device
+    """Clear buffer size of 2000 characters from the console of the device.
 
     :param console: console of a device (lan, wan, board etc.,)
     :type console: Object
     """
     try:
         console.read_nonblocking(size=2000, timeout=1)
-    except:
+    except Exception as error:
+        print(error)
         pass
 
 
@@ -102,8 +104,8 @@ class socks5_proxy_helper(object):
     :param via_hop: (unused) can be used to pass another pexpect session (default None, i.e. proxy is from localhost)
     :type via_hop: bft_pexpect_helper (for future use)
 
-    :Example:
-    Run from the bft python interactive console
+    :Example: Run from the bft python interactive console
+
     >>> from boardfarm.devices import mgr,device_type
     >>> from boardfarm.lib.common import socks5_proxy_helper
     >>> wan  = mgr.get_device_by_type(device_type.wan)
@@ -137,13 +139,13 @@ class socks5_proxy_helper(object):
     .. note:: throws Exception("Failed to create socks5 tunnel") on init failure
 
         The class holds a static list of connections in case the instance is not assigned to any local variable, ueful to keep the object alive when the proxy creation is hidden within a library.
-    .. seealso:: boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect
+    .. boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect
     """
 
     proxy_list = []
 
     def __str__(self):
-        return self.socks5_ip + ':' + str(self.socks5_port)
+        return self.socks5_ip + ":" + str(self.socks5_port)
 
     @classmethod
     def __add(cls, s):
@@ -157,21 +159,23 @@ class socks5_proxy_helper(object):
     @classmethod
     def __get(cls, a, p):
         # FIX ME: does not consider the via option!!!
-        l = list(
+        socks5_proxy_list = list(
             filter(lambda x: x.socks5_ip == a and x.socks5_port == p,
                    cls.__proxy_list))
-        if len(l):
-            if len(l) > 1:
+        if len(socks5_proxy_list):
+            if len(socks5_proxy_list) > 1:
                 print(
                     "WARNING: more than 1 socks5 proxy found {} returning 1st".
-                    format(l))
-            return l[0]
+                    format(socks5_proxy_list))
+            return socks5_proxy_list[0]
         else:
             return None
 
     @classmethod
     def get_proxy(cls, device):
-        """This classmethod is the getter that should be called to create a proxy object. This will look for an ssh tunnel connection already exisitng on the ssh ip:port (these are the ssh connection ip and port and NOT the socks5 ip and port). If a tunnel does not already  exist, creates one. Repeated calls to this method, with the SAME device, are an idempotent operation (you get the same tunnel obj).
+        """Getter that should be called to create a proxy object.
+
+        This will look for an ssh tunnel connection already exisitng on the ssh ip:port (these are the ssh connection ip and port and NOT the socks5 ip and port). If a tunnel does not already  exist, creates one. Repeated calls to this method, with the SAME device, are an idempotent operation (you get the same tunnel obj).
 
             :param device: the device the ssh need to connect to (i.e. lan or wan access)
             :type device: device object
@@ -180,8 +184,10 @@ class socks5_proxy_helper(object):
 
         """
         p = list(
-            filter(lambda x: x.ip == device.ipaddr and x.port == device.port,
-                   cls.proxy_list))
+            filter(
+                lambda x: x.ip == device.ipaddr and x.port == device.port,
+                cls.proxy_list,
+            ))
         if len(p):
             if len(p) > 1:
                 # this should never happen...
@@ -197,7 +203,9 @@ class socks5_proxy_helper(object):
                  end_port=65536,
                  retries=5,
                  via_hop=None):
-        """Initialises the object by invoking spawn_ssh_pexpect to bring up the tunnel. If spawn_ssh_pexpect throws an exception it will retry on a different port.
+        """Initialise the object by invoking spawn_ssh_pexpect to bring up the tunnel.
+
+        If spawn_ssh_pexpect throws an exception it will retry on a different port.
 
             :param device: the device the ssh need to connect to (i.e. lan or wan access)
             :type device: device object
@@ -212,7 +220,6 @@ class socks5_proxy_helper(object):
 
             .. note:: To get a proxy object the socks5_proxy_helper.get_proxy(device) class method should be used. This will reuse an already existing tunnel (if any) on the ssh device:port
         """
-
         from random import randrange
         self.socks5_ip = None
         self.socks5_pexpect = None
@@ -227,14 +234,16 @@ class socks5_proxy_helper(object):
                 # if you want to use -N you need to change the prompt expect pattern
                 # the pexpect logfile should be None
                 exargs = " -D {}".format(self.socks5_port)
-                self.socks5_pexpect = spawn_ssh_pexpect(ip=device.ipaddr,
-                                                        user=device.username,
-                                                        pw=device.password,
-                                                        port=device.port,
-                                                        via=via_hop,
-                                                        prompt=device.prompt,
-                                                        o=None,
-                                                        extra_args=exargs)
+                self.socks5_pexpect = spawn_ssh_pexpect(
+                    ip=device.ipaddr,
+                    user=device.username,
+                    pw=device.password,
+                    port=device.port,
+                    via=via_hop,
+                    prompt=device.prompt,
+                    o=None,
+                    extra_args=exargs,
+                )
                 break
             except Exception as e:
                 print(e)
@@ -245,7 +254,7 @@ class socks5_proxy_helper(object):
         if self.socks5_port:
             # if we have a hop the proxy will be hop:port
             # otherwise localhost:port
-            self.socks5_ip = device.ipaddr if via_hop else '127.0.0.1'
+            self.socks5_ip = device.ipaddr if via_hop else "127.0.0.1"
             self.ip = device.ipaddr
             self.port = device.port
             socks5_proxy_helper.__add(self)
@@ -256,24 +265,25 @@ class socks5_proxy_helper(object):
         socks5_proxy_helper.__remove(self)
 
     def close(self):
-        """Closes the pexpect session"""
+        """Close the pexpect session."""
         self.socks5_pexpect.close()
 
     def get_ip(self):
-        """Gets the tunnel host IP (usually localhost/127.0.0.1, unless <via> is specified)"""
+        """Get the tunnel host IP (usually localhost/127.0.0.1, unless <via> is specified)."""
         return self.socks5_ip
 
     def get_port(self):
-        """Gets the tunnel port (the -D <port> value)"""
+        """Get the tunnel port (the -D <port> value)."""
         return self.socks5_port
 
     def get_ip_port(self):
-        """Returns a string in the form of '<ip>:<port>'"""
+        """Return a string in the form of '<ip>:<port>'."""
         return self.__str__()
 
 
 def phantom_webproxy_driver(ipport):
     """Use this if you started phantom web proxy on a machine connected to router's LAN.
+
     A proxy server sits between a client application, such as a Web browser, and a real server.
     It intercepts all requests to the real server to see if it can fulfill the requests itself.
     If not, it forwards the request to the real server
@@ -284,8 +294,8 @@ def phantom_webproxy_driver(ipport):
     :rtype: selenium webdriver element
     """
     service_args = [
-        '--proxy=' + ipport,
-        '--proxy-type=http',
+        "--proxy=" + ipport,
+        "--proxy-type=http",
     ]
     print("Attempting to setup Phantom.js via proxy %s" % ipport)
     driver = webdriver.PhantomJS(service_args=service_args)
@@ -296,6 +306,7 @@ def phantom_webproxy_driver(ipport):
 
 def firefox_webproxy_driver(ipport, config):
     """Use this if you started firefox web proxy on a machine connected to router's LAN.
+
     A proxy server sits between a client application, such as a Web browser, and a real server.
     It intercepts all requests to the real server to see if it can fulfill the requests itself.
     If not, it forwards the request to the real server
@@ -307,11 +318,9 @@ def firefox_webproxy_driver(ipport, config):
     :return: gui selenium web driver
     :rtype: selenium webdriver element
     """
-
-    ip, port = ipport.split(':')
-
+    ip, port = ipport.split(":")
     profile = webdriver.FirefoxProfile()
-    if config.default_proxy_type == 'socks5':
+    if config.default_proxy_type == "socks5":
         # socks5 section MUST be separated or it will NOT work!!!!
         profile.set_preference("network.proxy.type", 1)
         profile.set_preference("network.proxy.socks", ip)
@@ -332,7 +341,7 @@ def firefox_webproxy_driver(ipport, config):
     # added this line to open the file without asking any questions
     profile.set_preference(
         "browser.helperApps.neverAsk.openFile",
-        "text/anytext,text/comma-separated-values,text/csv,application/octet-stream"
+        "text/anytext,text/comma-separated-values,text/csv,application/octet-stream",
     )
     profile.update_preferences()
     opts = webdriver.FirefoxOptions()
@@ -347,7 +356,9 @@ def firefox_webproxy_driver(ipport, config):
 
 
 def chrome_webproxy_driver(ipport, config):
-    """Use this if you prefer Chrome. Should be the same as firefox_webproxy_driver
+    """Use this if you prefer Chrome.
+
+    Should be the same as firefox_webproxy_driver
     above, although ChromeWebDriver seems to be slower in loading pages.
     A proxy server sits between a client application, such as a Web browser, and a real server.
     It intercepts all requests to the real server to see if it can fulfill the requests itself.
@@ -360,12 +371,11 @@ def chrome_webproxy_driver(ipport, config):
     :return: gui selenium web driver
     :rtype: selenium webdriver element
     """
-
     chrome_options = webdriver.ChromeOptions()
-    if config.default_proxy_type == 'socks5':
+    if config.default_proxy_type == "socks5":
         chrome_options.add_argument("--proxy-server=socks5://" + ipport)
     else:
-        chrome_options.add_argument('--proxy-server=' + ipport)
+        chrome_options.add_argument("--proxy-server=" + ipport)
 
     chrome_options.add_argument("--start-maximized")
 
@@ -384,7 +394,7 @@ def chrome_webproxy_driver(ipport, config):
 
 
 def get_webproxy_driver(ipport, config):
-    """Get the web driver initialized based on the web driver configurations in config.py
+    """Get the web driver initialized based on the web driver configurations in config.py.
 
     :param ipport: ip and port number
     :type ipport: String
@@ -405,7 +415,8 @@ def get_webproxy_driver(ipport, config):
         # something has gone wrong, make the error message as self explanatory as possible
         msg = "No usable web_driver specified, please add one to the board config"
         if config.default_web_driver is not None:
-            msg = msg + " (value in config: '" + config.default_web_driver + "' not recognised)"
+            msg = (msg + " (value in config: '" + config.default_web_driver +
+                   "' not recognised)")
         else:
             # this should never happen
             msg = msg + "(no default value set, please check boardfarm/config.py)"
@@ -413,16 +424,17 @@ def get_webproxy_driver(ipport, config):
 
 
 def test_msg(msg):
-    """Prints the message in Bold
+    """Print the message in Bold.
 
     :param msg: Message to print in bold
     :type msg: String
     """
-    cprint(msg, None, attrs=['bold'])
+    cprint(msg, None, attrs=["bold"])
 
 
 def _hash_file(filename, block_size, hashobj):
-    """Helper function: Initialize a hash obj and digests a file through it.
+    """Initialize a hash obj and digests a file through it.
+
     Calculates an md5sum based on the contents of the filename by calling digest()
 
     :param filename: Name of the file to calculate hash value
@@ -434,14 +446,15 @@ def _hash_file(filename, block_size, hashobj):
     :return: Returns the hash value in hexadecimal format
     :rtype: hex
     """
-    with open(filename, 'rb') as f:
-        for block in iter(lambda: f.read(block_size), b''):
+    with open(filename, "rb") as f:
+        for block in iter(lambda: f.read(block_size), b""):
             hashobj.update(block)
     return hashobj.hexdigest()
 
 
 def sha256_checksum(filename, block_size=65536):
-    """Calculates the SHA256 on a file.
+    """Calculate the SHA256 on a file.
+
     SHA-256 generates an almost-unique 256-bit signature for a text
 
     :param filename: Name of the file to calculate hash value
@@ -452,12 +465,14 @@ def sha256_checksum(filename, block_size=65536):
     :rtype: hex
     """
     import hashlib
+
     sha256 = hashlib.sha256()
     return _hash_file(filename, block_size, sha256)
 
 
 def keccak512_checksum(filename, block_size=65536):
-    """Calculates the SHA3 hash on a file.
+    """Calculate the SHA3 hash on a file.
+
     SHA-512 or keccak512 generates an almost-unique 512-bit signature for a text
 
     :param filename: Name of the file to calculate hash value
@@ -468,6 +483,7 @@ def keccak512_checksum(filename, block_size=65536):
     :rtype: hex
     """
     from Crypto.Hash import keccak
+
     keccak_hash = keccak.new(digest_bits=512)
     return _hash_file(filename, block_size, keccak_hash)
 
@@ -478,8 +494,8 @@ cmd_exists = lambda x: any(
 
 
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
-    """Starts a simple IPv4 web service on a specified port,
-    bound to a specified interface. (e.g. tun0)
+    """Start a simple IPv4 web service on a specified port,bound to a specified interface(e.g. tun0).
+
     Send ctrl-c to stop
 
     :param device: lan or wan
@@ -498,7 +514,7 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
     device.sendline(
         "python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()' %s"
         % (ip, port, options))
-    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+    if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold("Faield to start service on " + ip + ":" + port)
         return False
@@ -509,8 +525,8 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
 
 
 def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
-    """Starts a simple IPv6 web service on a specified port,
-    bound to a specified interface. (e.g. tun0)
+    """Start a simple IPv6 web service on a specified port, bound to a specified interface(e.g. tun0).
+
     Send ctrl-c to stop (twice? needs better signal handling)
 
     :param device: lan or wan
@@ -526,7 +542,7 @@ def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
     :rtype: Boolean
     """
     http_service_kill(device, "SimpleHTTPServer")
-    device.sendline('''cat > /root/SimpleHTTPServer6.py<<EOF
+    device.sendline("""cat > /root/SimpleHTTPServer6.py<<EOF
 import socket
 import BaseHTTPServer as bhs
 import SimpleHTTPServer as shs
@@ -534,13 +550,13 @@ import SimpleHTTPServer as shs
 class HTTPServerV6(bhs.HTTPServer):
     address_family = socket.AF_INET6
 HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
-EOF''' % (ip, port))
+EOF""" % (ip, port))
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
-    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+    if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
-            print_bold('Faield to start service on [' + ip + ']:' + port)
+            print_bold("Faield to start service on [" + ip + "]:" + port)
         return False
     else:
         if "BFT_DEBUG" in os.environ:
@@ -553,8 +569,8 @@ def start_ipbound_httpsservice(device,
                                port="443",
                                cert="/root/server.pem",
                                options=""):
-    """Starts a simple IPv4 HTTPS web service on a specified port,
-    bound to a specified interface. (e.g. tun0)
+    """Start a simple IPv4 HTTPS web service on a specified port, bound to a specified interface(e.g. tun0).
+
     Send ctrl-c to stop (twice? needs better signal handling)
 
     :param device: lan or wan
@@ -572,6 +588,7 @@ def start_ipbound_httpsservice(device,
     :rtype: Boolean
     """
     import re
+
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline(
@@ -592,7 +609,7 @@ def start_ipbound_httpsservice(device,
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
-    device.sendline('''cat > /root/SimpleHTTPsServer.py<< EOF
+    device.sendline("""cat > /root/SimpleHTTPsServer.py<< EOF
 # taken from http://www.piware.de/2011/01/creating-an-https-server-in-python/
 # generate server.xml with the following command:
 #    openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
@@ -607,11 +624,11 @@ import ssl
 httpd = BaseHTTPServer.HTTPServer((\"%s\", %s), SimpleHTTPServer.SimpleHTTPRequestHandler)
 httpd.socket = ssl.wrap_socket (httpd.socket, certfile=\"%s\", server_side=True)
 httpd.serve_forever()
-EOF''' % (ip, port, cert))
+EOF""" % (ip, port, cert))
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
-    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+    if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
     else:
@@ -625,8 +642,8 @@ def start_ip6bound_httpsservice(device,
                                 port="4443",
                                 cert="/root/server.pem",
                                 options=""):
-    """Starts a simple IPv6 HTTPS web service on a specified port,
-    bound to a specified interface. (e.g. tun0)
+    """Start a simple IPv6 HTTPS web service on a specified port, bound to a specified interface. (e.g. tun0).
+
     Send ctrl-c to stop (twice? needs better signal handling)
 
     :param device: lan or wan
@@ -644,6 +661,7 @@ def start_ip6bound_httpsservice(device,
     :rtype: Boolean
     """
     import re
+
     http_service_kill(device, "SimpleHTTPsServer")
     # the https server needs a certificate, lets create a bogus one
     device.sendline(
@@ -664,7 +682,7 @@ def start_ip6bound_httpsservice(device,
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
-    device.sendline('''cat > /root/SimpleHTTPsServer.py<< EOF
+    device.sendline("""cat > /root/SimpleHTTPsServer.py<< EOF
 import socket
 import BaseHTTPServer as bhs
 import SimpleHTTPServer as shs
@@ -675,11 +693,11 @@ class HTTPServerV6(bhs.HTTPServer):
 https=HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler)
 https.socket = ssl.wrap_socket (https.socket, certfile=\"%s\", server_side=True)
 https.serve_forever()
-EOF''' % (ip, port, cert))
+EOF""" % (ip, port, cert))
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
-    if 0 == device.expect(['Traceback', pexpect.TIMEOUT], timeout=10):
+    if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
     else:
@@ -689,14 +707,15 @@ EOF''' % (ip, port, cert))
 
 
 def configure_postfix(device):
-    """configures TSL and SSL ports to access postfix server
+    """Configure TSL and SSL ports to access postfix server.
+
     The function can be extended with configuration changes to test emails.
 
     :param device: lan or wan
     :type device: Object
     :raise assertion: Asserts if service reload fails
     """
-    device.sendline('''cat > /etc/postfix/master.cf << EOF
+    device.sendline("""cat > /etc/postfix/master.cf << EOF
 smtp      inet  n       -       y       -       -       smtpd
 465      inet  n       -       n       -       -       smtpd
 587      inet  n       -       n       -       -       smtpd
@@ -750,18 +769,18 @@ scalemail-backend unix  -       n       n       -       2       pipe
 mailman   unix  -       n       n       -       -       pipe
   flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
   ${nexthop} ${user}
-EOF''')
+EOF""")
     device.expect(device.prompt, timeout=10)
     device.sendline("service postfix start")
     device.expect(device.prompt)
     device.sendline("service postfix reload")
     assert 0 != device.expect(
-        ['failed'] + device.prompt,
+        ["failed"] + device.prompt,
         timeout=20), "Unable to reolad server with new configurations"
 
 
 def file_open_json(file):
-    """Reads json file from the location input
+    """Read json file from the location input.
 
     :param file: path of the json file
     :type file: String
@@ -777,17 +796,20 @@ def file_open_json(file):
         raise Exception("Could not open the json file")
 
 
-def snmp_mib_set(device,
-                 parser,
-                 iface_ip,
-                 mib_name,
-                 index,
-                 set_type,
-                 set_value,
-                 timeout=10,
-                 retry=3,
-                 community='private'):
-    """set value of mibs via snmp.
+def snmp_mib_set(
+    device,
+    parser,
+    iface_ip,
+    mib_name,
+    index,
+    set_type,
+    set_value,
+    timeout=10,
+    retry=3,
+    community="private",
+):
+    """Set value of mibs via snmp.
+
     Usage: snmp_mib_set(wan, board, board.wan_ip, "wifiMgmtBssSecurityMode", "32", "i", "1")
 
     :param device: device where SNMP command shall be executed
@@ -815,16 +837,16 @@ def snmp_mib_set(device,
     :raise Assertion: Asserts when Snmp set requests timeout
     """
     time_out = (timeout * retry) + 30
-    extra_arg = ''
+    extra_arg = ""
 
     if not isinstance(parser, SnmpMibs):
         match = re.search(r"\d+.(.*)", parser.mib[mib_name])
-        mib_oid = 'iso.' + match.group(1) + '.' + index
+        mib_oid = "iso." + match.group(1) + "." + index
         oid = parser.mib[mib_name]
     else:
-        extra_arg = ' -On '
+        extra_arg = " -On "
         oid = parser.get_mib_oid(mib_name)
-        mib_oid = '.' + oid + '.' + index
+        mib_oid = "." + oid + "." + index
     if set_type == "i" or set_type == "a" or set_type == "u" or set_type == "s":
         device.sendline("snmpset -v 2c " + extra_arg + " -c " + community +
                         " -t " + str(timeout) + " -r " + str(retry) + " " +
@@ -836,16 +858,18 @@ def snmp_mib_set(device,
                             set_type + " " + str(set_value))
         if set_type != "s":
             idx = device.expect(
-                ['Timeout: No Response from'] +
-                [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\r\n' % set_value] +
+                ["Timeout: No Response from"] +
+                [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\r\n" % set_value] +
                 device.prompt,
-                timeout=time_out)
+                timeout=time_out,
+            )
         else:
             idx = device.expect(
-                ['Timeout: No Response from'] +
-                [mib_oid + r'\s+\=\s+\S+\:\s+\"(%s)\"\r\n' % set_value] +
+                ["Timeout: No Response from"] +
+                [mib_oid + r"\s+\=\s+\S+\:\s+\"(%s)\"\r\n" % set_value] +
                 device.prompt,
-                timeout=time_out)
+                timeout=time_out,
+            )
     elif set_type == "x":
         device.sendline("snmpset -v 2c -Ox" + extra_arg + " -c " + community +
                         " -t " + str(timeout) + " -r " + str(retry) + " " +
@@ -859,14 +883,16 @@ def snmp_mib_set(device,
         if "0x" in set_value.lower():
             set_value = set_value[2:]
         set_value_hex = set_value.upper()
-        set_value_output = ' '.join(
+        set_value_output = " ".join(
             [set_value_hex[i:i + 2] for i in range(0, len(set_value_hex), 2)])
         idx = device.expect(
-            ['Timeout: No Response from'] +
-            [mib_oid + r'\s+\=\s+\S+\:\s+(%s)\s+\r\n' % set_value_output] +
+            ["Timeout: No Response from"] +
+            [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\s+\r\n" % set_value_output] +
             device.prompt,
-            timeout=40)
-    elif set_type == "t" or set_type == "b" or set_type == "o" or set_type == "n" or set_type == "d":
+            timeout=40,
+        )
+    elif (set_type == "t" or set_type == "b" or set_type == "o"
+          or set_type == "n" or set_type == "d"):
         idx = 0
     elif set_type == "str_with_space":
         set_type = "s"
@@ -879,9 +905,11 @@ def snmp_mib_set(device,
                             " -t " + str(timeout) + " -r " + str(retry) + " " +
                             iface_ip + " " + oid + "." + str(index) + " " +
                             set_type + " " + "'%s'" % set_value)
-        idx = device.expect(['Timeout: No Response from'] +
-                            ['STRING: \"(.*)\"\r\n'] + device.prompt,
-                            timeout=10)
+        idx = device.expect(
+            ["Timeout: No Response from"] + ['STRING: "(.*)"\r\n'] +
+            device.prompt,
+            timeout=10,
+        )
 
     assert idx == 1, "Setting the mib %s" % mib_name
     snmp_out = device.match.group(1)
@@ -889,16 +917,19 @@ def snmp_mib_set(device,
     return snmp_out
 
 
-def snmp_mib_get(device,
-                 parser,
-                 iface_ip,
-                 mib_name,
-                 index,
-                 timeout=10,
-                 retry=3,
-                 community='private',
-                 opt_args=''):
+def snmp_mib_get(
+    device,
+    parser,
+    iface_ip,
+    mib_name,
+    index,
+    timeout=10,
+    retry=3,
+    community="private",
+    opt_args="",
+):
     """Get value of mibs via snmp.
+
     Usage: snmp_mib_set(wan, board/snmpParser, board.wan_iface, "wifiMgmtBssSecurityMode", "32")
 
     :param device: device where SNMP command shall be executed
@@ -924,19 +955,19 @@ def snmp_mib_get(device,
     :raise Assertion: Asserts when Snmp get requests timeout
     """
     time_out = (timeout * retry) + 30
-    extra_arg = ''
+    extra_arg = ""
 
     # this should allow for legacy behaviour (with board passed in)
     if not isinstance(parser, SnmpMibs):
         match = re.search(r"\d+.(.*)", parser.mib[mib_name])
-        mib_oid = r'iso\.' + match.group(1) + '.' + index
+        mib_oid = r"iso\." + match.group(1) + "." + index
         oid = parser.mib[mib_name]
     else:
-        extra_arg = ' -On '
+        extra_arg = " -On "
         oid = parser.get_mib_oid(mib_name)
-        mib_oid = oid + '.' + index
+        mib_oid = oid + "." + index
     """opt_args attribute added to get the output in hexa value using Ox option"""
-    if opt_args != '':
+    if opt_args != "":
         device.sendline("snmpget -v 2c -Ox" + extra_arg + " -c " + community +
                         " -t " + str(timeout) + " -r " + str(retry) + " " +
                         iface_ip + " " + oid + "." + str(index))
@@ -951,33 +982,34 @@ def snmp_mib_get(device,
         device.expect_exact("snmpget -v 2c" + extra_arg + " -c " + community +
                             " -t " + str(timeout) + " -r " + str(retry) + " " +
                             iface_ip + " " + oid + "." + str(index))
-    idx = device.expect(['Timeout: No Response from'] +
-                        [mib_oid + r'\s+\=\s+\S+\:\s+(.*)\r\n'] +
-                        device.prompt,
-                        timeout=time_out)
+    idx = device.expect(
+        ["Timeout: No Response from"] +
+        [mib_oid + r"\s+\=\s+\S+\:\s+(.*)\r\n"] + device.prompt,
+        timeout=time_out,
+    )
     assert idx == 1, "Getting the mib %s" % mib_name
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
-    snmp_out = snmp_out.strip("\"").strip()
+    snmp_out = snmp_out.strip('"').strip()
     return snmp_out
 
 
 def hex2ipv6(hexstr):
-    """converts hex string to IPv6 Address
+    """Convert hex string to IPv6 Address.
 
     :param hexstr: ipv6 address in string(FE 80 00 00 00 00 00 00 3A 43 7D FF FE DC A6 C3)
     :type hexstr: String
     :return: IPv6 address
     :rtype: Unicode
     """
-    hexstr = hexstr.replace(' ', '').lower()
-    blocks = (''.join(block) for block in zip(*[iter(hexstr)] * 4))
-    return ipaddress.IPv6Address(':'.join(str(block)
-                                          for block in blocks).decode('utf-8'))
+    hexstr = hexstr.replace(" ", "").lower()
+    blocks = ("".join(block) for block in zip(*[iter(hexstr)] * 4))
+    return ipaddress.IPv6Address(":".join(str(block)
+                                          for block in blocks).decode("utf-8"))
 
 
 def retry(func_name, max_retry, *args):
-    """Retry a function if the output of the function is false
+    """Retry a function if the output of the function is false.
 
     :param func_name: name of the function to retry
     :type func_name: Object
@@ -991,7 +1023,7 @@ def retry(func_name, max_retry, *args):
     output = None
     for _ in range(max_retry):
         output = func_name(*args)
-        if output and output != 'False':
+        if output and output != "False":
             return output
         else:
             time.sleep(5)
@@ -1009,8 +1041,7 @@ def retry_on_exception(method, args, retries=10, tout=5):
     :type method: Object
     :param args: Arguments passed to the function
     :type args: args
-    :param retries: Maximum number of retries when a exception occur,
-    defaults to 10. When negative, no retries are made.
+    :param retries: Maximum number of retries when a exception occur,defaults to 10. When negative, no retries are made.
     :type retries: Integer, Optional
     :param tout: Sleep time after every exception occur, defaults to 5
     :type tout: Integer, Optional
@@ -1027,7 +1058,7 @@ def retry_on_exception(method, args, retries=10, tout=5):
 
 
 def resolv_dict(dic, key):
-    """This function used to get the value from gui json, replacement of eval
+    """Get the value from gui json, replacement of eval.
 
     :param dic: Dictionary to resolve
     :type dic: Dictionary(dict)
@@ -1036,7 +1067,7 @@ def resolv_dict(dic, key):
     :return: Value of the key
     :rtype: String
     """
-    key = key.strip("[]'").replace("']['", '#').split('#')
+    key = key.strip("[]'").replace("']['", "#").split("#")
     key_val = dic
     for elem in key:
         key_val = key_val[elem]
@@ -1047,10 +1078,11 @@ def snmp_mib_walk(device,
                   parser,
                   ip_address,
                   mib_name,
-                  community='public',
+                  community="public",
                   retry=3,
                   time_out=100):
-    """walk a mib with small mib tree
+    """Walk a mib with small mib tree.
+
     Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
 
     :param device: device where SNMP command shall be executed
@@ -1085,13 +1117,14 @@ def snmp_mib_walk(device,
     else:
         # the expect timed out, try to recover and return None
         snmp_out = None
-        device.sendcontrol('c')  # in case the walk is frozen/stuck
+        device.sendcontrol("c")  # in case the walk is frozen/stuck
         device.expect(device.prompt)
     return snmp_out
 
 
-def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
-    """Set snmp which has type as counter32(couldn't set it via SNMP)
+def snmp_set_counter32(device, wan_ip, parser, mib_set, value="1024"):
+    """Set snmp which has type as counter32(couldn't set it via SNMP).
+
     Usage: snmp_set_counter32(wan, self.cm_wan_ip, self.snmp_obj, mib_file['Ftp_Us_FileSize'], value='1000')
 
     :param device: device where SNMP command shall be executed
@@ -1109,7 +1142,7 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
     :raises Exception: Throws exception when failed to set the mib value
     """
     install_pysnmp(device)
-    pysnmp_file = 'pysnmp_mib_set.py'
+    pysnmp_file = "pysnmp_mib_set.py"
     device.sendline("python")
     device.expect(">>>")
     device.sendline("f = open('" + pysnmp_file + "'" + ", 'w')")
@@ -1123,37 +1156,43 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value='1024'):
         oid = parser.mib[mib_set]
     else:
         oid = parser.get_mib_oid(mib_set)
-    command = [("sed -i '1a from pysnmp.proto import rfc1902' " + pysnmp_file),
-               ("sed -i '2a wan_ip = " + '"' + wan_ip + '"' + "' " + pysnmp_file),\
-               ("sed -i '3a oid = " + '"' + oid + '.0"' + "' " + pysnmp_file),\
-               ("sed -i '4a value = " + '"' + value + '"' + "' " + pysnmp_file),\
-               ("sed -i '5a community = " + '"public"' + "' " + pysnmp_file),\
-               ("sed -i '6a value = rfc1902.Counter32(value)' " + pysnmp_file),\
-               ("sed -i '7a cmdGen = cmdgen.CommandGenerator()' " + pysnmp_file),\
-               ("sed -i '8a cmdGen.setCmd(' " + pysnmp_file),\
-               ("sed -i '9a cmdgen.CommunityData(community),' " + pysnmp_file),\
-               ("sed -i '10a cmdgen.UdpTransportTarget((wan_ip, 161), timeout=1, retries=3),' " + pysnmp_file),\
-               ("sed -i '11a (oid, value))' " + pysnmp_file),\
-               ("python " + pysnmp_file),\
-               ("rm " + pysnmp_file),\
-               ]
+    command = [
+        ("sed -i '1a from pysnmp.proto import rfc1902' " + pysnmp_file),
+        ("sed -i '2a wan_ip = " + '"' + wan_ip + '"' + "' " + pysnmp_file),
+        ("sed -i '3a oid = " + '"' + oid + '.0"' + "' " + pysnmp_file),
+        ("sed -i '4a value = " + '"' + value + '"' + "' " + pysnmp_file),
+        ("sed -i '5a community = " + '"public"' + "' " + pysnmp_file),
+        ("sed -i '6a value = rfc1902.Counter32(value)' " + pysnmp_file),
+        ("sed -i '7a cmdGen = cmdgen.CommandGenerator()' " + pysnmp_file),
+        ("sed -i '8a cmdGen.setCmd(' " + pysnmp_file),
+        ("sed -i '9a cmdgen.CommunityData(community),' " + pysnmp_file),
+        ("sed -i '10a cmdgen.UdpTransportTarget((wan_ip, 161), timeout=1, retries=3),' "
+         + pysnmp_file),
+        ("sed -i '11a (oid, value))' " + pysnmp_file),
+        ("python " + pysnmp_file),
+        ("rm " + pysnmp_file),
+    ]
     try:
         for i in command:
             device.sendline(i)
             device.expect(device.prompt)
         return True
-    except:
+    except Exception as error:
+        print(error)
         raise Exception("Failed in setting mib using pysnmp")
 
 
-def snmp_mib_bulkwalk(device,
-                      ip_address,
-                      mib_oid,
-                      time_out=90,
-                      retry=3,
-                      community='public',
-                      expect_content=None):
-    """uses SNMP GETBULK requests to query a network entity efficiently for a tree of information
+def snmp_mib_bulkwalk(
+    device,
+    ip_address,
+    mib_oid,
+    time_out=90,
+    retry=3,
+    community="public",
+    expect_content=None,
+):
+    """Use SNMP GETBULK requests to query a network entity efficiently for a tree of information.
+
     Usage: snmp_mib_bulkwalk(device, ip_address, mib_oid)
 
     :param device: device where SNMP command shall be executed
@@ -1173,16 +1212,16 @@ def snmp_mib_bulkwalk(device,
     :return: true or False
     :type: bool
     """
-
     device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" %
                     (community, time_out, retry, ip_address, mib_oid))
-    if expect_content != None:
+    if expect_content is not None:
         idx = device.expect([expect_content, "Timeout: No Response"],
                             timeout=(time_out * retry) + 30)
     else:
         idx = device.expect(
             ["It is past the end of the MIB tree", "Timeout: No Response"],
-            timeout=(time_out * retry) + 30)
+            timeout=(time_out * retry) + 30,
+        )
     device.expect(device.prompt)
     return idx == 0
 
@@ -1199,18 +1238,19 @@ def get_file_magic(fname, num_bytes=4):
     :rtype: String
     """
     if fname.startswith("http://") or fname.startswith("https://"):
-        rng = 'bytes=0-%s' % (num_bytes - 1)
-        req = Request(fname, headers={'Range': rng})
+        rng = "bytes=0-%s" % (num_bytes - 1)
+        req = Request(fname, headers={"Range": rng})
         data = urlopen(req).read()
     else:
-        f = open(fname, 'rb')
+        f = open(fname, "rb")
         data = f.read(num_bytes)
         f.close()
     return binascii.hexlify(data)
 
 
 def copy_file_to_server(cmd, password, target="/tftpboot/"):
-    """Requires a command like ssh/scp to transfer a file, and a password.
+    """Require a command like ssh/scp to transfer a file, and a password.
+
     Run the command and enter the password if asked for one.
     NOTE: The command must print the filename once the copy has completed
 
@@ -1227,8 +1267,8 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
     for _ in range(5):
         try:
             print_bold(cmd)
-            p = bft_pexpect_helper.spawn(command='/bin/bash',
-                                         args=['-c', cmd],
+            p = bft_pexpect_helper.spawn(command="/bin/bash",
+                                         args=["-c", cmd],
                                          timeout=240)
             p.logfile_read = sys.stdout
 
@@ -1261,7 +1301,7 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
 
 
 def download_from_web(url, server, username, password, port):
-    """Download a file from web by framing curl command and using "copy_file_to_server" function
+    """Download a file from web by framing curl command and using "copy_file_to_server" function.
 
     :param url: URL to download the file
     :type url: String
@@ -1278,16 +1318,17 @@ def download_from_web(url, server, username, password, port):
     :raises Exception: Exception thrown on copy file failed
     """
     pipe = ""
-    if cmd_exists('pv'):
+    if cmd_exists("pv"):
         pipe = " pv | "
 
-    cmd = "curl -n -L -k '%s' 2>/dev/null | %s ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (
-        url, pipe, port, username, server)
+    cmd = (
+        r"curl -n -L -k '%s' 2>/dev/null | %s ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\""
+        % (url, pipe, port, username, server))
     return copy_file_to_server(cmd, password)
 
 
 def scp_to_tftp_server(fname, server, username, password, port):
-    """Secure copy file to tftp server using copy_file_to_server
+    """Secure copy file to tftp server using copy_file_to_server.
 
     :param fname: filename to be copied to TFTP server
     :type fname: String
@@ -1309,16 +1350,17 @@ def scp_to_tftp_server(fname, server, username, password, port):
         sys.exit(10)
 
     pipe = ""
-    if cmd_exists('pv'):
+    if cmd_exists("pv"):
         pipe = " pv | "
 
-    cmd = "cat %s | %s ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\"" % (
-        fname, pipe, port, username, server)
+    cmd = (
+        r'cat %s | %s ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'
+        % (fname, pipe, port, username, server))
     return copy_file_to_server(cmd, password)
 
 
 def scp_from(fname, server, username, password, port, dest):
-    """Secure copy file from server using copy_file_to_server
+    """Secure copy file from server using copy_file_to_server.
 
     :param fname: filename to be copied to TFTP server
     :type fname: String
@@ -1338,20 +1380,20 @@ def scp_from(fname, server, username, password, port, dest):
     """
     cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server,
                                                    fname, dest)
-    copy_file_to_server(cmd, password, target='DONE')
+    copy_file_to_server(cmd, password, target="DONE")
 
 
 def print_bold(msg):
-    """Prints the input message in Bold
+    """Print the input message in Bold.
 
     :param msg: Message to print in bold
     :type msg: String
     """
-    termcolor.cprint(msg, None, attrs=['bold'])
+    termcolor.cprint(msg, None, attrs=["bold"])
 
 
 def check_url(url):
-    """validates the input URL. Parses the input URL and checks for error
+    """Validate the input URL. Parses the input URL and checks for error.
 
     :param url: Web address to be validated
     :type url: String
@@ -1361,16 +1403,16 @@ def check_url(url):
     try:
 
         def add_basic_auth(login_str, request):
-            """Adds Basic auth to http request, pass in login:password as string.
-            Usage is within the function.
+            """Add Basic auth to http request, pass in login:password as string.
 
+            Usage is within the function.
             :param login_str: parsed login and password in "login:password" format
             :type login_str: String
             :param request: request to upen url
             :type request: String
             """
             encodeuser = base64.b64encode(
-                login_str.encode('utf-8')).decode("utf-8")
+                login_str.encode("utf-8")).decode("utf-8")
             authheader = "Basic %s" % encodeuser
             request.add_header("Authorization", authheader)
 
@@ -1390,12 +1432,12 @@ def check_url(url):
         return True
     except Exception as e:
         print(e)
-        print('Error trying to access %s' % url)
+        print("Error trying to access %s" % url)
         return False
 
 
 def ftp_useradd(device):
-    """Add ftp user to client list to grant access
+    """Add ftp user to client list to grant access.
 
     :param device: Linux device(lan/wan)
     :type device: Object
@@ -1404,7 +1446,7 @@ def ftp_useradd(device):
     :rtype: Boolean or None
     """
     device.sendline("useradd -m client -s /usr/sbin/nologin")
-    index = device.expect(['already exists'] + [] + device.prompt, timeout=10)
+    index = device.expect(["already exists"] + [] + device.prompt, timeout=10)
     if index != 0:
         device.sendline("passwd client")
         device.expect("Enter new UNIX password:", timeout=10)
@@ -1412,9 +1454,9 @@ def ftp_useradd(device):
         device.expect("Retype new UNIX password:", timeout=10)
         device.sendline("client")
         device.expect(device.prompt, timeout=10)
-        device.sendline("echo \"/usr/sbin/nologin\" >> /etc/shells")
+        device.sendline('echo "/usr/sbin/nologin" >> /etc/shells')
         device.expect(device.prompt, timeout=10)
-        device.sendline("echo \"client\" | tee -a /etc/vsftpd.userlist")
+        device.sendline('echo "client" | tee -a /etc/vsftpd.userlist')
         device.expect(device.prompt, timeout=10)
         device.sendline("chmod 777 /home/client")
         device.expect(device.prompt, timeout=10)
@@ -1427,7 +1469,7 @@ def ftp_file_create_delete(device,
                            create_file=None,
                            extension=".txt",
                            remove_file=None):
-    """create and delete ftp file for upload and download
+    """Create and delete ftp file for upload and download.
 
     :param device: Linux device(lan/wan)
     :type device: Object
@@ -1448,7 +1490,7 @@ def ftp_file_create_delete(device,
 
 
 def ftp_device_login(device, ip_mode, device_ip):
-    """Login to FTP device by creating credentials
+    """Login to FTP device by creating credentials.
 
     :param device: Linux device(lan/wan)
     :type device: Object
@@ -1468,23 +1510,23 @@ def ftp_device_login(device, ip_mode, device_ip):
         device.sendline("client")
         device.expect("Password:", timeout=10)
         device.sendline("client")
-        device.expect(['230 Login successful'], timeout=10)
+        device.expect(["230 Login successful"], timeout=10)
         device.expect("ftp>", timeout=10)
-    except:
+    except Exception as error:
+        print(error)
         check = False
         ftp_close(device)
     return check
 
 
 def ftp_upload_download(device, ftp_load):
-    """Upload or download file
+    """Upload or download file.
 
     :param device: Linux device(lan/wan)
     :type device: Object
     :param ftp_load: "download" or "upload"
     :type ftp_load: String
     """
-
     if "download" in str(ftp_load):
         device.sendline("get %s.txt" % ftp_load)
     elif "upload" in str(ftp_load):
@@ -1495,20 +1537,21 @@ def ftp_upload_download(device, ftp_load):
 
 
 def ftp_close(device):
-    """Closing the FTP connection
+    """Close the FTP connection.
 
     :param device: Linux device(lan/wan)
     :type device: Object
     """
-    device.sendcontrol('c')
-    index = device.expect(['>'] + device.prompt, timeout=20)
+    device.sendcontrol("c")
+    index = device.expect([">"] + device.prompt, timeout=20)
     if index == 0:
         device.sendline("quit")
         device.expect(device.prompt, timeout=10)
 
 
 def postfix_install(device):
-    """Add iface_dut  to hosts and Install postfix service if not present
+    """Add iface_dut  to hosts and Install postfix service if not present.
+
     Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
 
     :param device: lan or wan
@@ -1522,7 +1565,7 @@ def postfix_install(device):
 
 
 def http_service_kill(device, process):
-    """Method to kill the existing http service
+    """Kill the existing http service.
 
     :param device: lan or wan
     :type device: Object
@@ -1530,7 +1573,7 @@ def http_service_kill(device, process):
     :type process: String
     """
     for _ in range(3):
-        device.sendcontrol('c')
+        device.sendcontrol("c")
         device.expect_prompt()
     device.sendline("ps -elf | grep %s" % process)
     device.expect_prompt()
@@ -1542,7 +1585,9 @@ def http_service_kill(device, process):
 
 
 def check_prompts(device_list):
-    """check to verify prompt of devices.In order to ensure, that all processes were killed by previous
+    """Check to verify prompt of devices.
+
+    In order to ensure, that all processes were killed by previous
     test, before running a new test.
 
     :param device_list: List of devices to check
@@ -1556,12 +1601,12 @@ def check_prompts(device_list):
 
 
 def hex_to_datetime(output):
-    """Convert hexstring format to datettime
+    """Convert hexstring format to datettime.
 
     :param output: output of the snmp output
     :type output: hexstring
     """
-    out = output.replace('0x', '')
+    out = output.replace("0x", "")
     mib_Hex = [out[i:i + 2] for i in range(0, len(out), 2)]
     dt = datetime(*list(
         map(lambda x: int(x, 16), [mib_Hex[0] + mib_Hex[1]] + mib_Hex[2:])))
@@ -1569,7 +1614,7 @@ def hex_to_datetime(output):
 
 
 def openssl_verify(device, ip_address, port, options=""):
-    """Openssl verfication for SMTP
+    """Openssl verfication for SMTP.
 
     :param device: device in which the command has to be excuted
     :type device: device
@@ -1589,9 +1634,10 @@ def openssl_verify(device, ip_address, port, options=""):
         output = True
     try:
         device.expect_prompt()
-    except:
+    except Exception as error:
+        print(error)
         for _ in range(3):
-            device.sendcontrol('c')
+            device.sendcontrol("c")
             device.expect_prompt()
     return output
 
@@ -1602,7 +1648,7 @@ def openssl_verify(device, ip_address, port, options=""):
 #
 ############################################################
 def copy_ovpn_config(server, client, config="lan.ovpn"):
-    """Copy config file from a device (usually the server) to another
+    """Copy config file from a device (usually the server) to another.
 
     :param server : device (Eg: VPN server)
     :type server :  Object
@@ -1624,31 +1670,31 @@ def copy_ovpn_config(server, client, config="lan.ovpn"):
         dev.expect(dev.prompt)
     if md5sum[server.name] != md5sum[client.name]:
         client.sendline(
-            'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@'
-            + server.get_interface_ipaddr(server.iface_dut) + ':/root/' +
-            config + ' .')
-        index = client.expect('.*password:')
-        client.sendline('bigfoot1')
-        client.expect('100%')
+            "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@"
+            + server.get_interface_ipaddr(server.iface_dut) + ":/root/" +
+            config + " .")
+        index = client.expect(".*password:")
+        client.sendline("bigfoot1")
+        client.expect("100%")
         client.expect(client.prompt)
 
 
 def add_ovpn_user(device, user):
-    """Add an OpenVPN user (assumes ovpn server is already installed)
+    """Add an OpenVPN user (assumes ovpn server is already installed).
 
-    :Param  device: device
-    :type  device: Object
+    :Param  device : device
+    :type  device : Object
     :param user : client name (Eg: "lan")
     :type  user : str
-    :return: addded user (eg: lan.ovpn)
-    :return type: str
+    :return : addded user (eg: lan.ovpn)
+    :return type : str
     """
-    device.sendline('./openvpn-install.sh')
-    device.expect('Select an option.*: ')
-    device.sendline('1')
-    device.expect('Client name:')
+    device.sendline("./openvpn-install.sh")
+    device.expect("Select an option.*: ")
+    device.sendline("1")
+    device.expect("Client name:")
     device.sendline(user)
-    device.expect('Select an option.*: ')
+    device.expect("Select an option.*: ")
     device.sendline()
     device.expect(".*the configuration file is available at /root/" + user +
                   ".ovpn")
@@ -1657,9 +1703,9 @@ def add_ovpn_user(device, user):
 
 
 def configure_ovpn(self, server, client, client_name, ip_version):
-    """Configure the openvpn on 2 devices, a server and 1 client
+    """Configure the openvpn on 2 devices, a server and 1 client.
 
-    :Param server: device Eg: wan
+    :Param server : device Eg: wan
     :type server : Object
     :param client : device Eg: lan
     :type client : Object
@@ -1670,26 +1716,27 @@ def configure_ovpn(self, server, client, client_name, ip_version):
     Returns: N/A
     """
     install_ovpn_server(server, _user=client_name, _ip=ip_version)
-    server.sendline('ls ./' + client_name + '.ovpn')
+    server.sendline("ls ./" + client_name + ".ovpn")
     flag = False
     for _ in range(2):
-        flag = server.expect(['No such file or directory', pexpect.TIMEOUT],
-                             timeout=5) == 0
+        flag = (server.expect(["No such file or directory", pexpect.TIMEOUT],
+                              timeout=5) == 0)
         server.expect(server.prompt, timeout=60)
         if flag:
             add_ovpn_user(server, client_name)
         else:
             break
-    assert flag == False, "Failed to create '" + client_name + ".ovpn' configuration file on server, bailing out"
+    assert flag is False, ("Failed to create '" + client_name +
+                           ".ovpn' configuration file on server, bailing out")
     install_ovpn_client(client)
     copy_ovpn_config(server, client)
 
     # makes sure there is a <user>.ovpn file
-    client.sendline('ls ./' + client_name + '.ovpn')
+    client.sendline("ls ./" + client_name + ".ovpn")
 
 
 def configure_pptpd(server, client):
-    """Configure the PPTP for VPN
+    """Configure the PPTP for VPN.
 
     :Param server : device
     :type server : Object
@@ -1697,23 +1744,27 @@ def configure_pptpd(server, client):
     :type server : Object
     :Returns: N/A
     """
-
     install_pptpd_server(server)
     server.sendline(
-        '''echo -e 'lan * "lanclient" *\nlan2 * "lanclient2" *' > /etc/ppp/chap-secrets'''
+        """echo -e 'lan * "lanclient" *\nlan2 * "lanclient2" *' > /etc/ppp/chap-secrets"""
     )
     server.expect(server.prompt)
     server.sendline(
-        '''echo -e "localip 10.0.0.1\nremoteip 10.0.0.100-200" >>  /etc/pptpd.conf'''
+        """echo -e "localip 10.0.0.1\nremoteip 10.0.0.100-200" >>  /etc/pptpd.conf"""
     )
     server.expect(server.prompt)
     install_pptp_client(client)
     client.sendline("\n".join([
         "cat > /etc/ppp/peers/pptpserver << EOF",
         'pty "pptp %s --nolaunchpppd"' %
-        (server.get_interface_ipaddr(server.iface_dut)), "name lan",
-        "password lanclient", "remotename PPTP", "require-mppe-128",
-        "file /etc/ppp/options.pptp", "ipparam pptpserver", "EOF"
+        (server.get_interface_ipaddr(server.iface_dut)),
+        "name lan",
+        "password lanclient",
+        "remotename PPTP",
+        "require-mppe-128",
+        "file /etc/ppp/options.pptp",
+        "ipparam pptpserver",
+        "EOF",
     ]))
     client.expect(client.prompt)
     client.sendline(
@@ -1724,9 +1775,10 @@ def configure_pptpd(server, client):
 
 def curl_page(dev,
               waddr,
-              opts='-s -L --insecure',
-              expected='<!doctype html>.*</body>\r\n</html>'):
-    """ Diagnostic to see if a page is accessible from a device.
+              opts="-s -L --insecure",
+              expected="<!doctype html>.*</body>\r\n</html>"):
+    """Diagnostic to see if a page is accessible from a device.
+
     The curl output is saved to a file (page.curl) as well as displayed to stdout.
 
     :Param dev : device to run curl from
@@ -1743,7 +1795,7 @@ def curl_page(dev,
         print("Curl from device '{}' url '{}' successful".format(
             dev.name, waddr))
     except Exception as e:
-        dev.sendcontrol('c')
+        dev.sendcontrol("c")
         dev.expect_prompt()
         print("ERROR: failed to curl from device '{}', url '{}'".format(
             dev.name, waddr))
@@ -1753,7 +1805,7 @@ def curl_page(dev,
 
 
 def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
-    ''' #TODO: This method is strictly for IRC test cases.
+    """#TODO: This method is strictly for IRC test cases.
 
     Communicate between two IRC clients given IRC server
     and clients are configured
@@ -1762,32 +1814,34 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
     :param client2: lan or wan or wlan
     :type client2: Object
     :param client1_scriptname: Python script file in IRC client used to
-                               connect to server
+    connect to server
     :type client1_scriptname: File object
     :param client2_scriptname: Python script file in IRC client used to
-                               connect to server
+    connect to server
     :type client2_scriptname: File object
-    '''
+    """
     try:
         for client in [client1, client2]:
             s_name, c = ((client1_scriptname,
                           "client1") if client == client1 else
                          (client2_scriptname, "client2"))
             client.sendline("python %s" % s_name)
-            index = client.expect(['JOIN :#channel'] +
-                                  ['#channel :End of /NAMES list.'] +
-                                  client.prompt,
-                                  timeout=300)
+            index = client.expect(
+                ["JOIN :#channel"] + ["#channel :End of /NAMES list."] +
+                client.prompt,
+                timeout=300,
+            )
             assert index <= 1, "Connect {} to server failed".format(c)
-        communicationstatus = client2.expect(['connection success'] +
+        communicationstatus = client2.expect(["connection success"] +
                                              client2.prompt,
                                              timeout=100)
-        assert communicationstatus == 0, \
-                "Communication between the IRC clients using the IRC server: PASS"
+        assert (
+            communicationstatus == 0
+        ), "Communication between the IRC clients using the IRC server: PASS"
     except Exception as e:
-        client2.sendcontrol('c')
+        client2.sendcontrol("c")
         client2.expect_prompt()
-        client1.sendcontrol('c')
+        client1.sendcontrol("c")
         client1.expect_prompt()
         print("IRC communicate Failed.")
         print(e)
