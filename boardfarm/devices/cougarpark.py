@@ -25,9 +25,7 @@ MODE_NSGMII2 = 3
 
 
 class CougarPark(openwrt_router.OpenWrtRouter):
-    '''
-    Intel Cougar Park board
-    '''
+    """Intel Cougar Park board."""
     model = ("cougarpark")
 
     wan_iface = "erouter0"
@@ -62,9 +60,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.arm.kill(signal.SIGKILL)
 
     def wait_for_boot(self):
-        '''
-        Break into Shell.
-        '''
+        """Break into Shell."""
         # Try to break into uboot
         self.expect('Remaining timeout:', timeout=30)
         self.send(KEY_ESCAPE)
