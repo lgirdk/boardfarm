@@ -19,7 +19,8 @@ from . import openwrt_router
 
 
 class Qemu(openwrt_router.OpenWrtRouter):
-    """Emulated QEMU board inherits the OpenWrtRouter.
+    """Emulated QEMU board inherit the OpenWrtRouter.
+
     This class handles the operations relating to booting, reset and setup of QEMU device.
     QEMU is used to perform few of the code validation without the use of the actual board but rather QEMU device.
     """
@@ -56,7 +57,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  kernel=None,
                  mgr=None,
                  **kwargs):
-        """This method intializes the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc.,
+        """Intialize the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc..
 
         :param model: Model of the QEMU device.
         :type model: string
@@ -90,8 +91,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
         :type rootfs: string
         :param kernel: The kernel image path to be used to flash to the device, defaults to None
         :type kernel: string
-        :param **kwargs: Extra set of arguements to be used if any.
-        :type **kwargs: dict
+        :param ``**kwargs``: Extra set of arguements to be used if any.
+        :type ``**kwargs``: dict
         :raises: Exception "The QEMU device type requires specifying a rootfs"
         """
         self.consoles = [self]
@@ -104,7 +105,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                 "The QEMU device type requires specifying a rootfs")
 
         def temp_download(url):
-            """This method is to download the image to the temp folder over the QEMU device.
+            """Download the image to the temp folder over the QEMU device.
 
             :param url: URL where the file is location (URL path of the file to be downloaded), defaults to None
             :type url: string
@@ -174,37 +175,32 @@ class Qemu(openwrt_router.OpenWrtRouter):
         atexit.register(self.kill_console_at_exit)
 
     def run_cleanup_cmd(self):
-        """This function is to remove set of files for the clean up.
-        """
+        """Remove set of files for the clean up."""
         for f in self.cleanup_files:
             if os.path.isfile(f):
                 os.remove(f)
 
     def close(self, *args, **kwargs):
-        """This method exists from the console and closes the session.
-        """
+        """Exist from the console and closes the session."""
         self.kill_console_at_exit()
         return super(Qemu, self).close(*args, **kwargs)
 
     def kill_console_at_exit(self):
-        """This method is to close the console over exit.
-        Exists pexpect.
-        """
+        """Close the console over exit.Exists pexpect."""
         try:
             self.sendcontrol('a')
             self.send('c')
             self.sendline('q')
             self.kill(signal.SIGKILL)
-        except:
+        except Exception:
             pass
 
     def wait_for_boot(self):
-        """This method is supposed to wait for the prompt after the reboot.
-        """
+        """Wait for the prompt after the reboot."""
         pass
 
     def setup_uboot_network(self, tftp_server=None):
-        """This method is supposed to perform a uboot of the device over the network.
+        """Perform a uboot of the device over the network.
 
         :param tftp_server: Ip address of the TFTP server to be used for uboot, defaults to None
         :type tftp_server: string
@@ -212,7 +208,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def flash_rootfs(self, ROOTFS):
-        """This method flashes the QEMU board with the ROOTFS (which in general is a patch update on the firmware).
+        """Flash the QEMU board with the ROOTFS (which in general is a patch update on the firmware).
 
         :param ROOTFS: Indicates the absolute location of the file to be used to flash.
         :type ROOTFS: string
@@ -220,7 +216,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def flash_linux(self, KERNEL):
-        """This method flashes the QEMU board by copying file to the board using TFTP protocol.
+        """Flash the QEMU board by copying file to the board using TFTP protocol.
 
         :param KERNEL: Indicates the absoulte location of the file to be used to flash.
         :type KERNEL: string
@@ -228,9 +224,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def wait_for_linux(self):
-        """This method waits for the linux menu.
-        Once the device is up will login and enter to root.
-        """
+        """Wait for the linux menu. Once the device is up will login and enter to root."""
         if self.kvm:
             tout = 60
         else:
@@ -247,7 +241,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                 break
 
     def boot_linux(self, rootfs=None, bootargs=None):
-        """This method is supposed to boots qemu board.
+        """Boot qemu board.
 
         :param rootfs: parameter to be used at later point, defaults to None.
         :type rootfs: NA
@@ -257,9 +251,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         pass
 
     def reset(self):
-        """This method resets the qemu board.
-        Uses the system_reset command to reset.
-        """
+        """Reset the qemu board. Use the system_reset command to reset."""
         self.sendcontrol('a')
         self.send('c')
         self.sendline('system_reset')
