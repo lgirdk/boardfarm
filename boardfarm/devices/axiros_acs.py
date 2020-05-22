@@ -28,8 +28,7 @@ warnings.simplefilter('always')
 
 
 class AxirosACS(base_acs.BaseACS):
-    """ACS connection class used to perform TR069 operations on stations/board
-    """
+    """ACS connection class used to perform TR069 operations on stations/board."""
     model = "axiros_acs_soap"
     name = "acs_server"
     # should the following be dynamic?
@@ -38,13 +37,13 @@ class AxirosACS(base_acs.BaseACS):
     Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
-        """This method intializes the varible that are used in establishing connection to the ACS.
-           The method intializes an HTTP SOAP client which will authenticate with the ACS server.
+        """Intialize the varible that are used in establishing connection to the ACS and\
+           Intialize an HTTP SOAP client which will authenticate with the ACS server.
 
-        :param *args: the arguments to be used if any
-        :type *args: tuple
-        :param **kwargs: extra args to be used if any (mainly contains username, password, ipadress and port)
-        :type **kwargs: dict
+        :param ``*args``: the arguments to be used if any
+        :type ``*args``: tuple
+        :param ``**kwargs``: extra args to be used if any (mainly contains username, password, ipadress and port)
+        :type ``**kwargs``: dict
         """
         self.args = args
         self.kwargs = kwargs
@@ -109,7 +108,7 @@ class AxirosACS(base_acs.BaseACS):
         self.sendline(cmd)
 
     def __str__(self):
-        """The method is used to format the string representation of self object (instance).
+        """Format the string representation of self object (instance).
 
         :returns: :class:`Response <Response>` string representation of self object.
         :rtype: string
@@ -118,8 +117,7 @@ class AxirosACS(base_acs.BaseACS):
 
     # TO DO: maybe this could be moved to a lib
     def _data_conversion(d):
-        """Conversion type/data helper
-        """
+        """Conversion type/data helper."""
         def to_int(v):
             return int(v)
 
@@ -131,7 +129,7 @@ class AxirosACS(base_acs.BaseACS):
             return v
 
         def to_dateTime(v):
-            if re.search('^1\s', v):
+            if re.search(r'^1\s', v):
                 v = v.zfill(len(v) + 3)
             v = datetime.strptime(
                 v, '%Y %m %d %H %M %S.0').strftime('%Y-%m-%dT%H:%M:%S')
@@ -198,9 +196,8 @@ class AxirosACS(base_acs.BaseACS):
 
     @staticmethod
     def _parse_soap_response(response):
-        """Helper function that parses the ACS response and returns a
-        list of dictionary with {key,type,value} pairs"""
-
+        """Parse the ACS response and return a\
+        list of dictionary with {key,type,value} pair."""
         if 'BFT_DEBUG' in os.environ:
             msg = xml.dom.minidom.parseString(response.text)
             print(msg.toprettyxml(indent=' ', newl=""))
@@ -238,33 +235,31 @@ class AxirosACS(base_acs.BaseACS):
             e.faultdict = \
                 ast.literal_eval(msg[msg.index('{'):])
             raise e
-        #'item' is not present in FactoryReset RPC response
+        # 'item' is not present in FactoryReset RPC response
         if 'item' in result['details']:
             return AxirosACS._parse_xml_response(result['details']['item'])
         else:
-            #Assumes that message is always present
+            # Assumes that message is always present
             return msg
 
     def _get_cmd_data(self, *args, **kwagrs):
-        """Helper method that returns CmdOptTypeStruct_data
-        """
+        """Return CmdOptTypeStruct_data. It is a helper method."""
         c_opt_type = 'ns0:CommandOptionsTypeStruct'
         CmdOptTypeStruct_type = self.client.get_type(c_opt_type)
         CmdOptTypeStruct_data = CmdOptTypeStruct_type(*args, **kwagrs)
         return CmdOptTypeStruct_data
 
     def _get_class_data(self, *args, **kwagrs):
-        """Helper method that returns CPEIdClassStruct_data
-        """
+        """Return CPEIdClassStruct_data. It is a helper method."""
         cpe__id_type = 'ns0:CPEIdentifierClassStruct'
         CPEIdClassStruct_type = self.client.get_type(cpe__id_type)
         CPEIdClassStruct_data = CPEIdClassStruct_type(*args, **kwagrs)
         return CPEIdClassStruct_data
 
     def _build_input_structs(self, cpeid, param, action):
-        """Helper function to create the get structs used in the get/set param values
-        NOTE: The command option is set as Syncronous
+        """Create the get structs used in the get/set param values. It is a helper method.
 
+        NOTE: The command option is set as Syncronous
         :param cpeid: the serial number of the modem through which ACS communication
         happens.
         :type cpeid: string
@@ -279,13 +274,13 @@ class AxirosACS(base_acs.BaseACS):
             param = [param]
 
         if action == 'SPV':
-            l = []
+            li = []
             # this is a list of single k,v pairs
             for d in param:
                 k = next(iter(d))
-                l.append({'key': k, 'value': d[k]})
+                li.append({'key': k, 'value': d[k]})
             p_arr_type = 'ns0:SetParameterValuesParametersClassArray'
-            param = l
+            param = li
         elif action == 'GPV':
             p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
         else:
@@ -303,12 +298,11 @@ class AxirosACS(base_acs.BaseACS):
             CPEIdClassStruct_data
 
     def close(self):
-        """Method to be implemented to close ACS connection
-        """
+        """Implement to close ACS connection. TODO."""
         pass
 
     def get_ticketId(self, cpeid, param):
-        """ACS server maintains a ticket ID for all TR069 RPC calls.
+        """ACS server maintain a ticket ID for all TR069 RPC calls.
 
         This method will contruct a TR069 GPV query, execute it and
         return the ticket id associated with it.
@@ -350,9 +344,9 @@ class AxirosACS(base_acs.BaseACS):
 
     @moves.moved_method('GPV')
     def get(self, cpeid, param, wait=8):
-        """This method is deprecated.
-        This method is used to perform a remote procedure call (GetParameterValue)
+        """Perform a remote procedure call (GetParameterValue).
 
+        This method is deprecated.
         The method will query the ACS server for value against ticket_id generated
         during the GPV RPC call.
         Example usage : acs_server.get(self.cpeid, 'Device.DeviceInfo.SoftwareVersion')
@@ -375,9 +369,9 @@ class AxirosACS(base_acs.BaseACS):
 
     @moves.moved_method('GPV')
     def getcurrent(self, cpeid, param, wait=8):
-        """This method is used to get the key, value of the response for the given parameter from board.
-        Example usage : acs_server.getcurrent(self.cpeid, 'Device.IP.Interface.')
+        """Get the key, value of the response for the given parameter from board.
 
+        Example usage : acs_server.getcurrent(self.cpeid, 'Device.IP.Interface.')
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
         :param param: parameter to be used in get
@@ -398,7 +392,7 @@ class AxirosACS(base_acs.BaseACS):
 
     @moves.moved_method('SPV')
     def set(self, cpeid, attr, value):
-        """This method is used to set a parameter in board via TR069 RPC call (SetParameterValue).
+        """Set a parameter in board via TR069 RPC call (SetParameterValue).
 
         This method constructs a SPV query and sends it to ACS server
         ACS server will generate a ticket_id and perform the RPC call.
@@ -424,7 +418,7 @@ class AxirosACS(base_acs.BaseACS):
             return None
 
     def Axiros_GetListOfCPEs(self):
-        """This method is used to get the list of all devices registered on the ACS server.
+        """Get the list of all devices registered on the ACS server.
 
         :raises: NA
         :returns: ACS response containing the list of CPE.
@@ -448,7 +442,7 @@ class AxirosACS(base_acs.BaseACS):
         return response
 
     def Axiros_DeleteCPEs(self, cpeid):
-        """This method is used to delete a CPE on the ACS server.
+        """Delete a CPE on the ACS server.
 
         :raises: NA
         :returns: True if successful
@@ -476,7 +470,7 @@ class AxirosACS(base_acs.BaseACS):
     delete_cpe = Axiros_DeleteCPEs
 
     def Axiros_GetTicketResponse(self, ticketid):
-        """This is helper method used to get the ticket response on ACS.
+        """Get the ticket response on ACS.
 
         :param ticketid: the ticketid to be used to get the ACS response.
         :type ticketid: string
@@ -492,7 +486,7 @@ class AxirosACS(base_acs.BaseACS):
         return response['code']
 
     def Axiros_GetTicketValue(self, ticketid, wait=8, objtype=False):
-        """This is helper method used to get the text of ticket response on ACS.
+        """Get the text of ticket response on ACS.
 
         :param ticketid: the ticketid to be used to get the ACS response.
         :type ticketid: string
@@ -530,9 +524,9 @@ class AxirosACS(base_acs.BaseACS):
         return None
 
     def rpc_GetParameterAttributes(self, cpeid, param):
-        """This method is used to get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
-        Example usage : acs_server.rpc_GetParameterAttributes('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
+        """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
+        Example usage : acs_server.rpc_GetParameterAttributes('DEAP815610DA', 'Device.WiFi.SSID.1.SSID')
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
         :param param: parameter to be used in get
@@ -590,7 +584,7 @@ class AxirosACS(base_acs.BaseACS):
         assert False, "rpc_GetParameterAttributes failed to lookup %s" % param
 
     def rpc_SetParameterAttributes(self, cpeid, attr, value):
-        """This method is used to set parameter attribute on ACS of the parameter specified i.e a remote procedure call (SetParameterAttribute).
+        """Set parameter attribute on ACS of the parameter specified i.e a remote procedure call (SetParameterAttribute).
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
@@ -642,7 +636,7 @@ class AxirosACS(base_acs.BaseACS):
         return self.Axiros_GetTicketValue(ticketid)
 
     def rpc_AddObject(self, cpeid, param, wait=8):
-        """This method is used to add object ACS of the parameter specified i.e a remote procedure call (AddObject).
+        """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
@@ -700,7 +694,7 @@ class AxirosACS(base_acs.BaseACS):
         assert False, "rpc_AddObject failed to lookup %s" % param
 
     def rpc_DelObject(self, cpeid, param):
-        """This method is used to delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
+        """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
@@ -740,7 +734,7 @@ class AxirosACS(base_acs.BaseACS):
         return self.Axiros_GetTicketValue(ticketid)
 
     def Read_Log_Message(self, cpeid, wait=8):
-        """This method is used to read ACS log messages
+        """Read ACS log messages.
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
@@ -782,7 +776,7 @@ class AxirosACS(base_acs.BaseACS):
         return None
 
     def Del_Log_Message(self, cpeid, wait=8):
-        """This method is used to delete ACS log messages
+        """Delete ACS log messages.
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
@@ -813,7 +807,7 @@ class AxirosACS(base_acs.BaseACS):
         return None
 
     def GPV(self, param):
-        """Get value from CM by ACS for a single given parameter key path synchronously
+        """Get value from CM by ACS for a single given parameter key path synchronously.
 
         :param param: path to the key that assigned value will be retrieved
         :return: value as a dictionary
@@ -837,7 +831,7 @@ class AxirosACS(base_acs.BaseACS):
                 if "507" not in str(e):
                     raise (e)
                 else:
-                    #adding 10 sec timeout
+                    # adding 10 sec timeout
                     warnings.warn(
                         "Ten seconds of timeout is added to compensate DOS attack."
                     )
@@ -847,15 +841,14 @@ class AxirosACS(base_acs.BaseACS):
                     val += 1
 
     def SPV(self, param_value):
-        """This method is used for modification the value of one or more CPE Parameters.
-        It can take a single k,v pair or a list of k,v pairs.
+        """Modify the value of one or more CPE Parameters.
 
+        It can take a single k,v pair or a list of k,v pairs.
         :param param_value: dictionary that contains the path to the key and
         the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
         :return: status of the SPV as int (0/1)
         :raises: TR069ResponseError if the status is not (0/1)
         """
-
         # TO DO: ideally this should come off the environment helper
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
@@ -876,7 +869,7 @@ class AxirosACS(base_acs.BaseACS):
                 if "507" not in str(e):
                     raise (e)
                 else:
-                    #adding 10 sec timeout
+                    # adding 10 sec timeout
                     warnings.warn(
                         "Ten seconds of timeout is added to compensate DOS attack."
                     )
@@ -890,7 +883,8 @@ class AxirosACS(base_acs.BaseACS):
         return status
 
     def FactoryReset(self):
-        """This method executes FactoryReset RPC.
+        """Execute FactoryReset RPC.
+
         Returns true if FactoryReset request is initiated.
         Note: This method only informs if the FactoryReset request initiated or not.
         The wait for the Reeboot of the device has to be handled in the test.
@@ -910,8 +904,9 @@ class AxirosACS(base_acs.BaseACS):
         return AxirosACS._parse_soap_response(response)
 
     def connectivity_check(self, cpeid):
-        """This method check the connectivity between the ACS and the DUT by
+        """Check the connectivity between the ACS and the DUT by\
         requesting the DUT to perform a ping to it wan container.
+
         NOTE: The scope of this method is to verify that the ACS and DUT can
         communicate with eachother, and NOT wheter the ping was successful!
 
