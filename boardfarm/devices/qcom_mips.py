@@ -11,25 +11,35 @@ from . import openwrt_router
 
 
 class QcomMipsRouter(openwrt_router.OpenWrtRouter):
-    '''
-    Board with a MIPS processor.
-    '''
-    model = ("db120", "ap135", "ap143", "ap147", "ap152", "ap151", "ap151-16M",
-             "ap143", "ap152-8M", "tew-823dru")
+    """Board with a MIPS processor."""
+
+    model = (
+        "db120",
+        "ap135",
+        "ap143",
+        "ap147",
+        "ap152",
+        "ap151",
+        "ap151-16M",
+        "ap143",
+        "ap152-8M",
+        "tew-823dru",
+    )
 
     prompt = [
-        'root\\@.*:.*#',
+        "root\\@.*:.*#",
     ]
-    uprompt = ['ath>', 'ar7240>']
+    uprompt = ["ath>", "ar7240>"]
 
     def __init__(self, *args, **kwargs):
+        """Instance initialisation."""
         super(QcomMipsRouter, self).__init__(*args, **kwargs)
         if self.model in ("ap152", "ap152-8M"):
             self.lan_gmac_iface = "eth0.1"
             self.wan_iface = "eth0.2"
 
     def check_memory_addresses(self):
-        '''Before flashing an image, set memory addresses.'''
+        """Before flashing an image, set memory addresses."""
         if self.model in ("ap135", "ap147", "ap152", "ap151-16M"):
             # would be nice to dynamically detect these
             self.kernel_addr = "0x9fe80000"
@@ -44,61 +54,63 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
             self.saveenv_safe = False
 
     def flash_rootfs(self, ROOTFS):
-        '''Flash Root File System image'''
+        """Flash Root File System image."""
         common.print_bold("\n===== Flashing rootfs =====\n")
         filename = self.prepare_file(ROOTFS)
         if self.model == "ap135-nand":
             self.tftp_get_file_uboot("0x82060000", filename)
-            self.sendline('nand erase 0x700000 0x1E00000')
-            self.expect('OK')
+            self.sendline("nand erase 0x700000 0x1E00000")
+            self.expect("OK")
             self.expect(self.uprompt)
-            self.sendline('nand write.jffs2 0x82060000 0x700000 $filesize')
-            self.expect('OK')
+            self.sendline("nand write.jffs2 0x82060000 0x700000 $filesize")
+            self.expect("OK")
             self.expect(self.uprompt)
             # erase the overlay otherwise, things will be in a weird state
-            self.sendline('nand erase 0x1F00000')
-            self.expect('OK')
+            self.sendline("nand erase 0x1F00000")
+            self.expect("OK")
             self.expect(self.uprompt)
             return
         self.tftp_get_file_uboot("0x82060000", filename)
-        self.sendline('erase %s +$filesize' % self.rootfs_addr)
-        self.expect('Erased .* sectors', timeout=180)
+        self.sendline("erase %s +$filesize" % self.rootfs_addr)
+        self.expect("Erased .* sectors", timeout=180)
         self.expect(self.uprompt)
-        self.sendline('protect off all')
+        self.sendline("protect off all")
         self.expect(self.uprompt)
-        self.sendline('cp.b $fileaddr %s $filesize' % self.rootfs_addr)
-        self.expect('done', timeout=80)
+        self.sendline("cp.b $fileaddr %s $filesize" % self.rootfs_addr)
+        self.expect("done", timeout=80)
         self.expect(self.uprompt)
-        self.sendline('cmp.b $fileaddr %s $filesize' % self.rootfs_addr)
-        self.expect('Total of .* bytes were the same')
+        self.sendline("cmp.b $fileaddr %s $filesize" % self.rootfs_addr)
+        self.expect("Total of .* bytes were the same")
 
     def flash_linux(self, KERNEL):
+        """Flash linux image."""
         common.print_bold("\n===== Flashing linux =====\n")
         filename = self.prepare_file(KERNEL)
         self.tftp_get_file_uboot("0x82060000", filename)
         if self.model == "ap135-nand":
-            self.sendline('nand erase 0x100000 $filesize')
-            self.expect('OK')
+            self.sendline("nand erase 0x100000 $filesize")
+            self.expect("OK")
             self.expect(self.uprompt)
-            self.sendline('nand write.jffs2 0x82060000 0x100000 $filesize')
-            self.expect('OK')
+            self.sendline("nand write.jffs2 0x82060000 0x100000 $filesize")
+            self.expect("OK")
             self.expect(self.uprompt)
             return
-        self.sendline('erase %s +$filesize' % self.kernel_addr)
-        self.expect('Erased .* sectors', timeout=120)
+        self.sendline("erase %s +$filesize" % self.kernel_addr)
+        self.expect("Erased .* sectors", timeout=120)
         self.expect(self.uprompt)
-        self.sendline('protect off all')
+        self.sendline("protect off all")
         self.expect(self.uprompt)
-        self.sendline('cp.b $fileaddr %s $filesize' % self.kernel_addr)
-        self.expect('done', timeout=60)
-        self.sendline('cmp.b $fileaddr %s $filesize' % self.kernel_addr)
-        self.expect('Total of .* bytes were the same')
+        self.sendline("cp.b $fileaddr %s $filesize" % self.kernel_addr)
+        self.expect("done", timeout=60)
+        self.sendline("cmp.b $fileaddr %s $filesize" % self.kernel_addr)
+        self.expect("Total of .* bytes were the same")
         self.expect(self.uprompt)
 
     def boot_linux(self, rootfs=None, bootargs=""):
+        """Boot Linux."""
         common.print_bold("\n===== Booting linux for %s =====" % self.model)
         if self.model == "ap135-nand":
-            self.sendline('setenv bootcmd nboot 0x81000000 0 0x100000')
+            self.sendline("setenv bootcmd nboot 0x81000000 0 0x100000")
             self.expect(self.uprompt)
         else:
             self.sendline("setenv bootcmd 'bootm %s'" % self.kernel_addr)
@@ -127,25 +139,30 @@ class QcomMipsRouter(openwrt_router.OpenWrtRouter):
             else:
                 raise Exception("Unknown perf event %s" % e)
 
-        return (':%s,' % kernel_user).join(ret) + ":%s" % kernel_user
+        return (":%s," % kernel_user).join(ret) + ":%s" % kernel_user
 
     def parse_perf_board(self):
-        events = [{
-            'expect': 'cycles',
-            'name': 'cycles',
-            'sname': 'CPP'
-        }, {
-            'expect': 'instructions',
-            'name': 'instructions',
-            'sname': 'IPP'
-        }, {
-            'expect': 'r98:ku',
-            'name': 'dcache_misses',
-            'sname': 'DMISS'
-        }, {
-            'expect': 'r86:ku',
-            'name': 'icache_misses',
-            'sname': 'IMISS'
-        }]
+        events = [
+            {
+                "expect": "cycles",
+                "name": "cycles",
+                "sname": "CPP"
+            },
+            {
+                "expect": "instructions",
+                "name": "instructions",
+                "sname": "IPP"
+            },
+            {
+                "expect": "r98:ku",
+                "name": "dcache_misses",
+                "sname": "DMISS"
+            },
+            {
+                "expect": "r86:ku",
+                "name": "icache_misses",
+                "sname": "IMISS"
+            },
+        ]
 
         return events
