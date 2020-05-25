@@ -326,6 +326,15 @@ def boot(config,
     board.wait_for_linux()
     logged['boot_step'] = "linux_ok"
 
+    if flashing_image:
+        if config.META_BUILD and board.flash_meta_booted:
+            flash_meta_helper(board, config.META_BUILD, wan, lan)
+            logged['boot_step'] = "late_flash_meta_ok"
+        elif env_helper.has_image() and board.flash_meta_booted \
+                and not config.ROOTFS and not config.KERNEL:
+            flash_meta_helper(board, env_helper.get_image(), wan, lan)
+            logged['boot_step'] = "late_flash_meta_ok"
+
     linux_booted_seconds_up = board.get_seconds_uptime()
     # Retry setting up wan protocol
     if config.setup_device_networking:
