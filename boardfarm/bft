@@ -6,7 +6,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""Configuration of dut, database, files and connect the devise to run."""
 import atexit
 import inspect
 import json
@@ -62,11 +62,14 @@ matplotlib.use('Agg')
 
 
 class FailedDevice(object):
+    """failed device."""
+
     name = None
 
 
 def bfcleanup():
-    """This method attemps to kill all the children processes under bft.
+    """bfcleanup: This method attemps to kill all the children processes under bft.
+
     Reason: some processes like Xvnc, firefox, are spawned by libraries using
     wrappers like EasyPorcess. Under certain circumstances these processes are
     not properly cleaned up, and are left hanging under the init process.
@@ -81,6 +84,13 @@ def bfcleanup():
 
 
 def threaded_device_helper(device, device_mgr, ret):
+    """threaded_device_helper: Sets up dynamic devices from devices.
+
+    :param device: object
+    :param device_mgr: string
+    :param ret: queue
+    :return: true
+    """
     from boardfarm.devices import get_device
     s = time.time()
     if 'BFT_DEBUG' in os.environ:
@@ -114,8 +124,7 @@ def threaded_device_helper(device, device_mgr, ret):
 
 
 def setup_dynamic_devices(config, device_mgr, env_helper):
-    '''Sets up dynamic devices from devices node in JSON config file'''
-
+    """Set up dynamic devices from devices node in JSON config file."""
     config.devices = []
     dynamic_devices = []
     threads = []
@@ -175,13 +184,13 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
 
 
 def connect_and_run(config):
+    """Connect to device and run the configurations."""
     config, device_mgr, env_helper, bfweb = connect_to_devices(config)
     return run_tests(config, device_mgr, env_helper, bfweb)
 
 
 def connect_to_devices(config):
-    '''Connect to devices.'''
-
+    """Connect to devices."""
     if config.test_args_location is not None:
         try:
             with open(config.test_args_location, "r") as fp:
@@ -204,8 +213,8 @@ def connect_to_devices(config):
     # Create output directory
     try:
         os.mkdir(config.output_dir)
-    except:
-        pass
+    except Exception as error:
+        print(error)
 
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
@@ -256,11 +265,11 @@ def connect_to_devices(config):
 
         return False
 
-    def walk_list(regex, l):
-        for i, v in enumerate(l):
+    def walk_list(regex, list_data):
+        for i, v in enumerate(list_data):
             if parse_type(regex, v):
                 continue
-            l[i] = update_value(regex, v)
+            list_data[i] = update_value(regex, v)
 
     def walk_dict(regex, d):
         for k, v in d.items():
@@ -397,7 +406,8 @@ def connect_to_devices(config):
     try:
         logger.info("Using Board %s, User %s" %
                     (name, os.environ['BUILD_USER_ID']))
-    except:
+    except Exception as e:
+        logger.debug(e)
         logger.info("Using Board %s, User %s" % (name, os.environ['USER']))
 
     # Store name of station in config for convenience
@@ -420,7 +430,7 @@ def connect_to_devices(config):
 
 
 def run_tests(config, device_mgr, env_helper, bfweb):
-    '''On the given devices, setup the environment and run tests.'''
+    """On the given devices, setup the environment and run tests."""
     os.environ['TEST_START_TIME'] = datetime.now().strftime("%s")
     tests_to_run = []
     # Add tests from specified suite
@@ -465,7 +475,8 @@ def run_tests(config, device_mgr, env_helper, bfweb):
             for name in config.EXTRA_TESTS:
                 try:
                     t = tests.available_tests[name]
-                except:
+                except Exception as error:
+                    print(error)
                     raise Exception(
                         "Unable to load %s test from tests class!!!! Parsing of test selected via -e failed"
                         % name)
@@ -526,8 +537,6 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                 (tests_pass, tests_fail, tests_skip))
 
     library.printd(config.board)
-    with open('results/station_name.txt', 'w') as f:
-        print(config.board.get_station(), file=f)
 
     os.environ['TEST_END_TIME'] = datetime.now().strftime("%s")
     create_file_logs(config, device_mgr.board, tests_to_run, logger)
@@ -574,9 +583,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
 
 
 def main():
-    '''
-    Collect arguments from the command-line and run with those.
-    '''
+    """Collect arguments from the command-line and run with those."""
     # Read command-line arguments
     from boardfarm import arguments
     config = arguments.parse()
