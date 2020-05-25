@@ -6,32 +6,32 @@ from boardfarm.devices import connection_decider, debian
 
 
 class Macbook(debian.DebianBox):
-    """Implementation for macbook
-    """
+    """Implementation for macbook."""
 
     model = "macbook"
     name = "mac_sniffer"
     prompt = [r".*\$"]
-    iface_wifi = 'en0'
+    iface_wifi = "en0"
 
     def __init__(self, *args, **kwargs):
-        """ Constructor method
-        """
+        """Instance initialisation."""
         self.args = args
         self.kwargs = kwargs
-        self.ipaddr = self.kwargs['ipaddr']
-        self.username = self.kwargs['username']
-        self.password = self.kwargs['password']
+        self.ipaddr = self.kwargs["ipaddr"]
+        self.username = self.kwargs["username"]
+        self.password = self.kwargs["password"]
 
-        conn_cmd = "ssh -o \"StrictHostKeyChecking no\" %s@%s" % (
-            self.username, self.ipaddr)
+        conn_cmd = 'ssh -o "StrictHostKeyChecking no" %s@%s' % (
+            self.username,
+            self.ipaddr,
+        )
 
         self.connection = connection_decider.connection("local_cmd",
                                                         device=self,
                                                         conn_cmd=conn_cmd)
         self.connection.connect()
 
-        if 0 == self.expect(['Password:'] + self.prompt):
+        if 0 == self.expect(["Password:"] + self.prompt):
             self.sendline(self.password)
             self.expect(self.prompt)
 
@@ -39,62 +39,68 @@ class Macbook(debian.DebianBox):
         self.logfile_read = sys.stdout
 
     def __str__(self):
-        """Return string format
+        """Return string format.
+
         :return: MacBook
         :rtype: string
         """
         return "MacBook"
 
     def change_channel(self, channel):
-        """Change channel via airport
+        """Change channel via airport.
+
         :param channel: channel number
         :type channel: string
         """
-        command = 'airport --ch={}'.format(channel)
+        command = "airport --ch={}".format(channel)
 
         self.sudo_sendline(command)
         self.expect(self.prompt)
         self.expect(pexpect.TIMEOUT, timeout=5)
 
     def set_sniff_channel(self, channel):
-        """Set sniff channel
+        """Set sniff channel.
+
         :rtype: string
         """
-        command = 'airport %s sniff %s' % (self.iface_wifi, channel)
+        command = "airport %s sniff %s" % (self.iface_wifi, channel)
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=3)
-        self.sendline('\x03')
+        self.sendline("\x03")
         self.expect(self.prompt)
 
     def wifi_scan(self):
-        """Scanning the SSIDs
+        """Scan the SSIDs.
+
         :return: List of SSID
         :rtype: string
         """
-        command = 'airport %s --scan' % self.iface_wifi
+        command = "airport %s --scan" % self.iface_wifi
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=10)
         return self.before
 
     def wifi_check_ssid(self, ssid_name):
-        """Check the SSID provided is present in the scan list
+        """Check the SSID provided is present in the scan list.
+
         :param ssid_name: SSID name to be verified
         :type ssid_name: string
         :return: True or False
         :rtype: boolean
         """
-        command = 'airport %s --scan | grep %s' % (self.iface_wifi, ssid_name)
+        command = "airport %s --scan | grep %s" % (self.iface_wifi, ssid_name)
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=10)
-        tmp = re.sub(command, '', self.before)
-        match = re.search(r'((\w.?)+)\s((\w+:)+)', tmp)
+        tmp = re.sub(command, "", self.before)
+        match = re.search(r"((\w.?)+)\s((\w+:)+)", tmp)
         if match.group(1) == ssid_name:
             return True
         else:
             return False
 
-    def tcpdump_wifi_capture(self, capture_file='pkt_capture.pcap', count=10):
+    def tcpdump_wifi_capture(self, capture_file="pkt_capture.pcap", count=10):
         """Capture wifi packet using tcpdump.
+
         :param command: tcpdump command to capture.
         :type command: String
         :param capture_file: Filename to create in which packets shall be stored. Defaults to 'pkt_capture.pcap'
@@ -107,8 +113,8 @@ class Macbook(debian.DebianBox):
         self.expect(self.prompt)
         return self.before
 
-    def tshark_wifi_read(self, capture_file, ssid_name='', opts=''):
-        """Read the tcpdump packets and deletes the capture file after read
+    def tshark_wifi_read(self, capture_file, ssid_name="", opts=""):
+        """Read the tcpdump packets and deletes the capture file after read.
 
         :param capture_file: Filename in which the packets were captured
         :type capture_file: String
@@ -119,7 +125,7 @@ class Macbook(debian.DebianBox):
         :return: Output of tshark read command.
         :rtype: string
         """
-        if opts == '':
+        if opts == "":
             self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' %
                           (capture_file, ssid_name))
         else:
