@@ -256,8 +256,14 @@ class AxirosACS(base_acs.BaseACS):
         CPEIdClassStruct_data = CPEIdClassStruct_type(*args, **kwagrs)
         return CPEIdClassStruct_data
 
-    def _build_input_structs(self, cpeid, param, action):
-        """Create the get structs used in the get/set param values. It is a helper method.
+    def _get_pars_val_data(self, p_arr_type, *args, **kwargs):
+        """Return ParValsParsClassArray_data.It is a helper method."""
+        ParValsClassArray_type = self.client.get_type(p_arr_type)
+        ParValsParsClassArray_data = ParValsClassArray_type(*args, **kwargs)
+        return ParValsParsClassArray_data
+
+    def _build_input_structs(self, cpeid, param, action, next_level=None):
+        """Helper function to create the get structs used in the get/set param values
 
         NOTE: The command option is set as Syncronous
         :param cpeid: the serial number of the modem through which ACS communication
@@ -265,28 +271,38 @@ class AxirosACS(base_acs.BaseACS):
         :type cpeid: string
         :param param: parameter to used
         :type param: string or list of strings for get, dict or list of dict for set
-        :param action: one of GPV/SPV (AO/DO-To be implemented)
-
+        :param action: one of GPV/SPV/GPN (AO/DO-To be implemented)
+        :type action: string
+        :param next_level: defaults to null takes True/False
+        :type next_level: boolean
         :raises: NA
         :returns: param_data, cmd_data, cpeid_data
         """
-        if type(param) is not list:
-            param = [param]
-
         if action == 'SPV':
-            li = []
+            if type(param) is not list:
+                param = [param]
+            l = []
             # this is a list of single k,v pairs
             for d in param:
                 k = next(iter(d))
-                li.append({'key': k, 'value': d[k]})
+                l.append({'key': k, 'value': d[k]})
             p_arr_type = 'ns0:SetParameterValuesParametersClassArray'
-            param = li
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, l)
+
         elif action == 'GPV':
+            if type(param) is not list:
+                param = [param]
             p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, param)
+
+        elif action == 'GPN':
+
+            p_arr_type = 'ns0:GetParameterNamesArgumentsStruct'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, NextLevel=next_level, ParameterPath=param)
         else:
             raise CodeError('Invalid action: ' + action)
-        ParValsClassArray_type = self.client.get_type(p_arr_type)
-        ParValsParsClassArray_data = ParValsClassArray_type(param)
 
         CmdOptTypeStruct_data = self._get_cmd_data(
             Sync=True, Lifetime=AxirosACS.CPE_wait_time)
@@ -881,6 +897,29 @@ class AxirosACS(base_acs.BaseACS):
         if status not in [0, 1]:
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
+
+    def GPN(self, param, next_level):
+        """This method is used to  discover the Parameters accessible on a particular CPE
+
+        :param param: parameter to be discovered
+        :type param: string
+        :next_level: displays the next level children of the object if marked true
+        :type next_level: boolean
+        :return: value as a dictionary
+        """
+
+        # TO DO: ideally this should come off the environment helper
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='GPN',
+                                                   next_level=next_level)
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetParameterNames(p, cmd, cpe_id)
+        return AxirosACS._parse_soap_response(response)
 
     def FactoryReset(self):
         """Execute FactoryReset RPC.
