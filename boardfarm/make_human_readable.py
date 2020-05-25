@@ -6,41 +6,41 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""make_human_readable : libraries to convert env and results in XML/JSON/HTML formats."""
 import glob
 import json
 import os
 import sys
 import time
+from collections import Counter
 from string import Template
 
 import boardfarm
-
-try:
-    from collections import Counter
-except:
-    from future.moves.collections import Counter
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 def pick_template_filename():
-    '''
-    Decide which HTML file to use as template for results.
-    This allows for different format for different audiences.
-    '''
+    """Decide which HTML file to use as template for results.
 
+    This allows for different format for different audiences.
+    """
     basic = owrt_tests_dir + "/html/template_results_basic.html"
     full = owrt_tests_dir + "/html/template_results.html"
     for modname in sorted(boardfarm.plugins):
         overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
-        tmp = glob.glob(os.path.join(overlay, 'html', 'template_results_basic.html')) + \
-              glob.glob(os.path.join(overlay, '*', 'html', 'template_results_basic.html'))
+        tmp = (glob.glob(
+            os.path.join(overlay, 'html', 'template_results_basic.html')) +
+               glob.glob(
+                   os.path.join(overlay, '*', 'html',
+                                'template_results_basic.html')))
         if len(tmp) > 0 and os.path.isfile(tmp[0]):
             basic = tmp[0]
             break
-        tmp = glob.glob(os.path.join(overlay, 'html', 'template_results.html')) + \
-              glob.glob(os.path.join(overlay, '*', 'html', 'template_results.html'))
+        tmp = (
+            glob.glob(os.path.join(overlay, 'html', 'template_results.html')) +
+            glob.glob(
+                os.path.join(overlay, '*', 'html', 'template_results.html')))
         if len(tmp) > 0 and os.path.isfile(tmp[0]):
             full = tmp[0]
             break
@@ -53,6 +53,7 @@ def pick_template_filename():
 
 
 def build_station_info(board_info):
+    """Build station information details."""
     ret = ""
 
     for device in board_info[u'devices']:
@@ -69,6 +70,7 @@ def xmlresults_to_html(test_results,
                        output_name=owrt_tests_dir + "/results/results.html",
                        title=None,
                        board_info={}):
+    """Parse XML result and convert to HTML."""
     parameters = {
         'build_url': os.environ.get('BUILD_URL'),
         'total_test_time': 'unknown',
@@ -143,8 +145,8 @@ def xmlresults_to_html(test_results,
             os.environ.get('TEST_START_TIME'))
         minutes = round((test_seconds / 60), 1)
         parameters['total_test_time'] = "%s minutes" % minutes
-    except:
-        pass
+    except Exception as error:
+        print(error)
 
     # Report completion time
     try:
@@ -152,8 +154,8 @@ def xmlresults_to_html(test_results,
         struct_time = time.localtime(end_timestamp)
         format_time = time.strftime("%Y-%m-%d %H:%M:%S", struct_time)
         parameters['report_time'] = "%s" % (format_time)
-    except:
-        pass
+    except Exception as error:
+        print(error)
 
     # Substitute parameters into template html to create new html file
     template_filename = pick_template_filename()
@@ -165,15 +167,17 @@ def xmlresults_to_html(test_results,
 
 
 def get_title():
+    """Get title from the environment."""
     try:
         title = os.environ.get('summary_title')
         if title:
             return title
-    except:
-        pass
+    except Exception as error:
+        print(error)
     try:
         return os.environ.get('JOB_NAME')
-    except:
+    except Exception as error:
+        print(error)
         return None
 
 
