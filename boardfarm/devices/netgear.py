@@ -1,10 +1,10 @@
+# !/usr/bin/env python
 # Copyright (c) 2015
 #
 # All rights reserved.
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-#!/usr/bin/env python
 
 import sys
 
@@ -17,10 +17,10 @@ prompt = r"\(M4100-50G\) "
 
 
 class NetgearM4100(linux.LinuxDevice):
-    """A netgear switch allows for changing connections by modifying VLANs on ports extends LinuxDevice.
-    """
+    """A netgear switch allows for changing connections by \
+    modifying VLANs on ports extends LinuxDevice."""
     def __init__(self, conn_cmd, username='admin', password='bigfoot1'):
-        """Constructor used to initialize variables in NetgearM4100
+        """Initialize variables in NetgearM4100.
 
         :param self: self object
         :type self: object
@@ -41,7 +41,7 @@ class NetgearM4100(linux.LinuxDevice):
         self.connect()
 
     def connect(self):
-        """connects to the device
+        """Connect to the device.
 
         :param self: self object
         :type self: object
@@ -55,7 +55,7 @@ class NetgearM4100(linux.LinuxDevice):
             self.expect(prompt)
 
     def disconnect(self):
-        """disconnects to the device
+        """Disconnect to the device.
 
         :param self: self object
         :type self: object
@@ -72,7 +72,7 @@ class NetgearM4100(linux.LinuxDevice):
         self.close()
 
     def change_port_vlan(self, port, vlan):
-        """This method changes the vlan associated to a port
+        """Change the vlan associated to a port.
 
         :param self: self object
         :type self: object
@@ -109,7 +109,8 @@ class NetgearM4100(linux.LinuxDevice):
         self.expect(prompt)
 
     def setup_standard_vlans(self, min_port=1, max_port=49):
-        """This method sets up the standard vlans
+        """Set up the standard vlans.
+
         Create enough VLANs, then put ports on VLANS such that:
         port 1 & 2 are on VLAN 3
         port 3 & 4 are on VLAN 4
@@ -165,7 +166,8 @@ class NetgearM4100(linux.LinuxDevice):
             pvid += 1
 
     def print_vlans(self):
-        """This method  Query each port on switch to see connected mac addresses and Print connection table in the end.
+        """Query each port on switch to see connected \
+        mac addresses and Print connection table in the end.
 
         :param self: self object
         :type self: object
