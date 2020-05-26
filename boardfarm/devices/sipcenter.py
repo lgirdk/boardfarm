@@ -166,3 +166,49 @@ EOF'''
         else:
             print(f"User {user} unavailable")
             return "User Unavailable"
+
+    def modify_sip_config(self, oper='', user=''):
+        """
+        Add or Delete users in sip.conf
+        :param oper: add or delete operation
+        :type  oper: string
+        :param user: enter the user number to add/delete
+        :type user: string
+        :return: output: return a tuple with bool and defined message
+        :rtype output: tuple
+        """
+        py_steps = [
+            'import configparser', 'def modify():',
+            '   config = configparser.ConfigParser(strict=False)',
+            '   config.read("/etc/asterisk/sip.conf")',
+            '   sip_conf = {"type": "friend", "regexten": "' + user +
+            '", "secret": "1234", "qualify": "no", "nat": '
+            '"force_rport", "host": "dynamic", "canreinvite": '
+            '"no", "context": "default", "dial": "SIP/' + user + '"}',
+            '   if "' + oper + '" == "add":', '       config.add_section("' +
+            user + '")', '       for keys, values in sip_conf.items():',
+            '           out = config.set("' + user + '", keys, values)',
+            '   elif "' + oper + '" == "delete":',
+            '       out = config.remove_section("' + user + '")',
+            '   with open("/etc/asterisk/sip.conf", "w") as configfile:',
+            '       config.write(configfile)', '   return out',
+            'print(modify())'
+        ]
+
+        self.sendline("cat > sip_config.py << EOF\n%s\nEOF" %
+                      "\n".join(py_steps))
+        self.expect('EOF')
+        self.expect_prompt()
+        self.sendline("python3 sip_config.py")
+        self.expect_prompt(timeout=10)
+        if "Traceback" in self.before:
+            output = False, "File error :\n%s" % self.before
+        elif "False" in self.before:
+            output = False, "User " + user + " does not exist"
+        else:
+            output = True, "Operation " + oper + " is successful"
+        self.sendline("cat /etc/asterisk/sip.conf")
+        self.expect_prompt()
+        self.sendline("rm sip_config.py")
+        self.expect_prompt()
+        return output
