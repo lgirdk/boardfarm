@@ -488,9 +488,11 @@ def keccak512_checksum(filename, block_size=65536):
     return _hash_file(filename, block_size, keccak_hash)
 
 
-cmd_exists = lambda x: any(
-    os.access(os.path.join(path, x), os.X_OK)
-    for path in os.environ["PATH"].split(os.pathsep))
+def cmd_exists(cmd):
+    """Check cmd exists. if cmd exists return true."""
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep))
 
 
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
