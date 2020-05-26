@@ -7,6 +7,7 @@
 
 import os
 import re
+import sys
 import time
 import types
 from functools import wraps
@@ -117,6 +118,11 @@ class LoggerMeta(type):
             :return: String with parent class, calling/returning of function
             :rtype: string
             """
+
+            if "pytest" in sys.modules:
+                # if in pytest bypass all this
+                return func(*args, **kwargs)
+
             func_args_str = "%s %s" % (repr(args), repr(kwargs))
             to_log = "%s.%s ( %s )" % (func.__module__, func.__name__,
                                        func_args_str)
