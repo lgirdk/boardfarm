@@ -165,21 +165,31 @@ class AxirosACS(base_acs.BaseACS):
         else:
             data_values = [data_values]
         for data in data_values:
-            v = data['value'].get('text', '')
-            if v == '':
-                if 'item' in data['value']:
-                    v = " ".join(
-                        [val.get('text') for val in data['value']['item']])
-            val_type = data['value']['type']
-            if val_type == 'SOAP-ENC:Array':
-                val_type = data['value'][
-                    'http://schemas.xmlsoap.org/soap/encoding/:arrayType']
-            data_list.append(
-                AxirosACS._data_conversion({
-                    'key': data['key']['text'],
-                    'type': val_type,
-                    'value': v
-                }))
+            if 'AccessList' in data['value']:
+                data_list.append({
+                    'Name':
+                    data['key']['text'],
+                    'AccessList':
+                    data['value']['AccessList']['item']['text'],
+                    'Notification':
+                    data['value']['Notification']['text']
+                })
+            else:
+                v = data['value'].get('text', '')
+                if v == '':
+                    if 'item' in data['value']:
+                        v = " ".join(
+                            [val.get('text') for val in data['value']['item']])
+                val_type = data['value']['type']
+                if val_type == 'SOAP-ENC:Array':
+                    val_type = data['value'][
+                        'http://schemas.xmlsoap.org/soap/encoding/:arrayType']
+                data_list.append(
+                    AxirosACS._data_conversion({
+                        'key': data['key']['text'],
+                        'type': val_type,
+                        'value': v
+                    }))
 
         return data_list
 
@@ -301,6 +311,13 @@ class AxirosACS(base_acs.BaseACS):
             p_arr_type = 'ns0:GetParameterNamesArgumentsStruct'
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, NextLevel=next_level, ParameterPath=param)
+
+        elif action == 'GPA':
+            if type(param) is not list:
+                param = [param]
+            p_arr_type = 'ns0:GetParameterAttributesParametersClassArray'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, param)
         else:
             raise CodeError('Invalid action: ' + action)
 
@@ -538,6 +555,29 @@ class AxirosACS(base_acs.BaseACS):
                 else:
                     return value.text
         return None
+
+    def GPA(self, param):
+        """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
+
+        Example usage : acs_server.GPA('Device.WiFi.SSID.1.SSID')
+        :param param: parameter to be used in get
+        :type param: string
+        :returns: dictionary with keys Name, AccessList, Notification indicating the GPA
+        :rtype: dict
+        """
+
+        # TO DO: ideally this should come off the environment helper
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='GPA')
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetParameterAttributes(
+                p, cmd, cpe_id)
+        return AxirosACS._parse_soap_response(response)
 
     def rpc_GetParameterAttributes(self, cpeid, param):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
