@@ -5,6 +5,7 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 class LocalCmd:
     """This class is meant to be used to connect to a device.
+
     using a custom Linux command instead of telnet/SSH.
 
     Sets connection_type to local_cmd, ignores all output for now
@@ -25,7 +26,8 @@ class LocalCmd:
 
     def connect(self):
         """Connect method is used to connect to the device.
-           It spawns a pexpect session for the device using the local cmd.
+
+        It spawns a pexpect session for the device using the local cmd.
 
         :raises: Exception Board is in use (connection refused).
         """
