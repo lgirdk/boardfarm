@@ -46,7 +46,7 @@ class MongodbLogger(object):
                  password,
                  db_name="boardfarm",
                  collection_name="bft_run"):
-        """Instance initialisation"""
+        """Instance initialisation."""
         self.host = host
         self.username = username
         self.password = password
