@@ -25,8 +25,8 @@ class DeviceNone(object):
 # by location and/or feature. E.g. wan2/lan2/etc all start to go away from this
 # short list
 class device_type(Enum):
-    """
-    Identifiers for different kinds of devices.
+    """Identifiers for different kinds of devices.
+
     Useful for correctly connecting to and using a device.
     """
 
@@ -232,7 +232,7 @@ class device_manager(UserList):
         return matching[0].obj
 
     def _add_device(self, dev):
-        """Hook to add devices created via old method get_device()."""
+        """To add devices created via old method get_device()."""
         new_dev = device_descriptor()
         if len(self.devices) == 0:
             new_dev.type = device_type.DUT

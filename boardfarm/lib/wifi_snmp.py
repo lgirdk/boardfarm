@@ -7,10 +7,12 @@ from .wifi import wifi_stub
 
 class wifi_snmp(wifi_stub):
     """Class for wifi settings via SNMP.
+
     Inherits wifi_stub from lib/wifi.py
     """
     def __init__(self, device, board):
         """To get the mib names for wifi.
+
         This mib name has to be provided via a vendor specific json file
         and initialised in the board method
         """

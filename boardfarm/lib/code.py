@@ -7,6 +7,7 @@ import six
 
 def get_all_classes_from_code(directories, debug=False):
     """Get all classes from code using grep.
+
     Uses 'grep' to find all files of type '.py' in the given directories.
     Then parses those files to return a dict where:
     * keys = class names
@@ -101,6 +102,7 @@ def get_features(directories, start, end, debug=False):
 
 def get_imported_names(line):
     """Get imported names.
+
     Given a string like:
     from boardfarm.lib.common import snmp_mib_set, snmp_mib_walk
     Return a list of strings which are the imported things:
@@ -110,8 +112,8 @@ def get_imported_names(line):
 
 
 def get_classes_lib_functions(directories, debug=False):
-    """
-    Find all test classes in code and all lib functions they directly use.
+    """Find all test classes in code and all lib functions they directly use.
+
     Returns a dict where:
     * key = class name
     * value = list of lib function names

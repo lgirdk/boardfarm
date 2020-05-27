@@ -171,8 +171,8 @@ def install_iperf3(device):
 
 def install_tcpick(device):
     """Install tcpick if not present.
-    tcpick - tcp stream sniffer and connection tracker
 
+    tcpick - tcp stream sniffer and connection tracker
     :param device: lan or wan
     :type device: Object
     :raises assertion: tcpick installation failed
@@ -188,9 +188,9 @@ def install_tcpick(device):
 
 def install_upnp(device):
     """Install miniupnpc  if not present.
+
     MiniUPnPc is a client library, enabling applications to access the services
     provided by an UPnP "Internet Gateway Device" present on the network
-
     :param device: lan or wan
     :type device: Object
     :raises assertion: upnp installation failed
@@ -267,8 +267,8 @@ def install_endpoint(device):
 
 def install_hping3(device):
     """Install hping3 if not present.
-    hping is a command-line oriented TCP/IP packet assembler/analyzer.
 
+    hping is a command-line oriented TCP/IP packet assembler/analyzer.
     :param device: lan or wan
     :type device: Object
     """
@@ -454,8 +454,8 @@ def install_telnet_client(device):
 
 def install_expect(device):
     """Install expect if not present.
-    Expect is a tool for automating interactive applications
 
+    Expect is a tool for automating interactive applications
     :param device: lan or wan
     :type device: Object
     """
@@ -470,8 +470,8 @@ def install_expect(device):
 
 def install_wget(device):
     """Install wget if not present.
-    Wget is a software package for retrieving files using HTTP, HTTPS, FTP and FTPS
 
+    Wget is a software package for retrieving files using HTTP, HTTPS, FTP and FTPS
     :param device: lan or wan
     :type device: Object
     """
@@ -503,8 +503,8 @@ def install_ftp(device):
 
 def install_xampp(device):
     """Install xampp if not present.
-    XAMPP is a cross-platform web server solution
 
+    XAMPP is a cross-platform web server solution
     :param device: lan or wan
     :type device: Object
     """
@@ -538,12 +538,12 @@ def install_xampp(device):
 
 def install_snmpd(device, post_cmd=None):
     """Install snmpd, use the 'post_cmd' to edit /etc/snmp/snmpd.conf.
-    (or for whatever is needed just after the installation)
 
+    (or for whatever is needed just after the installation)
     :param device: lan or wan
     :type device: Object
     :param post_cmd: linux command to add/delete/update/replace content
-                      of a file related to snmpd, post installtion, defaults to None
+    of a file related to snmpd, post installtion, defaults to None
     :type post_cmd: string, optional
     """
     apt_install(device, "snmpd")
@@ -579,8 +579,8 @@ def install_snmp(device):
 
 def install_vsftpd(device, remove=False):
     """Install vsftpd if not present.
-    vsftpd is a FTP server for Unix-like systems, including Linux
 
+    vsftpd is a FTP server for Unix-like systems, including Linux
     :param device: lan or wan
     :type device: Object
     :param remove: True or False, defaults to False
@@ -610,8 +610,8 @@ def install_vsftpd(device, remove=False):
 
 def install_pysnmp(device):
     """Install pysnmp if not present.
-    Pysnmp is a pure-Python SNMP engine implementation
 
+    Pysnmp is a pure-Python SNMP engine implementation
     :param device: lan or wan
     :type device: Object
     :raises assertion: Failed to install pysnmp library
@@ -636,8 +636,8 @@ def install_pysnmp(device):
 
 def install_iw(device):
     """Install iw if not present.
-    iw is nl80211 based CLI configuration utility for wireless devices
 
+    iw is nl80211 based CLI configuration utility for wireless devices
     :param device: lan or wan
     :type device: Object
     """
@@ -652,9 +652,9 @@ def install_iw(device):
 
 def install_jmeter(device):
     """Install jmeter if not present.
+
     JMeter is an Apache project, used as a load testing tool for analyzing and
     measuring the performance of a variety of services, with a focus on web applications
-
     :param device: lan or wan
     :type device: Object
     """
@@ -679,10 +679,10 @@ def install_jmeter(device):
 
 def install_IRCserver(device, remove=False):
     """Install irc server if not present.
+
     Internet Relay Chat (IRC) is an application layer protocol
     that facilitates communication in the form of text.
     The chat process works on a client/server model.
-
     :param device: lan or wan
     :type device: Object
     :param remove: If True remove inspircd application installed, defaults to False
@@ -705,8 +705,8 @@ def install_IRCserver(device, remove=False):
 
 def install_dovecot(device, remove=False):
     """Un/Install dovecot server if not present.
-    Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
 
+    Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
     :param device: lan or wan
     :type device: Object
     :param remove: True or False, defaults to False
@@ -754,8 +754,9 @@ def install_dovecot(device, remove=False):
 
 def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
     """Un/Install the OpenVPN server via a handy script.
-    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
 
+    OpenVPN implements virtual private network techniques
+    to create secure point-to-point or site-to-site connections
     :param device: lan or wan
     :type device: Object
     :param remove: True or False, defaults to False
@@ -878,8 +879,8 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
 
 def install_ovpn_client(device, remove=False):
     """Un/Install the OpenVPN client.
-    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
 
+    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
     To run the client as a daemon use:
     openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
     :param device: lan or wan
@@ -900,8 +901,8 @@ def install_ovpn_client(device, remove=False):
 
 def install_pptpd_server(device, remove=False):
     """Un/Install the pptpd.
-    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
 
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
     :param device: lan or wan
     :type device: Object
     :param remove: True or False, defaults to False
@@ -932,8 +933,8 @@ def install_pptpd_server(device, remove=False):
 
 def install_pptp_client(device, remove=False):
     """Un/Install the pptp-linux package.
-    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
 
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
     :param device: lan or wan
     :type device: Object
     :param remove: True or False, defaults to False
@@ -956,13 +957,14 @@ def install_pptp_client(device, remove=False):
 
 def install_postfix(device):
     """Install postfix server if not present.
-    Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
 
+    Postfix is a free and open-source mail transfer agent that routes and delivers electronic mail.
     :param device: lan or wan
     :type device: Object
-    :raises assertion: 1. Errors Encountered during installation. Installaion failed
-                       2. System mail name option is not received. Installaion failed
-                       3. Unable to start Postfix service.Service is not properly installed
+    :raises assertion:
+    1. Errors Encountered during installation. Installaion failed
+    2. System mail name option is not received. Installaion failed
+    3. Unable to start Postfix service.Service is not properly installed
     """
     deprecate(
         "Using apt purge in sendline is deprecated! Please use apt_purge",
@@ -1027,8 +1029,8 @@ def install_postfix(device):
 
 def check_pjsua(device):
     """Check if softphone is present.
-    pjsua is a command line SIP user agent
 
+    pjsua is a command line SIP user agent
     :param device: lan or wan
     :type device: Object
     """
@@ -1051,14 +1053,16 @@ def install_pjsua(device,
                   url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
                   ):
     """Install softphone if not present.
-    pjsua is a command line SIP user agent
 
+    pjsua is a command line SIP user agent
     :param device: lan or wan
     :type device: Object
-    :param url: url to download pjsua package, defaults to "https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
+    :param url: url to download pjsua package,
+    defaults to "https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
     :type url: String, optional
-    :raises assertion: 1. Unable to find executable
-                       2. Unable to start Pjsua.Service is not installed
+    :raises assertion:
+    1. Unable to find executable
+    2. Unable to start Pjsua.Service is not installed
     """
     result = check_pjsua(device)
     if not result:

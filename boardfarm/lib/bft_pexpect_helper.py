@@ -22,8 +22,8 @@ def print_bold(msg):
 def frame_index_out_of_file(this_file=__file__):
     """
     Look for the last function called before calling something from this file.
-    For example:
 
+    For example:
     - foo1()
     - foo2()
     - dev.sendline()
@@ -57,6 +57,7 @@ def frame_index_out_of_file(this_file=__file__):
 
 def caller_file_line(i):
     """Print a simple debug line.
+
     In a given frame index for the file, function, and line number
     """
     caller = inspect.stack()[i]  # caller of spawn or pexpect
@@ -162,9 +163,7 @@ class bft_pexpect_helper(pexpect.spawn):
         self.expect(self.prompt, timeout=timeout)
 
     def check_output(self, cmd, timeout=30):
-        """Send a string to device.
-        then  return the output between that string and the next prompt.
-        """
+        """Send a string to device then  return the output between that string and the next prompt."""
         self.sendline("\n" + cmd)
         self.expect_exact(cmd, timeout=5)
         try:
@@ -266,11 +265,10 @@ def spawn_ssh_pexpect(
     o=sys.stdout,
     extra_args="",
 ):
-    """
-    Provides a quick way to spawn an ssh session.
+    """Provide a quick way to spawn an ssh session.
+
     (this avoids having to import the SshConnection class from devices)
     Uses hardcoded options: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-
     Parameters:
     ip:         ip address to ssh to
     user:       username used by ssh (default 'root')
