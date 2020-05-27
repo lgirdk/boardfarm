@@ -534,7 +534,7 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         return True if index not in [2, 3] else False
 
     def get_lease_time(self):
-        """Get DHCP lease time from dhclient.leases file
+        """Get DHCP lease time from dhclient.leases file.
 
         :return: lease_time
         :rtype: integer
