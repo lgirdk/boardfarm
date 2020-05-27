@@ -15,6 +15,7 @@ def setup_python () {
         python3 -m venv venv3
         . venv3/bin/activate
         pip3 install --upgrade pip
+        pip3 install wheel
         python3 --version
         pip3 --version
         repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '

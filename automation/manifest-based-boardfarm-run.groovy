@@ -62,6 +62,7 @@ def setup_python (version) {
             python3 -m venv venv
             . venv/bin/activate
             pip3 install --upgrade pip
+            pip3 install wheel
             repo forall -c '[ -e "requirements.txt" ] && { pip3 install -r requirements.txt || echo failed; } || true '
             repo forall -c '[ -e "setup.py" ] && { pip3 install -e . || echo failed; } || true '
             echo $BUILD_URL > pip-check-build-py3
