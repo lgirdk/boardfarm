@@ -154,6 +154,7 @@ def disable_wifi(board, wlan_iface="ath0"):
 
 def wifi_on(board):
     """Return the WiFi enabled status over the CM.
+
     True if enabled else False.
 
     :param board: board object
@@ -172,6 +173,7 @@ def wifi_on(board):
 
 def wifi_get_info(board, wlan_iface):
     """Get the WiFi information about the board.
+
      like essid, channel, rate, freq
 
     :param board: board object
@@ -218,6 +220,7 @@ def wifi_get_info(board, wlan_iface):
 
 def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
     """Wait for the WiFi Bit Rate to be != 0.
+
      default 10 trials with a wait of 15 seconds for each trial.
 
     :param board: board object
@@ -246,6 +249,7 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
 
 def wifi_add_vap(console, phy, ssid):
     """Add virtual access point on the interface.
+
      specified as per the ssid provided.
 
     :param console: console object
@@ -609,7 +613,8 @@ class wifi_client_stub:
 
     def disable_and_enable_wifi(self):
         """Wifi client stub used to disbale and enable WiFi/.
-         make the WiFi interface DOWN and UP
+
+         Make the WiFi interface DOWN and UP
 
         :param self: self object
         :type self: object
@@ -619,6 +624,7 @@ class wifi_client_stub:
 
     def wifi_scan(self):
         """Wifi client stub used to scan for SSIDs on a particular radio.
+
          and return a list of SSID
 
         :param self: self object
@@ -649,7 +655,8 @@ class wifi_client_stub:
 
     def wifi_connect(self, ssid_name, password, security_mode):
         """Wifi client stub used to connect to wifi.
-         either with ssid name and password or with ssid name alone.
+
+         Either with ssid name and password or with ssid name alone.
 
         :param self: self object
         :type self: object
@@ -691,7 +698,7 @@ class wifi_client_stub:
         :param self: self object
         :type self: object
         :param country: country to change to
-        :type country: string
+        :tSype country: string
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
