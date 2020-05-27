@@ -5,14 +5,13 @@ from boardfarm.lib.installers import apt_install
 
 
 class SipCenter(object):
-    '''
-    asterisk  server
-    '''
+    """Asterisk  server."""
 
-    model = ('asterisk')
+    model = 'asterisk'
     profile = {}
 
     def __init__(self, *args, **kwargs):
+        """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
         self.ast_prompt = '.*>'
@@ -27,9 +26,7 @@ class SipCenter(object):
         return "asterisk"
 
     def install_essentials(self):
-        '''
-        install asterisk essentials
-        '''
+        """Install asterisk essentials."""
         apt_install(self, 'build-essential')
         apt_install(self, 'libncurses5-dev')
         apt_install(self, 'libjansson-dev')
@@ -39,17 +36,12 @@ class SipCenter(object):
         apt_install(self, 'tshark')
 
     def install_asterisk(self):
-        '''
-        install asterisk from internet
-        '''
+        """Install asterisk from internet."""
         self.install_essentials()
         apt_install(self, 'asterisk', timeout=300)
 
     def setup_asterisk_config(self):
-        '''
-        Generates sip.conf and extensions.conf file.
-
-        '''
+        """Generate sip.conf and extensions.conf file."""
         gen_conf = '''cat > /etc/asterisk/sip.conf << EOF
 [general]
 context=default
@@ -93,41 +85,32 @@ EOF'''
             self.expect(self.prompt)
 
     def start_asterisk(self):
-        '''
-        Start the asterisk server if executable is present
-        '''
+        """Start the asterisk server if executable is present."""
         self.install_asterisk()
         self.setup_asterisk_config()
         self.sendline('nohup asterisk -vvvvvvvd &> ./log.ast &')
         self.expect(self.prompt)
 
     def kill_asterisk(self):
-        '''
-        Kill  the asterisk server
-        '''
+        """Kill  the asterisk server."""
         self.sendline('killall -9 asterisk')
         self.expect(self.prompt)
 
     def enter_asterisk_console(self):
-        '''
-        Enter the asterisk console
-        '''
+        """Enter the asterisk console."""
         self.sendline('asterisk -rv')
         self.expect(self.ast_prompt)
 
     def exit_asterisk_console(self):
-        '''
-        Exit the asterisk console
-        '''
+        """Exit the asterisk console."""
         self.sendline('exit')
         self.expect(self.prompt)
 
     def sip_reload(self):
-        '''
-        Reload the SIP server from asterisk
+        """Reload the SIP server from asterisk.
         :return: Status of reload output in boolean
         :rtype: Boolean
-        '''
+        """
         try:
             self.enter_asterisk_console()
             self.sendline('sip reload')
@@ -140,8 +123,7 @@ EOF'''
             self.exit_asterisk_console()
 
     def peer_reg_status(self, user, mta_ip):
-        '''
-        To check the status of a user in sip server,
+        """To check the status of a user in sip server.
         which can be either 'Registered' or 'Unregistered'
         or 'Not Present'
         :param user: the username of the user
@@ -149,9 +131,9 @@ EOF'''
         :param mta_ip: IPv4 address of the MTA
         :type mta_ip: string
         :return: Registration Status for the user and will
-                be in 'Registered'/'Unregistered'/'User Unavailable'
+        be in 'Registered'/'Unregistered'/'User Unavailable'
         :rtype: string
-        '''
+        """
         self.enter_asterisk_console()
         self.sendline('sip show peers')
         self.expect(r']')
@@ -160,7 +142,7 @@ EOF'''
         if re.search('.*' + user + '.+' + mta_ip, output):
             print(f"User {user} is registered")
             return "Registered"
-        elif re.search('.*' + user + '.+\(Unspecified\)', output):
+        elif re.search('.*' + user + r'.+\(Unspecified\)', output):
             print(f"User {user} is unregistered")
             return "Unregistered"
         else:
@@ -169,7 +151,7 @@ EOF'''
 
     def modify_sip_config(self, oper='', user=''):
         """
-        Add or Delete users in sip.conf
+        Add or Delete users in sip.conf.
         :param oper: add or delete operation
         :type  oper: string
         :param user: enter the user number to add/delete
