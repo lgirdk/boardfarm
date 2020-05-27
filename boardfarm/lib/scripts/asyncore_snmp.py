@@ -14,6 +14,7 @@ def SnmpwalkAsync(target_IP=None,
                   walk_timeout=10,
                   mode='ipv4'):
     """Script to run in the remote device for snmp mib walk.
+
        This script can be copied to the remote device eg:wan
        and can be executed directly using python for snmp mib walk
        The walk can done for both ipv6 and ipv4
