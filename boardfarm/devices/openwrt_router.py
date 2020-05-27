@@ -28,7 +28,8 @@ except Exception:
 
 
 class OpenWrtRouter(linux.LinuxDevice):
-    """
+    """OpenWrt Router.
+
     Args:
       model: Examples include "ap148" and "ap135".
       conn_cmd: Command to connect to device such as "ssh -p 3003 root@10.0.0.202"
