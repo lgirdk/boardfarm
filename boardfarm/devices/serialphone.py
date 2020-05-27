@@ -80,6 +80,7 @@ class SerialPhone(object):
 
     def dial(self, number, receiver_ip=None):
         """To dial to another number.
+
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
