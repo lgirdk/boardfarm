@@ -1,5 +1,6 @@
 class CDrouterDevice(object):
     """CDRouter is an industry standard server.
+
     Used for feature, security, and performance testing of
     broadband and enterprise edge gateways, Wi-Fi APs and mesh systems, VoIP gateways, set-top-boxes,
     and smart hubs enabling the Internet of Things.
@@ -13,6 +14,7 @@ class CDrouterDevice(object):
 
     def __init__(self, *args, **kwargs):
         """Instance initalization.
+
         This method is to initialize the variables required from board-farm perspective
         to execute the tests and fetch results from CD-router.
 
@@ -33,7 +35,5 @@ class CDrouterDevice(object):
         self.ipv4hopcount = kwargs.pop("ipv4hopcount")
 
     def close(self):
-        """Close method is supposed to close the connection to the device.
-        (To be Enhanced).
-        """
+        """Close method is supposed to close the connection to the device.(To be Enhanced)."""
         pass

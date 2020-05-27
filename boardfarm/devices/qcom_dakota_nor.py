@@ -11,9 +11,7 @@ from . import qcom_arm_base
 
 
 class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
-    """QcomDakotaRouter board loader/configuration.
-    class derived from QcomArmBase.
-    """
+    """QcomDakotaRouter board loader/configuration class derived from QcomArmBase."""
 
     model = ("dk01-nor", "dk04-nor")
 
@@ -22,6 +20,7 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
 
     def __init__(self, *args, **kwargs):
         """Instance initialization.
+
         The constructor initializes all the related arguements in the parent class QcomArmBase.
         Also validates if the model passed from json actually matches the mach_id table.
 
@@ -40,6 +39,7 @@ class QcomDakotaRouterNOR(qcom_arm_base.QcomArmBase):
 
     def flash_rootfs(self, ROOTFS):
         """Flashes the Qcom Dakota board with the ROOTFS.
+
         (which in general is a patch update on the firmware).
 
         :param ROOTFS: Indicates the absolute location of the file to be used to flash.

@@ -3,8 +3,8 @@ from . import (kermit_connection, local_cmd, local_serial_connection,
 
 
 def connection(conn_type, device, **kwargs):
-    """Return an object of the appropriate class type.
-    Depending on the given connection type
+    """Return an object of the appropriate class type depending on the given connection type.
+
     Method initializes the connection specific parameters
     the connection type include ser2net, local_serial, ssh or kermit
 
