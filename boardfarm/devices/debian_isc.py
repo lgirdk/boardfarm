@@ -713,7 +713,10 @@ EOF""")
             self.print_dhcp_config()
 
     def reprovision_board(self, board_config):
-        """This should not be used, and will go away."""
+        """Reprovision the board.
+
+        This should not be used, and will go away.
+        """
         self.provision_board(board_config)
 
     def _try_to_restart_dhcp(self, do_ipv6):
