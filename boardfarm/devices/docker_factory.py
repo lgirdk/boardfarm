@@ -18,7 +18,7 @@ lock = Lock()
 
 
 class DockerFactory(linux.LinuxDevice):
-    '''
+    """
     A docker host that can spawn various types of containers.
 
     DockerFactory is based up on master-slave concept.
@@ -67,10 +67,10 @@ class DockerFactory(linux.LinuxDevice):
     4. Docker interface validation and docker network configuration
     5. If pre-configured target specified in JSON, deploy target containers
 
-    :param \*args: mandatory args **model**
-    :type \*args: tuple
-    :param \*\*kwargs: mandatory kwargs **mgr, name**
-    :type \*\*kwargs: dict
+    :param ``*args``: mandatory args **model**
+    :type ``*args``: tuple
+    :param ``**kwargs``: mandatory kwargs **mgr, name**
+    :type ``**kwargs``: dict
 
     .. note::
 
@@ -78,7 +78,7 @@ class DockerFactory(linux.LinuxDevice):
         2. ``iface`` used in docker factory must be a physical interface on the child docker engine.
         3. ``DockerFactory`` by default uses localhost, and local ifaces
 
-    '''
+    """
 
     model = ('docker-factory')
     prompt = ['docker_session>']
@@ -94,6 +94,7 @@ class DockerFactory(linux.LinuxDevice):
         return self.name
 
     def __init__(self, *args, **kwargs):
+        """Instance initialization."""
         atexit.register(self.run_cleanup_cmd)
         self.args = args
         self.kwargs = kwargs
@@ -157,8 +158,8 @@ class DockerFactory(linux.LinuxDevice):
                 ip_range = configuration.get("ip-range")
                 gateway = configuration.get("gateway")
                 extra_opts = configuration.get("extra_opts", "")
-                self.network_options = "--subnet %s --ip-range %s --gateway %s %s" % \
-                        (subnet, ip_range, gateway, extra_opts)
+                self.network_options = "--subnet %s --ip-range %s --gateway %s %s" %\
+                                       (subnet, ip_range, gateway, extra_opts)
 
         if 'BFT_DEBUG' in os.environ:
             self.logfile_read = sys.stdout
@@ -203,7 +204,7 @@ class DockerFactory(linux.LinuxDevice):
             self.add_target(target)
 
     def add_target(self, target, docker_network=None):
-        """Run a docker container from DockerFactory
+        """Run a docker container from DockerFactory.
 
         ``add_target`` performs the following actions:
             - Validate / Build target image for container
@@ -263,8 +264,10 @@ class DockerFactory(linux.LinuxDevice):
         assert 'Error response from daemon' not in self.before, "Failed to connect docker network"
 
         if self.network_options:
-            ip = json.loads(self.check_output("docker inspect -f '{{json .NetworkSettings.Networks.%s}}' %s" %\
-                    (docker_network, target_cname)))
+            ip = json.loads(
+                self.check_output(
+                    "docker inspect -f '{{json .NetworkSettings.Networks.%s}}' %s"
+                    % (docker_network, target_cname)))
 
             assert ip[
                 'IPAddress'], "Failed to set a static IPv4 Address for container : %s" % target_cname
@@ -299,7 +302,7 @@ class DockerFactory(linux.LinuxDevice):
         self.extra_devices.append(new_device)
 
     def validate_docker_image(self, img):
-        """Validate if docker image tag is already built in docker engine
+        """Validate if docker image tag is already built in docker engine.
 
         :param img: image tag, **e.g. bft:node**
         :type img: string
@@ -320,8 +323,7 @@ class DockerFactory(linux.LinuxDevice):
               the image. (.tar file)
             - if ``path`` is an absolute path, factory will try to load
               the image. (.tar file)
-            - if ``path != None``, image is loaded using:
-             | ``docker load -i <path> <img>``
+            - if ``path != None``, image is loaded using: | ``docker load -i <path> <img>``
 
         :param img: image tag, **e.g. bft:node**
         :type img: string
@@ -344,7 +346,7 @@ class DockerFactory(linux.LinuxDevice):
         self.expect_prompt(timeout=600)
 
     def configure_docker_image(self, img="bft:node"):
-        """Validate if docker image exists or build the image
+        """Validate if docker image exists or build the image.
 
         :param img: image tag, **e.g. bft:node**
         :type img: string
@@ -361,6 +363,7 @@ class DockerFactory(linux.LinuxDevice):
                 img), "Failed to build docker image: %s" % img
 
     def close(self, *args, **kwargs):
+        """Close docker."""
         self.clean_docker()
         self.clean_docker_network()
         out = super(DockerFactory, self).close(*args, **kwargs)
@@ -368,20 +371,23 @@ class DockerFactory(linux.LinuxDevice):
         return out
 
     def run_cleanup_cmd(self):
+        """Run cleanup command."""
         self.clean_docker()
         self.clean_docker_network()
 
     def clean_docker_network(self):
+        """Clean docker network."""
         self.sendcontrol('c')
         self.expect_prompt()
-        if self.del_docker_network and self.created_network == True:
+        if self.del_docker_network and self.created_network is True:
             self.sendline('docker network rm %s' % self.docker_network)
             self.expect(self.prompt)
             self.sendline('docker network ls')
             self.expect(self.prompt)
 
     def clean_docker(self):
-        if self.created_docker == True:
+        """Clean docker."""
+        if self.created_docker:
             self.sendcontrol('c')
             self.expect_prompt()
             for c in self.target_cname:
@@ -390,7 +396,7 @@ class DockerFactory(linux.LinuxDevice):
                 self.created_docker = False
 
     def validate_docker_network(self):
-        """Validate if docker network is already configured
+        """Validate if docker network is already configured.
 
         If the docker network is present, validate the parent iface of
         the docker network with args passed during initialization.
@@ -450,8 +456,8 @@ class DockerFactory(linux.LinuxDevice):
 
         # TODO, ensure that all docker networks don't have overlapping subnet configurations.
         # completely depending on the person who writes the config.
-        cmd = 'docker network create -d macvlan -o parent=%s %s -o macvlan_mode=bridge %s' % \
-                (self.iface, self.network_options ,self.docker_network)
+        cmd = 'docker network create -d macvlan -o parent=%s %s -o macvlan_mode=bridge %s' %\
+              (self.iface, self.network_options, self.docker_network)
         self.sendline(cmd)
         self.expect(self.prompt)
         assert 'Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network' not in self.before
@@ -465,7 +471,7 @@ class DockerFactory(linux.LinuxDevice):
             self.created_network = False
 
     def configure_docker_network(self):
-        """Validate if docker network exists or build the image
+        """Validate if docker network exists or build the image.
 
         :raises AssertionError: if not able to create Docker network
 
@@ -475,14 +481,14 @@ class DockerFactory(linux.LinuxDevice):
         # iface set, we need to create network
         if not self.validate_docker_network():
             self.add_docker_network()
-            assert self.validate_docker_network(), \
-                    "Failed to configure docker network: %s" % self.docker_network
+            assert self.validate_docker_network(),\
+                "Failed to configure docker network: %s" % self.docker_network
 
     @run_with_lock(lock)
     def isolate_traffic(self, cname):
         """
-        Pushes the network details of mgmt iface i.e. ``eth0``
-        to ``mgmt`` routing table and creates the necessary
+        Pushes the network details of mgmt iface.
+        i.e. ``eth0`` to ``mgmt`` routing table and creates the necessary
         ip lookup rules for management traffic.
 
         :param cname: name of the container
