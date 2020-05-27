@@ -54,9 +54,9 @@ def parse():
     :rtype: module
     """
     parser = argparse.ArgumentParser(
-        description=
-        "Connect to an available board, flash image(s), and run tests.",
-        usage="bft [options...]",
+        description='Connect to an available board,'
+        ' flash image(s), and run tests.',
+        usage='bft [options...]',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=HELP_EPILOG,
     )
