@@ -58,7 +58,7 @@ def continue_on_fail(func):
 
 
 def run_with_lock(lock):
-    """Common thread function use for hardware critical functionalities."""
+    """For hardware critical functionalities."""
     def run_with_lock_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
