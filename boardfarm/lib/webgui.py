@@ -31,6 +31,7 @@ class web_gui:
                  output_dir=os.path.join(os.getcwd(), "results"),
                  **kwargs):
         """Instance initialisation.
+
         To set the path for saving the gui page screenshots
         To set the driver and display port as None for gui
         initialisation
@@ -43,7 +44,7 @@ class web_gui:
     # this specified a prefix for the screenshots file names
     # it cna be used to prepend the testcase name to the file name
     def set_prefix(self, prefix=""):
-        """Specifying a prefix for the screenshots file name.
+        """Specify a prefix for the screenshots file name.
 
         :param prefix - prefix string
         :type prefix - string
@@ -52,7 +53,8 @@ class web_gui:
 
     def _save_screenshot(self, name):
         """Save screenshot of the selenium web gui driver.
-        and save it in the current working directory of the os path.
+
+        And save it in the current working directory of the os path.
 
         :param name: name for saving scrrenshot
         :type name: string
@@ -133,8 +135,7 @@ class web_gui:
         assert key_value, "Changes are not applied properly"
 
     def verify_drop_down(self, value, check_value):
-        """Verify check value.
-         Is present in the dropdown of the gui page.
+        """Verify check value. Is present in the dropdown of the gui page.
 
         :param value: dropdown id
         :type value: string
@@ -462,6 +463,7 @@ class web_gui:
 
     def __del__(self):
         """Destructor method.
+
         Deletes the webgui object.
         The function is called when the object references have gone.
         """
