@@ -272,7 +272,12 @@ class AxirosACS(base_acs.BaseACS):
         ParValsParsClassArray_data = ParValsClassArray_type(*args, **kwargs)
         return ParValsParsClassArray_data
 
-    def _build_input_structs(self, cpeid, param, action, next_level=None):
+    def _build_input_structs(self,
+                             cpeid,
+                             param,
+                             action,
+                             next_level=None,
+                             **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
         NOTE: The command option is set as Syncronous
@@ -305,6 +310,28 @@ class AxirosACS(base_acs.BaseACS):
             p_arr_type = 'ns0:GetParameterValuesParametersClassArray'
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, param)
+
+        elif action == 'SPA':
+            if type(param) is not list:
+                param = [param]
+            l = []
+            for d in param:
+                k = next(iter(d))
+                l.append({
+                    'Name':
+                    k,
+                    'Notification':
+                    d[k],
+                    'AccessListChange':
+                    kwargs.get("access_param", '0'),
+                    'AccessList': {
+                        'item': 'Subscriber'
+                    },
+                    'NotificationChange':
+                    kwargs.get("notification_param", '1')
+                })
+            p_arr_type = 'ns0:SetParameterAttributesParametersClassArray'
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, l)
 
         elif action == 'GPN':
 
@@ -690,6 +717,31 @@ class AxirosACS(base_acs.BaseACS):
             return None
 
         return self.Axiros_GetTicketValue(ticketid)
+
+    def SPA(self, param, **kwargs):
+        """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
+
+        Example usage : acs_server.SPA({'Device.WiFi.SSID.1.SSID':'1'}),could be parameter list of dicts/dict containing param name and notifications
+        :param param: parameter to be used in set
+        :type param: string
+        :param kwargs : access_param,notification_param
+        :returns: SPA response
+        :rtype: dict
+        """
+
+        # TO DO: ideally this should come off the environment helper
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='SPA',
+                                                   **kwargs)
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.SetParameterAttributes(
+                p, cmd, cpe_id)
+        return AxirosACS._parse_soap_response(response)
 
     def rpc_AddObject(self, cpeid, param, wait=8):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
