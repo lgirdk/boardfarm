@@ -1322,8 +1322,8 @@ def download_from_web(url, server, username, password, port):
         pipe = " pv | "
 
     cmd = (
-        r"curl -n -L -k '%s' 2>/dev/null | %s ssh -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x %s@%s \"mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile\""
-        % (url, pipe, port, username, server))
+        r'curl -n -L -k "{}" 2>/dev/null | {} ssh -p {} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x {}@{} "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'
+        .format(url, pipe, port, username, server))
     return copy_file_to_server(cmd, password)
 
 
