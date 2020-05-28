@@ -606,6 +606,7 @@ class AxirosACS(base_acs.BaseACS):
                 p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
+    @moves.moved_method('GPA')
     def rpc_GetParameterAttributes(self, cpeid, param):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
@@ -618,54 +619,14 @@ class AxirosACS(base_acs.BaseACS):
         :returns: dictionary with keys Name, Notification (0/1), AccessList indicating the GPA
         :rtype: dict
         """
-        GetParameterAttrParametersClassArray_type = self.client.get_type(
-            'ns0:GetParameterAttributesParametersClassArray')
-        GetParameterAttrParametersClassArray_data = GetParameterAttrParametersClassArray_type(
-            [param])
+        try:
+            return self.GPA(param)
 
-        CommandOptionsTypeStruct_type = self.client.get_type(
-            'ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+        except Exception as e:
+            print(e)
+            return {}
 
-        CPEIdentifierClassStruct_type = self.client.get_type(
-            'ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
-
-        # get raw soap response (parsing error with zeep)
-        with self.client.settings(raw_response=True):
-            response = self.client.service.GetParameterAttributes(
-                GetParameterAttrParametersClassArray_data,
-                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
-
-        if ticketid is None:
-            return None
-
-        for _ in range(8):
-            time.sleep(1)
-            with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(
-                    ticketid)
-
-            root = ElementTree.fromstring(ticket_resp.content)
-            for value in root.iter('code'):
-                break
-            if (value.text != '200'):
-                continue
-            dict_value = {'Name': param}
-            for iter_value in ['Notification', 'item']:
-                for value in root.iter(iter_value):
-                    dict_value[iter_value] = value.text
-            dict_value['AccessList'] = dict_value.pop('item')
-            return dict_value
-
-        assert False, "rpc_GetParameterAttributes failed to lookup %s" % param
-
+    @moves.moved_method('SPA')
     def rpc_SetParameterAttributes(self, cpeid, attr, value):
         """Set parameter attribute on ACS of the parameter specified i.e a remote procedure call (SetParameterAttribute).
 
@@ -679,44 +640,13 @@ class AxirosACS(base_acs.BaseACS):
         :returns: ticket response on ACS.
         :rtype: string
         """
-        SetParameterAttrParametersClassArray_type = self.client.get_type(
-            'ns0:SetParameterAttributesParametersClassArray')
-        SetParameterAttrParametersClassArray_data = SetParameterAttrParametersClassArray_type(
-            [{
-                'Name': attr,
-                'Notification': value,
-                'AccessListChange': '0',
-                'AccessList': {
-                    'item': 'Subscriber'
-                },
-                'NotificationChange': '1'
-            }])
-
-        CommandOptionsTypeStruct_type = self.client.get_type(
-            'ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
-
-        CPEIdentifierClassStruct_type = self.client.get_type(
-            'ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
-
-        # get raw soap response (parsing error with zeep)
-        with self.client.settings(raw_response=True):
-            response = self.client.service.SetParameterAttributes(
-                SetParameterAttrParametersClassArray_data,
-                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
-
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
-
-        if ticketid is None:
+        try:
+            param = {}
+            param[attr] = value
+            return self.SPA(param)
+        except Exception as e:
+            print(e)
             return None
-
-        return self.Axiros_GetTicketValue(ticketid)
 
     def SPA(self, param, **kwargs):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
