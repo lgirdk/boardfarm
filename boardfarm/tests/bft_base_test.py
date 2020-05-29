@@ -30,10 +30,8 @@ class _UnitTestCls(UTest):
         # This is just to ensure the pytest runs with BF
         # this is done so that base prefixed/suffixed test method don't run
         UTest.__init__(self, 'test_main')
-        if all([self.config, self.dev, self.env_helper]):
-            raise boardfarm.exceptions.CodeError(
-                'Args passed while running with pytest: {}'.format(
-                    [self.config, self.dev, self.env_helper]))
+        print('Args passed while running with pytest: {}'.format(
+            [self.config, self.dev, self.env_helper]))
 
 
 if "pytest" in sys.modules:
