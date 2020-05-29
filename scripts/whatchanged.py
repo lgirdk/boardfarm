@@ -20,7 +20,7 @@ if __name__ == '__main__':
                         help='Display much more info')
     try:
         args = parser.parse_args()
-    except:
+    except Exception:
         parser.print_help()
         sys.exit(0)
 
