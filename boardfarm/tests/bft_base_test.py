@@ -111,7 +111,7 @@ class BftBaseTest(inherit_class):
             if hasattr(c.logfile_read, 'extra_log'):
                 c.logfile_read.extra_log(msg)
 
-    def run(self):
+    def run(self, result=None):
         exc_to_raise = None
         self.startMarker()
         try:
@@ -139,7 +139,10 @@ class BftBaseTest(inherit_class):
                         self.result_grade = "TD FAIL"
 
         self.endMarker()
-        if exc_to_raise:
+
+        if "pytest" in sys.modules and self.result_grade != "OK":
+            assert 0, "Test Failed"
+        elif exc_to_raise:
             raise exc_to_raise
 
     def wan_setup(self):
