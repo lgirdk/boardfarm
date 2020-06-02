@@ -50,10 +50,6 @@ allowguest=yes
 qualify=yes
 registertimeout=900
 allow=all
-allow=alaw
-allow=gsm
-allow=g723
-allow=g729
 EOF'''
         gen_mod = '''cat > /etc/asterisk/extensions.conf << EOF
 [default]
@@ -159,6 +155,7 @@ EOF'''
         :return: output: return a tuple with bool and defined message
         :rtype output: tuple
         """
+        apt_install(self, 'python3')
         py_steps = [
             'import configparser', 'def modify():',
             '   config = configparser.ConfigParser(strict=False)',
@@ -185,10 +182,10 @@ EOF'''
         self.expect_prompt(timeout=10)
         if "Traceback" in self.before:
             output = False, "File error :\n%s" % self.before
-        elif "False" in self.before:
-            output = False, "User " + user + " does not exist"
-        else:
+        elif "True" in self.before or "None" in self.before:
             output = True, "Operation " + oper + " is successful"
+        else:
+            output = False, "Operation " + oper + " is failed"
         self.sendline("cat /etc/asterisk/sip.conf")
         self.expect_prompt()
         self.sendline("rm sip_config.py")
