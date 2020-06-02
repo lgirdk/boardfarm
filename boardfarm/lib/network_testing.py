@@ -187,8 +187,10 @@ def get_mta_details(capture_file, device, mta_user=[]):
             regx_str = r'SIP/2.0\s+200\s+OK(.*)From:\s+' + mta + '(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)'
             match = re.search(regx_str, line)
             if match:
-                mta_line_info['line%s' % idx] = match.group(3)
-                mta_line_info['Expires%s' % idx] = match.group(4)
+                mta_line_info[mta] = {
+                    'call-ID': match.group(3),
+                    'Expire': match.group(4)
+                }
                 break
     return mta_line_info
 
