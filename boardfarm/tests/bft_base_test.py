@@ -45,6 +45,8 @@ class BftBaseTest(inherit_class):
     log = ""
     log_calls = ""
     _format = "%a %d %b %Y %H:%M:%S"
+    start_time = 0
+    stop_time = 0
 
     def __init__(self, *args, **kwargs):
         self.config = self.dev = self.env_helper = None
