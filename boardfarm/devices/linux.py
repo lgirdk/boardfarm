@@ -436,6 +436,41 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         self.expect(self.prompt)
         return int(memFree)
 
+    def start_webproxy(self, dante=False):
+        if dante:
+            self.stop_tinyproxy()
+            self.start_danteproxy()
+        else:
+            self.stop_danteproxy()
+            self.start_tinyproxy()
+
+    def start_danteproxy(self):
+        """Start the dante server for socks5 proxy connections"""
+
+        to_send = [
+            'cat > /etc/danted.conf <<EOF', 'logoutput: stderr',
+            'internal: 0.0.0.0 port = 8080', 'external: eth1',
+            'clientmethod: none', 'socksmethod: username none #rfc931',
+            'user.privileged: root', 'user.unprivileged: nobody',
+            'user.libwrap: nobody', 'client pass {',
+            '    from: 0.0.0.0/0 to: 0.0.0.0/0',
+            '    log: connect disconnect error', '}', 'socks pass {',
+            '    from: 0.0.0.0/0 to: 0.0.0.0/0',
+            '    log: connect disconnect error', '}', 'EOF'
+        ]
+        self.sendline('\n'.join(to_send))
+        self.expect_prompt()
+        self.sendline('service danted restart')
+        self.expect_prompt()
+
+    def stop_danteproxy(self):
+        self.sendline('service danted stop')
+        self.expect_prompt()
+
+    def stop_tinyproxy(self):
+        self.sendline('/etc/init.d/tinyproxy stop')
+        self.expect_prompt()
+
     def start_tinyproxy(self):
         # TODO: determine which config file is the correct one... but for now just modify both
         for f in ['/etc/tinyproxy.conf', '/etc/tinyproxy/tinyproxy.conf']:

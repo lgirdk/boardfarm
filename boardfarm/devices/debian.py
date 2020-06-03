@@ -76,7 +76,7 @@ class DebianBox(linux.LinuxDevice):
         lan_gateway = ipaddress.IPv4Interface(
             six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))).ip
 
-        self.http_proxy = kwargs.pop("http_proxy", None)
+        self.http_proxy = kwargs.pop("http_proxy", ipaddr + ':8080')
 
         if pre_cmd_host is not None:
             sys.stdout.write("\tRunning pre_cmd_host.... ")
@@ -134,6 +134,7 @@ class DebianBox(linux.LinuxDevice):
         self.lan_network = lan_network
         self.lan_gateway = lan_gateway
         self.tftp_device = self
+        self.dante = False
 
         self.check_connection(username, name, password)
 
@@ -196,6 +197,8 @@ class DebianBox(linux.LinuxDevice):
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
                 else:
                     self.mgmt_dns = "8.8.8.8"
+                if opt == 'dante':
+                    self.dante = True
 
         if ipaddr is None:
             self.sendline("hostname")
@@ -365,7 +368,7 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("ifconfig %s down" % self.iface_dut)
             self.expect(self.prompt)
 
-        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd"
+        pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd dante-server"
 
         def _install_pkgs():
             self.sendline(
@@ -770,6 +773,9 @@ class DebianBox(linux.LinuxDevice):
 
         self.turn_off_pppoe()
 
+        if self.dante:
+            self.start_webproxy(self.dante)
+
     def setup_as_lan_device(self):
         # potential cleanup so this wan device works
         self.sendline("killall iperf ab hping3")
@@ -955,7 +961,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("nmap --version")
         self.expect(self.prompt)
-        self.start_tinyproxy()
+        self.start_webproxy(self.dante)
         # Write a useful ssh config for routers
         self.sendline("mkdir -p ~/.ssh")
         self.sendline("cat > ~/.ssh/config << EOF")
