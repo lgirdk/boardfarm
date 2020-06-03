@@ -718,7 +718,13 @@ EOF""")
 
     def _try_to_restart_dhcp(self, do_ipv6):
         """Try to restart DHCP."""
-        self.sendline("/etc/init.d/isc-dhcp-server restart")
+        self.sendline("ps auxwww|grep dhcpd")
+        self.expect_prompt()
+        self.sendline("/etc/init.d/isc-dhcp-server stop")
+        self.expect_prompt()
+        self.sendline("killall -15 dhcpd")
+        self.expect_prompt()
+        self.sendline("/etc/init.d/isc-dhcp-server start")
         matching = [
             "Starting ISC DHCP(v4)? server.*dhcpd.",
             "Starting isc-dhcp-server.*",
