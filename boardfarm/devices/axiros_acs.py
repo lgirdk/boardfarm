@@ -345,6 +345,14 @@ class AxirosACS(base_acs.BaseACS):
             p_arr_type = 'ns0:GetParameterAttributesParametersClassArray'
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, param)
+
+        elif action == "SI":
+            if type(param) is not list:
+                param = [param]
+            p_arr_type = 'ns0:ScheduleInformArgumentsStruct'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, *param)
+
         else:
             raise CodeError('Invalid action: ' + action)
 
@@ -992,6 +1000,31 @@ class AxirosACS(base_acs.BaseACS):
             r = AxirosACS._get_xml_key(response)[0]['code']['text']
         # Note the 200 is a string here!
         return r == '200'
+
+    def ScheduleInform(self, CommandKey='Test', DelaySeconds=20):
+        """Execute ScheduleInform RPC
+
+        :param commandKey: the string paramenter passed to scheduleInform
+        :param type: string
+        :param DelaySecond: delay of seconds in integer
+        :param type: integer
+
+        :return: returns ScheduleInform response
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        param = [CommandKey, DelaySeconds]
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='SI')
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.ScheduleInform(CommandOptions=cmd,
+                                                          CPEIdentifier=cpe_id,
+                                                          Parameters=p)
+
+        return AxirosACS._parse_soap_response(response)
 
 
 if __name__ == '__main__':
