@@ -27,7 +27,7 @@ class EnvHelper(object):
         if env is None:
             return
 
-        assert env["version"] == "1.0", "Unknown environment version!"
+        assert env["version"] in ["1.0", "1.1"], "Unknown environment version!"
         self.env = env
         self.mirror = ""
         if mirror:
