@@ -248,9 +248,9 @@ class AxirosACS(base_acs.BaseACS):
         # 'item' is not present in FactoryReset RPC response
         if 'item' in result['details']:
             return AxirosACS._parse_xml_response(result['details']['item'])
-        else:
-            # Assumes that message is always present
-            return msg
+        elif 'ns1:KeyValueStruct[0]' in result['details'][
+                'http://schemas.xmlsoap.org/soap/encoding/:arrayType']:
+            return []
 
     def _get_cmd_data(self, *args, **kwagrs):
         """Return CmdOptTypeStruct_data. It is a helper method."""
