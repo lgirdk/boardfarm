@@ -148,16 +148,17 @@ class device_manager(UserList):
         """To clear/initialize the list of devices."""
         self.devices = x
 
-    def set_device_array(self, array_name, dev):
+    def set_device_array(self, array_name, dev, override):
         """Set Device Array details."""
         if getattr(device_array_type, array_name, None):
             dev_array = getattr(self, array_name, [])
             for i in dev_array:
                 if i.ipaddr == dev.ipaddr:
                     if i.port == dev.port:
-                        raise Exception(
-                            "Device manager already had a device with same port and ip details."
-                        )
+                        if not override:
+                            raise Exception(
+                                "Device manager already had a device with same port and ip details."
+                            )
             dev_array.append(dev)
             setattr(self, array_name, dev_array)
         else:
@@ -231,7 +232,7 @@ class device_manager(UserList):
 
         return matching[0].obj
 
-    def _add_device(self, dev):
+    def _add_device(self, dev, override=False):
         """To add devices created via old method get_device()."""
         new_dev = device_descriptor()
         if len(self.devices) == 0:
@@ -243,8 +244,8 @@ class device_manager(UserList):
 
         array_name = getattr(dev, "dev_array", None)
         if array_name:
-            self.set_device_array(array_name, dev)
-        else:
+            self.set_device_array(array_name, dev, override)
+        if getattr(dev, 'legacy_add', True):
             # For convenience, set an attribute with a name the same as the
             # newly added device type. Example: self.lan = the device of type lan
             attribute_name = new_dev.type.name

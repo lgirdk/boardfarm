@@ -169,6 +169,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
             }
             self.session = devices.get_device("debian",
                                               device_mgr=self.dev,
+                                              override=True,
                                               **kwargs)
         except Exception:
             assert 0, "Failed to create session, Test FAILED!"

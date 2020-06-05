@@ -87,6 +87,14 @@ class DebianBox(linux.LinuxDevice):
             phc.expect(pexpect.EOF, timeout=120)
             print("\tpre_cmd_host done")
 
+        self.legacy_add = False
+        # introducing a hack till json schema does not get updated
+        if not self.dev_array:
+            self.legacy_add = True
+            arr_names = {"lan": "lan_clients", "wan": "wan_clients"}
+            for k, v in arr_names.items():
+                if k in name: self.dev_array = v
+
         if ipaddr is not None:
             bft_pexpect_helper.spawn.__init__(
                 self,

@@ -166,6 +166,7 @@ def get_device(model, device_mgr, **kwargs):
     These are connected to the device Under Test (DUT) board.
     """
     profile = kwargs.get("profile", {})
+    override = kwargs.pop('override', False)
     cls_list = []
     profile_list = []
     for device_file, devs in device_mappings.items():
@@ -212,7 +213,7 @@ def get_device(model, device_mgr, **kwargs):
             raise BftNotSupportedDevice(
                 "Unable to spawn instance of model: %s" % model)
         ret = bf_node(cls_list, model, device_mgr, **kwargs)
-        device_mgr._add_device(ret)
+        device_mgr._add_device(ret, override)
         return ret
     except BftNotSupportedDevice:
         raise
