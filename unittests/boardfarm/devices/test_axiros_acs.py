@@ -91,13 +91,20 @@ response_8 = Response(content_8, text_8)
 
 out_8 = [{'key': 'Status', 'type': 'string', 'value': '0'}]
 
+text_9 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[0]" xsi3:type="SOAP-ENC:Array">\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">504704</ticketid>\n</Result>\n</ns1:GetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
 
-@pytest.mark.parametrize("test_parse_soap_response, expected_result", [
-    (response_1, out_1),
-    (response_6, out_6),
-    (response_7, out_7),
-    (response_8, out_8),
-])
+content_9 = b'<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[0]" xsi3:type="SOAP-ENC:Array">\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">504704</ticketid>\n</Result>\n</ns1:GetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
+
+#to validate GPV empty response scenario
+response_9 = Response(content_9, text_9)
+
+out_9 = []
+
+
+@pytest.mark.parametrize("test_parse_soap_response, expected_result",
+                         [(response_1, out_1), (response_6, out_6),
+                          (response_7, out_7), (response_8, out_8),
+                          (response_9, out_9)])
 def test_parse_soap_response(test_parse_soap_response, expected_result):
     assert expected_result == AxirosACS._parse_soap_response(
         test_parse_soap_response)
