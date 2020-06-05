@@ -460,7 +460,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         ]
         self.sendline('\n'.join(to_send))
         self.expect_prompt()
-        self.sendline('service danted restart')
+        # NOTE: service danted restart DOES NOT WORK!
+        self.sendline('service danted stop; service danted start')
         self.expect_prompt()
 
     def stop_danteproxy(self):
