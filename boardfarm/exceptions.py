@@ -1,8 +1,9 @@
 """boardfarm.exceptions : custom exceptions for all plugins and modules used by framework."""
+
 import pexpect
 
 
-class BftBaseException(Exception):
+class BftBaseException(AssertionError):
     """Base exception all Bft exceptions inherit from."""
 
 

@@ -140,9 +140,7 @@ class BftBaseTest(inherit_class):
 
         self.endMarker()
 
-        if "pytest" in sys.modules and self.result_grade != "OK":
-            assert 0, "Test Failed"
-        elif exc_to_raise:
+        if exc_to_raise:
             raise exc_to_raise
 
     def wan_setup(self):
