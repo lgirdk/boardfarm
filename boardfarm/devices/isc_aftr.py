@@ -36,7 +36,7 @@ class AFTR(object):
         self.ipv6_acl = [
             str(self.ipv6_ep.network),
             str(self.ipv6_interface.network)
-        ] + kwargs.get("ipv6_acl", ["2001:dead:beef::/48"])
+        ] + kwargs.get("ipv6_ACL", ["2001:dead:beef::/48"])
 
         # this address will double NAT to WAN container's public IP
         self.ipv4_nat = ipaddress.IPv4Interface(
