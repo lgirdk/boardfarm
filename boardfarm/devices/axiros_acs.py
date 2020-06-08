@@ -286,7 +286,7 @@ class AxirosACS(base_acs.BaseACS):
         :type cpeid: string
         :param param: parameter to used
         :type param: string or list of strings for get, dict or list of dict for set
-        :param action: one of GPV/SPV/GPN (AO/DO-To be implemented)
+        :param action: one of GPV/SPV/GPN/AO/DO/SI/REBOOT
         :type action: string
         :param next_level: defaults to null takes True/False
         :type next_level: boolean
@@ -352,6 +352,16 @@ class AxirosACS(base_acs.BaseACS):
             p_arr_type = 'ns0:ScheduleInformArgumentsStruct'
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, *param)
+
+        elif action in ['AO', 'DO']:
+            p_arr_type = 'ns0:AddDelObjectArgumentsStruct'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, param, '')
+
+        elif action == "REBOOT":
+            p_arr_type = 'xsd:string'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, param)
 
         else:
             raise CodeError('Invalid action: ' + action)
@@ -681,6 +691,7 @@ class AxirosACS(base_acs.BaseACS):
                 p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
+    @moves.moved_method('AddObject')
     def rpc_AddObject(self, cpeid, param, wait=8):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
@@ -694,51 +705,30 @@ class AxirosACS(base_acs.BaseACS):
         :returns: ticket response on ACS
         :rtype: dictionary
         """
-        AddObjectClassArray_type = self.client.get_type(
-            'ns0:AddDelObjectArgumentsStruct')
-        AddObjectClassArray_data = AddObjectClassArray_type(param, '')
+        return {i['key']: i['value'] for i in self.AddObject(param)}
 
-        CommandOptionsTypeStruct_type = self.client.get_type(
-            'ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+    def AddObject(self, param):
+        """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
-        CPEIdentifierClassStruct_type = self.client.get_type(
-            'ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
+        :param param: parameter to be used to add
+        :type param: string
+        :raises assertion: On failure
+        :returns: list of dictionary with key, value, type indicating the AddObject
+        :rtype: dictionary
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='AO')
 
-        # get raw soap response (parsing error with zeep)
+        # get raw soap response
         with self.client.settings(raw_response=True):
-            response = self.client.service.AddObject(
-                AddObjectClassArray_data, CommandOptionsTypeStruct_data,
-                CPEIdentifierClassStruct_data)
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
+            response = self.client.service.AddObject(p, cmd, cpe_id)
 
-        if ticketid is None:
-            return None
+        return AxirosACS._parse_soap_response(response)
 
-        for _ in range(wait):
-            time.sleep(1)
-            with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(
-                    ticketid)
-
-            root = ElementTree.fromstring(ticket_resp.content)
-            for value in root.iter('code'):
-                break
-            if (value.text != '200'):
-                continue
-            dict_value = {}
-            for key, value in zip(root.iter('key'), root.iter('value')):
-                dict_value[key.text] = value.text
-            return dict_value
-
-        assert False, "rpc_AddObject failed to lookup %s" % param
-
+    @moves.moved_method('DelObject')
     def rpc_DelObject(self, cpeid, param):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
@@ -749,35 +739,27 @@ class AxirosACS(base_acs.BaseACS):
         :returns: ticket response on ACS ('0' is returned)
         :rtype: string
         """
-        DelObjectClassArray_type = self.client.get_type(
-            'ns0:AddDelObjectArgumentsStruct')
-        DelObjectClassArray_data = DelObjectClassArray_type(param, '')
+        return str(self.DelObject(param)[0]['value'])
 
-        CommandOptionsTypeStruct_type = self.client.get_type(
-            'ns0:CommandOptionsTypeStruct')
-        CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
+    def DelObject(self, param):
+        """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
-        CPEIdentifierClassStruct_type = self.client.get_type(
-            'ns0:CPEIdentifierClassStruct')
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
+        :param param: parameter to be used to delete
+        :type param: string
+        :returns: list of dictionary with key, value, type indicating the DelObject
+        :rtype: string
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='DO')
 
-        # get raw soap response (parsing error with zeep)
+        # get raw soap response
         with self.client.settings(raw_response=True):
-            response = self.client.service.DeleteObject(
-                DelObjectClassArray_data, CommandOptionsTypeStruct_data,
-                CPEIdentifierClassStruct_data)
+            response = self.client.service.DeleteObject(p, cmd, cpe_id)
 
-        ticketid = None
-        root = ElementTree.fromstring(response.content)
-        for value in root.iter('ticketid'):
-            ticketid = value.text
-            break
-
-        if ticketid is None:
-            return None
-
-        return self.Axiros_GetTicketValue(ticketid)
+        return AxirosACS._parse_soap_response(response)
 
     def Read_Log_Message(self, cpeid, wait=8):
         """Read ACS log messages.
@@ -1024,6 +1006,44 @@ class AxirosACS(base_acs.BaseACS):
                                                           CPEIdentifier=cpe_id,
                                                           Parameters=p)
 
+        return AxirosACS._parse_soap_response(response)
+
+    def Reboot(self, CommandKey="Reboot Test"):
+        """Execute Reboot.
+
+        Returns true if Reboot request is initiated.
+
+        :return: returns reboot RPC response
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   CommandKey,
+                                                   action='REBOOT')
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.Reboot(CommandOptions=cmd,
+                                                  CPEIdentifier=cpe_id,
+                                                  Parameters=p)
+
+        return AxirosACS._parse_soap_response(response)
+
+    def GetRPCMethods(self):
+        """Execute GetRPCMethods RPC.
+
+        :return: returns GetRPCMethods response of supported functions
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=20)
+        CPEIdClassStruct_data = self._get_class_data(cpeid=self.cpeid)
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetRPCMethods(
+                CommandOptions=CmdOptTypeStruct_data,
+                CPEIdentifier=CPEIdClassStruct_data)
         return AxirosACS._parse_soap_response(response)
 
 
