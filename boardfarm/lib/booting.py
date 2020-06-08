@@ -387,6 +387,13 @@ def boot(config,
     logged['boot_step'] = "boot_ok"
     logged['boot_time'] = end_seconds_up
 
+    for i, v in enumerate(board.dev.lan_clients):
+        if getattr(env_helper, "has_lan_advertise_identity", None):
+            if env_helper.has_lan_advertise_identity(i):
+                v.add_lan_advertise_identity_cfg(i)
+            else:
+                v.remove_lan_advertise_identity_cfg()
+
     if board.routing and lan and config.setup_device_networking:
         if wan is not None:
             lan.start_lan_client(wan_gw=wan.gw)

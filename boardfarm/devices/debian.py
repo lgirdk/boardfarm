@@ -567,6 +567,7 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
 
     def setup_dhcp_server(self):
+
         if not self.wan_dhcp_server:
             return
 
@@ -893,7 +894,6 @@ class DebianBox(linux.LinuxDevice):
             "sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script"
         )
         self.expect(self.prompt)
-
         if self.mgmt_dns is not None:
             self.sendline(
                 "sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf"
@@ -1024,6 +1024,45 @@ class DebianBox(linux.LinuxDevice):
     def tftp_server_ipv6_int(self):
         """Return the DUT facing side tftp server ipv6."""
         return self.gwv6
+
+    def add_lan_advertise_identity_cfg(self, lan_client_idx):
+        """Add lan advertise_identity changes in lan dhclient.conf
+
+           param lan_client_idx: lan client index [lan = 0, lan2 = 1]
+           type lan_client_idx: integer
+
+           return: None
+        """
+        out = self.check_output(
+            "egrep 'request option-125' /etc/dhcp/dhclient.conf")
+
+        if not re.search('request option-125,', out):
+            self.sendline(
+                "sed -i -e 's|request |\\noption option-125 code 125 = string;\\n\\nrequest option-125, |' /etc/dhcp/dhclient.conf"
+            )
+            self.expect(self.prompt)
+            # details of Text for HexaDecimal value as
+            # Enterprise code (3561) 00:00:0D:E9 length  (22)16
+            # code 01  length 06  (BFVER0) 42:46:56:45:52:30
+            # code 02  length 04  (LAN0/LAN1) 4c:41:4e:30/4c:41:4e:31
+            # code 03  length 06  (BFCLAN)  42:46:43:4c:41:4e
+
+            option_125 = "00:00:0D:E9:16:01:06:42:46:56:45:52:30:02:04:4c:41:4e:3{}:03:06:42:46:43:4c:41:4e".format(
+                lan_client_idx)
+            self.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
+            self.sendline('send option-125 = {};'.format(option_125))
+            self.sendline("")
+            self.sendline("EOF")
+            self.expect(self.prompt)
+
+    def remove_lan_advertise_identity_cfg(self):
+        """Remove lan advertise_identity changes in lan dhclient.conf"""
+        self.sendline(
+            "sed -i -e 's|request option-125,|request |' /etc/dhcp/dhclient.conf"
+        )
+        self.expect(self.prompt)
+        self.sendline("sed -i '/option-125/d' /etc/dhcp/dhclient.conf")
+        self.expect(self.prompt)
 
 
 if __name__ == "__main__":
