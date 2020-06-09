@@ -34,8 +34,11 @@ class _UnitTestCls(UTest):
             [self.config, self.dev, self.env_helper]))
 
 
+_using_pytest = False
 if "pytest" in sys.modules:
+    import pytest
     inherit_class = _UnitTestCls
+    _using_pytest = True
 else:
     inherit_class = six.with_metaclass(LoggerMeta, object)
 
@@ -85,7 +88,10 @@ class BftBaseTest(inherit_class):
         return self.__class__.__name__
 
     def skipTest(self, reason):
-        raise boardfarm.exceptions.SkipTest(reason)
+        if _using_pytest:
+            pytest.skip(reason)
+        else:
+            raise boardfarm.exceptions.SkipTest(reason)
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
@@ -137,6 +143,9 @@ class BftBaseTest(inherit_class):
                 if not td.td_result:
                     if 'FAIL' not in self.result_grade:
                         self.result_grade = "TD FAIL"
+        else:
+            self.endMarker()
+            self.skipTest(self.result_grade)
 
         self.endMarker()
 
