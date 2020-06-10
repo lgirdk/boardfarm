@@ -624,21 +624,25 @@ class wifi_client_stub:
 
     def wifi_scan(self):
         """Wifi client stub used to scan for SSIDs on a particular radio.
+        and return a list of SSID
 
-         and return a list of SSID
+        Note: this code does not execute, but rather serves as an example for
+        the API
+        return "SSID: <ssid_name1> SSID: <ssid_name2>.."
 
         :param self: self object
         :type self: object
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        """
-        this code does not execute, but rather serves as an example for the API
-        return "SSID: <ssid_name1> SSID: <ssid_name2>.."
-        """
 
     def wifi_check_ssid(self, ssid_name):
         """Wifi client stub used to scan for paticular SSID.
+
+        Note: this code does not execute, but rather serves as an example for
+        the API
+        return True  if found
+        return False  if not found
 
         :param self: self object
         :type self: object
@@ -647,11 +651,6 @@ class wifi_client_stub:
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        """
-        this code does not execute, but rather serves as an example for the API
-        return True  if found
-        return False  if not found
-        """
 
     def wifi_connect(self, ssid_name, password, security_mode):
         """Wifi client stub used to connect to wifi.
@@ -673,15 +672,15 @@ class wifi_client_stub:
     def wifi_connectivity_verify(self):
         """Wifi client stub used to verify wifi connectivity.
 
+        Note : this code does not execute, but rather serves as an example for
+        the API
+        return True or False
+
         :param self: self object
         :type self: object
         :raises: Exception "Not implemented"
         """
         raise Exception("Not implemented!")
-        """
-        this code does not execute, but rather serves as an example for the API
-        return True or False
-        """
 
     def wifi_disconnect(self):
         """Wifi client stub used to disconnect WiFi.
