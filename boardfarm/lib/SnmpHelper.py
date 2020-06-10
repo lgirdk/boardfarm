@@ -231,18 +231,17 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         return oid
 
 
-def snmp_v2(
-    device,
-    ip,
-    mib_name,
-    index=0,
-    value=None,
-    timeout=10,
-    retries=3,
-    community="private",
-    walk_cmd=None,
-    stype=None,
-):
+def snmp_v2(device,
+            ip,
+            mib_name,
+            index=0,
+            value=None,
+            timeout=10,
+            retries=3,
+            community="private",
+            walk_cmd=None,
+            stype=None,
+            walk_timeout=200):
     """
     Perform an snmp get/set on ip from device's console.
 
@@ -319,7 +318,11 @@ def snmp_v2(
         return data
 
     if walk_cmd:
-        return snmp_asyncore_walk(device, ip, oid, read_cmd=walk_cmd)
+        return snmp_asyncore_walk(device,
+                                  ip,
+                                  oid,
+                                  time_out=walk_timeout,
+                                  read_cmd=walk_cmd)
 
     if not stype:
         status, result, stype = _run_snmp()
