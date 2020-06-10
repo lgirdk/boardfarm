@@ -61,7 +61,7 @@ def kill_process(device, process="tcpdump"):
     device.sudo_sendline("killall %s" % process)
     device.expect(device.prompt)
     device.sudo_sendline("sync")
-    device.expect(device.prompt)
+    device.expect(device.prompt, timeout=60)
     return device.before
 
 
