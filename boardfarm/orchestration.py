@@ -222,8 +222,11 @@ class TestAction(object):
         try:
             output = self.action()
             return output
-        except AssertionError as e:
-            raise CodeError(e)
+        except Exception as e:
+            if e.__class__.__name__ == "AssertionError":
+                raise CodeError(e)
+            else:
+                raise
 
 
 class TearDown(TestStep):
