@@ -33,7 +33,7 @@ class AxirosACS(base_acs.BaseACS):
     name = "acs_server"
     # should the following be dynamic?
     namespaces = {'http://www.w3.org/2001/XMLSchema-instance': None}
-    CPE_wait_time = 60 * 5  # too long?
+    CPE_wait_time = 60 * 1  # too long?
     Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
@@ -56,6 +56,8 @@ class AxirosACS(base_acs.BaseACS):
         self.cli_password = self.kwargs.pop('cli_password', None)
         self.color = self.kwargs.pop('color', None)
         self.options = self.kwargs.pop('options', None)
+        AxirosACS.CPE_wait_time = self.kwargs.pop('wait_time',
+                                                  AxirosACS.CPE_wait_time)
 
         if self.options:
             options = [x.strip() for x in self.options.split(',')]
