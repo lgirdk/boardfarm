@@ -128,7 +128,7 @@ class BftBaseTest(inherit_class):
         if self.result_grade not in ["SKIP", "CC FAIL"]:
             try:
                 func = getattr(self.__class__, "teardown_class", None)
-                if func:
+                if func and not _using_pytest:
                     self.teardown_wrapper(func)
             except Exception as e:
                 print(e)
@@ -169,6 +169,13 @@ class BftBaseTest(inherit_class):
 
     def wlan_cleanup(self):
         None
+
+    def setup_wrapper(self, func):
+        lib.common.test_msg(
+            "\n==================== Running Setup %s    Time: %s ===================="
+            % (self.__class__.__name__, now_short(self._format)))
+
+        func()
 
     def teardown_wrapper(self, func):
         lib.common.test_msg(
@@ -212,6 +219,11 @@ class BftBaseTest(inherit_class):
                 self.attempts = 1
             else:
                 self.attempts = retry = 0
+
+            # TBC: should the setup and teardown part of the retry?
+            func = getattr(self.__class__, "setup_class", None)
+            if func and not _using_pytest:
+                self.setup_wrapper(func)
 
             while retry >= 0:
                 try:
