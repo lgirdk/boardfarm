@@ -956,32 +956,28 @@ class AxirosACS(base_acs.BaseACS):
 
     def connectivity_check(self, cpeid):
         """Check the connectivity between the ACS and the DUT by\
-        requesting the DUT to perform a ping to it wan container.
+        requesting the DUT to perform a schedule inform.
 
         NOTE: The scope of this method is to verify that the ACS and DUT can
-        communicate with eachother, and NOT wheter the ping was successful!
+        communicate with eachother!
 
         :param cpeid: the id to use for the ping
         :param type: string
 
-        :return: True for a successful ping, False otherwise
+        :return: True for a successful ScheduleInform, False otherwise
         """
-        CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=60)
-        CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
-        ScheduleInformArguments_type = self.client.get_type(
-            'ns0:ScheduleInformArgumentsStruct')
-        ScheduleInformArguments_data = ScheduleInformArguments_type(
-            CommandKey='Test', DelaySeconds=20)
-
-        r = None
-        with self.client.settings(raw_response=True):
-            response = self.client.service.ScheduleInform(
-                CommandOptions=CmdOptTypeStruct_data,
-                CPEIdentifier=CPEIdClassStruct_data,
-                Parameters=ScheduleInformArguments_data)
-            r = AxirosACS._get_xml_key(response)[0]['code']['text']
-        # Note the 200 is a string here!
-        return r == '200'
+        old_cpeid = self.cpeid
+        self.cpeid = cpeid
+        r = True
+        try:
+            self.ScheduleInform(DelaySeconds=1)
+        except Exception as e:
+            # on ANY exception assume ScheduleInform failed-> comms failed
+            print(e)
+            print(f"connectivity_check failed for {cpeid}")
+            r = False
+        self.cpeid = old_cpeid
+        return r
 
     def ScheduleInform(self, CommandKey='Test', DelaySeconds=20):
         """Execute ScheduleInform RPC
