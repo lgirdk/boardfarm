@@ -4,7 +4,7 @@ import os
 import sys
 import uuid
 
-from aenum import Enum
+from aenum import Enum, extend_enum
 from boardfarm.exceptions import DeviceDoesNotExistError
 from six.moves import UserList
 
@@ -127,6 +127,7 @@ class device_manager(UserList):
         # Devices that can create other devices, we store them for later
         # so we can use them to create devices that might not already exist
         self.factories = []
+        self.plugin_counter = -1
 
         # TODO: does self.env really belong here or in device class?
         self.uniqid = uuid.uuid4(
@@ -232,9 +233,18 @@ class device_manager(UserList):
 
         return matching[0].obj
 
-    def _add_device(self, dev, override=False):
+    def _add_device(self, dev, override=False, plugin=False):
         """To add devices created via old method get_device()."""
         new_dev = device_descriptor()
+        if plugin:
+            # first check if dev.name exist
+            if not hasattr(device_type, dev.name):
+                extend_enum(device_type, dev.name, self.plugin_counter)
+                self.plugin_counter -= 1
+            else:
+                print(
+                    "WARNING!! WARNING!! this device cannot be added as a plugin"
+                    "\nCode will fail, if two devices found with same name.")
         if len(self.devices) == 0:
             new_dev.type = device_type.DUT
         else:

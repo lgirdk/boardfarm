@@ -167,6 +167,7 @@ def get_device(model, device_mgr, **kwargs):
     """
     profile = kwargs.get("profile", {})
     override = kwargs.pop('override', False)
+    plugin = kwargs.pop("plugin_device", False)
     cls_list = []
     profile_list = []
     for device_file, devs in device_mappings.items():
@@ -213,7 +214,7 @@ def get_device(model, device_mgr, **kwargs):
             raise BftNotSupportedDevice(
                 "Unable to spawn instance of model: %s" % model)
         ret = bf_node(cls_list, model, device_mgr, **kwargs)
-        device_mgr._add_device(ret, override)
+        device_mgr._add_device(ret, override, plugin)
         return ret
     except BftNotSupportedDevice:
         raise
