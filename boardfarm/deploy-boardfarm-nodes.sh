@@ -30,7 +30,7 @@ def randomMAC():
     return (mac_to_be_decided)
 
 if __name__ == '__main__':
-    print randomMAC()
+    print(randomMAC())
 END
 }
 
