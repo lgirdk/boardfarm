@@ -74,11 +74,24 @@ password = None
 class bft_pexpect_helper(pexpect.spawn):
     """Boardfarm helper for logging pexpect and making minor tweaks."""
     def __setattr__(self, key, value):
-        if key == "name" and (type(getattr(self, "name", None)) is str
-                              and self.name[0] != "<"):
-            return
-        else:
-            super(bft_pexpect_helper, self).__setattr__(key, value)
+        # pexpect name start with <.*>
+        # idea is to check for all names before letting pexpect set the name
+        if key == "name":
+            # check for static name variable
+            name = getattr(type(self), 'name', None)
+            if name:
+                if value[0] == "<":
+                    # the code reached pexpect to set name
+                    # keep the class static variable name
+                    value = name
+            else:
+                # if static name not in class
+                # if a different name is already set apart from pexpect one
+                # use that name, since a kwarg in child init must have set the name
+                name = getattr(self, "name", None)
+                if name and name[0] != "<":
+                    value = name
+        super(bft_pexpect_helper, self).__setattr__(key, value)
 
     class spawn(pexpect.spawn):
         def __init__(self, *args, **kwargs):
