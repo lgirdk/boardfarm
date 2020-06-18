@@ -1849,3 +1849,11 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
         print(e)
         return False
     return True
+
+
+def toggle_dhcp_lan_advertise_identity(lan_dev):
+    if lan_dev.add_lan_advertise_identity_cfg(
+            lan_dev.dev.lan_clients.index(lan_dev)):
+        lan_dev.remove_lan_advertise_identity_cfg()
+
+    lan_dev.start_lan_client()

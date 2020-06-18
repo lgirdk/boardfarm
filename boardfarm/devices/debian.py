@@ -1031,7 +1031,7 @@ class DebianBox(linux.LinuxDevice):
            param lan_client_idx: lan client index [lan = 0, lan2 = 1]
            type lan_client_idx: integer
 
-           return: None
+           return: True (if lan identity cfg already present) else False
         """
         out = self.check_output(
             "egrep 'request option-125' /etc/dhcp/dhclient.conf")
@@ -1054,6 +1054,9 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("")
             self.sendline("EOF")
             self.expect(self.prompt)
+            return False
+
+        return True
 
     def remove_lan_advertise_identity_cfg(self):
         """Remove lan advertise_identity changes in lan dhclient.conf"""
