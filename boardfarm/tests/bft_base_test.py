@@ -10,10 +10,12 @@ import time
 import traceback
 import warnings
 
+import boardfarm.config
 import boardfarm.exceptions
 import boardfarm.lib.ConfigHelper
 import boardfarm.lib.DeviceManager
 import boardfarm.lib.env_helper
+import boardfarm.lib.test_configurator
 import debtcollector
 import six
 from boardfarm import lib

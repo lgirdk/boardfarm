@@ -1,28 +1,20 @@
 from boardfarm.orchestration import TestStep as TS
 from boardfarm.tests.bft_base_test import BftBaseTest
-from unittest2 import TestCase
 
 
-# Assumption1 : later test won't define runTest
-# Assumption2 : BF pytest pluging won't call a wrapper to execute runTest
-# Assumption3 : BF pytest will directly used test prefixed methods
-class BfPyTestCls(TestCase, BftBaseTest):
-    def __init__(self, *args, **kwargs):
-        # This is just to ensure the pytest runs with BF
-        # this is done so that base prefixed/suffixed test method don't run
-        BftBaseTest.__init__(self, None, None, None)
-        TestCase.__init__(self)
-
-    # mocking this behaviour
-    def runTest(self):
+class test_teardown1(BftBaseTest):
+    def startMarker(self):
         pass
 
-    # assuming it's less work
-    def testWrapper(self):
-        self.runTest()
+    def endMarker(self):
+        pass
 
+    def executionWrapper(self):
+        pass
 
-class test_teardown1(BfPyTestCls):
+    def run(self, *args, **kwargs):
+        pass
+
     def set_action_1(self, unset=False):
         """Test execution
         Set/Unset both will succeed
@@ -42,7 +34,7 @@ class test_teardown1(BfPyTestCls):
         """
         raise KeyError("Intended unset error")
 
-    def runTest(self):
+    def test_main(self):
         print("This is runTest of Test1")
 
         # working with TestStep variant

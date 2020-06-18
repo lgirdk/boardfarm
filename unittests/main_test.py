@@ -144,6 +144,9 @@ class TestSimpleBoardfarm(unittest.TestCase):
         class test_stub(BftBaseTest):
             log_to_file = ""
 
+            def test_main(self):
+                pass
+
             def skipTest(self, msg):
                 print("skipTest() called")
                 global ran
