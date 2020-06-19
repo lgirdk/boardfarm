@@ -98,7 +98,7 @@ class bft_pexpect_helper(pexpect.spawn):
             """Instance Initialization."""
             if IS_PYTHON_3:
                 kwargs["encoding"] = "latin1"
-            ret = pexpect.spawn.__init__(self, *args, **kwargs)
+            pexpect.spawn.__init__(self, *args, **kwargs)
 
             global password
             if ((len(args) > 0 and "sudo" in args[0])
@@ -118,8 +118,6 @@ class bft_pexpect_helper(pexpect.spawn):
                 else:
                     password = getpass.getpass(self.match.group(0))
                     self.sendline(password)
-
-            return ret
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
