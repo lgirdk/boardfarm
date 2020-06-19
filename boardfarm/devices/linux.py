@@ -530,9 +530,12 @@ EOFEOFEOFEOF''' % (dst, bin_file))
                             ['Connection timed out'] +
                             ['Failed to connect to'] + self.prompt,
                             timeout=100)
-        self.sendcontrol('c')
-        self.expect(self.prompt)
-        return True if index not in [2, 3] else False
+        try:
+            self.expect_prompt()
+        except pexpect.exceptions.TIMEOUT:
+            self.sendcontrol('c')
+            self.expect_prompt()
+        return index in [0, 1]
 
     def get_lease_time(self):
         """Get DHCP lease time from dhclient.leases file.
