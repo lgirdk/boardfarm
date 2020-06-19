@@ -114,7 +114,7 @@ class DebianISCProvisioner(debian.DebianBox):
         self.gw = self.prov_ip
         self.gwv6 = self.prov_ipv6
         self.nw = self.prov_network
-        return super(DebianISCProvisioner, self).__init__(*args, **kwargs)
+        super(DebianISCProvisioner, self).__init__(*args, **kwargs)
 
     def setup_dhcp6_config(self, board_config):
         """Set up DHCP 6 Config."""
