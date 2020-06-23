@@ -20,7 +20,7 @@ from boardfarm.tests import rootfs_boot
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
     """Copy a file to /tmp on the WAN device using\
     common.copy_file_to_server."""
-    def runTest(self):
+    def test_main(self):
         """Copy a file to /tmp on the WAN device using\
         common.copy_file_to_server."""
         wan = self.dev.wan
@@ -77,7 +77,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
 
     session = None
 
-    def runTest(self):
+    def test_main(self):
         """Tests the create_session function in devices/__init__.py."""
         wan = self.dev.wan
 
@@ -208,7 +208,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
 
 class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     """tests the linux functions moved to devices/linux.py."""
-    def runTest(self):
+    def test_main(self):
         """Tests the linux functions moved to devices/linux.py."""
         board = self.dev.board
         lan = self.dev.lan
@@ -466,7 +466,7 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
     2. performs an snmp get from the lan to the wan
     using hte compiled oids
     """
-    def runTest(self):
+    def test_main(self):
         """Start testing the SnmpHelper module."""
         wan = self.dev.wan
         lan = self.dev.lan
@@ -550,7 +550,7 @@ class selftest_test_retry(rootfs_boot.RootFSBootTest):
     fail_on = 0
     runs = 0
 
-    def runTest(self):
+    def test_main(self):
         """Start testing the retry function."""
         if not self.config.retry:
             self.skipTest("Test needs to be rerun with retries")
@@ -586,7 +586,7 @@ class selftest_always_fail(rootfs_boot.RootFSBootTest):
 
     expected_failure = True
 
-    def runTest(self):
+    def test_main(self):
         """Print failing message and assert False."""
         print("Failing...")
         assert False
@@ -635,7 +635,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
 
         self.cls_name = self.__class__.__name__
 
-    def runTest(self):
+    def test_main(self):
         """Start testing the error injection intercepts the function call\
         and spoof the return value."""
         lan = self.dev.lan
@@ -707,7 +707,7 @@ class selftest_tear_down(rootfs_boot.RootFSBootTest):
         )
         raise ValueError("No arguments passed to the test")
 
-    def runTest(self):
+    def test_main(self):
         """A sample test class to validate teardown feature."""
         with TS(self, "TD selftest. Print action1 output") as ts:
             ts.call(self.action_1, "Executed Action 1")
