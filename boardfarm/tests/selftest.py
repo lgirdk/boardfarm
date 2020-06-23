@@ -10,6 +10,7 @@ import random
 import string
 import tempfile
 
+import pytest
 from boardfarm import lib
 from boardfarm.devices import debian, linux
 from boardfarm.lib import SnmpHelper, common
@@ -17,6 +18,7 @@ from boardfarm.orchestration import TestStep as TS
 from boardfarm.tests import rootfs_boot
 
 
+@pytest.mark.selftest
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
     """Copy a file to /tmp on the WAN device using\
     common.copy_file_to_server."""
@@ -72,6 +74,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         print("Test passed")
 
 
+@pytest.mark.selftest
 class selftest_test_create_session(rootfs_boot.RootFSBootTest):
     """tests the create_session function in devices/__init__.py."""
 
@@ -206,6 +209,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
             self.session.sendline("exit")
 
 
+@pytest.mark.selftest
 class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     """tests the linux functions moved to devices/linux.py."""
     def test_main(self):
