@@ -155,17 +155,13 @@ def run_unittest () {
     sh '''
         set +e
         . venv/bin/activate
-    pip uninstall -y pytest_boardfarm
         # Run unittests, store exit codes
-        repo forall -c '[ -d "unittests" ] && { pytest unittests; echo $? >> ../unittest_results.txt; }'
+        repo forall -c '[ -d "unittests" ] && { pytest unittests -p no:boardfarm; echo $? >> ../unittest_results.txt; }'
         # If any exit code was 1, let's fail
         grep -q [1-9] unittest_results.txt
         if [ $? -eq 0 ]; then
             exit 1
         fi
-    cd pytest-boardfarm
-    pip install -e .
-    cd ..
         bft -l
     '''
 }
