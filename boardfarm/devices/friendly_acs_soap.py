@@ -129,6 +129,10 @@ class FriendlyACS:
         """Delete a CPE on the ACS server."""
         self.client.service.FTDeleteDevice(devicesn=cpeid)
 
+    def reset_to_default(self, cpeid):
+        """Reset to default on the ACS server."""
+        self.client.service.FTResetToDefault(devicesn=cpeid)
+
 
 if __name__ == "__main__":
     import sys
