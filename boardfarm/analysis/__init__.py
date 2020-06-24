@@ -15,7 +15,7 @@ import traceback
 classes = {}
 analysis_files = glob.glob(os.path.dirname(__file__) + "/*.py")
 for x in sorted(
-    [os.path.basename(f)[:-3] for f in analysis_files if not "__" in f]):
+    [os.path.basename(f)[:-3] for f in analysis_files if "__" not in f]):
     try:
         module = importlib.import_module('boardfarm.analysis.%s' % x)
     except Exception:

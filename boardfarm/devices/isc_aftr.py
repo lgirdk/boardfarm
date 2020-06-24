@@ -208,13 +208,13 @@ class AFTR(object):
 
         extra_bits = "\n".join([
             "set -x",
-            "PUBLIC=\`ip addr show dev %s | grep -w inet | awk '{print \$2}' | awk -F/ '{print \$1}'\`"
-            % self.iface_dut, '\ncase "\$1" in', "start)",
+            r"PUBLIC=\`ip addr show dev %s | grep -w inet | awk '{print \$2}' | awk -F/ '{print \$1}'\`"
+            % self.iface_dut, '\n' + r'case "\$1" in', "start)",
             "%saftr_start" % tab,
             "%s;;" % tab, "stop)",
             "%saftr_stop" % tab,
             "%s;;" % tab, "*)",
-            '%secho "Usage: \$0 start|stop"' % tab,
+            r'%secho "Usage: \$0 start|stop"' % tab,
             "%sexit 1" % tab,
             "%s;;" % tab, "esac\n", "exit 0"
         ])

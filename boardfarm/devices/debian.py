@@ -93,7 +93,8 @@ class DebianBox(linux.LinuxDevice):
             self.legacy_add = True
             arr_names = {"lan": "lan_clients", "wan": "wan_clients"}
             for k, v in arr_names.items():
-                if k in name: self.dev_array = v
+                if k in name:
+                    self.dev_array = v
 
         if ipaddr is not None:
             bft_pexpect_helper.spawn.__init__(

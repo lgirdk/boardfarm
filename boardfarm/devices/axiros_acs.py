@@ -320,13 +320,14 @@ class AxirosACS(base_acs.BaseACS):
         if action == 'SPV':
             if type(param) is not list:
                 param = [param]
-            l = []
+            list_kv = []
             # this is a list of single k,v pairs
             for d in param:
                 k = next(iter(d))
-                l.append({'key': k, 'value': d[k]})
+                list_kv.append({'key': k, 'value': d[k]})
             p_arr_type = 'ns0:SetParameterValuesParametersClassArray'
-            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, l)
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, list_kv)
 
         elif action == 'GPV':
             if type(param) is not list:
@@ -338,10 +339,10 @@ class AxirosACS(base_acs.BaseACS):
         elif action == 'SPA':
             if type(param) is not list:
                 param = [param]
-            l = []
+            list_kv = []
             for d in param:
                 k = next(iter(d))
-                l.append({
+                list_kv.append({
                     'Name':
                     k,
                     'Notification':
@@ -355,7 +356,8 @@ class AxirosACS(base_acs.BaseACS):
                     kwargs.get("notification_param", '1')
                 })
             p_arr_type = 'ns0:SetParameterAttributesParametersClassArray'
-            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, l)
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, list_kv)
 
         elif action == 'GPN':
 
