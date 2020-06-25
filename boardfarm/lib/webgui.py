@@ -208,9 +208,8 @@ class web_gui:
             query = WebDriverWait(self.driver, timeout).until(
                 EC.visibility_of_element_located(element))
         except Exception:
-            print(
-                "check_element_visibility(%s, %s): timeout to find element\n" %
-                element)
+            print("check_element_visibility({}): timeout to find "
+                  "element".format(element))
         return query
 
     def check_element_clickable(self, *element, **kwargs):
@@ -228,9 +227,8 @@ class web_gui:
             query = WebDriverWait(self.driver, timeout).until(
                 EC.element_to_be_clickable(element))
         except Exception:
-            print(
-                "check_element_clickable(%s, %s): timeout to find element\n" %
-                element)
+            print("check_element_clickable({}): timeout to find "
+                  "element".format(element))
         return query
 
     def check_element_selection_state_to_be(self, *element, **kwargs):
@@ -248,9 +246,8 @@ class web_gui:
             query = WebDriverWait(self.driver, timeout).until(
                 EC.element_selection_state_to_be(element))
         except Exception:
-            print(
-                "check_element_selection_state_to_be(%s, %s): timeout to find element\n"
-                % element)
+            print("check_element_selection_state_to_be({}): timeout to find "
+                  "element".format(element))
         return query
 
     def wait_for_element(self, index_by="id", ele_index=None):
