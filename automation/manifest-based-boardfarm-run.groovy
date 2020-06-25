@@ -156,7 +156,7 @@ def run_unittest () {
         set +e
         . venv/bin/activate
         # Run unittests, store exit codes
-        repo forall -c '[ -d "unittests" ] && { pytest unittests -p no:boardfarm; echo $? >> ../unittest_results.txt; }'
+        repo forall -c '[ -d "unittests" ] && { pytest unittests; echo $? >> ../unittest_results.txt; }'
         # If any exit code was 1, let's fail
         grep -q [1-9] unittest_results.txt
         if [ $? -eq 0 ]; then
