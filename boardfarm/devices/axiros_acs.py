@@ -13,6 +13,8 @@ import xmltodict
 from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
                                   TR069ResponseError)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.network_testing import (kill_process, tcpdump_capture,
+                                           tshark_read)
 from debtcollector import moves
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
@@ -108,6 +110,26 @@ class AxirosACS(base_acs.BaseACS):
         # overwriting linux behaviour
         # this is under assumption that acs is having root credentials.
         self.sendline(cmd)
+
+    def tcp_dump(func):
+        """ Decorator to capture tcpdump in error cases
+        """
+        def wrapper(self, param):
+            try:
+                capture_file = "acs_debug" + time.strftime(
+                    "%Y%m%d-%H%M%S") + ".pcap"
+                tcpdump_capture(self, "any", capture_file=capture_file)
+                out = func(self, param)
+                kill_process(self, process="tcpdump")
+                return out
+            except Exception as e:
+                kill_process(self, process="tcpdump")
+                tshark_read(self, capture_file, filter_str="-Y http")
+                raise (e)
+            finally:
+                self.sendline("rm %s" % capture_file)
+
+        return wrapper
 
     def __str__(self):
         """Format the string representation of self object (instance).
@@ -603,6 +625,7 @@ class AxirosACS(base_acs.BaseACS):
                     return value.text
         return None
 
+    @tcp_dump
     def GPA(self, param):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
@@ -668,6 +691,7 @@ class AxirosACS(base_acs.BaseACS):
             print(e)
             return None
 
+    @tcp_dump
     def SPA(self, param, **kwargs):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
@@ -836,6 +860,7 @@ class AxirosACS(base_acs.BaseACS):
                 continue
         return None
 
+    @tcp_dump
     def GPV(self, param):
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
@@ -870,6 +895,7 @@ class AxirosACS(base_acs.BaseACS):
                         raise (e)
                     val += 1
 
+    @tcp_dump
     def SPV(self, param_value):
         """Modify the value of one or more CPE Parameters.
 
@@ -912,6 +938,7 @@ class AxirosACS(base_acs.BaseACS):
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
 
+    @tcp_dump
     def GPN(self, param, next_level):
         """This method is used to  discover the Parameters accessible on a particular CPE
 
