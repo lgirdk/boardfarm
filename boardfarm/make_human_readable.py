@@ -159,11 +159,10 @@ def xmlresults_to_html(test_results,
 
     # Substitute parameters into template html to create new html file
     template_filename = pick_template_filename()
-    f = open(template_filename, "r").read()
-    s = Template(f)
-    f = open(output_name, "w")
-    f.write(s.substitute(parameters))
-    f.close()
+    with open(template_filename, "r") as fin, open(output_name, "w") as fout:
+        f = fin.read()
+        s = Template(f)
+        fout.write(s.substitute(parameters))
 
 
 def get_title():

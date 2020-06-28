@@ -551,10 +551,9 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     # Write test result messages to a file
     full_results = library.process_test_results(tests_to_run,
                                                 config.golden_master_results)
-    json.dump(full_results,
-              open(os.path.join(config.output_dir + 'test_results.json'), 'w'),
-              indent=4,
-              sort_keys=True)
+    with open(os.path.join(config.output_dir + 'test_results.json'),
+              'w') as fout:
+        json.dump(full_results, fout, indent=4, sort_keys=True)
 
     # run all analysis classes (post processing)
     # also, never fail so we don't block automation
@@ -596,12 +595,9 @@ def main():
     info_for_remote_log = connect_and_run(config)
 
     # Save Results to file
-    json.dump(info_for_remote_log,
-              open(
-                  os.path.join(config.output_dir + 'info_for_remote_log.json'),
-                  'w'),
-              indent=4,
-              sort_keys=True)
+    with open(os.path.join(config.output_dir + 'info_for_remote_log.json'),
+              'w') as fout:
+        json.dump(info_for_remote_log, fout, indent=4, sort_keys=True)
 
     # Send Results to logstash, if configured
     try:
@@ -664,7 +660,8 @@ def main():
 
     # Update the results in Zephyr
     try:
-        result_data = json.load(open('./results/test_results.json'))
+        with open('./results/test_results.json') as fin:
+            result_data = json.load(fin)
         test_cases_list = [[r["name"], r["grade"]]
                            for r in result_data["test_results"]]
         zephyr_reporter.update_zephyr(test_cases_list)
