@@ -16,6 +16,8 @@ repos:
             args: [--autofix, --indent=4]
           - id: check-added-large-files
           - id: requirements-txt-fixer
+          - id: check-merge-conflict
+          - id: debug-statements
     - repo: https://github.com/Lucas-C/pre-commit-hooks
       rev: v1.1.7
       hooks:
