@@ -310,7 +310,7 @@ class AxirosACS(base_acs.BaseACS):
         :type cpeid: string
         :param param: parameter to used
         :type param: string or list of strings for get, dict or list of dict for set
-        :param action: one of GPV/SPV/GPN/AO/DO/SI/REBOOT
+        :param action: one of GPV/SPV/GPN/AO/DO/SI/REBOOT/DOWNLOAD
         :type action: string
         :param next_level: defaults to null takes True/False
         :type next_level: boolean
@@ -388,6 +388,11 @@ class AxirosACS(base_acs.BaseACS):
             p_arr_type = 'xsd:string'
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, param)
+
+        elif action == "DOWNLOAD":
+            p_arr_type = 'ns0:DownloadArgumentsStruct'
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, *param)
 
         else:
             raise CodeError('Invalid action: ' + action)
@@ -1071,6 +1076,63 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.GetRPCMethods(
                 CommandOptions=CmdOptTypeStruct_data,
                 CPEIdentifier=CPEIdClassStruct_data)
+        return AxirosACS._parse_soap_response(response)
+
+    def Download(self,
+                 URL,
+                 FileType="1 Firmware Upgrade Image",
+                 TargetFileName="",
+                 FileSize=200,
+                 Username="",
+                 Password="",
+                 CommandKey="",
+                 DelaySeconds=10,
+                 SuccessURL="",
+                 FailureURL=""):
+        """Execute Download RPC.
+
+        :param URL: URL to download file
+        :param type: string
+        :param FileType: the string paramenter from following 6 values only
+                         ["1 Firmware Upgrade Image", "2 Web Content",
+                          "3 Vendor Configuration File", "4 Tone File",
+                          "5 Ringer File", "6 Stored Firmware Image" ]
+                         default="3 Vendor Configuration File"
+        :param type: string
+        :param TargetFileName: TargetFileName to download through RPC
+        :param type: string
+        :param FileSize: the size of file to download in bytes
+        :param type: integer
+        :param Username: User to authenticate with file Server.  Default=""
+        :param type: string
+        :param Password: Password to authenticate with file Server. Default=""
+        :param type: string
+        :param CommandKey: the string paramenter passed in Download API
+        :param type: string
+        :param DelaySeconds: delay of seconds in integer
+        :param type: integer
+        :param SuccessURL: URL to access in case of Download API execution succeeded
+        :param type: string
+        :param FailureURL: URL to access in case of Download API execution Failed
+        :param type: string
+
+        :return: returns Download response
+        """
+        if self.cpeid is None:
+            self.cpeid = self.dev.board._cpeid
+
+        param = [
+            CommandKey, DelaySeconds, FailureURL, FileSize, FileType, Password,
+            SuccessURL, TargetFileName, URL, Username
+        ]
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
+                                                   param,
+                                                   action='DOWNLOAD')
+
+        with self.client.settings(raw_response=True):
+            response = self.client.service.Download(CommandOptions=cmd,
+                                                    CPEIdentifier=cpe_id,
+                                                    Parameters=p)
         return AxirosACS._parse_soap_response(response)
 
 
