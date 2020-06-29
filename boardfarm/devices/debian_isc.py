@@ -727,6 +727,8 @@ EOF""")
         self.expect_prompt()
         self.sendline("killall -15 dhcpd")
         self.expect_prompt()
+        self.sendline("rm -f /run/dhcpd*.pid")
+        self.expect_prompt()
         self.sendline("/etc/init.d/isc-dhcp-server start")
         matching = [
             "Starting ISC DHCP(v4)? server.*dhcpd.",
