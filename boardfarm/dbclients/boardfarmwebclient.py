@@ -55,18 +55,15 @@ class BoardfarmWebClient(object):
             os.environ.get("BUILD_URL", None),
         }
         if self.default_data["username"] in [
-                "root",
-                "testuser",
-                "tester",
-                "docker-factory",
-                "boardfarm",
+                "root", "testuser", "tester", "docker-factory", "boardfarm"
         ]:
-            print("\x1b[6;30;42m" +
-                  "------------Username {} will be blacklisted-----------".
-                  format(self.default_data["username"]) + "\x1b[0m")
             warnings.warn(
-                "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' will be blacklisted soon. It is recommended to use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."
+                "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' are blacklisted. Use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."
             )
+            raise ServerError(
+                "\x1b[6;30;42m" +
+                "------------Username {} is blacklisted-----------".format(
+                    self.default_data["username"]) + "\x1b[0m")
         try:
             res = requests.get(self.config_url,
                                headers=self.headers,
