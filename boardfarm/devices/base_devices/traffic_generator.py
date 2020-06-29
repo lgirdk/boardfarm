@@ -98,7 +98,7 @@ class TrafficGenerator(base.BaseDevice):
         :param project: File path of project to be loaded
         :type project: str
         """
-        config = self.load_project()
+        config = self.load_project(project)
         for conf, value in config.items():
             # decide to add server_port / client_port / wifi_port
             # e.g.
