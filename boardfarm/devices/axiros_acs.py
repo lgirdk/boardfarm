@@ -114,12 +114,12 @@ class AxirosACS(base_acs.BaseACS):
     def tcp_dump(func):
         """ Decorator to capture tcpdump in error cases
         """
-        def wrapper(self, param):
+        def wrapper(self, *args, **kwargs):
             try:
                 capture_file = "acs_debug" + time.strftime(
                     "%Y%m%d-%H%M%S") + ".pcap"
                 tcpdump_capture(self, "any", capture_file=capture_file)
-                out = func(self, param)
+                out = func(self, *args, **kwargs)
                 kill_process(self, process="tcpdump")
                 return out
             except Exception as e:
