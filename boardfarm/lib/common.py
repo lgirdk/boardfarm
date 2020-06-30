@@ -349,8 +349,8 @@ def firefox_webproxy_driver(ipport, config):
     driver = webdriver.Firefox(firefox_profile=profile, options=opts)
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
-    driver.implicitly_wait(10)
-    driver.set_page_load_timeout(10)
+    driver.implicitly_wait(20)
+    driver.set_page_load_timeout(20)
 
     return driver
 
@@ -387,8 +387,8 @@ def chrome_webproxy_driver(ipport, config):
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
 
-    driver.implicitly_wait(10)
-    driver.set_page_load_timeout(10)
+    driver.implicitly_wait(20)
+    driver.set_page_load_timeout(20)
 
     return driver
 

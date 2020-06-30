@@ -37,7 +37,7 @@ class web_gui:
         initialisation
         """
         self.output_dir = output_dir
-        self.default_delay = 10
+        self.default_delay = 20
         self.driver = None
         self.display = None
 
