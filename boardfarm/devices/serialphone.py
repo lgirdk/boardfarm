@@ -78,6 +78,13 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("print(l)")
 
+    def offhook_onhook(self, hook_value):
+        """To generate the offhook/onhook signals."""
+        self.sendline("ser.write(b'ATH%s\\r')" % hook_value)
+        self.expect(">>>")
+        self.mta_readlines()
+        self.expect("OK")
+
     def dial(self, number, receiver_ip=None):
         """To dial to another number.
 
