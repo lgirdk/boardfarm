@@ -8,6 +8,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import ipaddress
+import re
 
 import pexpect
 import six
@@ -375,3 +376,26 @@ def custom_telnet_service(device,
         else:
             device.sendcontrol('c')
             device.expect(device.prompt, timeout=60)
+
+
+def dhcping_inform_trigger(device, server_ip, opts=None):
+    """This function is used to trigger dhcpv4 inform message
+    :param device:  client device from which the dhcping inform is triggered
+    :type device: object
+    :param server_ip: DHCP server Ip address to which inform is triggered
+    :param server_ip: String
+    :param opts: can be more than one parameter but it should be joined
+    :type opts: String, Optional
+    :return: boolean value based on success of dhcpv4 inform trigger
+    :rtype: Boolean
+    """
+
+    client_ip = device.get_interface_ipaddr(device.iface_dut)
+    mac = device.get_interface_macaddr(device.iface_dut).upper()
+    command_builder = 'dhcping -i -c {} -s {} -h "{}"'.format(
+        client_ip, server_ip, mac)
+    if opts:
+        command_builder = '{} {}'.format(command_builder, opts)
+    output = device.check_output(command_builder)
+    out = re.search(r'(\wot\sanswer\s\w+)', output)
+    return True if out else False
