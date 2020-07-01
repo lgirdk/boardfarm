@@ -305,7 +305,7 @@ def phantom_webproxy_driver(ipport):
     return driver
 
 
-def firefox_webproxy_driver(ipport, config):
+def firefox_webproxy_driver(ipport, config, default_delay=20):
     """Use this if you started firefox web proxy on a machine connected to router's LAN.
 
     A proxy server sits between a client application, such as a Web browser, and a real server.
@@ -350,13 +350,13 @@ def firefox_webproxy_driver(ipport, config):
     driver = webdriver.Firefox(firefox_profile=profile, options=opts)
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
-    driver.implicitly_wait(20)
-    driver.set_page_load_timeout(20)
+    driver.implicitly_wait(default_delay)
+    driver.set_page_load_timeout(default_delay)
 
     return driver
 
 
-def chrome_webproxy_driver(ipport, config):
+def chrome_webproxy_driver(ipport, config, default_delay=20):
     """Use this if you prefer Chrome.
 
     Should be the same as firefox_webproxy_driver
@@ -388,13 +388,13 @@ def chrome_webproxy_driver(ipport, config):
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
 
-    driver.implicitly_wait(20)
-    driver.set_page_load_timeout(20)
+    driver.implicitly_wait(default_delay)
+    driver.set_page_load_timeout(default_delay)
 
     return driver
 
 
-def get_webproxy_driver(ipport, config):
+def get_webproxy_driver(ipport, config, default_delay=20):
     """Get the web driver initialized based on the web driver configurations in config.py.
 
     :param ipport: ip and port number
@@ -406,7 +406,7 @@ def get_webproxy_driver(ipport, config):
     :rtype: selenium webdriver element
     """
     if config.default_web_driver == "ffox":
-        d = firefox_webproxy_driver(ipport, config)
+        d = firefox_webproxy_driver(ipport, config, default_delay)
         d.maximize_window()
         return d
     elif config.default_web_driver == "chrome":

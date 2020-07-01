@@ -37,7 +37,7 @@ class web_gui:
         initialisation
         """
         self.output_dir = output_dir
-        self.default_delay = 20
+        self.default_delay = kwargs.get('default_delay', 20)
         self.driver = None
         self.display = None
 
@@ -399,7 +399,8 @@ class web_gui:
         from boardfarm import config
 
         try:
-            self.driver = get_webproxy_driver(proxy, config)
+            self.driver = get_webproxy_driver(proxy, config,
+                                              self.default_delay)
         except Exception:
             traceback.print_exc()
             raise Exception("Failed to get webproxy driver via proxy " + proxy)
