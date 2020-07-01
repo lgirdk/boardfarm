@@ -5,6 +5,7 @@ import glob
 import importlib
 import inspect
 import os
+import pkgutil
 import sys
 import traceback
 import types  # noqa: F401
@@ -26,43 +27,30 @@ device_mappings = {}
 
 def probe_devices():
     """Dynamically find all devices classes accross all boardfarm projects."""
-    all_boardfarm_modules = boardfarm.plugins
+    all_boardfarm_modules = dict(boardfarm.plugins)
     all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
 
     all_mods = []
 
     # Loop over all modules to import their devices
     for modname in all_boardfarm_modules:
-        # Find all python files in 'devices' directories
-        location = os.path.join(
-            os.path.dirname(all_boardfarm_modules[modname].__file__),
-            'devices')
-        file_names = glob.glob(os.path.join(location, '*.py'))
-        file_names = [
-            os.path.basename(x)[:-3] for x in file_names if "__" not in x
-        ]
-        # Find sub modules too
-        sub_mod = glob.glob(os.path.join(location, '*', '__init__.py'))
-        file_names += [os.path.basename(os.path.dirname(x)) for x in sub_mod]
-        # Import devices
-        for fname in sorted(file_names):
-            tmp = '%s.devices.%s' % (modname, fname)
-            try:
-                module = importlib.import_module(tmp)
-                all_mods += [module]
-            except Exception:
-                if 'BFT_DEBUG' in os.environ:
-                    traceback.print_exc()
-                    print("Warning: could not import from file %s.py" % fname)
-                else:
-                    print(
-                        "Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details"
-                        % fname)
-                continue
-            device_mappings[module] = []
-            for thing_name in dir(module):
-                thing = getattr(module, thing_name)
-                if inspect.isclass(thing) and hasattr(thing, 'model'):
+        bf_module = all_boardfarm_modules[modname]
+        device_module = pkgutil.get_loader(".".join(
+            [bf_module.__name__, 'devices']))
+        if device_module:
+            all_mods += boardfarm.walk_library(
+                device_module.load_module(),
+                filter_pkgs=['base_devices', 'connections', 'platform'])
+
+    for module in all_mods:
+        device_mappings[module] = []
+        for thing_name in dir(module):
+            thing = getattr(module, thing_name)
+            if inspect.isclass(thing) and hasattr(thing, 'model'):
+                # thing.__module__ prints the module name where it is defined
+                # this name needs to match the current module we're scanning.
+                # else we skip
+                if thing.__module__ == module.__name__:
                     device_mappings[module].append(thing)
 
 

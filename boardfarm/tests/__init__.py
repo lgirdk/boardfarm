@@ -9,6 +9,7 @@ import glob
 import importlib
 import inspect
 import os
+import pkgutil
 import traceback
 
 import boardfarm
@@ -33,31 +34,24 @@ def init(config=None):
     )  # use dict() to create a copy instead of a reference
     all_boardfarm_modules["boardfarm"] = importlib.import_module("boardfarm")
 
+    all_mods = []
+
     # Loop over all modules to import their tests
     for modname in all_boardfarm_modules:
-        # Find all python files in 'tests' directories
-        location = os.path.join(
-            os.path.dirname(all_boardfarm_modules[modname].__file__), "tests")
-        file_names = glob.glob(os.path.join(location, "*.py"))
-        file_names = [
-            os.path.basename(x)[:-3] for x in file_names if "__" not in x
-        ]
-        for fname in sorted(file_names):
-            tmp = "%s.tests.%s" % (modname, fname)
-            try:
-                module = importlib.import_module(tmp)
-            except Exception:
-                traceback.print_exc()
-                raise TestImportError(
-                    "Error: Could not import from test file %s.py" % fname)
-            if fname in test_mappings:
-                print("WARNING: Two test files have the same name, %s.py" %
-                      fname)
-            test_mappings[fname] = []
-            for thing_name in dir(module):
-                thing = getattr(module, thing_name)
-                if inspect.isclass(thing) and hasattr(thing, "run"):
-                    test_mappings[fname].append(thing)
+        bf_module = all_boardfarm_modules[modname]
+        test_module = pkgutil.get_loader(".".join(
+            [bf_module.__name__, "tests"]))
+        if test_module:
+            all_mods += boardfarm.walk_library(test_module.load_module(),
+                                               filter_pkgs=['lib'])
+
+    for module in all_mods:
+        fname = module.__name__.split(".")[-1]
+        test_mappings[fname] = []
+        for thing_name in dir(module):
+            thing = getattr(module, thing_name)
+            if inspect.isclass(thing) and hasattr(thing, "run"):
+                test_mappings[fname].append(thing)
 
     # Loop over all test classes in all test files, and
     # run their 'parse' function if they have one.
