@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import xmltodict
 from boardfarm.lib.bft_logging import LoggerMeta
 from zeep import Client

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Syslog server method."""
 import datetime
 import re
