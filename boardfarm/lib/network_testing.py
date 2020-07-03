@@ -49,17 +49,22 @@ def tcpdump_capture(device,
     return device.before
 
 
-def kill_process(device, process="tcpdump"):
+def kill_process(device, process="tcpdump", pid=None):
     """Kill any active process
 
     :param device: lan or wan
     :type device: Object
     :param process: process to kill, defaults to tcpdump
     :type process: String, Optional
+    :param pid: process id to kill, defaults to None
+    :type pid: String, Optional
     :return: Console ouput of sync sendline command after kill process
     :rtype: string
     """
-    device.sudo_sendline("killall %s" % process)
+    if pid:
+        device.sudo_sendline("kill %s" % pid)
+    else:
+        device.sudo_sendline("killall %s" % process)
     device.expect(device.prompt)
     device.sudo_sendline("sync")
     retry_on_exception(device.expect, (device.prompt, ), retries=5, tout=60)
