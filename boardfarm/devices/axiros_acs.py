@@ -115,15 +115,20 @@ class AxirosACS(base_acs.BaseACS):
         """ Decorator to capture tcpdump in error cases
         """
         def wrapper(self, *args, **kwargs):
+            pid = None
             try:
                 capture_file = "acs_debug" + time.strftime(
                     "%Y%m%d-%H%M%S") + ".pcap"
-                tcpdump_capture(self, "any", capture_file=capture_file)
+                tcpdump_output = tcpdump_capture(self,
+                                                 "any",
+                                                 capture_file=capture_file)
+                pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))",
+                                tcpdump_output).group(2)
                 out = func(self, *args, **kwargs)
-                kill_process(self, process="tcpdump")
+                kill_process(self, process="tcpdump", pid=pid)
                 return out
             except Exception as e:
-                kill_process(self, process="tcpdump")
+                kill_process(self, process="tcpdump", pid=pid)
                 tshark_read(self, capture_file, filter_str="-Y http")
                 raise (e)
             finally:
