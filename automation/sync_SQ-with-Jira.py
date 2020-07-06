@@ -18,7 +18,7 @@ jira_base_url = os.getenv("JIRA_URL")
 jira_user = os.getenv("JIRA_USER")
 jira_pass = os.getenv("JIRA_PWD")
 jira_project = os.getenv("JIRA_PROJ")
-sonar_auth_url = sonar_base_url.replace('//', f'//{sonar_user}:{sonar_pass}@')
+sonar_auth_url = sonar_base_url.replace("//", f"//{sonar_user}:{sonar_pass}@")
 jira_epic = os.getenv("JIRA_EPIC", "")
 
 
@@ -40,8 +40,8 @@ def get_jira_id_in_comments(comments):
     :rtype: String or Boolean
     """
     for comment in comments:
-        if jira_base_url in comment['markdown']:
-            text = comment['markdown']
+        if jira_base_url in comment["markdown"]:
+            text = comment["markdown"]
             lines = text.split()
             for line in lines:
                 if line.startswith(jira_base_url):
@@ -61,7 +61,7 @@ def get_sonar_jira_issues():
     :rtype: DataFrame
     """
     issue_matrix = pd.DataFrame(
-        [], columns=['Sonarqube_id', 'Jira_id', 'comments'])
+        [], columns=["Sonarqube_id", "Jira_id", "comments"])
 
     try:
         sonar_issues = []
@@ -71,35 +71,36 @@ def get_sonar_jira_issues():
             for issue_type in issue_type_list:
                 response = requests.get(
                     sonar_auth_url +
-                    '/api/issues/search?additionalFields=comments&types=' +
-                    sonar_issue_type + '&projects=' + sonar_project +
-                    '&branch=' + sonar_branch +
-                    '&statuses=OPEN,REOPENED,CONFIRMED')
+                    "/api/issues/search?additionalFields=comments&types=" +
+                    sonar_issue_type + "&projects=" + sonar_project +
+                    "&branch=" + sonar_branch +
+                    "&statuses=OPEN,REOPENED,CONFIRMED")
                 data_json = response.json()
-                sonar_issues = sonar_issues + data_json['issues']
+                sonar_issues = sonar_issues + data_json["issues"]
 
     except Exception as e:
         print(e)
 
     for issue in sonar_issues:
-        existing_jira_id = get_jira_id_in_comments(issue['comments'])
+        existing_jira_id = get_jira_id_in_comments(issue["comments"])
         if existing_jira_id:
-            issue_matrix.loc[-1] = [issue['key'], existing_jira_id, ""]
+            issue_matrix.loc[-1] = [issue["key"], existing_jira_id, ""]
         else:
             Jira_id = create_jira_issue(issue)
             comment = ""
             if Jira_id:
                 response = requests.post(sonar_auth_url +
-                                         '/api/issues/add_comment?issue=' +
-                                         issue['key'] + '&text=' +
-                                         jira_base_url + '/browse/' + Jira_id)
+                                         "/api/issues/add_comment?issue=" +
+                                         issue["key"] + "&text=" +
+                                         jira_base_url + "/browse/" + Jira_id)
                 if not response.ok:
                     comment = "Unable to add Jira URL to issue in Sonarqube"
-                issue_matrix.loc[-1] = [issue['key'], Jira_id, comment]
+                issue_matrix.loc[-1] = [issue["key"], Jira_id, comment]
             else:
                 issue_matrix.loc[-1] = [
-                    issue['key'],
-                    "Jira id was not created due to earlier exception", comment
+                    issue["key"],
+                    "Jira id was not created due to earlier exception",
+                    comment,
                 ]
         issue_matrix.index = issue_matrix.index + 1
         issue_matrix = issue_matrix.sort_index()
@@ -116,40 +117,39 @@ def create_jira_issue(issue):
     try:
         jira = JIRA(server=jira_base_url, basic_auth=(jira_user, jira_pass))
 
-        labels = issue['tags']
-        labels.extend([issue['project']])
+        labels = issue["tags"]
+        labels.extend([issue["project"]])
 
-        description = "Triggering rule:\n" + issue[
-            'message'] + "\nLink: " "" + sonar_base_url + '/issues?issues=' + issue[
-                'key']
+        description = ("Triggering rule:\n" + issue["message"] + "\nLink: "
+                       "" + sonar_base_url + "/issues?issues=" + issue["key"])
 
-        if 'author' in issue.keys():
-            description += "\nAuthor: " "" + issue['author']
+        if "author" in issue.keys():
+            description += "\nAuthor: " "" + issue["author"]
 
         issue_dict = {
             "project": {
-                'key': jira_project
+                "key": jira_project
             },
-            "summary": "[SonarQube] - " + issue['component'],
+            "summary": "[SonarQube] - " + issue["component"],
             "description": description,
             "issuetype": {
-                'name': 'Bug'
+                "name": "Bug"
             },
             "priority": {
-                'name': get_priority(issue['severity'])
+                "name": get_priority(issue["severity"])
             },
-            "labels": ['SonarQube'],
+            "labels": ["SonarQube"],
             "customfield_12072": [{
                 "value": "Low"
             }],
-            "customfield_10530": jira_epic
+            "customfield_10530": jira_epic,
         }
 
         new_issue = jira.create_issue(fields=issue_dict)
         return new_issue.key
 
     except Exception as e:
-        print('Exception on create_jira_issue: ' + str(e) + '\n')
+        print("Exception on create_jira_issue: " + str(e) + "\n")
         return False
 
 
@@ -159,18 +159,18 @@ def get_priority(severity):
     :return: Jira priority
     :rtype: String
     """
-    if severity in ('BLOCKER', 'CRITICAL'):
-        return 'Major (P2)'
+    if severity in ("BLOCKER", "CRITICAL"):
+        return "Major (P2)"
 
-    elif severity == 'MAJOR':
-        return 'Minor (P3)'
+    elif severity == "MAJOR":
+        return "Minor (P3)"
 
-    elif severity in ('MINOR', 'INFO'):
-        return 'Not Blocking (P4)'
+    elif severity in ("MINOR", "INFO"):
+        return "Not Blocking (P4)"
 
     else:
-        return 'Unprioritised'
+        return "Unprioritised"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

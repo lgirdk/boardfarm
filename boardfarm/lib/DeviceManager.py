@@ -61,6 +61,7 @@ class device_type(Enum):
 
 class device_array_type(Enum):
     """Identifiers for device array type."""
+
     wan_clients = 1
     lan_clients = 2
 
@@ -256,7 +257,7 @@ class device_manager(UserList):
         array_name = getattr(dev, "dev_array", None)
         if array_name:
             self.set_device_array(array_name, dev, override)
-        if getattr(dev, 'legacy_add', True):
+        if getattr(dev, "legacy_add", True):
             # For convenience, set an attribute with a name the same as the
             # newly added device type. Example: self.lan = the device of type lan
             attribute_name = new_dev.type.name

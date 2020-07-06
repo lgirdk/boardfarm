@@ -29,7 +29,8 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 backend=self.config.default_display_backend,
                 rfbport=self.config.default_display_backend_port,
                 visible=0,
-                size=(x, y))
+                size=(x, y),
+            )
             self.display.start()
 
             if "BFT_DEBUG" in os.environ:
@@ -46,8 +47,8 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 proxy = lan.http_proxy
             elif lan.ipaddr is not None:
                 ip = lan.ipaddr
-                lan.sendline('cat /proc/net/vlan/config')
-                lan.expect(r'%s.*\|\s([0-9]+).*\|' % lan.iface_dut)
+                lan.sendline("cat /proc/net/vlan/config")
+                lan.expect(r"%s.*\|\s([0-9]+).*\|" % lan.iface_dut)
                 port = 8000 + int(lan.match.group(1))
                 lan.expect(prompt)
                 proxy = "%s:%s" % (ip, port)
@@ -117,7 +118,7 @@ class ScreenshotGUI(RunBrowserViaProxy):
 
         # take screenshot
         driver.save_screenshot(self.config.output_dir + os.sep +
-                               'lan_portal.png')
+                               "lan_portal.png")
 
         driver.close()
 

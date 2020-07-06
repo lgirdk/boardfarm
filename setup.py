@@ -10,18 +10,23 @@ g, ver = {}, {}
 with open(os.path.join("boardfarm", "version.py")) as f:
     exec(f.read(), g, ver)
 
-setup(name='boardfarm',
-      version=ver['__version__'],
-      description='Automated testing of network devices',
-      author='Various',
-      url='https://github.com/lgirdk/boardfarm',
-      packages=find_packages(),
-      package_data={'': ['*.txt', '*.json', '*.cfg', '*.md', '*.tcl']},
-      include_package_data=True,
-      data_files=[('html', [
-          'boardfarm/html/template_results.html',
-          'boardfarm/html/template_results_basic.html'
-      ])],
-      entry_points={
-          'console_scripts': ['bft=boardfarm.bft:main'],
-      })
+setup(
+    name="boardfarm",
+    version=ver["__version__"],
+    description="Automated testing of network devices",
+    author="Various",
+    url="https://github.com/lgirdk/boardfarm",
+    packages=find_packages(),
+    package_data={"": ["*.txt", "*.json", "*.cfg", "*.md", "*.tcl"]},
+    include_package_data=True,
+    data_files=[(
+        "html",
+        [
+            "boardfarm/html/template_results.html",
+            "boardfarm/html/template_results_basic.html",
+        ],
+    )],
+    entry_points={
+        "console_scripts": ["bft=boardfarm.bft:main"],
+    },
+)

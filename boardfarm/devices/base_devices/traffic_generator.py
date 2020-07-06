@@ -20,18 +20,18 @@ class TrafficGenerator(base.BaseDevice):
         kwargs["start"] = ""
         self.consoles = []
 
-        self.conn_cmd = kwargs.pop('conn_cmd', None)
-        self.connection_type = kwargs.pop('connection_type', None)
+        self.conn_cmd = kwargs.pop("conn_cmd", None)
+        self.connection_type = kwargs.pop("connection_type", None)
 
         # provide expected speeds and latency to be configured in a project.
-        self.tcp_down_speed = kwargs.pop('tcp_down_speed', None)
-        self.tcp_up_speed = kwargs.pop('tcp_up_speed', None)
-        self.udp_down_speed = kwargs.pop('udp_down_speed', None)
-        self.udp_up_speed = kwargs.pop('udp_up_speed', None)
+        self.tcp_down_speed = kwargs.pop("tcp_down_speed", None)
+        self.tcp_up_speed = kwargs.pop("tcp_up_speed", None)
+        self.udp_down_speed = kwargs.pop("udp_down_speed", None)
+        self.udp_up_speed = kwargs.pop("udp_up_speed", None)
         self.down_latency = timedelta(
-            microseconds=kwargs.pop('down_latency_ns', 10000000) / 1000.0)
+            microseconds=kwargs.pop("down_latency_ns", 10000000) / 1000.0)
         self.up_latency = timedelta(
-            microseconds=kwargs.pop('up_latency_ns', 10000000) / 1000.0)
+            microseconds=kwargs.pop("up_latency_ns", 10000000) / 1000.0)
 
         # Store instances of TrafficGeneratorPort as client or server
         self.server = None
@@ -76,8 +76,14 @@ class TrafficGenerator(base.BaseDevice):
         LATENCY:
             DOWN:       {}
             UP:         {}
-        """.format(self.tcp_down_speed, self.tcp_up_speed, self.udp_down_speed,
-                   self.udp_up_speed, self.down_latency, self.up_latency)
+        """.format(
+            self.tcp_down_speed,
+            self.tcp_up_speed,
+            self.udp_down_speed,
+            self.udp_up_speed,
+            self.down_latency,
+            self.up_latency,
+        )
 
     def load_project(self, project):
         """In case of pre-defined project, following method is used to load configurations
@@ -207,5 +213,5 @@ class TrafficGeneratorPort(object):
         raise Exception("Not implemented!")
 
     def __str__(self):
-        return "Port \"{}\" ({}@{})".format(self.port_name, self.interface,
-                                            self.address)
+        return 'Port "{}" ({}@{})'.format(self.port_name, self.interface,
+                                          self.address)

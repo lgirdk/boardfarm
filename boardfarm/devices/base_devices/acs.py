@@ -6,7 +6,7 @@ class BaseACS(base.BaseDevice):
 
     model = "base_acs"
     name = "acs_server"
-    namespaces = {'http://www.w3.org/2001/XMLSchema-instance': None}
+    namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
     CPE_wait_time = 60 * 1
     Count_retry_on_error = 3
 
@@ -24,21 +24,21 @@ class BaseACS(base.BaseDevice):
         # listing down the basic expected args
         self.args = args
         self.kwargs = kwargs
-        self.username = self.kwargs['username']
-        self.password = self.kwargs['password']
-        self.ipaddr = self.kwargs['ipaddr']
-        self.port = self.kwargs.get('port', None)
-        self.cli_port = self.kwargs.pop('cli_port', '22')
-        self.cli_username = self.kwargs.pop('cli_username', None)
-        self.cli_password = self.kwargs.pop('cli_password', None)
-        self.color = self.kwargs.pop('color', None)
-        self.options = self.kwargs.pop('options', None)
+        self.username = self.kwargs["username"]
+        self.password = self.kwargs["password"]
+        self.ipaddr = self.kwargs["ipaddr"]
+        self.port = self.kwargs.get("port", None)
+        self.cli_port = self.kwargs.pop("cli_port", "22")
+        self.cli_username = self.kwargs.pop("cli_username", None)
+        self.cli_password = self.kwargs.pop("cli_password", None)
+        self.color = self.kwargs.pop("color", None)
+        self.options = self.kwargs.pop("options", None)
 
         # logic for target ip:port
         # depends on construct used
         self.target = None
         self.wsdl = None
-        self.cpeid = self.kwargs.pop('cpeid', None)
+        self.cpeid = self.kwargs.pop("cpeid", None)
 
         # need to implement logic to connect to ACS
         self.connect()
@@ -78,7 +78,7 @@ class BaseACS(base.BaseDevice):
         raise Exception("Not implemented!")
 
     @staticmethod
-    def _get_xml_key(resp, k='text'):
+    def _get_xml_key(resp, k="text"):
         """Parse XML response
 
         Use this API to fetch data made via HTTP calls in ACS.
@@ -261,7 +261,7 @@ class BaseACS(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def ScheduleInform(self, CommandKey='Test', DelaySeconds=20):
+    def ScheduleInform(self, CommandKey="Test", DelaySeconds=20):
         """Execute ScheduleInform RPC
 
         :param commandKey: the string paramenter passed to scheduleInform

@@ -134,14 +134,17 @@ erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:F7
           RX bytes:146716 (143.2 KiB)  TX bytes:135837 (132.6 KiB)"""
 
 
-@pytest.mark.parametrize("output, expected_ip", [
-    (test2_1, "2001:730:1f:60a::cafe:20"),
-    (test2_2, "2001:730:1f:60a::cafe:20"),
-    (test3_1, "2001:730:1f:60c::e:92"),
-    (test4_1, "2002:0:c4:2::e:c1"),
-    (test4_2, "addd:0:c4:1::e:bb"),
-    (test4_3, "addd:0:c4:1::e:bb"),
-])
+@pytest.mark.parametrize(
+    "output, expected_ip",
+    [
+        (test2_1, "2001:730:1f:60a::cafe:20"),
+        (test2_2, "2001:730:1f:60a::cafe:20"),
+        (test3_1, "2001:730:1f:60c::e:92"),
+        (test4_1, "2002:0:c4:2::e:c1"),
+        (test4_2, "addd:0:c4:1::e:bb"),
+        (test4_3, "addd:0:c4:1::e:bb"),
+    ],
+)
 def test_get_interface_ip6addr(mocker, output, expected_ip):
     mocker.patch.object(LinuxDevice,
                         "check_output",
@@ -161,17 +164,20 @@ def test_get_interface_ip6addr(mocker, output, expected_ip):
                         autospec=True)
 
     dev = LinuxDevice()
-    #set mocker property
+    # set mocker property
     type(dev).before = mocker.PropertyMock(return_value=output)
 
     assert expected_ip == dev.get_interface_ip6addr("erouter0")
 
 
-@pytest.mark.parametrize("output, expected_ip", [
-    (out_str1, None),
-    (test1_1, "2001:730:1f:60c:e:92"),
-    (test1_2, "2001:730:1f:60c:e:92"),
-])
+@pytest.mark.parametrize(
+    "output, expected_ip",
+    [
+        (out_str1, None),
+        (test1_1, "2001:730:1f:60c:e:92"),
+        (test1_2, "2001:730:1f:60c:e:92"),
+    ],
+)
 def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
     mocker.patch.object(LinuxDevice,
                         "check_output",
@@ -187,16 +193,19 @@ def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
         dev.get_interface_ip6addr("erouter0")
 
 
-@pytest.mark.parametrize("output, expected_ip", [
-    (test2_1, "10.64.38.20"),
-    (test1_2, "10.15.80.16"),
-    (test1_1, "10.15.80.16"),
-    (test2_2, "10.64.38.20"),
-    (test3_1, "10.15.80.16"),
-    (test4_1, "10.13.0.13"),
-    (test4_2, "10.3.0.12"),
-    (test4_4, "10.15.80.17"),
-])
+@pytest.mark.parametrize(
+    "output, expected_ip",
+    [
+        (test2_1, "10.64.38.20"),
+        (test1_2, "10.15.80.16"),
+        (test1_1, "10.15.80.16"),
+        (test2_2, "10.64.38.20"),
+        (test3_1, "10.15.80.16"),
+        (test4_1, "10.13.0.13"),
+        (test4_2, "10.3.0.12"),
+        (test4_4, "10.15.80.17"),
+    ],
+)
 def test_get_interface_ipaddr(mocker, output, expected_ip):
     mocker.patch.object(LinuxDevice,
                         "__init__",
@@ -215,10 +224,10 @@ def test_get_interface_ipaddr(mocker, output, expected_ip):
                         return_value=None,
                         autospec=True)
     regex = [
-        r'inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\s*(Bcast|P-t-P|broadcast):',
-        r'inet:?(?:\s*addr:)?\s*(' + ValidIpv4AddressRegex + ').*netmask (' +
-        ValidIpv4AddressRegex + ')(.*destination ' + ValidIpv4AddressRegex +
-        ')?'
+        r"inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\s*(Bcast|P-t-P|broadcast):",
+        r"inet:?(?:\s*addr:)?\s*(" + ValidIpv4AddressRegex + ").*netmask (" +
+        ValidIpv4AddressRegex + ")(.*destination " + ValidIpv4AddressRegex +
+        ")?",
     ]
 
     dev = LinuxDevice()

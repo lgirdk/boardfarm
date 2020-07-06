@@ -44,7 +44,7 @@ class TestStepMeta(type):
 
     def __new__(cls, name, bases, dct):
         """Create instance."""
-        dct['__init__'] = cls.set_args(dct['__init__'])
+        dct["__init__"] = cls.set_args(dct["__init__"])
         return super(TestStepMeta, cls).__new__(cls, name, bases, dct)
 
     @classmethod
@@ -84,7 +84,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         # to maintain an id for each action.
         self.action_id = 1
 
-    def log_msg(self, msg, attr=['bold'], no_time=False, wrap=True):
+    def log_msg(self, msg, attr=["bold"], no_time=False, wrap=True):
         """Test step log parsing and append to log file."""
         time = datetime.now().strftime("%b %d %Y %H:%M:%S")
         indent = ""
@@ -120,17 +120,17 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.msg = "[{}]:[{} Step {}]".format(
             self.parent_test.__class__.__name__, self.prefix, self.step_id)
         print()
-        self.log_msg(('#' * 80), no_time=True)
+        self.log_msg(("#" * 80), no_time=True)
         self.log_msg("{}: START".format(self.msg))
         self.log_msg("Description: {}".format(self.name))
-        self.log_msg(('#' * 80), no_time=True)
+        self.log_msg(("#" * 80), no_time=True)
         self.called_with = True
         return self
 
     def __exit__(self, ex_type, ex_value, tb):
         """Test Step pass and Fail based log message result creation."""
         r = "PASS" if not tb else "FAIL"
-        self.log_msg(('-' * 80), no_time=True)
+        self.log_msg(("-" * 80), no_time=True)
         self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
         if tb:
             trace = traceback.format_exception(ex_type, ex_value, tb)
@@ -138,13 +138,13 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
                          attr=[],
                          no_time=True,
                          wrap=False)
-        self.log_msg(('-' * 80), no_time=True)
-        if tb and 'BFT_DEBUG' in os.environ:
+        self.log_msg(("-" * 80), no_time=True)
+        if tb and "BFT_DEBUG" in os.environ:
             step_output = ["Logging step output:"]
             for i in self.result:
                 step_output.append("[{}] :: {}".format(i.step, i.result))
             self.log_msg("\n".join(step_output), no_time=True, wrap=False)
-            self.log_msg(('-' * 80), no_time=True)
+            self.log_msg(("-" * 80), no_time=True)
         self.called_with = False
 
     # msg has to be the verification message.
@@ -153,7 +153,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         if not cond:
             self.log_msg("{}::[Verification] :\n{} - FAILED".format(
                 self.msg, msg))
-            raise TestError('{}::[Verification] :\n{} - FAILED'.format(
+            raise TestError("{}::[Verification] :\n{} - FAILED".format(
                 self.msg, msg))
         else:
             self.log_msg("{}::[Verification] :\n{} - PASSED".format(
@@ -178,8 +178,12 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         for a_id, action in enumerate(self.actions):
             func_name = action.action.func.__name__
             prefix = "[{}]:[{} Step {}.{}]::[{}]".format(
-                self.parent_test.__class__.__name__, self.prefix, self.step_id,
-                self.action_id, func_name)
+                self.parent_test.__class__.__name__,
+                self.prefix,
+                self.step_id,
+                self.action_id,
+                func_name,
+            )
             tr = None
 
             try:
@@ -279,22 +283,27 @@ class TearDown(TestStep):
                 "Teardown failed for Step {}.{}\n{} - Reason: {}".format(
                     self.step_id, step_id, i.step, i.result),
                 no_time=True,
-                wrap=False)
+                wrap=False,
+            )
             self.td_result = False
 
-            if hasattr(i.result, "tb") and 'BFT_DEBUG' in os.environ:
+            if hasattr(i.result, "tb") and "BFT_DEBUG" in os.environ:
                 trace = traceback.format_exception(*i.result.tb)
                 self.log_msg("".join(trace).strip(),
                              attr=[],
                              no_time=True,
                              wrap=False)
 
-        self.log_msg(('-' * 80), no_time=True)
+        self.log_msg(("-" * 80), no_time=True)
         self.log_msg("[{}]:[{} Step {}.{}]\tResult: {}".format(
-            self.parent_test.__class__.__name__, self.prefix, self.step_id,
-            step_id, ["FAIL", "PASS"][self.td_result]))
+            self.parent_test.__class__.__name__,
+            self.prefix,
+            self.step_id,
+            step_id,
+            ["FAIL", "PASS"][self.td_result],
+        ))
         self.log_msg("Output: {}".format(i.result), no_time=True)
-        self.log_msg(('-' * 80), no_time=True)
+        self.log_msg(("-" * 80), no_time=True)
 
 
 class ExpectException(object):
@@ -345,12 +354,12 @@ class ExpectException(object):
         self.called_with = True
         self.old_add = self.ts.add
         self.ts.execute_flag = False
-        setattr(self.ts, 'add', self.add)
+        setattr(self.ts, "add", self.add)
         return self
 
     def __exit__(self, ex_type, ex_value, tb):
         """If test step not able to capture exception and raise the message."""
-        setattr(self.ts, 'add', self.old_add)
+        setattr(self.ts, "add", self.old_add)
         if not self.ts.execute_flag:
             raise CodeError(
                 "TestSteps added but not executed. Cannot capture exceptions!!"
@@ -373,7 +382,7 @@ class ExpectException(object):
                     self.exc_list))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     def action1(a, m=2):
         """Perform multiplication with default value is 2."""
@@ -420,8 +429,8 @@ if __name__ == '__main__':
                 # add verification, call it later after execute.
                 # if no verification is added, we're expecting step to pass with exception from actions
                 def _verify():
-                    return ts.result[0].output() == 6 and \
-                           ts.result[1].output() == 3
+                    return ts.result[0].output() == 6 and ts.result[1].output(
+                    ) == 3
 
                 ts.add_verify(_verify, "verify step1 output")
                 ts.execute()
@@ -434,8 +443,10 @@ if __name__ == '__main__':
                 for i in [1, 2, 3, 4]:
                     ts.add(add_100, i)
                     ts.execute()
-                    ts.verify(ts.result[-1].output() == 100 + i,
-                              "Verification for input: {}".format(i))
+                    ts.verify(
+                        ts.result[-1].output() == 100 + i,
+                        "Verification for input: {}".format(i),
+                    )
 
             # variation 4
             # This is to ensure that you can call and verify functions directly

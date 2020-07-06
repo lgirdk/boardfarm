@@ -35,12 +35,17 @@ def flash_image(config,
     # Reflash only if at least one or more of these
     # variables are set, or else there is nothing to do in u-boot
     meta_interrupt = False
-    if (config.META_BUILD or env_helper.has_image()) \
-            and not board.flash_meta_booted:
+    if (config.META_BUILD
+            or env_helper.has_image()) and not board.flash_meta_booted:
         meta_interrupt = True
     if reflash and any([
-            meta_interrupt, config.ROOTFS, config.KERNEL, config.UBOOT,
-            config.COMBINED, config.ATOM, config.ARM
+            meta_interrupt,
+            config.ROOTFS,
+            config.KERNEL,
+            config.UBOOT,
+            config.COMBINED,
+            config.ATOM,
+            config.ARM,
     ]):
         # Break into U-Boot, set environment variables
         board.wait_for_boot()
@@ -60,7 +65,7 @@ def flash_image(config,
                     board.reset(break_into_uboot=True)
                     board.setup_uboot_network(tftp_device.gw)
             else:
-                raise Exception('Error during flashing...')
+                raise Exception("Error during flashing...")
         if config.UBOOT:
             board.flash_uboot(config.UBOOT)
         if config.COMBINED:
@@ -136,7 +141,8 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
                 "Warning!!! cmd line arg has been passed."
                 "Overriding image value for {}".format(strategy),
                 removal_version="> 1.1.1",
-                category=UserWarning)
+                category=UserWarning,
+            )
 
             return getattr(config, strategy.upper())
         return img
@@ -176,28 +182,29 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     if not stage[2]:
         d = env_helper.get_dependent_software()
         if d:
-            fr = d.get('factory_reset', False)
+            fr = d.get("factory_reset", False)
             if fr:
-                stage[1]['factory_reset'] = fr
-            strategy = d.get('flash_strategy')
-            img = _check_override(strategy, d.get('image_uri'))
+                stage[1]["factory_reset"] = fr
+            strategy = d.get("flash_strategy")
+            img = _check_override(strategy, d.get("image_uri"))
             stage[1][strategy] = img
 
     if not stage[2]:
         d = env_helper.get_software()
         if d:
-            fr = d.get('factory_reset', False)
+            fr = d.get("factory_reset", False)
             if fr:
-                stage[2]['factory_reset'] = fr
+                stage[2]["factory_reset"] = fr
             if "load_image" in d:
                 strategy = "meta_build"
-                img = _check_override(strategy, d.get('load_image'))
+                img = _check_override(strategy, d.get("load_image"))
             else:
-                strategy = d.get('flash_strategy')
-                img = _check_override(strategy, d.get('image_uri'))
+                strategy = d.get("flash_strategy")
+                img = _check_override(strategy, d.get("image_uri"))
 
             if stage[1]:
-                assert strategy != "meta_build", "meta_build strategy needs to run alone!!!"
+                assert (strategy != "meta_build"
+                        ), "meta_build strategy needs to run alone!!!"
 
             stage[2][strategy] = img
 
@@ -214,8 +221,8 @@ def get_tftp(config):
     """Get tftp server details."""
     # start tftpd server on appropriate device
     tftp_servers = [
-        x['name'] for x in config.board['devices']
-        if 'tftpd-server' in x.get('options', "")
+        x["name"] for x in config.board["devices"]
+        if "tftpd-server" in x.get("options", "")
     ]
     tftp_device = None
     # start all tftp servers for now
@@ -228,11 +235,11 @@ def get_tftp(config):
 def start_dhcp_servers(config):
     """Start DHCP server."""
     # start dhcp servers
-    for device in config.board['devices']:
-        if 'options' in device and 'no-dhcp-sever' in device['options']:
+    for device in config.board["devices"]:
+        if "options" in device and "no-dhcp-sever" in device["options"]:
             continue
-        if 'options' in device and 'dhcp-server' in device['options']:
-            getattr(config, device['name']).setup_dhcp_server()
+        if "options" in device and "dhcp-server" in device["options"]:
+            getattr(config, device["name"]).setup_dhcp_server()
 
 
 def provision(board, prov, wan, tftp_device):
@@ -240,24 +247,24 @@ def provision(board, prov, wan, tftp_device):
     prov.tftp_device = tftp_device
     board.reprovision(prov)
 
-    if hasattr(prov, 'prov_gateway'):
+    if hasattr(prov, "prov_gateway"):
         gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
 
         for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
-            wan.sendline('ip route add %s via %s' % (nw, gw))
+            wan.sendline("ip route add %s via %s" % (nw, gw))
             wan.expect(wan.prompt)
 
     # TODO: don't do this and sort out two interfaces with ipv6
-    wan.disable_ipv6('eth0')
+    wan.disable_ipv6("eth0")
 
-    if hasattr(prov, 'prov_gateway_v6'):
-        wan.sendline('ip -6 route add default via %s' %
+    if hasattr(prov, "prov_gateway_v6"):
+        wan.sendline("ip -6 route add default via %s" %
                      str(prov.prov_gateway_v6))
         wan.expect(wan.prompt)
 
-    wan.sendline('ip route')
+    wan.sendline("ip route")
     wan.expect(wan.prompt)
-    wan.sendline('ip -6 route')
+    wan.sendline("ip -6 route")
     wan.expect(wan.prompt)
 
 
@@ -268,16 +275,16 @@ def boot(config,
          logged=dict(),
          flashing_image=True):
     """Define Boot method for configuring to device."""
-    logged['boot_step'] = "start"
+    logged["boot_step"] = "start"
 
     board = devices.board
     wan = devices.wan
     lan = devices.lan
     tftp_device, tftp_servers = get_tftp(config)
-    logged['boot_step'] = "tftp_device_assigned"
+    logged["boot_step"] = "tftp_device_assigned"
 
     start_dhcp_servers(config)
-    logged['boot_step'] = "dhcp_server_started"
+    logged["boot_step"] = "dhcp_server_started"
 
     if not wan and len(tftp_servers) == 0:
         raise boardfarm.exceptions.NoTFTPServer
@@ -289,20 +296,20 @@ def boot(config,
         if tftp_device is None:
             tftp_device = wan
 
-    logged['boot_step'] = "wan_device_configured"
+    logged["boot_step"] = "wan_device_configured"
 
     tftp_device.start_tftp_server()
 
-    prov = getattr(config, 'provisioner', None)
+    prov = getattr(config, "provisioner", None)
     if prov is not None:
         provision(board, prov, wan, tftp_device)
-        logged['boot_step'] = "board_provisioned"
+        logged["boot_step"] = "board_provisioned"
     else:
-        logged['boot_step'] = "board_provisioned_skipped"
+        logged["boot_step"] = "board_provisioned_skipped"
 
     if lan:
         lan.configure(kind="lan_device")
-    logged['boot_step'] = "lan_device_configured"
+    logged["boot_step"] = "lan_device_configured"
 
     # tftp_device is always None, so we can set it from config
     board.tftp_server = tftp_device.ipaddr
@@ -313,27 +320,27 @@ def boot(config,
     board.tftp_password = "bigfoot1"
 
     board.reset()
-    logged['boot_step'] = "board_reset_ok"
+    logged["boot_step"] = "board_reset_ok"
     if flashing_image:
         flash_image(config, env_helper, board, lan, wan, tftp_device, reflash)
     else:
         boot_image(config, env_helper, board, lan, wan, tftp_device)
-    logged['boot_step'] = "flash_ok"
+    logged["boot_step"] = "flash_ok"
     if hasattr(board, "pre_boot_linux"):
         board.pre_boot_linux(wan=wan, lan=lan)
     board.linux_booted = True
-    logged['boot_step'] = "boot_ok"
+    logged["boot_step"] = "boot_ok"
     board.wait_for_linux()
-    logged['boot_step'] = "linux_ok"
+    logged["boot_step"] = "linux_ok"
 
     if flashing_image:
         if config.META_BUILD and board.flash_meta_booted:
             flash_meta_helper(board, config.META_BUILD, wan, lan)
-            logged['boot_step'] = "late_flash_meta_ok"
-        elif env_helper.has_image() and board.flash_meta_booted \
-                and not config.ROOTFS and not config.KERNEL:
+            logged["boot_step"] = "late_flash_meta_ok"
+        elif (env_helper.has_image() and board.flash_meta_booted
+              and not config.ROOTFS and not config.KERNEL):
             flash_meta_helper(board, env_helper.get_image(), wan, lan)
-            logged['boot_step'] = "late_flash_meta_ok"
+            logged["boot_step"] = "late_flash_meta_ok"
 
     linux_booted_seconds_up = board.get_seconds_uptime()
     # Retry setting up wan protocol
@@ -349,7 +356,7 @@ def boot(config,
                 print("\nFailed to check/set the router's WAN protocol.")
         board.wait_for_network()
     board.wait_for_mounts()
-    logged['boot_step'] = "network_ok"
+    logged["boot_step"] = "network_ok"
 
     # Give other daemons time to boot and settle
     if config.setup_device_networking:
@@ -358,20 +365,20 @@ def boot(config,
             time.sleep(5)
 
     try:
-        board.set_password(password='password')
+        board.set_password(password="password")
     except Exception:
         print("WARNING: Unable to set root password on router.")
 
-    board.sendline('cat /proc/cmdline')
+    board.sendline("cat /proc/cmdline")
     board.expect(board.prompt)
-    board.sendline('uname -a')
+    board.sendline("uname -a")
     board.expect(board.prompt)
 
     # we can't have random messsages messages
     board.set_printk()
 
-    if hasattr(config, 'INSTALL_PKGS') and config.INSTALL_PKGS != "":
-        for pkg in config.INSTALL_PKGS.split(' '):
+    if hasattr(config, "INSTALL_PKGS") and config.INSTALL_PKGS != "":
+        for pkg in config.INSTALL_PKGS.split(" "):
             if len(pkg) > 0:
                 board.install_package(pkg)
 
@@ -384,8 +391,8 @@ def boot(config,
     if config.setup_device_networking:
         assert end_seconds_up > linux_booted_seconds_up
 
-    logged['boot_step'] = "boot_ok"
-    logged['boot_time'] = end_seconds_up
+    logged["boot_step"] = "boot_ok"
+    logged["boot_time"] = end_seconds_up
 
     for i, v in enumerate(board.dev.lan_clients):
         if getattr(env_helper, "has_lan_advertise_identity", None):
@@ -400,4 +407,4 @@ def boot(config,
         else:
             lan.start_lan_client()
 
-    logged['boot_step'] = "lan_ok"
+    logged["boot_step"] = "lan_ok"

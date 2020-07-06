@@ -8,6 +8,7 @@ class BaseBoard(linux.LinuxDevice):
 
     Include all base functionalities defined in linux platform class.
     """
+
     model = "base_board"
     name = "board"
     wan_iface = None
@@ -44,14 +45,14 @@ class BaseBoard(linux.LinuxDevice):
         This will not be considered in base board
         """
 
-        self.encoding = 'latin1'
-        self.conn_type = kwargs.get('connection_type', None)
-        self.connection_cmd = kwargs.get('conn_cmd', [])
-        self.config = kwargs.get('config', None)
-        self.outlet = kwargs.get('power_outlet', None)
-        self.power_ip = kwargs.get('power_ip', None)
-        self.username = kwargs.get('power_username', None)
-        self.password = kwargs.get('power_password', None)
+        self.encoding = "latin1"
+        self.conn_type = kwargs.get("connection_type", None)
+        self.connection_cmd = kwargs.get("conn_cmd", [])
+        self.config = kwargs.get("config", None)
+        self.outlet = kwargs.get("power_outlet", None)
+        self.power_ip = kwargs.get("power_ip", None)
+        self.username = kwargs.get("power_username", None)
+        self.password = kwargs.get("power_password", None)
         self.consoles = []
         for _ in self.connection_cmd:
             # create ur connect statement to the core
@@ -61,11 +62,11 @@ class BaseBoard(linux.LinuxDevice):
         atexit.register(self.kill_console_at_exit)
 
     def get_logfile_read(self):
-        '''Returns logfile_read for main core (ARM)'''
+        """Returns logfile_read for main core (ARM)"""
         raise Exception("Not implemented!")
 
     def set_logfile_read(self, value):
-        '''Sets logfile_read for each core af board'''
+        """Sets logfile_read for each core af board"""
         raise Exception("Not implemented!")
 
     logfile_read = property(get_logfile_read, set_logfile_read)
@@ -245,13 +246,15 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def flash_meta(self,
-                   META,
-                   wan,
-                   lan,
-                   alt_tftp_server=None,
-                   check_version=False,
-                   nosh_image=False):
+    def flash_meta(
+        self,
+        META,
+        wan,
+        lan,
+        alt_tftp_server=None,
+        check_version=False,
+        nosh_image=False,
+    ):
         """Flashes a combine signed image over TFTP initated by SNMP commands
 
         :param META: image which is passed via argument -m
@@ -320,7 +323,7 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def restart_tr069(self, ip_mode='ipv4', recheck_times=5):
+    def restart_tr069(self, ip_mode="ipv4", recheck_times=5):
         """Initialize TR069 component in a board
 
         :param ip_mode: can be ipv4 or ipv6 or both, defaults to 'ipv4'
@@ -349,7 +352,7 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def check_sip_endpoints_registration(self, lines={0: 'TRUE', 1: 'TRUE'}):
+    def check_sip_endpoints_registration(self, lines={0: "TRUE", 1: "TRUE"}):
         """To validate the Registration status of the sip endpoint(s) connected
         to the MTA lines 0 and/or 1.
         :param lines: dictionary containing the line numbers as keys(0/1) and
@@ -391,7 +394,7 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def capture_stopping_signal(self, signal_num='30', dial_flag=False):
+    def capture_stopping_signal(self, signal_num="30", dial_flag=False):
         """This function could be called along with offhook or with dial function
 
         :param signal_num: signal_num of the stopping signal, defaults to '30'

@@ -78,7 +78,7 @@ class bft_pexpect_helper(pexpect.spawn):
         # idea is to check for all names before letting pexpect set the name
         if key == "name":
             # check for static name variable
-            name = getattr(type(self), 'name', None)
+            name = getattr(type(self), "name", None)
             if name:
                 if value[0] == "<":
                     # the code reached pexpect to set name

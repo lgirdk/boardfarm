@@ -10,14 +10,14 @@ from boardfarm.lib.code import (changed_classes, changed_functions,
                                 get_all_classes_from_code,
                                 get_classes_lib_functions, get_features)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Prosses a "git diff" to find test changes.')
-    parser.add_argument('start', type=str, help='Begining git hash')
-    parser.add_argument('end', type=str, help='Ending git hash')
-    parser.add_argument('--debug',
-                        action='store_true',
-                        help='Display much more info')
+    parser.add_argument("start", type=str, help="Begining git hash")
+    parser.add_argument("end", type=str, help="Ending git hash")
+    parser.add_argument("--debug",
+                        action="store_true",
+                        help="Display much more info")
     try:
         args = parser.parse_args()
     except Exception:
@@ -32,10 +32,10 @@ if __name__ == '__main__':
     all_boardfarm_dirs.append(os.path.dirname(boardfarm.__file__))
     test_code_loc = []
     for d in sorted(all_boardfarm_dirs):
-        tmp = glob.glob(os.path.join(d, 'tests')) + \
-              glob.glob(os.path.join(d, '*', 'tests'))
+        tmp = glob.glob(os.path.join(d, "tests")) + glob.glob(
+            os.path.join(d, "*", "tests"))
         if len(tmp) == 1:
-            test_code_loc.append(os.path.join(tmp[0], '*.py'))
+            test_code_loc.append(os.path.join(tmp[0], "*.py"))
         elif len(tmp) > 1:
             print("Error in %s" % d)
             print(
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         os.path.abspath(os.path.join(d, os.pardir, ".git"))
         for d in all_boardfarm_dirs
     ]
-    valid_test_types = ('rootfs_boot.RootFSBootTest', 'BF_Test')
+    valid_test_types = ("rootfs_boot.RootFSBootTest", "BF_Test")
 
     # Get a dictionary of the form
     #     {"classname": ["parent_classname", "grandparent_classname"], ... }
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     features = get_features(git_loc, args.start, args.end, debug=args.debug)
 
-    filter_name = '_TST_'
+    filter_name = "_TST_"
     if args.debug:
         print("\nWill filter to only test names containing '%s'." %
               filter_name)
@@ -112,4 +112,4 @@ if __name__ == '__main__':
     if args.debug:
         print(
             "\nFinal output including directly and indirectly changed tests:")
-    print(" -e ".join([''] + final_result) + " -q ".join([''] + features))
+    print(" -e ".join([""] + final_result) + " -q ".join([""] + features))

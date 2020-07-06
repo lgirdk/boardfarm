@@ -13,7 +13,7 @@ import socket
 
 class RemoteLogger(object):
     """Write data to remote logging server."""
-    def __init__(self, server, subtype='demo'):
+    def __init__(self, server, subtype="demo"):
         """Remote server logging.
 
         :param server: remote server to log
@@ -21,21 +21,21 @@ class RemoteLogger(object):
         :param subtype: subtype to be used, defaults to 'demo'
         :type subtype: string
         """
-        '''Logging server requires some default data for easy searching.'''
-        username = os.environ.get('BUILD_USER_ID', None)
+        """Logging server requires some default data for easy searching."""
+        username = os.environ.get("BUILD_USER_ID", None)
         if username is None:
-            username = os.environ.get('USER', '')
+            username = os.environ.get("USER", "")
         self.default_data = {
-            'type': 'qcatest',
-            'subtype': subtype,
-            'hostname': socket.gethostname(),
-            'user': username,
-            'build_url': os.environ.get('BUILD_URL', 'None'),
-            'change_list': os.environ.get('change_list', 'None'),
-            'manifest': os.environ.get('manifest', 'None'),
+            "type": "qcatest",
+            "subtype": subtype,
+            "hostname": socket.gethostname(),
+            "user": username,
+            "build_url": os.environ.get("BUILD_URL", "None"),
+            "change_list": os.environ.get("change_list", "None"),
+            "manifest": os.environ.get("manifest", "None"),
         }
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        name, port = server.split(':')
+        name, port = server.split(":")
         self.logserver_ip = socket.gethostbyname(name)
         self.logserver_port = int(port)
 

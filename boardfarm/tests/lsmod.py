@@ -16,9 +16,9 @@ class KernelModules(rootfs_boot.RootFSBootTest):
         """Run lsmod command and shows kernel modules."""
         board = self.dev.board
 
-        board.check_output('lsmod | wc -l')
-        tmp = re.search(r'\d+', board.before)
+        board.check_output("lsmod | wc -l")
+        tmp = re.search(r"\d+", board.before)
         num = int(tmp.group(0)) - 1  # subtract header line
-        board.check_output('lsmod | sort')
-        self.result_message = '%s kernel modules are loaded.' % num
-        self.logged['num_loaded'] = num
+        board.check_output("lsmod | sort")
+        self.result_message = "%s kernel modules are loaded." % num
+        self.logged["num_loaded"] = num

@@ -17,26 +17,26 @@ from . import base
 class DellSwitch(base.BaseDevice):
     """Connect to and configures a Dell Switch."""
 
-    prompt = ['console>', 'console#', r'console\(config.*\)#']
+    prompt = ["console>", "console#", r"console\(config.*\)#"]
 
-    def __init__(self, conn_cmd, password=''):
+    def __init__(self, conn_cmd, password=""):
         """Instance initialization."""
         bft_pexpect_helper.spawn.__init__(self,
-                                          '/bin/bash',
-                                          args=['-c', conn_cmd])
+                                          "/bin/bash",
+                                          args=["-c", conn_cmd])
         self.logfile_read = sys.stdout
         self.password = password
 
     def connect(self):
         """Connect and login to switch."""
         for _ in range(10):
-            self.sendline('exit')
+            self.sendline("exit")
             if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=5):
-                self.sendline('enable')
-                if 0 == self.expect(['Password:'] + self.prompt):
+                self.sendline("enable")
+                if 0 == self.expect(["Password:"] + self.prompt):
                     self.sendline(self.password)
                     self.expect(self.prompt)
-                self.sendline('config')
+                self.sendline("config")
                 self.expect(self.prompt)
                 return
 
@@ -44,19 +44,19 @@ class DellSwitch(base.BaseDevice):
 
     def create_vlan(self, vlan):
         """Create a Virtual LAN."""
-        self.sendline('vlan database')
+        self.sendline("vlan database")
         self.expect(self.prompt)
-        self.sendline('vlan %s' % vlan)
+        self.sendline("vlan %s" % vlan)
         self.expect(self.prompt)
-        self.sendline('exit')
+        self.sendline("exit")
         self.expect(self.prompt)
 
     def configure_basic_settings(self):
         """Set simple parameters."""
         self.create_vlan(4093)
-        self.sendline('ip address dhcp')
+        self.sendline("ip address dhcp")
         self.expect(self.prompt)
-        self.sendline('ip address vlan 4093')
+        self.sendline("ip address vlan 4093")
         self.expect(self.prompt)
 
     def configure_eth_private_port(self, port, override_vlan=None):
@@ -67,50 +67,50 @@ class DellSwitch(base.BaseDevice):
             vlan = override_vlan
 
         self.create_vlan(vlan)
-        self.sendline('interface ethernet 1/g%s' % port)
+        self.sendline("interface ethernet 1/g%s" % port)
         self.expect(self.prompt)
-        self.sendline('spanning-tree disable')
+        self.sendline("spanning-tree disable")
         self.expect(self.prompt)
-        self.sendline('switchport mode general')
+        self.sendline("switchport mode general")
         self.expect(self.prompt)
         # NOTE: we can't change the PVID otherwise it breaks other containers
-        self.sendline('switchport general pvid %s' % (100 + port))
+        self.sendline("switchport general pvid %s" % (100 + port))
         self.expect(self.prompt)
-        self.sendline('switchport general ingress-filtering disable')
+        self.sendline("switchport general ingress-filtering disable")
         self.expect(self.prompt)
-        self.sendline('switchport forbidden vlan add 1,4093')
+        self.sendline("switchport forbidden vlan add 1,4093")
         self.expect(self.prompt)
-        self.sendline('switchport general allowed vlan add %s' % vlan)
+        self.sendline("switchport general allowed vlan add %s" % vlan)
         self.expect(self.prompt)
-        self.sendline('exit')
+        self.sendline("exit")
         self.expect(self.prompt)
 
     def configure_eth_trunk_port(self, port):
         """Set an ethernet port to tag traffic with VLAN identifiers."""
-        self.sendline('interface ethernet 1/g%s' % port)
+        self.sendline("interface ethernet 1/g%s" % port)
         self.expect(self.prompt)
-        self.sendline('switchport mode trunk')
+        self.sendline("switchport mode trunk")
         self.expect(self.prompt)
-        self.sendline('switchport forbidden vlan add 1')
+        self.sendline("switchport forbidden vlan add 1")
         self.expect(self.prompt)
         # TODO: this secondary range should be configurable
         # maybe setting trunk ports on the device class first?
-        self.sendline('switchport trunk allowed vlan add 101-148,200-210,4093')
+        self.sendline("switchport trunk allowed vlan add 101-148,200-210,4093")
         self.expect(self.prompt)
-        self.sendline('exit')
+        self.sendline("exit")
         self.expect(self.prompt)
 
     def save_running_to_startup_config(self):
         """Save current configuration settings."""
-        self.sendline('exit')
+        self.sendline("exit")
         self.expect(self.prompt)
-        self.sendline('copy running-config startup-config')
+        self.sendline("copy running-config startup-config")
         self.expect(self.prompt)
-        self.sendline('config')
+        self.sendline("config")
         self.expect(self.prompt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     dell_switch = DellSwitch(sys.argv[1])
     dell_switch.connect()
 

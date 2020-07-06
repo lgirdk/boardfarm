@@ -31,7 +31,7 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         wan_ip = board.get_interface_ipaddr(board.wan_iface)
 
         # send at router ip, which will forward to lan client
-        wan.sendline('')
+        wan.sendline("")
         wan.expect(prompt)
         self.run_netperf(
             wan, wan_ip,

@@ -14,9 +14,9 @@ from . import openwrt_router
 class QcomArmBase(openwrt_router.OpenWrtRouter):
 
     prompt = [
-        'root\\@.*:.*#',
+        "root\\@.*:.*#",
     ]
-    uprompt = [r'\(IPQ\) #', r'\(IPQ40xx\)', r'\(QCA961x\) #']
+    uprompt = [r"\(IPQ\) #", r"\(IPQ40xx\)", r"\(QCA961x\) #"]
 
     def check_memory_addresses(self):
         """Before flashing, dynamically find addresses and memory size."""
@@ -26,7 +26,8 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         try:
             self.expect(
                 r"APPSBL\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
-                timeout=2)
+                timeout=2,
+            )
             self.uboot_addr = self.match.group(1)
             self.uboot_size = self.match.group(2)
         except Exception:
@@ -35,7 +36,8 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         try:
             self.expect(
                 r"HLOS\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
-                timeout=2)
+                timeout=2,
+            )
             self.kernel_addr = self.match.group(1)
             self.kernel_size = self.match.group(2)
         except Exception:
@@ -44,17 +46,18 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         try:
             self.expect(
                 r"(rootfs|ubi)\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)\s+(0x[0-9A-Fa-f]+)\r",
-                timeout=5)
+                timeout=5,
+            )
             self.rootfs_addr = self.match.group(2)
             self.rootfs_size = self.match.group(3)
         except Exception:
             self.rootfs_addr = None
             self.rootfs_size = None
 
-        self.sendline('env default -f')
-        self.expect('Resetting to default environment')
+        self.sendline("env default -f")
+        self.expect("Resetting to default environment")
         self.expect(self.uprompt)
-        self.sendline('setenv ethaddr %s' % randomMAC())
+        self.sendline("setenv ethaddr %s" % randomMAC())
         self.expect(self.uprompt)
 
     def flash_meta(self, META_BUILD, wan, lan):
@@ -68,23 +71,23 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
         # probe SPI flash incase this is a NOR boot meta
         if self.model not in ("dk01", "dk04"):
-            self.sendline('sf probe')
-            self.expect('sf probe')
+            self.sendline("sf probe")
+            self.expect("sf probe")
             self.expect(self.uprompt)
         self.sendline(
-            'machid=%s && imgaddr=%s && source $imgaddr:script && echo DONE' %
+            "machid=%s && imgaddr=%s && source $imgaddr:script && echo DONE" %
             (self.machid, self.uboot_ddr_addr))
-        self.expect('DONE')
+        self.expect("DONE")
         try:
             self.expect("Can't find 'script' FIT subimage", timeout=5)
         except Exception:
             pass
         else:
             self.sendline(
-                'machid=%s && imgaddr=%s && source $imgaddr:SCRIPT && echo DONE'
+                "machid=%s && imgaddr=%s && source $imgaddr:SCRIPT && echo DONE"
                 % (self.machid, self.uboot_ddr_addr))
-            self.expect('DONE')
-        self.expect('DONE', timeout=400)
+            self.expect("DONE")
+        self.expect("DONE", timeout=400)
         self.expect(self.uprompt)
         # reboot incase partitions changed
         self.reset()
@@ -121,14 +124,14 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
         if esize is None:
             esize = size
 
-        self.sendline('sf probe')
-        self.expect('SF: Detected')
+        self.sendline("sf probe")
+        self.expect("SF: Detected")
         self.expect(self.uprompt)
         # erase full partition
-        self.sendline('sf erase %s %s' % (addr, esize))
+        self.sendline("sf erase %s %s" % (addr, esize))
         self.expect(self.uprompt, timeout=180)
         hsize = hex(size)
-        self.sendline('sf write %s %s %s' % (src, addr, hsize))
+        self.sendline("sf write %s %s %s" % (src, addr, hsize))
         self.expect(self.uprompt, timeout=180)
 
     def perf_args(self, events, kernel_user="ku"):
@@ -160,70 +163,87 @@ class QcomArmBase(openwrt_router.OpenWrtRouter):
             else:
                 raise Exception("Unknown perf event %s" % e)
 
-        return (':%s,' % kernel_user).join(ret) + ":%s" % kernel_user
+        return (":%s," % kernel_user).join(ret) + ":%s" % kernel_user
 
     def parse_perf_board(self):
         if "3.14" in self.kernel_version:
-            events = [{
-                'expect': r'\s+cycles:ku',
-                'name': 'cycles',
-                'sname': 'CPP'
-            }, {
-                'expect': r'\s+instructions:ku',
-                'name': 'instructions',
-                'sname': 'IPP'
-            }, {
-                'expect': r'\s+r3:ku',
-                'name': 'dcache_misses',
-                'sname': 'DMISS'
-            }, {
-                'expect': r'\s+r1:ku',
-                'name': 'icache_misses',
-                'sname': 'IMISS'
-            }]
+            events = [
+                {
+                    "expect": r"\s+cycles:ku",
+                    "name": "cycles",
+                    "sname": "CPP"
+                },
+                {
+                    "expect": r"\s+instructions:ku",
+                    "name": "instructions",
+                    "sname": "IPP",
+                },
+                {
+                    "expect": r"\s+r3:ku",
+                    "name": "dcache_misses",
+                    "sname": "DMISS"
+                },
+                {
+                    "expect": r"\s+r1:ku",
+                    "name": "icache_misses",
+                    "sname": "IMISS"
+                },
+            ]
         else:
-            events = [{
-                'expect': 'cycles',
-                'name': 'cycles',
-                'sname': 'CPP'
-            }, {
-                'expect': 'instructions',
-                'name': 'instructions',
-                'sname': 'IPP'
-            }, {
-                'expect': 'raw 0x3',
-                'name': 'dcache_misses',
-                'sname': 'DMISS'
-            }, {
-                'expect': 'raw 0x1',
-                'name': 'icache_misses',
-                'sname': 'IMISS'
-            }]
+            events = [
+                {
+                    "expect": "cycles",
+                    "name": "cycles",
+                    "sname": "CPP"
+                },
+                {
+                    "expect": "instructions",
+                    "name": "instructions",
+                    "sname": "IPP"
+                },
+                {
+                    "expect": "raw 0x3",
+                    "name": "dcache_misses",
+                    "sname": "DMISS"
+                },
+                {
+                    "expect": "raw 0x1",
+                    "name": "icache_misses",
+                    "sname": "IMISS"
+                },
+            ]
 
-        events += [{
-            'expect': 'raw 0x12013',
-            'name': 'load_exclusive',
-            'sname': 'LDREX'
-        }, {
-            'expect': 'raw 0x12011',
-            'name': 'store_exclusive',
-            'sname': 'STREX'
-        }, {
-            'expect': 'raw 0x12041',
-            'name': 'data_sync_barrier',
-            'sname': 'DSB'
-        }, {
-            'expect': 'raw 0x12040',
-            'name': 'data_mem_barrier',
-            'sname': 'DBM'
-        }, {
-            'expect': 'raw 0x12073',
-            'name': 'unaligned_load',
-            'sname': 'UNALIGNED_LD'
-        }, {
-            'expect': 'raw 0x12071',
-            'name': 'unaligned_store',
-            'sname': 'UNALIGNED_ST'
-        }]
+        events += [
+            {
+                "expect": "raw 0x12013",
+                "name": "load_exclusive",
+                "sname": "LDREX"
+            },
+            {
+                "expect": "raw 0x12011",
+                "name": "store_exclusive",
+                "sname": "STREX"
+            },
+            {
+                "expect": "raw 0x12041",
+                "name": "data_sync_barrier",
+                "sname": "DSB"
+            },
+            {
+                "expect": "raw 0x12040",
+                "name": "data_mem_barrier",
+                "sname": "DBM"
+            },
+            {
+                "expect": "raw 0x12073",
+                "name": "unaligned_load",
+                "sname": "UNALIGNED_LD",
+            },
+            {
+                "expect": "raw 0x12071",
+                "name": "unaligned_store",
+                "sname": "UNALIGNED_ST",
+            },
+        ]
 
         return events

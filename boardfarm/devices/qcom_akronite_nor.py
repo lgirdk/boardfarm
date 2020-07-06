@@ -12,7 +12,8 @@ from . import qcom_arm_base
 
 class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
     """QcomAkroniteRouter board loader/configuration class derived from QcomArmBase."""
-    model = ("ap148-nor")
+
+    model = "ap148-nor"
 
     def __init__(self, *args, **kwargs):
         """Initialize all the related arguement in the parent class QcomArmBase also initialize the uboot ddr address.\
@@ -73,10 +74,10 @@ class QcomAkroniteRouterNOR(qcom_arm_base.QcomArmBase):
         self.expect(self.uprompt)
         self.sendline("set fsbootargs 'rootfstype=squashfs,jffs2'")
         self.expect(self.uprompt)
-        self.sendline('set bootcmd bootipq')
+        self.sendline("set bootcmd bootipq")
         self.expect(self.uprompt)
         self.sendline("saveenv")
         self.expect(self.uprompt)
         self.sendline("print")
         self.expect(self.uprompt)
-        self.sendline('run bootcmd')
+        self.sendline("run bootcmd")

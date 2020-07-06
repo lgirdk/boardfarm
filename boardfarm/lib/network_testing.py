@@ -18,7 +18,7 @@ from boardfarm.lib.common import retry_on_exception
 def tcpdump_capture(device,
                     interface,
                     port=None,
-                    capture_file='pkt_capture.pcap',
+                    capture_file="pkt_capture.pcap",
                     filters=None):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
@@ -39,14 +39,14 @@ def tcpdump_capture(device,
     """
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
     run_background = " &"
-    filter_str = ' '.join([' '.join(i)
-                           for i in filters.items()]) if filters else ''
+    filter_str = " ".join([" ".join(i)
+                           for i in filters.items()]) if filters else ""
     if port:
-        device.sudo_sendline(base + "\'portrange %s\' " % (port) + filter_str +
+        device.sudo_sendline(base + "'portrange %s' " % (port) + filter_str +
                              run_background)
     else:
         device.sudo_sendline(base + filter_str + run_background)
-    device.expect_exact('tcpdump: listening on %s' % interface)
+    device.expect_exact("tcpdump: listening on %s" % interface)
     return device.before
 
 
@@ -72,7 +72,7 @@ def kill_process(device, process="tcpdump", pid=None):
     return device.before
 
 
-def tcpdump_read(device, capture_file, protocol='', opts=''):
+def tcpdump_read(device, capture_file, protocol="", opts=""):
     """Read the tcpdump packets and deletes the capture file after read
 
     :param device: lan or wan
@@ -87,7 +87,7 @@ def tcpdump_read(device, capture_file, protocol='', opts=''):
     :rtype: string
     """
     if opts:
-        protocol = protocol + ' and ' + opts
+        protocol = protocol + " and " + opts
     device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
     device.expect(device.prompt)
     output = device.before
@@ -108,11 +108,11 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     :param filter_str: capture filter, ex. 'data.len == 1400'
     :type filter_str: String
     """
-    command_string = 'tshark -r {} '.format(capture_file)
+    command_string = "tshark -r {} ".format(capture_file)
     if packet_details:
-        command_string += '-V '
+        command_string += "-V "
     if filter_str:
-        command_string += '{}'.format(filter_str)
+        command_string += "{}".format(filter_str)
 
     device.sendline(command_string)
     device.expect(pexpect.TIMEOUT, timeout=5)
@@ -168,11 +168,15 @@ def basic_call_verify(output_sip, ip_src):
     :type ip_src: String
     """
     import re
+
     sip_msg = re.search(
         ".*" + ip_src + ".*INVITE.*?" + ip_src + "\s+SIP.*100\s+Trying.*?" +
         ip_src + "\s+SIP.*180\s+Ringing.*?" + ip_src +
         "\s+SIP\/SDP.*200\s+OK.*?" + ip_src + ".*ACK.*?" + ip_src +
-        ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|", output_sip, re.DOTALL)
+        ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|",
+        output_sip,
+        re.DOTALL,
+    )
     assert sip_msg is not None, "SIP call failed"
 
 
@@ -185,18 +189,20 @@ def get_mta_details(capture_file, device, mta_user=[]):
     :type device: Dictionary
     """
     import re
+
     output = tcpdump_read(device, capture_file, protocol="-vvv port 5060")
     out_rep = output.replace("\r\n", "").replace("\t", "")
     split_out = re.compile(r"\d\d:\d\d:\d\d").split(out_rep)
     mta_line_info = {}
     for idx, mta in enumerate(mta_user):
         for line in split_out:
-            regx_str = r'SIP/2.0\s+200\s+OK(.*)From:\s+' + mta + '(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)'
+            regx_str = (r"SIP/2.0\s+200\s+OK(.*)From:\s+" + mta +
+                        "(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)")
             match = re.search(regx_str, line)
             if match:
                 mta_line_info[mta] = {
-                    'call-ID': match.group(3),
-                    'Expire': match.group(4)
+                    "call-ID": match.group(3),
+                    "Expire": match.group(4),
                 }
                 break
     return mta_line_info
@@ -207,8 +213,8 @@ def nmap_cli(device,
              port,
              protocol=None,
              retry=0,
-             timing='',
-             optional=''):
+             timing="",
+             optional=""):
     """To run port scanning on the specified target.Port scan is a method for determining which ports on a interface are open.
     This method is used to perform port scanning on the specified port range of the target ip specified from the device specified.
 
@@ -233,13 +239,19 @@ def nmap_cli(device,
 
     if not protocol:
         protocol = "both"
-    ipv6 = '-6' if 'IPv6Address' == type(
-        ipaddress.ip_address(six.text_type(ip_address))).__name__ else ''
+    ipv6 = ("-6" if "IPv6Address" == type(
+        ipaddress.ip_address(six.text_type(ip_address))).__name__ else "")
     protocol_commandmap = {"tcp": "-sT", "udp": "-sU", "both": "-sT -sU"}
     device.sudo_sendline(
-        "nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" %
-        (ipv6, timing, protocol_commandmap[protocol], ip_address, port, retry,
-         optional))
+        "nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" % (
+            ipv6,
+            timing,
+            protocol_commandmap[protocol],
+            ip_address,
+            port,
+            retry,
+            optional,
+        ))
     retry_on_exception(device.expect, (device.prompt, ), retries=16, tout=30)
     device.sendline("cat nmap_logs.txt")
     device.expect(device.prompt)
@@ -249,11 +261,13 @@ def nmap_cli(device,
     return nmap_output
 
 
-def ssh_service_verify(device,
-                       dest_device,
-                       ip,
-                       opts="",
-                       ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1"):
+def ssh_service_verify(
+    device,
+    dest_device,
+    ip,
+    opts="",
+    ssh_key="-oKexAlgorithms=+diffie-hellman-group1-sha1",
+):
     """This function will try to verify if SSH service is running on a target device.
     If the ssh connection expects key exchange, then ssh_key provided is used to add the target device to known hosts.
     If connection is accepted and SSH password of target device is provided for login.
@@ -272,18 +286,20 @@ def ssh_service_verify(device,
     """
     device.sendline("ssh %s@%s" % (dest_device.username, ip))
     try:
-        idx = device.expect(['no matching key exchange method found'] +
-                            ['(yes/no)'] + ['assword:'],
-                            timeout=60)
+        idx = device.expect(
+            ["no matching key exchange method found"] + ["(yes/no)"] +
+            ["assword:"],
+            timeout=60,
+        )
         if idx == 0:
             device.expect(device.prompt)
             device.sendline("ssh %s %s@%s %s" %
                             (ssh_key, dest_device.username, ip, opts))
-            idx = device.expect(['(yes/no)'] + ['assword:'], timeout=60)
+            idx = device.expect(["(yes/no)"] + ["assword:"], timeout=60)
             if idx == 0:
                 idx = 1
         if idx == 1:
-            device.sendline('yes')
+            device.sendline("yes")
             device.expect("assword:")
         device.sendline(dest_device.password)
         device.expect(dest_device.prompt)
@@ -318,7 +334,7 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
         device.expect(device.prompt, timeout=20)
     except Exception as e:
         for _ in range(2):
-            device.sendcontrol('c')
+            device.sendcontrol("c")
             device.expect(device.prompt)
         raise Exception("Failed to connect telnet due to : %s" % e)
 
@@ -362,19 +378,19 @@ def custom_telnet_service(device,
             device.sendline(cm)
             device.expect(dest_prompt, timeout=60)
             result.append(device.before)
-        device.sendcontrol(']')
-        device.sendline('quit')
+        device.sendcontrol("]")
+        device.sendline("quit")
         send_control = False
         device.expect(device.prompt, timeout=60)
         return result
     except Exception as e:
         print(e)
         if send_control:
-            device.sendcontrol(']')
-            device.sendline('quit')
+            device.sendcontrol("]")
+            device.sendline("quit")
             device.expect(device.prompt, timeout=60)
         else:
-            device.sendcontrol('c')
+            device.sendcontrol("c")
             device.expect(device.prompt, timeout=60)
 
 
@@ -395,7 +411,7 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
     command_builder = 'dhcping -i -c {} -s {} -h "{}"'.format(
         client_ip, server_ip, mac)
     if opts:
-        command_builder = '{} {}'.format(command_builder, opts)
+        command_builder = "{} {}".format(command_builder, opts)
     output = device.check_output(command_builder)
-    out = re.search(r'(\wot\sanswer\s\w+)', output)
+    out = re.search(r"(\wot\sanswer\s\w+)", output)
     return True if out else False

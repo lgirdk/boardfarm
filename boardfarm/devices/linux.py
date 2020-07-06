@@ -18,7 +18,8 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 class LinuxDevice(base.BaseDevice):
     """Linux implementations."""
-    tftp_dir = '/tftpboot'
+
+    tftp_dir = "/tftpboot"
 
     def check_status(self):
         """Check the state of the device."""
@@ -27,19 +28,19 @@ class LinuxDevice(base.BaseDevice):
             "\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
         )
         self.expect_exact(
-            'cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n'
+            "cat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
         )
-        self.expect('version', timeout=5)
+        self.expect("version", timeout=5)
         self.expect(self.prompt, timeout=5)
 
     def get_interface_ipaddr(self, interface):
         """Get ipv4 address of interface."""
         self.sendline("\nifconfig %s" % interface)
         regex = [
-            r'addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):',
-            r'inet:?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P|Bcast)',
-            'inet (' + ValidIpv4AddressRegex + ').*netmask (' +
-            ValidIpv4AddressRegex + ').*destination ' + ValidIpv4AddressRegex
+            r"addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):",
+            r"inet:?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P|Bcast)",
+            "inet (" + ValidIpv4AddressRegex + ").*netmask (" +
+            ValidIpv4AddressRegex + ").*destination " + ValidIpv4AddressRegex,
         ]
         self.expect(regex)
         ipaddr = self.match.group(1)
@@ -58,7 +59,7 @@ class LinuxDevice(base.BaseDevice):
 
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
         self.expect(pexpect.TIMEOUT, timeout=0.5)
-        self.before = ''
+        self.before = ""
 
         self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
         self.expect(self.prompt)
@@ -89,10 +90,10 @@ class LinuxDevice(base.BaseDevice):
 
     def get_seconds_uptime(self):
         """Return seconds since last reboot. Stored in /proc/uptime."""
-        self.sendcontrol('c')
+        self.sendcontrol("c")
         self.expect(self.prompt)
-        self.sendline('\ncat /proc/uptime')
-        self.expect(r'((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})')
+        self.sendline("\ncat /proc/uptime")
+        self.expect(r"((\d+)\.(\d{2}))(\s)(\d+)\.(\d{2})")
         seconds_up = float(self.match.group(1))
         self.expect(self.prompt)
         return seconds_up
@@ -106,7 +107,7 @@ class LinuxDevice(base.BaseDevice):
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
         """Set static ip of the interface."""
-        self.sudo_sendline('ifconfig {} {} netmask {} up'.format(
+        self.sudo_sendline("ifconfig {} {} netmask {} up".format(
             interface, fix_ip, fix_mark))
         self.expect(self.prompt)
 
@@ -142,10 +143,10 @@ class LinuxDevice(base.BaseDevice):
         try:
             self.expect(self.prompt, timeout=10)
         except pexpect.TIMEOUT:
-            self.sendcontrol('c')
+            self.sendcontrol("c")
             self.expect(self.prompt)
 
-        match = re.search(r'HTTP\/.* 200', self.before)
+        match = re.search(r"HTTP\/.* 200", self.before)
         if match:
             return True
         else:
@@ -165,7 +166,7 @@ class LinuxDevice(base.BaseDevice):
         try:
             self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' %
                           (CUR, DEF, MIN, BTDEF))
-            self.expect('echo')
+            self.expect("echo")
             self.expect(self.prompt, timeout=10)
         except Exception:
             pass
@@ -190,14 +191,14 @@ class LinuxDevice(base.BaseDevice):
              ping_ip,
              ping_count=4,
              ping_interface=None,
-             options='',
+             options="",
              timetorun=None):
         """Check ping from any device."""
         timeout = 50
-        basic_cmd = 'ping -c {} {}'.format(ping_count, ping_ip)
+        basic_cmd = "ping -c {} {}".format(ping_count, ping_ip)
 
         if timetorun:
-            basic_cmd = 'timeout {} ping {} {}'.format(timetorun, ping_ip,
+            basic_cmd = "timeout {} ping {} {}".format(timetorun, ping_ip,
                                                        options)
             timeout = int(timetorun) + 10
         elif ping_interface:
@@ -213,13 +214,15 @@ class LinuxDevice(base.BaseDevice):
         else:
             match = re.search(
                 "%s packets transmitted, %s received, 0%% packet loss" %
-                (ping_count, ping_count), self.before)
+                (ping_count, ping_count),
+                self.before,
+            )
             if match:
                 return True
             else:
                 return False
 
-    def traceroute(self, host_ip, version='', options='', timeout=60):
+    def traceroute(self, host_ip, version="", options="", timeout=60):
         """Traceroute returns the route that packets take to a network host."""
         try:
             self.sendline("traceroute%s %s %s" % (version, options, host_ip))
@@ -228,7 +231,7 @@ class LinuxDevice(base.BaseDevice):
             self.expect_prompt(timeout=timeout)
             return self.before
         except pexpect.TIMEOUT:
-            self.sendcontrol('c')
+            self.sendcontrol("c")
             self.expect(self.prompt)
             return None
 
@@ -250,29 +253,29 @@ class LinuxDevice(base.BaseDevice):
 
     def add_new_user(self, id, pwd):
         """Create new login ID. But check if already exists."""
-        self.sendline('\nadduser %s' % id)
+        self.sendline("\nadduser %s" % id)
         try:
             self.expect_exact("Enter new UNIX password", timeout=5)
-            self.sendline('%s' % pwd)
+            self.sendline("%s" % pwd)
             self.expect_exact("Retype new UNIX password")
-            self.sendline('%s' % pwd)
+            self.sendline("%s" % pwd)
             self.expect_exact("Full Name []")
-            self.sendline('%s' % id)
+            self.sendline("%s" % id)
             self.expect_exact("Room Number []")
-            self.sendline('1')
+            self.sendline("1")
             self.expect_exact("Work Phone []")
-            self.sendline('4081234567')
+            self.sendline("4081234567")
             self.expect_exact("Home Phone []")
-            self.sendline('4081234567')
+            self.sendline("4081234567")
             self.expect_exact("Other []")
-            self.sendline('4081234567')
+            self.sendline("4081234567")
             self.expect_exact("Is the information correct?")
-            self.sendline('y')
+            self.sendline("y")
             self.expect(self.prompt)
-            self.sendline('usermod -aG sudo %s' % id)
+            self.sendline("usermod -aG sudo %s" % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline(r'sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc' %
+            self.sendline(r"sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc" %
                           id)
             self.expect(self.prompt, timeout=30)
         except Exception:
@@ -283,26 +286,27 @@ class LinuxDevice(base.BaseDevice):
         def gzip_str(string_):
             import gzip
             import io
+
             out = io.BytesIO()
-            with gzip.GzipFile(fileobj=out, mode='w') as fo:
+            with gzip.GzipFile(fileobj=out, mode="w") as fo:
                 fo.write(string_)
             return out.getvalue()
 
-        with open(src, mode='rb') as file:
+        with open(src, mode="rb") as file:
             bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
-            dst = self.tftp_dir + '/' + os.path.basename(src)
+            dst = self.tftp_dir + "/" + os.path.basename(src)
         print("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
-        self.sendline('''cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
+        self.sendline("""cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
 %s
-EOFEOFEOFEOF''' % (dst, bin_file))
+EOFEOFEOFEOF""" % (dst, bin_file))
         self.expect(self.prompt)
-        self.sendline('ls %s' % dst)
-        self.expect_exact('ls %s' % dst)
+        self.sendline("ls %s" % dst)
+        self.expect_exact("ls %s" % dst)
         i = self.expect(
-            ['ls: cannot access %s: No such file or directory' % dst] +
+            ["ls: cannot access %s: No such file or directory" % dst] +
             self.prompt)
         if i == 0:
             raise Exception("Failed to copy file")
@@ -310,8 +314,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def ip_neigh_flush(self):
         """Remove entries in the neighbour table."""
-        self.sendline('\nip -s neigh flush all')
-        self.expect('flush all')
+        self.sendline("\nip -s neigh flush all")
+        self.expect("flush all")
         self.expect(self.prompt)
 
     def sudo_sendline(self, cmd):
@@ -332,37 +336,45 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
     def set_cli_size(self, columns):
         """Set the terminal colums value."""
-        self.sendline('stty columns %s' % str(columns))
+        self.sendline("stty columns %s" % str(columns))
         self.expect(self.prompt)
 
     def wait_for_linux(self):
         """Verify Linux starts up."""
-        i = self.expect([
-            'Reset Button Push down', 'Linux version', 'Booting Linux',
-            'Starting kernel ...', 'Kernel command line specified:'
-        ],
-                        timeout=45)
+        i = self.expect(
+            [
+                "Reset Button Push down",
+                "Linux version",
+                "Booting Linux",
+                "Starting kernel ...",
+                "Kernel command line specified:",
+            ],
+            timeout=45,
+        )
         if i == 0:
-            self.expect('httpd')
-            self.sendcontrol('c')
+            self.expect("httpd")
+            self.sendcontrol("c")
             self.expect(self.uprompt)
-            self.sendline('boot')
-        i = self.expect([
-            'U-Boot', 'login:', 'Please press Enter to activate this console'
-        ] + self.prompt,
-                        timeout=150)
+            self.sendline("boot")
+        i = self.expect(
+            [
+                "U-Boot", "login:",
+                "Please press Enter to activate this console"
+            ] + self.prompt,
+            timeout=150,
+        )
         if i == 0:
-            raise Exception('U-Boot came back when booting kernel')
+            raise Exception("U-Boot came back when booting kernel")
         elif i == 1:
-            self.sendline('root')
-            if 0 == self.expect(['assword:'] + self.prompt):
-                self.sendline('password')
+            self.sendline("root")
+            if 0 == self.expect(["assword:"] + self.prompt):
+                self.sendline("password")
                 self.expect(self.prompt)
 
     def get_dns_server_upstream(self):
         """Get the IP of name server."""
-        self.sendline('grep nameserver /etc/resolv.conf')
-        self.expect_exact('grep nameserver /etc/resolv.conf')
+        self.sendline("grep nameserver /etc/resolv.conf")
+        self.expect_exact("grep nameserver /etc/resolv.conf")
         self.expect(self.prompt)
         return self.before
 
@@ -372,9 +384,9 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
         for _ in range(5):
             try:
-                pp.sendline('cat /proc/sys/net/netfilter/nf_conntrack_count')
+                pp.sendline("cat /proc/sys/net/netfilter/nf_conntrack_count")
                 pp.expect_exact(
-                    'cat /proc/sys/net/netfilter/nf_conntrack_count',
+                    "cat /proc/sys/net/netfilter/nf_conntrack_count",
                     timeout=2)
                 pp.expect(pp.prompt, timeout=15)
                 ret = int(pp.before.strip())
@@ -393,10 +405,10 @@ EOFEOFEOFEOF''' % (dst, bin_file))
 
         for _ in range(5):
             try:
-                pp.sendline('cat /proc/vmstat')
-                pp.expect_exact('cat /proc/vmstat')
+                pp.sendline("cat /proc/vmstat")
+                pp.expect_exact("cat /proc/vmstat")
                 pp.expect(pp.prompt)
-                results = re.findall(r'(\w+) (\d+)', pp.before)
+                results = re.findall(r"(\w+) (\d+)", pp.before)
                 ret = {}
                 for key, value in results:
                     ret[key] = int(value)
@@ -428,11 +440,11 @@ EOFEOFEOFEOF''' % (dst, bin_file))
     def get_memfree(self):
         """Return the kB of free memory."""
         # free pagecache, dentries and inodes for higher accuracy
-        self.sendline('\nsync; echo 3 > /proc/sys/vm/drop_caches')
-        self.expect('drop_caches')
+        self.sendline("\nsync; echo 3 > /proc/sys/vm/drop_caches")
+        self.expect("drop_caches")
         self.expect(self.prompt)
-        self.sendline('cat /proc/meminfo | head -2')
-        self.expect(r'MemFree:\s+(\d+) kB')
+        self.sendline("cat /proc/meminfo | head -2")
+        self.expect(r"MemFree:\s+(\d+) kB")
         memFree = self.match.group(1)
         self.expect(self.prompt)
         return int(memFree)
@@ -449,33 +461,42 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         """Start the dante server for socks5 proxy connections"""
 
         to_send = [
-            'cat > /etc/danted.conf <<EOF', 'logoutput: stderr',
-            'internal: 0.0.0.0 port = 8080', 'external: eth1',
-            'clientmethod: none', 'socksmethod: username none #rfc931',
-            'user.privileged: root', 'user.unprivileged: nobody',
-            'user.libwrap: nobody', 'client pass {',
-            '    from: 0.0.0.0/0 to: 0.0.0.0/0',
-            '    log: connect disconnect error', '}', 'socks pass {',
-            '    from: 0.0.0.0/0 to: 0.0.0.0/0',
-            '    log: connect disconnect error', '}', 'EOF'
+            "cat > /etc/danted.conf <<EOF",
+            "logoutput: stderr",
+            "internal: 0.0.0.0 port = 8080",
+            "external: eth1",
+            "clientmethod: none",
+            "socksmethod: username none #rfc931",
+            "user.privileged: root",
+            "user.unprivileged: nobody",
+            "user.libwrap: nobody",
+            "client pass {",
+            "    from: 0.0.0.0/0 to: 0.0.0.0/0",
+            "    log: connect disconnect error",
+            "}",
+            "socks pass {",
+            "    from: 0.0.0.0/0 to: 0.0.0.0/0",
+            "    log: connect disconnect error",
+            "}",
+            "EOF",
         ]
-        self.sendline('\n'.join(to_send))
+        self.sendline("\n".join(to_send))
         self.expect_prompt()
         # NOTE: service danted restart DOES NOT WORK!
-        self.sendline('service danted stop; service danted start')
+        self.sendline("service danted stop; service danted start")
         self.expect_prompt()
 
     def stop_danteproxy(self):
-        self.sendline('service danted stop')
+        self.sendline("service danted stop")
         self.expect_prompt()
 
     def stop_tinyproxy(self):
-        self.sendline('/etc/init.d/tinyproxy stop')
+        self.sendline("/etc/init.d/tinyproxy stop")
         self.expect_prompt()
 
     def start_tinyproxy(self):
         # TODO: determine which config file is the correct one... but for now just modify both
-        for f in ['/etc/tinyproxy.conf', '/etc/tinyproxy/tinyproxy.conf']:
+        for f in ["/etc/tinyproxy.conf", "/etc/tinyproxy/tinyproxy.conf"]:
             self.sendline("sed -i 's/^Port 8888/Port 8080/' %s" % f)
             self.expect(self.prompt)
             self.sendline("sed 's/#Allow/Allow/g' -i %s" % f)
@@ -488,26 +509,26 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             self.expect(self.prompt)
             self.sendline('echo "Listen ::" >> %s' % f)
             self.expect(self.prompt)
-        self.sendline('/etc/init.d/tinyproxy restart')
-        self.expect('Restarting')
+        self.sendline("/etc/init.d/tinyproxy restart")
+        self.expect("Restarting")
         self.expect(self.prompt)
-        self.sendline('sleep 3; ps auxwww')
-        self.expect('/usr/sbin/tinyproxy')
+        self.sendline("sleep 3; ps auxwww")
+        self.expect("/usr/sbin/tinyproxy")
         self.expect_prompt()
 
     def take_lock(self, file_lock, fd=9, timeout=200):
         """Take a file lock on file_lock."""
-        self.sendline('exec %s>%s' % (fd, file_lock))
+        self.sendline("exec %s>%s" % (fd, file_lock))
         self.expect(self.prompt)
-        self.sendline('flock -x %s' % fd)
+        self.sendline("flock -x %s" % fd)
         self.expect(self.prompt, timeout=timeout)
 
     def release_lock(self, file_lock, fd=9):
         """Releases a lock taken."""
-        self.sendline('flock -u %s' % fd)
+        self.sendline("flock -u %s" % fd)
         self.expect(self.prompt)
 
-    def perform_curl(self, host_ip, protocol, port=None, options=''):
+    def perform_curl(self, host_ip, protocol, port=None, options=""):
         """Perform curl action to web service running on host machine.
 
         :param dev : dev to perform curl
@@ -527,14 +548,15 @@ EOFEOFEOFEOF''' % (dst, bin_file))
             web_addr = "{}://{}".format(protocol, host_ip)
         command = "curl {} {}".format(options, web_addr)
         self.sendline(command)
-        index = self.expect(['Connected to'] + ['DOCTYPE html PUBLIC'] +
-                            ['Connection timed out'] +
-                            ['Failed to connect to'] + self.prompt,
-                            timeout=100)
+        index = self.expect(
+            ["Connected to"] + ["DOCTYPE html PUBLIC"] +
+            ["Connection timed out"] + ["Failed to connect to"] + self.prompt,
+            timeout=100,
+        )
         try:
             self.expect_prompt()
         except pexpect.exceptions.TIMEOUT:
-            self.sendcontrol('c')
+            self.sendcontrol("c")
             self.expect_prompt()
         return index in [0, 1]
 
@@ -545,8 +567,8 @@ EOFEOFEOFEOF''' % (dst, bin_file))
         :rtype: integer
         """
         self.sendline(
-            '\ncat /var/lib/dhcp/dhclient.leases | grep dhcp-lease-time')
-        self.expect(r'\s+option\sdhcp-lease-time\s(\d+);')
+            "\ncat /var/lib/dhcp/dhclient.leases | grep dhcp-lease-time")
+        self.expect(r"\s+option\sdhcp-lease-time\s(\d+);")
         lease_time = int(self.match.group(1))
         self.expect(self.prompt)
         return lease_time

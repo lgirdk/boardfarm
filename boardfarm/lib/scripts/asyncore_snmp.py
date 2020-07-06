@@ -10,9 +10,9 @@ from pysnmp.proto.api import v2c
 
 def SnmpwalkAsync(target_IP=None,
                   oid=None,
-                  community='public',
+                  community="public",
                   walk_timeout=10,
-                  mode='ipv4'):
+                  mode="ipv4"):
     """Script to run in the remote device for snmp mib walk.
 
        This script can be copied to the remote device eg:wan
@@ -61,12 +61,14 @@ def SnmpwalkAsync(target_IP=None,
                     transportDispatcher.jobFinished(1)
 
     # noinspection PyUnusedLocal
-    def cbRecvFun(transportDispatcher,
-                  transportDomain,
-                  transportAddress,
-                  wholeMsg,
-                  reqPDU=reqPDU,
-                  headVars=headVars):
+    def cbRecvFun(
+        transportDispatcher,
+        transportDomain,
+        transportAddress,
+        wholeMsg,
+        reqPDU=reqPDU,
+        headVars=headVars,
+    ):
         while wholeMsg:
             rspMsg, wholeMsg = decoder.decode(wholeMsg, asn1Spec=v2c.Message())
             rspPDU = v2c.apiMessage.getPDU(rspMsg)
@@ -81,9 +83,11 @@ def SnmpwalkAsync(target_IP=None,
                 errorStatus = v2c.apiBulkPDU.getErrorStatus(rspPDU)
                 if errorStatus and errorStatus != 2:
                     errorIndex = v2c.apiBulkPDU.getErrorIndex(rspPDU)
-                    print('%s at %s' %
-                          (errorStatus.prettyPrint(), errorIndex
-                           and varBindTable[int(errorIndex) - 1] or '?'))
+                    print("%s at %s" % (
+                        errorStatus.prettyPrint(),
+                        errorIndex and varBindTable[int(errorIndex) - 1]
+                        or "?",
+                    ))
                     transportDispatcher.jobFinished(1)
                     break
 
@@ -91,11 +95,11 @@ def SnmpwalkAsync(target_IP=None,
                 for tableRow in varBindTable:
                     for name, val in tableRow:
                         # print mib data
-                        print('from: %s, %s = %s' %
+                        print("from: %s, %s = %s" %
                               (transportAddress, name.prettyPrint(),
                                val.prettyPrint()))
                         output_list.append(
-                            'from: %s, %s = %s\n' %
+                            "from: %s, %s = %s\n" %
                             (transportAddress, name.prettyPrint(),
                              val.prettyPrint()))
 
@@ -119,7 +123,7 @@ def SnmpwalkAsync(target_IP=None,
     transportDispatcher = AsyncoreDispatcher()
     transportDispatcher.registerRecvCbFun(cbRecvFun)
     transportDispatcher.registerTimerCbFun(cbTimerFun)
-    if mode == 'ipv4':
+    if mode == "ipv4":
         transportDispatcher.registerTransport(
             udp.domainName,
             udp.UdpSocketTransport().openClientMode())
@@ -142,10 +146,13 @@ def SnmpwalkAsync(target_IP=None,
         return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
-    SnmpwalkAsync(target_IP=str(sys.argv[1]),
-                  oid=str(sys.argv[2]),
-                  community=str(sys.argv[3]),
-                  walk_timeout=str(sys.argv[4]),
-                  mode=str(sys.argv[5]))
+
+    SnmpwalkAsync(
+        target_IP=str(sys.argv[1]),
+        oid=str(sys.argv[2]),
+        community=str(sys.argv[3]),
+        walk_timeout=str(sys.argv[4]),
+        mode=str(sys.argv[5]),
+    )

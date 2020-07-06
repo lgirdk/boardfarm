@@ -18,9 +18,9 @@ class ProcVmstat(rootfs_boot.RootFSBootTest):
         self.logged.update(board.get_proc_vmstat())
 
         # Display extra info
-        board.sendline('cat /proc/slabinfo /proc/buddyinfo /proc/meminfo')
-        board.expect('cat /proc/')
+        board.sendline("cat /proc/slabinfo /proc/buddyinfo /proc/meminfo")
+        board.expect("cat /proc/")
         board.expect(prompt)
-        board.sendline('cat /proc/vmallocinfo')
-        board.expect('cat /proc/vmallocinfo')
+        board.sendline("cat /proc/vmallocinfo")
+        board.expect("cat /proc/vmallocinfo")
         board.expect(prompt)

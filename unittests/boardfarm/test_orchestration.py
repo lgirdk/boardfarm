@@ -4,6 +4,7 @@ from boardfarm.orchestration import TestStep as TS
 
 class Test(object):
     """Sample Test class."""
+
     steps = []
     log_to_file = None
     dev = None
@@ -15,7 +16,7 @@ class Test(object):
         raise e
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def obj():
     yield Test()
 

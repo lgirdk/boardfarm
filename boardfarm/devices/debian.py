@@ -77,7 +77,7 @@ class DebianBox(linux.LinuxDevice):
         lan_gateway = ipaddress.IPv4Interface(
             six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))).ip
 
-        self.http_proxy = kwargs.pop("http_proxy", ipaddr + ':8080')
+        self.http_proxy = kwargs.pop("http_proxy", ipaddr + ":8080")
 
         if pre_cmd_host is not None:
             sys.stdout.write("\tRunning pre_cmd_host.... ")
@@ -207,7 +207,7 @@ class DebianBox(linux.LinuxDevice):
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
                 else:
                     self.mgmt_dns = "8.8.8.8"
-                if opt == 'dante':
+                if opt == "dante":
                     self.dante = True
 
         if ipaddr is None:
@@ -1038,7 +1038,7 @@ class DebianBox(linux.LinuxDevice):
         out = self.check_output(
             "egrep 'request option-125' /etc/dhcp/dhclient.conf")
 
-        if not re.search('request option-125,', out):
+        if not re.search("request option-125,", out):
             self.sendline(
                 "sed -i -e 's|request |\\noption option-125 code 125 = string;\\n\\nrequest option-125, |' /etc/dhcp/dhclient.conf"
             )
@@ -1052,7 +1052,7 @@ class DebianBox(linux.LinuxDevice):
             option_125 = "00:00:0D:E9:16:01:06:42:46:56:45:52:30:02:04:4c:41:4e:3{}:03:06:42:46:43:4c:41:4e".format(
                 lan_client_idx)
             self.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
-            self.sendline('send option-125 = {};'.format(option_125))
+            self.sendline("send option-125 = {};".format(option_125))
             self.sendline("")
             self.sendline("EOF")
             self.expect(self.prompt)

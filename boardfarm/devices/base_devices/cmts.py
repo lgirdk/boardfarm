@@ -28,14 +28,15 @@ class BaseCmts(base.BaseDevice):
 
     BaseCmts device class can be used to derive any boardband router API.
     """
+
     model = "base_cmts"
     name = "cmts"
     board_wan_mac = None
     board_mta_mac = None
 
     def __init__(self, *args, **kwargs):
-        self.board_wan_mac = kwargs.get('wan_mac', None)
-        self.board_mta_mac = kwargs.get('mta_mac', None)
+        self.board_wan_mac = kwargs.get("wan_mac", None)
+        self.board_mta_mac = kwargs.get("mta_mac", None)
 
     def connect(self):
         """This method is used to connect CMTS, login to the CMTS based on the connection type available
@@ -262,7 +263,7 @@ class BaseCmts(base.BaseDevice):
 
     def modify_docsis_mac_ip_provisioning_mode(self,
                                                index,
-                                               ip_pvmode='dual-stack'):
+                                               ip_pvmode="dual-stack"):
         """Change the ip provsioning mode
 
         :param index: mac domain of the board configured
@@ -512,15 +513,17 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def add_iface_docsis_mac(self,
-                             index,
-                             ip_bundle,
-                             qam_idx,
-                             qam_ch,
-                             ups_idx,
-                             ups_ch,
-                             qam_sub=None,
-                             prov_mode=None):
+    def add_iface_docsis_mac(
+        self,
+        index,
+        ip_bundle,
+        qam_idx,
+        qam_ch,
+        ups_idx,
+        ups_ch,
+        qam_sub=None,
+        prov_mode=None,
+    ):
         """configure docsis-mac domain
 
         :param index: docsis mac index
@@ -586,7 +589,7 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def run_tcpdump(self, time, iface='any', opts=""):
+    def run_tcpdump(self, time, iface="any", opts=""):
         """tcpdump capture on the cmts interface
 
         :param time: timeout to wait till gets prompt
@@ -619,7 +622,7 @@ class BaseCmts(base.BaseDevice):
         if mac == None:
             return None
         # the mac CMTS syntax format example is 3843.7d80.0ac0
-        tmp = mac.replace(':', '')
+        tmp = mac.replace(":", "")
         mac_cmts_format = tmp[:4] + "." + tmp[4:8] + "." + tmp[8:]
         return mac_cmts_format.lower()
 

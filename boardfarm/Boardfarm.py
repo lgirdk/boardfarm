@@ -29,6 +29,7 @@ class Boardfarm(object):
     def list_tests(self):
         """Search for all available tests and return a dict."""
         from boardfarm import tests, config
+
         tests.init(config)
         return tests.available_tests
 

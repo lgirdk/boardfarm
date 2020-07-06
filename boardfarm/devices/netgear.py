@@ -19,7 +19,7 @@ prompt = r"\(M4100-50G\) "
 class NetgearM4100(linux.LinuxDevice):
     """A netgear switch allows for changing connections by \
     modifying VLANs on ports extends LinuxDevice."""
-    def __init__(self, conn_cmd, username='admin', password='bigfoot1'):
+    def __init__(self, conn_cmd, username="admin", password="bigfoot1"):
         """Initialize variables in NetgearM4100.
 
         :param self: self object
@@ -32,8 +32,8 @@ class NetgearM4100(linux.LinuxDevice):
         :type password: string
         """
         bft_pexpect_helper.spawn.__init__(self,
-                                          '/bin/bash',
-                                          args=['-c', conn_cmd])
+                                          "/bin/bash",
+                                          args=["-c", conn_cmd])
         self.logfile_read = sys.stdout
         self.username = username
         self.password = password
@@ -68,7 +68,7 @@ class NetgearM4100(linux.LinuxDevice):
         self.expect(prompt)
         # Quit
         self.sendline("quit")
-        self.expect('User:')
+        self.expect("User:")
         self.close()
 
     def change_port_vlan(self, port, vlan):
@@ -182,13 +182,13 @@ class NetgearM4100(linux.LinuxDevice):
         # Check each port
         for p in range(1, 48):
             port_name = "0/%01d" % p
-            self.sendline('show mac-addr-table interface %s' % port_name)
-            tmp = self.expect(['--More--', prompt])
+            self.sendline("show mac-addr-table interface %s" % port_name)
+            tmp = self.expect(["--More--", prompt])
             if tmp == 0:
                 self.sendline()
-            result = self.before.split('\n')
+            result = self.before.split("\n")
             for line in result:
-                if ':' in line:
+                if ":" in line:
                     mac, vlan, _ = line.split()
                     vlan = int(vlan)
                     if vlan not in vlan_macs:
@@ -202,9 +202,9 @@ class NetgearM4100(linux.LinuxDevice):
             print("%4s %s" % (vlan, " <-> ".join(devices)))
 
 
-if __name__ == '__main__':
-    switch = NetgearM4100(conn_cmd='telnet 10.0.0.64 6031',
-                          username='admin',
-                          password='password')
+if __name__ == "__main__":
+    switch = NetgearM4100(conn_cmd="telnet 10.0.0.64 6031",
+                          username="admin",
+                          password="password")
     switch.print_vlans()
     switch.disconnect()

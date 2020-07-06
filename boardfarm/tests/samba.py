@@ -16,33 +16,33 @@ class SambaShare(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         board.sendline(
-            'rm -f /etc/config/samba; opkg update; opkg install --force-reinstall samba36-server samba36-client kmod-fs-cifs'
+            "rm -f /etc/config/samba; opkg update; opkg install --force-reinstall samba36-server samba36-client kmod-fs-cifs"
         )
-        board.expect('Configuring samba36-server')
+        board.expect("Configuring samba36-server")
         board.expect(prompt)
         board.sendline(
-            'mkdir -p /tmp/samba; chmod a+rwx /tmp/samba; rm -rf /tmp/samba/*')
+            "mkdir -p /tmp/samba; chmod a+rwx /tmp/samba; rm -rf /tmp/samba/*")
         board.expect(prompt)
         board.sendline(
             'uci set samba.@samba[0].homes=0; uci delete samba.@sambashare[0]; uci add samba sambashare; uci set samba.@sambashare[0]=sambashare; uci set samba.@sambashare[0].name="boardfarm-test"; uci set samba.@sambashare[0].path="/tmp/samba"; uci set samba.@sambashare[0].read_only="no"; uci set samba.@sambashare[0].guest_ok="yes"; uci commit samba'
         )
         board.expect(prompt)
-        board.sendline('/etc/init.d/samba restart')
-        board.sendline('smbclient -N -L 127.0.0.1')
-        board.expect('boardfarm-test')
+        board.sendline("/etc/init.d/samba restart")
+        board.sendline("smbclient -N -L 127.0.0.1")
+        board.expect("boardfarm-test")
         board.expect(prompt)
-        lan.sendline('smbclient -N -L %s' %
+        lan.sendline("smbclient -N -L %s" %
                      board.get_interface_ipaddr(board.lan_iface))
-        lan.expect('boardfarm-test')
+        lan.expect("boardfarm-test")
         lan.expect(prompt)
         lan.sendline(
-            'mkdir -p /mnt/samba; mount -o guest //%s/boardfarm-test /mnt/samba'
+            "mkdir -p /mnt/samba; mount -o guest //%s/boardfarm-test /mnt/samba"
             % board.get_interface_ipaddr(board.lan_iface))
         lan.expect(prompt)
-        lan.sendline('echo boardafarm-testing-string > /mnt/samba/test')
+        lan.sendline("echo boardafarm-testing-string > /mnt/samba/test")
         lan.expect(prompt)
-        lan.sendline('umount /mnt/samba')
+        lan.sendline("umount /mnt/samba")
         lan.expect(prompt)
-        board.sendline('cat /tmp/samba/test')
-        board.expect('boardafarm-testing-string')
+        board.sendline("cat /tmp/samba/test")
+        board.expect("boardafarm-testing-string")
         board.expect(prompt)

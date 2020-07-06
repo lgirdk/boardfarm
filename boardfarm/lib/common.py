@@ -222,6 +222,7 @@ class socks5_proxy_helper(object):
             .. note:: To get a proxy object the socks5_proxy_helper.get_proxy(device) class method should be used. This will reuse an already existing tunnel (if any) on the ssh device:port
         """
         from random import randrange
+
         self.socks5_ip = None
         self.socks5_pexpect = None
         for _ in range(retries):
@@ -1324,9 +1325,8 @@ def download_from_web(url, server, username, password, port):
     if cmd_exists("pv"):
         pipe = " pv | "
 
-    cmd = (
-        r'curl -n -L -k "{}" 2>/dev/null | {} ssh -p {} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x {}@{} "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'
-        .format(url, pipe, port, username, server))
+    cmd = r'curl -n -L -k "{}" 2>/dev/null | {} ssh -p {} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x {}@{} "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'.format(
+        url, pipe, port, username, server)
     return copy_file_to_server(cmd, password)
 
 

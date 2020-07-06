@@ -14,9 +14,8 @@ import boardfarm
 import pexpect
 import termcolor
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm.lib.DeviceManager import \
-    device_type  # pylint: disable=unused-import    # noqa: F401
-from boardfarm.lib.DeviceManager import all_device_managers
+from boardfarm.lib.DeviceManager import (  # pylint: disable=unused-import    # noqa: F401
+    all_device_managers, device_type)
 from six.moves import UserList
 
 # TODO: this probably should not the generic device
@@ -28,7 +27,7 @@ device_mappings = {}
 def probe_devices():
     """Dynamically find all devices classes accross all boardfarm projects."""
     all_boardfarm_modules = dict(boardfarm.plugins)
-    all_boardfarm_modules['boardfarm'] = importlib.import_module('boardfarm')
+    all_boardfarm_modules["boardfarm"] = importlib.import_module("boardfarm")
 
     all_mods = []
 
@@ -36,17 +35,18 @@ def probe_devices():
     for modname in all_boardfarm_modules:
         bf_module = all_boardfarm_modules[modname]
         device_module = pkgutil.get_loader(".".join(
-            [bf_module.__name__, 'devices']))
+            [bf_module.__name__, "devices"]))
         if device_module:
             all_mods += boardfarm.walk_library(
                 device_module.load_module(),
-                filter_pkgs=['base_devices', 'connections', 'platform'])
+                filter_pkgs=["base_devices", "connections", "platform"],
+            )
 
     for module in all_mods:
         device_mappings[module] = []
         for thing_name in dir(module):
             thing = getattr(module, thing_name)
-            if inspect.isclass(thing) and hasattr(thing, 'model'):
+            if inspect.isclass(thing) and hasattr(thing, "model"):
                 # thing.__module__ prints the module name where it is defined
                 # this name needs to match the current module we're scanning.
                 # else we skip
@@ -57,17 +57,21 @@ def probe_devices():
 def check_for_cmd_on_host(cmd, msg=None):
     """Print an error message with a suggestion on how to install the command."""
     from boardfarm.lib.common import cmd_exists
+
     if not cmd_exists(cmd):
         termcolor.cprint(
             "\nThe  command '" + cmd +
             "' is NOT installed on your system. Please install it.",
             None,
-            attrs=['bold'])
+            attrs=["bold"],
+        )
         if msg is not None:
             print(cmd + ": " + msg)
         import sys
+
         if sys.platform == "linux2":
             import platform
+
             if "Ubuntu" in platform.dist() or "debian" in platform.dist():
                 print("To install run:\n\tsudo apt install <package with " +
                       cmd + ">")
@@ -92,7 +96,7 @@ class _prompt(UserList, list):
 
         for dm in all_device_managers:
             for d in dm:
-                for p in getattr(d, 'prompt', []):
+                for p in getattr(d, "prompt", []):
                     if p not in ret:
                         ret.append(p)
 
@@ -122,8 +126,8 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
     temp = []
     for cls in cls_list:
         members = [
-            attr for attr in cls.__dict__ if not attr.startswith('__')
-            and not attr.endswith('__') and attr not in ('model', 'prompt')
+            attr for attr in cls.__dict__ if not attr.startswith("__")
+            and not attr.endswith("__") and attr not in ("model", "prompt")
         ]
         common = list(set(members) & set(cls_members))
         if len(common) > 0:
@@ -142,7 +146,7 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
             cls.__init__(self, *args, **kwargs)
 
     ret = type(cls_name, tuple(cls_list),
-               {'__init__': __init__})(model, mgr=device_mgr, **kwargs)
+               {"__init__": __init__})(model, mgr=device_mgr, **kwargs)
     ret.target = kwargs
 
     return ret
@@ -154,14 +158,14 @@ def get_device(model, device_mgr, **kwargs):
     These are connected to the device Under Test (DUT) board.
     """
     profile = kwargs.get("profile", {})
-    override = kwargs.pop('override', False)
+    override = kwargs.pop("override", False)
     plugin = kwargs.pop("plugin_device", False)
     cls_list = []
     profile_list = []
     for device_file, devs in device_mappings.items():
         for dev in devs:
-            if 'model' in dev.__dict__:
-                attr = dev.__dict__['model']
+            if "model" in dev.__dict__:
+                attr = dev.__dict__["model"]
 
                 if type(attr) is str and model == attr:
                     cls_list.append(dev)
@@ -209,7 +213,9 @@ def get_device(model, device_mgr, **kwargs):
     except ConnectionRefused:
         raise
     except pexpect.EOF:
-        msg = "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured" % model
+        msg = (
+            "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured"
+            % model)
         raise Exception(msg)
     except Exception as e:
         traceback.print_exc()
@@ -220,13 +226,13 @@ def get_device(model, device_mgr, **kwargs):
 
 def board_decider(model, **kwargs):
     """Create class instance for the Device Under Test (DUT) board."""
-    if any('conn_cmd' in s for s in kwargs):
-        if any(u'kermit' in s for s in kwargs['conn_cmd']):
+    if any("conn_cmd" in s for s in kwargs):
+        if any(u"kermit" in s for s in kwargs["conn_cmd"]):
             check_for_cmd_on_host(
-                'kermit',
+                "kermit",
                 "telnet equivalent command. It has lower CPU usage than telnet,\n\
 and works exactly the same way (e.g. kermit -J <ipaddr> [<port>])\n\
-You are seeing this message as your configuration is now using kermit instead of telnet."
+You are seeing this message as your configuration is now using kermit instead of telnet.",
             )
 
     dynamic_dev = get_device(model, **kwargs)
@@ -247,8 +253,8 @@ You are seeing this message as your configuration is now using kermit instead of
         print(
             "No boardfarm plugins are installed, do you need to install some?")
 
-    if 'BFT_CONFIG' in os.environ:
-        print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ['BFT_CONFIG'])
+    if "BFT_CONFIG" in os.environ:
+        print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ["BFT_CONFIG"])
     else:
         print("No BFT_CONFIG is set, do you need one?")
 

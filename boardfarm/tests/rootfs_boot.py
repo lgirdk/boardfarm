@@ -23,6 +23,7 @@ if "pytest" in sys.modules:
     class RootFSBootTest(bft_base_test.BftBaseTest):
         reflash = False
         reboot = False
+
 else:
 
     class RootFSBootTest(bft_base_test.BftBaseTest):

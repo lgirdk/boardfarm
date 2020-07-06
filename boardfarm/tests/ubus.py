@@ -26,7 +26,7 @@ def ubus_call(session_id, ubus_object, ubus_func, params, lan):
         "jsonrpc": "2.0",
         "id": 1,
         "method": "call",
-        "params": [session_id, ubus_object, ubus_func, params]
+        "params": [session_id, ubus_object, ubus_func, params],
     }
     return ubus_call_raw(j, lan)
 
@@ -36,7 +36,7 @@ def ubus_check_error(reply, lan, assert_on_err=True):
         print("Got error in reply")
         print(reply)
 
-        assert (not assert_on_err)
+        assert not assert_on_err
 
 
 def ubus_login_raw(lan, username="root", password="password"):
@@ -48,11 +48,14 @@ def ubus_login_raw(lan, username="root", password="password"):
         "method":
         "call",
         "params": [
-            "00000000000000000000000000000000", "session", "login", {
+            "00000000000000000000000000000000",
+            "session",
+            "login",
+            {
                 "username": username,
                 "password": password
-            }
-        ]
+            },
+        ],
     }
     return ubus_call_raw(json, lan)
 
@@ -62,7 +65,7 @@ def ubus_login_session(lan, username="root", password="password"):
 
     ubus_check_error(reply, lan)
 
-    return reply['result'][1]['ubus_rpc_session']
+    return reply["result"][1]["ubus_rpc_session"]
 
 
 def ubus_network_restart(session_id, lan):
@@ -70,7 +73,7 @@ def ubus_network_restart(session_id, lan):
         "jsonrpc": "2.0",
         "id": 1,
         "method": "call",
-        "params": [session_id, "network", "restart", {}]
+        "params": [session_id, "network", "restart", {}],
     }
 
     reply = ubus_call_raw(json, lan)
@@ -82,7 +85,7 @@ def ubus_system_reboot(session_id, lan):
         "jsonrpc": "2.0",
         "id": 1,
         "method": "call",
-        "params": [session_id, "foo", "bar", {}]
+        "params": [session_id, "foo", "bar", {}],
     }
 
     reply = ubus_call_raw(json, lan)

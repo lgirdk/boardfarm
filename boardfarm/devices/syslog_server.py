@@ -11,7 +11,7 @@ from boardfarm.devices import connection_decider, debian
 class SyslogServer(debian.DebianBox):
     """Linux based syslog server."""
 
-    model = ('syslog')
+    model = "syslog"
     name = "syslog_server"
     prompt = [r".*\@.*:.*\$"]
 
@@ -19,21 +19,23 @@ class SyslogServer(debian.DebianBox):
         """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
-        self.syslog_ip = self.kwargs['ipaddr']
-        self.syslog_path = self.kwargs.get('syslog_path', '/var/log/BF/')
-        self.username = self.kwargs['username']
-        self.password = self.kwargs['password']
+        self.syslog_ip = self.kwargs["ipaddr"]
+        self.syslog_path = self.kwargs.get("syslog_path", "/var/log/BF/")
+        self.username = self.kwargs["username"]
+        self.password = self.kwargs["password"]
 
-        conn_cmd = "ssh -o \"StrictHostKeyChecking no\" %s@%s" % (
-            self.username, self.syslog_ip)
+        conn_cmd = 'ssh -o "StrictHostKeyChecking no" %s@%s' % (
+            self.username,
+            self.syslog_ip,
+        )
 
         self.connection = connection_decider.connection("local_cmd",
                                                         device=self,
                                                         conn_cmd=conn_cmd)
         self.connection.connect()
-        self.linesep = '\r'
+        self.linesep = "\r"
 
-        if 0 == self.expect(['assword: '] + self.prompt):
+        if 0 == self.expect(["assword: "] + self.prompt):
             self.sendline(self.password)
             self.expect(self.prompt)
 
@@ -90,7 +92,7 @@ class SyslogServer(debian.DebianBox):
         time_log_msg = match.group(1)
 
         # Check syslog time from server
-        x = time.strptime(time_log_msg, '%H:%M:%S')
+        x = time.strptime(time_log_msg, "%H:%M:%S")
         time_log_msg = datetime.timedelta(hours=x.tm_hour,
                                           minutes=x.tm_min,
                                           seconds=x.tm_sec).total_seconds()

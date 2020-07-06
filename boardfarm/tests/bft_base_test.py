@@ -31,14 +31,15 @@ class _UnitTestCls(UTest):
     def __init__(self, *args, **kwargs):
         # This is just to ensure the pytest runs with BF
         # this is done so that base prefixed/suffixed test method don't run
-        UTest.__init__(self, 'test_main')
-        print('Args passed while running with pytest: {}'.format(
+        UTest.__init__(self, "test_main")
+        print("Args passed while running with pytest: {}".format(
             [self.config, self.dev, self.env_helper]))
 
 
 _using_pytest = False
 if "pytest" in sys.modules:
     import pytest
+
     inherit_class = _UnitTestCls
     _using_pytest = True
 else:
@@ -56,10 +57,9 @@ class BftBaseTest(inherit_class):
     def __init__(self, *args, **kwargs):
         self.config = self.dev = self.env_helper = None
         if args and len(args) == 3:
-            if type(
-                    args[0]
-            ) is boardfarm.lib.test_configurator.BoardfarmTestConfig or args[
-                    0] is boardfarm.config:
+            if (type(args[0]) is
+                    boardfarm.lib.test_configurator.BoardfarmTestConfig
+                    or args[0] is boardfarm.config):
                 self.config = args[0]
             if type(args[1]) is boardfarm.lib.DeviceManager.device_manager:
                 self.dev = args[1]
@@ -97,26 +97,31 @@ class BftBaseTest(inherit_class):
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
-        msg = "==================== Begin %s    Time: %s ====================" \
-            % (self.__class__.__name__, now_short(self._format))
+        msg = "==================== Begin %s    Time: %s ====================" % (
+            self.__class__.__name__,
+            now_short(self._format),
+        )
 
-        lib.common.test_msg('\n' + msg)
+        lib.common.test_msg("\n" + msg)
         for c in self.dev.board.consoles:
-            if hasattr(c.logfile_read, 'extra_log'):
+            if hasattr(c.logfile_read, "extra_log"):
                 c.logfile_read.extra_log(msg)
 
     def endMarker(self):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
         result = self.result_grade
         if self.attempts:
-            result = self.result_grade + "(" + str(self.attempts) + "/" + str(
-                self.config.retry) + ")"
-        msg = "==================== End %s   %s   Time: %s ==================" \
-                    % (self.__class__.__name__, result, now_short(self._format))
+            result = (self.result_grade + "(" + str(self.attempts) + "/" +
+                      str(self.config.retry) + ")")
+        msg = "==================== End %s   %s   Time: %s ==================" % (
+            self.__class__.__name__,
+            result,
+            now_short(self._format),
+        )
 
-        lib.common.test_msg('\n' + msg)
+        lib.common.test_msg("\n" + msg)
         for c in self.dev.board.consoles:
-            if hasattr(c.logfile_read, 'extra_log'):
+            if hasattr(c.logfile_read, "extra_log"):
                 c.logfile_read.extra_log(msg)
 
     def run(self, result=None):
@@ -143,7 +148,7 @@ class BftBaseTest(inherit_class):
             finally:
                 td = self.td_step
                 if not td.td_result:
-                    if 'FAIL' not in self.result_grade:
+                    if "FAIL" not in self.result_grade:
                         self.result_grade = "TD FAIL"
         else:
             self.endMarker()
@@ -197,7 +202,7 @@ class BftBaseTest(inherit_class):
 
         for c in self.dev.board.consoles:
             c.test_to_log = self
-            c.test_prefix = 'console-%s' % str(
+            c.test_prefix = "console-%s" % str(
                 self.dev.board.consoles.index(c) + 1)
 
             if not c.isalive():
@@ -209,11 +214,11 @@ class BftBaseTest(inherit_class):
                 raise
 
         try:
-            if hasattr(self.dev, 'wan') and hasattr(self, 'wan_setup'):
+            if hasattr(self.dev, "wan") and hasattr(self, "wan_setup"):
                 self.wan_setup()
-            if hasattr(self.dev, 'lan') and hasattr(self, 'lan_setup'):
+            if hasattr(self.dev, "lan") and hasattr(self, "lan_setup"):
                 self.lan_setup()
-            if hasattr(self.dev, 'wlan') and hasattr(self, 'wlan_setup'):
+            if hasattr(self.dev, "wlan") and hasattr(self, "wlan_setup"):
                 self.wlan_setup()
 
             if self.config.retry and not self.dont_retry:
@@ -242,7 +247,7 @@ class BftBaseTest(inherit_class):
                     raise
                 except Exception:
                     retry = retry - 1
-                    if (retry > 0):
+                    if retry > 0:
                         self.attempts = self.config.retry - retry + 1
                         traceback.print_exc(file=sys.stdout)
                         print(
@@ -251,7 +256,8 @@ class BftBaseTest(inherit_class):
                         debtcollector.deprecate(
                             "Using function/method 'recover()' is deprecated",
                             removal_version="> 1.1.1",
-                            category=UserWarning)
+                            category=UserWarning,
+                        )
                         self.recover()
                         time.sleep(5)
                         print(
@@ -260,30 +266,30 @@ class BftBaseTest(inherit_class):
                     else:
                         raise
 
-            if hasattr(self.dev, 'wan') and hasattr(self, 'wan_cleanup'):
+            if hasattr(self.dev, "wan") and hasattr(self, "wan_cleanup"):
                 self.wan_cleanup()
-            if hasattr(self.dev, 'lan') and hasattr(self, 'lan_cleanup'):
+            if hasattr(self.dev, "lan") and hasattr(self, "lan_cleanup"):
                 self.lan_cleanup()
-            if hasattr(self.dev, 'wlan') and hasattr(self, 'wlan_cleanup'):
+            if hasattr(self.dev, "wlan") and hasattr(self, "wlan_cleanup"):
                 self.wlan_cleanup()
 
-            if hasattr(self, 'expected_failure') and self.expected_failure:
+            if hasattr(self, "expected_failure") and self.expected_failure:
                 self.result_grade = "Unexp OK"
             else:
                 self.result_grade = "OK"
 
             self.stop_time = time.time()
-            self.logged['test_time'] = float(self.stop_time - self.start_time)
+            self.logged["test_time"] = float(self.stop_time - self.start_time)
         except boardfarm.exceptions.SkipTest as e:
             self.stop_time = time.time()
-            self.logged['test_time'] = float(self.stop_time - self.start_time)
+            self.logged["test_time"] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
             print("\n\nSkipping test: %s" % e)
             print("=========== Test skipped! Moving on... =============")
             return
         except boardfarm.exceptions.ContingencyCheckError as e:
             self.stop_time = time.time()
-            self.logged['test_time'] = float(self.stop_time - self.start_time)
+            self.logged["test_time"] = float(self.stop_time - self.start_time)
             self.result_grade = "CC FAIL"
             print("\n\nContingency check failed: %s" % e)
             print(
@@ -308,8 +314,8 @@ class BftBaseTest(inherit_class):
                 "\n\n=========== Test: %s failed! Device status check done! Time: %s ==========="
                 % (self.__class__.__name__, now_short(self._format)))
 
-            self.logged['test_time'] = float(self.stop_time - self.start_time)
-            if hasattr(self, 'expected_failure') and self.expected_failure:
+            self.logged["test_time"] = float(self.stop_time - self.start_time)
+            if hasattr(self, "expected_failure") and self.expected_failure:
                 self.result_grade = "Exp FAIL"
             else:
                 self.result_grade = "FAIL"
@@ -323,7 +329,8 @@ class BftBaseTest(inherit_class):
                 traceback.print_exc(file=sys.stdout)
 
             import os
-            if 'BFT_DEBUG' in os.environ:
+
+            if "BFT_DEBUG" in os.environ:
                 print(self)
                 for device in self.config.devices:
                     try:
@@ -335,7 +342,8 @@ class BftBaseTest(inherit_class):
             debtcollector.deprecate(
                 "Using function/method 'recover()' is deprecated",
                 removal_version="> 1.1.1",
-                category=UserWarning)
+                category=UserWarning,
+            )
 
             try:
                 self.recover()
@@ -366,7 +374,7 @@ class BftBaseTest(inherit_class):
         # we have to call this because the property method calls are
         # not calling the decorator.. work around for now
         if self._log_to_file is not None:
-            self.x_log_to_file(value.replace(self._log_to_file, ''))
+            self.x_log_to_file(value.replace(self._log_to_file, ""))
         else:
             self.x_log_to_file(value)
 
@@ -376,18 +384,19 @@ class BftBaseTest(inherit_class):
 
     def get_device_by_feature(self, feature):
         for device in self.config.devices:
-            if 'feature' in device and feature in device['feature']:
+            if "feature" in device and feature in device["feature"]:
                 return getattr(self, device)
 
     def fetch_hosts(self):
-        '''To fetch wan hosts
-        Returns a dictionary of IP(key) with hosts(value) for all Wan devices'''
+        """To fetch wan hosts
+        Returns a dictionary of IP(key) with hosts(value) for all Wan devices"""
         import re
+
         hosts = {}
         for device in self.config.devices:
             if re.search("wan|sip|phone", device):
                 dev = getattr(self.config, device)
-                if hasattr(dev, 'iface_dut'):
+                if hasattr(dev, "iface_dut"):
                     device_ip = dev.get_interface_ipaddr(dev.iface_dut)
                     hosts[str(device_ip)] = device + ".boardfarm.com"
         return hosts

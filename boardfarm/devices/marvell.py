@@ -16,12 +16,13 @@ from . import openwrt_router
 class WRT3200ACM(openwrt_router.OpenWrtRouter):
     """Marvell board loader/configuration class implementation \
     extends OpenWrtRouter."""
-    model = ("wrt3200acm")
+
+    model = "wrt3200acm"
 
     prompt = [
-        'root\\@.*:.*#',
+        "root\\@.*:.*#",
     ]
-    uprompt = ['Venom>>']
+    uprompt = ["Venom>>"]
     uboot_eth = "egiga1"
     wan_iface = "wan"
 
@@ -43,13 +44,13 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         """Power cycle the marvell and enter to uboot menu."""
         self.power.reset()
 
-        self.expect_exact('General initialization - Version: 1.0.0')
+        self.expect_exact("General initialization - Version: 1.0.0")
         for _ in range(10):
             self.expect(pexpect.TIMEOUT, timeout=0.1)
-            self.sendline('echo FOO')
-            if 0 != self.expect([pexpect.TIMEOUT] + ['echo FOO'], timeout=0.1):
+            self.sendline("echo FOO")
+            if 0 != self.expect([pexpect.TIMEOUT] + ["echo FOO"], timeout=0.1):
                 break
-            if 0 != self.expect([pexpect.TIMEOUT] + ['FOO'], timeout=0.1):
+            if 0 != self.expect([pexpect.TIMEOUT] + ["FOO"], timeout=0.1):
                 break
             if 0 != self.expect([pexpect.TIMEOUT] + self.uprompt, timeout=0.1):
                 break
@@ -69,9 +70,9 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         """
         common.print_bold("\n===== Flashing linux =====\n")
         filename = self.prepare_file(KERNEL)
-        self.sendline('setenv firmwareName %s' % filename)
+        self.sendline("setenv firmwareName %s" % filename)
         self.expect(self.uprompt)
-        self.sendline('run update_both_images')
+        self.sendline("run update_both_images")
         self.expect(self.uprompt, timeout=90)
 
     def boot_linux(self, rootfs=None, bootargs=""):
@@ -82,4 +83,4 @@ class WRT3200ACM(openwrt_router.OpenWrtRouter):
         :param bootargs: parameter to be used at later point, defaults to empty string "".
         :type bootargs: string
         """
-        self.sendline('boot')
+        self.sendline("boot")

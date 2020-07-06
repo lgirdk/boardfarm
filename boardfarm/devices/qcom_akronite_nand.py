@@ -12,8 +12,18 @@ from . import qcom_arm_base
 
 class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
     """QcomAkroniteRouter board loader/configuration class derived from QcomArmBase."""
-    model = ("ipq8066", "db149", "ap145", "ap148", "ap148-osprey",
-             "ap148-beeliner", "ap160-1", "ap160-2", "ap161")
+
+    model = (
+        "ipq8066",
+        "db149",
+        "ap145",
+        "ap148",
+        "ap148-osprey",
+        "ap148-beeliner",
+        "ap160-1",
+        "ap160-2",
+        "ap161",
+    )
 
     machid_table = {
         "db149": "125b",
@@ -24,7 +34,7 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         "ap160-1": "136b",
         "ap160-2": "136b",
         "ap161": "136c",
-        "dk04": "8010001"
+        "dk04": "8010001",
     }
     uboot_ddr_addr = "0x42000000"
 
@@ -53,7 +63,7 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         common.print_bold("\n===== Flashing u-boot =====\n")
         filename = self.prepare_file(uboot)
         self.tftp_get_file_uboot(self.uboot_ddr_addr, filename)
-        self.sendline('ipq_nand sbl')
+        self.sendline("ipq_nand sbl")
         self.expect(self.uprompt)
         self.nand_flash_bin(self.uboot_addr, self.uboot_size,
                             self.uboot_ddr_addr)
@@ -103,12 +113,12 @@ class QcomAkroniteRouterNAND(qcom_arm_base.QcomArmBase):
         self.expect(self.uprompt)
         self.sendline("print")
         self.expect(self.uprompt)
-        self.sendline('run bootcmd')
+        self.sendline("run bootcmd")
         # if run isn't support, we just reset u-boot and
         # let the bootcmd run that way
         try:
-            self.expect('Unknown command', timeout=5)
+            self.expect("Unknown command", timeout=5)
         except Exception:
             pass
         else:
-            self.sendline('reset')
+            self.sendline("reset")

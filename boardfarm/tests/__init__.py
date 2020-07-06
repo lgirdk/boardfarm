@@ -43,7 +43,7 @@ def init(config=None):
             [bf_module.__name__, "tests"]))
         if test_module:
             all_mods += boardfarm.walk_library(test_module.load_module(),
-                                               filter_pkgs=['lib'])
+                                               filter_pkgs=["lib"])
 
     for module in all_mods:
         fname = module.__name__.split(".")[-1]

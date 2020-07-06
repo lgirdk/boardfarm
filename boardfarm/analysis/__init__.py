@@ -17,9 +17,9 @@ analysis_files = glob.glob(os.path.dirname(__file__) + "/*.py")
 for x in sorted(
     [os.path.basename(f)[:-3] for f in analysis_files if "__" not in f]):
     try:
-        module = importlib.import_module('boardfarm.analysis.%s' % x)
+        module = importlib.import_module("boardfarm.analysis.%s" % x)
     except Exception:
-        if 'BFT_DEBUG' in os.environ:
+        if "BFT_DEBUG" in os.environ:
             traceback.print_exc()
             print("Warning: could not import from file %s.py" % x)
         else:
@@ -29,5 +29,5 @@ for x in sorted(
         continue
     for thing_name in dir(module):
         thing = getattr(module, thing_name)
-        if inspect.isclass(thing) and hasattr(thing, 'analyze'):
+        if inspect.isclass(thing) and hasattr(thing, "analyze"):
             classes[thing_name] = thing

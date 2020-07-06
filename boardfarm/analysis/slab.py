@@ -22,7 +22,7 @@ class SlabAnalysis(analysis.Analysis):
         timestamps = collections.defaultdict(list)
         for dump in results:
             for line in dump.split("\\r\\n")[3:]:
-                line = re.sub(r'](?=[^\s])', ']', line)
+                line = re.sub(r"](?=[^\s])", "]", line)
                 e = line.split()
                 if len(e) < 4:
                     continue

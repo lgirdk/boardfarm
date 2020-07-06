@@ -80,8 +80,8 @@ class DockerFactory(linux.LinuxDevice):
 
     """
 
-    model = ('docker-factory')
-    prompt = ['docker_session>']
+    model = "docker-factory"
+    prompt = ["docker_session>"]
     created_docker = False
     created_network = True
 
@@ -99,12 +99,12 @@ class DockerFactory(linux.LinuxDevice):
         self.args = args
         self.kwargs = kwargs
         self.container_id = 1
-        self.dev = kwargs.pop('mgr', None)
+        self.dev = kwargs.pop("mgr", None)
 
-        self.ipaddr = kwargs.pop('ipaddr', 'localhost')
-        self.username = kwargs.pop('username', 'root')
+        self.ipaddr = kwargs.pop("ipaddr", "localhost")
+        self.username = kwargs.pop("username", "root")
         self.password = codecs.decode(
-            kwargs.pop('password', '626967666f6f7431'), "hex").decode("ascii")
+            kwargs.pop("password", "626967666f6f7431"), "hex").decode("ascii")
         self.docker_engine = None
         self.network_options = ""
 
@@ -112,38 +112,46 @@ class DockerFactory(linux.LinuxDevice):
 
         # In case json provides its own env, update that to boardfarm.devices.env
         # These are meant to be exported to docker-factory not to docker-engines
-        self.dev.env.update(kwargs.pop('env', {}))
+        self.dev.env.update(kwargs.pop("env", {}))
         self.build_img_path = self.dev.env.pop("build_img_path", None)
         configuration = self.dev.env.pop("configure", None)
 
-        if self.ipaddr != 'localhost':
+        if self.ipaddr != "localhost":
             # TOOO: we rely on correct username and key and standard port
             bft_pexpect_helper.spawn.__init__(
                 self,
                 command="ssh",
                 args=[
-                    '%s@%s' % (self.username, self.ipaddr), '-o',
-                    'StrictHostKeyChecking=no', '-o',
-                    'UserKnownHostsFile=/dev/null', '-o',
-                    'ServerAliveInterval=60', '-o', 'ServerAliveCountMax=5'
-                ])
+                    "%s@%s" % (self.username, self.ipaddr),
+                    "-o",
+                    "StrictHostKeyChecking=no",
+                    "-o",
+                    "UserKnownHostsFile=/dev/null",
+                    "-o",
+                    "ServerAliveInterval=60",
+                    "-o",
+                    "ServerAliveCountMax=5",
+                ],
+            )
         else:
             bft_pexpect_helper.spawn.__init__(
-                self, command='bash --noprofile --norc', env=self.dev.env)
+                self, command="bash --noprofile --norc", env=self.dev.env)
 
         # TODO: reused function for ssh auth for all of this
-        if 0 == self.expect(['assword', pexpect.TIMEOUT], timeout=10):
+        if 0 == self.expect(["assword", pexpect.TIMEOUT], timeout=10):
             self.sendline(self.password)
 
-        self.name = kwargs.pop('name')
+        self.name = kwargs.pop("name")
 
         # used to create a docker network, if not present
         # docker_network creation will skip if iface is not set
         # iface needs to point to env, it should not have an explicit iface name
-        self.iface = kwargs.pop('iface', None)
-        assert self.iface, "iface needs to be provided as an arguement to docker-factory"
+        self.iface = kwargs.pop("iface", None)
+        assert (
+            self.iface
+        ), "iface needs to be provided as an arguement to docker-factory"
 
-        self.docker_network = kwargs.pop('docker_network', None)
+        self.docker_network = kwargs.pop("docker_network", None)
         if not self.docker_network:
             self.docker_network = self.name + "-" + self.dev.env["uniq_id"]
             # clean only auto-created docker-networks
@@ -158,49 +166,54 @@ class DockerFactory(linux.LinuxDevice):
                 ip_range = configuration.get("ip-range")
                 gateway = configuration.get("gateway")
                 extra_opts = configuration.get("extra_opts", "")
-                self.network_options = "--subnet %s --ip-range %s --gateway %s %s" %\
-                                       (subnet, ip_range, gateway, extra_opts)
+                self.network_options = "--subnet %s --ip-range %s --gateway %s %s" % (
+                    subnet,
+                    ip_range,
+                    gateway,
+                    extra_opts,
+                )
 
-        if 'BFT_DEBUG' in os.environ:
+        if "BFT_DEBUG" in os.environ:
             self.logfile_read = sys.stdout
 
         self.sendline('export PS1="docker_session>"')
         self.expect(self.prompt)
-        self.sendline('echo FOO')
-        self.expect_exact('echo FOO')
+        self.sendline("echo FOO")
+        self.expect_exact("echo FOO")
         self.expect(self.prompt)
 
-        if self.ipaddr != 'localhost':
+        if self.ipaddr != "localhost":
             print(self.dev.env)
             for k, v in self.dev.env.items():
-                self.sendline('export %s=%s' % (k, v))
+                self.sendline("export %s=%s" % (k, v))
                 self.expect(self.prompt)
 
         self.setwinsize(80, 200)
         self.set_cli_size(200)
 
         # if these interfaces are getting created let's give them time to show up
-        if 'DOCKER_HOST' in self.dev.env:
-            out = self.check_output('echo %s' % (self.dev.env['DOCKER_HOST']))
+        if "DOCKER_HOST" in self.dev.env:
+            out = self.check_output("echo %s" % (self.dev.env["DOCKER_HOST"]))
             if out:
                 self.docker_engine = out.strip().split("//")[-1]
             else:
                 raise DeviceDoesNotExistError(
                     "Factory is not configured with DOCKER_ENGINE: %s" %
-                    (self.dev.env['DOCKER_HOST']))
+                    (self.dev.env["DOCKER_HOST"]))
 
         prefix = "ssh %s " % self.docker_engine if self.docker_engine else ""
         for _ in range(10):
-            self.sendline('%sifconfig %s' % (prefix, self.iface))
+            self.sendline("%sifconfig %s" % (prefix, self.iface))
             self.expect(self.prompt)
-            if 'error fetching interface information: Device not found' not in self.before or prefix:
+            if ("error fetching interface information: Device not found" not in
+                    self.before or prefix):
                 break
             self.expect(pexpect.TIMEOUT, timeout=5)
 
         # enforcing here, containers will only be created using docker-network
         self.configure_docker_network()
 
-        for target in kwargs.pop('targets', []):
+        for target in kwargs.pop("targets", []):
             self.add_target(target)
 
     def add_target(self, target, docker_network=None):
@@ -223,22 +236,22 @@ class DockerFactory(linux.LinuxDevice):
             2. LAN and WAN containers both have a mgmt iface ``eth0`` and a data iface ``eth1``
             3. JSON validation for target is not handled by add_target
         """
-        target_img = target['img']
-        target_type = target['type']
-        name = target['name']
+        target_img = target["img"]
+        target_type = target["type"]
+        name = target["name"]
 
         counter = self.device_counter
         counter[name] += 1
 
-        target_cname = target['name'] + '-${uniq_id}' + str(counter[name])
+        target_cname = target["name"] + "-${uniq_id}" + str(counter[name])
 
         ip = getattr(self, "docker_engine", None)
         if not ip:
             ip = self.ipaddr
-        target['ipaddr'] = ip.split('@')[-1]
-        target['device_mgr'] = self.dev
+        target["ipaddr"] = ip.split("@")[-1]
+        target["device_mgr"] = self.dev
 
-        options = target.get('options', [])
+        options = target.get("options", [])
         if options:
             options = options.split(",")
         docker_network = self.docker_network if not docker_network else docker_network
@@ -249,7 +262,7 @@ class DockerFactory(linux.LinuxDevice):
         # TODO: move default command into Dockerfile
         # TODO: list of ports to forward, http proxy port for example and ssh
         self.sendline(
-            'docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D'
+            "docker run --rm --privileged --name=%s -d -p 22 %s /usr/sbin/sshd -D"
             % (target_cname, target_img))
         self.expect(self.prompt)
         self.expect(pexpect.TIMEOUT, timeout=5)
@@ -258,10 +271,11 @@ class DockerFactory(linux.LinuxDevice):
 
         self.isolate_traffic(target_cname)
 
-        self.sendline('docker network connect %s %s' %
+        self.sendline("docker network connect %s %s" %
                       (docker_network, target_cname))
         self.expect(self.prompt)
-        assert 'Error response from daemon' not in self.before, "Failed to connect docker network"
+        assert ("Error response from daemon" not in self.before
+                ), "Failed to connect docker network"
 
         if self.network_options:
             ip = json.loads(
@@ -269,23 +283,24 @@ class DockerFactory(linux.LinuxDevice):
                     "docker inspect -f '{{json .NetworkSettings.Networks.%s}}' %s"
                     % (docker_network, target_cname)))
 
-            assert ip[
-                'IPAddress'], "Failed to set a static IPv4 Address for container : %s" % target_cname
+            assert ip["IPAddress"], (
+                "Failed to set a static IPv4 Address for container : %s" %
+                target_cname)
 
             options.append("wan-static-ip:%s/%s " %
-                           (ip['IPAddress'], ip['IPPrefixLen']))
+                           (ip["IPAddress"], ip["IPPrefixLen"]))
 
             # IPv6 is optional
             if ip["GlobalIPv6Address"]:
                 options.append(
                     "wan-static-ipv6:%s/%s" %
-                    (ip['GlobalIPv6Address'], ip['GlobalIPv6PrefixLen']))
+                    (ip["GlobalIPv6Address"], ip["GlobalIPv6PrefixLen"]))
 
             if ip["Gateway"]:
                 options.append("static-route:0.0.0.0/0-%s" % ip["Gateway"])
         else:
             # if the IP address for interface is suppose to be assigned using DHCP
-            self.sendline('docker exec %s ip address flush dev eth1' %
+            self.sendline("docker exec %s ip address flush dev eth1" %
                           target_cname)
             self.expect(self.prompt)
 
@@ -294,8 +309,8 @@ class DockerFactory(linux.LinuxDevice):
         self.expect_exact("docker port %s | grep '22/tcp' | sed 's/.*://g'" %
                           target_cname)
         self.expect(self.prompt)
-        target['port'] = self.before.strip()
-        target['options'] = ",".join(options)
+        target["port"] = self.before.strip()
+        target["options"] = ",".join(options)
         int(self.before.strip())
 
         new_device = get_device(target_type, **target)
@@ -334,7 +349,7 @@ class DockerFactory(linux.LinuxDevice):
             if any(list(map(lambda x: x in path, ["http://", "https://"]))):
                 self.sendline("curl -O %s" % path)
                 self.expect_prompt(timeout=120)
-                path = path.split('/')[-1]
+                path = path.split("/")[-1]
                 self.sendline("docker image load --input %s" % path)
         else:
             # try to build an image, for first time
@@ -359,8 +374,8 @@ class DockerFactory(linux.LinuxDevice):
             # only build an image if path is provided from config
             if self.build_img_path:
                 self.build_docker_image(img, self.build_img_path)
-            assert self.validate_docker_image(
-                img), "Failed to build docker image: %s" % img
+            assert self.validate_docker_image(img), (
+                "Failed to build docker image: %s" % img)
 
     def close(self, *args, **kwargs):
         """Close docker."""
@@ -377,21 +392,21 @@ class DockerFactory(linux.LinuxDevice):
 
     def clean_docker_network(self):
         """Clean docker network."""
-        self.sendcontrol('c')
+        self.sendcontrol("c")
         self.expect_prompt()
         if self.del_docker_network and self.created_network is True:
-            self.sendline('docker network rm %s' % self.docker_network)
+            self.sendline("docker network rm %s" % self.docker_network)
             self.expect(self.prompt)
-            self.sendline('docker network ls')
+            self.sendline("docker network ls")
             self.expect(self.prompt)
 
     def clean_docker(self):
         """Clean docker."""
         if self.created_docker:
-            self.sendcontrol('c')
+            self.sendcontrol("c")
             self.expect_prompt()
             for c in self.target_cname:
-                self.sendline('docker stop %s' % c)
+                self.sendline("docker stop %s" % c)
                 self.expect(self.prompt)
                 self.created_docker = False
 
@@ -407,13 +422,15 @@ class DockerFactory(linux.LinuxDevice):
         :rtype: bool
         """
         out = self.check_output(
-            'docker network inspect -f {{.Options.parent}} %s' %
+            "docker network inspect -f {{.Options.parent}} %s" %
             self.docker_network)
-        result = 'Error: No such network' not in out
+        result = "Error: No such network" not in out
         if result:
             check = out.strip() in self.check_output("echo %s" % self.iface)
             # if iface provided from JSON do not match with exisitng docker-nw's parent iface, exit
-            assert check, "Driver Issue: iface from config does not match exisiting docker network's parent iface"
+            assert (
+                check
+            ), "Driver Issue: iface from config does not match exisiting docker network's parent iface"
         return result
 
     @run_with_lock(lock)
@@ -456,17 +473,20 @@ class DockerFactory(linux.LinuxDevice):
 
         # TODO, ensure that all docker networks don't have overlapping subnet configurations.
         # completely depending on the person who writes the config.
-        cmd = 'docker network create -d macvlan -o parent=%s %s -o macvlan_mode=bridge %s' %\
-              (self.iface, self.network_options, self.docker_network)
+        cmd = (
+            "docker network create -d macvlan -o parent=%s %s -o macvlan_mode=bridge %s"
+            % (self.iface, self.network_options, self.docker_network))
         self.sendline(cmd)
         self.expect(self.prompt)
-        assert 'Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network' not in self.before
-        if ' is already using parent interface ' in self.before:
+        assert (
+            "Error response from daemon: could not find an available, non-overlapping IPv4 address pool among the defaults to assign to the network"
+            not in self.before)
+        if " is already using parent interface " in self.before:
             # should we exit if we find this scenario?
             print(
                 "Warning!! a docker-network network with same parent exists. Switching to that docker-network"
             )
-            self.docker_network = re.findall('dm-(.*) is already',
+            self.docker_network = re.findall("dm-(.*) is already",
                                              self.before)[0]
             self.created_network = False
 
@@ -481,8 +501,8 @@ class DockerFactory(linux.LinuxDevice):
         # iface set, we need to create network
         if not self.validate_docker_network():
             self.add_docker_network()
-            assert self.validate_docker_network(),\
-                "Failed to configure docker network: %s" % self.docker_network
+            assert self.validate_docker_network(), (
+                "Failed to configure docker network: %s" % self.docker_network)
 
     @run_with_lock(lock)
     def isolate_traffic(self, cname):
@@ -506,24 +526,24 @@ class DockerFactory(linux.LinuxDevice):
             "awk '{print $1}' | head -n1" % prefix)
 
         self.check_output(
-            'docker exec %s bash -c \'echo \"1 mgmt\" >> /etc/iproute2/rt_tables\''
+            "docker exec %s bash -c 'echo \"1 mgmt\" >> /etc/iproute2/rt_tables'"
             % cname)
         self.check_output(
-            'docker exec %s ip route add default via %s table mgmt' %
+            "docker exec %s ip route add default via %s table mgmt" %
             (cname, docker_gw_ip))
-        self.check_output('docker exec %s ip rule add from %s table mgmt' %
+        self.check_output("docker exec %s ip rule add from %s table mgmt" %
                           (cname, docker_dev_ip))
-        self.check_output('docker exec %s ip rule add to %s table mgmt' %
+        self.check_output("docker exec %s ip rule add to %s table mgmt" %
                           (cname, docker_dev_ip))
-        self.check_output('docker exec %s ip rule add from %s table mgmt' %
+        self.check_output("docker exec %s ip rule add from %s table mgmt" %
                           (cname, docker_nw))
-        self.check_output('docker exec %s ip rule add to %s table mgmt' %
+        self.check_output("docker exec %s ip rule add to %s table mgmt" %
                           (cname, docker_nw))
 
-        self.check_output('docker cp %s:root/.bashrc bashrc_%s' %
+        self.check_output("docker cp %s:root/.bashrc bashrc_%s" %
                           (cname, cname))
         self.check_output('echo "alias mgmt='
                           "'BIND_ADDR=%s LD_PRELOAD=/usr/lib/bind.so '"
                           '" >> bashrc_%s' % (docker_dev_ip, cname))
-        self.check_output('docker cp bashrc_%s %s:root/.bashrc; rm bashrc_%s' %
+        self.check_output("docker cp bashrc_%s %s:root/.bashrc; rm bashrc_%s" %
                           (cname, cname, cname))

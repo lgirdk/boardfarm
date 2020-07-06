@@ -9,89 +9,89 @@ class TestEnvHelper_env_check:
     """Suite of tests for boardfarm.lib.EnvHelper.env_check()."""
 
     env_with_devices = {
-        'environment_def': {
-            'board': {
-                'software': {
-                    'bootloader_image': 'Some_bios_image.bin',
-                    'downgrade_images': ['image.bin'],
-                    'load_image': 'image.bin',
-                    'upgrade_images': ['image.bin']
+        "environment_def": {
+            "board": {
+                "software": {
+                    "bootloader_image": "Some_bios_image.bin",
+                    "downgrade_images": ["image.bin"],
+                    "load_image": "image.bin",
+                    "upgrade_images": ["image.bin"],
                 },
-                'prov_mode': 'dual'
+                "prov_mode": "dual",
             },
-            'devices': {
-                'lan': True,
-                'wlan': True
-            }
+            "devices": {
+                "lan": True,
+                "wlan": True
+            },
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_no_devices = {
-        'environment_def': {
-            'board': {
-                'software': {
-                    'bootloader_image': 'Some_bios_image.bin',
-                    'downgrade_images': ['image.bin'],
-                    'load_image': 'image.bin',
-                    'upgrade_images': ['image.bin']
+        "environment_def": {
+            "board": {
+                "software": {
+                    "bootloader_image": "Some_bios_image.bin",
+                    "downgrade_images": ["image.bin"],
+                    "load_image": "image.bin",
+                    "upgrade_images": ["image.bin"],
                 },
-                'prov_mode': 'dual'
+                "prov_mode": "dual",
             }
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_multiple_images = {
-        'environment_def': {
-            'board': {
-                'software': {
-                    'bootloader_image': 'Some_bios_image.bin',
-                    'downgrade_images':
-                    ['image1', 'image2', 'image3', 'image4'],
-                    'load_image': 'image.bin',
-                    'upgrade_images': ['imageA.bin', 'imageB.bin']
+        "environment_def": {
+            "board": {
+                "software": {
+                    "bootloader_image": "Some_bios_image.bin",
+                    "downgrade_images":
+                    ["image1", "image2", "image3", "image4"],
+                    "load_image": "image.bin",
+                    "upgrade_images": ["imageA.bin", "imageB.bin"],
                 },
-                'prov_mode': 'dual'
+                "prov_mode": "dual",
             }
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_prov_mode_dual = {
-        'environment_def': {
-            'board': {
-                'eRouter_prov_mode': 'dual',
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "dual",
             },
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_prov_mode_ipv4 = {
-        'environment_def': {
-            'board': {
-                'eRouter_prov_mode': 'ipv4',
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "ipv4",
             },
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_prov_mode_bridge = {
-        'environment_def': {
-            'board': {
-                'eRouter_prov_mode': 'bridge',
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "bridge",
             },
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     env_prov_mode_none = {
-        'environment_def': {
-            'board': {
-                'eRouter_prov_mode': None,
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": None,
             },
         },
-        'version': '1.0'
+        "version": "1.0",
     }
 
     # Creates a few environments sets and keep them static, this will mimic
@@ -107,18 +107,18 @@ class TestEnvHelper_env_check:
     def test_env_check_is_a_subset(self):
         """The test env IS a subset of the EnvHelper."""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'bootloader_image': 'Some_bios_image.bin'
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "bootloader_image": "Some_bios_image.bin"
                     },
-                    'prov_mode': 'dual'
+                    "prov_mode": "dual",
                 },
-                'devices': {
-                    'lan': True
-                }
+                "devices": {
+                    "lan": True
+                },
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         assert self.eh_with_devs.env_check(tcenv)
 
@@ -127,19 +127,19 @@ class TestEnvHelper_env_check:
         ['environment_def']['devices']['lan'] values differ) and BftEnvMismatch
         must be raised"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'bootloader_image': 'Some_bios_image.bin'
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "bootloader_image": "Some_bios_image.bin"
                     },
-                    'prov_mode': 'dual'
+                    "prov_mode": "dual",
                 },
                 # Must detect this difference
-                'devices': {
-                    'lan': False
-                }
+                "devices": {
+                    "lan": False
+                },
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_with_devs.env_check(tcenv)
@@ -147,22 +147,22 @@ class TestEnvHelper_env_check:
     def test_env_check_is_not_a_subset_top_value(self):
         """Test env is NOT subset of EnvHelper (as ['version'] values differ)
         and BftEnvMismatch must be raised"""
-        tcenv = {'version': '2.0'}
+        tcenv = {"version": "2.0"}
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_no_devs.env_check(tcenv)
 
     def test_env_check_is_a_subset_with_lists(self):
         """Test env is a subset of EnvHelper (and has lists values)."""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'downgrade_images': ['image1', 'image3']
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "downgrade_images": ["image1", "image3"]
                     },
-                    'prov_mode': 'dual'
+                    "prov_mode": "dual",
                 }
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         assert self.eh_multiple_images.env_check(tcenv)
 
@@ -170,16 +170,16 @@ class TestEnvHelper_env_check:
         """Test env is NOT a subset of EnvHelper (and has lists values), as the
         list of images are not contained in the EnvHelper"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
+            "environment_def": {
+                "board": {
+                    "software": {
                         # one image name is different
-                        'downgrade_images': ['image', 'image3']
+                        "downgrade_images": ["image", "image3"]
                     },
-                    'prov_mode': 'dual'
+                    "prov_mode": "dual",
                 }
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_multiple_images.env_check(tcenv)
@@ -188,15 +188,15 @@ class TestEnvHelper_env_check:
         """Test env is a subset of EnvHelper (and has lists values), and the
         test env accepts ANY downgrade images in the EnvHelper"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'downgrade_images': [None]
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "downgrade_images": [None]
                     },
-                    'prov_mode': 'dual'
+                    "prov_mode": "dual"
                 }
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         assert self.eh_multiple_images.env_check(tcenv)
 
@@ -204,15 +204,15 @@ class TestEnvHelper_env_check:
         """Test env is a subset of EnvHelper (and has lists values), and the
         test env accepts ANY prov_mode in the EnvHelper"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'downgrade_images': ['image3', 'image4']
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "downgrade_images": ["image3", "image4"]
                     },
-                    'prov_mode': None
+                    "prov_mode": None,
                 }
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         assert self.eh_multiple_images.env_check(tcenv)
 
@@ -221,9 +221,9 @@ class TestEnvHelper_env_check:
         and the EnvHelper erotuter_prov_mode is one of the test env prov
         modes"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'eRouter_prov_mode': ['dual', 'ipv4', 'ipv6']
+            "environment_def": {
+                "board": {
+                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
                 }
             }
         }
@@ -234,9 +234,9 @@ class TestEnvHelper_env_check:
         and the EnvHelper erotuter_prov_mode is one of the test env prov
         modes"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'eRouter_prov_mode': ['dual', 'ipv4', 'ipv6']
+            "environment_def": {
+                "board": {
+                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
                 }
             }
         }
@@ -247,10 +247,10 @@ class TestEnvHelper_env_check:
         and the EnvHelper erotuter_prov_mode is one of the test env prov
         modes"""
         tcenv = {
-            'environment_def': {
+            "environment_def": {
                 # this is checked against 'bridge' and MUST fail
-                'board': {
-                    'eRouter_prov_mode': ['dual', 'ipv4', 'ipv6']
+                "board": {
+                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
                 }
             }
         }
@@ -261,19 +261,19 @@ class TestEnvHelper_env_check:
         """Test env has a key that is not in the EnvHelper, MUST throw a
         BftEnvMismatch!!!"""
         tcenv = {
-            'non_existing_key': True,
-            'environment_def': {
-                'board': {
-                    'prov_mode': 'dual'
+            "non_existing_key": True,
+            "environment_def": {
+                "board": {
+                    "prov_mode": "dual"
                 }
-            }
+            },
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_multiple_images.env_check(tcenv)
 
     def test_env_is_NOT_a_dict(self):
         """Test env is not a dict , MUST throw a BftEnvMismatch!!!"""
-        tcenv = 'this is not a dict'
+        tcenv = "this is not a dict"
 
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_multiple_images.env_check(tcenv)
@@ -282,12 +282,12 @@ class TestEnvHelper_env_check:
         """Test against an EnvHelper with a None value, MUST throw a BftEnvMismatch!!!
         Probably EnvHelper schema will catch this"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'eRouter_prov_mode': 'some_prov',
+            "environment_def": {
+                "board": {
+                    "eRouter_prov_mode": "some_prov",
                 },
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_prov_mode_none.env_check(tcenv)
@@ -296,14 +296,14 @@ class TestEnvHelper_env_check:
         """If the EnvHelper is a value (e.g. 1 FW image) and the test
         env has a list, where 1 value matches the EnvHelper"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'load_image': ['image.bin', 'image3', 'image4']
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "load_image": ["image.bin", "image3", "image4"]
                     }
                 },
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         assert self.eh_multiple_images.env_check(tcenv)
 
@@ -311,14 +311,14 @@ class TestEnvHelper_env_check:
         """If the EnvHelper is a value (e.g. 1 FW image) and the test
         env has a list, where 1 value matches the EnvHelper"""
         tcenv = {
-            'environment_def': {
-                'board': {
-                    'software': {
-                        'load_image': ['image1.bin', 'image3', 'image4']
+            "environment_def": {
+                "board": {
+                    "software": {
+                        "load_image": ["image1.bin", "image3", "image4"]
                     }
                 },
             },
-            'version': '1.0'
+            "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_multiple_images.env_check(tcenv)

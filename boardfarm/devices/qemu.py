@@ -24,7 +24,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
     This class handles the operations relating to booting, reset and setup of QEMU device.
     QEMU is used to perform few of the code validation without the use of the actual board but rather QEMU device.
     """
-    model = ("qemux86")
+
+    model = "qemux86"
 
     wan_iface = "eth0"
     lan_iface = "brlan0"
@@ -33,7 +34,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     lan_gateway = ipaddress.IPv4Address(u"10.0.0.1")
 
     # allowed open ports (starting point, dns is on wan?)
-    wan_open_ports = ['22', '53']
+    wan_open_ports = ["22", "53"]
 
     cleanup_files = []
     kvm = False
@@ -44,7 +45,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
                  power_ip,
                  power_outlet,
                  output=sys.stdout,
-                 password='bigfoot1',
+                 password="bigfoot1",
                  web_proxy=None,
                  tftp_server=None,
                  tftp_username=None,
@@ -98,7 +99,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         self.consoles = [self]
         self.dev = mgr
 
-        assert cmd_exists('qemu-system-i386')
+        assert cmd_exists("qemu-system-i386")
 
         if rootfs is None:
             raise Exception(
@@ -115,8 +116,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
             dl_console = bft_pexpect_helper.spawn("bash --noprofile --norc")
             dl_console.sendline('export PS1="prompt>>"')
             dl_console.expect_exact("prompt>>")
-            dl_console.sendline('mktemp')
-            dl_console.expect('/tmp/tmp.*')
+            dl_console.sendline("mktemp")
+            dl_console.expect("/tmp/tmp.*")
             fname = dl_console.match.group(0).strip()
             dl_console.expect_exact("prompt>>")
             self.cleanup_files.append(fname)
@@ -126,7 +127,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
             dl_console.sendline("curl -n -L -k '%s' > %s" % (url, fname))
             dl_console.expect_exact("prompt>>", timeout=500)
             dl_console.logfile_read = None
-            dl_console.sendline('exit')
+            dl_console.sendline("exit")
             dl_console.expect(pexpect.EOF)
             return fname
 
@@ -141,27 +142,29 @@ class Qemu(openwrt_router.OpenWrtRouter):
             cmd += " -kernel %s --append root=/dev/hda2" % kernel
 
         # check if we can run kvm
-        kvm_chk = bft_pexpect_helper.spawn('sudo kvm-ok')
-        if 0 != kvm_chk.expect(['KVM acceleration can be used', pexpect.EOF]):
-            cmd = cmd.replace('--enable-kvm ', '')
+        kvm_chk = bft_pexpect_helper.spawn("sudo kvm-ok")
+        if 0 != kvm_chk.expect(["KVM acceleration can be used", pexpect.EOF]):
+            cmd = cmd.replace("--enable-kvm ", "")
             self.kvm = False
 
         # TODO: add script=no,downscript=no to taps
 
         try:
             bft_pexpect_helper.spawn.__init__(self,
-                                              command='/bin/bash',
+                                              command="/bin/bash",
                                               args=["-c", cmd],
                                               env=self.dev.env)
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF:
             self.pid = None
-            if 'failed to initialize KVM: Device or resource busy' in self.before or \
-                    'failed to initialize KVM: Cannot allocate memory' in self.before:
-                cmd = cmd.replace('--enable-kvm ', '')
+            if ("failed to initialize KVM: Device or resource busy" in
+                    self.before
+                    or "failed to initialize KVM: Cannot allocate memory" in
+                    self.before):
+                cmd = cmd.replace("--enable-kvm ", "")
                 self.kvm = False
                 bft_pexpect_helper.spawn.__init__(self,
-                                                  command='/bin/bash',
+                                                  command="/bin/bash",
                                                   args=["-c", cmd],
                                                   env=self.dev.env)
             else:
@@ -188,9 +191,9 @@ class Qemu(openwrt_router.OpenWrtRouter):
     def kill_console_at_exit(self):
         """Close the console over exit.Exists pexpect."""
         try:
-            self.sendcontrol('a')
-            self.send('c')
-            self.sendline('q')
+            self.sendcontrol("a")
+            self.send("c")
+            self.sendline("q")
             self.kill(signal.SIGKILL)
         except Exception:
             pass
@@ -232,10 +235,10 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
         for _ in range(0, tout, 10):
             self.sendline()
-            i = self.expect([pexpect.TIMEOUT, 'login:'] + self.prompt,
+            i = self.expect([pexpect.TIMEOUT, "login:"] + self.prompt,
                             timeout=10)
             if i == 1:
-                self.sendline('root')
+                self.sendline("root")
                 self.expect(self.prompt, timeout=tout)
             if i >= 1:
                 break
@@ -252,11 +255,11 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
     def reset(self):
         """Reset the qemu board. Use the system_reset command to reset."""
-        self.sendcontrol('a')
-        self.send('c')
-        self.sendline('system_reset')
-        self.expect_exact(['system_reset', 'Linux version'])
-        if '-kernel' not in self.cmd:
-            self.expect(['SYSLINUX', 'GNU GRUB'])
-        self.sendcontrol('a')
-        self.send('c')
+        self.sendcontrol("a")
+        self.send("c")
+        self.sendline("system_reset")
+        self.expect_exact(["system_reset", "Linux version"])
+        if "-kernel" not in self.cmd:
+            self.expect(["SYSLINUX", "GNU GRUB"])
+        self.sendcontrol("a")
+        self.send("c")

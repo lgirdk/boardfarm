@@ -327,6 +327,7 @@ def uciSetWifiSecurity(board, vap_iface, security):
 
 class wifi_stub:
     """Wifi_stub."""
+
     apply_changes_no_delay = True
 
     # The above variable can tweak the behavior of the below functions

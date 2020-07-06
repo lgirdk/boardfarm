@@ -55,7 +55,11 @@ class BoardfarmWebClient(object):
             os.environ.get("BUILD_URL", None),
         }
         if self.default_data["username"] in [
-                "root", "testuser", "tester", "docker-factory", "boardfarm"
+                "root",
+                "testuser",
+                "tester",
+                "docker-factory",
+                "boardfarm",
         ]:
             warnings.warn(
                 "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' are blacklisted. Use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."

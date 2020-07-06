@@ -39,6 +39,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         from boardfarm.devices import cdrouter
+
         self.cdrouter_server = "http://" + cdrouter.ipaddr
         self.cdrouter_wan_iface = cdrouter.wan_iface
         self.cdrouter_lan_iface = cdrouter.lan_iface
@@ -49,11 +50,11 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         if self.cdrouter_server is None:
             self.skipTest("No cdrouter server specified")
 
-        lan.sendline('ifconfig %s down' % lan.iface_dut)
+        lan.sendline("ifconfig %s down" % lan.iface_dut)
         lan.expect(prompt)
 
         if not board.has_cmts:
-            wan.sendline('ifconfig %s down' % wan.iface_dut)
+            wan.sendline("ifconfig %s down" % wan.iface_dut)
             wan.expect(prompt)
 
         c = CDRouter(self.cdrouter_server)
@@ -62,50 +63,50 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         if board.has_cmts:
             provisioner = self.dev.provisioner
             # TODO: there are more missing ones CDrouter expects
-            provisioner.sendline('ip route add 200.0.0.0/8 via 192.168.3.2')
+            provisioner.sendline("ip route add 200.0.0.0/8 via 192.168.3.2")
             provisioner.expect(prompt)
-            provisioner.sendline('ip route add 3.3.3.3 via 192.168.3.2')
-            provisioner.expect(prompt)
-            provisioner.sendline(
-                'ip route add 3001:cafe:1::/64 via 2001:dead:beef:1::2')
+            provisioner.sendline("ip route add 3.3.3.3 via 192.168.3.2")
             provisioner.expect(prompt)
             provisioner.sendline(
-                'ip route add 3001:51a:cafe::1 via 2001:dead:beef:1::2')
+                "ip route add 3001:cafe:1::/64 via 2001:dead:beef:1::2")
+            provisioner.expect(prompt)
+            provisioner.sendline(
+                "ip route add 3001:51a:cafe::1 via 2001:dead:beef:1::2")
             provisioner.expect(prompt)
         elif not wan.static_ip:
-            for device in self.config.board['devices']:
-                if device['name'] == 'wan':
-                    if 'alt_macaddr' in device:
-                        wandutmac = device['alt_macaddr']
+            for device in self.config.board["devices"]:
+                if device["name"] == "wan":
+                    if "alt_macaddr" in device:
+                        wandutmac = device["alt_macaddr"]
                     break
 
             # Otherwise grab this from the device interface
             if wandutmac is None:
-                board.sendline('ifconfig %s' % board.wan_iface)
-                board.expect('([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')
+                board.sendline("ifconfig %s" % board.wan_iface)
+                board.expect("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})")
                 wandutmac = board.match.group()
                 board.expect(prompt)
 
             print("Using %s for WAN mac address" % wandutmac)
 
         lan.vlan = wan.vlan = 0
-        for device in self.config.board['devices']:
+        for device in self.config.board["devices"]:
             d = None
-            if device['name'] == 'wan':
+            if device["name"] == "wan":
                 d = wan
-            elif device['name'] == 'lan':
+            elif device["name"] == "lan":
                 d = lan
             else:
                 continue
 
             if d is not None:
-                d.vlan = getattr(device, 'vlan', 0)
+                d.vlan = getattr(device, "vlan", 0)
             if d.vlan == 0:
-                d.sendline('cat /proc/net/vlan/config')
-                d.expect_exact('cat /proc/net/vlan/config')
+                d.sendline("cat /proc/net/vlan/config")
+                d.expect_exact("cat /proc/net/vlan/config")
                 if 0 == d.expect(
                     [pexpect.TIMEOUT,
-                     r'%s.*\|\s([0-9]+).*\|' % d.iface_dut],
+                     r"%s.*\|\s([0-9]+).*\|" % d.iface_dut],
                         timeout=5):
                     d.vlan = 0
                 else:
@@ -118,29 +119,29 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         print("Using %s for LAN vlan" % lan.vlan)
 
         # TODO: move wan and lan interface to bft config?
-        contents = """
-testvar wanInterface """ + self.cdrouter_wan_iface
+        contents = ("""
+testvar wanInterface """ + self.cdrouter_wan_iface)
         if wandutmac is not None:
-            contents = contents + """
-testvar wanDutMac """ + wandutmac
+            contents = (contents + """
+testvar wanDutMac """ + wandutmac)
 
         if wan.vlan != 0:
-            contents = contents + """
-testvar wanVlanId """ + wan.vlan
+            contents = (contents + """
+testvar wanVlanId """ + wan.vlan)
 
-        contents = contents + """
-testvar lanInterface """ + self.cdrouter_lan_iface
+        contents = (contents + """
+testvar lanInterface """ + self.cdrouter_lan_iface)
 
         if lan.vlan != 0:
-            contents = contents + """
-testvar lanVlanId """ + lan.vlan
+            contents = (contents + """
+testvar lanVlanId """ + lan.vlan)
 
         if self.extra_config:
-            contents = contents + "\n" + self.extra_config.replace(',', '\n')
+            contents = contents + "\n" + self.extra_config.replace(",", "\n")
 
         def add_cdrouter_config(config):
             p = os.path.realpath(config)
-            cdr_conf = open(os.path.join(p, config), 'r').readlines()
+            cdr_conf = open(os.path.join(p, config), "r").readlines()
 
             return "\n" + "".join(cdr_conf)
 
@@ -198,16 +199,26 @@ testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s
-""" % (fixed_prefix6, cdrouter.wanispip_v6, cdrouter.wanispgateway_v6, wan_ip6,
-            cdrouter.wanispip, cdrouter.wanispgateway, wan_ip, wan_ip, cdrouter.
-            ipv4hopcount, board.get_dns_server(), board.get_dns_server_upstream()))
+""" % (
+                fixed_prefix6,
+                cdrouter.wanispip_v6,
+                cdrouter.wanispgateway_v6,
+                wan_ip6,
+                cdrouter.wanispip,
+                cdrouter.wanispgateway,
+                wan_ip,
+                wan_ip,
+                cdrouter.ipv4hopcount,
+                board.get_dns_server(),
+                board.get_dns_server_upstream(),
+            ))
 
         print("Using below for config:")
         print(contents)
         print("#######################")
 
         config_name = "bft-automated-job-%s" % str(time.time()).replace(
-            '.', '')
+            ".", "")
         cfg = c.configs.create(Config(name=config_name, contents=contents))
 
         p = c.packages.create(
@@ -225,7 +236,7 @@ testvar wanDnsServer %s
             board.expect(pexpect.TIMEOUT, timeout=1)
             j = c.jobs.get(j.id)
 
-        print('Job Result-ID: {0}'.format(j.result_id))
+        print("Job Result-ID: {0}".format(j.result_id))
 
         self.job_id = j.result_id
         self.results = c.results
@@ -265,7 +276,7 @@ testvar wanDnsServer %s
             board.expect(pexpect.TIMEOUT, timeout=5)
 
         print(r.result)
-        self.result_message = r.result.encode('ascii', 'ignore')
+        self.result_message = r.result.encode("ascii", "ignore")
         # TODO: results URL?
         elapsed_time = time.time() - self.start_time
         print("Test took %s" %
@@ -273,11 +284,13 @@ testvar wanDnsServer %s
 
         summary = c.results.summary_stats(j.result_id)
 
-        self.result_message = (
-            six.text_type(self.result_message) +
-            " (Failed= %s, Passed = %s, Skipped = %s)" %
-            (summary.result_breakdown.failed, summary.result_breakdown.passed,
-             summary.result_breakdown.skipped))
+        self.result_message = six.text_type(
+            self.result_message
+        ) + " (Failed= %s, Passed = %s, Skipped = %s)" % (
+            summary.result_breakdown.failed,
+            summary.result_breakdown.passed,
+            summary.result_breakdown.skipped,
+        )
 
         for test in summary.test_summaries:
             self.logged[test.name] = vars(test)
@@ -309,7 +322,7 @@ testvar wanDnsServer %s
                 # Not all tests have this metric, no other way?
                 pass
 
-        assert (r.result == "The package completed successfully")
+        assert r.result == "The package completed successfully"
 
         self.recover()
 
@@ -321,29 +334,29 @@ testvar wanDnsServer %s
         if board.has_cmts:
             provisioner = self.dev.provisioner
             # TODO: there are more missing ones CDrouter expects
-            provisioner.sendline('ip route del 200.0.0.0/8 via 192.168.3.2')
+            provisioner.sendline("ip route del 200.0.0.0/8 via 192.168.3.2")
             provisioner.expect(prompt)
-            provisioner.sendline('ip route del 3.3.3.3 via 192.168.3.2')
-            provisioner.expect(prompt)
-            provisioner.sendline(
-                'ip route del 3001:cafe:1::/64 via 2001:dead:beef:1::2')
+            provisioner.sendline("ip route del 3.3.3.3 via 192.168.3.2")
             provisioner.expect(prompt)
             provisioner.sendline(
-                'ip route del 3001:51a:cafe::1 via 2001:dead:beef:1::2')
+                "ip route del 3001:cafe:1::/64 via 2001:dead:beef:1::2")
+            provisioner.expect(prompt)
+            provisioner.sendline(
+                "ip route del 3001:51a:cafe::1 via 2001:dead:beef:1::2")
             provisioner.expect(prompt)
 
-        if hasattr(self, 'results'):
+        if hasattr(self, "results"):
             r = self.results.get(self.job_id)
 
             if r.status == "running":
                 self.results.stop(self.job_id)
         # TODO: full recovery...
         for d in [wan, lan]:
-            d.sendline('ifconfig %s up' % d.iface_dut)
+            d.sendline("ifconfig %s up" % d.iface_dut)
             d.expect(prompt)
 
         # make sure board is back in a sane state
-        board.sendcontrol('c')
+        board.sendcontrol("c")
         board.sendline()
         if 0 != board.expect([pexpect.TIMEOUT] + board.uprompt, timeout=5):
             board.reset()
@@ -355,18 +368,19 @@ testvar wanDnsServer %s
         """CDRouter."""
         try:
             from boardfarm.devices import cdrouter
-            url = 'http://' + cdrouter.ipaddr
+
+            url = "http://" + cdrouter.ipaddr
         except Exception:
             return []
 
         c = CDRouter(url)
         new_tests = []
         for mod in c.testsuites.list_modules():
-            name = "CDrouter" + mod.name.replace('.', '').replace('-', '_')
+            name = "CDrouter" + mod.name.replace(".", "").replace("-", "_")
             list_of_tests = [six.text_type(x) for x in mod.tests]
             new_tests.append(
                 type(six.text_type(name), (CDrouterStub, ),
-                     {'tests': list_of_tests}))
+                     {"tests": list_of_tests}))
 
         return new_tests
 

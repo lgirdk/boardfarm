@@ -13,7 +13,7 @@ from selenium.webdriver import ActionChains
 
 
 class WebTest(rootfs_boot.RootFSBootTest):
-    '''Login to LuCI'''
+    """Login to LuCI"""
     def setUp(self):
         board = self.dev.board
         lan = self.dev.lan
@@ -22,7 +22,7 @@ class WebTest(rootfs_boot.RootFSBootTest):
 
         super(WebTest, self).setUp()
         if not lan:
-            msg = 'No LAN Device defined, skipping web test.'
+            msg = "No LAN Device defined, skipping web test."
             lib.common.test_msg(msg)
             self.skipTest(msg)
 
@@ -35,21 +35,21 @@ class WebTest(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
         # Create a driver
-        self.driver = lib.common.phantom_webproxy_driver('http://' + lan.name +
-                                                         ':8080')
+        self.driver = lib.common.phantom_webproxy_driver("http://" + lan.name +
+                                                         ":8080")
         self.driver.get("http://%s/cgi-bin/luci" % ip)
         self.assertIn(ip, self.driver.current_url)
-        self.assertIn('LuCI', self.driver.title)
-        self.driver.find_element_by_name('luci_password').send_keys('password')
-        self.driver.find_element_by_class_name('cbi-button-apply').submit()
+        self.assertIn("LuCI", self.driver.title)
+        self.driver.find_element_by_name("luci_password").send_keys("password")
+        self.driver.find_element_by_class_name("cbi-button-apply").submit()
         self.driver.find_element_by_xpath(
             "//ul/li/a[contains(text(),'Status')]")
 
 
 class WebOverview(WebTest):
-    '''Check overview page'''
+    """Check overview page"""
     def runTest(self):
-        print('Checking overview page')
+        print("Checking overview page")
         action_chains = ActionChains(self.driver)
         status_menu = self.driver.find_element_by_xpath(
             "//ul/li/a[contains(text(),'Status')]")
@@ -57,9 +57,9 @@ class WebOverview(WebTest):
             "//ul/li/a[contains(text(),'Overview')]")
         action_chains.move_to_element(status_menu).click(
             overview_menu).perform()
-        self.assertIn('Overview', self.driver.title)
-        print('Managed to switch to overview page')
-        for i in ['System', 'Memory', 'Network', 'DHCP Leases']:
+        self.assertIn("Overview", self.driver.title)
+        print("Managed to switch to overview page")
+        for i in ["System", "Memory", "Network", "DHCP Leases"]:
             self.driver.find_element_by_xpath(
                 "//fieldset/legend[contains(text(),'" + i + "')]")
-            print(' * overview page contains section ' + i)
+            print(" * overview page contains section " + i)

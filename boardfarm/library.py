@@ -215,14 +215,15 @@ def process_test_results(raw_test_results, golden={}):
 def create_results_html(full_results, config, logger):
     """Create results.html from config and test results."""
     from boardfarm import make_human_readable
+
     try:
         title_str = make_human_readable.get_title()
-        make_human_readable.xmlresults_to_html(full_results["test_results"],
-                                               title=title_str,
-                                               output_name=os.path.join(
-                                                   config.output_dir,
-                                                   "results.html"),
-                                               board_info=config.board)
+        make_human_readable.xmlresults_to_html(
+            full_results["test_results"],
+            title=title_str,
+            output_name=os.path.join(config.output_dir, "results.html"),
+            board_info=config.board,
+        )
     except Exception as e:
         logger.debug(e)
         traceback.print_exc()

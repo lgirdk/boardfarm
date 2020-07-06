@@ -22,4 +22,4 @@ class RestartNetwork(rootfs_boot.RootFSBootTest):
     def recover(self):
         board = self.dev.board
 
-        board.sendcontrol('c')
+        board.sendcontrol("c")

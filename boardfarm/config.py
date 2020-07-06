@@ -18,11 +18,11 @@ local_path = os.path.dirname(os.path.realpath(__file__))
 # Boardfarm configuration describes test stations - see boardfarm doc.
 # Can be local or remote file.
 boardfarm_config_location = os.environ.get(
-    'BFT_CONFIG', os.path.join(local_path, 'boardfarm_config_example.json'))
+    "BFT_CONFIG", os.path.join(local_path, "boardfarm_config_example.json"))
 
 # Test Suite config files. Standard python config file format.
 testsuite_config_files = [
-    os.path.join(local_path, 'testsuites.cfg'),
+    os.path.join(local_path, "testsuites.cfg"),
 ]
 # Files named 'layerconf.py' can contain extra code needed to run
 layerconfs = []
@@ -31,18 +31,18 @@ for modname in sorted(boardfarm.plugins):
     overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
     # Find testsuite config files
     testsuites_path = glob.glob(os.path.join(
-        overlay, 'testsuites.cfg')) + glob.glob(
-            os.path.join(overlay, '*', 'testsuites.cfg'))
+        overlay, "testsuites.cfg")) + glob.glob(
+            os.path.join(overlay, "*", "testsuites.cfg"))
     testsuite_config_files += testsuites_path
     # Find layerconf files and import them
     layerconf_path = glob.glob(os.path.join(
-        overlay, 'layerconf.py')) + glob.glob(
-            os.path.join(overlay, '*', 'layerconf.py'))
+        overlay, "layerconf.py")) + glob.glob(
+            os.path.join(overlay, "*", "layerconf.py"))
     for f in layerconf_path:
         if os.path.isfile(f):
             location = os.path.dirname(f)
-            m = os.path.basename(location) + '.' + os.path.basename(
-                f.strip('.py'))
+            m = os.path.basename(location) + "." + os.path.basename(
+                f.strip(".py"))
             tmp = importlib.import_module(m)
             layerconfs.append((location, tmp))
 
@@ -53,13 +53,13 @@ logging_server = None
 # Elasticsearch server. Data in JSON-format can be directly sent here.
 # Set to None or to a valid host, see documentation:
 #     https://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch
-elasticsearch_server = os.environ.get('BFT_ELASTICSERVER', None)
+elasticsearch_server = os.environ.get("BFT_ELASTICSERVER", None)
 
 # MongoDB server. Data in JSON-format can be directly sent here.
 mongodb = {
-    "host": os.environ.get('BFT_MONGOHOST', None),
-    "username": os.environ.get('BFT_MONGOUSER', None),
-    "password": os.environ.get('BFT_MONGOPASS', None)
+    "host": os.environ.get("BFT_MONGOHOST", None),
+    "username": os.environ.get("BFT_MONGOUSER", None),
+    "password": os.environ.get("BFT_MONGOPASS", None),
 }
 
 # Code change server like gerrit, github, etc... Used only in display
@@ -74,7 +74,7 @@ option_dict = {
     "headless": ["false", "true", "y", "t"],
     "disp": ["xvfb", "xephyr", "xvnc"],
     "disp_port": ["0"],
-    "disp_size": ["1366x768"]
+    "disp_size": ["1366x768"],
 }
 
 # the syntax is BFT_OPTIONS="proxy=normal webdriver=chrome"
@@ -85,16 +85,16 @@ default_display_backend = "xvfb"
 default_display_backend_port = "0"  # i.e. use any available ports
 default_display_backend_size = "1366x768"
 
-if 'BFT_OPTIONS' in os.environ:
-    for option in os.environ['BFT_OPTIONS'].split(' '):
-        k, v = option.split(':')
+if "BFT_OPTIONS" in os.environ:
+    for option in os.environ["BFT_OPTIONS"].split(" "):
+        k, v = option.split(":")
         if option_dict.get(k) and (v in option_dict[k]):
             if k == "proxy":
                 default_proxy_type = v
             if k == "webdriver":
                 default_web_driver = v
             if k == "headless":
-                default_headless = v.lower in ['true', 't', 'y']
+                default_headless = v.lower in ["true", "t", "y"]
             if k == "disp":
                 default_display_backend = v
         elif k == "disp_port":
@@ -118,13 +118,13 @@ def get_display_backend_size():
     :return : display resolution size as x,y
     :rtype : integer
     """
-    xc, yc = default_display_backend_size.split('x')
+    xc, yc = default_display_backend_size.split("x")
     x = int(xc)
     y = int(yc)
     return x, y
 
 
-if 'BFT_DEBUG' in os.environ:
+if "BFT_DEBUG" in os.environ:
     print("Using proxy:" + default_proxy_type)
     print("Using webdriver:" + default_web_driver)
     if default_headless:
@@ -137,8 +137,8 @@ if 'BFT_DEBUG' in os.environ:
 
 # Default Test Config Settings
 output_dir = os.path.join(
-    os.path.abspath(os.path.join(os.getcwd(), "results", '')), '')
-WAN_PROTO = 'dhcp'  # or 'pppoe'. Protocol of the WAN interface
+    os.path.abspath(os.path.join(os.getcwd(), "results", "")), "")
+WAN_PROTO = "dhcp"  # or 'pppoe'. Protocol of the WAN interface
 setup_device_networking = True  # or False. Setup device networking during boot
 bootargs = None  # bootargs to set or append to default args (board dependant)
 golden = []  # Path to JSON results to compare against (golden master)
@@ -159,7 +159,7 @@ META_BUILD = None
 
 # BFT_ARGS points to json file for test args.
 # File needs to be a flat json.
-test_args_location = os.environ.get('BFT_ARGS', None)
+test_args_location = os.environ.get("BFT_ARGS", None)
 test_args = None
 
 # The following is a dictionary use for the error injection feature
@@ -191,13 +191,13 @@ def update_error_injection_dict(err_dict):
 
     for d in err_dict:
         try:
-            if 'BFT_DEBUG' in os.environ:
+            if "BFT_DEBUG" in os.environ:
                 print("Processing: '{}'".format(d))
             if d.startswith("http"):
                 data = requests.get(d).json()
                 err_injection_dict.update(requests.get(d).json())
             else:
-                data = open(d, 'r').read()
+                data = open(d, "r").read()
                 err_injection_dict.update(json.loads(data))
         except Exception as error:
             print(error)

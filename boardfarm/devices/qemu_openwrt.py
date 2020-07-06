@@ -12,7 +12,8 @@ from . import qemu
 
 class QemuOpenWrt(qemu.Qemu):
     """Emulated QEMU board."""
-    model = ("qemux86-openwrt")
+
+    model = "qemux86-openwrt"
 
     wan_iface = "eth1"
     lan_iface = "br-lan"
