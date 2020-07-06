@@ -210,11 +210,14 @@ class AxirosACS(base_acs.BaseACS):
             data_values = [data_values]
         for data in data_values:
             if "AccessList" in data["value"]:
+                access_list = []
+                if "item" in data["value"]["AccessList"]:
+                    access_list = data["value"]["AccessList"]["item"]["text"]
                 data_list.append({
                     "Name":
                     data["key"]["text"],
                     "AccessList":
-                    data["value"]["AccessList"]["item"]["text"],
+                    access_list,
                     "Notification":
                     data["value"]["Notification"]["text"],
                 })
