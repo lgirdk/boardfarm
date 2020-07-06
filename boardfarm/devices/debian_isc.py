@@ -23,6 +23,7 @@ class DebianISCProvisioner(debian.DebianBox):
     # default CM specific settings
     default_lease_time = 604800
     max_lease_time = 604800
+    min_lease_time = 302400
     is_env_setup_done = False
 
     def __init__(self, *args, **kwargs):
@@ -566,12 +567,17 @@ EOF"""
         mta_dhcp_options = {
             "mta": {
                 "hardware ethernet": board_config["mta_mac"],
+                "default-lease-time": self.default_lease_time,
+                "min-lease-time": self.min_lease_time,
+                "max-lease-time": self.max_lease_time,
                 "filename": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
                 "options": {
                     "bootfile-name": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
                     "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
                     "domain-name": '"sipcenter.com"',
                     "domain-name-servers": "%s" % sip_server,
+                    "docsis-mta.provision-server": "0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00",
+                    "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
                     "routers": self.mta_gateway,
                     "log-servers": self.prov_ip,
                     "host-name": '"' + board_config.get_station() + '"',
@@ -590,8 +596,6 @@ EOF"""
                     "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
                     "docsis-mta.dhcp-server-1": self.prov_ip,
                     "docsis-mta.dhcp-server-2": self.prov_ip,
-                    "docsis-mta.provision-server": "0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00",
-                    "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
                     "domain-name-servers": "%s" % tftp_server,
                     "time-offset": "%s" % str(self.timezone),
                 },
