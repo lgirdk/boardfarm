@@ -90,6 +90,7 @@ class AxirosACS(base_acs.BaseACS):
         )
 
         # to spawn pexpect on cli
+        self.session_connected = False
         if all([self.ipaddr, self.cli_username, self.cli_password]):
             bft_pexpect_helper.spawn.__init__(
                 self,
@@ -112,6 +113,8 @@ class AxirosACS(base_acs.BaseACS):
                                   self.cli_password)
             self.print_connected_console_msg(self.ipaddr, self.cli_port,
                                              self.color, self.name)
+            self.session_connected = True
+
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
 
@@ -126,22 +129,25 @@ class AxirosACS(base_acs.BaseACS):
         def wrapper(self, *args, **kwargs):
             pid = None
             try:
-                capture_file = "acs_debug" + time.strftime(
-                    "%Y%m%d-%H%M%S") + ".pcap"
-                tcpdump_output = tcpdump_capture(self,
-                                                 "any",
-                                                 capture_file=capture_file)
-                pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))",
-                                tcpdump_output).group(2)
-                out = func(self, *args, **kwargs)
-                kill_process(self, process="tcpdump", pid=pid)
-                return out
+                if not self.session_connected:
+                    warnings.warn(
+                        "Tcp dump cannot be captured as no ssh session exists")
+                else:
+                    capture_file = "acs_debug" + time.strftime(
+                        "%Y%m%d-%H%M%S") + ".pcap"
+                    tcpdump_output = tcpdump_capture(self,
+                                                     "any",
+                                                     capture_file=capture_file)
+                    pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))",
+                                    tcpdump_output).group(2)
+                    out = func(self, *args, **kwargs)
+                    kill_process(self, process="tcpdump", pid=pid)
+                    self.sendline("rm %s" % capture_file)
+                    return out
             except Exception as e:
                 kill_process(self, process="tcpdump", pid=pid)
                 tshark_read(self, capture_file, filter_str="-Y http")
                 raise (e)
-            finally:
-                self.sendline("rm %s" % capture_file)
 
         return wrapper
 
