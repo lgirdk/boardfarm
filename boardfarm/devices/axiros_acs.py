@@ -745,6 +745,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         return {i['key']: i['value'] for i in self.AddObject(param)}
 
+    @tcp_dump
     def AddObject(self, param):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
@@ -779,6 +780,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         return str(self.DelObject(param)[0]['value'])
 
+    @tcp_dump
     def DelObject(self, param):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
@@ -974,6 +976,7 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.GetParameterNames(p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
+    @tcp_dump
     def FactoryReset(self):
         """Execute FactoryReset RPC.
 
@@ -1020,6 +1023,7 @@ class AxirosACS(base_acs.BaseACS):
         self.cpeid = old_cpeid
         return r
 
+    @tcp_dump
     def ScheduleInform(self, CommandKey='Test', DelaySeconds=20):
         """Execute ScheduleInform RPC
 
@@ -1045,6 +1049,7 @@ class AxirosACS(base_acs.BaseACS):
 
         return AxirosACS._parse_soap_response(response)
 
+    @tcp_dump
     def Reboot(self, CommandKey="Reboot Test"):
         """Execute Reboot.
 
@@ -1066,6 +1071,7 @@ class AxirosACS(base_acs.BaseACS):
 
         return AxirosACS._parse_soap_response(response)
 
+    @tcp_dump
     def GetRPCMethods(self):
         """Execute GetRPCMethods RPC.
 
@@ -1083,6 +1089,7 @@ class AxirosACS(base_acs.BaseACS):
                 CPEIdentifier=CPEIdClassStruct_data)
         return AxirosACS._parse_soap_response(response)
 
+    @tcp_dump
     def Download(self,
                  URL,
                  FileType="1 Firmware Upgrade Image",
