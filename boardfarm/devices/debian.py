@@ -198,7 +198,7 @@ class DebianBox(linux.LinuxDevice):
                     self.wan_dhcp = True
                 if opt == "wan-no-eth0":
                     self.wan_no_eth0 = True
-                if opt == "wan-no-dhcp-sever":
+                if opt == "wan-no-dhcp-server":
                     self.wan_dhcp_server = False
                 if opt == "wan-dhcp-client-v6":
                     self.wan_dhcpv6 = True
@@ -711,6 +711,11 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("killall iperf ab hping3")
         self.expect(self.prompt)
 
+        # temporary hack
+        if type(self).__name__ != "DebianISCProvisioner":
+            self.sendline("killall dhcpd dhclient")
+            self.expect(self.prompt)
+
         # potential cleanup so this wan device works
         self.sendline("iptables -t nat -X")
         self.expect(self.prompt)
@@ -725,11 +730,12 @@ class DebianBox(linux.LinuxDevice):
                           (self.iface_dut, self.iface_dut))
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
-        elif not self.wan_no_eth0:
-            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
-            self.expect(self.prompt)
-            self.sendline("ifconfig %s up" % self.iface_dut)
-            self.expect(self.prompt)
+        else:
+            if not self.wan_no_eth0:
+                self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+                self.expect(self.prompt)
+                self.sendline("ifconfig %s up" % self.iface_dut)
+                self.expect(self.prompt)
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
