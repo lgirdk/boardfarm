@@ -120,7 +120,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             snmp_mib_files = []
 
         if snmp_mib_dirs is None:
-            snmp_mib_dirs = ["/usr/share/snmp/mibs"]
+            snmp_mib_dirs = []
 
         # looks for the boardfarm directory path
         thisfiledir = os.path.realpath(__file__)
