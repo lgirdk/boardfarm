@@ -100,6 +100,18 @@ response_9 = Response(content_9, text_9)
 
 out_9 = []
 
+content_10 = b'<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterAttributesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[1]" xsi3:type="SOAP-ENC:Array">\n<item>\n<key xsi3:type="xsd3:string">Device.WiFi.AccessPoint.1.Security.X_LGI-COM_ShadowPassphrase</key>\n<value>\n<AccessList SOAP-ENC:arrayType="ns2:SOAPStruct[0]" xsi3:type="SOAP-ENC:Array" xmlns:ns2="http://soapinterop.org/xsd">\n</AccessList>\n<Notification xsi3:type="xsd3:integer">2</Notification>\n</value>\n</item>\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">994400</ticketid>\n</Result>\n</ns1:GetParameterAttributesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
+
+text_10 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterAttributesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[1]" xsi3:type="SOAP-ENC:Array">\n<item>\n<key xsi3:type="xsd3:string">Device.WiFi.AccessPoint.1.Security.X_LGI-COM_ShadowPassphrase</key>\n<value>\n<AccessList SOAP-ENC:arrayType="ns2:SOAPStruct[0]" xsi3:type="SOAP-ENC:Array" xmlns:ns2="http://soapinterop.org/xsd">\n</AccessList>\n<Notification xsi3:type="xsd3:integer">2</Notification>\n</value>\n</item>\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">994400</ticketid>\n</Result>\n</ns1:GetParameterAttributesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
+
+response_10 = Response(content_10, text_10)
+
+out_10 = [{
+    'Name': 'Device.WiFi.AccessPoint.1.Security.X_LGI-COM_ShadowPassphrase',
+    'AccessList': [],
+    'Notification': '2'
+}]
+
 
 @pytest.mark.parametrize(
     "test_parse_soap_response, expected_result",
@@ -109,6 +121,7 @@ out_9 = []
         (response_7, out_7),
         (response_8, out_8),
         (response_9, out_9),
+        (response_10, out_10),
     ],
 )
 def test_parse_soap_response(test_parse_soap_response, expected_result):
