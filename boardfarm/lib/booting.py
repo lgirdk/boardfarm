@@ -280,6 +280,7 @@ def boot(config,
     board = devices.board
     wan = devices.wan
     lan = devices.lan
+    lan2 = getattr(devices, 'lan2', None)
     tftp_device, tftp_servers = get_tftp(config)
     logged["boot_step"] = "tftp_device_assigned"
 
@@ -309,6 +310,8 @@ def boot(config,
 
     if lan:
         lan.configure(kind="lan_device")
+    if lan2:
+        lan2.configure(kind="lan_device")
     logged["boot_step"] = "lan_device_configured"
 
     # tftp_device is always None, so we can set it from config
