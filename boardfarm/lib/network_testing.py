@@ -19,7 +19,8 @@ def tcpdump_capture(device,
                     interface,
                     port=None,
                     capture_file="pkt_capture.pcap",
-                    filters=None):
+                    filters=None,
+                    return_pid=False):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
     The kill_process method can be used to kill the process.
@@ -34,7 +35,9 @@ def tcpdump_capture(device,
     :type capture_file: String, Optional
     :param filters: dictionary of additional filters and filter_values as key value pair (eg: {"-v":"","-c": "4"})
     :type filters: dict
-    :return: Console ouput of tcpdump sendline command.
+    :param return_pid: flag to return pid number (as a string) instead of the whole command output.Defaults to False
+    :type return_pid: boolean
+    :return: Console ouput of tcpdump sendline command/pid depends on the return_pid flag
     :rtype: string
     """
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
@@ -47,6 +50,8 @@ def tcpdump_capture(device,
     else:
         device.sudo_sendline(base + filter_str + run_background)
     device.expect_exact("tcpdump: listening on %s" % interface)
+    if return_pid:
+        return re.search("(\[\d{1,10}\]\s(\d{1,6}))", device.before).group(2)
     return device.before
 
 
