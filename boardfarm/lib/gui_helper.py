@@ -368,3 +368,76 @@ def get_check_box_value_by_xpath(web_gui, get_value):
                 return False
     except NoSuchElementException:
         return None
+
+
+def get_element_xpath(web_gui, get_value):
+    """To get the UI element with its properties via xpath.
+
+    :param web_gui: web driver after initializing page
+    :type web_gui: string
+    :param get_value: web element xpath for the element
+    :type get_value: string
+    :raises Exception: If error thrown returns None
+    :return: the web element provided by xpath
+    :rtype: object(web element)
+    """
+    try:
+        return web_gui.find_element_by_xpath(get_value)
+    except NoSuchElementException:
+        return None
+
+
+def get_element_id(web_gui, get_value):
+    """To get the UI element with its properties via id.
+
+    :param web_gui: web driver after initializing page
+    :type web_gui: string
+    :param get_value: web element id for the element
+    :type get_value: string
+    :raises Exception: If error thrown returns None
+    :return: the web element provided by id
+    :rtype: object(web element)
+    """
+    try:
+        return web_gui.find_element_by_id(get_value)
+    except NoSuchElementException:
+        return None
+
+
+def get_attribute_element_id(web_gui, get_value, attribute):
+    """To get the value of attribute of UI element via id.
+
+    :param web_gui: web driver after initializing page
+    :type web_gui: string
+    :param get_value: web element id for the element
+    :type get_value: string
+    :param attribute: web element value of attribute which is required
+    :type get_value: string
+    :raises Exception: If error thrown returns None
+    :return: the value of attribute of web element provided by id
+    :rtype: string
+    """
+    try:
+        return web_gui.find_element_by_id(get_value).get_attribute(attribute)
+    except NoSuchElementException:
+        return None
+
+
+def get_attribute_element_xpath(web_gui, get_value, attribute):
+    """To get the value of attribute of UI element via xpath.
+
+    :param web_gui: web driver after initializing page
+    :type web_gui: string
+    :param get_value: web element xpath for the element
+    :type get_value: string
+    :param attribute: web element value of attribute which is required
+    :type get_value: string
+    :raises Exception: If error thrown returns None
+    :return: the value of attribute of web element provided by xpath
+    :rtype: string
+    """
+    try:
+        return web_gui.find_element_by_xpath(get_value).get_attribute(
+            attribute)
+    except NoSuchElementException:
+        return None
