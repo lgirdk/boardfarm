@@ -1,4 +1,5 @@
 import ast
+import inspect
 import ipaddress
 import os
 import re
@@ -13,8 +14,7 @@ import xmltodict
 from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
                                   TR069ResponseError)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.network_testing import (kill_process, tcpdump_capture,
-                                           tshark_read)
+from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 from debtcollector import moves
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
@@ -127,14 +127,20 @@ class AxirosACS(base_acs.BaseACS):
         """ Decorator to capture tcpdump in error cases
         """
         def wrapper(self, *args, **kwargs):
-            pid = None
+            pid = capture_file = None
             try:
                 if not self.session_connected:
                     warnings.warn(
                         "Tcp dump cannot be captured as no ssh session exists")
                 else:
-                    capture_file = "acs_debug" + time.strftime(
-                        "%Y%m%d-%H%M%S") + ".pcap"
+                    pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
+                    stack = inspect.stack()
+                    test_name = [
+                        st[0].f_locals["self"].__class__.__name__
+                        for st in stack
+                        if st.function in ["test_main", "mvx_tst_setup"]
+                    ][0]
+                    capture_file = func.__name__ + "_" + test_name + pcap
                     tcpdump_output = tcpdump_capture(self,
                                                      "any",
                                                      capture_file=capture_file)
@@ -146,7 +152,8 @@ class AxirosACS(base_acs.BaseACS):
                     return out
             except Exception as e:
                 kill_process(self, process="tcpdump", pid=pid)
-                tshark_read(self, capture_file, filter_str="-Y http")
+                print('\x1b[6;30;42m' +
+                      "TCPdump is saved in %s" % capture_file + '\x1b[0m')
                 raise (e)
 
         return wrapper
