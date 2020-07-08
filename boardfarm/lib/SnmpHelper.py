@@ -96,7 +96,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
 
     DEBUG:
         BFT_DEBUG=y     shows which mib module is being parsed
-        BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and mibs/oid details
+        BFT_DEBUG=yyy    VERY verbose, shows the compiled dictionary and mibs/oid details
     """
 
     dbg = None
@@ -157,7 +157,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         """Instance initialisation."""
         self.dbg = os.environ.get("BFT_DEBUG", "")
 
-        if "yy" in self.dbg:
+        if "yyy" in self.dbg:
             # VERY verbose, but essential for spotting
             # possible  ASN.1 errors
             from pysmi import debug
@@ -210,10 +210,10 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
                     # we want to skip objects that have no use
                     continue
                 # add it to my dict
-                if "yy" in self.dbg:
+                if "yyy" in self.dbg:
                     print("adding %s:{%s}" % (k, v))
                 self.mib_dict[k] = v
-        if "yy" in self.dbg:
+        if "yyy" in self.dbg:
             print(json.dumps(self.mib_dict, indent=4))
 
     def get_dict_mib(self):
@@ -372,7 +372,7 @@ if __name__ == "__main__":
 
         DEBUG:
             BFT_DEBUG=y     shows the compiled dictionary
-            BFT_DEBUG=yy    VERY verbose, shows the compiled dictionary and mibs/oid details
+            BFT_DEBUG=yyy    VERY verbose, shows the compiled dictionary and mibs/oid details
         """
 
         test_singleton = False  # if True it will invoke get_mib_parser() static method
