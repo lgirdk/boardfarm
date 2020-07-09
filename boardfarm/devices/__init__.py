@@ -126,8 +126,9 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
     temp = []
     for cls in cls_list:
         members = [
-            attr for attr in cls.__dict__ if not attr.startswith("__")
-            and not attr.endswith("__") and attr not in ("model", "prompt")
+            attr for attr in cls.__dict__
+            if not attr.startswith("__") and not attr.endswith("__")
+            and attr not in ("model", "prompt", "profile")
         ]
         common = list(set(members) & set(cls_members))
         if len(common) > 0:

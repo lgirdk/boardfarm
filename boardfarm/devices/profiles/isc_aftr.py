@@ -6,10 +6,11 @@ from collections import Counter, OrderedDict
 
 import pexpect
 import six
+from boardfarm.devices.profiles import base_profile
 from boardfarm.lib.installers import apt_install, install_wget
 
 
-class AFTR(object):
+class AFTR(base_profile.BaseProfile):
     """Linux based DSLite server using ISC AFTR
 
     This profile class should be inherited along
@@ -57,10 +58,10 @@ class AFTR(object):
         self.aftr_local = kwargs.get("local_site", None)
         self.aftr_fqdn = kwargs.get("aftr_fqdn", "aftr.boardfarm.com")
 
-        self.profile[self.name] = self.profile.get(self.name, {})
-        aftr_profile = self.profile[self.name][AFTR.model] = {}
-        aftr_profile["on_boot"] = self.configure_aftr
-        aftr_profile["hosts"] = {"aftr.boardfarm.com": str(self.ipv6_ep.ip)}
+        AFTR.configure_profile(
+            self,
+            self.configure_aftr,
+            hosts={"aftr.boardfarm.com": str(self.ipv6_ep.ip)})
 
     def configure_aftr(self):
         """Method to check the aftr exists already else configuring the same
