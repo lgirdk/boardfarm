@@ -340,13 +340,16 @@ class web_gui:
             print("No logout botton element ('id', %s) found " % id_value)
             return False
 
-    def driver_close(self, logout_id):
+    def driver_close(self, logout_id, logout_check=True):
         """Logout of the gui page and close selenium web driver.
 
         :param logout_id: element id for logout
         :type logout_id: string
+        :param logout_check: Flag for user to logout or not, defaults to True
+        :type logout_check: bool
         """
-        self.gui_logout(logout_id)
+        if logout_check:
+            self.gui_logout(logout_id)
         self.driver.quit()
         print("driver quit")
         if self.display is not None:
