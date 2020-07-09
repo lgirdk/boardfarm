@@ -1121,42 +1121,42 @@ class AxirosACS(base_acs.BaseACS):
     @tcp_dump
     def Download(
         self,
-        URL,
-        FileType="1 Firmware Upgrade Image",
-        TargetFileName="",
-        FileSize=200,
-        Username="",
-        Password="",
-        CommandKey="",
-        DelaySeconds=10,
-        SuccessURL="",
-        FailureURL="",
+        url,
+        filetype="1 Firmware Upgrade Image",
+        targetfilename="",
+        filesize=200,
+        username="",
+        password="",
+        commandkey="",
+        delayseconds=10,
+        successurl="",
+        failureurl="",
     ):
         """Execute Download RPC.
 
-        :param URL: URL to download file
+        :param url: URL to download file
         :param type: string
-        :param FileType: the string paramenter from following 6 values only
+        :param filetype: the string paramenter from following 6 values only
                          ["1 Firmware Upgrade Image", "2 Web Content",
                           "3 Vendor Configuration File", "4 Tone File",
                           "5 Ringer File", "6 Stored Firmware Image" ]
                          default="3 Vendor Configuration File"
         :param type: string
-        :param TargetFileName: TargetFileName to download through RPC
+        :param targetfilename: TargetFileName to download through RPC
         :param type: string
-        :param FileSize: the size of file to download in bytes
+        :param filesize: the size of file to download in bytes
         :param type: integer
-        :param Username: User to authenticate with file Server.  Default=""
+        :param username: User to authenticate with file Server.  Default=""
         :param type: string
-        :param Password: Password to authenticate with file Server. Default=""
+        :param password: Password to authenticate with file Server. Default=""
         :param type: string
-        :param CommandKey: the string paramenter passed in Download API
+        :param commandkey: the string paramenter passed in Download API
         :param type: string
-        :param DelaySeconds: delay of seconds in integer
+        :param delayseconds: delay of seconds in integer
         :param type: integer
-        :param SuccessURL: URL to access in case of Download API execution succeeded
+        :param successurl: URL to access in case of Download API execution succeeded
         :param type: string
-        :param FailureURL: URL to access in case of Download API execution Failed
+        :param failureurl: URL to access in case of Download API execution Failed
         :param type: string
 
         :return: returns Download response
@@ -1165,16 +1165,16 @@ class AxirosACS(base_acs.BaseACS):
             self.cpeid = self.dev.board._cpeid
 
         param = [
-            CommandKey,
-            DelaySeconds,
-            FailureURL,
-            FileSize,
-            FileType,
-            Password,
-            SuccessURL,
-            TargetFileName,
-            URL,
-            Username,
+            commandkey,
+            delayseconds,
+            failureurl,
+            filesize,
+            filetype,
+            password,
+            successurl,
+            targetfilename,
+            url,
+            username,
         ]
         p, cmd, cpe_id = self._build_input_structs(self.cpeid,
                                                    param,
