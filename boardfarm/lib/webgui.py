@@ -5,14 +5,19 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import inspect
 import os
+import pathlib
 import time
 import traceback
+from datetime import datetime
 
 from pyvirtualdisplay import Display
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.events import (AbstractEventListener,
+                                               EventFiringWebDriver)
 from selenium.webdriver.support.ui import WebDriverWait
 from xvfbwrapper import Xvfb
 
@@ -37,9 +42,27 @@ class web_gui:
         initialisation
         """
         self.output_dir = output_dir
-        self.default_delay = kwargs.get("default_delay", 20)
+        self.default_delay = kwargs.get('default_delay', 20)
         self.driver = None
         self.display = None
+        stack = inspect.stack()
+        self.test_class_name = self.get_test_class_name(stack)
+        self.screenshot_path = str(
+            pathlib.PurePosixPath(output_dir).joinpath(self.test_class_name))
+
+    def get_test_class_name(self, stack_list):
+        """to get test case class name of test case via stack trace
+        :param stack_list - list of stack trace details
+        :type stack_list - list
+        :return test class name or empty string in case of exception
+        """
+        for stack in stack_list:
+            try:
+                if stack.function in ["test_main", "mvx_tst_setup"]:
+                    return stack[0].f_locals["self"].__class__.__name__
+            except (AttributeError, KeyError):
+                continue
+        return ""
 
     # this specified a prefix for the screenshots file names
     # it cna be used to prepend the testcase name to the file name
@@ -61,7 +84,10 @@ class web_gui:
         :return: full path of the file
         :rtype: string
         """
-        full_path = os.path.join(self.output_dir, name)
+        now = datetime.now()
+        full_path = "_".join(
+            [self.screenshot_path,
+             now.strftime("%Y%m%d_%H%M%S%f"), name])
         self.driver.save_screenshot(full_path)
         return full_path
 
@@ -404,6 +430,8 @@ class web_gui:
         try:
             self.driver = get_webproxy_driver(proxy, config,
                                               self.default_delay)
+            self.driver = EventFiringWebDriver(
+                self.driver, ScreenshotListener(self.screenshot_path))
         except Exception:
             traceback.print_exc()
             raise Exception("Failed to get webproxy driver via proxy " + proxy)
@@ -472,3 +500,75 @@ class web_gui:
             self.display.stop()
         except Exception:
             pass
+
+
+class ScreenshotListener(AbstractEventListener):
+    """
+    Defined methods from AbstractEventListener class which allows to capture
+    screenshot based on selenium web driver events.
+    Capturing screenshot can be varied by setting below values
+    When BFT_DEBUG set to :-
+        1. not set - takes screenshots for on_exception and before_click events
+        2. "y" - takes screenshots for on_exception, before_click and
+                after_change_value_of events
+        3. "yy" - takes screenshot for all the events
+    """
+
+    bft_debug = os.getenv("BFT_DEBUG", "n")
+    condition1 = True if bft_debug in ["y"] else False
+    condition2 = True if bft_debug in ["yy"] else False
+
+    def __init__(self, screenshot_path):
+        self.screenshot_path = screenshot_path
+
+    def capture_screenshot(self, driver, name, ext="png"):
+        WebDriverWait(driver, 10).until(lambda driver: driver.execute_script(
+            'return document.readyState') == 'complete')
+        now = datetime.now()
+        abs_path = "_".join(
+            [self.screenshot_path,
+             now.strftime("%Y%m%d_%H%M%S%f"), name]) + "." + ext
+        driver.get_screenshot_as_file(abs_path)
+        print("Screenshot saved as '{}'".format(abs_path))
+
+    def on_exception(self, exception, driver):
+        self.capture_screenshot(driver, "Exception")
+
+    def before_navigate_to(self, url, driver):
+        if self.condition2:
+            self.capture_screenshot(driver, "before_navigate_to")
+
+    def after_navigate_to(self, url, driver):
+        if self.condition2:
+            self.capture_screenshot(driver, "after_navigate_to")
+
+    def before_click(self, element, driver):
+        self.capture_screenshot(driver, "before_click")
+
+    def after_click(self, element, driver):
+        if self.condition2: self.capture_screenshot(driver, "after_click")
+
+    def before_change_value_of(self, element, driver):
+        if self.condition2:
+            self.capture_screenshot(driver, "before_change_value_of")
+
+    def after_change_value_of(self, element, driver):
+        if self.condition2 or self.condition1:
+            self.capture_screenshot(driver, "after_change_value_of")
+
+    def before_execute_script(self, script, driver):
+        if self.condition2:
+            self.capture_screenshot(driver, "before_execute_script")
+
+    def after_execute_script(self, script, driver):
+        if self.condition2:
+            self.capture_screenshot(driver, "after_execute_script")
+
+    def before_close(self, driver):
+        if self.condition2: self.capture_screenshot(driver, "before_close")
+
+    def after_close(self, driver):
+        if self.condition2: self.capture_screenshot(driver, "after_close")
+
+    def before_quit(self, driver):
+        if self.condition2: self.capture_screenshot(driver, "before_quit")
