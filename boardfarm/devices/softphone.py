@@ -99,8 +99,9 @@ class SoftPhone(object):
         """To hangup the ongoing call."""
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
-        self.sendline("a")
+        self.sendline("h")
         self.expect("DISCON")
+        self.sendline("/n")
         self.expect(self.pjsip_prompt)
 
     def phone_kill(self):
