@@ -14,6 +14,7 @@ import xmltodict
 from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
                                   TR069ResponseError)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.common import get_class_name_in_stack
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 from debtcollector import moves
 from nested_lookup import nested_lookup
@@ -135,11 +136,10 @@ class AxirosACS(base_acs.BaseACS):
                 else:
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     stack = inspect.stack()
-                    test_name = [
-                        st[0].f_locals["self"].__class__.__name__
-                        for st in stack
-                        if st.function in ["test_main", "mvx_tst_setup"]
-                    ][0]
+                    test_name = get_class_name_in_stack(
+                        self, ["test_main", "mvx_tst_setup"],
+                        stack,
+                        not_found="TestNameNotFound")
                     capture_file = func.__name__ + "_" + test_name + pcap
                     tcpdump_output = tcpdump_capture(self,
                                                      "any",

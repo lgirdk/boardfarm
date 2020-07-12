@@ -1858,3 +1858,34 @@ def toggle_dhcp_lan_advertise_identity(lan_dev):
         lan_dev.remove_lan_advertise_identity_cfg()
 
     lan_dev.start_lan_client()
+
+
+def get_class_name_in_stack(self,
+                            needle,
+                            haystack,
+                            not_found="needle_not_found"):
+    """Given a class self and a stack trace, scan the stack looking for the
+    mathching string returning the class name (if needle is found). Can be
+    used to find the testname if working from a generic library that has no
+    access to the test case details.
+
+    :Param self : class self
+    :type  self : object instance
+    :param needle : what to look for (can be a list of strings)
+    :type needle : string or list
+    :param haystack : where to look into (i.e. a stacktrace)
+    :type haystack : a list of stack frames
+    :Returns: string in "not_found" or the class name associated to the needle
+    :rtype: string
+    """
+    s = not_found
+    if type(needle) is not list:
+        needle = [needle]
+    try:
+        s = [
+            st[0].f_locals["self"].__class__.__name__ for st in haystack
+            if st.function in needle
+        ][0]
+    except IndexError:
+        print(f"Needle: {needle} not found in given stack strace")
+    return s
