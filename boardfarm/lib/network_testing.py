@@ -9,10 +9,13 @@
 
 import ipaddress
 import re
+from collections import namedtuple
 
 import pexpect
 import six
 from boardfarm.lib.common import retry_on_exception
+
+sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
 
 
 def tcpdump_capture(
@@ -145,6 +148,8 @@ def sip_read(device, capture_file):
     device.sudo_sendline("tshark -r %s -Y sip" % (capture_file))
     device.expect(device.prompt)
     output_sip = device.before
+    device.sudo_sendline("rm %s" % (capture_file))
+    device.expect(device.prompt)
     return output_sip
 
 
@@ -429,3 +434,29 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
     output = device.check_output(command_builder)
     out = re.search(r"(\wot\sanswer\s\w+)", output)
     return True if out else False
+
+
+def verify_sip_status(device, capture_file, msg_list):
+    """This function is used to validate the SIP messages
+    :param device: device where the SIP traces are generated. The SIP server.
+    :type device: object
+    :param capture_file: Filename in which the packets were captured
+    :type capture_file: String
+    :param msg_list: list of 'sip_msg' named_tuples
+    :type msg_list: list
+    :return: boolean value based on success of the message(s) being found or not
+    :rtype: Boolean
+    """
+    output = sip_read(device, capture_file)
+    out_rep = output.replace("\r\n", "").replace("\t", "")
+    split_out = out_rep.split('|')
+    result_list = []
+    for msg in msg_list:
+        regex_str = (f".*{msg.src_ip}.*{msg.dest_ip}.*{msg.message}")
+        for line in split_out:
+            if re.search(regex_str, line):
+                result_list.append(True)
+                break
+        else:
+            result_list.append(False)
+    return all(result_list)
