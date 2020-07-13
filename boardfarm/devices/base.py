@@ -11,8 +11,7 @@ from boardfarm.lib.bft_logging import LoggerMeta
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 
-class BaseDevice(bft_pexpect_helper):
-    __metaclass__ = LoggerMeta
+class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
     log = ""
     log_calls = ""
 
@@ -20,6 +19,7 @@ class BaseDevice(bft_pexpect_helper):
         "root\\@.*:.*#",
     ]
     delaybetweenchar = None
+    sign_check = True
 
     def get_interface_ipaddr(self, interface):
         """Get ipv4 address of interface."""

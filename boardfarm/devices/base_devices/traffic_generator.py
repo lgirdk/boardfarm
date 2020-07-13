@@ -8,6 +8,7 @@ class TrafficGenerator(base.BaseDevice):
 
     model = "base_traffic_generator"
     name = "traffic_gen"
+    sign_check = True
 
     def __init__(self, *args, **kwargs):
         """Initialize a console/HTTP connection to traffic generator.

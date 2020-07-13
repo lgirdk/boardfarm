@@ -23,6 +23,7 @@ class LinuxDevice(base.BaseDevice):
     """Linux implementations."""
 
     tftp_dir = "/tftpboot"
+    sign_check = True
 
     def check_status(self):
         """Check the state of the device."""

@@ -6,6 +6,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import inspect
 import os
 import re
 import sys
@@ -13,6 +14,7 @@ import time
 import types
 from functools import wraps
 
+import debtcollector
 from boardfarm.lib.ConfigHelper import ConfigHelper
 from termcolor import colored
 
@@ -86,6 +88,10 @@ class LoggerMeta(type):
         :return: Return the instance object created
         :rtype: Object
         """
+        if "model" in attrs:
+            check_bases = [i for i in bases if getattr(i, "sign_check", False)]
+            cls.check_signature(name, check_bases, attrs)
+
         for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = cls.deco(attr_value)
@@ -151,6 +157,50 @@ class LoggerMeta(type):
             return ret
 
         return wrapper
+
+    @classmethod
+    def check_signature(cls, name, bases, attr):
+        """function to check signatures with reference to parent class.
+
+        :param cls: Instance of the class LoggerMeta
+        :type cls: Class
+        :param name: name of the new Class instantiated
+        :type name: Class
+        :param bases: Tuple of base parent classes
+        :type bases: Class
+        :param attrs: Class attributes
+        :type attrs: Arguments(args)
+
+        :return: Return None
+        """
+        for methodName in attr:
+            f = attr[methodName]
+            if not isinstance(f, types.FunctionType):
+                continue
+            for baseClass in bases:
+                try:
+                    fBase = getattr(baseClass, methodName)
+                    if isinstance(fBase, types.FunctionType):
+                        if not inspect.signature(f) == inspect.signature(fBase):
+                            debtcollector.deprecate(
+                                "{}.{} Method signature are not identical with base class {}".format(
+                                    name, methodName, baseClass
+                                ),
+                                category=UserWarning,
+                            )
+                            break
+                    else:
+                        debtcollector.deprecate(
+                            "{}.{} Method is not FunctionType in base class {}".format(
+                                name, methodName, baseClass
+                            ),
+                            category=UserWarning,
+                        )
+                        break
+                except AttributeError:
+                    # This method was not defined in this base class,
+                    # So just go to the next base class.
+                    continue
 
 
 def log_message(s, msg, header=False):

@@ -11,6 +11,7 @@ class BaseBoard(linux.LinuxDevice):
 
     model = "base_board"
     name = "board"
+    sign_check = True
     wan_iface = None
     lan_iface = None
     conn_list = None

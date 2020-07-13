@@ -7,7 +7,7 @@ class Provisioner(debian.DebianBox):
 
     model = "base_provisioner"
     name = "provisioner"
-
+    sign_check = True
     standalone_provisioner = True
     default_lease_time = 604800
     max_lease_time = 604800

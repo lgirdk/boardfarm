@@ -6,6 +6,7 @@ class BaseACS(base.BaseDevice):
 
     model = "base_acs"
     name = "acs_server"
+    sign_check = True
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
     CPE_wait_time = 60 * 1
     Count_retry_on_error = 3

@@ -33,6 +33,7 @@ class BaseCmts(base.BaseDevice):
 
     model = "base_cmts"
     name = "cmts"
+    sign_check = True
     board_wan_mac = None
     board_mta_mac = None
 

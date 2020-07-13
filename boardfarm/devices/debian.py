@@ -47,7 +47,7 @@ class DebianBox(linux.LinuxDevice):
     tftp_device = None
     tftp_dir = "/tftpboot"
     mgmt_dns = None
-
+    sign_check = True
     iface_dut = "eth1"
     gw = None
 
