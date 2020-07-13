@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class Webserver_Running(rootfs_boot.RootFSBootTest):
     """Router webserver is running."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -21,6 +22,7 @@ class Webserver_Running(rootfs_boot.RootFSBootTest):
 
 class WebGUI_Access(rootfs_boot.RootFSBootTest):
     """Router webpage available to LAN-device at http://192.168.1.1/."""
+
     def runTest(self):
         lan = self.dev.lan
 
@@ -36,6 +38,7 @@ class WebGUI_Access(rootfs_boot.RootFSBootTest):
 
 class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
     """Router webpage at cgi-bin/luci contains no stack traceback."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -47,6 +50,7 @@ class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
 
 class Webserver_Download(rootfs_boot.RootFSBootTest):
     """Downloaded small file from router webserver in reasonable time."""
+
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan

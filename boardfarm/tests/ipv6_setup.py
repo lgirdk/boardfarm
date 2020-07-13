@@ -14,6 +14,7 @@ from boardfarm.tests import rootfs_boot
 
 class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
     """Set IPv6 addresses and default routes for router and devices."""
+
     @run_once
     def runTest(self):
         board = self.dev.board
@@ -47,8 +48,7 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         lan.sendline("ip -6 route add 4aaa::1 dev %s" % lan.iface_dut)
         lan.expect(prompt)
-        lan.sendline("ip -6 route add default via 4aaa::1 dev %s" %
-                     lan.iface_dut)
+        lan.sendline("ip -6 route add default via 4aaa::1 dev %s" % lan.iface_dut)
         lan.expect(prompt)
         if "No route to host" in lan.before:
             raise Exception("Error setting ivp6 routes")
@@ -58,8 +58,7 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
         wan.sendline("ip -6 route add 5aaa::1 dev %s" % wan.iface_dut)
         wan.expect(prompt)
-        wan.sendline("ip -6 route add default via 5aaa::1 dev %s" %
-                     wan.iface_dut)
+        wan.sendline("ip -6 route add default via 5aaa::1 dev %s" % wan.iface_dut)
         wan.expect(prompt)
         if "No route to host" in wan.before:
             raise Exception("Error setting ivp6 routes")
@@ -88,6 +87,7 @@ class Set_IPv6_Addresses(rootfs_boot.RootFSBootTest):
 
 class Remove_IPv6_Addresses(rootfs_boot.RootFSBootTest):
     """Removed IPv6 addresses and default routes for router and devices."""
+
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan

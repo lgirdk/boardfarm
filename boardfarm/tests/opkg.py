@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class OpkgList(rootfs_boot.RootFSBootTest):
     """Opkg list shows installed packages."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -27,6 +28,7 @@ class OpkgList(rootfs_boot.RootFSBootTest):
 
 class CheckQosScripts(rootfs_boot.RootFSBootTest):
     """Package "qos-scripts" is not installed."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -41,6 +43,7 @@ class CheckQosScripts(rootfs_boot.RootFSBootTest):
 
 class OpkgUpdate(rootfs_boot.RootFSBootTest):
     """Opkg is able to update list of packages."""
+
     def runTest(self):
         board = self.dev.board
 

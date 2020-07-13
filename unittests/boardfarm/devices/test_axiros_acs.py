@@ -22,11 +22,13 @@ content_1 = b'<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  
 
 # 200 and output dict
 response_1 = Response(content_1, text_1)
-out_1 = [{
-    "key": "Device.ManagementServer.InstanceMode",
-    "type": "string",
-    "value": "InstanceNumber",
-}]
+out_1 = [
+    {
+        "key": "Device.ManagementServer.InstanceMode",
+        "type": "string",
+        "value": "InstanceNumber",
+    }
+]
 
 text_2 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">500</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[0]" xsi3:type="SOAP-ENC:Array">\n</details>\n<message xsi3:type="xsd3:string">No response from CPE, scenario was not completed or has error, lastResult - Stopped. {\'faultcode\': \'SOAP-ENV:Client\', \'code\': \'9005\', \'detail\': \'Invalid Parameter Name\'}</message>\n<ticketid xsi3:type="xsd3:int">38386</ticketid>\n</Result>\n</ns1:GetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
 
@@ -63,11 +65,13 @@ content_6 = b'<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  
 # to verify dateTime
 response_6 = Response(content_6, text_6)
 
-out_6 = [{
-    "key": "Device.DeviceInfo.FirstUseDate",
-    "type": "dateTime",
-    "value": "2020-04-19T19:56:18",
-}]
+out_6 = [
+    {
+        "key": "Device.DeviceInfo.FirstUseDate",
+        "type": "dateTime",
+        "value": "2020-04-19T19:56:18",
+    }
+]
 
 text_7 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[1]" xsi3:type="SOAP-ENC:Array">\n<item>\n<key xsi3:type="xsd3:string">Device.DeviceInfo.FirstUseDate</key>\n<value SOAP-ENC:arrayType="xsd3:ur-type[6]" xsi3:type="SOAP-ENC:Array">\n<item xsi3:type="xsd3:integer">1</item>\n<item xsi3:type="xsd3:integer">1</item>\n<item xsi3:type="xsd3:integer">1</item>\n<item xsi3:type="xsd3:integer">0</item>\n<item xsi3:type="xsd3:integer">0</item>\n<item xsi3:type="xsd3:double">0.0</item>\n</value>\n</item>\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">208900</ticketid>\n</Result>\n</ns1:GetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
 
@@ -76,11 +80,13 @@ content_7 = b'<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  
 # to verify dateTime 0001-01-01T00:00:00
 response_7 = Response(content_7, text_7)
 
-out_7 = [{
-    "key": "Device.DeviceInfo.FirstUseDate",
-    "type": "dateTime",
-    "value": "1-01-01T00:00:00",
-}]
+out_7 = [
+    {
+        "key": "Device.DeviceInfo.FirstUseDate",
+        "type": "dateTime",
+        "value": "1-01-01T00:00:00",
+    }
+]
 
 text_8 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:SetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[1]" xsi3:type="SOAP-ENC:Array">\n<item>\n<key xsi3:type="xsd3:string">Status</key>\n<value xsi3:type="xsd3:string">0</value>\n</item>\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">209094</ticketid>\n</Result>\n</ns1:SetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'
 
@@ -106,11 +112,13 @@ text_10 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xml
 
 response_10 = Response(content_10, text_10)
 
-out_10 = [{
-    'Name': 'Device.WiFi.AccessPoint.1.Security.X_LGI-COM_ShadowPassphrase',
-    'AccessList': [],
-    'Notification': '2'
-}]
+out_10 = [
+    {
+        "Name": "Device.WiFi.AccessPoint.1.Security.X_LGI-COM_ShadowPassphrase",
+        "AccessList": [],
+        "Notification": "2",
+    }
+]
 
 
 @pytest.mark.parametrize(
@@ -125,29 +133,25 @@ out_10 = [{
     ],
 )
 def test_parse_soap_response(test_parse_soap_response, expected_result):
-    assert expected_result == AxirosACS._parse_soap_response(
-        test_parse_soap_response)
+    assert expected_result == AxirosACS._parse_soap_response(test_parse_soap_response)
 
 
 @pytest.mark.parametrize(
-    "TR069_exception_parse_soap_response, expected_result", [
-        (response_2, None),
-    ])
+    "TR069_exception_parse_soap_response, expected_result", [(response_2, None),]
+)
 def test_TR069_exception_parse_soap_response(
-    TR069_exception_parse_soap_response, expected_result):
+    TR069_exception_parse_soap_response, expected_result
+):
     with pytest.raises(TR069FaultCode):
         AxirosACS._parse_soap_response(TR069_exception_parse_soap_response)
 
 
 @pytest.mark.parametrize(
     "HTTP_exception_parse_soap_response, expected_result",
-    [
-        (response_3, None),
-        (response_4, None),
-        (response_5, None),
-    ],
+    [(response_3, None), (response_4, None), (response_5, None),],
 )
-def test_HTTP_exception_parse_soap_response(HTTP_exception_parse_soap_response,
-                                            expected_result):
+def test_HTTP_exception_parse_soap_response(
+    HTTP_exception_parse_soap_response, expected_result
+):
     with pytest.raises(HTTPError):
         AxirosACS._parse_soap_response(HTTP_exception_parse_soap_response)

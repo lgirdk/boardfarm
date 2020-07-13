@@ -106,13 +106,13 @@ class TestSimpleBoardfarm(unittest.TestCase):
 
         cur_dir = os.path.dirname(boardfarm.__file__)
         loc, conf = test_configurator.get_station_config(
-            os.path.join(cur_dir, "boardfarm_config_example.json"))
-        names = test_configurator.filter_station_config(conf,
-                                                        board_type=["qemux86"])
+            os.path.join(cur_dir, "boardfarm_config_example.json")
+        )
+        names = test_configurator.filter_station_config(conf, board_type=["qemux86"])
         self.assertGreater(len(names), 0)
-        names = test_configurator.filter_station_config(conf,
-                                                        board_type=["qemux86"],
-                                                        board_filter="local")
+        names = test_configurator.filter_station_config(
+            conf, board_type=["qemux86"], board_filter="local"
+        )
         self.assertGreater(len(names), 0)
 
     def test_skip_on_fail_decorator(self):
@@ -133,10 +133,7 @@ class TestSimpleBoardfarm(unittest.TestCase):
                 global ran
                 ran = True
 
-                super(
-                    test_stub,
-                    self,
-                ).skipTest(msg)
+                super(test_stub, self,).skipTest(msg)
 
         @skip_on_fail
         def test_func(test, arg1, arg2):

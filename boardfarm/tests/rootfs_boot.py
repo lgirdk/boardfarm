@@ -24,14 +24,17 @@ if "pytest" in sys.modules:
         reflash = False
         reboot = False
 
+
 else:
 
     class RootFSBootTest(bft_base_test.BftBaseTest):
         """Flashed image and booted successfully."""
+
         def boot(self, reflash=True):
             try:
-                boardfarm.lib.booting.boot(self.config, self.env_helper,
-                                           self.dev, reflash, self.logged)
+                boardfarm.lib.booting.boot(
+                    self.config, self.env_helper, self.dev, reflash, self.logged
+                )
             except boardfarm.exceptions.NoTFTPServer:
                 msg = "No WAN Device or tftp_server defined, skipping flash."
                 lib.common.test_msg(msg)
@@ -57,8 +60,7 @@ else:
             board = self.dev.board
             if self.__class__.__name__ == "RootFSBootTest":
                 board.close()
-                lib.common.test_msg(
-                    "Unable to boot, skipping remaining tests...")
+                lib.common.test_msg("Unable to boot, skipping remaining tests...")
                 return
             try:
                 # let user interact with console if test failed

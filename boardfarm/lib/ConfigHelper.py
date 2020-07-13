@@ -12,6 +12,7 @@ class ConfigHelper(dict):
     Getters and Setters will be here, rather than accessing the dict directly
     so that some control can be maintained.
     """
+
     def __init__(self, *args, **kwargs):
         """Instance initialisation."""
         self.update(*args, **kwargs)
@@ -22,16 +23,12 @@ class ConfigHelper(dict):
             print(
                 'Support for calling config["mirror"] directly is going to be removed.'
             )
-            print(
-                "Please change your test as soon as possible to this file transfer"
-            )
+            print("Please change your test as soon as possible to this file transfer")
             print("in the proper way.")
             print("WARNING " * 9)
 
         if key in ("cm_cfg", "mta_cfg", "erouter_cfg"):
-            print(
-                "ERROR: use of cm_cfg or mta_cfg in config object is deprecated!"
-            )
+            print("ERROR: use of cm_cfg or mta_cfg in config object is deprecated!")
             print("Use board.cm_cfg or board.mta_cfg directly!")
             traceback.print_exc()
             raise ConfigKeyError
@@ -50,14 +47,15 @@ class ConfigHelper(dict):
 
 class SchemaValidator(object):
     """Validates the json files against the schema provided."""
+
     def __init__(self, schemapath, schemaname):
         """Instance initialisation."""
         with open(schemapath + schemaname, encoding="utf-8") as f:
             self.schema_file = load(f)
 
-        self.resolver = jsonschema.RefResolver(base_uri="file://" +
-                                               schemapath + "/",
-                                               referrer=self.schema_file)
+        self.resolver = jsonschema.RefResolver(
+            base_uri="file://" + schemapath + "/", referrer=self.schema_file
+        )
 
     def validate_json_schema(self, jsonpath, jsonname):
         """Validate json schema."""

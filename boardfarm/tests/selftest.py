@@ -22,6 +22,7 @@ from boardfarm.tests import rootfs_boot
 class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
     """Copy a file to /tmp on the WAN device using\
     common.copy_file_to_server."""
+
     def test_main(self):
         """Copy a file to /tmp on the WAN device using\
         common.copy_file_to_server."""
@@ -50,7 +51,8 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
 
         cmd = (
             'cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "cat - > %s"'
-            % (fname, wan.port, wan.username, wan.ipaddr, fname))
+            % (fname, wan.port, wan.username, wan.ipaddr, fname)
+        )
         # this must fail as the command does not echo the filename
         try:
             common.copy_file_to_server(cmd, wan.password, "/tmp")
@@ -59,7 +61,8 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
 
         cmd = (
             'cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "cat - > %s; echo %s"'
-            % (fname, wan.port, wan.username, wan.ipaddr, fname, fname))
+            % (fname, wan.port, wan.username, wan.ipaddr, fname, fname)
+        )
         # this should pass
         try:
             common.copy_file_to_server(cmd, wan.password, "/tmp")
@@ -99,15 +102,14 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 "port": 22,
                 "color": "magenta",
             }
-            self.session = devices.get_device("DebianBoxNonExistent",
-                                              device_mgr=self.dev,
-                                              **kwargs)
+            self.session = devices.get_device(
+                "DebianBoxNonExistent", device_mgr=self.dev, **kwargs
+            )
         except Exception as e:
             print(e)
         else:
             assert self.session is None, "Test Failed on wrong class name"
-            print(
-                "Failed to create session on wrong class name (expected) PASS")
+            print("Failed to create session on wrong class name (expected) PASS")
 
         # this must fail, as "169.254.12.18" is not a valid ip
         try:
@@ -117,9 +119,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 "port": 22,
                 "color": "cyan",
             }
-            self.session = devices.get_device("DebianBox",
-                                              device_mgr=self.dev,
-                                              **kwargs)
+            self.session = devices.get_device(
+                "DebianBox", device_mgr=self.dev, **kwargs
+            )
         except Exception as e:
             print(e)
         else:
@@ -134,9 +136,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 "port": 50,
                 "color": "red",
             }
-            self.session = devices.get_device("DebianBox",
-                                              device_mgr=self.dev,
-                                              **kwargs)
+            self.session = devices.get_device(
+                "DebianBox", device_mgr=self.dev, **kwargs
+            )
         except Exception as e:
             print(e)
         else:
@@ -151,16 +153,12 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 "port": 50,
                 "color": "red",
             }
-            self.session = devices.get_device("debina",
-                                              device_mgr=self.dev,
-                                              **kwargs)
+            self.session = devices.get_device("debina", device_mgr=self.dev, **kwargs)
         except Exception as e:
             print(e)
         else:
             assert self.session is None, "Test Failed on misspelled class name"
-            print(
-                "Failed to create session on misspelled class name (expected) PASS"
-            )
+            print("Failed to create session on misspelled class name (expected) PASS")
 
         # this should pass
         try:
@@ -170,10 +168,9 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
                 "port": wan.port,
                 "color": "yellow",
             }
-            self.session = devices.get_device("debian",
-                                              device_mgr=self.dev,
-                                              override=True,
-                                              **kwargs)
+            self.session = devices.get_device(
+                "debian", device_mgr=self.dev, override=True, **kwargs
+            )
         except Exception:
             assert 0, "Failed to create session, Test FAILED!"
         else:
@@ -212,6 +209,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
 @pytest.mark.selftest
 class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
     """tests the linux functions moved to devices/linux.py."""
+
     def test_main(self):
         """Tests the linux functions moved to devices/linux.py."""
         board = self.dev.board
@@ -293,8 +291,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         # Get the total number of connections in the network
         nw_count = board.get_nf_conntrack_conn_count()
         assert nw_count is not None, "connections are empty"
-        print("Get the total number of connections in the network{}".format(
-            nw_count))
+        print("Get the total number of connections in the network{}".format(nw_count))
 
         # Getting the DNS server upstream
         ip_addr = board.get_dns_server_upstream()
@@ -336,15 +333,12 @@ class SnmpMibsUnitTest(object):
         "DOCS-CABLE-DEVICE-MIB",
         "DOCS-IETF-BPI2-MIB",
     ]  # this is the list of mib/txt files to be compiled
-    src_directories = ["/tmp/boardfarm-docsis/mibs"
-                       ]  # this needs to point to the mibs directory location
+    src_directories = [
+        "/tmp/boardfarm-docsis/mibs"
+    ]  # this needs to point to the mibs directory location
     snmp_obj = None  # will hold an instance of the  SnmpMibs class
 
-    def __init__(self,
-                 mibs_location=None,
-                 files=None,
-                 mibs=None,
-                 err_mibs=None):
+    def __init__(self, mibs_location=None, files=None, mibs=None, err_mibs=None):
         """Initialize the SnmpMibsUnitTest class.
 
         Takes:
@@ -363,22 +357,23 @@ class SnmpMibsUnitTest(object):
         for d in self.src_directories:
             if not os.path.exists(str(d)):
                 msg = "No mibs directory {} found test_SnmpHelper.".format(
-                    str(self.src_directories))
+                    str(self.src_directories)
+                )
                 raise Exception(msg)
 
         if files:
             self.mib_files = files
 
         self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(
-            self.mib_files, self.src_directories)
+            self.mib_files, self.src_directories
+        )
         print("Using class singleton: %r" % self.snmp_obj)
 
         # the SAME object should be returned, NOT A NEW/DIFFERENT ONE!!!!!
         assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(
             self.mib_files, self.src_directories
         ), "SnmpHelper.SnmpMibs.get_mib_parser returned a NEW/different object. FAILED"
-        print(
-            "SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
+        print("SnmpHelper.SnmpMibs.get_mib_parser returned the same object PASS")
 
         # the same must be true when using the property method
         assert (
@@ -399,8 +394,7 @@ class SnmpMibsUnitTest(object):
         Asserts on failure
         """
         if "y" in self.snmp_obj.dbg:
-            print("The SNMP mib_dict contains %s keys." %
-                  len(self.snmp_obj.mib_dict))
+            print("The SNMP mib_dict contains %s keys." % len(self.snmp_obj.mib_dict))
             print("First 5 mib_dict keys and values alphabetically:")
             for k in sorted(self.snmp_obj.mib_dict)[:5]:
                 print("%s: %s" % (k, self.snmp_obj.mib_dict[k]))
@@ -470,6 +464,7 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
     2. performs an snmp get from the lan to the wan
     using hte compiled oids
     """
+
     def test_main(self):
         """Start testing the SnmpHelper module."""
         wan = self.dev.wan
@@ -504,7 +499,8 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                     os.pardir,
                     "resources",
                     "mibs",
-                )),
+                )
+            ),
             files=["SNMPv2-MIB"],
             mibs=test_mibs,
             err_mibs=wrong_mibs,
@@ -533,10 +529,9 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                 print("snmpget({})@{}={}".format(mib, wan_iface_ip, result))
                 print("Trying with snmp_v2 as well")
 
-                value = SnmpHelper.snmp_v2(lan,
-                                           str(wan_iface_ip),
-                                           mib,
-                                           community="public")
+                value = SnmpHelper.snmp_v2(
+                    lan, str(wan_iface_ip), mib, community="public"
+                )
 
                 print("Snmpget via snmpv2 on %s: %s" % (mib, value))
 
@@ -617,6 +612,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
     }
     }
     """
+
     def simple_bool_return(self):
         """Return true when invoked."""
         return True
@@ -656,33 +652,36 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         print("simple_bool_return real value PASS")
 
         addr = self.get_dev_ip_address(lan)
-        assert (addr == self.config.err_injection_dict[self.cls_name]
-                ["get_dev_ip_address"]), "spoofed value not received"
+        assert (
+            addr == self.config.err_injection_dict[self.cls_name]["get_dev_ip_address"]
+        ), "spoofed value not received"
         print("received spoofed address: {}".format(str(addr)))
         print("get_dev_ip_address spoofed PASS")
 
         addr = self.get_dev_ip_address(lan)
         try:
             assert addr == lan.get_interface_ipaddr(lan.iface_dut)
-            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(
-                str(addr)))
+            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(str(addr)))
         except Exception:
             print("get_dev_ip_address: {}, EXPECTED FAILURE".format(str(addr)))
             expected_faulures += 1
         self.config.err_injection_dict[self.cls_name].pop("get_dev_ip_address")
-        assert (expected_faulures
-                ), "get_dev_ip_address spoofed with EXPECTED FAILURE PASS"
+        assert (
+            expected_faulures
+        ), "get_dev_ip_address spoofed with EXPECTED FAILURE PASS"
 
         addr = self.get_dev_ip_address(lan)
         assert addr == lan.get_interface_ipaddr(
-            lan.iface_dut), "spoofed value not received"
+            lan.iface_dut
+        ), "spoofed value not received"
         print("received real address: {}".format(addr))
         print("get_dev_ip_address real PASS")
 
         # just  for the sake of this test we check that all the errors have been injected
         # this may not be the case a real world scenario
         assert not self.config.err_injection_dict[
-            self.cls_name], "Not all errors were injected"
+            self.cls_name
+        ], "Not all errors were injected"
         print("all errors have been injected")
 
         print("%s: PASS" % (self.cls_name))
@@ -694,6 +693,7 @@ class selftest_tear_down(rootfs_boot.RootFSBootTest):
     Need to ensure that teardown marks the test as fail,
     when an action added to teardown fails.
     """
+
     def action_1(self, arg1):
         """Print the arg1 values."""
         print(arg1)
@@ -706,9 +706,7 @@ class selftest_tear_down(rootfs_boot.RootFSBootTest):
 
     def teardown_action2(self):
         """Cause an error and mark test as FAIL."""
-        print(
-            "This is teardown action2. This will coz an error and mark test as FAIL"
-        )
+        print("This is teardown action2. This will coz an error and mark test as FAIL")
         raise ValueError("No arguments passed to the test")
 
     def test_main(self):

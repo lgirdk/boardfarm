@@ -22,6 +22,7 @@ STATUS_CODE_DICT = {
 
 class Zapi(object):
     """Zephyr API interface."""
+
     def __init__(
         self,
         project_id=None,
@@ -54,20 +55,18 @@ class Zapi(object):
             "build": self._build,
         }
         req_url = self._zapi_url + "cycle"
-        response = post(req_url,
-                        json=data,
-                        headers=self._zapi_hdr,
-                        auth=(self._usr, self._pwd))
+        response = post(
+            req_url, json=data, headers=self._zapi_hdr, auth=(self._usr, self._pwd)
+        )
         data = loads(response.text)
         return data["id"]
 
     def get_cycle_id(self, cycle_name):
         """Retrieve the cyccle id for a given Zephyr cycle name."""
         req_url = "{}cycle?projectID={}&versionId={}".format(
-            self._zapi_url, self._proj_id, self._vers_id)
-        response = get(req_url,
-                       headers=self._zapi_hdr,
-                       auth=(self._usr, self._pwd))
+            self._zapi_url, self._proj_id, self._vers_id
+        )
+        response = get(req_url, headers=self._zapi_hdr, auth=(self._usr, self._pwd))
         data = loads(response.text)
         pattern = re.compile("-?\\d")
         for k in dict(data).keys():
@@ -100,10 +99,9 @@ class Zapi(object):
             "assignee": assignee or self._usr,
         }
         req_url = self._zapi_url + "execution"
-        response = post(req_url,
-                        json=payload,
-                        headers=self._zapi_hdr,
-                        auth=(self._usr, self._pwd))
+        response = post(
+            req_url, json=payload, headers=self._zapi_hdr, auth=(self._usr, self._pwd)
+        )
         data = loads(response.text)
         execution_id = dict(data).keys()[0]
         if response.status_code != 200:
@@ -121,10 +119,9 @@ class Zapi(object):
             "versionId": self._vers_id,
         }
         req_url = self._zapi_url + "execution"
-        response = get(req_url,
-                       params=payload,
-                       headers=self._zapi_hdr,
-                       auth=(self._usr, self._pwd))
+        response = get(
+            req_url, params=payload, headers=self._zapi_hdr, auth=(self._usr, self._pwd)
+        )
         data = loads(response.text)
         executions = data.get("executions") or []
         return executions
@@ -133,28 +130,24 @@ class Zapi(object):
         """Set the execution status of a given test's executionid."""
         data = {field: value}
         req_url = self._zapi_url + "execution/" + execution_id + "/"
-        response = post(req_url,
-                        params=data,
-                        headers=self._zapi_hdr,
-                        auth=(self._usr, self._pwd))
+        response = post(
+            req_url, params=data, headers=self._zapi_hdr, auth=(self._usr, self._pwd)
+        )
         if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)
             print(data)
         return response
 
-    def set_execution(self,
-                      exec_status,
-                      execution_id,
-                      comment="",
-                      status_code_dict=STATUS_CODE_DICT):
+    def set_execution(
+        self, exec_status, execution_id, comment="", status_code_dict=STATUS_CODE_DICT
+    ):
         """Set the execution status of a given test's executionid."""
         data = {"status": status_code_dict[exec_status], "comment": comment}
         req_url = self._zapi_url + "execution/" + execution_id + "/execute"
-        response = put(req_url,
-                       json=data,
-                       headers=self._zapi_hdr,
-                       auth=(self._usr, self._pwd))
+        response = put(
+            req_url, json=data, headers=self._zapi_hdr, auth=(self._usr, self._pwd)
+        )
         if response.status_code != 200:
             print("WARNING: " + response.text)
             print(req_url)

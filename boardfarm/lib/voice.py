@@ -56,17 +56,19 @@ def voice_devices_configure(voice_devices_list, sip_server):
         for voice_device in voice_devices_list:
             if hasattr(voice_device, "profile"):
                 boot_list = nested_lookup(
-                    "on_boot", voice_device.profile.get(voice_device.name, {}))
+                    "on_boot", voice_device.profile.get(voice_device.name, {})
+                )
                 for profile_boot in boot_list:
                     profile_boot()
                 if "softphone" in voice_device.name:
                     voice_device.phone_config(
-                        sip_server.get_interface_ipaddr(sip_server.iface_dut))
+                        sip_server.get_interface_ipaddr(sip_server.iface_dut)
+                    )
     except Exception as e:
         sip_server.kill_asterisk()
         raise Exception(
-            "Unable to initialize Voice devices, failed due to the error : ",
-            e)
+            "Unable to initialize Voice devices, failed due to the error : ", e
+        )
 
 
 def dns_setup_sipserver(sip_server, config):
@@ -84,12 +86,10 @@ def dns_setup_sipserver(sip_server, config):
             sip_server.setup_dnsmasq(config)
             add_dns_auth_record(sip_server, sip_server.name)
     except Exception as e:
-        raise Exception("Unable to initialize dns, failed due to the error : ",
-                        e)
+        raise Exception("Unable to initialize dns, failed due to the error : ", e)
 
 
-def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number,
-               tcid):
+def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number, tcid):
     """
     To make a basic call.
 

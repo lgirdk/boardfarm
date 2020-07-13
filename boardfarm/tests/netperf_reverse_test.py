@@ -12,6 +12,7 @@ from boardfarm.tests import netperf_test
 
 class NetperfReverseTest(netperf_test.NetperfTest):
     """Setup Netperf and Ran Reverse Throughput."""
+
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan
@@ -29,14 +30,13 @@ class NetperfReverseTest(netperf_test.NetperfTest):
         wan.sendline("")
         wan.expect(prompt)
         board.sendline("mpstat -P ALL 30 1")
-        speed = self.run_netperf(wan, wan_ip,
-                                 "-c -C -l 30 -t TCP_STREAM -- -P ,12866")
-        board.expect(
-            "Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n")
+        speed = self.run_netperf(wan, wan_ip, "-c -C -l 30 -t TCP_STREAM -- -P ,12866")
+        board.expect("Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n")
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
         lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
 
         self.result_message = (
             "Setup NetperfReverse and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)"
-            % (speed, avg_cpu))
+            % (speed, avg_cpu)
+        )

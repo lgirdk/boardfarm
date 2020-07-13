@@ -21,9 +21,7 @@ def get_all_classes_from_code(directories, debug=False):
             print(d)
         cmd = "grep -E '^class' %s" % d
         try:
-            result = subprocess.check_output(cmd,
-                                             stderr=subprocess.STDOUT,
-                                             shell=True)
+            result = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             raw_text.append(result)
         except subprocess.CalledProcessError:
             if debug:
@@ -35,9 +33,7 @@ def get_all_classes_from_code(directories, debug=False):
     #    {"classname1": [parent_classname1,],
     #     "classname2": [parent_classname2,], ... etc}
     # Because we will add parents to that list.
-    all_classes = dict([(x[0], [
-        x[1],
-    ]) for x in result])
+    all_classes = dict([(x[0], [x[1],]) for x in result])
     # Add grandparent class
     for name in all_classes:
         parent = all_classes[name][0]
@@ -60,13 +56,10 @@ def changed_classes(directories, start, end, debug=False):
             cmd = "git --git-dir %s diff %s..%s -U0" % (d, start, end)
             if debug:
                 print(cmd)
-            diff = subprocess.check_output(cmd,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True)
+            diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             result.update(
-                dict(
-                    re.findall(r"class\s(\w+)\(([\w\.]+)\):",
-                               six.text_type(diff))))
+                dict(re.findall(r"class\s(\w+)\(([\w\.]+)\):", six.text_type(diff)))
+            )
         except subprocess.CalledProcessError:
             if debug:
                 print("Warning: git diff command failed in %s" % d)
@@ -87,9 +80,7 @@ def get_features(directories, start, end, debug=False):
             cmd = "git --git-dir %s log %s..%s" % (d, start, end)
             if debug:
                 print(cmd)
-            text = subprocess.check_output(cmd,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True)
+            text = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             result += re.findall(r"Features:\s(\w+)", six.text_type(text))
         except subprocess.CalledProcessError:
             if debug:
@@ -147,9 +138,7 @@ def get_classes_lib_functions(directories, debug=False):
                 result[current_class_name] = set()
             for name in library_function_names:
                 if name in line:
-                    result[current_class_name] |= set([
-                        name,
-                    ])
+                    result[current_class_name] |= set([name,])
     for key in result:
         result[key] = sorted(result[key])
     return result
@@ -165,9 +154,7 @@ def changed_functions(directories, start, end, debug=False):
             cmd = "git --git-dir %s diff %s..%s -U0" % (d, start, end)
             if debug:
                 print(cmd)
-            diff = subprocess.check_output(cmd,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True)
+            diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             result = re.findall(r"def\s(\w+)\(", six.text_type(diff))
         except subprocess.CalledProcessError:
             if debug:

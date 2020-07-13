@@ -15,12 +15,14 @@ import six
 from boardfarm.lib.common import retry_on_exception
 
 
-def tcpdump_capture(device,
-                    interface,
-                    port=None,
-                    capture_file="pkt_capture.pcap",
-                    filters=None,
-                    return_pid=False):
+def tcpdump_capture(
+    device,
+    interface,
+    port=None,
+    capture_file="pkt_capture.pcap",
+    filters=None,
+    return_pid=False,
+):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
     The kill_process method can be used to kill the process.
@@ -42,11 +44,11 @@ def tcpdump_capture(device,
     """
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
     run_background = " &"
-    filter_str = " ".join([" ".join(i)
-                           for i in filters.items()]) if filters else ""
+    filter_str = " ".join([" ".join(i) for i in filters.items()]) if filters else ""
     if port:
-        device.sudo_sendline(base + "'portrange %s' " % (port) + filter_str +
-                             run_background)
+        device.sudo_sendline(
+            base + "'portrange %s' " % (port) + filter_str + run_background
+        )
     else:
         device.sudo_sendline(base + filter_str + run_background)
     device.expect_exact("tcpdump: listening on %s" % interface)
@@ -73,7 +75,7 @@ def kill_process(device, process="tcpdump", pid=None):
         device.sudo_sendline("killall %s" % process)
     device.expect(device.prompt)
     device.sudo_sendline("sync")
-    retry_on_exception(device.expect, (device.prompt, ), retries=5, tout=60)
+    retry_on_exception(device.expect, (device.prompt,), retries=5, tout=60)
     return device.before
 
 
@@ -175,10 +177,21 @@ def basic_call_verify(output_sip, ip_src):
     import re
 
     sip_msg = re.search(
-        ".*" + ip_src + ".*INVITE.*?" + ip_src + "\s+SIP.*100\s+Trying.*?" +
-        ip_src + "\s+SIP.*180\s+Ringing.*?" + ip_src +
-        "\s+SIP\/SDP.*200\s+OK.*?" + ip_src + ".*ACK.*?" + ip_src +
-        ".*BYE.*?" + ip_src + "\s+SIP.*200\s+OK\s+\|",
+        ".*"
+        + ip_src
+        + ".*INVITE.*?"
+        + ip_src
+        + "\s+SIP.*100\s+Trying.*?"
+        + ip_src
+        + "\s+SIP.*180\s+Ringing.*?"
+        + ip_src
+        + "\s+SIP\/SDP.*200\s+OK.*?"
+        + ip_src
+        + ".*ACK.*?"
+        + ip_src
+        + ".*BYE.*?"
+        + ip_src
+        + "\s+SIP.*200\s+OK\s+\|",
         output_sip,
         re.DOTALL,
     )
@@ -201,8 +214,11 @@ def get_mta_details(capture_file, device, mta_user=[]):
     mta_line_info = {}
     for idx, mta in enumerate(mta_user):
         for line in split_out:
-            regx_str = (r"SIP/2.0\s+200\s+OK(.*)From:\s+" + mta +
-                        "(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)")
+            regx_str = (
+                r"SIP/2.0\s+200\s+OK(.*)From:\s+"
+                + mta
+                + "(.*)Call-ID:\s+(\S+)CSeq.*Expires:\s+(\d+)"
+            )
             match = re.search(regx_str, line)
             if match:
                 mta_line_info[mta] = {
@@ -213,13 +229,7 @@ def get_mta_details(capture_file, device, mta_user=[]):
     return mta_line_info
 
 
-def nmap_cli(device,
-             ip_address,
-             port,
-             protocol=None,
-             retry=0,
-             timing="",
-             optional=""):
+def nmap_cli(device, ip_address, port, protocol=None, retry=0, timing="", optional=""):
     """To run port scanning on the specified target.Port scan is a method for determining which ports on a interface are open.
     This method is used to perform port scanning on the specified port range of the target ip specified from the device specified.
 
@@ -244,11 +254,16 @@ def nmap_cli(device,
 
     if not protocol:
         protocol = "both"
-    ipv6 = ("-6" if "IPv6Address" == type(
-        ipaddress.ip_address(six.text_type(ip_address))).__name__ else "")
+    ipv6 = (
+        "-6"
+        if "IPv6Address"
+        == type(ipaddress.ip_address(six.text_type(ip_address))).__name__
+        else ""
+    )
     protocol_commandmap = {"tcp": "-sT", "udp": "-sU", "both": "-sT -sU"}
     device.sudo_sendline(
-        "nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt" % (
+        "nmap %s %s %s %s -p%s -Pn -r -max-retries %s %s > nmap_logs.txt"
+        % (
             ipv6,
             timing,
             protocol_commandmap[protocol],
@@ -256,8 +271,9 @@ def nmap_cli(device,
             port,
             retry,
             optional,
-        ))
-    retry_on_exception(device.expect, (device.prompt, ), retries=16, tout=30)
+        )
+    )
+    retry_on_exception(device.expect, (device.prompt,), retries=16, tout=30)
     device.sendline("cat nmap_logs.txt")
     device.expect(device.prompt)
     nmap_output = device.before
@@ -292,14 +308,14 @@ def ssh_service_verify(
     device.sendline("ssh %s@%s" % (dest_device.username, ip))
     try:
         idx = device.expect(
-            ["no matching key exchange method found"] + ["(yes/no)"] +
-            ["assword:"],
+            ["no matching key exchange method found"] + ["(yes/no)"] + ["assword:"],
             timeout=60,
         )
         if idx == 0:
             device.expect(device.prompt)
-            device.sendline("ssh %s %s@%s %s" %
-                            (ssh_key, dest_device.username, ip, opts))
+            device.sendline(
+                "ssh %s %s@%s %s" % (ssh_key, dest_device.username, ip, opts)
+            )
             idx = device.expect(["(yes/no)"] + ["assword:"], timeout=60)
             if idx == 0:
                 idx = 1
@@ -344,13 +360,7 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
         raise Exception("Failed to connect telnet due to : %s" % e)
 
 
-def custom_telnet_service(device,
-                          dest_prompt,
-                          ip,
-                          username,
-                          password,
-                          opts="",
-                          cmd=[]):
+def custom_telnet_service(device, dest_prompt, ip, username, password, opts="", cmd=[]):
     """Telnet service connection
 
     :param device: client device from which the telnet session is initiated
@@ -413,8 +423,7 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
 
     client_ip = device.get_interface_ipaddr(device.iface_dut)
     mac = device.get_interface_macaddr(device.iface_dut).upper()
-    command_builder = 'dhcping -i -c {} -s {} -h "{}"'.format(
-        client_ip, server_ip, mac)
+    command_builder = 'dhcping -i -c {} -s {} -h "{}"'.format(client_ip, server_ip, mac)
     if opts:
         command_builder = "{} {}".format(command_builder, opts)
     output = device.check_output(command_builder)

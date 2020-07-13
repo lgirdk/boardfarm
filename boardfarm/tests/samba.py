@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class SambaShare(rootfs_boot.RootFSBootTest):
     """Setup and run Samba and test connection."""
+
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
@@ -21,7 +22,8 @@ class SambaShare(rootfs_boot.RootFSBootTest):
         board.expect("Configuring samba36-server")
         board.expect(prompt)
         board.sendline(
-            "mkdir -p /tmp/samba; chmod a+rwx /tmp/samba; rm -rf /tmp/samba/*")
+            "mkdir -p /tmp/samba; chmod a+rwx /tmp/samba; rm -rf /tmp/samba/*"
+        )
         board.expect(prompt)
         board.sendline(
             'uci set samba.@samba[0].homes=0; uci delete samba.@sambashare[0]; uci add samba sambashare; uci set samba.@sambashare[0]=sambashare; uci set samba.@sambashare[0].name="boardfarm-test"; uci set samba.@sambashare[0].path="/tmp/samba"; uci set samba.@sambashare[0].read_only="no"; uci set samba.@sambashare[0].guest_ok="yes"; uci commit samba'
@@ -31,13 +33,13 @@ class SambaShare(rootfs_boot.RootFSBootTest):
         board.sendline("smbclient -N -L 127.0.0.1")
         board.expect("boardfarm-test")
         board.expect(prompt)
-        lan.sendline("smbclient -N -L %s" %
-                     board.get_interface_ipaddr(board.lan_iface))
+        lan.sendline("smbclient -N -L %s" % board.get_interface_ipaddr(board.lan_iface))
         lan.expect("boardfarm-test")
         lan.expect(prompt)
         lan.sendline(
             "mkdir -p /mnt/samba; mount -o guest //%s/boardfarm-test /mnt/samba"
-            % board.get_interface_ipaddr(board.lan_iface))
+            % board.get_interface_ipaddr(board.lan_iface)
+        )
         lan.expect(prompt)
         lan.sendline("echo boardafarm-testing-string > /mnt/samba/test")
         lan.expect(prompt)

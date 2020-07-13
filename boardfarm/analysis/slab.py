@@ -13,6 +13,7 @@ from . import analysis
 
 class SlabAnalysis(analysis.Analysis):
     """Make graphs for output of /proc/slabinfo over time."""
+
     def analyze(self, console_log, output_dir):
         regex = "root\\@OpenWrt:[^#]+# cat /proc/slabinfo.*?(?=root@OpenWrt)"
         results = re.findall(regex, repr(console_log))
@@ -38,8 +39,6 @@ class SlabAnalysis(analysis.Analysis):
                 fname = k
                 for c in r"[]/\;,><&*:%=+@!#^()|?^":
                     fname = fname.replace(c, "")
-                self.make_graph(data[k],
-                                k,
-                                fname,
-                                ts=timestamps[k],
-                                output_dir=output_dir)
+                self.make_graph(
+                    data[k], k, fname, ts=timestamps[k], output_dir=output_dir
+                )

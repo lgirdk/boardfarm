@@ -39,9 +39,7 @@ class web_gui:
 
     prefix = ""
 
-    def __init__(self,
-                 output_dir=os.path.join(os.getcwd(), "results"),
-                 **kwargs):
+    def __init__(self, output_dir=os.path.join(os.getcwd(), "results"), **kwargs):
         """Instance initialisation.
 
         To set the path for saving the gui page screenshots
@@ -49,13 +47,14 @@ class web_gui:
         initialisation
         """
         self.output_dir = output_dir
-        self.default_delay = kwargs.get('default_delay', 20)
+        self.default_delay = kwargs.get("default_delay", 20)
         self.driver = None
         self.display = None
         stack = inspect.stack()
         self.test_class_name = self.get_test_class_name(stack)
         self.screenshot_path = str(
-            pathlib.PurePosixPath(output_dir).joinpath(self.test_class_name))
+            pathlib.PurePosixPath(output_dir).joinpath(self.test_class_name)
+        )
 
     def get_test_class_name(self, stack_list):
         """to get test case class name of test case via stack trace
@@ -93,8 +92,8 @@ class web_gui:
         """
         now = datetime.now()
         full_path = "_".join(
-            [self.screenshot_path,
-             now.strftime("%Y%m%d_%H%M%S%f"), name])
+            [self.screenshot_path, now.strftime("%Y%m%d_%H%M%S%f"), name]
+        )
         self.driver.save_screenshot(full_path)
         return full_path
 
@@ -151,8 +150,7 @@ class web_gui:
         select_id = self.key[key_id]
         select_key_value = resolv_dict(self.config, select_id)
         self.scroll_view(select_key_value)
-        select_button = select_option_by_id(self.driver, select_key_value,
-                                            value)
+        select_button = select_option_by_id(self.driver, select_key_value, value)
         assert select_button, "Select button : %s  " % select_button
 
     def verify_radio(self, value):
@@ -239,10 +237,13 @@ class web_gui:
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located(element))
+                EC.visibility_of_element_located(element)
+            )
         except Exception:
-            print("check_element_visibility({}): timeout to find "
-                  "element".format(element))
+            print(
+                "check_element_visibility({}): timeout to find "
+                "element".format(element)
+            )
         return query
 
     def check_element_clickable(self, *element, **kwargs):
@@ -258,10 +259,13 @@ class web_gui:
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                EC.element_to_be_clickable(element))
+                EC.element_to_be_clickable(element)
+            )
         except Exception:
-            print("check_element_clickable({}): timeout to find "
-                  "element".format(element))
+            print(
+                "check_element_clickable({}): timeout to find "
+                "element".format(element)
+            )
         return query
 
     def check_element_selection_state_to_be(self, *element, **kwargs):
@@ -277,10 +281,13 @@ class web_gui:
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                EC.element_selection_state_to_be(element))
+                EC.element_selection_state_to_be(element)
+            )
         except Exception:
-            print("check_element_selection_state_to_be({}): timeout to find "
-                  "element".format(element))
+            print(
+                "check_element_selection_state_to_be({}): timeout to find "
+                "element".format(element)
+            )
         return query
 
     def wait_for_element(self, index_by="id", ele_index=None):
@@ -300,8 +307,10 @@ class web_gui:
 
         self.driver.implicitly_wait(self.default_delay)
 
-        print("wait_for_element(): check_element_visibility(%s, %s)" %
-              (str(by), ele_index))
+        print(
+            "wait_for_element(): check_element_visibility(%s, %s)"
+            % (str(by), ele_index)
+        )
         ele = self.check_element_visibility(by, ele_index)
         assert ele is not None, "check_element_visibility(%s, %s)=False" % (
             str(by),
@@ -362,9 +371,7 @@ class web_gui:
         :rtype: boolean
         """
         try:
-            ele_botton = self.check_element_clickable(By.ID,
-                                                      id_value,
-                                                      timeout=3)
+            ele_botton = self.check_element_clickable(By.ID, id_value, timeout=3)
             if ele_botton is not None:
                 ele_botton.click()
                 print("Logout clicked")
@@ -404,8 +411,7 @@ class web_gui:
             xc, yc = config.default_display_backend_size.split("x")
             x = int(xc)
             y = int(yc)
-            r = Randomizer(
-            ) if config.default_display_backend_port == 0 else None
+            r = Randomizer() if config.default_display_backend_port == 0 else None
             self.display = Display(
                 backend=config.default_display_backend,
                 rfbport=config.default_display_backend_port,
@@ -435,10 +441,10 @@ class web_gui:
         from boardfarm import config
 
         try:
-            self.driver = get_webproxy_driver(proxy, config,
-                                              self.default_delay)
+            self.driver = get_webproxy_driver(proxy, config, self.default_delay)
             self.driver = EventFiringWebDriver(
-                self.driver, ScreenshotListener(self.screenshot_path))
+                self.driver, ScreenshotListener(self.screenshot_path)
+            )
         except Exception:
             traceback.print_exc()
             raise Exception("Failed to get webproxy driver via proxy " + proxy)
@@ -529,12 +535,16 @@ class ScreenshotListener(AbstractEventListener):
         self.screenshot_path = screenshot_path
 
     def capture_screenshot(self, driver, name, ext="png"):
-        WebDriverWait(driver, 10).until(lambda driver: driver.execute_script(
-            'return document.readyState') == 'complete')
+        WebDriverWait(driver, 10).until(
+            lambda driver: driver.execute_script("return document.readyState")
+            == "complete"
+        )
         now = datetime.now()
-        abs_path = "_".join(
-            [self.screenshot_path,
-             now.strftime("%Y%m%d_%H%M%S%f"), name]) + "." + ext
+        abs_path = (
+            "_".join([self.screenshot_path, now.strftime("%Y%m%d_%H%M%S%f"), name])
+            + "."
+            + ext
+        )
         driver.get_screenshot_as_file(abs_path)
         print("Screenshot saved as '{}'".format(abs_path))
 
@@ -553,7 +563,8 @@ class ScreenshotListener(AbstractEventListener):
         self.capture_screenshot(driver, "before_click")
 
     def after_click(self, element, driver):
-        if self.condition2: self.capture_screenshot(driver, "after_click")
+        if self.condition2:
+            self.capture_screenshot(driver, "after_click")
 
     def before_change_value_of(self, element, driver):
         if self.condition2:
@@ -572,10 +583,13 @@ class ScreenshotListener(AbstractEventListener):
             self.capture_screenshot(driver, "after_execute_script")
 
     def before_close(self, driver):
-        if self.condition2: self.capture_screenshot(driver, "before_close")
+        if self.condition2:
+            self.capture_screenshot(driver, "before_close")
 
     def after_close(self, driver):
-        if self.condition2: self.capture_screenshot(driver, "after_close")
+        if self.condition2:
+            self.capture_screenshot(driver, "after_close")
 
     def before_quit(self, driver):
-        if self.condition2: self.capture_screenshot(driver, "before_quit")
+        if self.condition2:
+            self.capture_screenshot(driver, "before_quit")

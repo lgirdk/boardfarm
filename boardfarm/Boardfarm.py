@@ -16,6 +16,7 @@ from .dbclients import boardfarmwebclient
 
 class Boardfarm(object):
     """This class makes it easy to interact with the boardfarm server, and to run tests."""
+
     def __init__(self, bfconfig_url, debug=False):
         """Parameters: bfconfig_url: location of boardfarm config file.
 
@@ -23,7 +24,8 @@ class Boardfarm(object):
         """
         self.bfconfig_url = bfconfig_url
         self.server = boardfarmwebclient.BoardfarmWebClient(
-            bfconfig_url, bf_version=boardfarm.__version__, debug=debug)
+            bfconfig_url, bf_version=boardfarm.__version__, debug=debug
+        )
         self.debug = debug
 
     def list_tests(self):
@@ -55,7 +57,8 @@ class Boardfarm(object):
         if self.debug:
             cmd += "export BFT_DEBUG=%s ; " % self.debug
         cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(
-            b=board_type, t=testsuite, c=self.bfconfig_url, o=output_dir)
+            b=board_type, t=testsuite, c=self.bfconfig_url, o=output_dir
+        )
         print(cmd)
         subprocess.check_output(cmd, shell=True)
         print("Results in %s" % output_dir)

@@ -50,6 +50,7 @@ class TestStepMeta(type):
     @classmethod
     def set_args(cls, func):
         """Set args method defined."""
+
         @wraps(func)
         def wrapper(self, tst_cls, *args, **kwargs):
             """Test wrapper function fot test class method."""
@@ -92,8 +93,9 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             indent = " " * (len(time) + 1)
             msg = "{} {}".format(time, msg)
         if wrap:
-            msg = textwrap.TextWrapper(width=80,
-                                       subsequent_indent=indent).fill(text=msg)
+            msg = textwrap.TextWrapper(width=80, subsequent_indent=indent).fill(
+                text=msg
+            )
         self.parent_test.log_to_file += msg + "\r\n"
         cprint(msg, None, attrs=attr)
 
@@ -118,7 +120,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
     def __enter__(self):
         """Test Step log initialization and return."""
         self.msg = "[{}]:[{} Step {}]".format(
-            self.parent_test.__class__.__name__, self.prefix, self.step_id)
+            self.parent_test.__class__.__name__, self.prefix, self.step_id
+        )
         print()
         self.log_msg(("#" * 80), no_time=True)
         self.log_msg("{}: START".format(self.msg))
@@ -134,10 +137,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
         if tb:
             trace = traceback.format_exception(ex_type, ex_value, tb)
-            self.log_msg("".join(trace).strip(),
-                         attr=[],
-                         no_time=True,
-                         wrap=False)
+            self.log_msg("".join(trace).strip(), attr=[], no_time=True, wrap=False)
         self.log_msg(("-" * 80), no_time=True)
         if tb and "BFT_DEBUG" in os.environ:
             step_output = ["Logging step output:"]
@@ -151,27 +151,24 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
     def verify(self, cond, msg):
         """Log message of Result is based on condition of pass or fail."""
         if not cond:
-            self.log_msg("{}::[Verification] :\n{} - FAILED".format(
-                self.msg, msg))
-            raise TestError("{}::[Verification] :\n{} - FAILED".format(
-                self.msg, msg))
+            self.log_msg("{}::[Verification] :\n{} - FAILED".format(self.msg, msg))
+            raise TestError("{}::[Verification] :\n{} - FAILED".format(self.msg, msg))
         else:
-            self.log_msg("{}::[Verification] :\n{} - PASSED".format(
-                self.msg, msg))
+            self.log_msg("{}::[Verification] :\n{} - PASSED".format(self.msg, msg))
 
     def execute(self):
         """Define Test step execute and Verifying test steps."""
         # enforce not to call execute without using with clause.
         if not self.called_with:
             raise CodeError(
-                "{} - need to execute step using 'with' clause".format(
-                    self.msg))
+                "{} - need to execute step using 'with' clause".format(self.msg)
+            )
 
         # enforce not to call execute without adding an action
         if not self.actions:
             raise CodeError(
-                "{} - no actions added before calling execute".format(
-                    self.msg))
+                "{} - no actions added before calling execute".format(self.msg)
+            )
 
         self.execute_flag = True
 
@@ -192,8 +189,9 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
                 self.log_msg("{} : DONE".format(prefix))
             except Exception as e:
                 tr = TestResult(prefix, "FAIL", str(e), (func_name, str(e)))
-                self.log_msg("{} : FAIL :: {}:{}".format(
-                    prefix, e.__class__.__name__, str(e)))
+                self.log_msg(
+                    "{} : FAIL :: {}:{}".format(prefix, e.__class__.__name__, str(e))
+                )
                 raise (e)
             finally:
                 self.result.append(tr)
@@ -203,8 +201,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             try:
                 cond = self.verify_f()
             except Exception as e:
-                raise CodeError("{}::[Verification] :\n{}".format(
-                    self.msg, str(e)))
+                raise CodeError("{}::[Verification] :\n{}".format(self.msg, str(e)))
             self.verify(cond, self.v_msg)
 
         self.actions = []
@@ -269,7 +266,9 @@ class TearDown(TestStep):
             if not r:
                 r = ContOnFailError(
                     "Teardown Assertion FAIL :\nExp: {} Actual: {}".format(
-                        exp, self.result[-1].output()))
+                        exp, self.result[-1].output()
+                    )
+                )
                 r.tb = (None, None, None)
                 self.result[-1].result = r
 
@@ -281,7 +280,8 @@ class TearDown(TestStep):
         if issubclass(type(i.result), Exception):
             self.log_msg(
                 "Teardown failed for Step {}.{}\n{} - Reason: {}".format(
-                    self.step_id, step_id, i.step, i.result),
+                    self.step_id, step_id, i.step, i.result
+                ),
                 no_time=True,
                 wrap=False,
             )
@@ -289,25 +289,25 @@ class TearDown(TestStep):
 
             if hasattr(i.result, "tb") and "BFT_DEBUG" in os.environ:
                 trace = traceback.format_exception(*i.result.tb)
-                self.log_msg("".join(trace).strip(),
-                             attr=[],
-                             no_time=True,
-                             wrap=False)
+                self.log_msg("".join(trace).strip(), attr=[], no_time=True, wrap=False)
 
         self.log_msg(("-" * 80), no_time=True)
-        self.log_msg("[{}]:[{} Step {}.{}]\tResult: {}".format(
-            self.parent_test.__class__.__name__,
-            self.prefix,
-            self.step_id,
-            step_id,
-            ["FAIL", "PASS"][self.td_result],
-        ))
+        self.log_msg(
+            "[{}]:[{} Step {}.{}]\tResult: {}".format(
+                self.parent_test.__class__.__name__,
+                self.prefix,
+                self.step_id,
+                step_id,
+                ["FAIL", "PASS"][self.td_result],
+            )
+        )
         self.log_msg("Output: {}".format(i.result), no_time=True)
         self.log_msg(("-" * 80), no_time=True)
 
 
 class ExpectException(object):
     """Initialize Exception."""
+
     def __init__(self, ts, exc, *args, **kwargs):
         """Instance initialization for ExpectException class."""
         self.called_with = False
@@ -326,7 +326,8 @@ class ExpectException(object):
             else:
                 raise CodeError(
                     "Invalid Syntax - Context Management doesn't work when"
-                    " callable-{} is passed as an arg.".format(args[0]))
+                    " callable-{} is passed as an arg.".format(args[0])
+                )
 
     def execute_callable(self, *args, **kwargs):
         """Test step call execute."""
@@ -335,6 +336,7 @@ class ExpectException(object):
 
     def decorate_add_method(self, func):
         """If decorator based method calling this function execute."""
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
@@ -375,31 +377,32 @@ class ExpectException(object):
                     print(i.result)
                     raise AssertionError(
                         "Expected Exceptions - {} Caught - {}".format(
-                            self.exc_list, type(i.result)))
+                            self.exc_list, type(i.result)
+                        )
+                    )
         if not self.exception:
             raise AssertionError(
-                "No exception caught!!\nExpected exceptions - {}".format(
-                    self.exc_list))
+                "No exception caught!!\nExpected exceptions - {}".format(self.exc_list)
+            )
 
 
 if __name__ == "__main__":
 
     def action1(a, m=2):
         """Perform multiplication with default value is 2."""
-        print("\nAction 1 performed multiplication\nWill return value: {}\n".
-              format(a * m))
+        print(
+            "\nAction 1 performed multiplication\nWill return value: {}\n".format(a * m)
+        )
         return a * m
 
     def action2(a, m=3):
         """Perform Division with default value is 3."""
-        print("\nAction 2 performed division\nWill return value: {}\n".format(
-            a / m))
+        print("\nAction 2 performed division\nWill return value: {}\n".format(a / m))
         return a / m
 
     def add_100(a):
         """Perform addition with return value."""
-        print("\nAction addition performed \nWill return value: {}\n".format(
-            a + 100))
+        print("\nAction addition performed \nWill return value: {}\n".format(a + 100))
         return a + 100
 
     def raise_exc(exc, code=99):
@@ -418,8 +421,7 @@ if __name__ == "__main__":
         def runTest(self):
             # this one can be used to define common test Steps
             # note: we could assign a section to a test-step, e.g. Set-up in this case.
-            with TestStep(self, "This is step1 of test setup",
-                          "Example 1") as ts:
+            with TestStep(self, "This is step1 of test setup", "Example 1") as ts:
 
                 # if you're intializing a TA, pass the function as a partial,
                 # else code will fail
@@ -429,8 +431,7 @@ if __name__ == "__main__":
                 # add verification, call it later after execute.
                 # if no verification is added, we're expecting step to pass with exception from actions
                 def _verify():
-                    return ts.result[0].output() == 6 and ts.result[1].output(
-                    ) == 3
+                    return ts.result[0].output() == 6 and ts.result[1].output() == 3
 
                 ts.add_verify(_verify, "verify step1 output")
                 ts.execute()
@@ -438,8 +439,7 @@ if __name__ == "__main__":
             # variation 2, call execute multiple times.
             # Note: here you might need to change verification for each execute, manually
             # Note: don't pop the output, we might need it to log step results later
-            with TestStep(self, "This is step1 of execution",
-                          "Example 2") as ts:
+            with TestStep(self, "This is step1 of execution", "Example 2") as ts:
                 for i in [1, 2, 3, 4]:
                     ts.add(add_100, i)
                     ts.execute()
@@ -450,17 +450,16 @@ if __name__ == "__main__":
 
             # variation 4
             # This is to ensure that you can call and verify functions directly
-            with TestStep(self, "This is call step variation of execution",
-                          "Example 4") as ts:
+            with TestStep(
+                self, "This is call step variation of execution", "Example 4"
+            ) as ts:
                 ts.call(action1, 2, m=3)
                 ts.call(action2, 6, m=1)
-                ts.verify(ts.result[1].output() != 3,
-                          "verify variation 4 output")
+                ts.verify(ts.result[1].output() != 3, "verify variation 4 output")
 
             # variation 3
             # need this to reset the counter.
-            with TestStep(self, "This is step2 of execution",
-                          "Example 3") as ts:
+            with TestStep(self, "This is step2 of execution", "Example 3") as ts:
                 ts.add(action1, 2, m=3)
                 ts.add(action2, 6, m=0)
                 ts.execute()
@@ -476,27 +475,22 @@ if __name__ == "__main__":
 
         def test_main(self):
             """Initialize test steps under this method and execute."""
-            with TestStep(self, "Negative Testing Scenario",
-                          "Example 1") as ts:
+            with TestStep(self, "Negative Testing Scenario", "Example 1") as ts:
                 with ts.assertRaises(ValueError) as e:
                     ts.call(raise_exc, ValueError, 600)
                 ts.verify(e.exception.code == 600, "Verify negative scenario")
 
-            with TestStep(self, "Negative Testing Scenario",
-                          "Example 2") as ts:
+            with TestStep(self, "Negative Testing Scenario", "Example 2") as ts:
                 e = ts.assertRaises(ValueError, raise_exc, ValueError, 600)
                 ts.verify(e.exception.code == 600, "Verify negative scenario")
 
-            with TestStep(self, "Negative Testing Scenario",
-                          "Example 3") as ts:
+            with TestStep(self, "Negative Testing Scenario", "Example 3") as ts:
                 try:
                     with ts.assertRaises(KeyError) as e:
                         ts.call(action1, 2, 3)
                         ts.call(action1, 3, 4)
                 except Exception as e:
-                    print(
-                        "To show if an exception didn't occure, test will fail",
-                        e)
+                    print("To show if an exception didn't occure, test will fail", e)
 
     obj = Test1()
     obj1 = Test2()
@@ -508,5 +502,4 @@ if __name__ == "__main__":
 
     obj1.test_main()
 
-    print("\n\nHow stuff will look like in txt file:\n{}".format(
-        obj.log_to_file))
+    print("\n\nHow stuff will look like in txt file:\n{}".format(obj.log_to_file))

@@ -33,15 +33,28 @@ class SoftPhone(object):
         Arguments:
         sipserver_ip(str): ip of sip server
         """
-        conf = ("""(
-        echo --local-port=""" + self.port + """
-        echo --id=sip:""" + self.own_number + """@""" + sipserver_ip + """
-        echo --registrar=sip:""" + sipserver_ip + """
+        conf = (
+            """(
+        echo --local-port="""
+            + self.port
+            + """
+        echo --id=sip:"""
+            + self.own_number
+            + """@"""
+            + sipserver_ip
+            + """
+        echo --registrar=sip:"""
+            + sipserver_ip
+            + """
         echo --realm=*
-        echo --username=""" + self.own_number + """
+        echo --username="""
+            + self.own_number
+            + """
         echo --password=1234
         echo --null-audio
-        )> """ + self.config_name)
+        )> """
+            + self.config_name
+        )
         self.sendline(conf)
         self.expect(self.prompt)
 

@@ -14,6 +14,7 @@ from boardfarm.tests import rootfs_boot
 
 class UciShowWireless(rootfs_boot.RootFSBootTest):
     """UCI lists wifi interfaces."""
+
     def runTest(self):
         """Start test to list wifi interfaces by UCI."""
         board = self.dev.board
@@ -26,8 +27,7 @@ class UciShowWireless(rootfs_boot.RootFSBootTest):
         board.expect("uci show wireless")
         board.expect(prompt)
         wifi_interfaces = re.findall("wireless.*=wifi-device", board.before)
-        self.result_message = "UCI shows %s wifi interface(s)." % (
-            len(wifi_interfaces))
+        self.result_message = "UCI shows %s wifi interface(s)." % (len(wifi_interfaces))
         self.logged["num_ifaces"] = len(wifi_interfaces)
         # Require that at least one wifi interface is present
         assert len(wifi_interfaces) > 0

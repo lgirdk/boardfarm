@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class RouterPingWanDev(rootfs_boot.RootFSBootTest):
     """Router can ping device through WAN interface."""
+
     def test_main(self):
         board = self.dev.board
         wan = self.dev.wan
@@ -28,6 +29,7 @@ class RouterPingWanDev(rootfs_boot.RootFSBootTest):
 
 class RouterPingInternet(rootfs_boot.RootFSBootTest):
     """Router can ping internet address by IP."""
+
     def test_main(self):
         board = self.dev.board
         board.sendline("\nping -c2 8.8.8.8")
@@ -37,6 +39,7 @@ class RouterPingInternet(rootfs_boot.RootFSBootTest):
 
 class RouterPingInternetName(rootfs_boot.RootFSBootTest):
     """Router can ping internet address by name."""
+
     def test_main(self):
         board = self.dev.board
         board.sendline("\nping -c2 www.google.com")
@@ -46,6 +49,7 @@ class RouterPingInternetName(rootfs_boot.RootFSBootTest):
 
 class LanDevPingRouter(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping router."""
+
     def test_main(self):
         board = self.dev.board
         lan = self.dev.lan
@@ -62,6 +66,7 @@ class LanDevPingRouter(rootfs_boot.RootFSBootTest):
 
 class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping through router."""
+
     def test_main(self):
         lan = self.dev.lan
         wan = self.dev.wan
@@ -84,6 +89,7 @@ class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
 
 class LanDevPingInternet(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping through router to internet."""
+
     def test_main(self):
         lan = self.dev.lan
         if not lan:

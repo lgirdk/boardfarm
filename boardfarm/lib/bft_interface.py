@@ -80,8 +80,7 @@ class bft_iface(object):
         for ip in ip_list:
             try:
                 if ip.startswith("fe80"):
-                    self._ipv6_link_local = ipaddress.IPv6Interface(
-                        six.text_type(ip))
+                    self._ipv6_link_local = ipaddress.IPv6Interface(six.text_type(ip))
                 else:
                     self._ipv6 = ipaddress.IPv6Interface(six.text_type(ip))
             except ipaddress.AddressValueError:
@@ -169,10 +168,10 @@ if __name__ == "__main__":
 
     class DummyDevice(BaseDevice):
         """Dummy Device."""
+
         def __init__(self):
             """Instance initialisation."""
-            super().__init__(command="bash --noprofile --norc",
-                             encoding="utf-8")
+            super().__init__(command="bash --noprofile --norc", encoding="utf-8")
             self.sendline('export PS1="dummy>"')
             self.expect_exact('export PS1="dummy>"')
             self.prompt = ["dummy>"]

@@ -34,8 +34,8 @@ class SoCat(rootfs_boot.RootFSBootTest):
             random_port = randint(1024, 65535)
             if not ipaddress.ip_address(six.text_type(random_ip)).is_private:
                 if (
-                        ipaddress.ip_address(six.text_type(random_ip)),
-                        random_port,
+                    ipaddress.ip_address(six.text_type(random_ip)),
+                    random_port,
                 ) not in self.all_ips:
                     break
             else:
@@ -49,17 +49,19 @@ class SoCat(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
 
         random_rate = randint(1, 1024)
-        random_size = randint(int(1 * random_rate * mintime),
-                              int(1024 * random_rate * maxtime))
+        random_size = randint(
+            int(1 * random_rate * mintime), int(1024 * random_rate * maxtime)
+        )
 
-        args = (self.socat_recv, random_port, random_ip, self.payload,
-                random_rate)
+        args = (self.socat_recv, random_port, random_ip, self.payload, random_rate)
         wan.sendline(
             "nohup socat %s:%s,bind=%s system:'(echo -n %s;  head /dev/zero) | pv -L %sk' &"
-            % args)
+            % args
+        )
         print(
             "nohup socat %s:%s,bind=%s system:'(echo -n %s;  head /dev/zero) | pv -L %sk' &"
-            % args)
+            % args
+        )
         wan.expect(prompt)
 
         args = (
@@ -72,14 +74,15 @@ class SoCat(rootfs_boot.RootFSBootTest):
         )
         lan.sendline(
             "nohup socat system:'(echo -n %s;  head -c %s /dev/zero) | pv -L %sk' %s:%s:%s &"
-            % args)
+            % args
+        )
         print(
             "nohup socat system:'(echo -n %s;  head -c %s /dev/zero) | pv -L %sk' %s:%s:%s &"
-            % args)
+            % args
+        )
         lan.expect(prompt)
 
-        self.all_conns.append(
-            (random_size, random_rate, random_ip, random_port))
+        self.all_conns.append((random_size, random_rate, random_ip, random_port))
         return (random_size, random_rate, random_ip, random_port)
 
     def runTest(self):
@@ -106,8 +109,7 @@ class SoCat(rootfs_boot.RootFSBootTest):
             board.touch()
             print("Starting connection %s" % i)
             sz, rate, ip, port = self.startSingleFlow(maxtime=single_max)
-            print("started flow to %s:%s sz = %s, rate = %sk" %
-                  (ip, port, sz, rate))
+            print("started flow to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
 
             max_time = max(max_time, sz / (rate * 1024))
             self.check_and_clean_ips()
@@ -148,7 +150,8 @@ class SoCat(rootfs_boot.RootFSBootTest):
             c = "UDP"
         lan.sendline(
             "echo SYNC; ps aux | grep  socat | sed -e 's/.*%s/%s/g' | tr '\n' ' '"
-            % (c, c))
+            % (c, c)
+        )
         lan.expect_exact("SYNC\r\n")
         lan.expect(prompt)
         seen_ips = re.findall("%s:([^:]*):" % self.socat_send, lan.before)

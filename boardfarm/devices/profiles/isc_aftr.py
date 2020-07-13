@@ -34,7 +34,8 @@ class AFTR(base_profile.BaseProfile):
 
         # IPv6 ep must be from a different subnet than WAN container.
         self.ipv6_ep = ipaddress.IPv6Interface(
-            six.text_type(kwargs.get("ipv6_ep", "2001::1/48")))
+            six.text_type(kwargs.get("ipv6_ep", "2001::1/48"))
+        )
         # Open gateway subnets need to be in this ACL.
         self.ipv6_acl = [
             str(self.ipv6_ep.network),
@@ -43,7 +44,8 @@ class AFTR(base_profile.BaseProfile):
 
         # this address will double NAT to WAN container's public IP
         self.ipv4_nat = ipaddress.IPv4Interface(
-            six.text_type(kwargs.get("ipv4_nat", "198.18.200.111/16")))
+            six.text_type(kwargs.get("ipv4_nat", "198.18.200.111/16"))
+        )
         self.ipv4_nat_ip = str(self.ipv4_nat.ip)
 
         # static pool port range
@@ -61,7 +63,8 @@ class AFTR(base_profile.BaseProfile):
         AFTR.configure_profile(
             self,
             self.configure_aftr,
-            hosts={"aftr.boardfarm.com": str(self.ipv6_ep.ip)})
+            hosts={"aftr.boardfarm.com": str(self.ipv6_ep.ip)},
+        )
 
     def configure_aftr(self):
         """Method to check the aftr exists already else configuring the same
@@ -73,14 +76,12 @@ class AFTR(base_profile.BaseProfile):
         run_conf = None
         # check if aftr.conf already exists
         self.sendline("ls /root/aftr/aftr.conf")
-        if self.expect(["No such file or directory", pexpect.TIMEOUT],
-                       timeout=2) == 1:
+        if self.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2) == 1:
             self.expect(self.prompt)
             self.sendline("cat /root/aftr/aftr.conf")
             self.expect(self.prompt)
             run_conf = [
-                i.strip() for i in self.before.split("\n")[1:]
-                if i.strip() != ""
+                i.strip() for i in self.before.split("\n")[1:] if i.strip() != ""
             ]
             self.sendline("\n")
         self.expect(self.prompt)
@@ -88,32 +89,33 @@ class AFTR(base_profile.BaseProfile):
         run_script = None
         # check if aftr-script already exists
         self.sendline("ls /root/aftr/aftr-script")
-        if self.expect(["No such file or directory", pexpect.TIMEOUT],
-                       timeout=2) == 1:
+        if self.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2) == 1:
             self.expect(self.prompt)
             self.sendline("cat /root/aftr/aftr-script")
             self.expect(self.prompt)
             run_script = [
-                i.strip() for i in self.before.split("\n")[1:]
-                if i.strip() != ""
+                i.strip() for i in self.before.split("\n")[1:] if i.strip() != ""
             ]
             self.sendline("\n")
         self.expect(self.prompt)
 
         # if contents are same just restart the service.
         # will be useful incase we go with one aftr for a location.
-        if Counter([
-                i.strip() for i in start_conf.split("\n") if i.strip() != ""
-        ]) != Counter(run_conf):
+        if Counter(
+            [i.strip() for i in start_conf.split("\n") if i.strip() != ""]
+        ) != Counter(run_conf):
             to_send = "cat > /root/aftr/aftr.conf << EOF\n%s\nEOF" % start_conf
             self.sendline(to_send)
             self.expect(self.prompt)
 
         # the replace is pretty static here, will figure out something later.
-        if Counter([
+        if Counter(
+            [
                 i.strip().replace(r"\$", "$").replace(r"\`", "`")
-                for i in start_script.split("\n") if i.strip() != ""
-        ]) != Counter(run_script):
+                for i in start_script.split("\n")
+                if i.strip() != ""
+            ]
+        ) != Counter(run_script):
             to_send = "cat > /root/aftr/aftr-script << EOF\n%s\nEOF" % start_script
             self.sendline(to_send)
             self.expect(self.prompt)
@@ -130,8 +132,9 @@ class AFTR(base_profile.BaseProfile):
         self.expect(self.prompt)
 
         self.expect(pexpect.TIMEOUT, timeout=2)
-        assert (str(self.get_interface_ipaddr("tun0")) == "192.0.0.1"
-                ), "Failed to bring up tun0 interface."
+        assert (
+            str(self.get_interface_ipaddr("tun0")) == "192.0.0.1"
+        ), "Failed to bring up tun0 interface."
 
     def generate_aftr_conf(self):
         """Generates aftr.conf file. Refers conf/aftr.conf template inside ds-lite package
@@ -143,27 +146,31 @@ class AFTR(base_profile.BaseProfile):
 
         # section 0 defines global paramters for NAT, PCP and tunnel.
         # If not specified, aftr script will consider it's default values.
-        self.aftr_conf["section 0: global parameters"] = OrderedDict([
-            ("defmtu ", self.mtu),
-            ("defmss ", "on"),
-            # dont't throw error if IPv4 packet is too big to fit in one IPv6 encapsulating packet
-            ("deftoobig ", "off"),
-        ])
+        self.aftr_conf["section 0: global parameters"] = OrderedDict(
+            [
+                ("defmtu ", self.mtu),
+                ("defmss ", "on"),
+                # dont't throw error if IPv4 packet is too big to fit in one IPv6 encapsulating packet
+                ("deftoobig ", "off"),
+            ]
+        )
 
         # section 1 defines required parameters.
         # providing minimum requirement to bring up aftr tunnel.
-        self.aftr_conf["section 1: required parameters"] = OrderedDict([
-            ("address endpoint ", str(self.ipv6_ep.ip)),
-            ("address icmp ", self.ipv4_nat_ip),
-            ("pool %s tcp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
-            ("pool %s udp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
-            ("pcp %s tcp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
-            ("pcp %s udp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
-            (
-                "#All IPv6 ACLs\n",
-                "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_acl)),
-            ),
-        ])
+        self.aftr_conf["section 1: required parameters"] = OrderedDict(
+            [
+                ("address endpoint ", str(self.ipv6_ep.ip)),
+                ("address icmp ", self.ipv4_nat_ip),
+                ("pool %s tcp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
+                ("pool %s udp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
+                ("pcp %s tcp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
+                ("pcp %s udp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
+                (
+                    "#All IPv6 ACLs\n",
+                    "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_acl)),
+                ),
+            ]
+        )
 
         for k, v in self.aftr_conf.items():
             run_conf.append("## %s\n" % k)
@@ -209,32 +216,36 @@ class AFTR(base_profile.BaseProfile):
                     r"iptables -t nat -A OUTPUT -p udp -d \$PUBLIC --dport %s -j DNAT --to-destination %s"
                     % (self.ipv4_pcp_pool.replace("-", ":"), self.ipv4_nat_ip),
                 ],
-            ))
+            )
+        )
 
         run_conf["aftr_stop()"] = "\n".join(
             map(
                 lambda x: "%s%s" % (tab, x),
                 ["iptables -t nat -F", "ip link set tun0 down"],
-            ))
+            )
+        )
 
-        extra_bits = "\n".join([
-            "set -x",
-            r"PUBLIC=\`ip addr show dev %s | grep -w inet | awk '{print \$2}' | awk -F/ '{print \$1}'\`"
-            % self.iface_dut,
-            "\n" + r'case "\$1" in',
-            "start)",
-            "%saftr_start" % tab,
-            "%s;;" % tab,
-            "stop)",
-            "%saftr_stop" % tab,
-            "%s;;" % tab,
-            "*)",
-            r'%secho "Usage: \$0 start|stop"' % tab,
-            "%sexit 1" % tab,
-            "%s;;" % tab,
-            "esac\n",
-            "exit 0",
-        ])
+        extra_bits = "\n".join(
+            [
+                "set -x",
+                r"PUBLIC=\`ip addr show dev %s | grep -w inet | awk '{print \$2}' | awk -F/ '{print \$1}'\`"
+                % self.iface_dut,
+                "\n" + r'case "\$1" in',
+                "start)",
+                "%saftr_start" % tab,
+                "%s;;" % tab,
+                "stop)",
+                "%saftr_stop" % tab,
+                "%s;;" % tab,
+                "*)",
+                r'%secho "Usage: \$0 start|stop"' % tab,
+                "%sexit 1" % tab,
+                "%s;;" % tab,
+                "esac\n",
+                "exit 0",
+            ]
+        )
 
         # there could be a better way to generate this shell script.
         script += "%s\n%s" % (
@@ -252,20 +263,28 @@ class AFTR(base_profile.BaseProfile):
         attempt = 0
         while attempt < 2:
             self.sendline("ls /root/aftr/aftr")
-            if (self.expect(["No such file or directory", pexpect.TIMEOUT],
-                            timeout=2) == 0):
+            if (
+                self.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2)
+                == 0
+            ):
                 self.expect(self.prompt)
                 apt_install(self, "build-essential")
                 # check for configure script.
                 self.sendline("ls /root/aftr/configure")
-                if (self.expect(["No such file or directory", pexpect.TIMEOUT],
-                                timeout=2) == 0):
+                if (
+                    self.expect(
+                        ["No such file or directory", pexpect.TIMEOUT], timeout=2
+                    )
+                    == 0
+                ):
                     self.expect(self.prompt)
                     # need to download the tar file and extract it.
                     install_wget(self)
-                    self.aftr_url = (self.aftr_local
-                                     if self.aftr_local is not None else
-                                     self.aftr_url)
+                    self.aftr_url = (
+                        self.aftr_local
+                        if self.aftr_local is not None
+                        else self.aftr_url
+                    )
                     self.sendline("curl %s -o /root/aftr.tbz" % self.aftr_url)
                     self.expect(self.prompt, timeout=60)
                     self.sendline(
@@ -319,8 +338,7 @@ if __name__ == "__main__":
         username="root",
         password="bigfoot1",
         port=port,
-        options=
-        "tftpd-server, wan-static-ip:10.64.38.23/23, wan-no-eth0, wan-static-ipv6:2001:730:1f:60a::cafe:23, static-route:0.0.0.0/0-10.64.38.2",
+        options="tftpd-server, wan-static-ip:10.64.38.23/23, wan-no-eth0, wan-static-ipv6:2001:730:1f:60a::cafe:23, static-route:0.0.0.0/0-10.64.38.2",
     )
 
     dev.configure("wan_device")

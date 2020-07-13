@@ -21,8 +21,9 @@ class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         for d in [wan, lan]:
-            d.sendline("tcpdump -i %s -w /tmp/tcpdump.pcap %s" %
-                       (d.iface_dut, self.opts))
+            d.sendline(
+                "tcpdump -i %s -w /tmp/tcpdump.pcap %s" % (d.iface_dut, self.opts)
+            )
 
         board.expect(pexpect.TIMEOUT, timeout=15)
 

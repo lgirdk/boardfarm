@@ -437,7 +437,6 @@ def get_attribute_element_xpath(web_gui, get_value, attribute):
     :rtype: string
     """
     try:
-        return web_gui.find_element_by_xpath(get_value).get_attribute(
-            attribute)
+        return web_gui.find_element_by_xpath(get_value).get_attribute(attribute)
     except NoSuchElementException:
         return None

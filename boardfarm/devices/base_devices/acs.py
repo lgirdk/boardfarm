@@ -130,12 +130,7 @@ class BaseACS(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def _build_input_structs(self,
-                             cpeid,
-                             param,
-                             action,
-                             next_level=None,
-                             **kwargs):
+    def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
         NOTE: The command option is set as Syncronous

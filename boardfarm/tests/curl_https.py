@@ -4,6 +4,7 @@ from boardfarm.tests import rootfs_boot
 
 class CurlSSLGood(rootfs_boot.RootFSBootTest):
     """Curl can access https and verify signature."""
+
     def runTest(self):
         """Start test to curl to access https and verify signature."""
         board = self.dev.board
@@ -30,6 +31,7 @@ class CurlSSLGood(rootfs_boot.RootFSBootTest):
 
 class CurlSSLBad(rootfs_boot.RootFSBootTest):
     """Curl can't access https with bad signature."""
+
     def runTest(self):
         """Start test to curl can't access https with bad signature."""
         board = self.dev.board
@@ -52,10 +54,8 @@ class CurlSSLBad(rootfs_boot.RootFSBootTest):
                 "https://self-signed.badssl.com/",
                 "unable to get local issuer certificate",
             ),
-            ("https://superfish.badssl.com/",
-             "unable to get local issuer certificate"),
-            ("https://edellroot.badssl.com/",
-             "unable to get local issuer certificate"),
+            ("https://superfish.badssl.com/", "unable to get local issuer certificate"),
+            ("https://edellroot.badssl.com/", "unable to get local issuer certificate"),
             (
                 "https://dsdtestprovider.badssl.com/",
                 "unable to get local issuer certificate",
@@ -69,5 +69,4 @@ class CurlSSLBad(rootfs_boot.RootFSBootTest):
             board.sendline("curl " + check[0])
             board.expect(check[1])
             board.expect(prompt)
-            print("\n\nCurl refused to download " + check[0] +
-                  " as expected\n")
+            print("\n\nCurl refused to download " + check[0] + " as expected\n")

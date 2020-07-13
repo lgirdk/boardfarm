@@ -73,6 +73,7 @@ password = None
 
 class bft_pexpect_helper(pexpect.spawn):
     """Boardfarm helper for logging pexpect and making minor tweaks."""
+
     def __setattr__(self, key, value):
         # pexpect name start with <.*>
         # idea is to check for all names before letting pexpect set the name
@@ -101,16 +102,15 @@ class bft_pexpect_helper(pexpect.spawn):
             pexpect.spawn.__init__(self, *args, **kwargs)
 
             global password
-            if ((len(args) > 0 and "sudo" in args[0])
-                    or "sudo" in kwargs.get("command", "")
-                    or True in ["sudo" in x for x in kwargs.get("args", [])]):
+            if (
+                (len(args) > 0 and "sudo" in args[0])
+                or "sudo" in kwargs.get("command", "")
+                or True in ["sudo" in x for x in kwargs.get("args", [])]
+            ):
                 print_bold("NOTE: sudo helper running")
                 if 0 != self.expect(
-                    [
-                        r"\[sudo\] password for [^:]*: ", pexpect.TIMEOUT,
-                        pexpect.EOF
-                    ],
-                        timeout=5,
+                    [r"\[sudo\] password for [^:]*: ", pexpect.TIMEOUT, pexpect.EOF],
+                    timeout=5,
                 ):
                     return
                 if password is not None:
@@ -164,8 +164,7 @@ class bft_pexpect_helper(pexpect.spawn):
         if isinstance(value, o_helper):
             self._logfile_read = value
         elif value is not None:
-            self._logfile_read = o_helper(self, value,
-                                          getattr(self, "color", None))
+            self._logfile_read = o_helper(self, value, getattr(self, "color", None))
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
@@ -183,23 +182,21 @@ class bft_pexpect_helper(pexpect.spawn):
             self.sendcontrol("c")
             raise Exception(
                 "Command did not complete within %s seconds. Prompt was not seen."
-                % timeout)
+                % timeout
+            )
         return self.before.strip()
 
     def write(self, string):
         """Log file write."""
         self._logfile_read.write(string)
 
-    def interact(self,
-                 escape_character=chr(29),
-                 input_filter=None,
-                 output_filter=None):
+    def interact(self, escape_character=chr(29), input_filter=None, output_filter=None):
 
         o = self._logfile_read
         self.logfile_read = None
-        ret = super(bft_pexpect_helper,
-                    self).interact(escape_character, input_filter,
-                                   output_filter)
+        ret = super(bft_pexpect_helper, self).interact(
+            escape_character, input_filter, output_filter
+        )
         self.logfile_read = o
 
         return ret
@@ -229,16 +226,14 @@ class bft_pexpect_helper(pexpect.spawn):
             return wrapper(pattern, *args, **kwargs)
 
         idx = frame_index_out_of_file()
-        print_bold("%s = expecting: %s" %
-                   (caller_file_line(idx), repr(pattern)))
+        print_bold("%s = expecting: %s" % (caller_file_line(idx), repr(pattern)))
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
             frame = caller_file_line(idx)
 
             if hasattr(self.match, "group"):
-                print_bold("%s = matched: %s" %
-                           (frame, repr(self.match.group())))
+                print_bold("%s = matched: %s" % (frame, repr(self.match.group())))
             else:
                 print_bold("%s = matched: %s" % (frame, repr(pattern)))
             return ret
@@ -259,8 +254,9 @@ class bft_pexpect_helper(pexpect.spawn):
     def sendcontrol(self, char):
         if BFT_DEBUG:
             print_bold(
-                "%s = sending: control-%s" %
-                (caller_file_line(frame_index_out_of_file()), repr(char)))
+                "%s = sending: control-%s"
+                % (caller_file_line(frame_index_out_of_file()), repr(char))
+            )
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
 
@@ -295,12 +291,14 @@ def spawn_ssh_pexpect(
     if via:
         p = via.sendline(
             "ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s"
-            % (user, ip, port, extra_args))
+            % (user, ip, port, extra_args)
+        )
         p = via
     else:
         p = bft_pexpect_helper.spawn(
             "ssh %s@%s -p %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s"
-            % (user, ip, port, extra_args))
+            % (user, ip, port, extra_args)
+        )
 
     i = p.expect(["yes/no", "assword:", "Last login"], timeout=30)
     if i == 0:

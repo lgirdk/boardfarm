@@ -19,8 +19,7 @@ try:
     from elasticsearch import RequestError
 except Exception as e:
     print(e)
-    print("Please install needed module:\n"
-          "  sudo pip install -U elasticsearch")
+    print("Please install needed module:\n" "  sudo pip install -U elasticsearch")
     sys.exit(1)
 
 
@@ -42,15 +41,14 @@ def pprint(x):
 
 class ElasticsearchLogger(object):
     """Write data directly to an elasticsearch cluster."""
+
     def __init__(self, server, index="boardfarm", doc_type="bft_run"):
         """Instance initialisation."""
         self.server = server
-        self.index = index + "-" + datetime.datetime.utcnow().strftime(
-            "%Y.%m.%d")
+        self.index = index + "-" + datetime.datetime.utcnow().strftime("%Y.%m.%d")
         self.doc_type = doc_type
         # Connect to server
-        self.es = elasticsearch.Elasticsearch([server],
-                                              serializer=Serializer())
+        self.es = elasticsearch.Elasticsearch([server], serializer=Serializer())
         # Set default data
         username = os.environ.get("BUILD_USER_ID", None)
         if username is None:
@@ -67,12 +65,12 @@ class ElasticsearchLogger(object):
         """Log data for elastic search."""
         # Put in default data
         self.default_data["@timestamp"] = datetime.datetime.utcnow().strftime(
-            "%Y-%m-%dT%H:%M:%S.000Z")
+            "%Y-%m-%dT%H:%M:%S.000Z"
+        )
         data.update(self.default_data)
 
         data = {
-            k: data[k]
-            for k in data if not (type(data[k]) is float and isnan(data[k]))
+            k: data[k] for k in data if not (type(data[k]) is float and isnan(data[k]))
         }
 
         if debug:
@@ -80,9 +78,7 @@ class ElasticsearchLogger(object):
             pprint(data)
 
         try:
-            result = self.es.index(index=self.index,
-                                   doc_type=self.doc_type,
-                                   body=data)
+            result = self.es.index(index=self.index, doc_type=self.doc_type, body=data)
         except RequestError as e:
             print("Elastic logging error:")
             print(e.info)

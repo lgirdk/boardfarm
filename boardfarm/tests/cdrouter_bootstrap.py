@@ -68,10 +68,12 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             provisioner.sendline("ip route add 3.3.3.3 via 192.168.3.2")
             provisioner.expect(prompt)
             provisioner.sendline(
-                "ip route add 3001:cafe:1::/64 via 2001:dead:beef:1::2")
+                "ip route add 3001:cafe:1::/64 via 2001:dead:beef:1::2"
+            )
             provisioner.expect(prompt)
             provisioner.sendline(
-                "ip route add 3001:51a:cafe::1 via 2001:dead:beef:1::2")
+                "ip route add 3001:51a:cafe::1 via 2001:dead:beef:1::2"
+            )
             provisioner.expect(prompt)
         elif not wan.static_ip:
             for device in self.config.board["devices"]:
@@ -105,9 +107,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
                 d.sendline("cat /proc/net/vlan/config")
                 d.expect_exact("cat /proc/net/vlan/config")
                 if 0 == d.expect(
-                    [pexpect.TIMEOUT,
-                     r"%s.*\|\s([0-9]+).*\|" % d.iface_dut],
-                        timeout=5):
+                    [pexpect.TIMEOUT, r"%s.*\|\s([0-9]+).*\|" % d.iface_dut], timeout=5
+                ):
                     d.vlan = 0
                 else:
                     d.vlan = d.match.group(1)
@@ -119,22 +120,41 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         print("Using %s for LAN vlan" % lan.vlan)
 
         # TODO: move wan and lan interface to bft config?
-        contents = ("""
-testvar wanInterface """ + self.cdrouter_wan_iface)
+        contents = (
+            """
+testvar wanInterface """
+            + self.cdrouter_wan_iface
+        )
         if wandutmac is not None:
-            contents = (contents + """
-testvar wanDutMac """ + wandutmac)
+            contents = (
+                contents
+                + """
+testvar wanDutMac """
+                + wandutmac
+            )
 
         if wan.vlan != 0:
-            contents = (contents + """
-testvar wanVlanId """ + wan.vlan)
+            contents = (
+                contents
+                + """
+testvar wanVlanId """
+                + wan.vlan
+            )
 
-        contents = (contents + """
-testvar lanInterface """ + self.cdrouter_lan_iface)
+        contents = (
+            contents
+            + """
+testvar lanInterface """
+            + self.cdrouter_lan_iface
+        )
 
         if lan.vlan != 0:
-            contents = (contents + """
-testvar lanVlanId """ + lan.vlan)
+            contents = (
+                contents
+                + """
+testvar lanVlanId """
+                + lan.vlan
+            )
 
         if self.extra_config:
             contents = contents + "\n" + self.extra_config.replace(",", "\n")
@@ -159,8 +179,7 @@ testvar lanVlanId """ + lan.vlan)
                     lan.start_lan_client()
                     lan_ip6 = lan.get_interface_ip6addr(lan.iface_dut)
                     ip6 = ipaddress.IPv6Network(six.text_type(lan_ip6))
-                    fixed_prefix6 = str(
-                        ip6.supernet(new_prefix=64).network_address)
+                    fixed_prefix6 = str(ip6.supernet(new_prefix=64).network_address)
                     break
                 except Exception as e:
                     exp = e
@@ -171,7 +190,9 @@ testvar lanVlanId """ + lan.vlan)
                     raise exp
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
-            contents = (contents + """
+            contents = (
+                contents
+                + """
 testvar ipv6LanIp %s%%eui64%%
 testvar ipv6LanPrefixLen 64
 testvar healthCheckEnable yes
@@ -199,30 +220,32 @@ testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s
-""" % (
-                fixed_prefix6,
-                cdrouter.wanispip_v6,
-                cdrouter.wanispgateway_v6,
-                wan_ip6,
-                cdrouter.wanispip,
-                cdrouter.wanispgateway,
-                wan_ip,
-                wan_ip,
-                cdrouter.ipv4hopcount,
-                board.get_dns_server(),
-                board.get_dns_server_upstream(),
-            ))
+"""
+                % (
+                    fixed_prefix6,
+                    cdrouter.wanispip_v6,
+                    cdrouter.wanispgateway_v6,
+                    wan_ip6,
+                    cdrouter.wanispip,
+                    cdrouter.wanispgateway,
+                    wan_ip,
+                    wan_ip,
+                    cdrouter.ipv4hopcount,
+                    board.get_dns_server(),
+                    board.get_dns_server_upstream(),
+                )
+            )
 
         print("Using below for config:")
         print(contents)
         print("#######################")
 
-        config_name = "bft-automated-job-%s" % str(time.time()).replace(
-            ".", "")
+        config_name = "bft-automated-job-%s" % str(time.time()).replace(".", "")
         cfg = c.configs.create(Config(name=config_name, contents=contents))
 
         p = c.packages.create(
-            Package(name=config_name, testlist=self.tests, config_id=cfg.id))
+            Package(name=config_name, testlist=self.tests, config_id=cfg.id)
+        )
 
         self.start_time = time.time()
         j = c.jobs.launch(Job(package_id=p.id))
@@ -279,8 +302,7 @@ testvar wanDnsServer %s
         self.result_message = r.result.encode("ascii", "ignore")
         # TODO: results URL?
         elapsed_time = time.time() - self.start_time
-        print("Test took %s" %
-              time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+        print("Test took %s" % time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 
         summary = c.results.summary_stats(j.result_id)
 
@@ -297,11 +319,9 @@ testvar wanDnsServer %s
 
             if str(test.name) not in ["start", "final"]:
                 try:
-                    grade_map = {
-                        "pass": "OK",
-                        "fail": "FAIL",
-                        "skip": "SKIP"
-                    }[test.result]
+                    grade_map = {"pass": "OK", "fail": "FAIL", "skip": "SKIP"}[
+                        test.result
+                    ]
                     tr = TestResult(test.name, grade_map, test.description)
                     if test.started is not None:
                         tr.start_time = test.started
@@ -339,10 +359,12 @@ testvar wanDnsServer %s
             provisioner.sendline("ip route del 3.3.3.3 via 192.168.3.2")
             provisioner.expect(prompt)
             provisioner.sendline(
-                "ip route del 3001:cafe:1::/64 via 2001:dead:beef:1::2")
+                "ip route del 3001:cafe:1::/64 via 2001:dead:beef:1::2"
+            )
             provisioner.expect(prompt)
             provisioner.sendline(
-                "ip route del 3001:51a:cafe::1 via 2001:dead:beef:1::2")
+                "ip route del 3001:51a:cafe::1 via 2001:dead:beef:1::2"
+            )
             provisioner.expect(prompt)
 
         if hasattr(self, "results"):
@@ -379,8 +401,8 @@ testvar wanDnsServer %s
             name = "CDrouter" + mod.name.replace(".", "").replace("-", "_")
             list_of_tests = [six.text_type(x) for x in mod.tests]
             new_tests.append(
-                type(six.text_type(name), (CDrouterStub, ),
-                     {"tests": list_of_tests}))
+                type(six.text_type(name), (CDrouterStub,), {"tests": list_of_tests})
+            )
 
         return new_tests
 

@@ -10,6 +10,7 @@ from boardfarm.tests import rootfs_boot
 
 class Uname(rootfs_boot.RootFSBootTest):
     """Checked board system information."""
+
     def runTest(self):
         board = self.dev.board
         board.sendline("\nuname -a")

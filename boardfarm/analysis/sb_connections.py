@@ -12,11 +12,17 @@ from . import analysis
 
 class SbConnectionsAnalysis(analysis.Analysis):
     """Look for streamboost 2.0 number of connections and make graphs."""
+
     def analyze(self, console_log, output_dir):
-        regex = (r"redis-cli -s \$s keys \\'conndb...flow\\' \| wc -l" +
-                 analysis.newline_re_match + r"(\d+)" + analysis.newline_re)
+        regex = (
+            r"redis-cli -s \$s keys \\'conndb...flow\\' \| wc -l"
+            + analysis.newline_re_match
+            + r"(\d+)"
+            + analysis.newline_re
+        )
         timestamps, results = analysis.split_results(
-            re.findall(regex, repr(console_log)))
+            re.findall(regex, repr(console_log))
+        )
 
         if len(timestamps) == len(results) and len(results) > 1:
             self.make_graph(
@@ -34,11 +40,15 @@ class SbConnectionsAnalysis(analysis.Analysis):
                 output_dir=output_dir,
             )
 
-        regex = (r"redis-cli -s \$s scard flowdb.flows" +
-                 analysis.newline_re_match + r"\(integer\) (\d+)" +
-                 analysis.newline_re)
+        regex = (
+            r"redis-cli -s \$s scard flowdb.flows"
+            + analysis.newline_re_match
+            + r"\(integer\) (\d+)"
+            + analysis.newline_re
+        )
         timestamps, results = analysis.split_results(
-            re.findall(regex, repr(console_log)))
+            re.findall(regex, repr(console_log))
+        )
 
         if len(timestamps) == len(results) and len(results) > 1:
             self.make_graph(
@@ -49,7 +59,6 @@ class SbConnectionsAnalysis(analysis.Analysis):
                 output_dir=output_dir,
             )
         if len(results) > 1:
-            self.make_graph(results,
-                            "streamboost flows",
-                            "sb_flows",
-                            output_dir=output_dir)
+            self.make_graph(
+                results, "streamboost flows", "sb_flows", output_dir=output_dir
+            )

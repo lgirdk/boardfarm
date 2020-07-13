@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
     """Check that opkg will overwrite old configuration files with known MD5."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -40,6 +41,7 @@ class OpkgConfUpdateMD5(rootfs_boot.RootFSBootTest):
 
 class OpkgConfNotUpdateMD5(rootfs_boot.RootFSBootTest):
     """Check that opkg will not overwrite old modified configuration files with known MD5."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -72,6 +74,7 @@ class OpkgConfNotUpdateMD5(rootfs_boot.RootFSBootTest):
 
 class OpkgConfUpdateSHA256(rootfs_boot.RootFSBootTest):
     """Check that opkg will overwrite old configuration files with known MD5."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -101,6 +104,7 @@ class OpkgConfUpdateSHA256(rootfs_boot.RootFSBootTest):
 
 class OpkgConfNotUpdateSHA256(rootfs_boot.RootFSBootTest):
     """Check that opkg will not overwrite old modified configuration files with known MD5."""
+
     def runTest(self):
         board = self.dev.board
 

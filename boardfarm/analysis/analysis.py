@@ -35,16 +35,13 @@ def split_results(results):
 
 class Analysis:
     """Base analysis class, each child class should implement the analyze function."""
+
     def analyze(self, console_log, output_dir):
         pass
 
-    def make_graph(self,
-                   data,
-                   ylabel,
-                   fname,
-                   ts=None,
-                   xlabel="seconds",
-                   output_dir=None):
+    def make_graph(
+        self, data, ylabel, fname, ts=None, xlabel="seconds", output_dir=None
+    ):
         """Make a PNG graph."""
         if not output_dir:
             return

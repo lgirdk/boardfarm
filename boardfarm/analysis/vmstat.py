@@ -13,9 +13,9 @@ from . import analysis
 
 class VmStatAnalysis(analysis.Analysis):
     """Make graphs from /proc/vmstat over time."""
+
     def analyze(self, console_log, output_dir):
-        results = re.findall(analysis.newline_match + r"nr_(\w+) (\d+)",
-                             console_log)
+        results = re.findall(analysis.newline_match + r"nr_(\w+) (\d+)", console_log)
         data = collections.defaultdict(list)
         timestamps = collections.defaultdict(list)
         for t, k, v in results:
@@ -29,11 +29,7 @@ class VmStatAnalysis(analysis.Analysis):
         for k in data:
             if len(data[k]) > 1:
                 sz = min(len(data[k]), sz)
-                self.make_graph(data[k],
-                                k,
-                                k,
-                                ts=timestamps[k],
-                                output_dir=output_dir)
+                self.make_graph(data[k], k, k, ts=timestamps[k], output_dir=output_dir)
 
         # not great, just trimming some data to fit but works OK
         # for the time being

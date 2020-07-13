@@ -19,10 +19,7 @@ class TestEnvHelper_env_check:
                 },
                 "prov_mode": "dual",
             },
-            "devices": {
-                "lan": True,
-                "wlan": True
-            },
+            "devices": {"lan": True, "wlan": True},
         },
         "version": "1.0",
     }
@@ -47,8 +44,7 @@ class TestEnvHelper_env_check:
             "board": {
                 "software": {
                     "bootloader_image": "Some_bios_image.bin",
-                    "downgrade_images":
-                    ["image1", "image2", "image3", "image4"],
+                    "downgrade_images": ["image1", "image2", "image3", "image4"],
                     "load_image": "image.bin",
                     "upgrade_images": ["imageA.bin", "imageB.bin"],
                 },
@@ -59,38 +55,22 @@ class TestEnvHelper_env_check:
     }
 
     env_prov_mode_dual = {
-        "environment_def": {
-            "board": {
-                "eRouter_prov_mode": "dual",
-            },
-        },
+        "environment_def": {"board": {"eRouter_prov_mode": "dual",},},
         "version": "1.0",
     }
 
     env_prov_mode_ipv4 = {
-        "environment_def": {
-            "board": {
-                "eRouter_prov_mode": "ipv4",
-            },
-        },
+        "environment_def": {"board": {"eRouter_prov_mode": "ipv4",},},
         "version": "1.0",
     }
 
     env_prov_mode_bridge = {
-        "environment_def": {
-            "board": {
-                "eRouter_prov_mode": "bridge",
-            },
-        },
+        "environment_def": {"board": {"eRouter_prov_mode": "bridge",},},
         "version": "1.0",
     }
 
     env_prov_mode_none = {
-        "environment_def": {
-            "board": {
-                "eRouter_prov_mode": None,
-            },
-        },
+        "environment_def": {"board": {"eRouter_prov_mode": None,},},
         "version": "1.0",
     }
 
@@ -109,14 +89,10 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "bootloader_image": "Some_bios_image.bin"
-                    },
+                    "software": {"bootloader_image": "Some_bios_image.bin"},
                     "prov_mode": "dual",
                 },
-                "devices": {
-                    "lan": True
-                },
+                "devices": {"lan": True},
             },
             "version": "1.0",
         }
@@ -129,15 +105,11 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "bootloader_image": "Some_bios_image.bin"
-                    },
+                    "software": {"bootloader_image": "Some_bios_image.bin"},
                     "prov_mode": "dual",
                 },
                 # Must detect this difference
-                "devices": {
-                    "lan": False
-                },
+                "devices": {"lan": False},
             },
             "version": "1.0",
         }
@@ -156,9 +128,7 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "downgrade_images": ["image1", "image3"]
-                    },
+                    "software": {"downgrade_images": ["image1", "image3"]},
                     "prov_mode": "dual",
                 }
             },
@@ -189,12 +159,7 @@ class TestEnvHelper_env_check:
         test env accepts ANY downgrade images in the EnvHelper"""
         tcenv = {
             "environment_def": {
-                "board": {
-                    "software": {
-                        "downgrade_images": [None]
-                    },
-                    "prov_mode": "dual"
-                }
+                "board": {"software": {"downgrade_images": [None]}, "prov_mode": "dual"}
             },
             "version": "1.0",
         }
@@ -206,9 +171,7 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "downgrade_images": ["image3", "image4"]
-                    },
+                    "software": {"downgrade_images": ["image3", "image4"]},
                     "prov_mode": None,
                 }
             },
@@ -222,9 +185,7 @@ class TestEnvHelper_env_check:
         modes"""
         tcenv = {
             "environment_def": {
-                "board": {
-                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
-                }
+                "board": {"eRouter_prov_mode": ["dual", "ipv4", "ipv6"]}
             }
         }
         assert self.eh_prov_mode_dual.env_check(tcenv)
@@ -235,9 +196,7 @@ class TestEnvHelper_env_check:
         modes"""
         tcenv = {
             "environment_def": {
-                "board": {
-                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
-                }
+                "board": {"eRouter_prov_mode": ["dual", "ipv4", "ipv6"]}
             }
         }
         assert self.eh_prov_mode_ipv4.env_check(tcenv)
@@ -249,9 +208,7 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 # this is checked against 'bridge' and MUST fail
-                "board": {
-                    "eRouter_prov_mode": ["dual", "ipv4", "ipv6"]
-                }
+                "board": {"eRouter_prov_mode": ["dual", "ipv4", "ipv6"]}
             }
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
@@ -262,11 +219,7 @@ class TestEnvHelper_env_check:
         BftEnvMismatch!!!"""
         tcenv = {
             "non_existing_key": True,
-            "environment_def": {
-                "board": {
-                    "prov_mode": "dual"
-                }
-            },
+            "environment_def": {"board": {"prov_mode": "dual"}},
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
             self.eh_multiple_images.env_check(tcenv)
@@ -282,11 +235,7 @@ class TestEnvHelper_env_check:
         """Test against an EnvHelper with a None value, MUST throw a BftEnvMismatch!!!
         Probably EnvHelper schema will catch this"""
         tcenv = {
-            "environment_def": {
-                "board": {
-                    "eRouter_prov_mode": "some_prov",
-                },
-            },
+            "environment_def": {"board": {"eRouter_prov_mode": "some_prov",},},
             "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):
@@ -298,9 +247,7 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "load_image": ["image.bin", "image3", "image4"]
-                    }
+                    "software": {"load_image": ["image.bin", "image3", "image4"]}
                 },
             },
             "version": "1.0",
@@ -313,9 +260,7 @@ class TestEnvHelper_env_check:
         tcenv = {
             "environment_def": {
                 "board": {
-                    "software": {
-                        "load_image": ["image1.bin", "image3", "image4"]
-                    }
+                    "software": {"load_image": ["image1.bin", "image3", "image4"]}
                 },
             },
             "version": "1.0",

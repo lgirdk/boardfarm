@@ -10,6 +10,7 @@ class LocalCmd:
 
     Sets connection_type to local_cmd, ignores all output for now
     """
+
     def __init__(self, device=None, conn_cmd=None, **kwargs):
         """Initialize instance of LocalCmd class.
 
@@ -32,13 +33,14 @@ class LocalCmd:
         :raises: Exception Board is in use (connection refused).
         """
         try:
-            bft_pexpect_helper.spawn.__init__(self.device,
-                                              command="/bin/bash",
-                                              args=["-c", self.conn_cmd])
+            bft_pexpect_helper.spawn.__init__(
+                self.device, command="/bin/bash", args=["-c", self.conn_cmd]
+            )
             self.device.expect(pexpect.TIMEOUT, timeout=5)
         except pexpect.EOF:
             raise boardfarm.exceptions.ConnectionRefused(
-                "Board is in use (connection refused).")
+                "Board is in use (connection refused)."
+            )
 
     def close(self, force=True):
         """Close the pexpect session to the device."""

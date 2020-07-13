@@ -484,12 +484,9 @@ class BaseBoard(linux.LinuxDevice):
         """Download file from tftp server."""
         raise Exception("Not implemented!")
 
-    def prepare_file(self,
-                     fname,
-                     tserver=None,
-                     tusername=None,
-                     tpassword=None,
-                     tport=None):
+    def prepare_file(
+        self, fname, tserver=None, tusername=None, tpassword=None, tport=None
+    ):
         """Copy file to tftp server, so that it it available to tftp or
         to the board itself."""
         raise Exception("Not implemented!")

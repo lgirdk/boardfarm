@@ -14,6 +14,7 @@ from boardfarm.tests import rootfs_boot
 
 class RandomWebBrowse(rootfs_boot.RootFSBootTest):
     """Created light web traffic."""
+
     def runTest(self):
         """Run Test to Create light web traffic."""
         board = self.dev.board
@@ -47,10 +48,15 @@ class RandomWebBrowse(rootfs_boot.RootFSBootTest):
         user = (
             "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0"
         )
-        cmd = ("wget -Hp http://%(url)s " + "-e robots=off " +
-               "-P /tmp/webbrowse-test " + "-T 10 " +
-               "--header='Accept: text/html' " + "-U '%(user)s' " +
-               "2>&1 | tail -1")
+        cmd = (
+            "wget -Hp http://%(url)s "
+            + "-e robots=off "
+            + "-P /tmp/webbrowse-test "
+            + "-T 10 "
+            + "--header='Accept: text/html' "
+            + "-U '%(user)s' "
+            + "2>&1 | tail -1"
+        )
         for url in urls:
             lan.sendline("mkdir -p /tmp/webbrowse-test")
             print("\n%s" % url)

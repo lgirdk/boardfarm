@@ -51,9 +51,9 @@ def detect_crashdump_error(console, s):
             # this waits until we get the reseting message which means
             # we are done
             while i < 3:
-                i = console.expect(tftp_expect +
-                                   ["Resetting with watch dog!"] +
-                                   console.uprompt)
+                i = console.expect(
+                    tftp_expect + ["Resetting with watch dog!"] + console.uprompt
+                )
         except Exception as error:
             print(error)
             print_bold("Crashdump upload failed")

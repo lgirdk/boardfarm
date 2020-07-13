@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 class DeviceNone(object):
     """Check device."""
+
     def __getattr__(self, key):
         """Raise DeviceDoesNotExistError."""
         raise DeviceDoesNotExistError
@@ -121,6 +122,7 @@ all_device_managers = []
 
 class device_manager(UserList):
     """Manages all your devices, for getting and creating (if needed)."""
+
     def __init__(self):
         """Instance initialisation."""
         super().__init__()
@@ -132,8 +134,7 @@ class device_manager(UserList):
         self.plugin_counter = -1
 
         # TODO: does self.env really belong here or in device class?
-        self.uniqid = uuid.uuid4(
-        ).hex[:15]  # Random, unique ID and use first 15 bytes
+        self.uniqid = uuid.uuid4().hex[:15]  # Random, unique ID and use first 15 bytes
         self.env = {
             "wan_iface": "wan%s" % self.uniqid[:12],
             "lan_iface": "lan%s" % self.uniqid[:12],
@@ -175,8 +176,9 @@ class device_manager(UserList):
                 d.obj.close()
             except Exception as e:
                 logger.warning(e)
-                logger.warning("Problem trying to close connection to '%s'." %
-                               d.type.name)
+                logger.warning(
+                    "Problem trying to close connection to '%s'." % d.type.name
+                )
         # erase device list
         self.devices = []
 
@@ -225,8 +227,10 @@ class device_manager(UserList):
             matching[:] = [d for d in matching if d.location == location]
 
         if len(matching) > 1 and "BFT_DEBUG" in os.environ:
-            print("multiple matches, returning first hit (%s, %s, %s)" %
-                  (t, feature, location))
+            print(
+                "multiple matches, returning first hit (%s, %s, %s)"
+                % (t, feature, location)
+            )
             for m in matching:
                 print(m)
 
@@ -246,7 +250,8 @@ class device_manager(UserList):
             else:
                 print(
                     "WARNING!! WARNING!! this device cannot be added as a plugin"
-                    "\nCode will fail, if two devices found with same name.")
+                    "\nCode will fail, if two devices found with same name."
+                )
         if len(self.devices) == 0:
             new_dev.type = device_type.DUT
         else:
@@ -261,12 +266,15 @@ class device_manager(UserList):
             # For convenience, set an attribute with a name the same as the
             # newly added device type. Example: self.lan = the device of type lan
             attribute_name = new_dev.type.name
-            if (attribute_name != "Unknown"
-                    and getattr(self, attribute_name, None) is not None):
+            if (
+                attribute_name != "Unknown"
+                and getattr(self, attribute_name, None) is not None
+            ):
                 # device manager already has an attribute of this name
                 raise Exception(
                     "Device Manager already has '%s' attribute, you cannot add another."
-                    % attribute_name)
+                    % attribute_name
+                )
             else:
                 setattr(self, attribute_name, new_dev.obj)
                 # Alias board to DUT

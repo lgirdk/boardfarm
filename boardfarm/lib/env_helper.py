@@ -22,13 +22,18 @@ class EnvHelper(object):
         "version": "1.0"
     }
     """
+
     def __init__(self, env, mirror=None):
         """Instance initialization."""
         if env is None:
             return
 
-        assert env["version"] in ["1.0", "1.1", "1.2",
-                                  2.0], "Unknown environment version!"
+        assert env["version"] in [
+            "1.0",
+            "1.1",
+            "1.2",
+            2.0,
+        ], "Unknown environment version!"
         self.env = env
         self.mirror = ""
         if mirror:
@@ -42,11 +47,12 @@ class EnvHelper(object):
         """
         try:
             if mirror:
-                return (self.mirror + self.env["environment_def"]["board"]
-                        ["software"]["load_image"])
+                return (
+                    self.mirror
+                    + self.env["environment_def"]["board"]["software"]["load_image"]
+                )
             else:
-                return self.env["environment_def"]["board"]["software"][
-                    "load_image"]
+                return self.env["environment_def"]["board"]["software"]["load_image"]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
@@ -61,16 +67,16 @@ class EnvHelper(object):
     def get_downgrade_image(self):
         """Return the desired downgrade image to test against."""
         try:
-            return self.env["environment_def"]["board"]["software"][
-                "downgrade_images"][0]
+            return self.env["environment_def"]["board"]["software"]["downgrade_images"][
+                0
+            ]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
     def get_upgrade_image(self):
         """Return the desired upgrade image to test against."""
         try:
-            return self.env["environment_def"]["board"]["software"][
-                "upgrade_images"][0]
+            return self.env["environment_def"]["board"]["software"]["upgrade_images"][0]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
@@ -134,11 +140,13 @@ class EnvHelper(object):
         .. note:: recursively checks dictionaries
         .. note:: A value of None in the test_environment is used as a wildcard, i.e. matches any values int the EnvHelper
         """
+
         def contained(env_test, env_helper, path="root"):
             if type(env_test) is dict:
                 for k in env_test:
                     if k not in env_helper or not contained(
-                            env_test[k], env_helper[k], path + "->" + k):
+                        env_test[k], env_helper[k], path + "->" + k
+                    ):
                         return False
             elif type(env_test) is list:
                 # Handle case where env_test is a list and the env_helper is a value:

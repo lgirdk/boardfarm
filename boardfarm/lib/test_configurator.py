@@ -14,10 +14,12 @@ class BoardfarmTestConfig:
     used to run tests. Such as: url of the inventory server,
     environment files, etc...
     """
+
     def __init__(self, name="results"):
         self.name = name
         self.output_dir = os.path.join(
-            os.path.abspath(os.path.join(os.getcwd(), name, "")), "")
+            os.path.abspath(os.path.join(os.getcwd(), name, "")), ""
+        )
         self.EXTRA_TESTS = []
         self.BOARD_NAMES = []
         self.boardfarm_config_location = None
@@ -49,8 +51,7 @@ def get_station_config(location=None, ignore_redir=False):
     """
     boardfarm_config = read_station_config(location)
     if "_redirect" in boardfarm_config and not ignore_redir:
-        print("Using boardfarm config file at %s" %
-              boardfarm_config["_redirect"])
+        print("Using boardfarm config file at %s" % boardfarm_config["_redirect"])
         print("Please set your default config by doing:")
         print('    export BFT_CONFIG="%s"' % boardfarm_config["_redirect"])
         print("If you want to use local config, remove the _redirect line.")
@@ -145,9 +146,11 @@ def filter_station_config(
         for b in possible_names:
             if b == "_redirect":
                 continue
-            if (len(board_names) != 1
-                    and "available_for_autotests" in boardfarm_config[b] and
-                    boardfarm_config[b]["available_for_autotests"] == False):
+            if (
+                len(board_names) != 1
+                and "available_for_autotests" in boardfarm_config[b]
+                and boardfarm_config[b]["available_for_autotests"] == False
+            ):
                 # Skip this board
                 continue
             if board_features != []:
@@ -167,8 +170,9 @@ def filter_station_config(
 
                             if type(d["feature"]) in (str, six.text_type):
                                 d["feature"] = [d["feature"]]
-                            features.extend(x for x in d["feature"]
-                                            if x not in features)
+                            features.extend(
+                                x for x in d["feature"] if x not in features
+                            )
                 if type(features) in (str, six.text_type):
                     features = [features]
                 if set(board_features) != set(board_features) & set(features):

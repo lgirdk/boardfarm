@@ -12,6 +12,7 @@ from boardfarm.tests import rootfs_boot
 
 class RestartNetwork(rootfs_boot.RootFSBootTest):
     """Restarted router network."""
+
     def runTest(self):
         board = self.dev.board
 

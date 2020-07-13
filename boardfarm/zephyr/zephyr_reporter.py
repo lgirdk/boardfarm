@@ -46,10 +46,9 @@ def parse_arguments():
                               Default: RDK-B",
         default="RDKB",
     )
-    parser.add_argument("--release",
-                        "-r",
-                        help="The release version in Jira",
-                        default="7.6.1")
+    parser.add_argument(
+        "--release", "-r", help="The release version in Jira", default="7.6.1"
+    )
     parser.add_argument(
         "--environment",
         "-e",
@@ -129,13 +128,11 @@ def parse_zapi_config():
     for modname in sorted(boardfarm.plugins):
         overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
         zapi_conf = glob.glob(
-            os.path.join(overlay, "*", "zapi_configuration.json")) + glob.glob(
-                os.path.join(overlay, "*", "*", "zapi_configuration.json"))
+            os.path.join(overlay, "*", "zapi_configuration.json")
+        ) + glob.glob(os.path.join(overlay, "*", "*", "zapi_configuration.json"))
         metafile = glob.glob(
-            os.path.join(overlay, "*",
-                         "boardfarm_tc_meta_file.csv")) + glob.glob(
-                             os.path.join(overlay, "*", "*",
-                                          "boardfarm_tc_meta_file.csv"))
+            os.path.join(overlay, "*", "boardfarm_tc_meta_file.csv")
+        ) + glob.glob(os.path.join(overlay, "*", "*", "boardfarm_tc_meta_file.csv"))
         if len(zapi_conf) > 0:
             data.append(json.load(open(zapi_conf[0])))
         if len(metafile) > 0:
@@ -161,14 +158,16 @@ def update_zephyr(test_cases_list):
             continue
         """"Main routine"""
 
-        jira = JIRA(basic_auth=(z["user"], z["passwd"]),
-                    options={"server": z["jira_url"]})
+        jira = JIRA(
+            basic_auth=(z["user"], z["passwd"]), options={"server": z["jira_url"]}
+        )
 
         proj = jira.project(z["project"])
         verid = get_jira_release_id(z["release"], jira, proj)
         cycleName = z["cycle"]
-        cycleName = (cycleName + "_" + str(
-            (datetime.datetime.now()).strftime("%Y%m%d%H%M%S")))
+        cycleName = (
+            cycleName + "_" + str((datetime.datetime.now()).strftime("%Y%m%d%H%M%S"))
+        )
 
         reporter = zapi.Zapi(
             project_id=proj.id,
@@ -216,13 +215,10 @@ def update_zephyr(test_cases_list):
 
             if "status_codes" in z:
                 ret = reporter.set_execution(
-                    result,
-                    exec_id,
-                    log_data,
-                    status_code_dict=z["status_codes"])
+                    result, exec_id, log_data, status_code_dict=z["status_codes"]
+                )
             else:
                 ret = reporter.set_execution(result, exec_id, log_data)
 
             if ret.status_code != requests.codes.ok:
-                raise Exception(
-                    "Error = %s, when trying to set execution status" % ret)
+                raise Exception("Error = %s, when trying to set execution status" % ret)

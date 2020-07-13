@@ -14,8 +14,7 @@ import traceback
 # import all analysis classes
 classes = {}
 analysis_files = glob.glob(os.path.dirname(__file__) + "/*.py")
-for x in sorted(
-    [os.path.basename(f)[:-3] for f in analysis_files if "__" not in f]):
+for x in sorted([os.path.basename(f)[:-3] for f in analysis_files if "__" not in f]):
     try:
         module = importlib.import_module("boardfarm.analysis.%s" % x)
     except Exception:
@@ -25,7 +24,8 @@ for x in sorted(
         else:
             print(
                 "Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details"
-                % x)
+                % x
+            )
         continue
     for thing_name in dir(module):
         thing = getattr(module, thing_name)

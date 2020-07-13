@@ -12,6 +12,7 @@ from . import analysis
 
 class PanicAnalysis(analysis.Analysis):
     """Parse logs for kernel panic events."""
+
     def analyze(self, console_log, output_dir):
         if len(re.findall("Kernel panic", console_log)):
             print("ERROR: log had panic")

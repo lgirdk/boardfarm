@@ -70,6 +70,10 @@ SNMPMacAddressRegex = r"([0-9A-Z][0-9A-Z]\s){6}"
 # Trying x.x.x.x...
 # Connected to x.x.x.x.
 # Escape character is '^]'.
-telnet_ipv4_conn = ("Trying " + ValidIpv4AddressRegex +
-                    r"\.\.\.\r\nConnected to " + ValidIpv4AddressRegex +
-                    r"\.\r\nEscape character is '\^]'\.((\r\n){,2})")
+telnet_ipv4_conn = (
+    "Trying "
+    + ValidIpv4AddressRegex
+    + r"\.\.\.\r\nConnected to "
+    + ValidIpv4AddressRegex
+    + r"\.\r\nEscape character is '\^]'\.((\r\n){,2})"
+)

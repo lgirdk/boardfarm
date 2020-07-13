@@ -33,8 +33,7 @@ def probe_devices():
     # Loop over all modules to import their devices
     for modname in all_boardfarm_modules:
         bf_module = all_boardfarm_modules[modname]
-        device_module = pkgutil.get_loader(".".join(
-            [bf_module.__name__, "devices"]))
+        device_module = pkgutil.get_loader(".".join([bf_module.__name__, "devices"]))
         if device_module:
             all_mods += boardfarm.walk_library(
                 device_module.load_module(),
@@ -59,8 +58,9 @@ def check_for_cmd_on_host(cmd, msg=None):
 
     if not cmd_exists(cmd):
         termcolor.cprint(
-            "\nThe  command '" + cmd +
-            "' is NOT installed on your system. Please install it.",
+            "\nThe  command '"
+            + cmd
+            + "' is NOT installed on your system. Please install it.",
             None,
             attrs=["bold"],
         )
@@ -72,11 +72,9 @@ def check_for_cmd_on_host(cmd, msg=None):
             import platform
 
             if "Ubuntu" in platform.dist() or "debian" in platform.dist():
-                print("To install run:\n\tsudo apt install <package with " +
-                      cmd + ">")
+                print("To install run:\n\tsudo apt install <package with " + cmd + ">")
                 exit(1)
-        print(
-            "To install refer to your system SW app installation instructions")
+        print("To install refer to your system SW app installation instructions")
 
 
 __loader__ = None
@@ -90,6 +88,7 @@ class _prompt(UserList, list):
     now dynamically create this list of prompts. It checks all currently instanstiated
     devices and returns a read-only list
     """
+
     def get_prompts(self):
         ret = []
 
@@ -125,15 +124,18 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
     temp = []
     for cls in cls_list:
         members = [
-            attr for attr in cls.__dict__
-            if not attr.startswith("__") and not attr.endswith("__")
+            attr
+            for attr in cls.__dict__
+            if not attr.startswith("__")
+            and not attr.endswith("__")
             and attr not in ("model", "prompt", "profile")
         ]
         common = list(set(members) & set(cls_members))
         if len(common) > 0:
             raise Exception(
-                "Identified duplicate class members %s between classes  %s" %
-                (str(common), str(cls_list[:cls_list.index(cls) + 1])))
+                "Identified duplicate class members %s between classes  %s"
+                % (str(common), str(cls_list[: cls_list.index(cls) + 1]))
+            )
 
         cls_members.extend(members)
         temp.append(cls)
@@ -145,8 +147,9 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
         for cls in cls_list:
             cls.__init__(self, *args, **kwargs)
 
-    ret = type(cls_name, tuple(cls_list),
-               {"__init__": __init__})(model, mgr=device_mgr, **kwargs)
+    ret = type(cls_name, tuple(cls_list), {"__init__": __init__})(
+        model, mgr=device_mgr, **kwargs
+    )
     ret.target = kwargs
 
     return ret
@@ -177,11 +180,9 @@ def get_device(model, device_mgr, **kwargs):
                     if type(attr) is str and attr in profile:
                         profile_exists = True
                         profile_kwargs = profile[attr]
-                    elif type(attr) is tuple and len(set(attr)
-                                                     & set(profile)) == 1:
+                    elif type(attr) is tuple and len(set(attr) & set(profile)) == 1:
                         profile_exists = True
-                        profile_kwargs = profile[list(
-                            set(attr) & set(profile))[0]]
+                        profile_kwargs = profile[list(set(attr) & set(profile))[0]]
 
                 if profile_exists:
                     if dev not in cls_list:
@@ -193,7 +194,8 @@ def get_device(model, device_mgr, **kwargs):
                     if len(common_keys) > 0:
                         print(
                             "Identified duplicate keys in profile and base device : %s"
-                            % str(list(common_keys)))
+                            % str(list(common_keys))
+                        )
                         print("Removing duplicate keys from profile!")
                         for i in list(common_keys):
                             profile_kwargs.pop(i)
@@ -203,8 +205,7 @@ def get_device(model, device_mgr, **kwargs):
         # to ensure profile always initializes after base class.
         cls_list.extend(profile_list)
         if len(cls_list) == 0:
-            raise BftNotSupportedDevice(
-                "Unable to spawn instance of model: %s" % model)
+            raise BftNotSupportedDevice("Unable to spawn instance of model: %s" % model)
         ret = bf_node(cls_list, model, device_mgr, **kwargs)
         device_mgr._add_device(ret, override, plugin)
         return ret
@@ -215,7 +216,8 @@ def get_device(model, device_mgr, **kwargs):
     except pexpect.EOF:
         msg = (
             "Failed to connect to a %s, unable to connect (in use) or possibly misconfigured"
-            % model)
+            % model
+        )
         raise Exception(msg)
     except Exception as e:
         traceback.print_exc()
@@ -243,15 +245,15 @@ You are seeing this message as your configuration is now using kermit instead of
     print("\nWARNING: Unknown board model '%s'." % model)
     print(
         "Please check spelling, your environment setup, or write an appropriate class "
-        "to handle that kind of board.")
+        "to handle that kind of board."
+    )
 
     if len(boardfarm.plugins) > 0:
         print("The following boardfarm plugins are installed.")
         print("Do you need to update them or install others?")
         print("\n".join(boardfarm.plugins))
     else:
-        print(
-            "No boardfarm plugins are installed, do you need to install some?")
+        print("No boardfarm plugins are installed, do you need to install some?")
 
     if "BFT_CONFIG" in os.environ:
         print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ["BFT_CONFIG"])

@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class SshWanDetect(rootfs_boot.RootFSBootTest):
     """Can access main web GUI page."""
+
     @lib.common.run_once
     def runTest(self):
         board = self.dev.board
@@ -29,10 +30,7 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
             t = lib.bft_pexpect_helper.spawn("bash")
         t.close()
 
-        sp = lib.bft_pexpect_helper.spawn_ssh_pexpect(ipaddr,
-                                                      "root",
-                                                      "password",
-                                                      prompt="root@OpenWrt",
-                                                      port=port,
-                                                      via=wan)
+        sp = lib.bft_pexpect_helper.spawn_ssh_pexpect(
+            ipaddr, "root", "password", prompt="root@OpenWrt", port=port, via=wan
+        )
         sp.sendline("exit")

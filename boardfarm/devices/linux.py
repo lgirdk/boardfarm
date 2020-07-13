@@ -42,8 +42,12 @@ class LinuxDevice(base.BaseDevice):
         regex = [
             r"addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):",
             r"inet:?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P|Bcast)",
-            "inet (" + ValidIpv4AddressRegex + ").*netmask (" +
-            ValidIpv4AddressRegex + ").*destination " + ValidIpv4AddressRegex,
+            "inet ("
+            + ValidIpv4AddressRegex
+            + ").*netmask ("
+            + ValidIpv4AddressRegex
+            + ").*destination "
+            + ValidIpv4AddressRegex,
         ]
         self.expect(regex)
         ipaddr = self.match.group(1)
@@ -74,8 +78,7 @@ class LinuxDevice(base.BaseDevice):
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_global:
-                    print("ifconfig {} IPV6 {}".format(interface,
-                                                       str(ipv6_iface.ip)))
+                    print("ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip)))
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
@@ -110,8 +113,9 @@ class LinuxDevice(base.BaseDevice):
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
         """Set static ip of the interface."""
-        self.sudo_sendline("ifconfig {} {} netmask {} up".format(
-            interface, fix_ip, fix_mark))
+        self.sudo_sendline(
+            "ifconfig {} {} netmask {} up".format(interface, fix_ip, fix_mark)
+        )
         self.expect(self.prompt)
 
         ip = self.get_interface_ipaddr(interface)
@@ -141,8 +145,7 @@ class LinuxDevice(base.BaseDevice):
         if source_ip is None:
             self.sendline("curl -I {!s}".format(url))
         else:
-            self.sendline("curl --interface {!s} -I {!s}".format(
-                source_ip, url))
+            self.sendline("curl --interface {!s} -I {!s}".format(source_ip, url))
         try:
             self.expect(self.prompt, timeout=10)
         except pexpect.TIMEOUT:
@@ -167,8 +170,10 @@ class LinuxDevice(base.BaseDevice):
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         """Modify the log level in kernel."""
         try:
-            self.sendline('\necho "%d %d %d %d" > /proc/sys/kernel/printk' %
-                          (CUR, DEF, MIN, BTDEF))
+            self.sendline(
+                '\necho "%d %d %d %d" > /proc/sys/kernel/printk'
+                % (CUR, DEF, MIN, BTDEF)
+            )
             self.expect("echo")
             self.expect(self.prompt, timeout=10)
         except Exception:
@@ -190,19 +195,15 @@ class LinuxDevice(base.BaseDevice):
             )
         self.expect(self.prompt)
 
-    def ping(self,
-             ping_ip,
-             ping_count=4,
-             ping_interface=None,
-             options="",
-             timetorun=None):
+    def ping(
+        self, ping_ip, ping_count=4, ping_interface=None, options="", timetorun=None
+    ):
         """Check ping from any device."""
         timeout = 50
         basic_cmd = "ping -c {} {}".format(ping_count, ping_ip)
 
         if timetorun:
-            basic_cmd = "timeout {} ping {} {}".format(timetorun, ping_ip,
-                                                       options)
+            basic_cmd = "timeout {} ping {} {}".format(timetorun, ping_ip, options)
             timeout = int(timetorun) + 10
         elif ping_interface:
             basic_cmd += " -I {} {}".format(ping_interface, options)
@@ -216,8 +217,8 @@ class LinuxDevice(base.BaseDevice):
             return True
         else:
             match = re.search(
-                "%s packets transmitted, %s received, 0%% packet loss" %
-                (ping_count, ping_count),
+                "%s packets transmitted, %s received, 0%% packet loss"
+                % (ping_count, ping_count),
                 self.before,
             )
             if match:
@@ -229,8 +230,7 @@ class LinuxDevice(base.BaseDevice):
         """Traceroute returns the route that packets take to a network host."""
         try:
             self.sendline("traceroute%s %s %s" % (version, options, host_ip))
-            self.expect_exact("traceroute%s %s %s" %
-                              (version, options, host_ip))
+            self.expect_exact("traceroute%s %s %s" % (version, options, host_ip))
             self.expect_prompt(timeout=timeout)
             return self.before
         except pexpect.TIMEOUT:
@@ -278,14 +278,14 @@ class LinuxDevice(base.BaseDevice):
             self.sendline("usermod -aG sudo %s" % id)
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
-            self.sendline(r"sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc" %
-                          id)
+            self.sendline(r"sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc" % id)
             self.expect(self.prompt, timeout=30)
         except Exception:
             self.expect(self.prompt, timeout=30)
 
     def copy_file_to_server(self, src, dst=None):
         """Copy the file from source to destination."""
+
         def gzip_str(string_):
             import gzip
             import io
@@ -302,15 +302,18 @@ class LinuxDevice(base.BaseDevice):
         print("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
-        self.sendline("""cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
+        self.sendline(
+            """cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
 %s
-EOFEOFEOFEOF""" % (dst, bin_file))
+EOFEOFEOFEOF"""
+            % (dst, bin_file)
+        )
         self.expect(self.prompt)
         self.sendline("ls %s" % dst)
         self.expect_exact("ls %s" % dst)
         i = self.expect(
-            ["ls: cannot access %s: No such file or directory" % dst] +
-            self.prompt)
+            ["ls: cannot access %s: No such file or directory" % dst] + self.prompt
+        )
         if i == 0:
             raise Exception("Failed to copy file")
         self.logfile_read = saved_logfile_read
@@ -360,10 +363,8 @@ EOFEOFEOFEOF""" % (dst, bin_file))
             self.expect(self.uprompt)
             self.sendline("boot")
         i = self.expect(
-            [
-                "U-Boot", "login:",
-                "Please press Enter to activate this console"
-            ] + self.prompt,
+            ["U-Boot", "login:", "Please press Enter to activate this console"]
+            + self.prompt,
             timeout=150,
         )
         if i == 0:
@@ -389,8 +390,8 @@ EOFEOFEOFEOF""" % (dst, bin_file))
             try:
                 pp.sendline("cat /proc/sys/net/netfilter/nf_conntrack_count")
                 pp.expect_exact(
-                    "cat /proc/sys/net/netfilter/nf_conntrack_count",
-                    timeout=2)
+                    "cat /proc/sys/net/netfilter/nf_conntrack_count", timeout=2
+                )
                 pp.expect(pp.prompt, timeout=15)
                 ret = int(pp.before.strip())
 
@@ -552,8 +553,11 @@ EOFEOFEOFEOF""" % (dst, bin_file))
         command = "curl {} {}".format(options, web_addr)
         self.sendline(command)
         index = self.expect(
-            ["Connected to"] + ["DOCTYPE html PUBLIC"] +
-            ["Connection timed out"] + ["Failed to connect to"] + self.prompt,
+            ["Connected to"]
+            + ["DOCTYPE html PUBLIC"]
+            + ["Connection timed out"]
+            + ["Failed to connect to"]
+            + self.prompt,
             timeout=100,
         )
         try:
@@ -569,8 +573,7 @@ EOFEOFEOFEOF""" % (dst, bin_file))
         :return: lease_time
         :rtype: integer
         """
-        self.sendline(
-            "\ncat /var/lib/dhcp/dhclient.leases | grep dhcp-lease-time")
+        self.sendline("\ncat /var/lib/dhcp/dhclient.leases | grep dhcp-lease-time")
         self.expect(r"\s+option\sdhcp-lease-time\s(\d+);")
         lease_time = int(self.match.group(1))
         self.expect(self.prompt)

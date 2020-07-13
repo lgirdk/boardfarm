@@ -39,11 +39,11 @@ def init(config=None):
     # Loop over all modules to import their tests
     for modname in all_boardfarm_modules:
         bf_module = all_boardfarm_modules[modname]
-        test_module = pkgutil.get_loader(".".join(
-            [bf_module.__name__, "tests"]))
+        test_module = pkgutil.get_loader(".".join([bf_module.__name__, "tests"]))
         if test_module:
-            all_mods += boardfarm.walk_library(test_module.load_module(),
-                                               filter_pkgs=["lib"])
+            all_mods += boardfarm.walk_library(
+                test_module.load_module(), filter_pkgs=["lib"]
+            )
 
     for module in all_mods:
         fname = module.__name__.split(".")[-1]
@@ -67,8 +67,10 @@ def init(config=None):
             except Exception:
                 if "BFT_DEBUG" in os.environ:
                     traceback.print_exc()
-                print("Warning: Failed to run parse function in %s" %
-                      inspect.getsourcefile(test))
+                print(
+                    "Warning: Failed to run parse function in %s"
+                    % inspect.getsourcefile(test)
+                )
 
     # Build dictionary where
     #   key = test name

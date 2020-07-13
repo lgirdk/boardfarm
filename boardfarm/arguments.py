@@ -26,8 +26,8 @@ except ImportError:
     cmd = "pip install -e ."
     if not os.path.isfile("setup.py"):
         tmp = os.path.abspath(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         os.pardir))
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+        )
         cmd = "cd %s ; %s" % (tmp, cmd)
     print(cmd)
     sys.exit(1)
@@ -54,8 +54,7 @@ def parse():
     :rtype: module
     """
     parser = argparse.ArgumentParser(
-        description="Connect to an available board,"
-        " flash image(s), and run tests.",
+        description="Connect to an available board," " flash image(s), and run tests.",
         usage="bft [options...]",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=HELP_EPILOG,
@@ -112,10 +111,9 @@ def parse():
         nargs="+",
         help="Path to JSON results to compare against (golden master)",
     )
-    parser.add_argument("-i",
-                        "--inventory",
-                        action="store_true",
-                        help="List available boards and exit")
+    parser.add_argument(
+        "-i", "--inventory", action="store_true", help="List available boards and exit"
+    )
     parser.add_argument(
         "-k",
         "--kernel",
@@ -124,10 +122,9 @@ def parse():
         default=None,
         help="URL or file PATH of Kernel image to flash",
     )
-    parser.add_argument("-l",
-                        "--list_tests",
-                        action="store_true",
-                        help="List available tests and exit")
+    parser.add_argument(
+        "-l", "--list_tests", action="store_true", help="List available tests and exit"
+    )
     parser.add_argument(
         "-m",
         "--meta_img_loc",
@@ -195,12 +192,9 @@ def parse():
         default=0,
         help="How many times to retry every test if it fails",
     )
-    parser.add_argument("-u",
-                        "--uboot",
-                        metavar="",
-                        type=str,
-                        default=None,
-                        help=argparse.SUPPRESS)
+    parser.add_argument(
+        "-u", "--uboot", metavar="", type=str, default=None, help=argparse.SUPPRESS
+    )
     parser.add_argument(
         "-w",
         "--wan",
@@ -243,9 +237,7 @@ def parse():
         default=None,
         help="URL or file PATH of Rootfs image to flash",
     )
-    parser.add_argument("--version",
-                        action="store_true",
-                        help="show version and exit")
+    parser.add_argument("--version", action="store_true", help="show version and exit")
     parser.add_argument(
         "--nostrict",
         action="store_true",
@@ -297,8 +289,8 @@ def parse():
             print("Installed Plugins:")
             for key in sorted(boardfarm.plugins):
                 print(
-                    "%s %s" %
-                    (key, getattr(boardfarm.plugins[key], "__version__", "")))
+                    "%s %s" % (key, getattr(boardfarm.plugins[key], "__version__", ""))
+                )
             print("Python: %s" % sys.version)
         sys.exit(0)
 
@@ -325,11 +317,14 @@ def parse():
             config.boardfarm_config_location,
             config.boardfarm_config,
         ) = boardfarm.lib.test_configurator.get_station_config(
-            config.boardfarm_config_location, bool(args.config_file))
+            config.boardfarm_config_location, bool(args.config_file)
+        )
     except Exception as e:
         print(e)
-        print("Unable to access/read boardfarm configuration from %s" %
-              config.boardfarm_config_location)
+        print(
+            "Unable to access/read boardfarm configuration from %s"
+            % config.boardfarm_config_location
+        )
         sys.exit(1)
 
     # Check if boardfarm configuration is empty
@@ -341,26 +336,25 @@ def parse():
     if args.board_type:
         all_board_types = []
         for key in config.boardfarm_config:
-            elem = (config.boardfarm_config[key].get("board_type", None)
-                    if type(config.boardfarm_config[key]) is dict else None)
+            elem = (
+                config.boardfarm_config[key].get("board_type", None)
+                if type(config.boardfarm_config[key]) is dict
+                else None
+            )
             if elem:
                 all_board_types.append(elem)
 
         if not (set(args.board_type) & set(all_board_types)):
-            print("ERROR! You specified board types: %s " %
-                  " ".join(args.board_type))
+            print("ERROR! You specified board types: %s " % " ".join(args.board_type))
             print("but that is not an existing & available type of board.")
             print("Please choose a board type from:")
             print("\n".join([" * %s" % x for x in set(all_board_types)]))
             sys.exit(10)
     # Check if given board name(s) are present in available boards
     if args.board_names:
-        all_board_names = [
-            key for key in config.boardfarm_config if key != "locations"
-        ]
+        all_board_names = [key for key in config.boardfarm_config if key != "locations"]
         if not (set(args.board_names) & set(all_board_names)):
-            print("ERROR! You specified board names: %s " %
-                  " ".join(args.board_names))
+            print("ERROR! You specified board names: %s " % " ".join(args.board_names))
             print("but that is not an existing & available board.")
             print("Please choose a board name from:")
             print("\n".join([" * %s" % x for x in sorted(all_board_names)]))
@@ -369,12 +363,13 @@ def parse():
     config.batch = args.batch
 
     if args.inventory:
-        print("%11s  %15s  %5s  %25s  %25s  %s" %
-              ("Name", "Model", "Auto", "LAN", "WAN", "Notes"))
+        print(
+            "%11s  %15s  %5s  %25s  %25s  %s"
+            % ("Name", "Model", "Auto", "LAN", "WAN", "Notes")
+        )
         bf = config.boardfarm_config
         for i, b in enumerate(sorted(bf)):
-            if args.board_type is None or bf[b].get(
-                    "board_type") in args.board_type:
+            if args.board_type is None or bf[b].get("board_type") in args.board_type:
                 if not args.board_names or b in args.board_names:
                     info = {
                         "name": b,
@@ -387,16 +382,17 @@ def parse():
                         "notes": bf[b].get("notes", ""),
                     }
                     if not args.filter or (
-                            args.filter
-                            and boardfarm.lib.test_configurator.filter_boards(
-                                bf[b], args.filter)):
+                        args.filter
+                        and boardfarm.lib.test_configurator.filter_boards(
+                            bf[b], args.filter
+                        )
+                    ):
                         print(
                             "%(name)11s  %(type)15s  %(auto)5s  %(lan_device)25s  %(wan_device)25s  %(notes)s"
-                            % info)
+                            % info
+                        )
         print("To connect to a board by name:\n  ./bft -x connect -n NAME")
-        print(
-            "To connect to any board of a given model:\n  ./bft -x connect -b MODEL"
-        )
+        print("To connect to any board of a given model:\n  ./bft -x connect -b MODEL")
         sys.exit(0)
 
     if hasattr(config, "INSTALL_PKGS") is False:
@@ -418,13 +414,13 @@ def parse():
     config.META_BUILD = args.meta_img_loc
     # Quick check to make sure file url/path arguments are reasonable
     for x in (
-            config.UBOOT,
-            config.KERNEL,
-            config.ROOTFS,
-            config.META_BUILD,
-            config.ARM,
-            config.ATOM,
-            config.COMBINED,
+        config.UBOOT,
+        config.KERNEL,
+        config.ROOTFS,
+        config.META_BUILD,
+        config.ARM,
+        config.ATOM,
+        config.COMBINED,
     ):
         if x is None:
             continue
@@ -498,9 +494,7 @@ def parse():
             print("ERROR")
             print("You must specify a board name with the '-n' argument:")
             print("./run-all.py -n 3000")
-            print(
-                "That same board name must be present in boardfarm configuration."
-            )
+            print("That same board name must be present in boardfarm configuration.")
             sys.exit(1)
 
     if args.err_dict:

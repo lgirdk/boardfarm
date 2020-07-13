@@ -31,8 +31,7 @@ def connection(conn_type, device, **kwargs):
         out = ser2net_connection.Ser2NetConnection(device=device, **kwargs)
 
     if conn_type in ("local_serial"):
-        out = local_serial_connection.LocalSerialConnection(device=device,
-                                                            **kwargs)
+        out = local_serial_connection.LocalSerialConnection(device=device, **kwargs)
 
     if conn_type in ("ssh"):
         out = ssh_connection.SshConnection(device=device, **kwargs)
@@ -43,14 +42,15 @@ def connection(conn_type, device, **kwargs):
     if not out:
         # Default for all other models
         print("\nWARNING: Unknown connection type  '%s'." % type)
-        print("Please check spelling, or write an appropriate class "
-              "to handle that kind of board.")
+        print(
+            "Please check spelling, or write an appropriate class "
+            "to handle that kind of board."
+        )
         out = ser2net_connection.Ser2NetConnection(**kwargs)
 
     if hasattr(out, "close"):
         unbound_method = out.close.__func__
-        bounded_method = unbound_method.__get__(out.device,
-                                                out.device.__class__)
+        bounded_method = unbound_method.__get__(out.device, out.device.__class__)
         setattr(out.device, "close", bounded_method)
 
     return out

@@ -14,8 +14,7 @@ from boardfarm.dbclients import configreader
 tmp = configreader.TestsuiteConfigReader()
 
 # Build a list of all testsuite config files. Name should match "testsuites*.cfg"
-config_files = glob.glob(
-    os.path.join(os.path.dirname(__file__), "testsuites*.cfg"))
+config_files = glob.glob(os.path.join(os.path.dirname(__file__), "testsuites*.cfg"))
 for modname in sorted(boardfarm.plugins):
     overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
     config_files += glob.glob(os.path.join(overlay, "testsuites*.cfg"))

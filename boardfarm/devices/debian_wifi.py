@@ -19,8 +19,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
     def __init__(self, *args, **kwargs):
         """Initialise wifi interface."""
         super(DebianWifi, self).__init__(*args, **kwargs)
-        self.iface_dut = self.iface_wifi = self.kwargs.get(
-            "dut_interface", "wlan1")
+        self.iface_dut = self.iface_wifi = self.kwargs.get("dut_interface", "wlan1")
 
     def disable_and_enable_wifi(self):
         """Disable and enable wifi interface.
@@ -96,11 +95,11 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
         install_iw(self)
 
-        self.sudo_sendline('iw %s scan | grep "SSID: %s"' %
-                           (self.iface_wifi, ssid_name))
+        self.sudo_sendline(
+            'iw %s scan | grep "SSID: %s"' % (self.iface_wifi, ssid_name)
+        )
         self.expect(self.prompt)
-        match = re.search(r"%s\"\s+.*(%s)" % (ssid_name, ssid_name),
-                          self.before)
+        match = re.search(r"%s\"\s+.*(%s)" % (ssid_name, ssid_name), self.before)
         if match:
             return True
         else:
@@ -154,8 +153,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         """Create wpa_supplicant config."""
         self.sudo_sendline("rm {}.conf".format(ssid_name))
         self.expect(self.prompt)
-        self.sudo_sendline("echo -e '{}' > {}.conf".format(
-            final_config, ssid_name))
+        self.sudo_sendline("echo -e '{}' > {}.conf".format(final_config, ssid_name))
         self.expect(self.prompt)
         self.sendline("cat {}.conf".format(ssid_name))
         self.expect(self.prompt)
@@ -163,11 +161,13 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         driver_name = "nl80211"
         if security_mode == "WPA-EAP":
             driver_name = "wext"
-        self.sudo_sendline("wpa_supplicant -B -D{} -i {} -c {}.conf".format(
-            driver_name, self.iface_wifi, ssid_name))
+        self.sudo_sendline(
+            "wpa_supplicant -B -D{} -i {} -c {}.conf".format(
+                driver_name, self.iface_wifi, ssid_name
+            )
+        )
         self.expect(self.prompt)
-        match = re.search("Successfully initialized wpa_supplicant",
-                          self.before)
+        match = re.search("Successfully initialized wpa_supplicant", self.before)
         return bool(match)
 
     def wifi_connectivity_verify(self):
@@ -247,10 +247,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.iface_dut = self.iface_wifi
         super(DebianWifi, self).start_lan_client()
 
-    def wifi_client_connect(self,
-                            ssid_name,
-                            password=None,
-                            security_mode=None):
+    def wifi_client_connect(self, ssid_name, password=None, security_mode=None):
         """Scan for SSID and verify wifi connectivity.
 
         :param ssid_name: SSID name

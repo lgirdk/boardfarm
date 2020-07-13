@@ -22,23 +22,17 @@ def flash_meta_helper(board, meta, wan, lan):
     board.flash_meta(meta, wan, lan, check_version=True)
 
 
-def flash_image(config,
-                env_helper,
-                board,
-                lan,
-                wan,
-                tftp_device,
-                reflash=True):
+def flash_image(config, env_helper, board, lan, wan, tftp_device, reflash=True):
     """Flash image on board."""
     rootfs = None
 
     # Reflash only if at least one or more of these
     # variables are set, or else there is nothing to do in u-boot
     meta_interrupt = False
-    if (config.META_BUILD
-            or env_helper.has_image()) and not board.flash_meta_booted:
+    if (config.META_BUILD or env_helper.has_image()) and not board.flash_meta_booted:
         meta_interrupt = True
-    if reflash and any([
+    if reflash and any(
+        [
             meta_interrupt,
             config.ROOTFS,
             config.KERNEL,
@@ -46,7 +40,8 @@ def flash_image(config,
             config.COMBINED,
             config.ATOM,
             config.ARM,
-    ]):
+        ]
+    ):
         # Break into U-Boot, set environment variables
         board.wait_for_boot()
         board.setup_uboot_network(tftp_device.gw)
@@ -56,8 +51,7 @@ def flash_image(config,
                     if config.META_BUILD:
                         flash_meta_helper(board, config.META_BUILD, wan, lan)
                     elif not config.ROOTFS and not config.KERNEL:
-                        flash_meta_helper(board, env_helper.get_image(), wan,
-                                          lan)
+                        flash_meta_helper(board, env_helper.get_image(), wan, lan)
                     break
                 except Exception as e:
                     print(e)
@@ -88,6 +82,7 @@ def flash_image(config,
 
 def boot_image(config, env_helper, board, lan, wan, tftp_device):
     """Boot image."""
+
     def _meta_flash(img):
         """Flash with image."""
         try:
@@ -203,8 +198,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
                 img = _check_override(strategy, d.get("image_uri"))
 
             if stage[1]:
-                assert (strategy != "meta_build"
-                        ), "meta_build strategy needs to run alone!!!"
+                assert (
+                    strategy != "meta_build"
+                ), "meta_build strategy needs to run alone!!!"
 
             stage[2][strategy] = img
 
@@ -221,7 +217,8 @@ def get_tftp(config):
     """Get tftp server details."""
     # start tftpd server on appropriate device
     tftp_servers = [
-        x["name"] for x in config.board["devices"]
+        x["name"]
+        for x in config.board["devices"]
         if "tftpd-server" in x.get("options", "")
     ]
     tftp_device = None
@@ -258,8 +255,7 @@ def provision(board, prov, wan, tftp_device):
     wan.disable_ipv6("eth0")
 
     if hasattr(prov, "prov_gateway_v6"):
-        wan.sendline("ip -6 route add default via %s" %
-                     str(prov.prov_gateway_v6))
+        wan.sendline("ip -6 route add default via %s" % str(prov.prov_gateway_v6))
         wan.expect(wan.prompt)
 
     wan.sendline("ip route")
@@ -268,19 +264,14 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(config,
-         env_helper,
-         devices,
-         reflash=True,
-         logged=dict(),
-         flashing_image=True):
+def boot(config, env_helper, devices, reflash=True, logged=dict(), flashing_image=True):
     """Define Boot method for configuring to device."""
     logged["boot_step"] = "start"
 
     board = devices.board
     wan = devices.wan
     lan = devices.lan
-    lan2 = getattr(devices, 'lan2', None)
+    lan2 = getattr(devices, "lan2", None)
     tftp_device, tftp_servers = get_tftp(config)
     logged["boot_step"] = "tftp_device_assigned"
 
@@ -340,8 +331,12 @@ def boot(config,
         if config.META_BUILD and board.flash_meta_booted:
             flash_meta_helper(board, config.META_BUILD, wan, lan)
             logged["boot_step"] = "late_flash_meta_ok"
-        elif (env_helper.has_image() and board.flash_meta_booted
-              and not config.ROOTFS and not config.KERNEL):
+        elif (
+            env_helper.has_image()
+            and board.flash_meta_booted
+            and not config.ROOTFS
+            and not config.KERNEL
+        ):
             flash_meta_helper(board, env_helper.get_image(), wan, lan)
             logged["boot_step"] = "late_flash_meta_ok"
 

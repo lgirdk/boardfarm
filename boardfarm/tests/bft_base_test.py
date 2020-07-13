@@ -32,8 +32,11 @@ class _UnitTestCls(UTest):
         # This is just to ensure the pytest runs with BF
         # this is done so that base prefixed/suffixed test method don't run
         UTest.__init__(self, "test_main")
-        print("Args passed while running with pytest: {}".format(
-            [self.config, self.dev, self.env_helper]))
+        print(
+            "Args passed while running with pytest: {}".format(
+                [self.config, self.dev, self.env_helper]
+            )
+        )
 
 
 _using_pytest = False
@@ -57,9 +60,10 @@ class BftBaseTest(inherit_class):
     def __init__(self, *args, **kwargs):
         self.config = self.dev = self.env_helper = None
         if args and len(args) == 3:
-            if (type(args[0]) is
-                    boardfarm.lib.test_configurator.BoardfarmTestConfig
-                    or args[0] is boardfarm.config):
+            if (
+                type(args[0]) is boardfarm.lib.test_configurator.BoardfarmTestConfig
+                or args[0] is boardfarm.config
+            ):
                 self.config = args[0]
             if type(args[1]) is boardfarm.lib.DeviceManager.device_manager:
                 self.dev = args[1]
@@ -78,8 +82,8 @@ class BftBaseTest(inherit_class):
         # TearDown step has a hook to call a fixture : teardown
         # this hook ensures that any action executed does not fail
         self.td_step = TearDown(
-            self,
-            "Excuting teardown for test: {}".format(self.__class__.__name__))
+            self, "Excuting teardown for test: {}".format(self.__class__.__name__)
+        )
 
         # add a hook in class to call the fixture directly
         # need to ensure that self.call is used for teardown only
@@ -111,8 +115,14 @@ class BftBaseTest(inherit_class):
         """Prints a banner at the end of a test, including test status, number of attempts (if applicable) and the current time"""
         result = self.result_grade
         if self.attempts:
-            result = (self.result_grade + "(" + str(self.attempts) + "/" +
-                      str(self.config.retry) + ")")
+            result = (
+                self.result_grade
+                + "("
+                + str(self.attempts)
+                + "/"
+                + str(self.config.retry)
+                + ")"
+            )
         msg = "==================== End %s   %s   Time: %s ==================" % (
             self.__class__.__name__,
             result,
@@ -180,14 +190,16 @@ class BftBaseTest(inherit_class):
     def setup_wrapper(self, func):
         lib.common.test_msg(
             "\n==================== Running Setup %s    Time: %s ===================="
-            % (self.__class__.__name__, now_short(self._format)))
+            % (self.__class__.__name__, now_short(self._format))
+        )
 
         func()
 
     def teardown_wrapper(self, func):
         lib.common.test_msg(
             "\n==================== Running Teardown %s    Time: %s ===================="
-            % (self.__class__.__name__, now_short(self._format)))
+            % (self.__class__.__name__, now_short(self._format))
+        )
 
         func()
 
@@ -202,8 +214,7 @@ class BftBaseTest(inherit_class):
 
         for c in self.dev.board.consoles:
             c.test_to_log = self
-            c.test_prefix = "console-%s" % str(
-                self.dev.board.consoles.index(c) + 1)
+            c.test_prefix = "console-%s" % str(self.dev.board.consoles.index(c) + 1)
 
             if not c.isalive():
                 self.result_grade = "SKIP"
@@ -262,7 +273,8 @@ class BftBaseTest(inherit_class):
                         time.sleep(5)
                         print(
                             "=========== Retry attempt number %s of %s ============="
-                            % (self.attempts, self.config.retry))
+                            % (self.attempts, self.config.retry)
+                        )
                     else:
                         raise
 
@@ -301,18 +313,19 @@ class BftBaseTest(inherit_class):
 
             print(
                 "\n\n=========== Test: %s failed! running Device status check! Time: %s ==========="
-                % (self.__class__.__name__, now_short(self._format)))
+                % (self.__class__.__name__, now_short(self._format))
+            )
             try:
                 all_devices = [self.dev.board] + [
-                    getattr(self.config, name, None)
-                    for name in self.config.devices
+                    getattr(self.config, name, None) for name in self.config.devices
                 ]
                 recheck_devices = check_devices(all_devices)
             except Exception as e:
                 print(e)
             print(
                 "\n\n=========== Test: %s failed! Device status check done! Time: %s ==========="
-                % (self.__class__.__name__, now_short(self._format)))
+                % (self.__class__.__name__, now_short(self._format))
+            )
 
             self.logged["test_time"] = float(self.stop_time - self.start_time)
             if hasattr(self, "expected_failure") and self.expected_failure:
@@ -321,7 +334,8 @@ class BftBaseTest(inherit_class):
                 self.result_grade = "FAIL"
             print(
                 "\n\n=========== Test failed! Running recovery Time: %s ==========="
-                % now_short(self._format))
+                % now_short(self._format)
+            )
             if e.__class__.__name__ == "TIMEOUT":
                 print(e.get_trace())
             else:

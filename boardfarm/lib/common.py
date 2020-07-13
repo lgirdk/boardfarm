@@ -50,9 +50,9 @@ except Exception as error:
 
 ubootprompt = ["ath>", r"\(IPQ\) #", "ar7240>"]
 linuxprompt = ["root\\@.*:.*#", "@R7500:/# "]
-prompts = (ubootprompt + linuxprompt + [
-    "/.* # ",
-])
+prompts = (
+    ubootprompt + linuxprompt + ["/.* # ",]
+)
 
 
 def run_once(f):
@@ -63,6 +63,7 @@ def run_once(f):
     :return: Output of the function for the first run, Other calls to it will return None
     :rtype: Any(for first run), None for Other calls
     """
+
     def wrapper(*args, **kwargs):
         """Cache the result for all future arguments and will not run the function again.
 
@@ -167,13 +168,15 @@ class socks5_proxy_helper(object):
     def __get(cls, a, p):
         # FIX ME: does not consider the via option!!!
         socks5_proxy_list = list(
-            filter(lambda x: x.socks5_ip == a and x.socks5_port == p,
-                   cls.__proxy_list))
+            filter(lambda x: x.socks5_ip == a and x.socks5_port == p, cls.__proxy_list)
+        )
         if len(socks5_proxy_list):
             if len(socks5_proxy_list) > 1:
                 print(
-                    "WARNING: more than 1 socks5 proxy found {} returning 1st".
-                    format(socks5_proxy_list))
+                    "WARNING: more than 1 socks5 proxy found {} returning 1st".format(
+                        socks5_proxy_list
+                    )
+                )
             return socks5_proxy_list[0]
         else:
             return None
@@ -194,22 +197,23 @@ class socks5_proxy_helper(object):
             filter(
                 lambda x: x.ip == device.ipaddr and x.port == device.port,
                 cls.proxy_list,
-            ))
+            )
+        )
         if len(p):
             if len(p) > 1:
                 # this should never happen...
-                print("WARNING: more than 1 proxy tunnel found for {}: {}".
-                      format(device.name, p))
+                print(
+                    "WARNING: more than 1 proxy tunnel found for {}: {}".format(
+                        device.name, p
+                    )
+                )
             return p[0]
         else:
             return cls(device)
 
-    def __init__(self,
-                 device,
-                 start_port=49152,
-                 end_port=65536,
-                 retries=5,
-                 via_hop=None):
+    def __init__(
+        self, device, start_port=49152, end_port=65536, retries=5, via_hop=None
+    ):
         """Initialise the object by invoking spawn_ssh_pexpect to bring up the tunnel.
 
         If spawn_ssh_pexpect throws an exception it will retry on a different port.
@@ -235,8 +239,7 @@ class socks5_proxy_helper(object):
             try:
                 self.socks5_port = randrange(start_port, end_port)
                 if "BFT_DEBUG" in os.environ:
-                    print("Creating Socks5 tunnel on port {}".format(
-                        self.socks5_port))
+                    print("Creating Socks5 tunnel on port {}".format(self.socks5_port))
 
                 # DO NOT use -N [-v -v] as it seems to kill the tunnel,
                 # if you want to use -N you need to change the prompt expect pattern
@@ -256,8 +259,7 @@ class socks5_proxy_helper(object):
             except Exception as e:
                 print(e)
                 if "BFT_DEBUG" in os.environ:
-                    print("Sock5 failed on port {} - retyring".format(
-                        self.socks5_port))
+                    print("Sock5 failed on port {} - retyring".format(self.socks5_port))
                 self.socks5_port = None
         if self.socks5_port:
             # if we have a hop the proxy will be hop:port
@@ -423,8 +425,12 @@ def get_webproxy_driver(ipport, config, default_delay=20):
         # something has gone wrong, make the error message as self explanatory as possible
         msg = "No usable web_driver specified, please add one to the board config"
         if config.default_web_driver is not None:
-            msg = (msg + " (value in config: '" + config.default_web_driver +
-                   "' not recognised)")
+            msg = (
+                msg
+                + " (value in config: '"
+                + config.default_web_driver
+                + "' not recognised)"
+            )
         else:
             # this should never happen
             msg = msg + "(no default value set, please check boardfarm/config.py)"
@@ -500,7 +506,8 @@ def cmd_exists(cmd):
     """Check cmd exists. if cmd exists return true."""
     return any(
         os.access(os.path.join(path, cmd), os.X_OK)
-        for path in os.environ["PATH"].split(os.pathsep))
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
 
 
 def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
@@ -523,7 +530,8 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
     http_service_kill(device, "SimpleHTTPServer")
     device.sendline(
         "python -c 'import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"%s\", %s), shs.SimpleHTTPRequestHandler).serve_forever()' %s"
-        % (ip, port, options))
+        % (ip, port, options)
+    )
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
             print_bold("Faield to start service on " + ip + ":" + port)
@@ -552,7 +560,8 @@ def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
     :rtype: Boolean
     """
     http_service_kill(device, "SimpleHTTPServer")
-    device.sendline("""cat > /root/SimpleHTTPServer6.py<<EOF
+    device.sendline(
+        """cat > /root/SimpleHTTPServer6.py<<EOF
 import socket
 import BaseHTTPServer as bhs
 import SimpleHTTPServer as shs
@@ -560,7 +569,9 @@ import SimpleHTTPServer as shs
 class HTTPServerV6(bhs.HTTPServer):
     address_family = socket.AF_INET6
 HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
-EOF""" % (ip, port))
+EOF"""
+        % (ip, port)
+    )
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
@@ -574,11 +585,9 @@ EOF""" % (ip, port))
         return True
 
 
-def start_ipbound_httpsservice(device,
-                               ip="0.0.0.0",
-                               port="443",
-                               cert="/root/server.pem",
-                               options=""):
+def start_ipbound_httpsservice(
+    device, ip="0.0.0.0", port="443", cert="/root/server.pem", options=""
+):
     """Start a simple IPv4 HTTPS web service on a specified port, bound to a specified interface(e.g. tun0).
 
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -605,21 +614,20 @@ def start_ipbound_httpsservice(device,
         "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
     )
     for _ in range(10):
-        if device.expect([re.escape("]:"),
-                          re.escape("Email Address []:")]) > 0:
+        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
             device.sendline()
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" %
-                    cert)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         print_bold("Failed to create certificate for HTTPs service")
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
-    device.sendline("""cat > /root/SimpleHTTPsServer.py<< EOF
+    device.sendline(
+        """cat > /root/SimpleHTTPsServer.py<< EOF
 # taken from http://www.piware.de/2011/01/creating-an-https-server-in-python/
 # generate server.xml with the following command:
 #    openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
@@ -634,7 +642,9 @@ import ssl
 httpd = BaseHTTPServer.HTTPServer((\"%s\", %s), SimpleHTTPServer.SimpleHTTPRequestHandler)
 httpd.socket = ssl.wrap_socket (httpd.socket, certfile=\"%s\", server_side=True)
 httpd.serve_forever()
-EOF""" % (ip, port, cert))
+EOF"""
+        % (ip, port, cert)
+    )
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
@@ -647,11 +657,9 @@ EOF""" % (ip, port, cert))
         return True
 
 
-def start_ip6bound_httpsservice(device,
-                                ip="::",
-                                port="4443",
-                                cert="/root/server.pem",
-                                options=""):
+def start_ip6bound_httpsservice(
+    device, ip="::", port="4443", cert="/root/server.pem", options=""
+):
     """Start a simple IPv6 HTTPS web service on a specified port, bound to a specified interface. (e.g. tun0).
 
     Send ctrl-c to stop (twice? needs better signal handling)
@@ -678,21 +686,20 @@ def start_ip6bound_httpsservice(device,
         "openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes"
     )
     for _ in range(10):
-        if device.expect([re.escape("]:"),
-                          re.escape("Email Address []:")]) > 0:
+        if device.expect([re.escape("]:"), re.escape("Email Address []:")]) > 0:
             device.sendline()
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" %
-                    cert)
+    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         print_bold("Failed to create certificate for HTTPs service")
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
-    device.sendline("""cat > /root/SimpleHTTPsServer.py<< EOF
+    device.sendline(
+        """cat > /root/SimpleHTTPsServer.py<< EOF
 import socket
 import BaseHTTPServer as bhs
 import SimpleHTTPServer as shs
@@ -703,7 +710,9 @@ class HTTPServerV6(bhs.HTTPServer):
 https=HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler)
 https.socket = ssl.wrap_socket (https.socket, certfile=\"%s\", server_side=True)
 https.serve_forever()
-EOF""" % (ip, port, cert))
+EOF"""
+        % (ip, port, cert)
+    )
 
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
@@ -725,7 +734,8 @@ def configure_postfix(device):
     :type device: Object
     :raise assertion: Asserts if service reload fails
     """
-    device.sendline("""cat > /etc/postfix/master.cf << EOF
+    device.sendline(
+        """cat > /etc/postfix/master.cf << EOF
 smtp      inet  n       -       y       -       -       smtpd
 465      inet  n       -       n       -       -       smtpd
 587      inet  n       -       n       -       -       smtpd
@@ -779,14 +789,15 @@ scalemail-backend unix  -       n       n       -       2       pipe
 mailman   unix  -       n       n       -       -       pipe
   flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
   ${nexthop} ${user}
-EOF""")
+EOF"""
+    )
     device.expect(device.prompt, timeout=10)
     device.sendline("service postfix start")
     device.expect(device.prompt)
     device.sendline("service postfix reload")
     assert 0 != device.expect(
-        ["failed"] + device.prompt,
-        timeout=20), "Unable to reolad server with new configurations"
+        ["failed"] + device.prompt, timeout=20
+    ), "Unable to reolad server with new configurations"
 
 
 def file_open_json(file):
@@ -858,66 +869,167 @@ def snmp_mib_set(
         oid = parser.get_mib_oid(mib_name)
         mib_oid = "." + oid + "." + index
     if set_type == "i" or set_type == "a" or set_type == "u" or set_type == "s":
-        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community +
-                        " -t " + str(timeout) + " -r " + str(retry) + " " +
-                        iface_ip + " " + oid + "." + str(index) + " " +
-                        set_type + " " + str(set_value))
-        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community +
-                            " -t " + str(timeout) + " -r " + str(retry) + " " +
-                            iface_ip + " " + oid + "." + str(index) + " " +
-                            set_type + " " + str(set_value))
+        device.sendline(
+            "snmpset -v 2c "
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + str(set_value)
+        )
+        device.expect_exact(
+            "snmpset -v 2c "
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + str(set_value)
+        )
         if set_type != "s":
             idx = device.expect(
-                ["Timeout: No Response from"] +
-                [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\r\n" % set_value] +
-                device.prompt,
+                ["Timeout: No Response from"]
+                + [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\r\n" % set_value]
+                + device.prompt,
                 timeout=time_out,
             )
         else:
             idx = device.expect(
-                ["Timeout: No Response from"] +
-                [mib_oid + r"\s+\=\s+\S+\:\s+\"(%s)\"\r\n" % set_value] +
-                device.prompt,
+                ["Timeout: No Response from"]
+                + [mib_oid + r"\s+\=\s+\S+\:\s+\"(%s)\"\r\n" % set_value]
+                + device.prompt,
                 timeout=time_out,
             )
     elif set_type == "x":
-        device.sendline("snmpset -v 2c -Ox" + extra_arg + " -c " + community +
-                        " -t " + str(timeout) + " -r " + str(retry) + " " +
-                        iface_ip + " " + oid + "." + str(index) + " " +
-                        set_type + " " + set_value)
-        device.expect_exact("snmpset -v 2c -Ox" + extra_arg + " -c " +
-                            community + " -t " + str(timeout) + " -r " +
-                            str(retry) + " " + iface_ip + " " + oid + "." +
-                            str(index) + " " + set_type + " " + set_value)
+        device.sendline(
+            "snmpset -v 2c -Ox"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + set_value
+        )
+        device.expect_exact(
+            "snmpset -v 2c -Ox"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + set_value
+        )
         """trimming the prefix 0x , since snmp will return in that format"""
         if "0x" in set_value.lower():
             set_value = set_value[2:]
         set_value_hex = set_value.upper()
         set_value_output = " ".join(
-            [set_value_hex[i:i + 2] for i in range(0, len(set_value_hex), 2)])
+            [set_value_hex[i : i + 2] for i in range(0, len(set_value_hex), 2)]
+        )
         idx = device.expect(
-            ["Timeout: No Response from"] +
-            [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\s+\r\n" % set_value_output] +
-            device.prompt,
+            ["Timeout: No Response from"]
+            + [mib_oid + r"\s+\=\s+\S+\:\s+(%s)\s+\r\n" % set_value_output]
+            + device.prompt,
             timeout=40,
         )
-    elif (set_type == "t" or set_type == "b" or set_type == "o"
-          or set_type == "n" or set_type == "d"):
+    elif (
+        set_type == "t"
+        or set_type == "b"
+        or set_type == "o"
+        or set_type == "n"
+        or set_type == "d"
+    ):
         idx = 0
     elif set_type == "str_with_space":
         set_type = "s"
         set_value = str(set_value)
-        device.sendline("snmpset -v 2c " + extra_arg + " -c " + community +
-                        " -t " + str(timeout) + " -r " + str(retry) + " " +
-                        iface_ip + " " + oid + "." + str(index) + " " +
-                        set_type + " " + "'%s'" % set_value)
-        device.expect_exact("snmpset -v 2c " + extra_arg + " -c " + community +
-                            " -t " + str(timeout) + " -r " + str(retry) + " " +
-                            iface_ip + " " + oid + "." + str(index) + " " +
-                            set_type + " " + "'%s'" % set_value)
+        device.sendline(
+            "snmpset -v 2c "
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + "'%s'" % set_value
+        )
+        device.expect_exact(
+            "snmpset -v 2c "
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+            + " "
+            + set_type
+            + " "
+            + "'%s'" % set_value
+        )
         idx = device.expect(
-            ["Timeout: No Response from"] + ['STRING: "(.*)"\r\n'] +
-            device.prompt,
+            ["Timeout: No Response from"] + ['STRING: "(.*)"\r\n'] + device.prompt,
             timeout=10,
         )
 
@@ -978,23 +1090,75 @@ def snmp_mib_get(
         mib_oid = oid + "." + index
     """opt_args attribute added to get the output in hexa value using Ox option"""
     if opt_args != "":
-        device.sendline("snmpget -v 2c -Ox" + extra_arg + " -c " + community +
-                        " -t " + str(timeout) + " -r " + str(retry) + " " +
-                        iface_ip + " " + oid + "." + str(index))
-        device.expect_exact("snmpget -v 2c -Ox" + extra_arg + " -c " +
-                            community + " -t " + str(timeout) + " -r " +
-                            str(retry) + " " + iface_ip + " " + oid + "." +
-                            str(index))
+        device.sendline(
+            "snmpget -v 2c -Ox"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+        )
+        device.expect_exact(
+            "snmpget -v 2c -Ox"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+        )
     else:
-        device.sendline("snmpget -v 2c" + extra_arg + " -c " + community +
-                        " -t " + str(timeout) + " -r " + str(retry) + " " +
-                        iface_ip + " " + oid + "." + str(index))
-        device.expect_exact("snmpget -v 2c" + extra_arg + " -c " + community +
-                            " -t " + str(timeout) + " -r " + str(retry) + " " +
-                            iface_ip + " " + oid + "." + str(index))
+        device.sendline(
+            "snmpget -v 2c"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+        )
+        device.expect_exact(
+            "snmpget -v 2c"
+            + extra_arg
+            + " -c "
+            + community
+            + " -t "
+            + str(timeout)
+            + " -r "
+            + str(retry)
+            + " "
+            + iface_ip
+            + " "
+            + oid
+            + "."
+            + str(index)
+        )
     idx = device.expect(
-        ["Timeout: No Response from"] +
-        [mib_oid + r"\s+\=\s+\S+\:\s+(.*)\r\n"] + device.prompt,
+        ["Timeout: No Response from"]
+        + [mib_oid + r"\s+\=\s+\S+\:\s+(.*)\r\n"]
+        + device.prompt,
         timeout=time_out,
     )
     assert idx == 1, "Getting the mib %s" % mib_name
@@ -1014,8 +1178,9 @@ def hex2ipv6(hexstr):
     """
     hexstr = hexstr.replace(" ", "").lower()
     blocks = ("".join(block) for block in zip(*[iter(hexstr)] * 4))
-    return ipaddress.IPv6Address(":".join(str(block)
-                                          for block in blocks).decode("utf-8"))
+    return ipaddress.IPv6Address(
+        ":".join(str(block) for block in blocks).decode("utf-8")
+    )
 
 
 def retry(func_name, max_retry, *args):
@@ -1084,13 +1249,9 @@ def resolv_dict(dic, key):
     return key_val
 
 
-def snmp_mib_walk(device,
-                  parser,
-                  ip_address,
-                  mib_name,
-                  community="public",
-                  retry=3,
-                  time_out=100):
+def snmp_mib_walk(
+    device, parser, ip_address, mib_name, community="public", retry=3, time_out=100
+):
     """Walk a mib with small mib tree.
 
     Usage: snmp_mib_walk(wan, board, cm_wan_ip, "wifiMgmtBssSecurityMode")
@@ -1117,10 +1278,21 @@ def snmp_mib_walk(device,
     else:
         oid = parser.get_mib_oid(mib_name)
 
-    device.sendline("snmpwalk -v 2c -c " + community + " -t " + str(time_out) +
-                    " -r " + str(retry) + " " + ip_address + " " + oid)
-    i = device.expect([pexpect.TIMEOUT] + device.prompt,
-                      timeout=(time_out * retry) + 10)  # +10 just to be sure
+    device.sendline(
+        "snmpwalk -v 2c -c "
+        + community
+        + " -t "
+        + str(time_out)
+        + " -r "
+        + str(retry)
+        + " "
+        + ip_address
+        + " "
+        + oid
+    )
+    i = device.expect(
+        [pexpect.TIMEOUT] + device.prompt, timeout=(time_out * retry) + 10
+    )  # +10 just to be sure
     if i != 0:
         # we have a prompt, so we assume the walk completed ok
         snmp_out = device.before
@@ -1157,8 +1329,7 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value="1024"):
     device.expect(">>>")
     device.sendline("f = open('" + pysnmp_file + "'" + ", 'w')")
     device.expect(">>>")
-    device.sendline(
-        "f.write('from pysnmp.entity.rfc3413.oneliner import cmdgen')")
+    device.sendline("f.write('from pysnmp.entity.rfc3413.oneliner import cmdgen')")
     device.expect(">>>")
     device.sendline("exit()")
     device.expect(device.prompt)
@@ -1176,8 +1347,10 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value="1024"):
         ("sed -i '7a cmdGen = cmdgen.CommandGenerator()' " + pysnmp_file),
         ("sed -i '8a cmdGen.setCmd(' " + pysnmp_file),
         ("sed -i '9a cmdgen.CommunityData(community),' " + pysnmp_file),
-        ("sed -i '10a cmdgen.UdpTransportTarget((wan_ip, 161), timeout=1, retries=3),' "
-         + pysnmp_file),
+        (
+            "sed -i '10a cmdgen.UdpTransportTarget((wan_ip, 161), timeout=1, retries=3),' "
+            + pysnmp_file
+        ),
         ("sed -i '11a (oid, value))' " + pysnmp_file),
         ("python " + pysnmp_file),
         ("rm " + pysnmp_file),
@@ -1222,11 +1395,14 @@ def snmp_mib_bulkwalk(
     :return: true or False
     :type: bool
     """
-    device.sendline("snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s" %
-                    (community, time_out, retry, ip_address, mib_oid))
+    device.sendline(
+        "snmpbulkwalk -v2c -c %s -Cr25 -Os -t %s -r %s %s %s"
+        % (community, time_out, retry, ip_address, mib_oid)
+    )
     if expect_content is not None:
-        idx = device.expect([expect_content, "Timeout: No Response"],
-                            timeout=(time_out * retry) + 30)
+        idx = device.expect(
+            [expect_content, "Timeout: No Response"], timeout=(time_out * retry) + 30
+        )
     else:
         idx = device.expect(
             ["It is past the end of the MIB tree", "Timeout: No Response"],
@@ -1277,17 +1453,15 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
     for _ in range(5):
         try:
             print_bold(cmd)
-            p = bft_pexpect_helper.spawn(command="/bin/bash",
-                                         args=["-c", cmd],
-                                         timeout=240)
+            p = bft_pexpect_helper.spawn(
+                command="/bin/bash", args=["-c", cmd], timeout=240
+            )
             p.logfile_read = sys.stdout
 
             i = p.expect(["yes/no", "password:", "%s.*" % target])
             if i == 0:
                 p.sendline("yes")
-                i = p.expect(["not used", "password:",
-                              "%s.*" % target],
-                             timeout=45)
+                i = p.expect(["not used", "password:", "%s.*" % target], timeout=45)
 
             if i == 1:
                 p.sendline("%s" % password)
@@ -1332,7 +1506,8 @@ def download_from_web(url, server, username, password, port):
         pipe = " pv | "
 
     cmd = r'curl -n -L -k "{}" 2>/dev/null | {} ssh -p {} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -x {}@{} "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'.format(
-        url, pipe, port, username, server)
+        url, pipe, port, username, server
+    )
     return copy_file_to_server(cmd, password)
 
 
@@ -1364,7 +1539,8 @@ def scp_to_tftp_server(fname, server, username, password, port):
 
     cmd = (
         r'cat %s | %s ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "mkdir -p /tftpboot/tmp; tmpfile=\`mktemp /tftpboot/tmp/XXXXX\`; cat - > \$tmpfile; chmod a+rw \$tmpfile; echo \$tmpfile"'
-        % (fname, pipe, port, username, server))
+        % (fname, pipe, port, username, server)
+    )
     return copy_file_to_server(cmd, password)
 
 
@@ -1387,8 +1563,7 @@ def scp_from(fname, server, username, password, port, dest):
     :rtype: String
     :raises Exception: Exception thrown on copy file failed
     """
-    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server,
-                                                   fname, dest)
+    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
     copy_file_to_server(cmd, password, target="DONE")
 
 
@@ -1420,8 +1595,7 @@ def check_url(url):
             :param request: request to upen url
             :type request: String
             """
-            encodeuser = base64.b64encode(
-                login_str.encode("utf-8")).decode("utf-8")
+            encodeuser = base64.b64encode(login_str.encode("utf-8")).decode("utf-8")
             authheader = "Basic %s" % encodeuser
             request.add_header("Authorization", authheader)
 
@@ -1474,10 +1648,9 @@ def ftp_useradd(device):
         return "failed" in device.before
 
 
-def ftp_file_create_delete(device,
-                           create_file=None,
-                           extension=".txt",
-                           remove_file=None):
+def ftp_file_create_delete(
+    device, create_file=None, extension=".txt", remove_file=None
+):
     """Create and delete ftp file for upload and download.
 
     :param device: Linux device(lan/wan)
@@ -1566,10 +1739,11 @@ def postfix_install(device):
     :param device: lan or wan
     :type device: Object
     """
-    if retry_on_exception(device.get_interface_ipaddr, (device.iface_dut, ),
-                          retries=1):
-        device.check_output("sed '/'%s'*/d' /etc/hosts > /etc/hosts" %
-                            device.get_interface_ipaddr(device.iface_dut))
+    if retry_on_exception(device.get_interface_ipaddr, (device.iface_dut,), retries=1):
+        device.check_output(
+            "sed '/'%s'*/d' /etc/hosts > /etc/hosts"
+            % device.get_interface_ipaddr(device.iface_dut)
+        )
     install_postfix(device)
 
 
@@ -1586,8 +1760,7 @@ def http_service_kill(device, process):
         device.expect_prompt()
     device.sendline("ps -elf | grep %s" % process)
     device.expect_prompt()
-    match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP",
-                      device.before)
+    match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
     if match:
         device.sendline("kill -9 %s" % match.group(1))
         device.expect_prompt()
@@ -1604,8 +1777,8 @@ def check_prompts(device_list):
     """
     for dev in device_list:
         assert "FOO" in dev.check_output(
-            'echo "FOO"'), "Failed to validate prompt for device: {}".format(
-                dev.name)
+            'echo "FOO"'
+        ), "Failed to validate prompt for device: {}".format(dev.name)
     return True
 
 
@@ -1616,9 +1789,10 @@ def hex_to_datetime(output):
     :type output: hexstring
     """
     out = output.replace("0x", "")
-    mib_Hex = [out[i:i + 2] for i in range(0, len(out), 2)]
-    dt = datetime(*list(
-        map(lambda x: int(x, 16), [mib_Hex[0] + mib_Hex[1]] + mib_Hex[2:])))
+    mib_Hex = [out[i : i + 2] for i in range(0, len(out), 2)]
+    dt = datetime(
+        *list(map(lambda x: int(x, 16), [mib_Hex[0] + mib_Hex[1]] + mib_Hex[2:]))
+    )
     return dt
 
 
@@ -1637,8 +1811,9 @@ def openssl_verify(device, ip_address, port, options=""):
     :rtype: Boolean
     """
     output = False
-    device.sendline("openssl s_client -connect [{}]:{} {}".format(
-        ip_address, port, options))
+    device.sendline(
+        "openssl s_client -connect [{}]:{} {}".format(ip_address, port, options)
+    )
     if device.expect(["CONNECTED", pexpect.TIMEOUT]) == 0:
         output = True
     try:
@@ -1670,9 +1845,9 @@ def copy_ovpn_config(server, client, config="lan.ovpn"):
     md5sum = {}
     for dev in [server, client]:
         dev.sendline("md5sum " + config)
-        index = dev.expect([
-            r"([A-Fa-f0-9]{32}(\s{2,}))" + config, "No such file or directory"
-        ])
+        index = dev.expect(
+            [r"([A-Fa-f0-9]{32}(\s{2,}))" + config, "No such file or directory"]
+        )
         if dev == server:
             assert index == 0, "File '" + config + "' not found on source device."
         md5sum[dev.name] = dev.after
@@ -1680,8 +1855,11 @@ def copy_ovpn_config(server, client, config="lan.ovpn"):
     if md5sum[server.name] != md5sum[client.name]:
         client.sendline(
             "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@"
-            + server.get_interface_ipaddr(server.iface_dut) + ":/root/" +
-            config + " .")
+            + server.get_interface_ipaddr(server.iface_dut)
+            + ":/root/"
+            + config
+            + " ."
+        )
         index = client.expect(".*password:")
         client.sendline("bigfoot1")
         client.expect("100%")
@@ -1705,8 +1883,7 @@ def add_ovpn_user(device, user):
     device.sendline(user)
     device.expect("Select an option.*: ")
     device.sendline()
-    device.expect(".*the configuration file is available at /root/" + user +
-                  ".ovpn")
+    device.expect(".*the configuration file is available at /root/" + user + ".ovpn")
     device.expect(device.prompt)
     return user + ".ovpn"
 
@@ -1728,15 +1905,20 @@ def configure_ovpn(self, server, client, client_name, ip_version):
     server.sendline("ls ./" + client_name + ".ovpn")
     flag = False
     for _ in range(2):
-        flag = (server.expect(["No such file or directory", pexpect.TIMEOUT],
-                              timeout=5) == 0)
+        flag = (
+            server.expect(["No such file or directory", pexpect.TIMEOUT], timeout=5)
+            == 0
+        )
         server.expect(server.prompt, timeout=60)
         if flag:
             add_ovpn_user(server, client_name)
         else:
             break
-    assert flag is False, ("Failed to create '" + client_name +
-                           ".ovpn' configuration file on server, bailing out")
+    assert flag is False, (
+        "Failed to create '"
+        + client_name
+        + ".ovpn' configuration file on server, bailing out"
+    )
     install_ovpn_client(client)
     copy_ovpn_config(server, client)
 
@@ -1763,18 +1945,22 @@ def configure_pptpd(server, client):
     )
     server.expect(server.prompt)
     install_pptp_client(client)
-    client.sendline("\n".join([
-        "cat > /etc/ppp/peers/pptpserver << EOF",
-        'pty "pptp %s --nolaunchpppd"' %
-        (server.get_interface_ipaddr(server.iface_dut)),
-        "name lan",
-        "password lanclient",
-        "remotename PPTP",
-        "require-mppe-128",
-        "file /etc/ppp/options.pptp",
-        "ipparam pptpserver",
-        "EOF",
-    ]))
+    client.sendline(
+        "\n".join(
+            [
+                "cat > /etc/ppp/peers/pptpserver << EOF",
+                'pty "pptp %s --nolaunchpppd"'
+                % (server.get_interface_ipaddr(server.iface_dut)),
+                "name lan",
+                "password lanclient",
+                "remotename PPTP",
+                "require-mppe-128",
+                "file /etc/ppp/options.pptp",
+                "ipparam pptpserver",
+                "EOF",
+            ]
+        )
+    )
     client.expect(client.prompt)
     client.sendline(
         "sed -i  's/#require-mppe-128/require-mppe-128/' /etc/ppp/options.pptp"
@@ -1782,10 +1968,9 @@ def configure_pptpd(server, client):
     client.expect(client.prompt)
 
 
-def curl_page(dev,
-              waddr,
-              opts="-s -L --insecure",
-              expected="<!doctype html>.*</body>\r\n</html>"):
+def curl_page(
+    dev, waddr, opts="-s -L --insecure", expected="<!doctype html>.*</body>\r\n</html>"
+):
     """Diagnostic to see if a page is accessible from a device.
 
     The curl output is saved to a file (page.curl) as well as displayed to stdout.
@@ -1801,13 +1986,13 @@ def curl_page(dev,
         dev.sendline("curl {} {} | tee page.curl".format(opts, waddr))
         dev.expect(expected)
         dev.expect_prompt()
-        print("Curl from device '{}' url '{}' successful".format(
-            dev.name, waddr))
+        print("Curl from device '{}' url '{}' successful".format(dev.name, waddr))
     except Exception as e:
         dev.sendcontrol("c")
         dev.expect_prompt()
-        print("ERROR: failed to curl from device '{}', url '{}'".format(
-            dev.name, waddr))
+        print(
+            "ERROR: failed to curl from device '{}', url '{}'".format(dev.name, waddr)
+        )
         print(e)
         return False
     return True
@@ -1831,19 +2016,20 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
     """
     try:
         for client in [client1, client2]:
-            s_name, c = ((client1_scriptname,
-                          "client1") if client == client1 else
-                         (client2_scriptname, "client2"))
+            s_name, c = (
+                (client1_scriptname, "client1")
+                if client == client1
+                else (client2_scriptname, "client2")
+            )
             client.sendline("python %s" % s_name)
             index = client.expect(
-                ["JOIN :#channel"] + ["#channel :End of /NAMES list."] +
-                client.prompt,
+                ["JOIN :#channel"] + ["#channel :End of /NAMES list."] + client.prompt,
                 timeout=300,
             )
             assert index <= 1, "Connect {} to server failed".format(c)
-        communicationstatus = client2.expect(["connection success"] +
-                                             client2.prompt,
-                                             timeout=100)
+        communicationstatus = client2.expect(
+            ["connection success"] + client2.prompt, timeout=100
+        )
         assert (
             communicationstatus == 0
         ), "Communication between the IRC clients using the IRC server: PASS"
@@ -1859,8 +2045,7 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
 
 
 def toggle_dhcp_lan_advertise_identity(lan_dev):
-    if lan_dev.add_lan_advertise_identity_cfg(
-            lan_dev.dev.lan_clients.index(lan_dev)):
+    if lan_dev.add_lan_advertise_identity_cfg(lan_dev.dev.lan_clients.index(lan_dev)):
         lan_dev.remove_lan_advertise_identity_cfg()
 
     lan_dev.start_lan_client()

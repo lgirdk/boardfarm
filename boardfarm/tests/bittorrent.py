@@ -20,14 +20,14 @@ class BitTorrentBasic(socat.SoCat):
 
 class BitTorrentSingle(BitTorrentBasic):
     """Single UDP/Bittorrent flow."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board
         lan = self.dev.lan
 
         sz, rate, ip, port = self.startSingleFlow()
-        print("started UDP to %s:%s sz = %s, rate = %sk" %
-              (ip, port, sz, rate))
+        print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
         time = sz / (rate * 1024)
         print("time should be ~%s" % time)
         self.check_and_clean_ips()
@@ -36,7 +36,8 @@ class BitTorrentSingle(BitTorrentBasic):
 
         # TODO: make this a function that's more robust
         board.get_pp_dev().sendline(
-            "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port))
+            "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port)
+        )
         board.get_pp_dev().expect(prompt)
 
         self.recover()
@@ -44,6 +45,7 @@ class BitTorrentSingle(BitTorrentBasic):
 
 class BitTorrentB2B(BitTorrentBasic):
     """Single UDP/Bittorrent flow back-to-back."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board
@@ -53,8 +55,7 @@ class BitTorrentB2B(BitTorrentBasic):
 
         for _ in range(10000):
             sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
-            print("started UDP to %s:%s sz = %s, rate = %sk" %
-                  (ip, port, sz, rate))
+            print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
             time = sz / (rate * 1024)
             print("time should be ~%s" % time)
             self.check_and_clean_ips()
@@ -62,8 +63,8 @@ class BitTorrentB2B(BitTorrentBasic):
             lan.expect(prompt, timeout=5)
 
             board.get_pp_dev().sendline(
-                "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" %
-                (ip, port))
+                "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port)
+            )
             board.get_pp_dev().expect(prompt)
 
         board.get_nf_conntrack_conn_count()
@@ -94,8 +95,8 @@ class BitTorrentClient(rootfs_boot.RootFSBootTest):
             while not done:
                 lan.expect(pexpect.TIMEOUT, timeout=1)  # flush buffer
                 if 0 == lan.expect(
-                    ["time left:      Download Succeeded!", pexpect.TIMEOUT],
-                        timeout=10):
+                    ["time left:      Download Succeeded!", pexpect.TIMEOUT], timeout=10
+                ):
                     print("Finished, restarting....")
                     done = True
                 board.expect(pexpect.TIMEOUT, timeout=5)

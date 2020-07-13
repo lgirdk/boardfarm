@@ -14,21 +14,20 @@ from six.moves import input
 
 class Interact(rootfs_boot.RootFSBootTest):
     """Interact with console, wan, lan, wlan connections and re-run tests."""
+
     def print_dynamic_devices(self):
         """Print dynamic devices."""
         for device in self.config.devices:
             d = getattr(self.config, device)
             # TODO: should move all classes to use string repr
             if hasattr(d, "username"):
-                print("  %s device:    ssh %s@%s" %
-                      (device, d.username, d.name))
+                print("  %s device:    ssh %s@%s" % (device, d.username, d.name))
             else:
                 print("  %s device:    %s" % (d.name, d))
 
     def test_main(self):
         board = self.dev.board
-        lib.common.test_msg(
-            "Press Ctrl-] to stop interaction and return to menu")
+        lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
         try:
             board.interact()
@@ -40,8 +39,10 @@ class Interact(rootfs_boot.RootFSBootTest):
             print("\n\nCurrent station")
             print("  Board console: %s" % self.config.board.get("conn_cmd"))
             self.print_dynamic_devices()
-            print("Pro-tip: Increase kernel message verbosity with\n"
-                  '    echo "7 7 7 7" > /proc/sys/kernel/printk')
+            print(
+                "Pro-tip: Increase kernel message verbosity with\n"
+                '    echo "7 7 7 7" > /proc/sys/kernel/printk'
+            )
             print("Menu")
             i = 2
             if board.consoles is None:
@@ -62,8 +63,7 @@ class Interact(rootfs_boot.RootFSBootTest):
             print("  %s: Enter interactive python shell" % i)
             i += 1
             if len(self.config.devices) > 0:
-                print("  Type a device name to connect: %s" %
-                      self.config.devices)
+                print("  Type a device name to connect: %s" % self.config.devices)
             print("  x: Exit")
             key = input("Please select: ")
 
@@ -101,11 +101,13 @@ class Interact(rootfs_boot.RootFSBootTest):
                     test = sys.stdin.readline().strip()
 
                     try:
-                        tests.available_tests[test](self.config, self.dev,
-                                                    self.env_helper).run()
+                        tests.available_tests[test](
+                            self.config, self.dev, self.env_helper
+                        ).run()
                     except Exception as e:
                         lib.common.test_msg(
-                            "Failed to find and/or run test, continuing..")
+                            "Failed to find and/or run test, continuing.."
+                        )
                         print(e)
                         continue
 

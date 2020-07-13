@@ -21,13 +21,13 @@ def find_subdirs(directories, name):
     """
     result = []
     for d in directories:
-        tmp = glob.glob(os.path.join(d, name)) + glob.glob(
-            os.path.join(d, "*", name))
+        tmp = glob.glob(os.path.join(d, name)) + glob.glob(os.path.join(d, "*", name))
         result += [os.path.join(d, x) for x in tmp]
         if len(tmp) > 1:
             # By design there shouldn't be more than one "devices" or "tests" directory in
             # a given boardfarm project
-            print("WARNING: Multiple directories of the name %s found in %s." %
-                  (name, d))
+            print(
+                "WARNING: Multiple directories of the name %s found in %s." % (name, d)
+            )
             print("All will be used to find python classes")
     return result

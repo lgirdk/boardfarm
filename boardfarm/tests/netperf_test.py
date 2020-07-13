@@ -26,6 +26,7 @@ def install_netperf(device):
 
 class NetperfTest(rootfs_boot.RootFSBootTest):
     """Setup Netperf and Run Throughput."""
+
     @lib.common.run_once
     def lan_setup(self):
         lan = self.dev.lan
@@ -96,8 +97,8 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
 
         board.sendcontrol("c")
         board.expect(
-            "Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n",
-            timeout=60)
+            "Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n", timeout=60
+        )
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
         lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
@@ -105,7 +106,8 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
 
         self.result_message = (
             "Setup Netperf and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)"
-            % (speed, avg_cpu))
+            % (speed, avg_cpu)
+        )
 
 
 ###########################
@@ -134,6 +136,7 @@ def run_netperf_tcp(device, run_time, pkt_size, wangw, direction="up"):
 
 class Netperf_UpTCP256(rootfs_boot.RootFSBootTest):
     """Netperf upload throughput (TCP, packets size 256 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan
@@ -148,6 +151,7 @@ class Netperf_UpTCP256(rootfs_boot.RootFSBootTest):
 
 class Netperf_UpTCP512(rootfs_boot.RootFSBootTest):
     """Netperf upload throughput (TCP, packets size 512 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan
@@ -162,6 +166,7 @@ class Netperf_UpTCP512(rootfs_boot.RootFSBootTest):
 
 class Netperf_UpTCP1024(rootfs_boot.RootFSBootTest):
     """Netperf upload throughput (TCP, packets size 1024 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan
@@ -176,6 +181,7 @@ class Netperf_UpTCP1024(rootfs_boot.RootFSBootTest):
 
 class Netperf_DownTCP256(rootfs_boot.RootFSBootTest):
     """Netperf download throughput (TCP, packets size 256 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan
@@ -190,6 +196,7 @@ class Netperf_DownTCP256(rootfs_boot.RootFSBootTest):
 
 class Netperf_DownTCP512(rootfs_boot.RootFSBootTest):
     """Netperf download throughput (TCP, packets size 512 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan
@@ -204,6 +211,7 @@ class Netperf_DownTCP512(rootfs_boot.RootFSBootTest):
 
 class Netperf_DownTCP1024(rootfs_boot.RootFSBootTest):
     """Netperf download throughput (TCP, packets size 1024 Bytes)."""
+
     def runTest(self):
         wan = self.dev.wan
         lan = self.dev.lan

@@ -12,16 +12,16 @@ from boardfarm.tests import rootfs_boot
 
 class OpenwrtVersion(rootfs_boot.RootFSBootTest):
     """Openwrt release file exists and contains expected data."""
+
     def runTest(self):
         """Run openwrt release file and checking expecting data."""
         board = self.dev.board
 
         board.check_output("cat /etc/openwrt_release", timeout=6)
-        info = dict(
-            re.findall("DISTRIB_([a-zA-Z]+)=['\"]([^\"']+)['\"]",
-                       board.before))
+        info = dict(re.findall("DISTRIB_([a-zA-Z]+)=['\"]([^\"']+)['\"]", board.before))
         self.result_message = (
             'Openwrt release is "%(RELEASE)s", revision "%(REVISION)s", and codename "%(CODENAME)s".'
-            % info)
+            % info
+        )
         self.logged["rev"] = info["REVISION"]
         self.logged["name"] = info["CODENAME"]

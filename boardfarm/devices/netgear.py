@@ -19,6 +19,7 @@ prompt = r"\(M4100-50G\) "
 class NetgearM4100(linux.LinuxDevice):
     """A netgear switch allows for changing connections by \
     modifying VLANs on ports extends LinuxDevice."""
+
     def __init__(self, conn_cmd, username="admin", password="bigfoot1"):
         """Initialize variables in NetgearM4100.
 
@@ -31,9 +32,7 @@ class NetgearM4100(linux.LinuxDevice):
         :param password: password to connect to device, defaults to "bigfoot1"
         :type password: string
         """
-        bft_pexpect_helper.spawn.__init__(self,
-                                          "/bin/bash",
-                                          args=["-c", conn_cmd])
+        bft_pexpect_helper.spawn.__init__(self, "/bin/bash", args=["-c", conn_cmd])
         self.logfile_read = sys.stdout
         self.username = username
         self.password = password
@@ -203,8 +202,8 @@ class NetgearM4100(linux.LinuxDevice):
 
 
 if __name__ == "__main__":
-    switch = NetgearM4100(conn_cmd="telnet 10.0.0.64 6031",
-                          username="admin",
-                          password="password")
+    switch = NetgearM4100(
+        conn_cmd="telnet 10.0.0.64 6031", username="admin", password="password"
+    )
     switch.print_vlans()
     switch.disconnect()

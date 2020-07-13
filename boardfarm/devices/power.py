@@ -86,24 +86,19 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
     def check_data(data):
         if "<title>Power Controller" in data:
-            return DLIPowerSwitch(ip_address,
-                                  outlet=outlet,
-                                  username=username,
-                                  password=password)
+            return DLIPowerSwitch(
+                ip_address, outlet=outlet, username=username, password=password
+            )
         if "Sentry Switched CDU" in data:
             return SentrySwitchedCDU(ip_address, outlet=outlet)
         if "<title>APC " in data:
             return APCPower(ip_address, outlet=outlet)
         if "<b>IP9258 Log In</b>" in data:
-            return Ip9258(ip_address,
-                          outlet,
-                          username=username,
-                          password=password)
+            return Ip9258(ip_address, outlet, username=username, password=password)
         if "Cyber Power Systems" in data:
-            return CyberPowerPdu(ip_address,
-                                 outlet=outlet,
-                                 username=username,
-                                 password=password)
+            return CyberPowerPdu(
+                ip_address, outlet=outlet, username=username, password=password
+            )
         if "IP9820" in data:
             return Ip9820(ip_address, outlet)
 
@@ -118,8 +113,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         def get_with_username_password(username, password):
             # create a password manager
             password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
-            password_mgr.add_password(None, "http://" + ip_address, username,
-                                      password)
+            password_mgr.add_password(None, "http://" + ip_address, username, password)
             handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
             opener = _urllib.request.build_opener(handler)
             opener.open("http://" + ip_address)
@@ -137,8 +131,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
 
         for username, password in all_login_defaults:
             try:
-                ret = check_data(get_with_username_password(
-                    username, password))
+                ret = check_data(get_with_username_password(username, password))
             except Exception:
                 continue
             else:
@@ -148,12 +141,12 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         if ret is not None:
             return ret
 
-    raise Exception("No code written to handle power device found at %s" %
-                    ip_address)
+    raise Exception("No code written to handle power device found at %s" % ip_address)
 
 
 class PowerDevice:
     """At minimum, power devices let users reset an outlet over a network."""
+
     def __init__(self, ip_address, username=None, password=None):
         """Instance initialization."""
         self.ip_address = ip_address
@@ -164,12 +157,14 @@ class PowerDevice:
     def reset(self, outlet):
         """Turn an outlet OFF, maybe wait, then back ON."""
         raise Exception(
-            "Code not written to reset with this type of power device at %s" %
-            self.ip_address)
+            "Code not written to reset with this type of power device at %s"
+            % self.ip_address
+        )
 
 
 class SentrySwitchedCDU(PowerDevice):
     """Power Unit from Server Technology."""
+
     def __init__(self, ip_address, outlet, username="admn", password="admn"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
@@ -178,8 +173,7 @@ class SentrySwitchedCDU(PowerDevice):
         try:
             pcon = self.__connect()
             pcon.sendline("status .a%s" % self.outlet)
-            i = pcon.expect(
-                ["Command successful", "User/outlet -- name not found"])
+            i = pcon.expect(["Command successful", "User/outlet -- name not found"])
             if i == 1:
                 raise Exception("\nOutlet %s not found" % self.outlet)
             pcon.close()
@@ -220,6 +214,7 @@ class SentrySwitchedCDU(PowerDevice):
 
 class PX2(PowerDevice):
     """Power Unit from Raritan."""
+
     def __init__(self, outlet, username="admin", password="scripter99"):
         """Instance initialization."""
         ip_address, self.outlet = outlet.replace("px2://", "").split(";")
@@ -255,6 +250,7 @@ class PX2(PowerDevice):
 
 class HumanButtonPusher(PowerDevice):
     """Tell a person to physically reboot the router."""
+
     def __init__(self):
         """Instance initialization."""
         PowerDevice.__init__(self, None)
@@ -265,6 +261,7 @@ class HumanButtonPusher(PowerDevice):
 
 class APCPower(PowerDevice):
     """A network-managed power unit from APC."""
+
     def __init__(self, ip_address, outlet, username="apc", password="apc"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
@@ -296,12 +293,13 @@ class APCPower(PowerDevice):
 
 class DLIPowerSwitch(PowerDevice):
     """A network-managed power switch from Digital Loggers (DLI)."""
+
     def __init__(self, ip_address, outlet, username, password):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
-        self.switch = dlipower.PowerSwitch(hostname=ip_address,
-                                           userid=username,
-                                           password=password)
+        self.switch = dlipower.PowerSwitch(
+            hostname=ip_address, userid=username, password=password
+        )
         self.outlet = outlet
 
     def reset(self, outlet=None):
@@ -313,6 +311,7 @@ class DLIPowerSwitch(PowerDevice):
 
 class WemoPowerSwitch(PowerDevice):
     """Control a Wemo switch given an ipaddress."""
+
     def __init__(self, outlet):
         """Instance initialization."""
         addr = "http://" + outlet.replace("wemo://", "") + ":49153/setup.xml"
@@ -401,11 +400,8 @@ class SimpleSerialPower(PowerDevice):
 
 class Ip9258(PowerDevice):
     """Network Power controller, IP Power 9258."""
-    def __init__(self,
-                 ip_address,
-                 port,
-                 username="admin",
-                 password="12345678"):
+
+    def __init__(self, ip_address, port, username="admin", password="12345678"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self._ip_address = ip_address
@@ -413,8 +409,7 @@ class Ip9258(PowerDevice):
 
         # create a password manager
         password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, "http://" + ip_address, username,
-                                  password)
+        password_mgr.add_password(None, "http://" + ip_address, username, password)
         handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
         opener = _urllib.request.build_opener(handler)
         # Now all calls to urllib2.urlopen use our opener.
@@ -423,16 +418,24 @@ class Ip9258(PowerDevice):
     def on(self):
         """Send ON command."""
         print("Power On Port(%s)\n" % self.port)
-        return _urllib.request.urlopen("http://" + self._ip_address +
-                                       "/set.cmd?cmd=setpower+p6" +
-                                       str(self.port) + "=1")
+        return _urllib.request.urlopen(
+            "http://"
+            + self._ip_address
+            + "/set.cmd?cmd=setpower+p6"
+            + str(self.port)
+            + "=1"
+        )
 
     def off(self):
         """Send OFF command."""
         print("Power Off Port(%s)\n" % self.port)
-        return _urllib.request.urlopen("http://" + self._ip_address +
-                                       "/set.cmd?cmd=setpower+p6" +
-                                       str(self.port) + "=0")
+        return _urllib.request.urlopen(
+            "http://"
+            + self._ip_address
+            + "/set.cmd?cmd=setpower+p6"
+            + str(self.port)
+            + "=0"
+        )
 
     def reset(self):
         """Turn off, wait 5 seconds, turn on."""
@@ -443,15 +446,14 @@ class Ip9258(PowerDevice):
 
 class CyberPowerPdu(PowerDevice):
     """Power unit from CyberPower."""
+
     def __init__(self, ip_address, outlet, username="cyber", password="cyber"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.port = outlet
         self.ip_address = ip_address
         self.oid_Outlet = "1.3.6.1.4.1.3808.1.1.3.3.3.1.1.4"
-        self.session = Session(hostname=self.ip_address,
-                               community="private",
-                               version=2)
+        self.session = Session(hostname=self.ip_address, community="private", version=2)
 
     def on(self):
         """Send ON command."""
@@ -472,11 +474,8 @@ class CyberPowerPdu(PowerDevice):
 
 class Ip9820(PowerDevice):
     """Network Power controller, IP Power 9820."""
-    def __init__(self,
-                 ip_address,
-                 port,
-                 username="admin",
-                 password="12345678"):
+
+    def __init__(self, ip_address, port, username="admin", password="12345678"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self._ip_address = ip_address
@@ -484,8 +483,7 @@ class Ip9820(PowerDevice):
 
         # create a password manager
         password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, "http://" + ip_address, username,
-                                  password)
+        password_mgr.add_password(None, "http://" + ip_address, username, password)
         handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
         opener = _urllib.request.build_opener(handler)
         # Now all calls to _urllib.urlopen use our opener.
@@ -494,16 +492,24 @@ class Ip9820(PowerDevice):
     def on(self):
         """Send ON command."""
         print("Power On Port(%s)\n" % self.port)
-        return _urllib.request.urlopen("http://" + self._ip_address +
-                                       "/set.cmd?cmd=setpower+p6" +
-                                       str(self.port) + "=1")
+        return _urllib.request.urlopen(
+            "http://"
+            + self._ip_address
+            + "/set.cmd?cmd=setpower+p6"
+            + str(self.port)
+            + "=1"
+        )
 
     def off(self):
         """Send OFF command."""
         print("Power Off Port(%s)\n" % self.port)
-        return _urllib.request.urlopen("http://" + self._ip_address +
-                                       "/set.cmd?cmd=setpower+p6" +
-                                       str(self.port) + "=0")
+        return _urllib.request.urlopen(
+            "http://"
+            + self._ip_address
+            + "/set.cmd?cmd=setpower+p6"
+            + str(self.port)
+            + "=0"
+        )
 
     def reset(self):
         """Send OFF command, wait 5 seconds, sned ON command."""
@@ -526,8 +532,9 @@ if __name__ == "__main__":
             for switch_name in env.list_switches():
                 switch = env.get_switch(switch_name)
                 print("%s ip address is %s" % (switch_name, switch.host))
-            print("The switches above can be added by ip address"
-                  " for example use the")
+            print(
+                "The switches above can be added by ip address" " for example use the"
+            )
             print("following to use %s" % switch_name)
             print("\twemo://%s" % switch.host)
         else:

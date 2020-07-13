@@ -83,8 +83,10 @@ class NetperfStressTest(netperf_test.NetperfTest):
         board.expect("([0-9]+)\r\n")
         n = board.match.group(1)
 
-        print("Stopped with %s connections, %s netperf's still running" %
-              (conns_parsed, n))
+        print(
+            "Stopped with %s connections, %s netperf's still running"
+            % (conns_parsed, n)
+        )
         print("Mbits passed was %s" % bandwidth)
 
         # Record number of bytes and packets sent through interfaces
@@ -99,5 +101,6 @@ class NetperfStressTest(netperf_test.NetperfTest):
         lib.common.clear_buffer(lan)
 
         self.result_message = (
-            "Ran %s/%s for %s seconds (Pkt Size = %s, Mbits = %s, CPU = %s)" %
-            (conns_parsed, num_conn, run_time, pkt_size, bandwidth, avg_cpu))
+            "Ran %s/%s for %s seconds (Pkt Size = %s, Mbits = %s, CPU = %s)"
+            % (conns_parsed, num_conn, run_time, pkt_size, bandwidth, avg_cpu)
+        )

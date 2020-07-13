@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class LanDevPing6Router(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping6 router."""
+
     def runTest(self):
         """Start running test on LAN Device to ping6 router."""
         lan = self.dev.lan
@@ -25,6 +26,7 @@ class LanDevPing6Router(rootfs_boot.RootFSBootTest):
 
 class LanDevPing6WanDev(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping6 through router."""
+
     def runTest(self):
         """Start running test to make Lan device ping Wan-device."""
         lan = self.dev.lan

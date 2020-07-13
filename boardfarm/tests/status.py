@@ -14,6 +14,7 @@ from boardfarm.tests import rootfs_boot
 
 class Logread(rootfs_boot.RootFSBootTest):
     """Recorded syslog."""
+
     def runTest(self):
         """Executing Logread."""
         board = self.dev.board
@@ -26,6 +27,7 @@ class Logread(rootfs_boot.RootFSBootTest):
 
 class DiskUse(rootfs_boot.RootFSBootTest):
     """Checked disk use."""
+
     def runTest(self):
         """Executing DiskUse."""
         board = self.dev.board
@@ -39,6 +41,7 @@ class DiskUse(rootfs_boot.RootFSBootTest):
 
 class TopCheck(rootfs_boot.RootFSBootTest):
     """Ran "top" to see current processes."""
+
     def runTest(self):
         """Executing current processes."""
         board = self.dev.board
@@ -55,6 +58,7 @@ class TopCheck(rootfs_boot.RootFSBootTest):
 
 class UciShow(rootfs_boot.RootFSBootTest):
     """Dumped all current uci settings."""
+
     def runTest(self):
         """Executing uci setting."""
         board = self.dev.board
@@ -69,12 +73,13 @@ class UciShow(rootfs_boot.RootFSBootTest):
         board.sendline("uci show")
         board.expect(prompt, searchwindowsize=50)
         self.result_message = (
-            "Dumped all current uci settings from %s files in /etc/config/." %
-            num_files)
+            "Dumped all current uci settings from %s files in /etc/config/." % num_files
+        )
 
 
 class DhcpLeaseCheck(rootfs_boot.RootFSBootTest):
     """Checked dhcp.leases file."""
+
     def runTest(self):
         """Executing dhcp lease."""
         board = self.dev.board
@@ -86,6 +91,7 @@ class DhcpLeaseCheck(rootfs_boot.RootFSBootTest):
 
 class IfconfigCheck(rootfs_boot.RootFSBootTest):
     """Ran 'ifconfig' to check interfaces."""
+
     def runTest(self):
         """Executing ifconfig check prompt."""
         board = self.dev.board
@@ -93,8 +99,9 @@ class IfconfigCheck(rootfs_boot.RootFSBootTest):
         board.sendline("\nifconfig")
         board.expect("ifconfig")
         board.expect(prompt)
-        results = re.findall(r"([A-Za-z0-9-\.]+)\s+Link.*\n.*addr:([^ ]+)",
-                             board.before)
+        results = re.findall(
+            r"([A-Za-z0-9-\.]+)\s+Link.*\n.*addr:([^ ]+)", board.before
+        )
         tmp = ", ".join(["%s %s" % (x, y) for x, y in results])
         board.sendline("route -n")
         board.expect(prompt)
@@ -103,6 +110,7 @@ class IfconfigCheck(rootfs_boot.RootFSBootTest):
 
 class MemoryUse(rootfs_boot.RootFSBootTest):
     """Checked memory use."""
+
     def runTest(self):
         """Executing memory use cmd."""
         board = self.dev.board
@@ -133,6 +141,7 @@ class MemoryUse(rootfs_boot.RootFSBootTest):
 
 class SleepHalfMinute(rootfs_boot.RootFSBootTest):
     """Slept 30 seconds."""
+
     def recover(self):
         """Recover to initial prompt."""
         board = self.dev.board
@@ -150,6 +159,7 @@ class SleepHalfMinute(rootfs_boot.RootFSBootTest):
 
 class Sleep1Minute(rootfs_boot.RootFSBootTest):
     """Slept 1 minute."""
+
     def recover(self):
         """Recover to initial prompt."""
         board = self.dev.board
@@ -167,6 +177,7 @@ class Sleep1Minute(rootfs_boot.RootFSBootTest):
 
 class Sleep2Minutes(rootfs_boot.RootFSBootTest):
     """Slept 2 minutes."""
+
     def recover(self):
         """Recover to initial prompt."""
         board = self.dev.board
@@ -191,6 +202,7 @@ class Sleep2Minutes(rootfs_boot.RootFSBootTest):
 
 class Sleep5Minutes(rootfs_boot.RootFSBootTest):
     """Slept 5 minutes."""
+
     def recover(self):
         """Recover to initial prompt."""
         board = self.dev.board

@@ -18,7 +18,8 @@ local_path = os.path.dirname(os.path.realpath(__file__))
 # Boardfarm configuration describes test stations - see boardfarm doc.
 # Can be local or remote file.
 boardfarm_config_location = os.environ.get(
-    "BFT_CONFIG", os.path.join(local_path, "boardfarm_config_example.json"))
+    "BFT_CONFIG", os.path.join(local_path, "boardfarm_config_example.json")
+)
 
 # Test Suite config files. Standard python config file format.
 testsuite_config_files = [
@@ -30,19 +31,18 @@ layerconfs = []
 for modname in sorted(boardfarm.plugins):
     overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
     # Find testsuite config files
-    testsuites_path = glob.glob(os.path.join(
-        overlay, "testsuites.cfg")) + glob.glob(
-            os.path.join(overlay, "*", "testsuites.cfg"))
+    testsuites_path = glob.glob(os.path.join(overlay, "testsuites.cfg")) + glob.glob(
+        os.path.join(overlay, "*", "testsuites.cfg")
+    )
     testsuite_config_files += testsuites_path
     # Find layerconf files and import them
-    layerconf_path = glob.glob(os.path.join(
-        overlay, "layerconf.py")) + glob.glob(
-            os.path.join(overlay, "*", "layerconf.py"))
+    layerconf_path = glob.glob(os.path.join(overlay, "layerconf.py")) + glob.glob(
+        os.path.join(overlay, "*", "layerconf.py")
+    )
     for f in layerconf_path:
         if os.path.isfile(f):
             location = os.path.dirname(f)
-            m = os.path.basename(location) + "." + os.path.basename(
-                f.strip(".py"))
+            m = os.path.basename(location) + "." + os.path.basename(f.strip(".py"))
             tmp = importlib.import_module(m)
             layerconfs.append((location, tmp))
 
@@ -101,9 +101,7 @@ if "BFT_OPTIONS" in os.environ:
             # quick validation
             i = int(v)  # if not a valid num python will throw and exception
             if i != 0 and not 1024 <= i <= 65535:
-                print(
-                    "Warning: display backend port: %i not in range (1024-65535)"
-                    % i)
+                print("Warning: display backend port: %i not in range (1024-65535)" % i)
                 exit(1)
             default_display_backend_port = v
         elif k == "disp_size":
@@ -136,8 +134,7 @@ if "BFT_DEBUG" in os.environ:
     print("Using disp_size:" + default_display_backend_size)
 
 # Default Test Config Settings
-output_dir = os.path.join(
-    os.path.abspath(os.path.join(os.getcwd(), "results", "")), "")
+output_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), "results", "")), "")
 WAN_PROTO = "dhcp"  # or 'pppoe'. Protocol of the WAN interface
 setup_device_networking = True  # or False. Setup device networking during boot
 bootargs = None  # bootargs to set or append to default args (board dependant)
@@ -201,9 +198,7 @@ def update_error_injection_dict(err_dict):
                 err_injection_dict.update(json.loads(data))
         except Exception as error:
             print(error)
-            print(
-                "Failed to fetch error dictionay at '{}', skipping...".format(
-                    d))
+            print("Failed to fetch error dictionay at '{}', skipping...".format(d))
 
     if err_injection_dict:
         print("Error injection dictionary:")

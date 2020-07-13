@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
     """Runs SNMP sysDescr on WAN iface."""
+
     def runTest(self):
         board = self.dev.board
         wan = self.dev.wan

@@ -12,6 +12,7 @@ from boardfarm.tests import rootfs_boot
 
 class Sysupgrade(rootfs_boot.RootFSBootTest):
     """Upgrading via sysupgrade works."""
+
     def runTest(self):
         board = self.dev.board
 

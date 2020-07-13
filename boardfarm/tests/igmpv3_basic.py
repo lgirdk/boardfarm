@@ -11,6 +11,7 @@ from boardfarm.tests import rootfs_boot
 
 class IGMPv3_Running(rootfs_boot.RootFSBootTest):
     """IGMP Proxy daemon mcproxy is up and running."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board
@@ -22,6 +23,7 @@ class IGMPv3_Running(rootfs_boot.RootFSBootTest):
 
 class IGMPv3_Config(rootfs_boot.RootFSBootTest):
     """IGMP Proxy daemon mcproxy config is set correctly."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board
@@ -40,6 +42,7 @@ class IGMPv3_Config(rootfs_boot.RootFSBootTest):
 
 class IGMPv3_StopStart(rootfs_boot.RootFSBootTest):
     """IGMP Proxy daemon mcproxy can be stopped and started without rebooting."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board

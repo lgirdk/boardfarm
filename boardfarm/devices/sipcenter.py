@@ -59,24 +59,38 @@ EOF"""
         self.sendline(gen_mod)
         self.expect(self.prompt)
         for i in self.numbers:
-            num_conf = ("""cat >> /etc/asterisk/sip.conf << EOF
-[""" + i + """]
+            num_conf = (
+                """cat >> /etc/asterisk/sip.conf << EOF
+["""
+                + i
+                + """]
 type=friend
-regexten=""" + i + """
+regexten="""
+                + i
+                + """
 secret=1234
 qualify=no
 nat=force_rport
 host=dynamic
 canreinvite=no
 context=default
-dial=SIP/""" + i + """
-EOF""")
+dial=SIP/"""
+                + i
+                + """
+EOF"""
+            )
             self.sendline(num_conf)
             self.expect(self.prompt)
-            num_mod = ("""cat >> /etc/asterisk/extensions.conf << EOF
-exten => """ + i + """,1,Dial(SIP/""" + i + """,20,r)
+            num_mod = (
+                """cat >> /etc/asterisk/extensions.conf << EOF
+exten => """
+                + i
+                + """,1,Dial(SIP/"""
+                + i
+                + """,20,r)
 same =>n,Wait(20)
-EOF""")
+EOF"""
+            )
             self.sendline(num_mod)
             self.expect(self.prompt)
 
@@ -161,8 +175,9 @@ EOF""")
             "def modify():",
             "   config = configparser.ConfigParser(strict=False)",
             '   config.read("/etc/asterisk/sip.conf")',
-            '   sip_conf = {"type": "friend", "regexten": "' + user +
-            '", "secret": "1234", "qualify": "no", "nat": '
+            '   sip_conf = {"type": "friend", "regexten": "'
+            + user
+            + '", "secret": "1234", "qualify": "no", "nat": '
             '"force_rport", "host": "dynamic", "canreinvite": '
             '"no", "context": "default", "dial": "SIP/' + user + '"}',
             '   if "' + oper + '" == "add":',
@@ -177,8 +192,7 @@ EOF""")
             "print(modify())",
         ]
 
-        self.sendline("cat > sip_config.py << EOF\n%s\nEOF" %
-                      "\n".join(py_steps))
+        self.sendline("cat > sip_config.py << EOF\n%s\nEOF" % "\n".join(py_steps))
         self.expect("EOF")
         self.expect_prompt()
         self.sendline("python3 sip_config.py")

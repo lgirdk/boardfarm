@@ -27,9 +27,9 @@ class Macbook(debian.DebianBox):
             self.ipaddr,
         )
 
-        self.connection = connection_decider.connection("local_cmd",
-                                                        device=self,
-                                                        conn_cmd=conn_cmd)
+        self.connection = connection_decider.connection(
+            "local_cmd", device=self, conn_cmd=conn_cmd
+        )
         self.connection.connect()
 
         if 0 == self.expect(["Password:"] + self.prompt):
@@ -109,8 +109,9 @@ class Macbook(debian.DebianBox):
         :return: Console ouput of tcpdump sendline command.
         :rtype: string
         """
-        self.sendline("tcpdump -I -n -i %s -w %s -c %d" %
-                      (self.iface_wifi, capture_file, count))
+        self.sendline(
+            "tcpdump -I -n -i %s -w %s -c %d" % (self.iface_wifi, capture_file, count)
+        )
         self.expect(self.prompt)
         return self.before
 
@@ -127,8 +128,9 @@ class Macbook(debian.DebianBox):
         :rtype: string
         """
         if opts == "":
-            self.sendline('tshark -V -r %s wlan_mgt.ssid == "%s"' %
-                          (capture_file, ssid_name))
+            self.sendline(
+                'tshark -V -r %s wlan_mgt.ssid == "%s"' % (capture_file, ssid_name)
+            )
         else:
             self.sendline('tshark -V -r %s "%s"' % (capture_file, opts))
         self.expect(pexpect.TIMEOUT, timeout=10)

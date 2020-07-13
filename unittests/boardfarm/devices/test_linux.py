@@ -146,22 +146,10 @@ erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:F7
     ],
 )
 def test_get_interface_ip6addr(mocker, output, expected_ip):
-    mocker.patch.object(LinuxDevice,
-                        "check_output",
-                        return_value=output,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "__init__",
-                        return_value=None,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "expect",
-                        return_value=None,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "sendline",
-                        return_value=None,
-                        autospec=True)
+    mocker.patch.object(LinuxDevice, "check_output", return_value=output, autospec=True)
+    mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "expect", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "sendline", return_value=None, autospec=True)
 
     dev = LinuxDevice()
     # set mocker property
@@ -179,17 +167,10 @@ def test_get_interface_ip6addr(mocker, output, expected_ip):
     ],
 )
 def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
-    mocker.patch.object(LinuxDevice,
-                        "check_output",
-                        return_value=output,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "__init__",
-                        return_value=None,
-                        autospec=True)
+    mocker.patch.object(LinuxDevice, "check_output", return_value=output, autospec=True)
+    mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
     dev = LinuxDevice()
-    with pytest.raises(Exception) or pytest.raises(
-            ipaddress.AddressValueError):
+    with pytest.raises(Exception) or pytest.raises(ipaddress.AddressValueError):
         dev.get_interface_ip6addr("erouter0")
 
 
@@ -207,27 +188,19 @@ def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
     ],
 )
 def test_get_interface_ipaddr(mocker, output, expected_ip):
-    mocker.patch.object(LinuxDevice,
-                        "__init__",
-                        return_value=None,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "sendline",
-                        return_value=None,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "check_output",
-                        return_value=None,
-                        autospec=True)
-    mocker.patch.object(LinuxDevice,
-                        "expect",
-                        return_value=None,
-                        autospec=True)
+    mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "sendline", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "check_output", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "expect", return_value=None, autospec=True)
     regex = [
         r"inet:?(?:\s*addr:)?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\s*(Bcast|P-t-P|broadcast):",
-        r"inet:?(?:\s*addr:)?\s*(" + ValidIpv4AddressRegex + ").*netmask (" +
-        ValidIpv4AddressRegex + ")(.*destination " + ValidIpv4AddressRegex +
-        ")?",
+        r"inet:?(?:\s*addr:)?\s*("
+        + ValidIpv4AddressRegex
+        + ").*netmask ("
+        + ValidIpv4AddressRegex
+        + ")(.*destination "
+        + ValidIpv4AddressRegex
+        + ")?",
     ]
 
     dev = LinuxDevice()

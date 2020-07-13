@@ -11,16 +11,19 @@ from boardfarm.tests import rootfs_boot
 
 class OEVersion(rootfs_boot.RootFSBootTest):
     """Record OE version."""
+
     def runTest(self):
         """Start test to record OE version."""
         board = self.dev.board
 
         board.sendline("cat /etc/os-release")
         # PRETTY_NAME=RDK (A Yocto Project 1.6 based Distro) 2.0 (krogoth)
-        if 0 == board.expect([
+        if 0 == board.expect(
+            [
                 "cat: can't open '/etc/os-release': No such file or directory",
                 r"PRETTY_NAME=([^\s]*) \(A Yocto Project (?:[^\s]*?)\s?based Distro\) ([^\s]*) \(([^\)]*)\)",
-        ]):
+            ]
+        ):
             self.skipTest("Skipping, not not an OE based distro")
 
         index = 1
@@ -47,7 +50,8 @@ class OEVersion(rootfs_boot.RootFSBootTest):
 
         self.result_message = (
             "BSP = %s, BSP version = %s, OE version = %s, OE version string = %s"
-            % (bsp_type, bsp_version, oe_version, oe_version_string))
+            % (bsp_type, bsp_version, oe_version, oe_version_string)
+        )
         self.logged["bsp-type"] = bsp_type
         self.logged["oe-version"] = oe_version
         self.logged["bsp-version"] = bsp_version

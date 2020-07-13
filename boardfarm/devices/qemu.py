@@ -39,25 +39,27 @@ class Qemu(openwrt_router.OpenWrtRouter):
     cleanup_files = []
     kvm = False
 
-    def __init__(self,
-                 model,
-                 conn_cmd,
-                 power_ip,
-                 power_outlet,
-                 output=sys.stdout,
-                 password="bigfoot1",
-                 web_proxy=None,
-                 tftp_server=None,
-                 tftp_username=None,
-                 tftp_password=None,
-                 tftp_port=None,
-                 connection_type=None,
-                 power_username=None,
-                 power_password=None,
-                 rootfs=None,
-                 kernel=None,
-                 mgr=None,
-                 **kwargs):
+    def __init__(
+        self,
+        model,
+        conn_cmd,
+        power_ip,
+        power_outlet,
+        output=sys.stdout,
+        password="bigfoot1",
+        web_proxy=None,
+        tftp_server=None,
+        tftp_username=None,
+        tftp_password=None,
+        tftp_port=None,
+        connection_type=None,
+        power_username=None,
+        power_password=None,
+        rootfs=None,
+        kernel=None,
+        mgr=None,
+        **kwargs
+    ):
         """Intialize the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc..
 
         :param model: Model of the QEMU device.
@@ -102,8 +104,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         assert cmd_exists("qemu-system-i386")
 
         if rootfs is None:
-            raise Exception(
-                "The QEMU device type requires specifying a rootfs")
+            raise Exception("The QEMU device type requires specifying a rootfs")
 
         def temp_download(url):
             """Download the image to the temp folder over the QEMU device.
@@ -150,23 +151,21 @@ class Qemu(openwrt_router.OpenWrtRouter):
         # TODO: add script=no,downscript=no to taps
 
         try:
-            bft_pexpect_helper.spawn.__init__(self,
-                                              command="/bin/bash",
-                                              args=["-c", cmd],
-                                              env=self.dev.env)
+            bft_pexpect_helper.spawn.__init__(
+                self, command="/bin/bash", args=["-c", cmd], env=self.dev.env
+            )
             self.expect(pexpect.TIMEOUT, timeout=1)
         except pexpect.EOF:
             self.pid = None
-            if ("failed to initialize KVM: Device or resource busy" in
-                    self.before
-                    or "failed to initialize KVM: Cannot allocate memory" in
-                    self.before):
+            if (
+                "failed to initialize KVM: Device or resource busy" in self.before
+                or "failed to initialize KVM: Cannot allocate memory" in self.before
+            ):
                 cmd = cmd.replace("--enable-kvm ", "")
                 self.kvm = False
-                bft_pexpect_helper.spawn.__init__(self,
-                                                  command="/bin/bash",
-                                                  args=["-c", cmd],
-                                                  env=self.dev.env)
+                bft_pexpect_helper.spawn.__init__(
+                    self, command="/bin/bash", args=["-c", cmd], env=self.dev.env
+                )
             else:
                 raise
 
@@ -235,8 +234,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
 
         for _ in range(0, tout, 10):
             self.sendline()
-            i = self.expect([pexpect.TIMEOUT, "login:"] + self.prompt,
-                            timeout=10)
+            i = self.expect([pexpect.TIMEOUT, "login:"] + self.prompt, timeout=10)
             if i == 1:
                 self.sendline("root")
                 self.expect(self.prompt, timeout=tout)

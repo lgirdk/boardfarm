@@ -39,8 +39,7 @@ class BaseDevice(bft_pexpect_helper):
 
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
-        self.expect(
-            r"Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){6}\r\n")
+        self.expect(r"Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){6}\r\n")
         idle = float(self.match.group(1))
         self.expect("Average.*rxmcst/s.*\r\n")
 
@@ -55,12 +54,10 @@ class BaseDevice(bft_pexpect_helper):
             i = self.expect(exp)
             if i == 0:  # parse wan stats
                 self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
-                wan_pps = float(self.match.group(1)) + float(
-                    self.match.group(2))
+                wan_pps = float(self.match.group(1)) + float(self.match.group(2))
             if i == 1:
                 self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
-                client_pps = float(self.match.group(1)) + float(
-                    self.match.group(2))
+                client_pps = float(self.match.group(1)) + float(self.match.group(2))
 
         return idle, wan_pps, client_pps
 
@@ -153,28 +150,28 @@ class BaseDevice(bft_pexpect_helper):
 
     def flash_uboot(self, uboot):
         raise Exception(
-            "Code not written for flash_uboot for this board type, %s" %
-            self.model)
+            "Code not written for flash_uboot for this board type, %s" % self.model
+        )
 
     def flash_rootfs(self, ROOTFS):
         raise Exception(
-            "Code not written for flash_rootfs for this board type, %s" %
-            self.model)
+            "Code not written for flash_rootfs for this board type, %s" % self.model
+        )
 
     def flash_linux(self, KERNEL):
         raise Exception(
-            "Code not written for flash_linux for this board type, %s." %
-            self.model)
+            "Code not written for flash_linux for this board type, %s." % self.model
+        )
 
     def flash_meta(self, META_BUILD, wan, lan):
         raise Exception(
-            "Code not written for flash_meta for this board type, %s." %
-            self.model)
+            "Code not written for flash_meta for this board type, %s." % self.model
+        )
 
     def prepare_nfsroot(self, NFSROOT):
         raise Exception(
-            "Code not written for prepare_nfsroot for this board type, %s." %
-            self.model)
+            "Code not written for prepare_nfsroot for this board type, %s." % self.model
+        )
 
     def kill_console_at_exit(self):
         """Killing console."""
@@ -191,4 +188,5 @@ class BaseDevice(bft_pexpect_helper):
     def boot_linux(self, rootfs=None, bootargs=""):
         raise Exception(
             "\nWARNING: We don't know how to boot this board to linux."
-            "please write the code to do so.")
+            "please write the code to do so."
+        )

@@ -18,7 +18,8 @@ import pymongo
 class ComplexEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ipaddress.IPv4Network) or isinstance(
-                obj, ipaddress.IPv4Address):
+            obj, ipaddress.IPv4Address
+        ):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             return str(obj)
@@ -29,7 +30,8 @@ class ComplexEncoder(json.JSONEncoder):
                 print(error)
                 print(
                     "WARNING: mongodblogger ComplexEncoder can't handle type %s"
-                    % type(obj))
+                    % type(obj)
+                )
                 return ""
 
 
@@ -40,12 +42,10 @@ def pprint(x):
 
 class MongodbLogger(object):
     """Write data directly to mongodb."""
-    def __init__(self,
-                 host,
-                 username,
-                 password,
-                 db_name="boardfarm",
-                 collection_name="bft_run"):
+
+    def __init__(
+        self, host, username, password, db_name="boardfarm", collection_name="bft_run"
+    ):
         """Instance initialisation."""
         self.host = host
         self.username = username
@@ -78,6 +78,7 @@ class MongodbLogger(object):
 
     def log(self, data, debug=False):
         """Store log of mongodb."""
+
         def fix_dict(d):
             if not isinstance(d, dict):
                 return d
@@ -87,7 +88,8 @@ class MongodbLogger(object):
 
         # Put in default data
         self.default_data["timestamp"] = datetime.datetime.utcnow().strftime(
-            "%Y-%m-%dT%H:%M:%S.000Z")
+            "%Y-%m-%dT%H:%M:%S.000Z"
+        )
         data.update(self.default_data)
         # Handle object types that json normally can't (converts them to a string or number)
         data = json.loads(json.dumps(data, cls=ComplexEncoder))

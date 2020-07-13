@@ -20,7 +20,8 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         super(NetperfUdpTest, self).runTest()
 
         self.run_netperf(
-            lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460")
+            lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460"
+        )
 
         # setup port forwarding to lan netperf server
         lan_priv_ip = lan.get_interface_ipaddr(lan.iface_dut)
@@ -34,5 +35,5 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         wan.sendline("")
         wan.expect(prompt)
         self.run_netperf(
-            wan, wan_ip,
-            "-c -C -l 30 -t UDP_STREAM -- -P ,12866 -m 1460 -M 1460")
+            wan, wan_ip, "-c -C -l 30 -t UDP_STREAM -- -P ,12866 -m 1460 -M 1460"
+        )

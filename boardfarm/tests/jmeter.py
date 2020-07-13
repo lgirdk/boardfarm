@@ -2,7 +2,6 @@ import os
 import shutil
 
 import pexpect
-# To Do: Move this file or function out of the "devices" directory
 from boardfarm.devices import prompt
 from boardfarm.lib.common import scp_from
 from boardfarm.lib.installers import install_jmeter
@@ -48,9 +47,9 @@ class JMeter(rootfs_boot.RootFSBootTest):
             lan.sendline("echo $HOME")
             lan.expect_exact("echo $HOME")
             lan.expect(prompt)
-            lan.copy_file_to_server(self.jmx,
-                                    dst=lan.before.strip() +
-                                    "/%s/test.jmx" % self.dir)
+            lan.copy_file_to_server(
+                self.jmx, dst=lan.before.strip() + "/%s/test.jmx" % self.dir
+            )
 
         board.collect_stats(stats=["mpstat"])
 
@@ -58,7 +57,8 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         lan.sendline(
             'JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t ../test.jmx -l foo.log -e -o $HOME/%s/results'
-            % self.dir)
+            % self.dir
+        )
         lan.expect_exact("$HOME/%s/results" % self.dir)
         for i in range(self.default_time):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
@@ -122,54 +122,55 @@ class JMeter(rootfs_boot.RootFSBootTest):
 class JMeter_10x_10u_5t(JMeter):
     """Runs JMeter jmx 10x_10u_5t."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_10x_10u_5t.jmx")
+    jmx = os.path.join(os.path.dirname(__file__), "jmeter/httpreq_10x_10u_5t.jmx")
     shortname = "httpreq_10x_10u_5t"
 
 
 class JMeter_1x_9u_5t(JMeter):
     """Runs JMeter jmx 1x_9u_5t."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_1x_9u_5t.jmx")
+    jmx = os.path.join(os.path.dirname(__file__), "jmeter/httpreq_1x_9u_5t.jmx")
     shortname = "httpreq_1x_9u_5t"
 
 
 class JMeter_20x_9u_1t(JMeter):
     """Runs JMeter jmx 20x_9u_1t."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_20x_9u_1t.jmx")
+    jmx = os.path.join(os.path.dirname(__file__), "jmeter/httpreq_20x_9u_1t.jmx")
     shortname = "httpreq_20x_9u_1t"
 
 
 class JMeter_20x_9u_1t_300msdelay(JMeter):
     """Runs JMeter jmx 20x_9u_1t_300msdelay."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_20x_9u_1t_300msdelay.jmx")
+    jmx = os.path.join(
+        os.path.dirname(__file__), "jmeter/httpreq_20x_9u_1t_300msdelay.jmx"
+    )
     shortname = "httpreq_20x_9u_1t_300msdelay"
 
 
 class JMeter_20x_9u_1t_500msdelay(JMeter):
     """Runs JMeter jmx 20x_9u_1t_500msdelay."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_20x_9u_1t_500msdelay.jmx")
+    jmx = os.path.join(
+        os.path.dirname(__file__), "jmeter/httpreq_20x_9u_1t_500msdelay.jmx"
+    )
     shortname = "httpreq_20x_9u_1t_500msdelay"
 
 
 class JMeter_20x_9u_1t_1000msdelay(JMeter):
     """Runs JMeter jmx 20x_9u_1t_1000msdelay."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_20x_9u_1t_1000msdelay.jmx")
+    jmx = os.path.join(
+        os.path.dirname(__file__), "jmeter/httpreq_20x_9u_1t_1000msdelay.jmx"
+    )
     shortname = "httpreq_20x_9u_1t_1000msdelay"
 
 
 class JMeter_20x_9u_1t_1500msdelay(JMeter):
     """Runs JMeter jmx 20x_9u_1t_1500msdelay."""
 
-    jmx = os.path.join(os.path.dirname(__file__),
-                       "jmeter/httpreq_20x_9u_1t_1500msdelay.jmx")
+    jmx = os.path.join(
+        os.path.dirname(__file__), "jmeter/httpreq_20x_9u_1t_1500msdelay.jmx"
+    )
     shortname = "httpreq_20x_9u_1t_1500msdelay"

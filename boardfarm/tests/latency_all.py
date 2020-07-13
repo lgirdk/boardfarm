@@ -5,6 +5,7 @@ from boardfarm.tests import rootfs_boot
 
 class LatencyAllDevices(rootfs_boot.RootFSBootTest):
     """finds latency between all devices."""
+
     def runTest(self):
         board = self.dev.board
 
@@ -31,10 +32,7 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                     ip2 = d2.get_interface_ipaddr(d2.iface_dut)
 
                     def parse_ping_times(string):
-                        r = [
-                            float(i)
-                            for i in re.findall(r"time=([^\s]*) ms", string)
-                        ]
+                        r = [float(i) for i in re.findall(r"time=([^\s]*) ms", string)]
                         return sum(r) / len(r)
 
                     d1.sendline("ping -c20 %s" % ip2)
@@ -43,8 +41,10 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
 
                     result = parse_ping_times(d1.before)
                     if result is not float("nan"):
-                        results.append("latency from %s to %s = %s ms" %
-                                       (d1.name, d2.name, str(result)))
+                        results.append(
+                            "latency from %s to %s = %s ms"
+                            % (d1.name, d2.name, str(result))
+                        )
 
                     d2.sendline("ping -c20 %s" % ip1)
                     d2.expect_exact("ping -c20 %s" % ip1)
@@ -52,8 +52,10 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
 
                     result = parse_ping_times(d2.before)
                     if result is not float("nan"):
-                        results.append("latency from %s to %s = %s ms" %
-                                       (d2.name, d1.name, str(result)))
+                        results.append(
+                            "latency from %s to %s = %s ms"
+                            % (d2.name, d1.name, str(result))
+                        )
                 except Exception as error:
                     print(error)
                     print("failed to ping " + d1.name + " to " + d2.name)

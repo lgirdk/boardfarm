@@ -14,6 +14,7 @@ from . import analysis
 
 class PSAnalysis(analysis.Analysis):
     """Parse top for ps commands, and create graph of process memory usage over time."""
+
     def analyze(self, console_log, output_dir):
         regex = "root\\@OpenWrt:[^#]+# ps.*?(?=root@OpenWrt)"
         results = re.findall(regex, repr(console_log))
@@ -31,9 +32,7 @@ class PSAnalysis(analysis.Analysis):
                 pid = e.pop(0)
                 _ = e.pop(0)  # user
                 mem = e.pop(0)
-                while e[0] in [
-                        "S", "R", "SW", "SW<", "DW", "N", "<", "D", "Z"
-                ]:
+                while e[0] in ["S", "R", "SW", "SW<", "DW", "N", "<", "D", "Z"]:
                     e.pop(0)
                 cmdline = " ".join(e)
                 if cmdline[0] == "[" and cmdline[-1] == "]":
@@ -49,8 +48,6 @@ class PSAnalysis(analysis.Analysis):
                 fname = k
                 for c in r"[]/\;,><&*:%=+@!#^()|?^":
                     fname = fname.replace(c, "")
-                self.make_graph(data[k],
-                                k,
-                                fname,
-                                ts=timestamps[k],
-                                output_dir=output_dir)
+                self.make_graph(
+                    data[k], k, fname, ts=timestamps[k], output_dir=output_dir
+                )

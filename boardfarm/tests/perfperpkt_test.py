@@ -12,6 +12,7 @@ from boardfarm.tests import iperf_test
 
 class PerfPerPktTest(iperf_test.iPerfTest):
     """Count various perf events on a per packet basis"""
+
     def extra(self, perf_parse):
         # calculate abstract IPC
         for p in perf_parse:
@@ -54,23 +55,20 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         self.run_iperf_server(wan)
         self.run_iperf(
             client,
-            opts="-t %s -P %s -N -m -M %s" %
-            (self.test_time + 10, self.conns, self.pkt_size),
+            opts="-t %s -P %s -N -m -M %s"
+            % (self.test_time + 10, self.conns, self.pkt_size),
         )
 
         # run perf wrapper command
         board.check_output_perf("sar -u -n DEV 100000 1", self.perf_events())
 
-        speed = self.parse_iperf(client,
-                                 connections=self.conns,
-                                 t=self.test_time)
+        speed = self.parse_iperf(client, connections=self.conns, t=self.test_time)
         self.kill_iperf(wan)
         lib.common.test_msg("\n speed was %s Mbit/s" % speed)
 
         # extract cpu and packet info
         board.sendcontrol("c")
-        idle, wan_pps, client_pps = board.parse_sar_iface_pkts(
-            wan_iface, client_name)
+        idle, wan_pps, client_pps = board.parse_sar_iface_pkts(wan_iface, client_name)
         lib.common.test_msg("\n idle cpu: %s" % idle)
         lib.common.test_msg("client pps = %s" % client_pps)
         lib.common.test_msg("wan pps = %s" % wan_pps)
@@ -88,8 +86,9 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         else:
             client_pkts = "n/a"
 
-        lib.common.test_msg("\n client pkts = %s wan pkts = %s" %
-                            (client_pkts, wan_pkts))
+        lib.common.test_msg(
+            "\n client pkts = %s wan pkts = %s" % (client_pkts, wan_pkts)
+        )
 
         if client_name is not None:
             total_pkts = min(client_pkts, wan_pkts)
@@ -105,8 +104,10 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         results = board.parse_perf(self.perf_events())
         for p in results:
             p["value_per_pkt"] = p["value"] / total_pkts
-            lib.common.test_msg("\n %s = %s (per pkt = %s)" %
-                                (p["name"], p["value"], p["value_per_pkt"]))
+            lib.common.test_msg(
+                "\n %s = %s (per pkt = %s)"
+                % (p["name"], p["value"], p["value_per_pkt"])
+            )
             perf_msg += ", %s=%.2f" % (p["sname"], p["value_per_pkt"])
 
             # restore legacy names
@@ -136,10 +137,9 @@ class PerfPerPktTest(iperf_test.iPerfTest):
 
 class PerfBarrierPerPktTest(PerfPerPktTest):
     """Count barrier related perf events on a per packet basis"""
+
     def perf_events(self):
-        return [
-            "cycles", "instructions", "data_sync_barrier", "data_mem_barrier"
-        ]
+        return ["cycles", "instructions", "data_sync_barrier", "data_mem_barrier"]
 
     def extra(self, perf_parse):
         return ""
@@ -147,6 +147,7 @@ class PerfBarrierPerPktTest(PerfPerPktTest):
 
 class PerfLockPerPktTest(PerfPerPktTest):
     """Count lock related perf events on a per packet basis"""
+
     def perf_events(self):
         return ["cycles", "instructions", "load_exclusive", "store_exclusive"]
 
@@ -156,6 +157,7 @@ class PerfLockPerPktTest(PerfPerPktTest):
 
 class PerfUnalignedPerPktTest(PerfPerPktTest):
     """Count unaligned load/store perf events on a per packet basis"""
+
     def perf_events(self):
         return ["cycles", "instructions", "unaligned_load", "unaligned_store"]
 
@@ -165,6 +167,7 @@ class PerfUnalignedPerPktTest(PerfPerPktTest):
 
 class PerfPerPktTestWifi(PerfPerPktTest):
     """Count various perf events on a per packet basis over wifi"""
+
     def runTest(self):
         # for wlan since it's not reporting packets properly, we just assign
         # it to None and add logic in the parse section to take the other iface

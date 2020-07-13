@@ -38,6 +38,7 @@ class TestsuiteConfigReader(object):
     }
 
     """
+
     def __init__(self):
         """Initialize the self.section to empty dict."""
         self.section = {}
@@ -77,8 +78,7 @@ class TestsuiteConfigReader(object):
         current_section = None
         for i, line in enumerate(s_config.split("\n")):
             try:
-                if line == "" or re.match(r"^\s+",
-                                          line) or line.startswith("#"):
+                if line == "" or re.match(r"^\s+", line) or line.startswith("#"):
                     continue
                 if "[" in line:
                     current_section = re.search(r"\[(.*)\]", line).group(1)
@@ -102,7 +102,8 @@ class TestsuiteConfigReader(object):
                     else:
                         print(
                             "Failed to find '%s' testsuite referenced by '%s'."
-                            % (ref_section, section))
+                            % (ref_section, section)
+                        )
                 else:
                     new_section.append(item)
             self.section[section] = new_section
@@ -125,9 +126,9 @@ if __name__ == "__main__":
     for modname in sorted(boardfarm.plugins):
         overlay = os.path.dirname(boardfarm.plugins[modname].__file__)
         # Find testsuite config files
-        filenames = glob.glob(os.path.join(
-            overlay, "testsuites.cfg")) + glob.glob(
-                os.path.join(overlay, "*", "testsuites.cfg"))
+        filenames = glob.glob(os.path.join(overlay, "testsuites.cfg")) + glob.glob(
+            os.path.join(overlay, "*", "testsuites.cfg")
+        )
 
     t = TestsuiteConfigReader()
     t.read(filenames)

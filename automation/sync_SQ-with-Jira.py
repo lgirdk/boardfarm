@@ -60,8 +60,7 @@ def get_sonar_jira_issues():
     :return: issue_matrix
     :rtype: DataFrame
     """
-    issue_matrix = pd.DataFrame(
-        [], columns=["Sonarqube_id", "Jira_id", "comments"])
+    issue_matrix = pd.DataFrame([], columns=["Sonarqube_id", "Jira_id", "comments"])
 
     try:
         sonar_issues = []
@@ -70,11 +69,15 @@ def get_sonar_jira_issues():
         for sonar_project in projects_list:
             for issue_type in issue_type_list:
                 response = requests.get(
-                    sonar_auth_url +
-                    "/api/issues/search?additionalFields=comments&types=" +
-                    sonar_issue_type + "&projects=" + sonar_project +
-                    "&branch=" + sonar_branch +
-                    "&statuses=OPEN,REOPENED,CONFIRMED")
+                    sonar_auth_url
+                    + "/api/issues/search?additionalFields=comments&types="
+                    + sonar_issue_type
+                    + "&projects="
+                    + sonar_project
+                    + "&branch="
+                    + sonar_branch
+                    + "&statuses=OPEN,REOPENED,CONFIRMED"
+                )
                 data_json = response.json()
                 sonar_issues = sonar_issues + data_json["issues"]
 
@@ -89,10 +92,15 @@ def get_sonar_jira_issues():
             Jira_id = create_jira_issue(issue)
             comment = ""
             if Jira_id:
-                response = requests.post(sonar_auth_url +
-                                         "/api/issues/add_comment?issue=" +
-                                         issue["key"] + "&text=" +
-                                         jira_base_url + "/browse/" + Jira_id)
+                response = requests.post(
+                    sonar_auth_url
+                    + "/api/issues/add_comment?issue="
+                    + issue["key"]
+                    + "&text="
+                    + jira_base_url
+                    + "/browse/"
+                    + Jira_id
+                )
                 if not response.ok:
                     comment = "Unable to add Jira URL to issue in Sonarqube"
                 issue_matrix.loc[-1] = [issue["key"], Jira_id, comment]
@@ -120,28 +128,22 @@ def create_jira_issue(issue):
         labels = issue["tags"]
         labels.extend([issue["project"]])
 
-        description = ("Triggering rule:\n" + issue["message"] + "\nLink: "
-                       "" + sonar_base_url + "/issues?issues=" + issue["key"])
+        description = (
+            "Triggering rule:\n" + issue["message"] + "\nLink: "
+            "" + sonar_base_url + "/issues?issues=" + issue["key"]
+        )
 
         if "author" in issue.keys():
             description += "\nAuthor: " "" + issue["author"]
 
         issue_dict = {
-            "project": {
-                "key": jira_project
-            },
+            "project": {"key": jira_project},
             "summary": "[SonarQube] - " + issue["component"],
             "description": description,
-            "issuetype": {
-                "name": "Bug"
-            },
-            "priority": {
-                "name": get_priority(issue["severity"])
-            },
+            "issuetype": {"name": "Bug"},
+            "priority": {"name": get_priority(issue["severity"])},
             "labels": ["SonarQube"],
-            "customfield_12072": [{
-                "value": "Low"
-            }],
+            "customfield_12072": [{"value": "Low"}],
             "customfield_10530": jira_epic,
         }
 

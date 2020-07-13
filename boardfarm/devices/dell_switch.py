@@ -21,9 +21,7 @@ class DellSwitch(base.BaseDevice):
 
     def __init__(self, conn_cmd, password=""):
         """Instance initialization."""
-        bft_pexpect_helper.spawn.__init__(self,
-                                          "/bin/bash",
-                                          args=["-c", conn_cmd])
+        bft_pexpect_helper.spawn.__init__(self, "/bin/bash", args=["-c", conn_cmd])
         self.logfile_read = sys.stdout
         self.password = password
 

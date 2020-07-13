@@ -47,10 +47,12 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
         del kwargs["conn_cmd"]
         self.arm = bft_pexpect_helper.spawn.__new__(linux.LinuxDevice)
-        arm_conn = connection_decider.connection(kwargs["connection_type"],
-                                                 device=self.arm,
-                                                 conn_cmd=self.conn_list[1],
-                                                 **kwargs)
+        arm_conn = connection_decider.connection(
+            kwargs["connection_type"],
+            device=self.arm,
+            conn_cmd=self.conn_list[1],
+            **kwargs
+        )
         arm_conn.connect()
         self.consoles.append(self.arm)
         self.arm.logfile_read = sys.stdout
@@ -117,40 +119,45 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt)
         self.sendline("ifconfig -c %s" % self.uboot_eth)
         self.expect_exact(self.uprompt, timeout=30)
-        self.sendline("ifconfig -s %s static %s 255.255.255.0 %s" %
-                      (self.uboot_eth, tftp_server + 1, tftp_server))
+        self.sendline(
+            "ifconfig -s %s static %s 255.255.255.0 %s"
+            % (self.uboot_eth, tftp_server + 1, tftp_server)
+        )
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline("ifconfig -l")
         self.expect_exact(self.uprompt)
         self.sendline("ping %s" % tftp_server)
-        if 0 == self.expect([
+        if 0 == self.expect(
+            [
                 "Echo request sequence 1 timeout",
                 "10 packets transmitted, 10 received, 0% packet loss, time 0ms",
-        ]):
+            ]
+        ):
             raise Exception("Failing to ping tftp server, aborting")
         self.expect_exact(self.uprompt, timeout=30)
 
     def flash_linux(self, KERNEL):
         print("\n===== Updating kernel and rootfs =====\n")
         lan = self.dev.lan
-        filename = self.prepare_file(KERNEL,
-                                     tserver=lan.ipaddr,
-                                     tport=lan.port)
+        filename = self.prepare_file(KERNEL, tserver=lan.ipaddr, tport=lan.port)
 
         self.sendline(
-            "tftp -p %s -d %s %s" %
-            (self.uboot_ddr_addr, lan.tftp_server_ip_int(), filename))
+            "tftp -p %s -d %s %s"
+            % (self.uboot_ddr_addr, lan.tftp_server_ip_int(), filename)
+        )
         self.expect_exact("TFTP  general status Success")
-        if 0 == self.expect_exact(["TFTP TFTP Read File status Time out"] +
-                                  self.uprompt,
-                                  timeout=60):
+        if 0 == self.expect_exact(
+            ["TFTP TFTP Read File status Time out"] + self.uprompt, timeout=60
+        ):
             raise Exception("TFTP timed out")
 
         self.sendline("update -a A -s %s" % self.uboot_ddr_addr)
-        if 0 == self.expect_exact([
+        if 0 == self.expect_exact(
+            [
                 "UImage has wrong version magic",
                 "Congrats! Looks like everything went as planned! Your flash has been updated! Have a good day!",
-        ]):
+            ]
+        ):
             raise Exception("Image looks corrupt")
         self.expect_exact(self.uprompt, timeout=30)
 

@@ -10,6 +10,7 @@ class wifi_snmp(wifi_stub):
 
     Inherits wifi_stub from lib/wifi.py
     """
+
     def __init__(self, device, board):
         """To get the mib names for wifi.
 
@@ -79,7 +80,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == ssid_name, (
-            "Mib query return value for setting the SSID: %s" % mib_out)
+            "Mib query return value for setting the SSID: %s" % mib_out
+        )
 
     def set_security(self, wifi_mode, security):
         """To set wifi security via SNMP.
@@ -111,8 +113,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == security_mode, (
-            "Mib query return value for setting the security mode: %s" %
-            mib_out)
+            "Mib query return value for setting the security mode: %s" % mib_out
+        )
 
     def set_password(self, wifi_mode, password):
         """To set wifi password via SNMP.
@@ -143,7 +145,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == password, (
-            "Mib query return value for setting the password: %s" % mib_out)
+            "Mib query return value for setting the password: %s" % mib_out
+        )
 
     def enable_channel_utilization(self, wifi_mode):
         """To enable channel utilization via SNMP.
@@ -172,8 +175,8 @@ class wifi_snmp(wifi_stub):
                 "0",
             )
         assert mib_out == "2", (
-            "Mib query return value for setting the channel utilisation: %s" %
-            mib_out)
+            "Mib query return value for setting the channel utilisation: %s" % mib_out
+        )
 
     def set_operating_mode(self, wifi_mode, operating_mode):
         """To set wifi operating mode via SNMP.
@@ -206,8 +209,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == operating_mode, (
-            "Mib query return value for setting the operating mode: %s" %
-            mib_out)
+            "Mib query return value for setting the operating mode: %s" % mib_out
+        )
 
     def set_bandwidth(self, wifi_mode, bandwidth, channel_number=0):
         """To set wifi bandwidth via SNMP.
@@ -242,7 +245,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == bandwidth, (
-            "Mib query return value for setting the bandwidth: %s" % mib_out)
+            "Mib query return value for setting the bandwidth: %s" % mib_out
+        )
 
     def set_channel_number(self, wifi_mode, channel_number):
         """To set wifi channel number via SNMP.
@@ -274,8 +278,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == channel_number, (
-            "Mib query return value for setting the channel number: %s" %
-            mib_out)
+            "Mib query return value for setting the channel number: %s" % mib_out
+        )
 
     def set_broadcast(self, wifi_mode, broadcast="enable"):
         """To set wifi broadcast via SNMP.
@@ -311,8 +315,8 @@ class wifi_snmp(wifi_stub):
                 index,
             )
         assert mib_out == broadcast_value, (
-            "Mib query return value for setting the broadcast for SSID: %s" %
-            mib_out)
+            "Mib query return value for setting the broadcast for SSID: %s" % mib_out
+        )
 
     def apply_changes(self):
         """To apply changes to the wifi settings.

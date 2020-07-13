@@ -64,8 +64,7 @@ class AxirosACS(base_acs.BaseACS):
         self.cli_password = self.kwargs.pop("cli_password", None)
         self.color = self.kwargs.pop("color", None)
         self.options = self.kwargs.pop("options", None)
-        AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time",
-                                                  AxirosACS.CPE_wait_time)
+        AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
 
         if self.options:
             options = [x.strip() for x in self.options.split(",")]
@@ -89,8 +88,7 @@ class AxirosACS(base_acs.BaseACS):
 
         self.client = Client(
             wsdl=self.wsdl,
-            transport=Transport(session=session,
-                                cache=InMemoryCache(timeout=3600 * 3)),
+            transport=Transport(session=session, cache=InMemoryCache(timeout=3600 * 3)),
             wsse=UsernameToken(self.username, self.password),
         )
 
@@ -114,10 +112,10 @@ class AxirosACS(base_acs.BaseACS):
                     "ServerAliveCountMax=5",
                 ],
             )
-            self.check_connection(self.cli_username, self.name,
-                                  self.cli_password)
-            self.print_connected_console_msg(self.ipaddr, self.cli_port,
-                                             self.color, self.name)
+            self.check_connection(self.cli_username, self.name, self.cli_password)
+            self.print_connected_console_msg(
+                self.ipaddr, self.cli_port, self.color, self.name
+            )
             self.session_connected = True
 
         # this should be populater ONLY when using __main__
@@ -131,12 +129,14 @@ class AxirosACS(base_acs.BaseACS):
     def tcp_dump(func):
         """ Decorator to capture tcpdump in error cases
         """
+
         def wrapper(self, *args, **kwargs):
             pid = capture_file = None
             try:
                 if not self.session_connected:
                     warnings.warn(
-                        "Tcp dump cannot be captured as no ssh session exists")
+                        "Tcp dump cannot be captured as no ssh session exists"
+                    )
                 else:
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     stack = inspect.stack()
@@ -145,19 +145,23 @@ class AxirosACS(base_acs.BaseACS):
                         stack,
                         not_found="TestNameNotFound")
                     capture_file = func.__name__ + "_" + test_name + pcap
-                    tcpdump_output = tcpdump_capture(self,
-                                                     "any",
-                                                     capture_file=capture_file)
-                    pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))",
-                                    tcpdump_output).group(2)
+                    tcpdump_output = tcpdump_capture(
+                        self, "any", capture_file=capture_file
+                    )
+                    pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))", tcpdump_output).group(
+                        2
+                    )
                     out = func(self, *args, **kwargs)
                     kill_process(self, process="tcpdump", pid=pid)
                     self.sendline("rm %s" % capture_file)
                     return out
             except Exception as e:
                 kill_process(self, process="tcpdump", pid=pid)
-                print('\x1b[6;30;42m' +
-                      "TCPdump is saved in %s" % capture_file + '\x1b[0m')
+                print(
+                    "\x1b[6;30;42m"
+                    + "TCPdump is saved in %s" % capture_file
+                    + "\x1b[0m"
+                )
                 raise (e)
 
         return wrapper
@@ -173,6 +177,7 @@ class AxirosACS(base_acs.BaseACS):
     # TO DO: maybe this could be moved to a lib
     def _data_conversion(d):
         """Conversion type/data helper."""
+
         def to_int(v):
             return int(v)
 
@@ -186,23 +191,16 @@ class AxirosACS(base_acs.BaseACS):
         def to_dateTime(v):
             if re.search(r"^1\s", v):
                 v = v.zfill(len(v) + 3)
-            v = datetime.strptime(
-                v, "%Y %m %d %H %M %S.0").strftime("%Y-%m-%dT%H:%M:%S")
+            v = datetime.strptime(v, "%Y %m %d %H %M %S.0").strftime(
+                "%Y-%m-%dT%H:%M:%S"
+            )
             return v
 
         conv_table = {
-            "xsd3:string": {
-                "string": None
-            },
-            "xsd3:integer": {
-                "integer": to_int
-            },
-            "xsd3:boolean": {
-                "boolean": to_bool
-            },
-            "xsd3:ur-type[6]": {
-                "dateTime": to_dateTime
-            },
+            "xsd3:string": {"string": None},
+            "xsd3:integer": {"integer": to_int},
+            "xsd3:boolean": {"boolean": to_bool},
+            "xsd3:ur-type[6]": {"dateTime": to_dateTime},
         }
         convdict = conv_table.get(d["type"])
         if convdict:
@@ -224,30 +222,28 @@ class AxirosACS(base_acs.BaseACS):
                 access_list = []
                 if "item" in data["value"]["AccessList"]:
                     access_list = data["value"]["AccessList"]["item"]["text"]
-                data_list.append({
-                    "Name":
-                    data["key"]["text"],
-                    "AccessList":
-                    access_list,
-                    "Notification":
-                    data["value"]["Notification"]["text"],
-                })
+                data_list.append(
+                    {
+                        "Name": data["key"]["text"],
+                        "AccessList": access_list,
+                        "Notification": data["value"]["Notification"]["text"],
+                    }
+                )
             else:
                 v = data["value"].get("text", "")
                 if v == "":
                     if "item" in data["value"]:
-                        v = " ".join(
-                            [val.get("text") for val in data["value"]["item"]])
+                        v = " ".join([val.get("text") for val in data["value"]["item"]])
                 val_type = data["value"]["type"]
                 if val_type == "SOAP-ENC:Array":
                     val_type = data["value"][
-                        "http://schemas.xmlsoap.org/soap/encoding/:arrayType"]
+                        "http://schemas.xmlsoap.org/soap/encoding/:arrayType"
+                    ]
                 data_list.append(
-                    AxirosACS._data_conversion({
-                        "key": data["key"]["text"],
-                        "type": val_type,
-                        "value": v
-                    }))
+                    AxirosACS._data_conversion(
+                        {"key": data["key"]["text"], "type": val_type, "value": v}
+                    )
+                )
 
         return data_list
 
@@ -289,27 +285,28 @@ class AxirosACS(base_acs.BaseACS):
                 raise HTTPError(http_error_message)
 
         # is this needed (might be overkill)?
-        if not all([
-                result.get("details"),
-                result.get("message"),
-                result.get("ticketid")
-        ]):
+        if not all(
+            [result.get("details"), result.get("message"), result.get("ticketid")]
+        ):
             e = TR069ResponseError(
                 "ACS malformed response (issues with either "
-                "details/message/ticketid).")
+                "details/message/ticketid)."
+            )
             e.result = result  # for inspection later
             raise e
         fault = "faultcode" in msg
         if fault:
             # could there be more than 1 fault in a response?
             e = TR069FaultCode(msg)
-            e.faultdict = ast.literal_eval(msg[msg.index("{"):])
+            e.faultdict = ast.literal_eval(msg[msg.index("{") :])
             raise e
         # 'item' is not present in FactoryReset RPC response
         if "item" in result["details"]:
             return AxirosACS._parse_xml_response(result["details"]["item"])
-        elif ("ns1:KeyValueStruct[0]" in result["details"]
-              ["http://schemas.xmlsoap.org/soap/encoding/:arrayType"]):
+        elif (
+            "ns1:KeyValueStruct[0]"
+            in result["details"]["http://schemas.xmlsoap.org/soap/encoding/:arrayType"]
+        ):
             return []
 
     def _get_cmd_data(self, *args, **kwagrs):
@@ -332,12 +329,7 @@ class AxirosACS(base_acs.BaseACS):
         ParValsParsClassArray_data = ParValsClassArray_type(*args, **kwargs)
         return ParValsParsClassArray_data
 
-    def _build_input_structs(self,
-                             cpeid,
-                             param,
-                             action,
-                             next_level=None,
-                             **kwargs):
+    def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
         NOTE: The command option is set as Syncronous
@@ -362,15 +354,13 @@ class AxirosACS(base_acs.BaseACS):
                 k = next(iter(d))
                 list_kv.append({"key": k, "value": d[k]})
             p_arr_type = "ns0:SetParameterValuesParametersClassArray"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, list_kv)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, list_kv)
 
         elif action == "GPV":
             if type(param) is not list:
                 param = [param]
             p_arr_type = "ns0:GetParameterValuesParametersClassArray"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, param)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, param)
 
         elif action == "SPA":
             if type(param) is not list:
@@ -378,63 +368,55 @@ class AxirosACS(base_acs.BaseACS):
             list_kv = []
             for d in param:
                 k = next(iter(d))
-                list_kv.append({
-                    "Name":
-                    k,
-                    "Notification":
-                    d[k],
-                    "AccessListChange":
-                    kwargs.get("access_param", "0"),
-                    "AccessList": {
-                        "item": "Subscriber"
-                    },
-                    "NotificationChange":
-                    kwargs.get("notification_param", "1"),
-                })
+                list_kv.append(
+                    {
+                        "Name": k,
+                        "Notification": d[k],
+                        "AccessListChange": kwargs.get("access_param", "0"),
+                        "AccessList": {"item": "Subscriber"},
+                        "NotificationChange": kwargs.get("notification_param", "1"),
+                    }
+                )
             p_arr_type = "ns0:SetParameterAttributesParametersClassArray"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, list_kv)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, list_kv)
 
         elif action == "GPN":
 
             p_arr_type = "ns0:GetParameterNamesArgumentsStruct"
             ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, NextLevel=next_level, ParameterPath=param)
+                p_arr_type, NextLevel=next_level, ParameterPath=param
+            )
 
         elif action == "GPA":
             if type(param) is not list:
                 param = [param]
             p_arr_type = "ns0:GetParameterAttributesParametersClassArray"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, param)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, param)
 
         elif action == "SI":
             if type(param) is not list:
                 param = [param]
             p_arr_type = "ns0:ScheduleInformArgumentsStruct"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, *param)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, *param)
 
         elif action in ["AO", "DO"]:
             p_arr_type = "ns0:AddDelObjectArgumentsStruct"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, param, "")
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, param, "")
 
         elif action == "REBOOT":
             p_arr_type = "xsd:string"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, param)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, param)
 
         elif action == "DOWNLOAD":
             p_arr_type = "ns0:DownloadArgumentsStruct"
-            ParValsParsClassArray_data = self._get_pars_val_data(
-                p_arr_type, *param)
+            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, *param)
 
         else:
             raise CodeError("Invalid action: " + action)
 
         CmdOptTypeStruct_data = self._get_cmd_data(
-            Sync=True, Lifetime=AxirosACS.CPE_wait_time)
+            Sync=True, Lifetime=AxirosACS.CPE_wait_time
+        )
 
         CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
 
@@ -459,18 +441,21 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: string
         """
         GetParameterValuesParametersClassArray_type = self.client.get_type(
-            "ns0:GetParameterValuesParametersClassArray")
+            "ns0:GetParameterValuesParametersClassArray"
+        )
         GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type(
-            [param])
+            [param]
+        )
 
         CommandOptionsTypeStruct_type = self.client.get_type(
-            "ns0:CommandOptionsTypeStruct")
+            "ns0:CommandOptionsTypeStruct"
+        )
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type(
-            "ns0:CPEIdentifierClassStruct")
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
+            "ns0:CPEIdentifierClassStruct"
+        )
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
@@ -570,17 +555,18 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: string
         """
         CPESearchOptionsClassStruct_type = self.client.get_type(
-            "ns0:CPESearchOptionsClassStruct")
+            "ns0:CPESearchOptionsClassStruct"
+        )
         CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type()
 
         CommandOptionsForCPESearchStruct_type = self.client.get_type(
-            "ns0:CommandOptionsForCPESearchStruct")
-        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type(
+            "ns0:CommandOptionsForCPESearchStruct"
         )
+        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
 
         response = self.client.service.GetListOfCPEs(
-            CPESearchOptionsClassStruct_data,
-            CommandOptionsForCPESearchStruct_data)
+            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data
+        )
         if response["code"] != 200:
             return None
 
@@ -594,18 +580,18 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: True/False
         """
         CPESearchOptionsClassStruct_type = self.client.get_type(
-            "ns0:CPESearchOptionsClassStruct")
-        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(
-            cpeid=cpeid)
+            "ns0:CPESearchOptionsClassStruct"
+        )
+        CPESearchOptionsClassStruct_data = CPESearchOptionsClassStruct_type(cpeid=cpeid)
 
         CommandOptionsForCPESearchStruct_type = self.client.get_type(
-            "ns0:CommandOptionsForCPESearchStruct")
-        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type(
+            "ns0:CommandOptionsForCPESearchStruct"
         )
+        CommandOptionsForCPESearchStruct_data = CommandOptionsForCPESearchStruct_type()
 
         response = self.client.service.DeleteCPEs(
-            CPESearchOptionsClassStruct_data,
-            CommandOptionsForCPESearchStruct_data)
+            CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data
+        )
         print(response)
         if response["code"] != 200:
             return False
@@ -646,8 +632,7 @@ class AxirosACS(base_acs.BaseACS):
         for _ in range(wait):
             time.sleep(1)
             with self.client.settings(raw_response=True):
-                ticket_resp = self.client.service.get_generic_sb_result(
-                    ticketid)
+                ticket_resp = self.client.service.get_generic_sb_result(ticketid)
 
             root = ElementTree.fromstring(ticket_resp.content)
             for value in root.iter("code"):
@@ -683,13 +668,10 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="GPA")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="GPA")
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.GetParameterAttributes(
-                p, cmd, cpe_id)
+            response = self.client.service.GetParameterAttributes(p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
     @moves.moved_method("GPA")
@@ -750,14 +732,12 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="SPA",
-                                                   **kwargs)
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param, action="SPA", **kwargs
+        )
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.SetParameterAttributes(
-                p, cmd, cpe_id)
+            response = self.client.service.SetParameterAttributes(p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
     @moves.moved_method("AddObject")
@@ -788,9 +768,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="AO")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="AO")
 
         # get raw soap response
         with self.client.settings(raw_response=True):
@@ -822,9 +800,7 @@ class AxirosACS(base_acs.BaseACS):
         """
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="DO")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="DO")
 
         # get raw soap response
         with self.client.settings(raw_response=True):
@@ -843,18 +819,20 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: dictionary
         """
         CommandOptionsTypeStruct_type = self.client.get_type(
-            "ns0:CommandOptionsForCPELogStruct")
+            "ns0:CommandOptionsForCPELogStruct"
+        )
         CommandOptionsTypeStruct_data = CommandOptionsTypeStruct_type()
 
         CPEIdentifierClassStruct_type = self.client.get_type(
-            "ns0:CPEIdentifierClassStruct")
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
+            "ns0:CPEIdentifierClassStruct"
+        )
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.GetLogMessagesOfCPE(
-                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data)
+                CommandOptionsTypeStruct_data, CPEIdentifierClassStruct_data
+            )
 
         for _ in range(wait):
             time.sleep(1)
@@ -885,14 +863,15 @@ class AxirosACS(base_acs.BaseACS):
         :rtype: Boolean
         """
         CPEIdentifierClassStruct_type = self.client.get_type(
-            "ns0:CPEIdentifierClassStruct")
-        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(
-            cpeid=cpeid)
+            "ns0:CPEIdentifierClassStruct"
+        )
+        CPEIdentifierClassStruct_data = CPEIdentifierClassStruct_type(cpeid=cpeid)
 
         # get raw soap response (parsing error with zeep)
         with self.client.settings(raw_response=True):
             response = self.client.service.DeleteLogMessagesOfCPE(
-                CPEIdentifierClassStruct_data)
+                CPEIdentifierClassStruct_data
+            )
 
         for _ in range(wait):
             time.sleep(1)
@@ -916,16 +895,13 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="GPV")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="GPV")
 
         val = 0
         while val <= 1:
             try:
                 with self.client.settings(raw_response=True):
-                    response = self.client.service.GetParameterValues(
-                        p, cmd, cpe_id)
+                    response = self.client.service.GetParameterValues(p, cmd, cpe_id)
                 return AxirosACS._parse_soap_response(response)
             except HTTPError as e:
                 if "507" not in str(e):
@@ -954,16 +930,15 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param_value,
-                                                   action="SPV")
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param_value, action="SPV"
+        )
 
         val = 0
         while val <= 1:
             try:
                 with self.client.settings(raw_response=True):
-                    response = self.client.service.SetParameterValues(
-                        p, cmd, cpe_id)
+                    response = self.client.service.SetParameterValues(p, cmd, cpe_id)
                 result = AxirosACS._parse_soap_response(response)
                 break
             except HTTPError as e:
@@ -998,10 +973,9 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="GPN",
-                                                   next_level=next_level)
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param, action="GPN", next_level=next_level
+        )
 
         with self.client.settings(raw_response=True):
             response = self.client.service.GetParameterNames(p, cmd, cpe_id)
@@ -1070,14 +1044,12 @@ class AxirosACS(base_acs.BaseACS):
             self.cpeid = self.dev.board._cpeid
 
         param = [CommandKey, DelaySeconds]
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="SI")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="SI")
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.ScheduleInform(CommandOptions=cmd,
-                                                          CPEIdentifier=cpe_id,
-                                                          Parameters=p)
+            response = self.client.service.ScheduleInform(
+                CommandOptions=cmd, CPEIdentifier=cpe_id, Parameters=p
+            )
 
         return AxirosACS._parse_soap_response(response)
 
@@ -1092,14 +1064,14 @@ class AxirosACS(base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   CommandKey,
-                                                   action="REBOOT")
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, CommandKey, action="REBOOT"
+        )
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.Reboot(CommandOptions=cmd,
-                                                  CPEIdentifier=cpe_id,
-                                                  Parameters=p)
+            response = self.client.service.Reboot(
+                CommandOptions=cmd, CPEIdentifier=cpe_id, Parameters=p
+            )
 
         return AxirosACS._parse_soap_response(response)
 
@@ -1180,20 +1152,19 @@ class AxirosACS(base_acs.BaseACS):
             url,
             username,
         ]
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid,
-                                                   param,
-                                                   action="DOWNLOAD")
+        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="DOWNLOAD")
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.Download(CommandOptions=cmd,
-                                                    CPEIdentifier=cpe_id,
-                                                    Parameters=p)
+            response = self.client.service.Download(
+                CommandOptions=cmd, CPEIdentifier=cpe_id, Parameters=p
+            )
         return AxirosACS._parse_soap_response(response)
 
 
 if __name__ == "__main__":
     from pprint import pprint
     import sys
+
     """Good values to test:
     Device.DeviceInfo.ModelNumber
     Device.DeviceInfo.SoftwareVersion
@@ -1251,11 +1222,9 @@ if __name__ == "__main__":
         print("Error: missing cpeid")
         sys.exit(1)
 
-    acs = AxirosACS(ipaddr=ip,
-                    port=port,
-                    username=sys.argv[2],
-                    password=sys.argv[3],
-                    cpeid=cpe_id)
+    acs = AxirosACS(
+        ipaddr=ip, port=port, username=sys.argv[2], password=sys.argv[3], cpeid=cpe_id
+    )
 
     action = acs.SPV if sys.argv[5] == "SPV" else acs.GPV
 

@@ -41,20 +41,14 @@ def ubus_check_error(reply, lan, assert_on_err=True):
 
 def ubus_login_raw(lan, username="root", password="password"):
     json = {
-        "jsonrpc":
-        "2.0",
-        "id":
-        1,
-        "method":
-        "call",
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "call",
         "params": [
             "00000000000000000000000000000000",
             "session",
             "login",
-            {
-                "username": username,
-                "password": password
-            },
+            {"username": username, "password": password},
         ],
     }
     return ubus_call_raw(json, lan)
@@ -94,13 +88,14 @@ def ubus_system_reboot(session_id, lan):
 
 class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
     """Various UBus tests."""
+
     def runTest(self):
         lan = self.dev.lan
 
         for i in range(1000):
             print(
-                "\nRunning iteration of ubus json-rpc network restart nubmer %s\n"
-                % i)
+                "\nRunning iteration of ubus json-rpc network restart nubmer %s\n" % i
+            )
             session_id = ubus_login_session(lan)
             print("\nLogged in with sessionid = %s\n" % session_id)
             ubus_network_restart(session_id, lan)
@@ -111,14 +106,13 @@ class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
 
 class UBusTestSystemReboot(rootfs_boot.RootFSBootTest):
     """Various UBus tests."""
+
     def runTest(self):
         board = self.dev.board
         lan = self.dev.lan
 
         for i in range(1000):
-            print(
-                "\nRunning iteration of ubus json-rpc system reboot nubmer %s\n"
-                % i)
+            print("\nRunning iteration of ubus json-rpc system reboot nubmer %s\n" % i)
             session_id = ubus_login_session(lan)
             print("\nLogged in with sessionid = %s\n" % session_id)
 

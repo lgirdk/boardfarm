@@ -9,6 +9,7 @@ class Ser2NetConnection:
     If a board is connected serially to a server running ser2net daemon, this class can be used
     to connect to the board.
     """
+
     def __init__(self, device=None, conn_cmd=None, **kwargs):
         """Initialize the class instance to open a pexpect session.
 
@@ -32,17 +33,19 @@ class Ser2NetConnection:
 
         :raises: Exception Board is in use (connection refused). / Password required and not supported
         """
-        bft_pexpect_helper.spawn.__init__(self.device,
-                                          command="/bin/bash",
-                                          args=["-c", self.conn_cmd])
+        bft_pexpect_helper.spawn.__init__(
+            self.device, command="/bin/bash", args=["-c", self.conn_cmd]
+        )
 
         try:
-            result = self.device.expect([
-                "assword:",
-                "ser2net.*\r\n",
-                "OpenGear Serial Server",
-                "to access the port escape menu",
-            ])
+            result = self.device.expect(
+                [
+                    "assword:",
+                    "ser2net.*\r\n",
+                    "OpenGear Serial Server",
+                    "to access the port escape menu",
+                ]
+            )
         except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
         if result == 0:

@@ -13,6 +13,7 @@ from boardfarm.tests import rootfs_boot
 
 class InterfacesShow(rootfs_boot.RootFSBootTest):
     """Used "ip" or "ifconfig" to list interfaces."""
+
     def runTest(self):
         """Runtest implementation."""
         board = self.dev.board
@@ -21,13 +22,13 @@ class InterfacesShow(rootfs_boot.RootFSBootTest):
         board.expect("ip link show")
         board.expect(prompt)
         if "ip: not found" not in board.before:
-            up_interfaces = re.findall(r"\d: ([A-Za-z0-9-\.]+)[:@].*state UP ",
-                                       board.before)
+            up_interfaces = re.findall(
+                r"\d: ([A-Za-z0-9-\.]+)[:@].*state UP ", board.before
+            )
         else:
             board.sendline("ifconfig")
             board.expect(prompt)
-            up_interfaces = re.findall(r"([A-Za-z0-9-\.]+)\s+Link",
-                                       board.before)
+            up_interfaces = re.findall(r"([A-Za-z0-9-\.]+)\s+Link", board.before)
         num_up = len(up_interfaces)
         if num_up >= 1:
             msg = "%s interfaces are UP: %s." % (

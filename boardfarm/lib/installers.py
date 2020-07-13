@@ -28,12 +28,15 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
     :type timeout: integer, optional
     :raises assertion: package is not installed correctly
     """
+
     def _kill_stale_apt():
         pids = device.check_output("pgrep apt")
         if pids:
             print(
-                "Stale apt PIDs identified!! - {}\nKilling them before installation"
-                .format(pids.splitlines()))
+                "Stale apt PIDs identified!! - {}\nKilling them before installation".format(
+                    pids.splitlines()
+                )
+            )
             device.check_output("pkill apt")
 
     _kill_stale_apt()
@@ -41,8 +44,7 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
         device.sendline("export DEBIAN_FRONTEND=noninteractive")
         device.expect(device.prompt)
         apt_update(device)
-        device.sendline("apt-get install {} -q -y {}".format(
-            dpkg_options, name))
+        device.sendline("apt-get install {} -q -y {}".format(dpkg_options, name))
         device.expect("Reading package")
         try:
             device.expect(device.prompt, timeout=timeout)
@@ -57,8 +59,7 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
             pid = device.check_output("fuser -k {}".format(lock))
             pid = pid.replace("{}:".format(lock), "").strip()
             device.check_output("kill -9 {}".format(pid))
-            print("Retrying apt installation, after releasing {} lock!".format(
-                lock))
+            print("Retrying apt installation, after releasing {} lock!".format(lock))
         elif "apt --fix-broken install" in device.before:
             device.check_output("apt --fix-broken -y install", timeout=timeout)
             print("Retrying apt installation, after fixing broken packages!")
@@ -83,12 +84,15 @@ def apt_purge(device, name, timeout=120):
     :type timeout: integer, optional
     :raises assertion: if package is not removed correctly
     """
+
     def _kill_stale_apt():
         pids = device.check_output("pgrep apt")
         if pids:
             print(
-                "Stale apt PIDs identified!! - {}\nKilling them before installation"
-                .format(pids.splitlines()))
+                "Stale apt PIDs identified!! - {}\nKilling them before installation".format(
+                    pids.splitlines()
+                )
+            )
             device.check_output("pkill apt")
 
     for _ in range(2):
@@ -110,8 +114,7 @@ def apt_purge(device, name, timeout=120):
             pid = device.check_output("fuser -k {}".format(lock))
             pid = pid.replace("{}:".format(lock), "").strip()
             device.check_output("kill -9 {}".format(pid))
-            print("Retrying apt installation, after releasing {} lock!".format(
-                lock))
+            print("Retrying apt installation, after releasing {} lock!".format(lock))
         else:
             break
     device.sendline("dpkg -l %s" % name)
@@ -148,8 +151,7 @@ def install_iperf(device):
         device.expect(device.prompt)
         device.sendline("apt-get update")
         device.expect(device.prompt)
-        apt_install(device, "iperf",
-                    '-o DPkg::Options::="--force-confnew" --force-yes')
+        apt_install(device, "iperf", '-o DPkg::Options::="--force-confnew" --force-yes')
 
 
 def install_iperf3(device):
@@ -166,8 +168,7 @@ def install_iperf3(device):
         device.expect(device.prompt)
         device.sendline("apt-get update")
         device.expect(device.prompt)
-        apt_install(device, "iperf",
-                    '-o DPkg::Options::="--force-confnew" --force-yes')
+        apt_install(device, "iperf", '-o DPkg::Options::="--force-confnew" --force-yes')
 
 
 def install_tcpick(device):
@@ -234,8 +235,9 @@ def install_netperf(device):
         device.expect(device.prompt)
         device.sendline("apt-get update")
         device.expect(device.prompt)
-        apt_install(device, "netperf",
-                    '-o DPkg::Options::="--force-confnew" --force-yes')
+        apt_install(
+            device, "netperf", '-o DPkg::Options::="--force-confnew" --force-yes'
+        )
     device.sendline("/etc/init.d/netperf restart")
     device.expect("Restarting")
     device.expect(device.prompt)
@@ -337,8 +339,7 @@ def install_java(device):
             category=UserWarning,
         )
         device.sendline("apt-get install oracle-java8-installer -y")
-        device.expect_exact(
-            "Do you accept the Oracle Binary Code license terms")
+        device.expect_exact("Do you accept the Oracle Binary Code license terms")
         device.sendline("yes")
         device.expect(device.prompt, timeout=60)
         device.sendline("\njavac -version")
@@ -406,14 +407,11 @@ def install_telnet_server(device, remove=False):
         device.sendline('echo "socket_type = stream" >> /etc/xinetd.d/telnet')
         device.sendline('echo "wait = no" >> /etc/xinetd.d/telnet')
         device.sendline('echo "user = root" >> /etc/xinetd.d/telnet')
-        device.sendline(
-            'echo "server = /usr/sbin/in.telnetd" >> /etc/xinetd.d/telnet')
-        device.sendline(
-            'echo "log_on_failure += USERID" >> /etc/xinetd.d/telnet')
+        device.sendline('echo "server = /usr/sbin/in.telnetd" >> /etc/xinetd.d/telnet')
+        device.sendline('echo "log_on_failure += USERID" >> /etc/xinetd.d/telnet')
         device.sendline('echo "}" >> /etc/xinetd.d/telnet')
         device.expect(device.prompt, timeout=60)
-        pty_num = len(
-            device.check_output("cat /etc/securetty | grep pts/").split("\n"))
+        pty_num = len(device.check_output("cat /etc/securetty | grep pts/").split("\n"))
         # ensure 10 pts sessions for telnet server.
         for i in range(pty_num, 10):
             device.check_output('echo "pts/%s" >> /etc/securetty' % i)
@@ -596,7 +594,8 @@ def install_vsftpd(device, remove=False):
         )
         device.expect(device.prompt, timeout=5)
         device.sendline(
-            'sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf')
+            'sed -i "s/#write_enable=YES/write_enable=YES/g" /etc/vsftpd.conf'
+        )
         device.expect(device.prompt, timeout=5)
         device.sendline("service vsftpd restart")
         device.expect(device.prompt, timeout=60)
@@ -745,12 +744,14 @@ def install_dovecot(device, remove=False):
             "ssl_key = </etc/dovecot/private/dovecot.pem",
         ]
         device.sendline(
-            "cat > /etc/dovecot/conf.d/10-ssl.conf << EOF\n%s\nEOF\n" %
-            "\n".join(ssl_settings))
+            "cat > /etc/dovecot/conf.d/10-ssl.conf << EOF\n%s\nEOF\n"
+            % "\n".join(ssl_settings)
+        )
         device.expect_prompt()
         device.check_output("service dovecot restart")
         assert "dovecot is running" in device.check_output(
-            "service dovecot status"), "Failed to install dovecot"
+            "service dovecot status"
+        ), "Failed to install dovecot"
 
 
 def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
@@ -779,17 +780,19 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
     import os
 
     ovpn_install_script = "openvpn-install.sh"
-    fname = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                         "scripts/" + ovpn_install_script)
+    fname = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "scripts/" + ovpn_install_script
+    )
     dest = "/root/" + ovpn_install_script
     device.copy_file_to_server(fname, dest)
     device.sendline("chmod +x openvpn-install.sh")
     device.expect(device.prompt)
 
     device.sendline("ls -l /etc/init.d/openvpn")
-    index = device.expect([
-        "(\\sroot\\sroot\\s{1,}\\d{4}(.*)\\s{1,}\\/etc\\/init\\.d\\/openvpn)"
-    ] + ["No such file or directory"])
+    index = device.expect(
+        ["(\\sroot\\sroot\\s{1,}\\d{4}(.*)\\s{1,}\\/etc\\/init\\.d\\/openvpn)"]
+        + ["No such file or directory"]
+    )
     device.expect(device.prompt)
 
     # do we want to remove it?
@@ -801,8 +804,7 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
             device.sendline("./openvpn-install.sh")
             device.expect("Select an option.*: ")
             device.sendline("3")
-            device.expect_exact(
-                "Do you really want to remove OpenVPN? [y/n]: n")
+            device.expect_exact("Do you really want to remove OpenVPN? [y/n]: n")
             device.sendcontrol("h")
             device.sendline("y")
             device.expect(device.prompt, timeout=90)
@@ -851,20 +853,22 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
         device.expect(device.prompt)
         if _ip == "ipv4":
             # only add it in ipv4
-            device.sendline('echo "local ' + dev_ip +
-                            '" > /etc/openvpn/server.conf.tmp')
+            device.sendline(
+                'echo "local ' + dev_ip + '" > /etc/openvpn/server.conf.tmp'
+            )
             device.expect(device.prompt)
             device.sendline(
-                "cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp")
+                "cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp"
+            )
             device.expect(device.prompt)
-            device.sendline(
-                "mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf")
+            device.sendline("mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf")
             device.expect(device.prompt)
 
     device.sendline("/etc/init.d/openvpn status")
     index = device.expect(
-        ["VPN 'server' is running"] +
-        ["VPN 'server' is not running ... failed"] + device.prompt,
+        ["VPN 'server' is running"]
+        + ["VPN 'server' is not running ... failed"]
+        + device.prompt,
         timeout=90,
     )
     if index != 0:
@@ -914,8 +918,7 @@ def install_pptpd_server(device, remove=False):
     device.expect([pexpect.TIMEOUT] + device.prompt, timeout=5)
     device.sendline("ls -l /usr/sbin/pptpd")
     index = device.expect(
-        ["(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)"] +
-        device.prompt,
+        ["(\\s{1,}\\d{4}()\\s{1,}\\/etc\\/init\\.d\\/openvpn)"] + device.prompt,
         timeout=90,
     )
     if remove:
@@ -981,8 +984,7 @@ def install_postfix(device):
     except Exception:
         device.expect(device.prompt)
         device.sendline("apt-get update")  # Update inetd before installation
-        if 0 == device.expect(["Reading package", pexpect.TIMEOUT],
-                              timeout=60):
+        if 0 == device.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             device.expect(device.prompt, timeout=300)
         else:
             print("Failed to download packages, things might not work")
@@ -991,8 +993,7 @@ def install_postfix(device):
                 device.expect(device.prompt, timeout=10)
             device.sendline("cat /etc/resolv.conf")
             device.expect(device.prompt)
-            raise Exception(
-                "Failed to download packages, things might not work")
+            raise Exception("Failed to download packages, things might not work")
         deprecate(
             "Using apt install in sendline is deprecated! Please use apt_install",
             removal_version="> 1.1.1",
@@ -1000,8 +1001,9 @@ def install_postfix(device):
         )
         device.sendline("apt-get install postfix -y")
         install_settings = device.expect(
-            ["General type of mail configuration:"] +
-            ["Errors were encountered"] + device.prompt,
+            ["General type of mail configuration:"]
+            + ["Errors were encountered"]
+            + device.prompt,
             timeout=120,
         )
         print(install_settings)
@@ -1012,8 +1014,8 @@ def install_postfix(device):
             ), "System mail name option is not received. Installaion failed"
             device.sendline("testingsmtp.com")
             assert 0 != device.expect(
-                ["Errors were encountered"] + device.prompt,
-                timeout=90), "Errors Encountered. Installaion failed"
+                ["Errors were encountered"] + device.prompt, timeout=90
+            ), "Errors Encountered. Installaion failed"
 
         elif install_settings == 1:
             assert 0 != 1, "Errors Encountered. Installaion failed"
@@ -1050,9 +1052,9 @@ def check_pjsua(device):
         return False
 
 
-def install_pjsua(device,
-                  url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
-                  ):
+def install_pjsua(
+    device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
+):
     """Install softphone if not present.
 
     pjsua is a command line SIP user agent
@@ -1091,8 +1093,8 @@ def install_pjsua(device,
         device.expect(device.prompt)
         device.sendline("ls pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu")
         assert 0 == device.expect(
-            ["pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu"] +
-            device.prompt), "Unable to find executable"
+            ["pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu"] + device.prompt
+        ), "Unable to find executable"
         device.expect(device.prompt)
         device.sendline(
             "cp pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu /usr/local/bin/pjsua"
@@ -1112,11 +1114,11 @@ def configure_IRCserver(device, user_name):
     :raises assertion: 1. Start Service inspircd failed
                        2. Service inspircd is not running
     """
-    device.sendline(
-        "rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
+    device.sendline("rm /etc/inspircd/inspircd.conf; touch /etc/inspircd/inspircd.conf")
     device.expect(device.prompt)
 
-    device.sendline("""cat > /etc/inspircd/inspircd.conf << EOF
+    device.sendline(
+        """cat > /etc/inspircd/inspircd.conf << EOF
 <server name="irc.boardfarm.net"
         description="Boardfarm IRC Server"
         network="Boardfarm">
@@ -1218,7 +1220,9 @@ def configure_IRCserver(device, user_name):
 <badnick nick="NickServ" reason="Reserved For Services">
 <badnick nick="OperServ" reason="Reserved For Services">
 <badnick nick="MemoServ" reason="Reserved For Services">
-EOF""" % (user_name, user_name))
+EOF"""
+        % (user_name, user_name)
+    )
     device.expect(device.prompt)
 
     device.sendline("rm /etc/default/inspircd; touch /etc/default/inspircd")
@@ -1227,8 +1231,7 @@ EOF""" % (user_name, user_name))
     device.expect(device.prompt)
 
     device.sendline("service inspircd restart")
-    index = device.expect(["Starting Inspircd... done."] + device.prompt,
-                          timeout=30)
+    index = device.expect(["Starting Inspircd... done."] + device.prompt, timeout=30)
     assert index == 0, "Start Service inspircd"
     device.expect(device.prompt)
     device.sendline("netstat -tulpn | grep -i inspircd")
@@ -1237,8 +1240,9 @@ EOF""" % (user_name, user_name))
     device.expect(device.prompt)
 
 
-def configure_IRCclient(device, user_name, irc_client_scriptname, client_id,
-                        irc_server_ip, socket_type):
+def configure_IRCclient(
+    device, user_name, irc_client_scriptname, client_id, irc_server_ip, socket_type
+):
     """To create a python file in IRC client. The script shall be used to connect to server.
 
     :param device: lan or wan
@@ -1256,7 +1260,8 @@ def configure_IRCclient(device, user_name, irc_client_scriptname, client_id,
     """
     device.sendline("touch %s" % irc_client_scriptname)
     device.expect(device.prompt)
-    device.sendline('''cat > %s << EOF
+    device.sendline(
+        '''cat > %s << EOF
 import socket
 import time
 
@@ -1293,16 +1298,18 @@ while True:
         client.send('quit #channel\\r\\n')
     else:
         client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))
-EOF''' % (
-        irc_client_scriptname,
-        irc_server_ip,
-        user_name,
-        client_id,
-        client_id,
-        socket_type,
-        client_id,
-        client_id,
-    ))
+EOF'''
+        % (
+            irc_client_scriptname,
+            irc_server_ip,
+            user_name,
+            client_id,
+            client_id,
+            socket_type,
+            client_id,
+            client_id,
+        )
+    )
     device.expect(device.prompt)
 
 

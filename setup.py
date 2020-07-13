@@ -19,14 +19,14 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.txt", "*.json", "*.cfg", "*.md", "*.tcl"]},
     include_package_data=True,
-    data_files=[(
-        "html",
-        [
-            "boardfarm/html/template_results.html",
-            "boardfarm/html/template_results_basic.html",
-        ],
-    )],
-    entry_points={
-        "console_scripts": ["bft=boardfarm.bft:main"],
-    },
+    data_files=[
+        (
+            "html",
+            [
+                "boardfarm/html/template_results.html",
+                "boardfarm/html/template_results_basic.html",
+            ],
+        )
+    ],
+    entry_points={"console_scripts": ["bft=boardfarm.bft:main"],},
 )

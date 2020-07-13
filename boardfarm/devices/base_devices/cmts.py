@@ -13,6 +13,7 @@ def deco_get_mac(function):
     to be passed as an arg when know via JSON config.
 
     """
+
     @wraps(function)
     def wrapper(*args, **kwargs):
         args = list(args)
@@ -261,9 +262,7 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def modify_docsis_mac_ip_provisioning_mode(self,
-                                               index,
-                                               ip_pvmode="dual-stack"):
+    def modify_docsis_mac_ip_provisioning_mode(self, index, ip_pvmode="dual-stack"):
         """Change the ip provsioning mode
 
         :param index: mac domain of the board configured
@@ -488,13 +487,9 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def add_service_class(self,
-                          index,
-                          name,
-                          max_rate,
-                          max_burst,
-                          max_tr_burst=None,
-                          downstream=False):
+    def add_service_class(
+        self, index, name, max_rate, max_burst, max_tr_burst=None, downstream=False
+    ):
         """Add a service class
 
         :param index: service class number
@@ -553,8 +548,9 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def add_service_group(self, index, qam_idx, qam_sub, qam_channels, ups_idx,
-                          ups_channels):
+    def add_service_group(
+        self, index, qam_idx, qam_sub, qam_channels, ups_idx, ups_channels
+    ):
         """Add a service group
 
         :param index: service group number

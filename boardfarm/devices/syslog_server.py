@@ -29,9 +29,9 @@ class SyslogServer(debian.DebianBox):
             self.syslog_ip,
         )
 
-        self.connection = connection_decider.connection("local_cmd",
-                                                        device=self,
-                                                        conn_cmd=conn_cmd)
+        self.connection = connection_decider.connection(
+            "local_cmd", device=self, conn_cmd=conn_cmd
+        )
         self.connection.connect()
         self.linesep = "\r"
 
@@ -93,8 +93,8 @@ class SyslogServer(debian.DebianBox):
 
         # Check syslog time from server
         x = time.strptime(time_log_msg, "%H:%M:%S")
-        time_log_msg = datetime.timedelta(hours=x.tm_hour,
-                                          minutes=x.tm_min,
-                                          seconds=x.tm_sec).total_seconds()
+        time_log_msg = datetime.timedelta(
+            hours=x.tm_hour, minutes=x.tm_min, seconds=x.tm_sec
+        ).total_seconds()
 
         return time_log_msg

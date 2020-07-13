@@ -31,6 +31,7 @@ class BoardfarmWebClient(object):
 
     For checking out stations, etc.
     """
+
     def __init__(self, config_url, bf_version="1.0.0", debug=False):
         """Instance initialisation."""
         self.config_url = config_url
@@ -46,32 +47,30 @@ class BoardfarmWebClient(object):
             return
         self.headers = {"user-agent": self._user_agent()}
         self.default_data = {
-            "hostname":
-            socket.gethostname(),
-            "username":
-            os.environ.get("BUILD_USER_ID", None)
+            "hostname": socket.gethostname(),
+            "username": os.environ.get("BUILD_USER_ID", None)
             or os.environ.get("USER", None),
-            "build_url":
-            os.environ.get("BUILD_URL", None),
+            "build_url": os.environ.get("BUILD_URL", None),
         }
         if self.default_data["username"] in [
-                "root",
-                "testuser",
-                "tester",
-                "docker-factory",
-                "boardfarm",
+            "root",
+            "testuser",
+            "tester",
+            "docker-factory",
+            "boardfarm",
         ]:
             warnings.warn(
                 "Warning! Usernames 'root', 'testuser', 'tester', 'docker-factory', 'boardfarm' are blacklisted. Use either firstname or the git Id as username. E.g. If the name is Tom Smith, Tom or tsmith could be used."
             )
             raise ServerError(
-                "\x1b[6;30;42m" +
-                "------------Username {} is blacklisted-----------".format(
-                    self.default_data["username"]) + "\x1b[0m")
+                "\x1b[6;30;42m"
+                + "------------Username {} is blacklisted-----------".format(
+                    self.default_data["username"]
+                )
+                + "\x1b[0m"
+            )
         try:
-            res = requests.get(self.config_url,
-                               headers=self.headers,
-                               timeout=5)
+            res = requests.get(self.config_url, headers=self.headers, timeout=5)
             self.bf_config_str = res.text
             self.bf_config = res.json()
             res.raise_for_status()
@@ -89,15 +88,19 @@ class BoardfarmWebClient(object):
 
             @run_once
             def print_info():
-                print("Using %s as boardfarm server, version %s" %
-                      (self.server_url, self.server_version))
+                print(
+                    "Using %s as boardfarm server, version %s"
+                    % (self.server_url, self.server_version)
+                )
 
             print_info()
         except Exception as e:
             if self.debug:
                 print(e)
-                print("The server hosting '%s' does not appear to be a "
-                      "boardfarm server." % self.config_url)
+                print(
+                    "The server hosting '%s' does not appear to be a "
+                    "boardfarm server." % self.config_url
+                )
 
     def _user_agent(self):
         bfversion = "Boardfarm %s" % self.bf_version
@@ -136,9 +139,7 @@ class BoardfarmWebClient(object):
             return
         try:
             url = self.server_url + "/stations/" + self.checked_out["name"]
-            requests.post(url,
-                          json={"_meta.active_msg": msg},
-                          headers=self.headers)
+            requests.post(url, json={"_meta.active_msg": msg}, headers=self.headers)
         except Exception as e:
             if self.debug:
                 print(e)
@@ -169,9 +170,7 @@ class BoardfarmWebClient(object):
             station_id = config.get("_id", None)
             device_ids = []
             if "devices" in config:
-                device_ids = [
-                    x["_id"] for x in config["devices"] if "_id" in x
-                ]
+                device_ids = [x["_id"] for x in config["devices"] if "_id" in x]
             self.checked_out = {
                 "ids": [station_id] + device_ids,
                 "name": config.get("station", None),
@@ -182,8 +181,9 @@ class BoardfarmWebClient(object):
             print("Notified boardfarm server of checkout")
             # Periodically let server know we're still using devices
             self.done_with_devices = multiprocessing.Event()
-            w1 = multiprocessing.Process(target=self._poll,
-                                         args=(self.done_with_devices, ))
+            w1 = multiprocessing.Process(
+                target=self._poll, args=(self.done_with_devices,)
+            )
             # daemon allows main program to exit anytime and kill this process
             w1.daemon = True
             w1.start()
@@ -215,12 +215,6 @@ class BoardfarmWebClient(object):
 if __name__ == "__main__":
     bf_config = "http://boardfarm.myexamplesite.com/api/bf_config"
     bfweb = BoardfarmWebClient(bf_config, debug=False)
-    bfweb.checkout({
-        "_id": "1111",
-        "station": "rpi3",
-        "devices": [{
-            "_id": "1112"
-        }]
-    })
+    bfweb.checkout({"_id": "1111", "station": "rpi3", "devices": [{"_id": "1112"}]})
     time.sleep(65)
     bfweb.checkin()

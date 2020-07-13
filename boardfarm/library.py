@@ -17,12 +17,15 @@ from boardfarm.lib.common import print_bold
 
 class HelperEncoder(json.JSONEncoder):
     """Turn some objects into a form that can be stored in JSON."""
+
     def default(self, obj):
         """Return obj to the form that can be stored in JSON."""
-        if (isinstance(obj, ipaddress.IPv4Network)
-                or isinstance(obj, ipaddress.IPv4Address)
-                or isinstance(obj, ipaddress.IPv6Network)
-                or isinstance(obj, ipaddress.IPv6Address)):
+        if (
+            isinstance(obj, ipaddress.IPv4Network)
+            or isinstance(obj, ipaddress.IPv4Address)
+            or isinstance(obj, ipaddress.IPv6Network)
+            or isinstance(obj, ipaddress.IPv6Address)
+        ):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
             return str(obj)
@@ -35,7 +38,8 @@ class HelperEncoder(json.JSONEncoder):
                 print(error)
                 print(
                     "WARNING: HelperEncoder doesn't know how to convert %s to a string or number"
-                    % type(obj))
+                    % type(obj)
+                )
                 return ""
 
 
@@ -108,8 +112,11 @@ def check_devices(devices, func_name="check_status"):
                 if hasattr(d, "logfile_read"):
                     saved_logfile_read = d.logfile_read.out
                     d.logfile_read.out = None
-                print("Checking status for " + d.__class__.__name__ +
-                      " (see log in result dir for data)")
+                print(
+                    "Checking status for "
+                    + d.__class__.__name__
+                    + " (see log in result dir for data)"
+                )
                 getattr(d, func_name)()
             except Exception as error:
                 print(error)
@@ -118,8 +125,10 @@ def check_devices(devices, func_name="check_status"):
             if saved_logfile_read is not None:
                 d.logfile_read.out = saved_logfile_read
         elif "BFT_DEBUG" in os.environ:
-            print("Pro Tip: Write a function %s.%s() to run between tests." %
-                  (d.__class__.__name__, func_name))
+            print(
+                "Pro Tip: Write a function %s.%s() to run between tests."
+                % (d.__class__.__name__, func_name)
+            )
     print("\n" + "=" * 20 + " END Status Check " + "=" * 20)
 
     return ret
@@ -190,21 +199,22 @@ def process_test_results(raw_test_results, golden={}):
 
         long_message = getattr(cls, "long_result_message", "")
 
-        full_results["test_results"].append({
-            "name": name,
-            "message": message,
-            "long_message": long_message,
-            "grade": grade,
-            "elapsed_time": elapsed_time,
-        })
+        full_results["test_results"].append(
+            {
+                "name": name,
+                "message": message,
+                "long_message": long_message,
+                "grade": grade,
+                "elapsed_time": elapsed_time,
+            }
+        )
 
     for i, x in enumerate(raw_test_results):
         try:
             parse_and_add_results(x)
 
             for subtest in x.subtests:
-                parse_and_add_results(subtest,
-                                      prefix=x.__class__.__name__ + "-")
+                parse_and_add_results(subtest, prefix=x.__class__.__name__ + "-")
         except Exception as e:
             print("Failed to parse test result: %s" % e)
 
@@ -230,8 +240,7 @@ def create_results_html(full_results, config, logger):
         logger.debug("Unable to create HTML results")
 
 
-def create_info_for_remote_log(config, full_results, tests_to_run, logger,
-                               env_helper):
+def create_info_for_remote_log(config, full_results, tests_to_run, logger, env_helper):
     """Create information for the remote log."""
     # Try to remotely log information about this run
     info_for_remote_log = dict(config.board)
@@ -247,8 +256,9 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger,
 
     # TODO: move duration calculation outside of this function
     if "TEST_END_TIME" in os.environ and "TEST_START_TIME" in os.environ:
-        info_for_remote_log["duration"] = int(
-            os.environ["TEST_END_TIME"]) - int(os.environ["TEST_START_TIME"])
+        info_for_remote_log["duration"] = int(os.environ["TEST_END_TIME"]) - int(
+            os.environ["TEST_START_TIME"]
+        )
 
     if hasattr(config, "TEST_SUITE"):
         info_for_remote_log["test_suite"] = str(config.TEST_SUITE)
@@ -260,9 +270,7 @@ def create_info_for_remote_log(config, full_results, tests_to_run, logger,
         data = generate_test_info_for_kibana(t, prefix="", override_name="")
         info_for_remote_log["test_results"][idx].update(data)
         for subtest in t.subtests:
-            data = generate_test_info_for_kibana(subtest,
-                                                 prefix="",
-                                                 override_name="")
+            data = generate_test_info_for_kibana(subtest, prefix="", override_name="")
             info_for_remote_log["test_results"][idx].update(data)
             idx += 1
         idx += 1

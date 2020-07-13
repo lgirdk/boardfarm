@@ -29,9 +29,11 @@ class TrafficGenerator(base.BaseDevice):
         self.udp_down_speed = kwargs.pop("udp_down_speed", None)
         self.udp_up_speed = kwargs.pop("udp_up_speed", None)
         self.down_latency = timedelta(
-            microseconds=kwargs.pop("down_latency_ns", 10000000) / 1000.0)
+            microseconds=kwargs.pop("down_latency_ns", 10000000) / 1000.0
+        )
         self.up_latency = timedelta(
-            microseconds=kwargs.pop("up_latency_ns", 10000000) / 1000.0)
+            microseconds=kwargs.pop("up_latency_ns", 10000000) / 1000.0
+        )
 
         # Store instances of TrafficGeneratorPort as client or server
         self.server = None
@@ -200,6 +202,7 @@ class TrafficGenerator(base.BaseDevice):
 
 class TrafficGeneratorPort(object):
     """Pseudo base class for configuring a port on traffic genrator"""
+
     def __init__(self, *args, **kwargs):
         self.port_name = kwargs.pop("role", "server")
         self.address = kwargs.pop("address", None)
@@ -213,5 +216,4 @@ class TrafficGeneratorPort(object):
         raise Exception("Not implemented!")
 
     def __str__(self):
-        return 'Port "{}" ({}@{})'.format(self.port_name, self.interface,
-                                          self.address)
+        return 'Port "{}" ({}@{})'.format(self.port_name, self.interface, self.address)
