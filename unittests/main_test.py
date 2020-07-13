@@ -7,12 +7,6 @@ import boardfarm
 
 
 class TestSimpleBoardfarm(unittest.TestCase):
-    def test_plugins_installed(self):
-        """
-        Verify some boardfarm plugins are installed.
-        """
-        self.assertGreater(len(boardfarm.plugins), 1)
-
     def test_import_tests(self):
         """
         Verify we can import all boardfarm tests.
@@ -23,18 +17,6 @@ class TestSimpleBoardfarm(unittest.TestCase):
         # Also make sure something is in tests.available_tests
         self.assertGreater(len(tests.available_tests), 10)
 
-    def test_import_testsuites(self):
-        """
-        Verify we can import testsuites and find
-        a few needed testsuites.
-        """
-        from boardfarm import testsuites
-
-        self.assertGreater(len(testsuites.list_tests), 5)
-        self.assertIn("flash", testsuites.list_tests)
-        self.assertIn("basic", testsuites.list_tests)
-        self.assertIn("connect", testsuites.list_tests)
-
     def test_import_debian_wifi(self):
         """
         Verify we can import a specific device by name.
@@ -42,15 +24,6 @@ class TestSimpleBoardfarm(unittest.TestCase):
         import boardfarm.devices.debian_wifi
 
         print(boardfarm.devices.debian_wifi.__name__)
-
-    def test_import_devices(self):
-        """
-        Verify we can import boardfarm devices.
-        """
-        import boardfarm.devices
-
-        boardfarm.devices.probe_devices()
-        self.assertGreater(len(boardfarm.devices.device_mappings), 10)
 
     def test_devicemanager(self):
         """
@@ -176,17 +149,6 @@ class TestSimpleBoardfarm(unittest.TestCase):
         with self.assertRaises(boardfarm.exceptions.BftDeprecate):
             test_func(test_stub(None, None, None), "not", "same")
             self.assertEqual(ran, True)
-
-
-class TestSnmp(unittest.TestCase):
-    def test_snmp_compile(self):
-        """
-        Verify the Simple Network Management Protocol (SNMP) helper
-        functions successfully compile Management Information Base (mib)
-        files.
-        """
-        tmp = boardfarm.lib.SnmpHelper.SnmpMibs.default_mibs
-        self.assertGreater(len(tmp.mib_dict), 0)
 
 
 if __name__ == "__main__":
