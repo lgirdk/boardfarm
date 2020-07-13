@@ -46,10 +46,6 @@ repos:
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
-    - repo: https://github.com/pre-commit/mirrors-yapf
-      rev: v0.29.0
-      hooks:
-          - id: yapf
     - repo: https://github.com/myint/eradicate
       rev: master
       hooks:
