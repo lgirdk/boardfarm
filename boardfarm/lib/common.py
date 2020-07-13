@@ -21,11 +21,17 @@ from datetime import datetime
 
 import pexpect
 import termcolor
-from boardfarm.lib.bft_pexpect_helper import (bft_pexpect_helper,
-                                              spawn_ssh_pexpect)
-from boardfarm.lib.installers import (install_ovpn_client, install_ovpn_server,
-                                      install_postfix, install_pptp_client,
-                                      install_pptpd_server)
+from boardfarm.lib.bft_pexpect_helper import (
+    bft_pexpect_helper,
+    spawn_ssh_pexpect,
+)
+from boardfarm.lib.installers import (
+    install_ovpn_client,
+    install_ovpn_server,
+    install_postfix,
+    install_pptp_client,
+    install_pptpd_server,
+)
 from boardfarm.lib.SnmpHelper import SnmpMibs
 from selenium import webdriver
 from termcolor import cprint

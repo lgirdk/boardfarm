@@ -26,8 +26,12 @@ import boardfarm.exceptions
 import matplotlib
 import psutil
 from boardfarm import devices, library, tests
-from boardfarm.dbclients import (boardfarmwebclient, elasticlogger, logstash,
-                                 mongodblogger)
+from boardfarm.dbclients import (
+    boardfarmwebclient,
+    elasticlogger,
+    logstash,
+    mongodblogger,
+)
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.lib import DeviceManager
 from boardfarm.lib.bft_logging import create_file_logs, write_test_log

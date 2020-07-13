@@ -16,15 +16,22 @@ from pyvirtualdisplay import Display
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.events import (AbstractEventListener,
-                                               EventFiringWebDriver)
+from selenium.webdriver.support.events import (
+    AbstractEventListener,
+    EventFiringWebDriver,
+)
 from selenium.webdriver.support.ui import WebDriverWait
 from xvfbwrapper import Xvfb
 
 from .common import get_webproxy_driver, resolv_dict
-from .gui_helper import (click_button_id, enter_input, get_drop_down_value,
-                         get_radio_button_value, get_text_value,
-                         select_option_by_id)
+from .gui_helper import (
+    click_button_id,
+    enter_input,
+    get_drop_down_value,
+    get_radio_button_value,
+    get_text_value,
+    select_option_by_id,
+)
 
 
 class web_gui:

@@ -5,9 +5,12 @@ import netaddr
 import pexpect
 import six
 from boardfarm.exceptions import BftIfaceNoIpV4Addr, BftIfaceNoIpV6Addr
-from boardfarm.lib.regexlib import (InterfaceIPv4_AddressRegex,
-                                    InterfaceIPv6_AddressRegex, LinuxMacFormat,
-                                    NetmaskIPv4_AddressRegex)
+from boardfarm.lib.regexlib import (
+    InterfaceIPv4_AddressRegex,
+    InterfaceIPv6_AddressRegex,
+    LinuxMacFormat,
+    NetmaskIPv4_AddressRegex,
+)
 
 
 class bft_iface(object):

@@ -11,8 +11,12 @@ from xml.etree import ElementTree
 
 import pexpect
 import xmltodict
-from boardfarm.exceptions import (ACSFaultCode, CodeError, TR069FaultCode,
-                                  TR069ResponseError)
+from boardfarm.exceptions import (
+    ACSFaultCode,
+    CodeError,
+    TR069FaultCode,
+    TR069ResponseError,
+)
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import get_class_name_in_stack
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture

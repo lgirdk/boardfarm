@@ -7,9 +7,12 @@ import re
 import pexpect
 import six
 from boardfarm.exceptions import PexpectErrorTimeout
-from boardfarm.lib.regexlib import (AllValidIpv6AddressesRegex,
-                                    InterfaceIPv6_AddressRegex, LinuxMacFormat,
-                                    ValidIpv4AddressRegex)
+from boardfarm.lib.regexlib import (
+    AllValidIpv6AddressesRegex,
+    InterfaceIPv6_AddressRegex,
+    LinuxMacFormat,
+    ValidIpv4AddressRegex,
+)
 
 from . import base
 

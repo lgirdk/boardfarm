@@ -14,8 +14,7 @@ import boardfarm
 import pexpect
 import termcolor
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm.lib.DeviceManager import (  # pylint: disable=unused-import    # noqa: F401
-    all_device_managers, device_type)
+from boardfarm.lib.DeviceManager import all_device_managers, device_type
 from six.moves import UserList
 
 # TODO: this probably should not the generic device
