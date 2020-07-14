@@ -78,30 +78,37 @@ class IPerf3(base_profile.BaseProfile):
 
     @classmethod
     def run_traffic_gen(cls, traffic_profile="TCP", duration=10):
+        client_args = cls.get_traffic_gen_client()
+        client = client_args.device
+
+        server_args = cls.get_traffic_gen_server()
+        server = server_args.device
+        port = server_args.port
+
+        print("Run Traffic Generation Parameters:\n"
+              f"Profile: {traffic_profile}\n"
+              f"Server: {server.name}:{port}\n"
+              f"Client: {client.name}\n")
+        raise CodeError("Not Implemented !!")
+
+    @classmethod
+    def get_traffic_gen_client(cls):
         try:
-            client_args = cls.profile["client"]
-            client = client_args.device
+            client = cls.profile["client"]
+            return client
         except KeyError:
             raise DeviceDoesNotExistError(
                 "Client not found!!" "Check json config for client profile"
             )
 
+    @classmethod
+    def get_traffic_gen_server(cls):
         try:
-            server_args = cls.profile["server"]
-            server = server_args.device
-            port = server_args.port
+            server = cls.profile["server"]
+            return server
         except KeyError:
             raise DeviceDoesNotExistError(
-                "Server not found!!" "Check json config for server profile"
-            )
-
-        print(
-            "Run Traffic Generation Parameters:\n"
-            f"Profile: {traffic_profile}\n"
-            f"Server: {server.name}:{port}\n"
-            f"Client: {client.name}\n"
-        )
-        raise CodeError("Not Implemented !!")
-
+                "Server not found!!"
+                "Check json config for server profile")
 
 ####################################################################################################
