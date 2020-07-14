@@ -2051,10 +2051,7 @@ def toggle_dhcp_lan_advertise_identity(lan_dev):
     lan_dev.start_lan_client()
 
 
-def get_class_name_in_stack(self,
-                            needle,
-                            haystack,
-                            not_found="needle_not_found"):
+def get_class_name_in_stack(self, needle, haystack, not_found="needle_not_found"):
     """Given a class self and a stack trace, scan the stack looking for the
     mathching string returning the class name (if needle is found). Can be
     used to find the testname if working from a generic library that has no
@@ -2074,7 +2071,8 @@ def get_class_name_in_stack(self,
         needle = [needle]
     try:
         s = [
-            st[0].f_locals["self"].__class__.__name__ for st in haystack
+            st[0].f_locals["self"].__class__.__name__
+            for st in haystack
             if st.function in needle
         ][0]
     except IndexError:

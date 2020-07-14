@@ -141,9 +141,11 @@ class AxirosACS(base_acs.BaseACS):
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     stack = inspect.stack()
                     test_name = get_class_name_in_stack(
-                        self, ["test_main", "mvx_tst_setup"],
+                        self,
+                        ["test_main", "mvx_tst_setup"],
                         stack,
-                        not_found="TestNameNotFound")
+                        not_found="TestNameNotFound",
+                    )
                     capture_file = func.__name__ + "_" + test_name + pcap
                     tcpdump_output = tcpdump_capture(
                         self, "any", capture_file=capture_file

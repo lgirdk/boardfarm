@@ -58,7 +58,7 @@ class FriendlyACS:
         if type(attr) is list and type(value) is list:
             arr = array_of_param()
             for i, j in zip(attr, value):
-                arr['Param'].append({'Name': i, 'Value': j})
+                arr["Param"].append({"Name": i, "Value": j})
         else:
             arr = array_of_param([{"Name": attr, "Value": value}])
 
