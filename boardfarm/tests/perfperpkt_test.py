@@ -31,7 +31,8 @@ class PerfPerPktTest(iperf_test.iPerfTest):
     def runTest(self, client=None, client_name="br-lan"):
         board = self.dev.board
         wan = self.dev.wan
-        client = self.dev.lan
+        if not client:
+            client = self.dev.lan
 
         if not board.check_perf():
             self.result_message = "perf not in image. skipping test."
