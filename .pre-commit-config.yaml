@@ -56,3 +56,9 @@ repos:
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
+    - repo: https://github.com/ambv/black
+      rev: 19.10b0
+      hooks:
+          - id: black
+            description: 'Black: The uncompromising Python code formatter'
+            args: [--safe]
