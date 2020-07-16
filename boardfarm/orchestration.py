@@ -239,6 +239,7 @@ class TearDown(TestStep):
         """Instance initialization for TearDown class."""
         super(TearDown, self).__init__(parent_test, name, prefix)
         self.td_result = True
+        self.td_final_result = True
         self.print_enter = False
 
     def add(self, func, *args, **kwargs):
@@ -271,6 +272,8 @@ class TearDown(TestStep):
                 )
                 r.tb = (None, None, None)
                 self.result[-1].result = r
+            else:
+                self.td_result = True
 
         self.print_log(self.result[-1])
 
@@ -286,6 +289,7 @@ class TearDown(TestStep):
                 wrap=False,
             )
             self.td_result = False
+            self.td_final_result = False
 
             if hasattr(i.result, "tb") and "BFT_DEBUG" in os.environ:
                 trace = traceback.format_exception(*i.result.tb)

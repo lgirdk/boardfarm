@@ -136,6 +136,7 @@ class BftBaseTest(inherit_class):
 
     def run(self, result=None):
         exc_to_raise = None
+        td_exception = False
         self.startMarker()
         try:
             self.executionWrapper()
@@ -148,6 +149,7 @@ class BftBaseTest(inherit_class):
                 if func and not _using_pytest:
                     self.teardown_wrapper(func)
             except Exception as e:
+                td_exception = True
                 print(e)
                 print("This should never happen. TearDown should be fail-safe")
                 traceback.print_exc(file=sys.stdout)
@@ -157,7 +159,7 @@ class BftBaseTest(inherit_class):
                     raise
             finally:
                 td = self.td_step
-                if not td.td_result:
+                if not td.td_final_result or td_exception:
                     if "FAIL" not in self.result_grade:
                         self.result_grade = "TD FAIL"
         else:
