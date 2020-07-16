@@ -28,6 +28,16 @@ repos:
           - id: remove-tabs
           - id: forbid-crlf
           - id: forbid-tabs
+    - repo: https://github.com/myint/eradicate
+      rev: master
+      hooks:
+          - id: eradicate
+            name: eradicate
+            description: Apply eradicate
+            entry: eradicate
+            language: python
+            files: \.py$
+            args: [--in-place]
     - repo: https://github.com/timothycrosley/isort
       rev: 4.3.21
       hooks:
@@ -46,13 +56,3 @@ repos:
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
-    - repo: https://github.com/myint/eradicate
-      rev: master
-      hooks:
-          - id: eradicate
-            name: eradicate
-            description: Apply eradicate
-            entry: eradicate
-            language: python
-            files: \.py$
-            args: [--in-place]
