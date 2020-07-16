@@ -39,12 +39,18 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
             )
             device.check_output("pkill apt")
 
+    shim_prefix = (
+        device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
+    )
+
     _kill_stale_apt()
     for _ in range(2):
         device.sendline("export DEBIAN_FRONTEND=noninteractive")
         device.expect(device.prompt)
         apt_update(device)
-        device.sendline("apt-get install {} -q -y {}".format(dpkg_options, name))
+        device.sendline(
+            "{}apt-get install {} -q -y {}".format(shim_prefix, dpkg_options, name)
+        )
         device.expect("Reading package")
         try:
             device.expect(device.prompt, timeout=timeout)
@@ -61,7 +67,9 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
             device.check_output("kill -9 {}".format(pid))
             print("Retrying apt installation, after releasing {} lock!".format(lock))
         elif "apt --fix-broken install" in device.before:
-            device.check_output("apt --fix-broken -y install", timeout=timeout)
+            device.check_output(
+                "{}apt --fix-broken -y install".format(shim_prefix), timeout=timeout
+            )
             print("Retrying apt installation, after fixing broken packages!")
         else:
             break
@@ -99,7 +107,15 @@ def apt_purge(device, name, timeout=120):
         device.sendline("export DEBIAN_FRONTEND=noninteractive")
         device.expect(device.prompt)
         apt_update(device)
-        device.sendline("apt-get purge -q -y %s" % name)
+        device.sendline(
+            "%sapt-get purge -q -y %s"
+            % (
+                name,
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else "",
+            )
+        )
         device.expect("Reading package")
         try:
             device.expect(device.prompt, timeout=timeout)
@@ -132,7 +148,10 @@ def apt_update(device, timeout=120):
     :param timeout: timeout for expect, defaults to '120'
     :type timeout: integer, optional
     """
-    device.sendline("apt-get -q update")
+    shim_prefix = (
+        device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
+    )
+    device.sendline("{}apt-get -q update".format(shim_prefix))
     device.expect("Reading package")
     device.expect(device.prompt, timeout=timeout)
 
@@ -149,7 +168,13 @@ def install_iperf(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(device, "iperf", '-o DPkg::Options::="--force-confnew" --force-yes')
 
@@ -166,7 +191,13 @@ def install_iperf3(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(device, "iperf", '-o DPkg::Options::="--force-confnew" --force-yes')
 
@@ -233,7 +264,13 @@ def install_netperf(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(
             device, "netperf", '-o DPkg::Options::="--force-confnew" --force-yes'
@@ -281,7 +318,13 @@ def install_hping3(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(device, "hping3")
 
@@ -298,7 +341,13 @@ def install_python(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(
             device,
@@ -331,14 +380,26 @@ def install_java(device):
             "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886"
         )
         device.expect(device.prompt)
-        device.sendline("apt-get update -y")
+        device.sendline(
+            "{}apt-get update -y".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         deprecate(
             "Using apt install in sendline is deprecated! Please use apt_install",
             removal_version="> 1.1.1",
             category=UserWarning,
         )
-        device.sendline("apt-get install oracle-java8-installer -y")
+        device.sendline(
+            "{}apt-get install oracle-java8-installer -y".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect_exact("Do you accept the Oracle Binary Code license terms")
         device.sendline("yes")
         device.expect(device.prompt, timeout=60)
@@ -364,7 +425,13 @@ def install_java(device):
                 removal_version="> 1.1.1",
                 category=UserWarning,
             )
-            device.sendline("apt-get install oracle-java8-installer -y")
+            device.sendline(
+                "{}apt-get install oracle-java8-installer -y".format(
+                    device.get_shim_prefix()
+                    if getattr(device, "get_shim_prefix", "")
+                    else ""
+                )
+            )
             device.expect(device.prompt, timeout=60)
 
 
@@ -489,7 +556,11 @@ def install_ftp(device):
     :param device: lan or wan
     :type device: Object
     """
-    device.sendline("apt-get update")
+    device.sendline(
+        "{}apt-get update".format(
+            device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
+        )
+    )
     device.expect(device.prompt, timeout=90)
     device.sendline("\ndpkg -l | grep ftp")
     try:
@@ -571,7 +642,13 @@ def install_snmp(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt update")
+        device.sendline(
+            "{}apt update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         apt_install(device, "snmp")
 
@@ -586,7 +663,13 @@ def install_vsftpd(device, remove=False):
     :type remove: Boolean, optional
     """
     if not remove:
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt, timeout=90)
         apt_install(device, "vsftpd")
         device.sendline(
@@ -690,7 +773,11 @@ def install_IRCserver(device, remove=False):
     """
     if remove:
         device.check_output(
-            "service inspircd stop; killall inspircd; apt-get --purge remove inspircd -y"
+            "service inspircd stop; killall inspircd; {}apt-get --purge remove inspircd -y".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
         )
         return
     device.sendline("inspircd --version")
@@ -724,7 +811,11 @@ def install_dovecot(device, remove=False):
             category=UserWarning,
         )
         device.check_output(
-            "killall dovecot; service dovecot stop; apt purge -y --auto-remove dovecot-*"
+            "killall dovecot; service dovecot stop; {}apt purge -y --auto-remove dovecot-*".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
         )
         device.check_output("rm -rf /etc/dovecot")
     if remove:
@@ -815,7 +906,13 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
         device.sendline("rm -f /etc/openvpn/server.conf")
         device.expect(device.prompt)
         dev_ip = device.get_interface_ipaddr(device.iface_dut)
-        device.sendline("apt-get update")
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         device.expect(device.prompt)
         shim = getattr(device, "shim", None)
         output = shim if shim else ""
@@ -899,7 +996,11 @@ def install_ovpn_client(device, remove=False):
         apt_purge(device, "openvpn")
         return
 
-    device.sendline("apt-get update")
+    device.sendline(
+        "{}apt-get update".format(
+            device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
+        )
+    )
     device.expect(device.prompt)
     apt_install(device, "openvpn")
 
@@ -975,7 +1076,11 @@ def install_postfix(device):
         removal_version="> 1.1.1",
         category=UserWarning,
     )
-    device.sendline("apt-get purge postfix -y")
+    device.sendline(
+        "{}apt-get purge postfix -y".format(
+            device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
+        )
+    )
     device.expect(device.prompt, timeout=40)
     device.sendline("postconf -d | grep mail_version")
     try:
@@ -983,7 +1088,14 @@ def install_postfix(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        device.sendline("apt-get update")  # Update inetd before installation
+        # Update inetd before installation
+        device.sendline(
+            "{}apt-get update".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         if 0 == device.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             device.expect(device.prompt, timeout=300)
         else:
@@ -999,7 +1111,13 @@ def install_postfix(device):
             removal_version="> 1.1.1",
             category=UserWarning,
         )
-        device.sendline("apt-get install postfix -y")
+        device.sendline(
+            "{}apt-get install postfix -y".format(
+                device.get_shim_prefix()
+                if getattr(device, "get_shim_prefix", "")
+                else ""
+            )
+        )
         install_settings = device.expect(
             ["General type of mail configuration:"]
             + ["Errors were encountered"]

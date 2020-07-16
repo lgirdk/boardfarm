@@ -219,17 +219,6 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
             ipaddr = self.ipaddr = self.before.strip()
 
-        self.sendline("alias mgmt")
-        idx = self.expect(
-            ["alias mgmt=", "alias: mgmt: not found", pexpect.TIMEOUT], timeout=10
-        )
-        if idx == 0:
-            self.expect(self.prompt)
-            self.shim = "mgmt"
-            self.sendline('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
-            self.expect_exact('alias apt="mgmt apt"; alias apt-get="mgmt apt-get"')
-        self.expect(self.prompt)
-
         self.print_connected_console_msg(ipaddr, port, color, name)
 
         if post_cmd_host is not None:
@@ -391,9 +380,10 @@ class DebianBox(linux.LinuxDevice):
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd dante-server"
 
         def _install_pkgs():
+            shim_prefix = self.get_shim_prefix()
             self.sendline(
-                'apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s'
-                % pkgs
+                '%sapt-get -q update && %sapt-get -o DPkg::Options::="--force-confnew" -qy install %s'
+                % (shim_prefix, shim_prefix, pkgs)
             )
             if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
                 self.expect(self.prompt, timeout=300)
@@ -427,9 +417,10 @@ class DebianBox(linux.LinuxDevice):
                 self.sendline("ping -c1 deb.debian.org")
                 self.expect(self.prompt)
                 undo_default_route = possible_default_gw
+                shim_prefix = self.get_shim_prefix()
                 self.sendline(
-                    'apt-get -q update && apt-get -o DPkg::Options::="--force-confnew" -qy install %s'
-                    % pkgs
+                    '%sapt-get -q update && %sapt-get -o DPkg::Options::="--force-confnew" -qy install %s'
+                    % (shim_prefix, shim_prefix, pkgs)
                 )
                 if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
                     self.expect(self.prompt, timeout=300)
@@ -843,7 +834,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
         self.expect(self.prompt)
-        self.sendline("apt install -qy ndisc6")
+        self.sendline("%sapt install -qy ndisc6" % self.get_shim_prefix())
         if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             self.expect(self.prompt, timeout=60)
         else:
@@ -1094,6 +1085,22 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("sed -i '/option-125/d' /etc/dhcp/dhclient.conf")
         self.expect(self.prompt)
+
+    def get_shim_prefix(self):
+        if getattr(self, "shim", ""):
+            return self.shim
+
+        self.sendline("alias mgmt")
+        idx = self.expect(
+            ["alias mgmt=", "alias: mgmt: not found", pexpect.TIMEOUT], timeout=10
+        )
+        self.expect(self.prompt)
+        if idx == 0:
+            self.shim = "mgmt "
+        else:
+            self.shim = ""
+
+        return self.shim
 
 
 if __name__ == "__main__":
