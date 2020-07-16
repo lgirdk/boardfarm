@@ -449,10 +449,10 @@ def verify_sip_status(device, capture_file, msg_list):
     """
     output = sip_read(device, capture_file)
     out_rep = output.replace("\r\n", "").replace("\t", "")
-    split_out = out_rep.split('|')
+    split_out = out_rep.split("|")
     result_list = []
     for msg in msg_list:
-        regex_str = (f".*{msg.src_ip}.*{msg.dest_ip}.*{msg.message}")
+        regex_str = f".*{msg.src_ip}.*{msg.dest_ip}.*{msg.message}"
         for line in split_out:
             if re.search(regex_str, line):
                 result_list.append(True)

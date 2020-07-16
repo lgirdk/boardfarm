@@ -85,10 +85,12 @@ class IPerf3(base_profile.BaseProfile):
         server = server_args.device
         port = server_args.port
 
-        print("Run Traffic Generation Parameters:\n"
-              f"Profile: {traffic_profile}\n"
-              f"Server: {server.name}:{port}\n"
-              f"Client: {client.name}\n")
+        print(
+            "Run Traffic Generation Parameters:\n"
+            f"Profile: {traffic_profile}\n"
+            f"Server: {server.name}:{port}\n"
+            f"Client: {client.name}\n"
+        )
         raise CodeError("Not Implemented !!")
 
     @classmethod
@@ -108,7 +110,8 @@ class IPerf3(base_profile.BaseProfile):
             return server
         except KeyError:
             raise DeviceDoesNotExistError(
-                "Server not found!!"
-                "Check json config for server profile")
+                "Server not found!!" "Check json config for server profile"
+            )
+
 
 ####################################################################################################
