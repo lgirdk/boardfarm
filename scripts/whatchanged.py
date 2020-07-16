@@ -21,6 +21,8 @@ if __name__ == "__main__":
     parser.add_argument("start", type=str, help="Begining git hash")
     parser.add_argument("end", type=str, help="Ending git hash")
     parser.add_argument("--debug", action="store_true", help="Display much more info")
+    parser.add_argument("--pytest", action="store_true", help="returns arguments in pytest format")
+
     try:
         args = parser.parse_args()
     except Exception:
@@ -111,4 +113,9 @@ if __name__ == "__main__":
                 break
     if args.debug:
         print("\nFinal output including directly and indirectly changed tests:")
-    print(" -e ".join([""] + final_result) + " -q ".join([""] + features))
+    if args.pytest:
+        t = " ".join(final_result)
+        f = " --bffeature " + ",".join(features) if features else ""
+        print(t + f)
+    else:
+        print(" -e ".join([""] + final_result) + " -q ".join([""] + features))
