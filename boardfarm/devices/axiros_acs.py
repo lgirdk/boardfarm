@@ -177,9 +177,9 @@ class AxirosACS(base_acs.BaseACS):
         return "AxirosACS"
 
     # TO DO: maybe this could be moved to a lib
+    @staticmethod
     def _data_conversion(d):
         """Conversion type/data helper."""
-
         def to_int(v):
             return int(v)
 
