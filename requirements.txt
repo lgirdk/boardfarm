@@ -52,5 +52,4 @@ xmltodict
 xvfbwrapper
 yamlfmt
 yamllint
-yapf
 zeep
