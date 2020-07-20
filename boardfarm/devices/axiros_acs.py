@@ -180,6 +180,7 @@ class AxirosACS(base_acs.BaseACS):
     @staticmethod
     def _data_conversion(d):
         """Conversion type/data helper."""
+
         def to_int(v):
             return int(v)
 
