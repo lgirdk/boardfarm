@@ -13,7 +13,7 @@ import tempfile
 import pytest
 from boardfarm import lib
 from boardfarm.devices import debian, linux
-from boardfarm.lib import SnmpHelper, common
+from boardfarm.lib import ConfigHelper, SnmpHelper, common
 from boardfarm.orchestration import TestStep as TS
 from boardfarm.tests import rootfs_boot
 
@@ -622,14 +622,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         return dev.get_interface_ipaddr(dev.iface_dut)
 
     def err_inj_prep(self):
-        from boardfarm.config import (
-            get_err_injection_dict,
-        )  # TO DO: this should come from ConfigHelper
-
-        # this si a direct ref to the dict  (not a copy!!!)
-        self.config.err_injection_dict = get_err_injection_dict()
-
-        if not self.config.err_injection_dict:
+        if not ConfigHelper()["err_injection_dict"]:
             print("err_injection_dict not found... Skipping test")
             self.skipTest("err_injection_dict not found!!!")
 
@@ -645,7 +638,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         self.err_inj_prep()
 
         assert not self.simple_bool_return(), "error not correctly injected"
-        self.config.err_injection_dict[self.cls_name].pop("simple_bool_return")
+        ConfigHelper()["err_injection_dict"][self.cls_name].pop("simple_bool_return")
         print("simple_bool_return spoofed PASS")
 
         assert self.simple_bool_return(), "real value not received"
@@ -653,7 +646,8 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
 
         addr = self.get_dev_ip_address(lan)
         assert (
-            addr == self.config.err_injection_dict[self.cls_name]["get_dev_ip_address"]
+            addr
+            == ConfigHelper()["err_injection_dict"][self.cls_name]["get_dev_ip_address"]
         ), "spoofed value not received"
         print("received spoofed address: {}".format(str(addr)))
         print("get_dev_ip_address spoofed PASS")
@@ -665,7 +659,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         except Exception:
             print("get_dev_ip_address: {}, EXPECTED FAILURE".format(str(addr)))
             expected_faulures += 1
-        self.config.err_injection_dict[self.cls_name].pop("get_dev_ip_address")
+        ConfigHelper()["err_injection_dict"][self.cls_name].pop("get_dev_ip_address")
         assert (
             expected_faulures
         ), "get_dev_ip_address spoofed with EXPECTED FAILURE PASS"
@@ -679,7 +673,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
 
         # just  for the sake of this test we check that all the errors have been injected
         # this may not be the case a real world scenario
-        assert not self.config.err_injection_dict[
+        assert not ConfigHelper()["err_injection_dict"][
             self.cls_name
         ], "Not all errors were injected"
         print("all errors have been injected")

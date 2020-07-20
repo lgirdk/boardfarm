@@ -12,6 +12,7 @@ import time
 import types
 from functools import wraps
 
+from boardfarm.lib.ConfigHelper import ConfigHelper
 from termcolor import colored
 
 
@@ -124,13 +125,7 @@ class LoggerMeta(type):
 
             clsname = args[0].__class__.__name__
 
-            # if the err_injection_dict exists, hijack the function call (if matched) and
-            # return the bogus value.
-            from boardfarm.config import (
-                get_err_injection_dict,
-            )  # TO DO:  remove once the ConfigHelper is fixed (i.e. is a sigleton)
-
-            err_injection_dict = get_err_injection_dict()
+            err_injection_dict = ConfigHelper()["err_injection_dict"]
             if (
                 err_injection_dict
                 and clsname in err_injection_dict
@@ -138,7 +133,7 @@ class LoggerMeta(type):
             ):
                 ret = err_injection_dict[clsname][func.__name__]
                 args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % (
-                    time.processs_time(),
+                    time.process_time(),
                     to_log,
                     repr(ret),
                 )
