@@ -387,20 +387,11 @@ def connect_to_devices(config):
 
             # check devices after they start for tftpd-server option if
             # if we still have not configured a tftp server
-            if tftp_server is None:
-                for x in config.board["devices"]:
-                    if "tftpd-server" in x.get("options", ""):
-                        get_tftp_config(getattr(config, x["name"]))
-                        # TODO: how do we handle multiple tftp servers, break for now
-                        break
-            else:
-                # check if the tftp_server is an unresolved name and resolve the ip
-                for x in config.board["devices"]:
-                    if tftp_server == x.get("name", ""):
-                        get_tftp_config(getattr(config, tftp_server))
-                    # call for ip addr too since we want to fields populated
-                    if tftp_server == x.get("ipaddr", ""):
-                        board.tftp_dev = getattr(config, x.get("name"))
+            for x in config.board["devices"]:
+                if "tftpd-server" in x.get("options", ""):
+                    get_tftp_config(getattr(config, x["name"]))
+                    # TODO: how do we handle multiple tftp servers, break for now
+                    break
 
         except boardfarm.exceptions.ConnectionRefused:
             logger.warning("Failed to connect to a board or device on %s" % name)
