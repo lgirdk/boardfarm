@@ -493,8 +493,11 @@ class OpenWrtRouter(linux.LinuxDevice):
 
             self.stats.append(stat)
 
-    def parse_stats(self, dict_to_log={}):
+    def parse_stats(self, dict_to_log=None):
         pp = self.get_pp_dev()
+
+        if dict_to_log is None:
+            dict_to_log = {}
 
         if "mpstat" in self.stats:
             pp.sendline("ps | grep mpstat")
