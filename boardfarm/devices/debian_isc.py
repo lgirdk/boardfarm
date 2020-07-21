@@ -5,6 +5,7 @@ import traceback
 
 import pexpect
 import six
+from boardfarm.exceptions import CodeError
 from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
@@ -867,7 +868,7 @@ EOF"""
                 or cm_cfg is None
                 or cm_cfg_srv is None
             ):
-                raise
+                raise CodeError("One of the Config File is not found")
             return [
                 [mta_cfg.replace('"', ""), mta_cfg_srv],
                 [cm_cfg.replace('"', ""), cm_cfg_srv],

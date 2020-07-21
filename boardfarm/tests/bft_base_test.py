@@ -224,7 +224,6 @@ class BftBaseTest(inherit_class):
                     "\n\n=========== Test skipped! Board is not alive... ============="
                 )
                 self.skipTest("Board is not alive")
-                raise
 
         try:
             if hasattr(self.dev, "wan") and hasattr(self, "wan_setup"):
