@@ -68,6 +68,10 @@ class SerialPhone(object):
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
+        self.sendline("ser.write(b'AT+FCLASS=1\\r')")
+        self.expect(">>>")
+        self.mta_readlines()
+        self.expect("OK")
 
     def mta_readlines(self, time="3"):
         """To readlines from serial console."""
@@ -92,7 +96,7 @@ class SerialPhone(object):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
-        self.sendline("ser.write(b'ATDT%s\\r')" % number)
+        self.sendline("ser.write(b'ATDT%s;\\r')" % number)
         self.expect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
