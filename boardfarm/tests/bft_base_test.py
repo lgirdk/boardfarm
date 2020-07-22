@@ -317,13 +317,7 @@ class BftBaseTest(inherit_class):
                 "\n\n=========== Test: %s failed! running Device status check! Time: %s ==========="
                 % (self.__class__.__name__, now_short(self._format))
             )
-            try:
-                all_devices = [self.dev.board] + [
-                    getattr(self.config, name, None) for name in self.config.devices
-                ]
-                recheck_devices = check_devices(all_devices)
-            except Exception as e:
-                print(e)
+
             print(
                 "\n\n=========== Test: %s failed! Device status check done! Time: %s ==========="
                 % (self.__class__.__name__, now_short(self._format))
@@ -343,6 +337,14 @@ class BftBaseTest(inherit_class):
             else:
                 print(e)
                 traceback.print_exc(file=sys.stdout)
+
+            try:
+                all_devices = [self.dev.board] + [
+                    getattr(self.config, name, None) for name in self.config.devices
+                ]
+                recheck_devices = check_devices(all_devices)
+            except Exception as e:
+                print(e)
 
             import os
 
