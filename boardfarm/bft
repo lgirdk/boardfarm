@@ -297,7 +297,10 @@ def connect_to_devices(config):
         try:
             # Use helper class to control access to configuration from tests
             config.board = boardfarm.lib.ConfigHelper(config.boardfarm_config[name])
-            config.board.update({"err_injection_dict": config.get_err_injection_dict()})
+            if hasattr(config, "get_err_injection_dict"):
+                config.board.update(
+                    {"err_injection_dict": config.get_err_injection_dict()}
+                )
         except Exception as e:
             logger.debug(e)
             logger.debug(
