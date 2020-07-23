@@ -87,8 +87,7 @@ exten => """
                 + i
                 + """,1,Dial(SIP/"""
                 + i
-                + """,20,r)
-same =>n,Wait(20)
+                + """,180,r)
 EOF"""
             )
             self.sendline(num_mod)
