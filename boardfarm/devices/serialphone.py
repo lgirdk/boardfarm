@@ -112,7 +112,7 @@ class SerialPhone(object):
 
     def hangup(self):
         """To hangup the ongoing call."""
-        self.sendline("ser.write(b'ATH\\r')")
+        self.sendline("ser.write(b'ATH0\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -123,3 +123,18 @@ class SerialPhone(object):
         self.expect(">>>")
         self.sendline("exit()")
         self.expect(self.prompt)
+
+    def validate_state(self, state):
+        """Read the mta_line message to validate the call state
+
+        :param state: The call state expected in the MTA line
+        :type state: string
+        :example usage: validate_state('RING') to verify Ringing state.
+        :return: boolean True if success
+        :rtype: Boolean
+        """
+        self.mta_readlines()
+        self.expect(state)
+        self.sendline()
+        self.expect(">>>")
+        return True

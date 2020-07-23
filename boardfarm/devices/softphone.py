@@ -111,3 +111,20 @@ class SoftPhone(object):
         """To kill the pjsip session."""
         self.sendcontrol("c")
         self.expect(self.prompt)
+
+    def validate_state(self, msg):
+        """Verify the message to validate the status of the call
+
+        :param msg: The message to expect on the softphone container
+        :type msg: string
+        :example usage:
+           validate_state('INCOMING') to validate an incoming call.
+           validate_state('Current call id=<call_id> to <sip_uri> [CONFIRMED]') to validate call connected.
+        :return: boolean True if success
+        :rtype: Boolean
+        """
+        self.sendline("/n")
+        self.expect(self.pjsip_prompt)
+        self.expect(msg)
+        self.expect(self.pjsip_prompt)
+        return True
