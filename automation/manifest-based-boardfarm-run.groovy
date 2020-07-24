@@ -300,7 +300,7 @@ pipeline {
                             loc_selftest["${idx}: ${board}: $loc"] = {
                                 stage("run selftest in $loc on board $board") {
                                     script {
-                                        node ('boardfarm && ' + loc) {
+                                        node (loc + ' && execution') {
                                             sync_code()
                                             setup_python(python_version)
                                             println("running testsuites = " + testsuites)
@@ -336,7 +336,7 @@ pipeline {
                             loc_jobs["${idx}: ${board}: $loc"] = {
                                 stage("run bft in $loc on board $board") {
                                     script {
-                                        node ('boardfarm && ' + loc) {
+                                        node (loc + ' && execution') {
                                             sync_code()
                                             run_test(loc, null, true, board)
                                         }
