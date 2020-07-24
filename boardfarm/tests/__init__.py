@@ -5,7 +5,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import glob
 import importlib
 import inspect
 import os
@@ -13,7 +12,6 @@ import pkgutil
 import traceback
 
 import boardfarm
-from boardfarm.exceptions import TestImportError
 
 available_tests = {}
 

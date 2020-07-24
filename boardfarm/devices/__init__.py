@@ -1,7 +1,6 @@
 """This directory contains classes for connecting to and controlling \
 devices over a network."""
 
-import glob
 import importlib
 import inspect
 import os
@@ -14,7 +13,7 @@ import boardfarm
 import pexpect
 import termcolor
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm.lib.DeviceManager import all_device_managers, device_type
+from boardfarm.lib.DeviceManager import all_device_managers
 from six.moves import UserList
 
 # TODO: this probably should not the generic device

@@ -50,9 +50,7 @@ except Exception as error:
 
 ubootprompt = ["ath>", r"\(IPQ\) #", "ar7240>"]
 linuxprompt = ["root\\@.*:.*#", "@R7500:/# "]
-prompts = (
-    ubootprompt + linuxprompt + ["/.* # ",]
-)
+prompts = ubootprompt + linuxprompt + ["/.* # "]
 
 
 def run_once(f):

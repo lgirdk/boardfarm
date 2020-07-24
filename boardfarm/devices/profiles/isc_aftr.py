@@ -317,7 +317,7 @@ if __name__ == "__main__":
     # Example use
     try:
         ipaddr, port = sys.argv[1].split(":")
-    except:
+    except Exception:
         raise Exception("First argument should be in form of ipaddr:port")
 
     # for getting lib.common from tests working

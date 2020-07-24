@@ -28,5 +28,5 @@ setup(
             ],
         )
     ],
-    entry_points={"console_scripts": ["bft=boardfarm.bft:main"],},
+    entry_points={"console_scripts": ["bft=boardfarm.bft:main"]},
 )

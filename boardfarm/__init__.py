@@ -8,7 +8,7 @@
 import uuid
 
 from .Boardfarm import Boardfarm  # noqa: F401
-from .plugins import find_plugins, walk_library
+from .plugins import find_plugins, walk_library  # noqa: F401
 from .version import __version__  # noqa: F401
 
 uniqid = uuid.uuid4().hex[:15]  # Random, unique ID and use first 15 bytes

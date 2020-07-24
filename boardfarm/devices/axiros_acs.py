@@ -150,7 +150,7 @@ class AxirosACS(base_acs.BaseACS):
                     tcpdump_output = tcpdump_capture(
                         self, "any", capture_file=capture_file
                     )
-                    pid = re.search("(\[\d{1,10}\]\s(\d{1,6}))", tcpdump_output).group(
+                    pid = re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", tcpdump_output).group(
                         2
                     )
                     out = func(self, *args, **kwargs)

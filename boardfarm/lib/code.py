@@ -33,7 +33,7 @@ def get_all_classes_from_code(directories, debug=False):
     #    {"classname1": [parent_classname1,],
     #     "classname2": [parent_classname2,], ... etc}
     # Because we will add parents to that list.
-    all_classes = dict([(x[0], [x[1],]) for x in result])
+    all_classes = dict([(x[0], [x[1]]) for x in result])
     # Add grandparent class
     for name in all_classes:
         parent = all_classes[name][0]
@@ -138,7 +138,7 @@ def get_classes_lib_functions(directories, debug=False):
                 result[current_class_name] = set()
             for name in library_function_names:
                 if name in line:
-                    result[current_class_name] |= set([name,])
+                    result[current_class_name] |= set([name])
     for key in result:
         result[key] = sorted(result[key])
     return result

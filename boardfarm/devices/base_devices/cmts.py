@@ -615,7 +615,7 @@ class BaseCmts(base.BaseDevice):
         :return:  the cm_mac in CMTS format xxxx.xxxx.xxxx (lowercase)
         :rtype: string
         """
-        if mac == None:
+        if mac is None:
             return None
         # the mac CMTS syntax format example is 3843.7d80.0ac0
         tmp = mac.replace(":", "")
