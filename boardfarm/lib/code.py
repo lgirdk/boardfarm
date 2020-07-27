@@ -1,3 +1,4 @@
+"""Public Methods related to git changes."""
 import glob
 import re
 import subprocess

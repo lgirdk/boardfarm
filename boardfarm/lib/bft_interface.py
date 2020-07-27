@@ -1,3 +1,4 @@
+"""This file holds functions related to ipv4, ipv6 and mac addresses."""
 import ipaddress
 import re
 
@@ -14,6 +15,7 @@ from boardfarm.lib.regexlib import (
 
 
 class bft_iface(object):
+    """Holds functions related to ipv4, ipv6 and mac addresses."""
 
     _ipv4 = None
     _ipv6 = None
@@ -21,6 +23,7 @@ class bft_iface(object):
     _mac = None
 
     def __str__(self):
+        """Given the device name, returns as string."""
         return str(self.dev.name)
 
     def __init__(self, device, iface, ip_cmd="ifconfig"):
@@ -30,6 +33,7 @@ class bft_iface(object):
         self.ip_cmd = ip_cmd
 
     def refresh(self):
+        """Single function to get the ipv4, ipv6 and mac address."""
         output = self.dev.check_output("%s %s" % (self.ip_cmd, self.iface))
         try:
             self.get_interface_ipv4addr(output)
@@ -104,6 +108,7 @@ class bft_iface(object):
 
     @property
     def ipv4(self):
+        """Get interface ipv4 address."""
         if not getattr(self, "_ipv4", None):
             self.get_interface_ipv4addr()
 
@@ -111,6 +116,7 @@ class bft_iface(object):
 
     @property
     def netmask(self):
+        """Get interface ipv4 netmask."""
         if not getattr(self, "_ipv4", None):
             self.get_interface_ipv4addr()
 
@@ -118,6 +124,7 @@ class bft_iface(object):
 
     @property
     def network(self):
+        """Get interface ipv4 network address."""
         if not getattr(self, "_ipv4", None):
             self.get_interface_ipv4addr()
 
@@ -125,6 +132,7 @@ class bft_iface(object):
 
     @property
     def ipv6(self):
+        """Get interface ipv6 address."""
         if not getattr(self, "_ipv6", None):
             self.get_interface_ipv6addr()
 
@@ -132,6 +140,7 @@ class bft_iface(object):
 
     @property
     def network_v6(self):
+        """Get interface ipv6 network address."""
         if not getattr(self, "_ipv6", None):
             self.get_interface_ipv6addr()
 

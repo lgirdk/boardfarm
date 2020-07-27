@@ -1,3 +1,4 @@
+"""Jmeter related."""
 import os
 import shutil
 
@@ -26,6 +27,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
     default_time = 600
 
     def runTest(self):
+        """Runs the JMeter jmx file."""
         board = self.dev.board
         lan = self.dev.lan
 
@@ -81,6 +83,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        """Do clean the LAN after running JMeter."""
         board = self.dev.board
         lan = self.dev.lan
 

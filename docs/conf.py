@@ -1,3 +1,4 @@
+"""Boardfarm documentation build configuration file."""
 # -*- coding: utf-8 -*-
 #
 # Boardfarm documentation build configuration file, created by
