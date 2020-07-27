@@ -132,7 +132,7 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     return output
 
 
-def sip_read(device, capture_file):
+def sip_read(device, capture_file, rm_pcap_file=True):
     """Read and filter SIP packets from the captured file.
     The Session Initiation Protocol is a signaling protocol used for initiating, maintaining, and
     terminating real-time sessions that include voice, video and messaging applications
@@ -148,8 +148,9 @@ def sip_read(device, capture_file):
     device.sudo_sendline("tshark -r %s -Y sip" % (capture_file))
     device.expect(device.prompt)
     output_sip = device.before
-    device.sudo_sendline("rm %s" % (capture_file))
-    device.expect(device.prompt)
+    if rm_pcap_file:
+        device.sudo_sendline("rm %s" % (capture_file))
+        device.expect(device.prompt)
     return output_sip
 
 
@@ -161,6 +162,8 @@ def rtp_read_verify(device, capture_file):
     :type device: Object
     :param capture_file: Filename in which the packets were captured
     :type capture_file: String
+    :return: True if RTP messages found as expected
+    :rtype: Boolean
     """
     device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % (capture_file))
     device.expect_prompt()
@@ -169,6 +172,9 @@ def rtp_read_verify(device, capture_file):
     device.expect_prompt()
     device.sudo_sendline("rm rtp.txt")
     device.expect_prompt()
+    device.sudo_sendline("rm %s" % (capture_file))
+    device.expect_prompt()
+    return True
 
 
 def basic_call_verify(output_sip, ip_src):
