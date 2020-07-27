@@ -1,3 +1,4 @@
+"""Ping functions between North and south bound devices of DUT."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -13,6 +14,7 @@ class RouterPingWanDev(rootfs_boot.RootFSBootTest):
     """Router can ping device through WAN interface."""
 
     def test_main(self):
+        """Perform Ping action."""
         board = self.dev.board
         wan = self.dev.wan
         if not wan:
@@ -24,6 +26,7 @@ class RouterPingWanDev(rootfs_boot.RootFSBootTest):
         board.expect(board.prompt)
 
     def recover(self):
+        """Exit Ping action."""
         self.dev.board.sendcontrol("c")
 
 
@@ -31,6 +34,7 @@ class RouterPingInternet(rootfs_boot.RootFSBootTest):
     """Router can ping internet address by IP."""
 
     def test_main(self):
+        """Perform Ping action."""
         board = self.dev.board
         board.sendline("\nping -c2 8.8.8.8")
         board.expect("2 (packets )?received", timeout=15)
@@ -41,6 +45,7 @@ class RouterPingInternetName(rootfs_boot.RootFSBootTest):
     """Router can ping internet address by name."""
 
     def test_main(self):
+        """Perform Ping action."""
         board = self.dev.board
         board.sendline("\nping -c2 www.google.com")
         board.expect("2 (packets )?received", timeout=15)
@@ -51,6 +56,7 @@ class LanDevPingRouter(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping router."""
 
     def test_main(self):
+        """Perform Ping action."""
         board = self.dev.board
         lan = self.dev.lan
         if not lan:
@@ -68,6 +74,7 @@ class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping through router."""
 
     def test_main(self):
+        """Perform Ping action."""
         lan = self.dev.lan
         wan = self.dev.wan
         if not lan:
@@ -84,6 +91,7 @@ class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
         lan.expect(lan.prompt)
 
     def recover(self):
+        """Exit Ping action."""
         self.dev.lan.sendcontrol("c")
 
 
@@ -91,6 +99,7 @@ class LanDevPingInternet(rootfs_boot.RootFSBootTest):
     """Device on LAN can ping through router to internet."""
 
     def test_main(self):
+        """Perform Ping action."""
         lan = self.dev.lan
         if not lan:
             msg = "No LAN Device defined, skipping ping test from LAN."
@@ -101,4 +110,5 @@ class LanDevPingInternet(rootfs_boot.RootFSBootTest):
         lan.expect(lan.prompt)
 
     def recover(self):
+        """Exit Ping action."""
         self.dev.lan.sendcontrol("c")

@@ -1,3 +1,4 @@
+"""Turns ON/OFF Firewall in router."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -13,6 +14,7 @@ class FirewallOFF(rootfs_boot.RootFSBootTest):
     """Turned router firewall off."""
 
     def runTest(self):
+        """Performs the firewall off action."""
         board = self.dev.board
 
         board.sendline("\nuci set firewall.@defaults[0].forward=ACCEPT")
@@ -33,6 +35,7 @@ class FirewallON(rootfs_boot.RootFSBootTest):
     """Turned router firewall on."""
 
     def runTest(self):
+        """Performs the firewall on action."""
         board = self.dev.board
 
         board.sendline("\nuci set firewall.@defaults[0].forward=REJECT")

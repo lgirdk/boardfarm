@@ -1,3 +1,4 @@
+"""Downloaded file through router using IPv6."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -13,6 +14,7 @@ class IPv6_File_Download(rootfs_boot.RootFSBootTest):
     """Downloaded file through router using IPv6."""
 
     def runTest(self):
+        """Performs the Download action via Curl."""
         wan = self.dev.wan
         lan = self.dev.lan
 

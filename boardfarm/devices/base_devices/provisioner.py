@@ -1,7 +1,10 @@
+"""Provisioner Class."""
 from boardfarm.devices import debian
 
 
 class Provisioner(debian.DebianBox):
+    """Base Class for debian Provisioner device."""
+
     model = "base_provisioner"
     name = "provisioner"
 
@@ -15,7 +18,6 @@ class Provisioner(debian.DebianBox):
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
-
         # Initialization parameters will differ based on environment
         # Note this setting in case you want provisioner to act as TFTP server
         if "options" in kwargs:
@@ -48,6 +50,7 @@ class Provisioner(debian.DebianBox):
 
     @staticmethod
     def setup_dhcp_env(device):
+        """Yet to define the function. Throws exception for now."""
         raise Exception("Not implemented!")
 
     def print_dhcp_config(self):
@@ -74,6 +77,7 @@ class Provisioner(debian.DebianBox):
         raise Exception("Not implemented!")
 
     def start_tftp_server(self):
+        """Yet to be implemented. Throws exception for now."""
         self.install_pkgs()
         if self.shared_tftp_server:
             # perform the rest
@@ -82,11 +86,11 @@ class Provisioner(debian.DebianBox):
 
     # mode can be "ipv4" or "ipv6"
     def restart_tftp_server(self, mode=None):
-        """To apply configuration changes made to TFTP server"""
+        """To apply configuration changes made to TFTP server."""
         raise Exception("Not implemented!")
 
     def copy_file_to_server(file_path):
-        """Copy a config file to remote/local server
+        """Copy a config file to remote/local server.
 
         2 approaches:
             - SCP the File using

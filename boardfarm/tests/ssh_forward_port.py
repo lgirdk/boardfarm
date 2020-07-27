@@ -1,3 +1,4 @@
+"""Can access main web GUI page."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -14,6 +15,7 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
 
     @lib.common.run_once
     def runTest(self):
+        """Checks SSH connection to CM WAN interface."""
         board = self.dev.board
         wan = self.dev.wan
 

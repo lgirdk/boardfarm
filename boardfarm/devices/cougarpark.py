@@ -1,3 +1,4 @@
+"""Intel Cougar Park device class."""
 # Copyright (c) 2017
 #
 # All rights reserved.
@@ -43,6 +44,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     arm = None
 
     def __init__(self, *args, **kwargs):
+        """Instance initialisation."""
         super(CougarPark, self).__init__(*args, **kwargs)
 
         del kwargs["conn_cmd"]
@@ -59,6 +61,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.arm.start = self.start
 
     def kill_console_at_exit(self):
+        """Exit the console sending kill signal."""
         self.kill(signal.SIGKILL)
         self.arm.kill(signal.SIGKILL)
 
@@ -72,6 +75,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt, timeout=30)
 
     def switch_to_mode(self, index):
+        """Switch to mode based on the index received."""
         self.sendline("exit")
         self.expect_exact("Device Manager")
         self.send(KEY_DOWN)
@@ -104,6 +108,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.wait_for_boot()
 
     def setup_uboot_network(self, tftp_server):
+        """Tftp server for the device."""
         lan = self.dev.lan
 
         # we override to use LAN because that's the only way it works for this device
@@ -137,6 +142,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt, timeout=30)
 
     def flash_linux(self, KERNEL):
+        """Flash the device with desired image."""
         print("\n===== Updating kernel and rootfs =====\n")
         lan = self.dev.lan
         filename = self.prepare_file(KERNEL, tserver=lan.ipaddr, tport=lan.port)
@@ -162,6 +168,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt, timeout=30)
 
     def boot_linux(self, rootfs=None, bootargs=None):
+        """Booting the device."""
         common.print_bold("\n===== Booting linux for %s =====" % self.model)
         self.switch_to_mode(MODE_DISABLED)
         self.sendline("npcpu start")

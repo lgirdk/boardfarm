@@ -1,3 +1,4 @@
+"""Get System Descr using SNMP."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -13,6 +14,7 @@ class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
     """Runs SNMP sysDescr on WAN iface."""
 
     def runTest(self):
+        """Get SNMPSysDescrWAN."""
         board = self.dev.board
         wan = self.dev.wan
 
