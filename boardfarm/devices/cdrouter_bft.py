@@ -1,3 +1,6 @@
+"""Class to initiate CD-Router testsuite and close the connection to DUT."""
+
+
 class CDrouterDevice(object):
     """CDRouter is an industry standard server.
 

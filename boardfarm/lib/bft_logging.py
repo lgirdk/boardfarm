@@ -1,3 +1,4 @@
+"""Global functions related to logging messages."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -67,6 +68,8 @@ def write_test_log(t, output_dir):
 
 
 class LoggerMeta(type):
+    """To wrap functions with logging messages."""
+
     def __new__(cls, name, bases, attrs):
         """Magic method to create instance object reference.
 
@@ -82,7 +85,6 @@ class LoggerMeta(type):
         :type attrs: Arguments(args)
         :return: Return the instance object created
         :rtype: Object
-
         """
         for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
@@ -113,7 +115,6 @@ class LoggerMeta(type):
             :return: String with parent class, calling/returning of function
             :rtype: string
             """
-
             if "pytest" in sys.modules:
                 # if in pytest bypass all this
                 return func(*args, **kwargs)
@@ -176,6 +177,8 @@ def log_message(s, msg, header=False):
 
 
 class o_helper(object):
+    """Class to handle output logging."""
+
     def __init__(self, parent, out, color):
         """Instance initialisation to handle the output logging.
 
@@ -225,6 +228,7 @@ class o_helper(object):
             )
 
     def extra_log(self, string):
+        """Add process time with the log messages."""
         if hasattr(self.parent, "log"):
             self.parent.log += "\r\n[%s] " % time.process_time()
             self.parent.log += string + "\r\n"
@@ -236,6 +240,7 @@ class o_helper(object):
 
 
 def create_file_logs(config, board, tests_to_run, logger):
+    """Add and write log messages to a combined list."""
     combined_list = []
 
     def add_to_combined_list(log, name, combined_list=combined_list):

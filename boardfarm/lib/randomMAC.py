@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+"""Generate and returns random mac address."""
 import random
 
 

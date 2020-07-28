@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Code Author: https://github.com/CVCLabs/
 # Project: https://github.com/CVCLabs/sonar-jira-integration
-
+"""Function related to posting sonar issues to Jira."""
 import os
 
 import pandas as pd
@@ -23,17 +23,19 @@ jira_epic = os.getenv("JIRA_EPIC", "")
 
 
 def main():
-    """Drives the script flow. Returns dataframe table with 'Sonarqube_id',
-       'Jira_id', 'comments' columns
-       Gets the issue_matrix containing the issues created and prints it.
+    """
+    Drives the script flow. Returns issue_matrix.
+
+    DataFrame has 'Sonarqube_id', 'Jira_id', 'comments' columns.
+    Gets the issue_matrix containing the issues created and prints it.
     """
     issue_matrix = get_sonar_jira_issues()
     print(issue_matrix)
 
 
 def get_jira_id_in_comments(comments):
-    """Function to check whether Jira id's are already mentioned in comments
-       of sonarqube issues.
+    """
+    Check whether Jira id's are already mentioned in comments of sonar issues.
 
     :return: returns the jira_id if jira url is present in comments
              else returns False
@@ -52,10 +54,12 @@ def get_jira_id_in_comments(comments):
 
 
 def get_sonar_jira_issues():
-    """Gets all the sonarqube issue based on the issue type and
-       1. Check Jira is already created for every issue.
-       2. If not call create_jira_issue function to create new Jira issue
-       3. Add rows to issue_matrix with sonar_issue, Jira and comments
+    """
+    Fetch all the sonarqube issue based on the issue type.
+
+    1. Check Jira is already created for every issue.
+    2. If not call create_jira_issue function to create new Jira issue
+    3. Add rows to issue_matrix with sonar_issue, Jira and comments
 
     :return: issue_matrix
     :rtype: DataFrame
@@ -117,7 +121,8 @@ def get_sonar_jira_issues():
 
 
 def create_jira_issue(issue):
-    """Creates new jira ticket for sonarqube issue
+    """
+    Create new jira ticket for sonarqube issue.
 
     :return: New Jira id created else returns False
     :rtype: String or Boolean
@@ -156,7 +161,8 @@ def create_jira_issue(issue):
 
 
 def get_priority(severity):
-    """Returns priority to be added in Jira based on Sonarqube issue priority
+    """
+    Fetch defined priority for Jira based on Sonarqube issue priority.
 
     :return: Jira priority
     :rtype: String

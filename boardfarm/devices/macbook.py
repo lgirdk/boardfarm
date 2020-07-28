@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Implementation for device macbook."""
 import re
 import sys
 

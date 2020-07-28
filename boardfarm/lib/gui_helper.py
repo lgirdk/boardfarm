@@ -1,3 +1,4 @@
+"""Global Functions to perfrom GUI actions in DUT."""
 # Copyright (c) 2018
 #
 # All rights reserved.

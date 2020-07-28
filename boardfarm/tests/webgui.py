@@ -1,3 +1,4 @@
+"""Webserver related class functions."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -13,6 +14,7 @@ class Webserver_Running(rootfs_boot.RootFSBootTest):
     """Router webserver is running."""
 
     def runTest(self):
+        """Performs desired actions."""
         board = self.dev.board
 
         board.sendline("\nps | grep -v grep | grep http")
@@ -24,6 +26,7 @@ class WebGUI_Access(rootfs_boot.RootFSBootTest):
     """Router webpage available to LAN-device at http://192.168.1.1/."""
 
     def runTest(self):
+        """Performs desired actions."""
         lan = self.dev.lan
 
         ip = "192.168.1.1"
@@ -40,6 +43,7 @@ class WebGUI_NoStackTrace(rootfs_boot.RootFSBootTest):
     """Router webpage at cgi-bin/luci contains no stack traceback."""
 
     def runTest(self):
+        """Performs desired actions."""
         board = self.dev.board
 
         board.sendline("\ncurl -s http://127.0.0.1/cgi-bin/luci | head -15")
@@ -52,6 +56,7 @@ class Webserver_Download(rootfs_boot.RootFSBootTest):
     """Downloaded small file from router webserver in reasonable time."""
 
     def runTest(self):
+        """Performs desired actions."""
         board = self.dev.board
         lan = self.dev.lan
 
@@ -68,6 +73,7 @@ class Webserver_Download(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
     def recover(self):
+        """Delete the downloaded file."""
         board = self.dev.board
         lan = self.dev.lan
 

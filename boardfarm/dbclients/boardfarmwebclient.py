@@ -5,7 +5,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""Handle interacting with a boardfarm server."""
 import multiprocessing
 import os
 import platform
@@ -163,6 +163,7 @@ class BoardfarmWebClient(object):
                 print("Failed to notify boardfarm server with message.")
 
     def checkout(self, config):
+        """Check out one of the available DUT for execution."""
         if not self.server_version:
             return
         try:
@@ -195,6 +196,7 @@ class BoardfarmWebClient(object):
                 print("Failed to notify boardfarm server of checkout")
 
     def checkin(self):
+        """Release the DUT and Notify boardfarm server after execution."""
         if not self.server_version or not self.checked_out:
             return
         try:
