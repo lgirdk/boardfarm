@@ -1,6 +1,8 @@
 [flake8]
-exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,unittests,*test_*,*_test*
-extend-ignore=E501, D100, D204, E122, E125, E251, E127, E722
+exclude = .git,__pycache__,docs/source/conf.py,old,build,dist,unittests,*test_*,*_test*,*/tests/*
+select = C,E,F,W,B
+ignore = E203, E501, W503, B950
+max-line-length=80
 rst-roles =
     class,
     func,
