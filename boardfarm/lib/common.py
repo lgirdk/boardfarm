@@ -6,7 +6,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
-
+"""Commonly used global functions."""
 import base64
 import binascii
 import ipaddress
@@ -151,6 +151,7 @@ class socks5_proxy_helper(object):
     proxy_list = []
 
     def __str__(self):
+        """Printable string representing the object is returned."""
         return self.socks5_ip + ":" + str(self.socks5_port)
 
     @classmethod
@@ -270,6 +271,7 @@ class socks5_proxy_helper(object):
             raise Exception("Failed to create socks5 tunnel")
 
     def __del__(self):
+        """Destructor method called when all obj references are deleted."""
         socks5_proxy_helper.__remove(self)
 
     def close(self):
@@ -2043,6 +2045,7 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
 
 
 def toggle_dhcp_lan_advertise_identity(lan_dev):
+    """Toggle dhcp lan advertise identity."""
     if lan_dev.add_lan_advertise_identity_cfg(lan_dev.dev.lan_clients.index(lan_dev)):
         lan_dev.remove_lan_advertise_identity_cfg()
 
@@ -2050,8 +2053,10 @@ def toggle_dhcp_lan_advertise_identity(lan_dev):
 
 
 def get_class_name_in_stack(self, needle, haystack, not_found="needle_not_found"):
-    """Given a class self and a stack trace, scan the stack looking for the
-    mathching string returning the class name (if needle is found). Can be
+    """Get class name from the stack trace.
+
+    Given a class self and a stack trace, scan the stack looking for the
+    matching string returning the class name (if needle is found). Can be
     used to find the testname if working from a generic library that has no
     access to the test case details.
 

@@ -1,3 +1,4 @@
+"""Openwrt release file exists and contains expected data."""
 # Copyright (c) 2015
 #
 # All rights reserved.

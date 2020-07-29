@@ -1,3 +1,4 @@
+"""Make graphs for output of /proc/slabinfo over time."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -15,6 +16,7 @@ class SlabAnalysis(analysis.Analysis):
     """Make graphs for output of /proc/slabinfo over time."""
 
     def analyze(self, console_log, output_dir):
+        """Perfrom analysis on console log."""
         regex = "root\\@OpenWrt:[^#]+# cat /proc/slabinfo.*?(?=root@OpenWrt)"
         results = re.findall(regex, repr(console_log))
 

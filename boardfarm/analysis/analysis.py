@@ -1,3 +1,4 @@
+"""Base analysis class, each child class should implement the analyze function."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -37,6 +38,7 @@ class Analysis:
     """Base analysis class, each child class should implement the analyze function."""
 
     def analyze(self, console_log, output_dir):
+        """Analyze console log. Yet to be implemented."""
         pass
 
     def make_graph(

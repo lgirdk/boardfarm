@@ -4,7 +4,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""Captures traces for WAN and LAN devices."""
 import pexpect
 from boardfarm.tests import rootfs_boot
 
@@ -34,4 +34,6 @@ class TCPDumpWANandLAN(rootfs_boot.RootFSBootTest):
 
 
 class TCPDumpWANandLANfilterICMP(TCPDumpWANandLAN):
+    """Captures ICMP traces for WAN and LAN devices."""
+
     opts = "icmp"

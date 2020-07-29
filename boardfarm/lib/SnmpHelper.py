@@ -1,3 +1,4 @@
+"""Functions related to SNMP."""
 # Copyright (c) 2019
 #
 # All rights reserved.
@@ -80,8 +81,11 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
 
 
 class SnmpMibsMeta(type):
+    """Instance of SnmpMibs class."""
+
     @property
     def default_mibs(self):
+        """Return mib parser."""
         return SnmpMibs.get_mib_parser()
 
 
@@ -199,6 +203,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             print("# %d MIB modules compiled" % len(mib_dict))
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
+        """Add and prints the mib dict for mib name passed."""
         if "y" in self.dbg:
             print("# MIB module %s" % mibName)
 

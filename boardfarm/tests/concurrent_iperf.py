@@ -1,3 +1,4 @@
+"""Determine's max number of iperf connections."""
 from datetime import datetime
 
 import pexpect
@@ -10,6 +11,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
     """Determine's max number of iperf connections."""
 
     def runTest(self):
+        """Perfrom concurrent iperf connections."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
@@ -69,6 +71,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        """Kill iperf connections."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan

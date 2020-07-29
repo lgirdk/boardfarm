@@ -1,3 +1,4 @@
+"""Interact with console, wan, lan, wlan connections and re-run tests."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -26,6 +27,7 @@ class Interact(rootfs_boot.RootFSBootTest):
                 print("  %s device:    %s" % (d.name, d))
 
     def test_main(self):
+        """Function to interact menu."""
         board = self.dev.board
         lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
