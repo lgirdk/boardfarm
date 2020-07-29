@@ -442,7 +442,7 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
     return True if out else False
 
 
-def verify_sip_status(device, capture_file, msg_list):
+def verify_sip_status(device, capture_file, msg_list, rm_pcap=True):
     """This function is used to validate the SIP messages
     :param device: device where the SIP traces are generated. The SIP server.
     :type device: object
@@ -450,10 +450,12 @@ def verify_sip_status(device, capture_file, msg_list):
     :type capture_file: String
     :param msg_list: list of 'sip_msg' named_tuples
     :type msg_list: list
+    :param rm_pcap: True if pcap needs to be removed else False
+    :type rm_pcap: Boolean
     :return: boolean value based on success of the message(s) being found or not
     :rtype: Boolean
     """
-    output = sip_read(device, capture_file)
+    output = sip_read(device, capture_file, rm_pcap)
     out_rep = output.replace("\r\n", "").replace("\t", "")
     split_out = out_rep.split("|")
     result_list = []
