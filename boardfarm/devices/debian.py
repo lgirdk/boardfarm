@@ -5,6 +5,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
+"""Device class for a debian linux."""
 
 import atexit
 import ipaddress
@@ -313,6 +314,7 @@ class DebianBox(linux.LinuxDevice):
         cprint(cmsg, None, attrs=["bold"])
 
     def get_default_gateway(self, interface):
+        """Get the default gateway from ip route output."""
         self.sendline("ip route | grep {!s}".format(interface))
         self.expect(self.prompt)
 
@@ -325,6 +327,7 @@ class DebianBox(linux.LinuxDevice):
             return None
 
     def run_cleanup_cmd(self):
+        """To clear the buffer."""
         sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
         sys.stdout.flush()
         cc = bft_pexpect_helper.spawn(
@@ -334,6 +337,7 @@ class DebianBox(linux.LinuxDevice):
         print("cleanup_cmd done.")
 
     def reset(self):
+        """Reset the debian linux device."""
         self.sendline("reboot")
         self.expect(["going down", "disconnected"])
         try:
@@ -366,6 +370,7 @@ class DebianBox(linux.LinuxDevice):
         )
 
     def install_pkgs(self):
+        """Install required basic packages in the device."""
         if self.pkgs_installed:
             return
 
@@ -449,6 +454,7 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
 
     def turn_on_pppoe(self):
+        """Turn on PPPoE server in the linux device."""
         self.sendline("cat > /etc/ppp/pppoe-server-options << EOF")
         self.sendline("noauth")
         self.sendline("ms-dns 8.8.8.8")
@@ -461,11 +467,13 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def turn_off_pppoe(self):
+        """Turn off PPPoE server in the linux device."""
         self.sendline("\nkillall pppoe-server pppoe pppd")
         self.expect("pppd")
         self.expect(self.prompt)
 
     def start_tftp_server(self):
+        """Turn on tftp server in the linux device."""
         # we can call this first, before configure so we need to do this here
         # as well
         self.install_pkgs()
@@ -519,6 +527,7 @@ class DebianBox(linux.LinuxDevice):
 
     # mode can be "ipv4" or "ipv6"
     def restart_tftp_server(self, mode=None):
+        """Restart tftp server in the linux device."""
         self.sendline("sed /TFTP_OPTIONS/d -i /etc/default/tftpd-hpa")
         self.expect(self.prompt)
         self.sendline(
@@ -534,6 +543,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def start_sshd_server(self):
+        """Turn on sshd server in the linux device."""
         self.sendline("/etc/init.d/rsyslog start")
         self.expect(self.prompt)
         self.sendline("/etc/init.d/ssh start")
@@ -546,6 +556,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def configure(self, kind, config=[]):
+        """Cofiguring the device as WAN or LAN."""
         # TODO: wan needs to enable on more so we can route out?
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
@@ -569,7 +580,7 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
 
     def setup_dhcp_server(self):
-
+        """Configure dhcp server in the linux device."""
         if not self.wan_dhcp_server:
             return
 
@@ -616,6 +627,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def setup_dnsmasq(self, config=None):
+        """Configure DNS Masq in the linux device."""
         self.sendline("cat > /etc/dnsmasq.conf << EOF")
         self.sendline("server=8.8.4.4")
         self.sendline("listen-address=127.0.0.1")
@@ -630,13 +642,14 @@ class DebianBox(linux.LinuxDevice):
         self.restart_dns_server()
 
     def restart_dns_server(self):
+        """Restart dns service in the linux device."""
         self.sendline("/etc/init.d/dnsmasq restart")
         self.expect(self.prompt)
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
         self.expect(self.prompt)
 
     def add_hosts(self, addn_host={}, config=None):
-        # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
+        """Add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container."""
         # this is a hack, the add_host should have been called from RootFs
         self.hosts = getattr(self, "hosts", defaultdict(list))
         restart = False
@@ -701,6 +714,7 @@ class DebianBox(linux.LinuxDevice):
             self.restart_dns_server()
 
     def remove_hosts(self):
+        """Remove dnsmasq.hosts and restart the service."""
         # TODO: we should probably be specific here whether we want to remove
         # everything or just few hosts.
         self.sendline("rm  /etc/dnsmasq.hosts")
@@ -709,7 +723,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def setup_as_wan_gateway(self, config=None):
-
+        """Set the device as WAN Gateway."""
         self.setup_dnsmasq(config)
 
         self.sendline("killall iperf ab hping3")
@@ -800,6 +814,7 @@ class DebianBox(linux.LinuxDevice):
             self.start_webproxy(self.dante)
 
     def setup_as_lan_device(self):
+        """Set the device as a LAN Device."""
         # potential cleanup so this wan device works
         self.sendline("killall iperf ab hping3")
         self.expect(self.prompt)
@@ -837,6 +852,7 @@ class DebianBox(linux.LinuxDevice):
             self.expect(self.prompt)
 
     def start_lan_client(self, wan_gw=None, ipv4_only=False):
+        """Start lan client and get ip addresses received from DUT."""
         ipv4, ipv6 = None, None
         self.sendline(
             "ip link set down %s && ip link set up %s"
@@ -1039,12 +1055,11 @@ class DebianBox(linux.LinuxDevice):
         return self.gwv6
 
     def add_lan_advertise_identity_cfg(self, lan_client_idx):
-        """Add lan advertise_identity changes in lan dhclient.conf
+        """Add lan advertise_identity changes in lan dhclient.conf.
 
-           param lan_client_idx: lan client index [lan = 0, lan2 = 1]
-           type lan_client_idx: integer
-
-           return: True (if lan identity cfg already present) else False
+        param lan_client_idx: lan client index [lan = 0, lan2 = 1]
+        type lan_client_idx: integer
+        return: True (if lan identity cfg already present) else False
         """
         out = self.check_output("egrep 'request option-125' /etc/dhcp/dhclient.conf")
 
@@ -1072,7 +1087,7 @@ class DebianBox(linux.LinuxDevice):
         return True
 
     def remove_lan_advertise_identity_cfg(self):
-        """Remove lan advertise_identity changes in lan dhclient.conf"""
+        """Remove lan advertise_identity changes in lan dhclient.conf."""
         self.sendline(
             "sed -i -e 's|request option-125,|request |' /etc/dhcp/dhclient.conf"
         )

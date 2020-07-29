@@ -1,3 +1,4 @@
+"""Single test to simulate RFC2544."""
 # Copyright (c) 2015
 #
 # All rights reserved.

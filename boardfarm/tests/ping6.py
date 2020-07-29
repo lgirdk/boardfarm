@@ -1,3 +1,4 @@
+"""Class functions to ping ipv6 lan to reouter and wan."""
 # Copyright (c) 2015
 #
 # All rights reserved.

@@ -1,3 +1,4 @@
+"""Floods hping3, creating lots of firewall entries in router."""
 import pexpect
 from boardfarm.devices import prompt
 from boardfarm.lib.installers import install_hping3
@@ -11,6 +12,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
     conns = 20000
 
     def runTest(self):
+        """Flood hping3."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan
@@ -40,6 +42,7 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
         self.recover()
 
     def recover(self):
+        """Kill hping3."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan

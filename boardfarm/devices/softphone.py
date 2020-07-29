@@ -1,7 +1,9 @@
+"""Class functions related to softphone software."""
 from boardfarm.lib.installers import install_pjsua
 
 
 class SoftPhone(object):
+    """Perform Functions related to softphone software."""
 
     model = "pjsip"
     profile = {}
@@ -20,6 +22,7 @@ class SoftPhone(object):
         softphone_profile["on_boot"] = self.install_softphone
 
     def __str__(self):
+        """Magic method to return a printable string."""
         return "softphone"
 
     def install_softphone(self):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Class for wifi acs methods."""
 import re
 
 import pexpect
@@ -8,6 +9,7 @@ from .wifi import wifi_stub
 
 class wifi_acs(wifi_stub):
     """Class for wifi acs methods.
+
     Inherits the wifi stub from lib/wifi.py
     """
 
@@ -16,6 +18,7 @@ class wifi_acs(wifi_stub):
 
     def __init__(self, wan, board, acs_server):
         """Instance initialization and get.
+
         wan ip, and acs serverserial number and acs
         data object
         """
@@ -28,6 +31,7 @@ class wifi_acs(wifi_stub):
 
     def prepare(self):
         """Get boot file name via ACS to ensure connectivity exist or not.
+
         If it returns none , ACS connectivity happens
         """
         acs_value = self.acs_server.get(self.cpeid, "Device.DeviceInfo.SerialNumber")
@@ -36,6 +40,7 @@ class wifi_acs(wifi_stub):
 
     def _check_acspath_spectrum(self, wifi_mode, ssid_flag=0):
         """Check and get the acs data object.
+
         based on wifi mode and ssid flag
 
         :param wifi_mode: wifi network mode eg:private_2.4 or private_5

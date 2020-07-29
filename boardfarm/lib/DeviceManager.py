@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Setup logging
+"""Class functions to Manage device."""
 import logging
 import os
 import sys
@@ -145,6 +146,7 @@ class device_manager(UserList):
 
     @property
     def data(self):
+        """Get the list of obj for devices."""
         return [x.obj for x in self.devices]
 
     @data.setter

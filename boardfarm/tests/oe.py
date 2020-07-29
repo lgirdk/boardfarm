@@ -1,3 +1,4 @@
+"""Record OE version."""
 # Copyright (c) 2015.
 
 # All rights reserved.

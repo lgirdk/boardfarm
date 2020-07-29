@@ -1,3 +1,4 @@
+"""Flash image and boot."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -21,6 +22,8 @@ warnings.simplefilter("always", UserWarning)
 if "pytest" in sys.modules:
 
     class RootFSBootTest(bft_base_test.BftBaseTest):
+        """Flashed image and booted successfully."""
+
         reflash = False
         reboot = False
 
@@ -31,6 +34,7 @@ else:
         """Flashed image and booted successfully."""
 
         def boot(self, reflash=True):
+            """Boot the DUT."""
             try:
                 boardfarm.lib.booting.boot(
                     self.config, self.env_helper, self.dev, reflash, self.logged
@@ -57,6 +61,7 @@ else:
 
         @removals.remove(removal_version="> 1.1.1", category=UserWarning)
         def recover(self):
+            """Recover DUT incase of Boot fails."""
             board = self.dev.board
             if self.__class__.__name__ == "RootFSBootTest":
                 board.close()

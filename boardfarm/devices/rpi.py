@@ -1,3 +1,4 @@
+"""Raspberry pi board device class with OpenWrtRouter OS installed."""
 # Copyright (c) 2017
 #
 # All rights reserved.
