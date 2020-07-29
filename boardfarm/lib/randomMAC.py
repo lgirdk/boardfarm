@@ -10,7 +10,7 @@ def randomMAC():
     :rtype : string
     """
     mac = [
-        (random.randint(0x00, 0xFF) & 0xFE),  # the lsb is 0, i.e. no multicat bit
+        (random.randint(0x00, 0xFF) & 0xFE),  # the lsb is 0, i.e. no multicast bit
         random.randint(0x00, 0xFF),
         random.randint(0x00, 0xFF),
         random.randint(0x00, 0xFF),

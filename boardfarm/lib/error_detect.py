@@ -4,7 +4,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-"""Global functions to detect errors occuring in Kernel."""
+"""Global functions to detect errors occurring in Kernel."""
 import os
 import re
 
@@ -48,7 +48,7 @@ def detect_crashdump_error(console, s):
 
         i = -1
         try:
-            # this waits until we get the reseting message which means
+            # this waits until we get the resetting message which means
             # we are done
             while i < 3:
                 i = console.expect(

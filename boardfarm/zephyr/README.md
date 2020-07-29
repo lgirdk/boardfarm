@@ -15,7 +15,7 @@ Folder and file structure follows as below for the integration of Zephyr with bo
        2. project    : "RDKB"
                JIRA projet name in which JIRA tickets has been created
        3. release"   : "7.6.1"
-               JIRA relase version
+               JIRA release version
        4. cycle      : "Demo-zephyr-cycle"
                Zephyr cycle name for the test cases execution. Set of all testcase execution result will be updated in a single cycle in Zephyr
        5. build      : "DemoBuild"

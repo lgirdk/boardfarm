@@ -2,7 +2,7 @@ from boardfarm.devices import base
 
 
 class BaseACS(base.BaseDevice):
-    """Base ACS class to define methods to perfrom common ACS APIs."""
+    """Base ACS class to define methods to perform common ACS APIs."""
 
     model = "base_acs"
     name = "acs_server"
@@ -11,8 +11,8 @@ class BaseACS(base.BaseDevice):
     Count_retry_on_error = 3
 
     def __init__(self, *args, **kwargs):
-        """Intialize the varible that are used in establishing connection to the ACS and\
-           Intialize an HTTP SOAP client which will authenticate with the ACS server.
+        """Initialize the variable that are used in establishing connection to the ACS and\
+           Initialize an HTTP SOAP client which will authenticate with the ACS server.
 
         :param ``*args``: the arguments to be used if any
         :type ``*args``: tuple
@@ -133,7 +133,7 @@ class BaseACS(base.BaseDevice):
     def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
-        NOTE: The command option is set as Syncronous
+        NOTE: The command option is set as Synchronous
         :param cpeid: the serial number of the modem through which ACS communication
         happens.
         :type cpeid: string
@@ -149,7 +149,7 @@ class BaseACS(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def close(self):
-        """Implemention to close ACS connection."""
+        """Implementation to close ACS connection."""
         raise Exception("Not implemented!")
 
     def GPA(self, param):
@@ -247,7 +247,7 @@ class BaseACS(base.BaseDevice):
         requesting the DUT to perform a schedule inform.
 
         NOTE: The scope of this method is to verify that the ACS and DUT can
-        communicate with eachother!
+        communicate with each other!
 
         :param cpeid: the id to use for the ping
         :param type: string

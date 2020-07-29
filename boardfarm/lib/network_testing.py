@@ -42,7 +42,7 @@ def tcpdump_capture(
     :type filters: dict
     :param return_pid: flag to return pid number (as a string) instead of the whole command output.Defaults to False
     :type return_pid: boolean
-    :return: Console ouput of tcpdump sendline command/pid depends on the return_pid flag
+    :return: Console output of tcpdump sendline command/pid depends on the return_pid flag
     :rtype: string
     """
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
@@ -71,7 +71,7 @@ def kill_process(device, process="tcpdump", pid=None, sync=True):
     :type pid: String, Optional
     :param sync: Marked False if sync should not be executed;defaults to True
     :type sync: Boolean,optional
-    :return: Console ouput of sync sendline command after kill process
+    :return: Console output of sync sendline command after kill process
     :rtype: string
     """
     if pid:

@@ -47,7 +47,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         text_file.flush()
 
         fmd5 = hashlib.md5(open(fname, "rb").read()).hexdigest()
-        print("File orginal md5sum: %s" % fmd5)
+        print("File original md5sum: %s" % fmd5)
 
         cmd = (
             'cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "cat - > %s"'
@@ -174,7 +174,7 @@ class selftest_test_create_session(rootfs_boot.RootFSBootTest):
         except Exception:
             assert 0, "Failed to create session, Test FAILED!"
         else:
-            assert self.session is not None, "Test Failed on correct paramters!!"
+            assert self.session is not None, "Test Failed on correct parameters!!"
 
         print("Session created successfully")
 
@@ -267,7 +267,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         text_file.flush()
 
         fmd5 = hashlib.md5(open(text_file.name, "rb").read()).hexdigest()
-        print("File orginal md5sum: %s" % fmd5)
+        print("File original md5sum: %s" % fmd5)
         print("copying file to lan at /tmp/dst.txt")
         lan.copy_file_to_server(text_file.name, "/tmp/dst.txt")
         print("Copy Done. Verify the integrity of the file")
@@ -313,10 +313,10 @@ class SnmpMibsUnitTest(object):
     """
 
     error_mibs = [
-        "SsnmpEngineMaxMessageSize",  # mispelled MUST fail
+        "SsnmpEngineMaxMessageSize",  # misspelled MUST fail
         "nonExistenMib",  # this one MUST fail
         "ifCounterDiscontinuityTimeQ",
-    ]  # mispelled MUST fail
+    ]  # misspelled MUST fail
 
     mibs = [
         "docsDevSwAdminStatus",
@@ -414,7 +414,7 @@ class SnmpMibsUnitTest(object):
 
             except Exception as e:
                 print(e)
-                # we shoudl NOT find only the errored mibs, all other mibs MUST be found
+                # we should NOT find only the errored mibs, all other mibs MUST be found
                 assert i in self.error_mibs, "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
                 if self.error_mibs is not None:
@@ -441,7 +441,7 @@ class SnmpMibsUnitTest(object):
 
             except Exception as e:
                 print(e)
-                # we shoudl NOT find only the errored mibs, all other mibs MUST be found
+                # we should NOT find only the errored mibs, all other mibs MUST be found
                 assert i in self.error_mibs1, "Failed to get oid for mib: " + i
                 print("Failed to get oid for mib: %s (expected)" % i)
                 if self.error_mibs1 is not None:
@@ -462,7 +462,7 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
     Tests the SnmpHelper module:
     1. compiles and get the oid of some sample mibs
     2. performs an snmp get from the lan to the wan
-    using hte compiled oids
+    using the compiled oids
     """
 
     def test_main(self):
@@ -599,7 +599,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
     --err "http://<some web addr>/error_injection.json".
     --err "path_to/error_injection.json".
 
-    for multiple sources (or web) a dict.update() is perfomed:
+    for multiple sources (or web) a dict.update() is performed:
 
     --err "path_to/error_injection.json" "path_to/error_injection1.json".
 

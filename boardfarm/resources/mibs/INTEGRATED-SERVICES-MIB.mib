@@ -341,7 +341,7 @@ IntSrvIfAttribEntry ::=
         DESCRIPTION
            "The source address of the sender  selected  by
            this  reservation.  The value of all zeroes in-
-           dicates 'all senders'.  This object may not  be
+           dictates 'all senders'.  This object may not  be
            changed  when the value of the RowStatus object
            is 'active'."
        ::= { intSrvFlowEntry 5 }

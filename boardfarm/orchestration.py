@@ -53,7 +53,7 @@ class TestStepMeta(type):
 
         @wraps(func)
         def wrapper(self, tst_cls, *args, **kwargs):
-            """Test wrapper function fot test class method."""
+            """Test wrapper function for test class method."""
             cls.section[tst_cls] = cls.section.get(tst_cls, {})
             self.section = cls.section[tst_cls]
             return func(self, tst_cls, *args, **kwargs)
@@ -427,7 +427,7 @@ if __name__ == "__main__":
             # note: we could assign a section to a test-step, e.g. Set-up in this case.
             with TestStep(self, "This is step1 of test setup", "Example 1") as ts:
 
-                # if you're intializing a TA, pass the function as a partial,
+                # if you're initializing a TA, pass the function as a partial,
                 # else code will fail
                 TestAction(ts, partial(action1, 2, m=3))
                 TestAction(ts, partial(action2, 6, m=2))
@@ -494,7 +494,7 @@ if __name__ == "__main__":
                         ts.call(action1, 2, 3)
                         ts.call(action1, 3, 4)
                 except Exception as e:
-                    print("To show if an exception didn't occure, test will fail", e)
+                    print("To show if an exception did not occur, test will fail", e)
 
     obj = Test1()
     obj1 = Test2()

@@ -101,7 +101,7 @@ class TrafficGenerator(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def update_project(self, project):
-        """Apply settings of a project to the trafic generator.
+        """Apply settings of a project to the traffic generator.
 
         :param project: File path of project to be loaded
         :type project: str

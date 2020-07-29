@@ -26,7 +26,7 @@ class SshConnection:
     def connect(self):
         """Connect to the device via ssh using credentials\
         spawn the device to check the availability and expect\
-        for password/passphrase raise exeception if we are not getting prompt for password.
+        for password/passphrase raise exception if we are not getting prompt for password.
 
         :param self: self object
         :type self: object

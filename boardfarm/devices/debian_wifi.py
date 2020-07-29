@@ -112,7 +112,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         security_mode="NONE",
         hotspot_id="cbn",
         hotspot_pwd="cbn",
-        boardcast=True,
+        broadcast=True,
     ):
         """Initialise wpa supplicant file.
 
@@ -126,8 +126,8 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         :type hotspot_id: string
         :param hotspot_pwd: password of hotspot
         :type hotspot_pwd: string
-        :param boardcast: Enable/Disable boardcast for ssid scan
-        :type boardcast: bool
+        :param broadcast: Enable/Disable broadcast for ssid scan
+        :type broadcast: bool
         :return: True or False
         :rtype: boolean
         """
@@ -142,7 +142,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
             config["eap"] = "PEAP"
             config["identity"] = hotspot_id
             config["password"] = hotspot_pwd
-        config["scan_ssid"] = int(not boardcast)
+        config["scan_ssid"] = int(not broadcast)
 
         config_str = ""
         for k, v in config.items():
@@ -171,7 +171,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         return bool(match)
 
     def wifi_connectivity_verify(self):
-        """Verify wifi is in teh connected state.
+        """Verify wifi is in the connected state.
 
         :return: True or False
         :rtype: boolean

@@ -137,8 +137,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
-        """Intialize the varible that are used in establishing connection to the ACS and\
-           Intialize an HTTP SOAP client which will authenticate with the ACS server.
+        """Initialize the variable that are used in establishing connection to the ACS and\
+           Initialize an HTTP SOAP client which will authenticate with the ACS server.
 
         :param ``*args``: the arguments to be used if any
         :type ``*args``: tuple
@@ -427,7 +427,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
-        NOTE: The command option is set as Syncronous
+        NOTE: The command option is set as Synchronous
         :param cpeid: the serial number of the modem through which ACS communication
         happens.
         :type cpeid: string
@@ -524,7 +524,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     def get_ticketId(self, cpeid, param):
         """ACS server maintain a ticket ID for all TR069 RPC calls.
 
-        This method will contruct a TR069 GPV query, execute it and
+        This method will construct a TR069 GPV query, execute it and
         return the ticket id associated with it.
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
@@ -583,7 +583,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
         :type wait: int
         :raises: NA
-        :returns: first value of ACS reponse for the parameter.
+        :returns: first value of ACS response for the parameter.
         :rtype: string
         """
         try:
@@ -1065,7 +1065,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         requesting the DUT to perform a schedule inform.
 
         NOTE: The scope of this method is to verify that the ACS and DUT can
-        communicate with eachother!
+        communicate with each other!
 
         :param cpeid: the id to use for the ping
         :param type: string

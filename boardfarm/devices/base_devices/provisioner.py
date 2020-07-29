@@ -94,7 +94,7 @@ class Provisioner(debian.DebianBox):
 
         2 approaches:
             - SCP the File using
-              ``boardfarm.lib.commom.scp_from(fname, server, username, password, port, dest)``
+              ``boardfarm.lib.common.scp_from(fname, server, username, password, port, dest)``
             - use gunzip approach to write file in remote. use parent method of linux.
               ``super().copy_file_to_server(file_path)``
         """

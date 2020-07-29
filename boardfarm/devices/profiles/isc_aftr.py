@@ -99,7 +99,7 @@ class AFTR(base_profile.BaseProfile):
         self.expect(self.prompt)
 
         # if contents are same just restart the service.
-        # will be useful incase we go with one aftr for a location.
+        # will be useful in case we go with one aftr for a location.
         if Counter(
             [i.strip() for i in start_conf.split("\n") if i.strip() != ""]
         ) != Counter(run_conf):
@@ -145,13 +145,13 @@ class AFTR(base_profile.BaseProfile):
         """
         run_conf = []
 
-        # section 0 defines global paramters for NAT, PCP and tunnel.
+        # section 0 defines global parameters for NAT, PCP and tunnel.
         # If not specified, aftr script will consider it's default values.
         self.aftr_conf["section 0: global parameters"] = OrderedDict(
             [
                 ("defmtu ", self.mtu),
                 ("defmss ", "on"),
-                # dont't throw error if IPv4 packet is too big to fit in one IPv6 encapsulating packet
+                # don't throw error if IPv4 packet is too big to fit in one IPv6 encapsulating packet
                 ("deftoobig ", "off"),
             ]
         )

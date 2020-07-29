@@ -17,7 +17,7 @@ available_tests = {}
 
 
 def init(config=None):
-    """Dynamically find all test classes accross all boardfarm projects.
+    """Dynamically find all test classes across all boardfarm projects.
 
     This creates a dictionary of "test names" to "python object of test class".
     """

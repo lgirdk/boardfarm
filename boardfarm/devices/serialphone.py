@@ -56,36 +56,36 @@ class SerialPhone(object):
         self.sendline("import serial,time")
         self.expect(">>>")
         self.sendline(
-            "ser = serial.Serial('/root/line-%s', %s ,timeout= %s)"
+            "set = serial.Serial('/root/line-%s', %s ,timeout= %s)"
             % (self.line, baud, timeout)
         )
         self.expect(">>>")
-        self.sendline("ser.write(b'ATZ\\r')")
+        self.sendline("set.write(b'ATZ\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
-        self.sendline("ser.write(b'AT\\r')")
+        self.sendline("set.write(b'AT\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
-        self.sendline("ser.write(b'AT+FCLASS=1\\r')")
+        self.sendline("set.write(b'AT+FCLASS=1\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
     def mta_readlines(self, time="3"):
         """To readlines from serial console."""
-        self.sendline("ser.flush()")
+        self.sendline("set.flush()")
         self.expect(">>>")
         self.sendline("time.sleep(%s)" % time)
         self.expect(">>>")
-        self.sendline("l=ser.readlines()")
+        self.sendline("l=set.readlines()")
         self.expect(">>>")
         self.sendline("print(l)")
 
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
-        self.sendline("ser.write(b'ATH%s\\r')" % hook_value)
+        self.sendline("set.write(b'ATH%s\\r')" % hook_value)
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -96,7 +96,7 @@ class SerialPhone(object):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
-        self.sendline("ser.write(b'ATDT%s;\\r')" % number)
+        self.sendline("set.write(b'ATDT%s;\\r')" % number)
         self.expect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
@@ -105,21 +105,21 @@ class SerialPhone(object):
         """To answer the incoming call."""
         self.mta_readlines(time="10")
         self.expect("RING")
-        self.sendline("ser.write(b'ATA\\r')")
+        self.sendline("set.write(b'ATA\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("ATA")
 
     def hangup(self):
         """To hangup the ongoing call."""
-        self.sendline("ser.write(b'ATH0\\r')")
+        self.sendline("set.write(b'ATH0\\r')")
         self.expect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
     def phone_kill(self):
         """To kill the serial port console session."""
-        self.sendline("ser.close()")
+        self.sendline("set.close()")
         self.expect(">>>")
         self.sendline("exit()")
         self.expect(self.prompt)

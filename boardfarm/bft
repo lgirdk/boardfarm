@@ -71,7 +71,7 @@ class FailedDevice(object):
 
 
 def bfcleanup():
-    """bfcleanup: This method attemps to kill all the children processes under bft.
+    """bfcleanup: This method attempts to kill all the children processes under bft.
 
     Reason: some processes like Xvnc, firefox, are spawned by libraries using
     wrappers like EasyPorcess. Under certain circumstances these processes are

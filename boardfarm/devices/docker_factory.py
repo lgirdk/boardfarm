@@ -33,7 +33,7 @@ class DockerFactory(linux.LinuxDevice):
         - To load a docker image to remote docker engine from mirror.
         - To create docker containers connecting to pre-configured docker networks
 
-    Initialization will handle environement setup for docker orchestrator.
+    Initialization will handle environment setup for docker orchestrator.
     init parameters need to be passed from boardfarm config.
 
     Docker factory communicates with child docker engines by exporting env
@@ -118,7 +118,7 @@ class DockerFactory(linux.LinuxDevice):
         configuration = self.dev.env.pop("configure", None)
 
         if self.ipaddr != "localhost":
-            # TOOO: we rely on correct username and key and standard port
+            # TODO: we rely on correct username and key and standard port
             bft_pexpect_helper.spawn.__init__(
                 self,
                 command="ssh",
@@ -149,9 +149,7 @@ class DockerFactory(linux.LinuxDevice):
         # docker_network creation will skip if iface is not set
         # iface needs to point to env, it should not have an explicit iface name
         self.iface = kwargs.pop("iface", None)
-        assert (
-            self.iface
-        ), "iface needs to be provided as an arguement to docker-factory"
+        assert self.iface, "iface needs to be provided as an argument to docker-factory"
 
         self.docker_network = kwargs.pop("docker_network", None)
         if not self.docker_network:
@@ -427,7 +425,7 @@ class DockerFactory(linux.LinuxDevice):
         If the docker network is present, validate the parent iface of
         the docker network with args passed during initialization.
 
-        :raises AssertionError: in case of iface mismatch wiht boardfarm config.
+        :raises AssertionError: in case of iface mismatch with boardfarm config.
 
         :return: ``True`` if exist, else ``False``
         :rtype: bool
@@ -438,10 +436,10 @@ class DockerFactory(linux.LinuxDevice):
         result = "Error: No such network" not in out
         if result:
             check = out.strip() in self.check_output("echo %s" % self.iface)
-            # if iface provided from JSON do not match with exisitng docker-nw's parent iface, exit
+            # if iface provided from JSON do not match with existing docker-nw's parent iface, exit
             assert (
                 check
-            ), "Driver Issue: iface from config does not match exisiting docker network's parent iface"
+            ), "Driver Issue: iface from config does not match existing docker network's parent iface"
         return result
 
     @run_with_lock(lock)

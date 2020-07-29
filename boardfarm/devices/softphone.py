@@ -76,7 +76,7 @@ class SoftPhone(object):
 
         Arguments:
         dial_number(str): number to dial
-        receiver_ip(str): ip of the reciever,it is mta ip the call is dialed to mta
+        receiver_ip(str): ip of the receiver,it is mta ip the call is dialed to mta
         """
         self.sendline("/n")
         self.expect(self.pjsip_prompt)

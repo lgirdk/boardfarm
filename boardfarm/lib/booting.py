@@ -372,7 +372,7 @@ def boot(config, env_helper, devices, reflash=True, logged=dict(), flashing_imag
     board.sendline("uname -a")
     board.expect(board.prompt)
 
-    # we can't have random messsages messages
+    # we can't have random messages messages
     board.set_printk()
 
     if hasattr(config, "INSTALL_PKGS") and config.INSTALL_PKGS != "":

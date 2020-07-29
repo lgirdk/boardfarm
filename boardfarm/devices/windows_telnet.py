@@ -64,7 +64,7 @@ class WindowsTelnet(base.BaseDevice):
     def ping(
         self, ping_ip, source_ip=None, ping_count=4, ping_interface=None, wait_time=30
     ):
-        """Check the ping is successfull from the windows client.
+        """Check the ping is successful from the windows client.
 
         :param ping_ip : IP to check the ping
         :type ping_ip : string

@@ -255,7 +255,7 @@ class BaseBoard(linux.LinuxDevice):
         check_version=False,
         nosh_image=False,
     ):
-        """Flashes a combine signed image over TFTP initated by SNMP commands
+        """Flash a combined signed image over TFTP initiated by SNMP commands.
 
         :param META: image which is passed via argument -m
         :type META: string
@@ -406,11 +406,11 @@ class BaseBoard(linux.LinuxDevice):
 
     def get_ifaces_ip_dict(self, ifaces=None):
         """To return the dict of ipaddress of interfaces.
-        This method is to get the dictionary of all the avalibale ip adress for
+        This method is to get the dictionary of all the available ip address for
         wan, erouter and mta device which intern can be used for pre  validations.
 
         return: dictionary containing the ip details.
-        rtype: dictionay
+        rtype: dictionary
         """
         raise Exception("Not implemented!")
 

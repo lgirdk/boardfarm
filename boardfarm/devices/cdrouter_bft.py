@@ -16,14 +16,14 @@ class CDrouterDevice(object):
     name = "cdrouter"
 
     def __init__(self, *args, **kwargs):
-        """Instance initalization.
+        """Instance initialization.
 
         This method is to initialize the variables required from board-farm perspective
         to execute the tests and fetch results from CD-router.
 
         These variables include ipaddress, wan_iface, lan_iface etc.,
 
-        :param ``*args``: set of arguements to be passed if any.
+        :param ``*args``: set of arguments to be passed if any.
         :type ``*args``: tuple
         :param ``**kwargs``: extra args to be used if any.
         :type ``**kwargs``: dict

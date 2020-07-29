@@ -60,7 +60,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         mgr=None,
         **kwargs
     ):
-        """Intialize the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc..
+        """Initialize the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc..
 
         :param model: Model of the QEMU device.
         :type model: string
@@ -94,7 +94,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         :type rootfs: string
         :param kernel: The kernel image path to be used to flash to the device, defaults to None
         :type kernel: string
-        :param ``**kwargs``: Extra set of arguements to be used if any.
+        :param ``**kwargs``: Extra set of arguments to be used if any.
         :type ``**kwargs``: dict
         :raises: Exception "The QEMU device type requires specifying a rootfs"
         """
@@ -220,7 +220,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     def flash_linux(self, KERNEL):
         """Flash the QEMU board by copying file to the board using TFTP protocol.
 
-        :param KERNEL: Indicates the absoulte location of the file to be used to flash.
+        :param KERNEL: Indicates the absolute location of the file to be used to flash.
         :type KERNEL: string
         """
         pass

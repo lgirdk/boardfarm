@@ -19,7 +19,7 @@ random_private_mac () {
 import random
 
 def randomMAC():
-    mac = [ (random.randint(0x00,0xff) & 0xfe), # the lsb is 0, i.e. no multicat bit
+    mac = [ (random.randint(0x00,0xff) & 0xfe), # the lsb is 0, i.e. no multicast bit
              random.randint(0x00, 0xff),
              random.randint(0x00, 0xff),
              random.randint(0x00, 0xff),

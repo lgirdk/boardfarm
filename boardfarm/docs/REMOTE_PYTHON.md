@@ -4,7 +4,7 @@ ASYNCHRONOUS SNMP:
 With asyncio built-in facilities, you could run many SNMP queries in parallel and/or sequentially, interleave SNMP queries with I/O operations with other systems. See asyncio resources repository for other asyncio-compatible modules.
 
 ##FUNCTION PATH: boardfarm/tests/lib/common.py
-##ASYNCRONOUS SCRIPT PATH: boardfarm/tests/lib/scripts/asyncore_snmp.py
+##ASYNCHRONOUS SCRIPT PATH: boardfarm/tests/lib/scripts/asyncore_snmp.py
 
 ##USAGE:
 *snmp_asyncore_walk(device, ip_address, mib_oid, community='public', time_out=100)*

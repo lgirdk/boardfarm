@@ -14,7 +14,7 @@ fake_generator = Factory.create()
 
 
 class SoCat(rootfs_boot.RootFSBootTest):
-    """Super simple simulatation of HTTP traffic."""
+    """Super simple simulation of HTTP traffic."""
 
     all_ips = []
     all_conns = []
@@ -44,7 +44,7 @@ class SoCat(rootfs_boot.RootFSBootTest):
 
         self.all_ips.append((random_ip, random_port))
 
-        # start listners
+        # start listeners
         wan.sendline("ip addr add %s/32 dev %s" % (random_ip, wan.iface_dut))
         wan.expect(prompt)
 

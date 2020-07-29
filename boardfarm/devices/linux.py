@@ -291,8 +291,8 @@ class LinuxDevice(base.BaseDevice):
             import io
 
             out = io.BytesIO()
-            with gzip.GzipFile(fileobj=out, mode="w") as fo:
-                fo.write(string_)
+            with gzip.GzipFile(fileobj=out, mode="w") as file:
+                file.write(string_)
             return out.getvalue()
 
         with open(src, mode="rb") as file:
@@ -341,7 +341,7 @@ EOFEOFEOFEOF"""
         super(LinuxDevice, self).sendline(cmd)
 
     def set_cli_size(self, columns):
-        """Set the terminal colums value."""
+        """Set the terminal columns value."""
         self.sendline("stty columns %s" % str(columns))
         self.expect(self.prompt)
 

@@ -23,7 +23,7 @@ device_mappings = {}
 
 
 def probe_devices():
-    """Dynamically find all devices classes accross all boardfarm projects."""
+    """Dynamically find all devices classes across all boardfarm projects."""
     all_boardfarm_modules = dict(boardfarm.plugins)
     all_boardfarm_modules["boardfarm"] = importlib.import_module("boardfarm")
 

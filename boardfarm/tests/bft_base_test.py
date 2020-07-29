@@ -82,7 +82,7 @@ class BftBaseTest(inherit_class):
         # TearDown step has a hook to call a fixture : teardown
         # this hook ensures that any action executed does not fail
         self.td_step = TearDown(
-            self, "Excuting teardown for test: {}".format(self.__class__.__name__)
+            self, "Executing teardown for test: {}".format(self.__class__.__name__)
         )
 
         # add a hook in class to call the fixture directly

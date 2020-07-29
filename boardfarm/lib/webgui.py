@@ -71,7 +71,7 @@ class web_gui:
         return ""
 
     # this specified a prefix for the screenshots file names
-    # it cna be used to prepend the testcase name to the file name
+    # it can be used to prepend the testcase name to the file name
     def set_prefix(self, prefix=""):
         """Specify a prefix for the screenshots file name.
 
@@ -371,13 +371,13 @@ class web_gui:
         :rtype: boolean
         """
         try:
-            ele_botton = self.check_element_clickable(By.ID, id_value, timeout=3)
-            if ele_botton is not None:
-                ele_botton.click()
+            ele_button = self.check_element_clickable(By.ID, id_value, timeout=3)
+            if ele_button is not None:
+                ele_button.click()
                 print("Logout clicked")
             return True
         except NoSuchElementException:
-            print("No logout botton element ('id', %s) found " % id_value)
+            print("No logout button element ('id', %s) found " % id_value)
             return False
 
     def driver_close(self, logout_id, logout_check=True):
@@ -450,7 +450,7 @@ class web_gui:
             raise Exception("Failed to get webproxy driver via proxy " + proxy)
         return self.driver
 
-    def botton_click_to_next_page(self, index_by="id", ele_index=None):
+    def button_click_to_next_page(self, index_by="id", ele_index=None):
         """Click button and verify.
 
         :param index_by: 'id' or 'name'
@@ -465,10 +465,10 @@ class web_gui:
         else:
             by = By.ID
 
-        # verify $botton is exist
-        botton = self.check_element_visibility(by, ele_index)
-        assert botton is not None, "timeout: not found %s in page" % ele_index
-        print("get botton value: %s" % botton.get_attribute("value"))
+        # verify $button is exist
+        button = self.check_element_visibility(by, ele_index)
+        assert button is not None, "timeout: not found %s in page" % ele_index
+        print("get button value: %s" % button.get_attribute("value"))
 
         self._save_screenshot("%s_click.png" % ele_index)
         self.check_element_clickable(by, ele_index).click()
@@ -489,7 +489,7 @@ class web_gui:
         self._save_screenshot(self.prefix + "home_page.png")
 
     def navigate_to_target_page(self, navi_path):
-        """Navigating to teh target page.
+        """Navigating to the target page.
 
         :param navi_path: navigation path of the page
         :type navi_path: string

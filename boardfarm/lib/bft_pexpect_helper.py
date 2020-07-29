@@ -76,7 +76,7 @@ class bft_pexpect_helper(pexpect.spawn):
     """Boardfarm helper for logging pexpect and making minor tweaks."""
 
     def __setattr__(self, key, value):
-        """Everytime when an attribute assignment is attempted, the function is called."""
+        """Every time when an attribute assignment is attempted, the function is called."""
         # pexpect name start with <.*>
         # idea is to check for all names before letting pexpect set the name
         if key == "name":
@@ -301,7 +301,7 @@ def spawn_ssh_pexpect(
     :type via: string
     :param color: fonts output color (default None)
     :type color: string
-    :param o: ssh output stream (defautl sys.stdout)
+    :param o: ssh output stream (default sys.stdout)
     :type o: string
     :param extra_args: additional arguments APPENDED to the ssh command line (default "")
         E.g.: for a socks5 tunnnel with port 50000: extra_args="-D 50000 -N -v -v"

@@ -377,7 +377,7 @@ def install_java(device):
         )
         device.expect(device.prompt)
         device.sendline(
-            "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886"
+            "apt-key adv --key server hkp://key server.ubuntu.com:80 --recv-keys EEA14886"
         )
         device.expect(device.prompt)
         device.sendline(
@@ -613,7 +613,7 @@ def install_snmpd(device, post_cmd=None):
     :param device: lan or wan
     :type device: Object
     :param post_cmd: linux command to add/delete/update/replace content
-    of a file related to snmpd, post installtion, defaults to None
+    of a file related to snmpd, post installation, defaults to None
     :type post_cmd: string, optional
     """
     apt_install(device, "snmpd")
@@ -864,8 +864,8 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
     device.expect(device.prompt)
     """
     This is where the original setup script comes from. For conveninence we shall
-    copy the version commited in test/lib/scripts to the server (we cannot always
-    guarantee tha the containers will have web access)
+    copy the version committed in test/lib/scripts to the server (we cannot always
+    guarantee that the containers will have web access)
     device.sendline('curl -O https://raw.githubusercontent.com/Angristan/openvpn-install/master/openvpn-install.sh')
     """
     import os
@@ -1067,8 +1067,8 @@ def install_postfix(device):
     :param device: lan or wan
     :type device: Object
     :raises assertion:
-    1. Errors Encountered during installation. Installaion failed
-    2. System mail name option is not received. Installaion failed
+    1. Errors Encountered during installation. Installation failed
+    2. System mail name option is not received. Installation failed
     3. Unable to start Postfix service.Service is not properly installed
     """
     deprecate(
@@ -1129,14 +1129,14 @@ def install_postfix(device):
             device.sendline("2")
             assert 0 == device.expect(
                 ["System mail name:"] + device.prompt, timeout=90
-            ), "System mail name option is not received. Installaion failed"
+            ), "System mail name option is not received. Installation failed"
             device.sendline("testingsmtp.com")
             assert 0 != device.expect(
                 ["Errors were encountered"] + device.prompt, timeout=90
-            ), "Errors Encountered. Installaion failed"
+            ), "Errors Encountered. Installation failed"
 
         elif install_settings == 1:
-            assert 0 != 1, "Errors Encountered. Installaion failed"
+            assert 0 != 1, "Errors Encountered. Installation failed"
 
         elif install_settings == 2:
             device.sendline("postconf -d | grep mail_version")

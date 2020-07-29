@@ -28,7 +28,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
     waits for completion and grabs results.
     """
 
-    # To be overriden by children class
+    # To be overridden by children class
     tests = None
     extra_config = False
     cdrouter_server = None

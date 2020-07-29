@@ -83,7 +83,7 @@ EOF"""
             self.expect(self.prompt)
             num_mod = (
                 """cat >> /etc/asterisk/extensions.conf << EOF
-exten => """
+extent => """
                 + i
                 + """,1,Dial(SIP/"""
                 + i

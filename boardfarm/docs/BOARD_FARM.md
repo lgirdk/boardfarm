@@ -1,7 +1,7 @@
 Board Farm
 ==========
 
-A "Board Farm" is simply one or more boards (such as routers) connected to a network so that they are remotely accessable to testers or developers.
+A "Board Farm" is simply one or more boards (such as routers) connected to a network so that they are remotely accessible to testers or developers.
 
 There are many benefits to building a board farm, including:
 
@@ -28,7 +28,7 @@ The smallest board farm requires:
 * 1 board (e.g. a router).
 * 1 console server. (or local serial connection (see below)
 * 1 network-controlled power switch.
-* 2 computers each with 2 network interfaces - Preferably Debian Linux. Can be small Raspberry PI computers, or more powerful computers (to acheive gigabit throughput).
+* 2 computers each with 2 network interfaces - Preferably Debian Linux. Can be small Raspberry PI computers, or more powerful computers (to achieve gigabit throughput).
 * Several ethernet cables, and serial connector for the board.
 
 A console server allows users to ssh/telnet to it and gain console access to boards.  They can be made for free using any Linux computer by using libraries such as [ser2net]([http://sourceforge.net/projects/ser2net/).  Console servers can also be purchased: there are open-source, linux-based console servers available from [OpenGear](http://opengear.com/products/cm4100-console-server).
@@ -327,7 +327,7 @@ Please select:
 
 From here you can type lan, and press enter.. or wan and press enter. This will
 change the shell from the device under test to the WAN and LAN docker containers.
-You should verfiy that the eth0 and eth1 devices are present in each containter.
+You should verfiy that the eth0 and eth1 devices are present in each container.
 eth1 is the interface name of the device you specified in the boardfarm config.
 If something went wrong you will need each command one-by-one outside of the
 boardfarm scripts and see if there are errors present.
@@ -372,8 +372,8 @@ test, something like this:
 
 NOTE: since we are running new containers each time keep in mind that the WAN
 and LAN devices will be completely reset each time you start the scripts. You
-could actual modify the startup and make the containers persistant across
+could actual modify the startup and make the containers persistent across
 invocations of the script. Each way has it's pros and cons
 
 Next step is to add proper support for your new board so you can take advantage of
-automated flashing and remote power and reset to completly automate your CI flow
+automated flashing and remote power and reset to completely automate your CI flow

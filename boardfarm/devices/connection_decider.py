@@ -17,7 +17,7 @@ def connection(conn_type, device, **kwargs):
     :type conn_type: string
     :param device: the device to which connection to be established
     :type device: object
-    :param ``**kwargs``: extra set of arguements to be used if any
+    :param ``**kwargs``: extra set of arguments to be used if any
     :type ``**kwargs``: dict
     :raises: NA
     :return: :class:`Response <Response>` object of class type used for connection

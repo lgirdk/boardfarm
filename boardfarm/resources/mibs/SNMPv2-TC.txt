@@ -201,7 +201,7 @@ RowStatus ::= TEXTUAL-CONVENTION
                  exists in the agent, but is missing information
                  necessary in order to be available for use by the
                  managed device (i.e., one or more required columns in
-                 the conceptual row have not been instanciated);
+                 the conceptual row have not been instantiated);
 
                  - `createAndGo', which is supplied by a management
                  station wishing to create a new instance of a

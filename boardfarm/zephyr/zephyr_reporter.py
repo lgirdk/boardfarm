@@ -17,7 +17,7 @@ COLUMN_JIRA_TEST_ID = "Jira ID"
 
 
 def parse_arguments():
-    """Parse imput arguments and returns them to the main routine.
+    """Parse input arguments and returns them to the main routine.
 
     Also takes care of prompting help
     """

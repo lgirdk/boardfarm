@@ -11,7 +11,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
     """Determine's max number of iperf connections."""
 
     def runTest(self):
-        """Perfrom concurrent iperf connections."""
+        """Perform concurrent iperf connections."""
         board = self.dev.board
         wan = self.dev.wan
         lan = self.dev.lan

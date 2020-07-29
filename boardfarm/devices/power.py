@@ -165,7 +165,7 @@ class PowerDevice:
 class SentrySwitchedCDU(PowerDevice):
     """Power Unit from Server Technology."""
 
-    def __init__(self, ip_address, outlet, username="admn", password="admn"):
+    def __init__(self, ip_address, outlet, username="admin", password="admin"):
         """Instance initialization."""
         PowerDevice.__init__(self, ip_address, username, password)
         self.outlet = outlet
@@ -368,14 +368,14 @@ class SimpleSerialPower(PowerDevice):
         """Send off command, wait 5 seconds, send on command."""
         import serial
 
-        with serial.Serial(self.serial_dev, self.baud) as ser:
+        with serial.Serial(self.serial_dev, self.baud) as set:
             if self.off_cmd is not None:
-                ser.write(self.off_cmd + "\r")
+                set.write(self.off_cmd + "\r")
                 time.sleep(5)
 
-            ser.write(self.on_cmd + "\r")
+            set.write(self.on_cmd + "\r")
 
-            ser.close()
+            set.close()
 
     """
     IP Power 9258 networked power switch class.

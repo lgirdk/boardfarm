@@ -54,7 +54,7 @@ def find_directory_in_tree(pattern, root_dir):
 
 def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
     """
-    Look for all the files in a directry tree.
+    Look for all the files in a directory tree.
 
     Parameters:
     root_dir: root of tree to traverse, can be a list of directory

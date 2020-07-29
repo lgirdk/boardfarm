@@ -150,11 +150,11 @@ class DebianBox(linux.LinuxDevice):
 
         self.check_connection(username, name, password)
 
-        # attempts to fix the cli colums size
+        # attempts to fix the cli columns size
         self.set_cli_size(200)
 
         # we need to pick a non-conflicting private network here
-        # also we want it to be consistant and not random for a particular
+        # also we want it to be consistent and not random for a particular
         # board
         if self.gw is None:
             if (lan_gateway - lan_network.num_addresses).is_private:
@@ -547,7 +547,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
 
     def configure(self, kind, config=[]):
-        """Cofiguring the device as WAN or LAN."""
+        """Configuring the device as WAN or LAN."""
         # TODO: wan needs to enable on more so we can route out?
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()

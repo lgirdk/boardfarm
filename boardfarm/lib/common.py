@@ -97,7 +97,7 @@ def clear_buffer(console):
 class socks5_proxy_helper(object):
     """Helper class to create a socks5 proxy tunnel.
 
-    This class opens an ssh local "dynamic" application-level port forwarding to a given device, for the SOCKS5 protocol (the SOCKS5 protocol is defined in RFC 1928). The ssh session uses the -D <port> option. The <port> value is selected at random from the IANA ephemeral port range. If the ssh connection fails (e.g. the port is already taken) the code will retry on another port. This class assumes that the device obj to connect to contians an IP, ssh port, username and password. This class depends on the boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect funciton. A typical use case for this class is creating a proxy to be used with the selenium webdriver. Ideally there should be 1 tunnnel per device (a getter method is provided).
+    This class opens an ssh local "dynamic" application-level port forwarding to a given device, for the SOCKS5 protocol (the SOCKS5 protocol is defined in RFC 1928). The ssh session uses the -D <port> option. The <port> value is selected at random from the IANA ephemeral port range. If the ssh connection fails (e.g. the port is already taken) the code will retry on another port. This class assumes that the device obj to connect to contains an IP, ssh port, username and password. This class depends on the boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect function. A typical use case for this class is creating a proxy to be used with the selenium webdriver. Ideally there should be 1 tunnnel per device (a getter method is provided).
 
     :param device: the device the ssh need to connect to (i.e. lan or wan access)
     :type device: device object
@@ -144,7 +144,7 @@ class socks5_proxy_helper(object):
 
     .. note:: throws Exception("Failed to create socks5 tunnel") on init failure
 
-        The class holds a static list of connections in case the instance is not assigned to any local variable, ueful to keep the object alive when the proxy creation is hidden within a library.
+        The class holds a static list of connections in case the instance is not assigned to any local variable, useful to keep the object alive when the proxy creation is hidden within a library.
     .. boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect
     """
 
@@ -184,7 +184,7 @@ class socks5_proxy_helper(object):
     def get_proxy(cls, device):
         """Getter that should be called to create a proxy object.
 
-        This will look for an ssh tunnel connection already exisitng on the ssh ip:port (these are the ssh connection ip and port and NOT the socks5 ip and port). If a tunnel does not already  exist, creates one. Repeated calls to this method, with the SAME device, are an idempotent operation (you get the same tunnel obj).
+        This will look for an ssh tunnel connection already existing on the ssh ip:port (these are the ssh connection ip and port and NOT the socks5 ip and port). If a tunnel does not already  exist, creates one. Repeated calls to this method, with the SAME device, are an idempotent operation (you get the same tunnel obj).
 
             :param device: the device the ssh need to connect to (i.e. lan or wan access)
             :type device: device object
@@ -534,7 +534,7 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
     )
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
-            print_bold("Faield to start service on " + ip + ":" + port)
+            print_bold("Failed to start service on " + ip + ":" + port)
         return False
     else:
         if "BFT_DEBUG" in os.environ:
@@ -577,7 +577,7 @@ EOF"""
     device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         if "BFT_DEBUG" in os.environ:
-            print_bold("Faield to start service on [" + ip + "]:" + port)
+            print_bold("Failed to start service on [" + ip + "]:" + port)
         return False
     else:
         if "BFT_DEBUG" in os.environ:
@@ -1797,9 +1797,9 @@ def hex_to_datetime(output):
 
 
 def openssl_verify(device, ip_address, port, options=""):
-    """Openssl verfication for SMTP.
+    """Openssl verification for SMTP.
 
-    :param device: device in which the command has to be excuted
+    :param device: device in which the command has to be executed
     :type device: device
     :param ip_address: ip address to be connected
     :type ip_address: string
@@ -1873,7 +1873,7 @@ def add_ovpn_user(device, user):
     :type  device : Object
     :param user : client name (Eg: "lan")
     :type  user : str
-    :return : addded user (eg: lan.ovpn)
+    :return : added user (eg: lan.ovpn)
     :return type : str
     """
     device.sendline("./openvpn-install.sh")

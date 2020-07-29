@@ -59,7 +59,7 @@ class BaseCmts(base.BaseDevice):
     def check_online(self, cmmac=None):
         """Check the board status from CMTS.
 
-        Function checks the encrytion mode and returns True if online
+        Function checks the encryption mode and returns True if online
 
         :param cmmac: mac address of the board
         :type cmmac: string
@@ -267,7 +267,7 @@ class BaseCmts(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def modify_docsis_mac_ip_provisioning_mode(self, index, ip_pvmode="dual-stack"):
-        """Change the ip provsioning mode.
+        """Change the IP provisioning mode.
 
         :param index: mac domain of the board configured
         :type index: string
@@ -375,9 +375,9 @@ class BaseCmts(base.BaseDevice):
         :type index: string
         :param helper_ip: helper ip to be used,
         :type helper_ip: string
-        :param ipaddr: actual ip to be assiged to cable mac in the format  <ip></><subnet> subnet defaut taken as 24 if not provided,
+        :param ipaddr: actual ip to be assigned to cable mac in the format  <ip></><subnet> subnet default taken as 24 if not provided,
         :type ipaddr: string
-        :param secondary_ips: list of seconday ips  in the format  <ip></><subnet> subnet defaut taken as 24 if not provided, defaults to empty list []
+        :param secondary_ips: list of secondary ips  in the format  <ip></><subnet> subnet default taken as 24 if not provided, defaults to empty list []
         :type secondary_ips: list
         :raises Exception: Not implemented
         """
@@ -390,9 +390,9 @@ class BaseCmts(base.BaseDevice):
         :type index: string
         :param helper_ip: helper ip to be used
         :type helper_ip: string
-        :param ip: actual ip to be assiged to cable mac in the format  <ip></><subnet> subnet defaut taken as 24 if not provided
+        :param ip: actual ip to be assigned to cable mac in the format  <ip></><subnet> subnet default taken as 24 if not provided
         :type ip: string
-        :param secondary_ips: list of seconday ips  in the format  <ip></><subnet> subnet defaut taken as 24 if not provided defaults to empty list []
+        :param secondary_ips: list of secondary ips  in the format  <ip></><subnet> subnet default taken as 24 if not provided defaults to empty list []
         :type secondary_ips: list
         :raises Exception: Not implemented
         """
@@ -578,7 +578,7 @@ class BaseCmts(base.BaseDevice):
     def mirror_traffic(self, macaddr=""):
         """Send the mirror traffic.
 
-        :param macaddr: mac address of the device if avaliable, defaults to empty string ""
+        :param macaddr: mac address of the device if available, defaults to empty string ""
         :type macaddr: string
         :raises Exception: Not implemented
         """
@@ -605,7 +605,14 @@ class BaseCmts(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def get_qos_parameter(self, cm_mac):
-        """To get the qos related parameters of board, to get the qos related parameters ["Maximum Concatenated Burst", "Maximum Burst", "Maximum Sustained rate", "Mimimum Reserved rate", "Scheduling Type"] of board.
+        """Get the QoS related parameters of the board.
+
+        List of QoS parameters:
+        - "Maximum Concatenated Burst",
+        - "Maximum Burst",
+        - "Maximum Sustained rate",
+        - "Minimum Reserved rate",
+        - "Scheduling Type"
 
         :param cm_mac: mac address of the board
         :type cm_mac: string
@@ -614,9 +621,9 @@ class BaseCmts(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def get_cm_mac_cmts_format(self, mac):
-        """To convert mac adress to the format that to be used on CMTS.
+        """Convert mac address to the format that to be used on CMTS.
 
-        :param mac: mac address of board in foramt XX:XX:XX:XX:XX:XX
+        :param mac: mac address of board in format XX:XX:XX:XX:XX:XX
         :type mac: string
         :return:  the cm_mac in CMTS format xxxx.xxxx.xxxx (lowercase)
         :rtype: string

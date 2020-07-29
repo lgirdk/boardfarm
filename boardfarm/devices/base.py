@@ -142,7 +142,7 @@ class BaseDevice(bft_pexpect_helper):
                 return
             except Exception as e:
                 print(e)
-                print("\nWe appeared to have failed to break into U-Boot...")
+                print("\new appeared to have failed to break into U-Boot...")
 
     def check_memory_addresses(self):
         """Check/set memory addresses and size for proper flashing."""

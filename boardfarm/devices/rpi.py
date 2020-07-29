@@ -125,7 +125,7 @@ class RPI(openwrt_router.OpenWrtRouter):
     def flash_linux(self, KERNEL):
         """Flash the Raspberry pi board with a file downloaded using TFTP protocol.
 
-        :param KERNEL: Indicates the absoulte location of the file to be used to flash.
+        :param KERNEL: Indicates the absolute location of the file to be used to flash.
         :type KERNEL: string
         """
         common.print_bold("\n===== Flashing linux =====\n")
@@ -142,7 +142,7 @@ class RPI(openwrt_router.OpenWrtRouter):
     def flash_meta(self, META, wan, lan):
         """Flash an openembedded-core to RPi. (Flashes a combine signed image using TFTP).
 
-        :param META: Indicates the absoulte location of the file to be used to flash.
+        :param META: Indicates the absolute location of the file to be used to flash.
         :type META: string
         :param wan: Indicates the wan device to be used
         :type wan: object

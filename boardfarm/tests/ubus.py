@@ -94,7 +94,7 @@ class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
 
         for i in range(1000):
             print(
-                "\nRunning iteration of ubus json-rpc network restart nubmer %s\n" % i
+                "\nRunning iteration of ubus json-rpc network restart number %s\n" % i
             )
             session_id = ubus_login_session(lan)
             print("\nLogged in with sessionid = %s\n" % session_id)
@@ -112,7 +112,7 @@ class UBusTestSystemReboot(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         for i in range(1000):
-            print("\nRunning iteration of ubus json-rpc system reboot nubmer %s\n" % i)
+            print("\nRunning iteration of ubus json-rpc system reboot number %s\n" % i)
             session_id = ubus_login_session(lan)
             print("\nLogged in with sessionid = %s\n" % session_id)
 

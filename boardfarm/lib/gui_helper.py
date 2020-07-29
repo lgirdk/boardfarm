@@ -1,4 +1,4 @@
-"""Global Functions to perfrom GUI actions in DUT."""
+"""Global Functions to perform GUI actions in DUT."""
 # Copyright (c) 2018
 #
 # All rights reserved.
@@ -223,7 +223,7 @@ def get_text_value_by_xpath(web_gui, get_value):
 
 
 def get_value_from_disabled_input(web_gui, get_value):
-    """To get the value for diabled element.
+    """To get the value for disabled element.
 
     :param web_gui: web driver after initializing page
     :type web_gui: string

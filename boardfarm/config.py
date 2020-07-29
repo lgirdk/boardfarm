@@ -137,7 +137,7 @@ if "BFT_DEBUG" in os.environ:
 output_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), "results", "")), "")
 WAN_PROTO = "dhcp"  # or 'pppoe'. Protocol of the WAN interface
 setup_device_networking = True  # or False. Setup device networking during boot
-bootargs = None  # bootargs to set or append to default args (board dependant)
+bootargs = None  # bootargs to set or append to default args (board dependent)
 golden = []  # Path to JSON results to compare against (golden master)
 golden_master_results = {}  # Will store golden master results
 features = []  # Features required for this test run
@@ -198,7 +198,7 @@ def update_error_injection_dict(err_dict):
                 err_injection_dict.update(json.loads(data))
         except Exception as error:
             print(error)
-            print("Failed to fetch error dictionay at '{}', skipping...".format(d))
+            print("Failed to fetch error dictionary at '{}', skipping...".format(d))
 
     if err_injection_dict:
         print("Error injection dictionary:")

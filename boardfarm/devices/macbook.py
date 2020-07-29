@@ -107,7 +107,7 @@ class Macbook(debian.DebianBox):
         :type command: String
         :param capture_file: Filename to create in which packets shall be stored. Defaults to 'pkt_capture.pcap'
         :type capture_file: String, Optional
-        :return: Console ouput of tcpdump sendline command.
+        :return: Console output of tcpdump sendline command.
         :rtype: string
         """
         self.sendline(

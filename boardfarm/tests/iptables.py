@@ -37,7 +37,7 @@ class IPTablesResetCounters(rootfs_boot.RootFSBootTest):
     """Reset iptables counters."""
 
     def runTest(self):
-        """Start reseting iptables counters."""
+        """Start resetting iptables counters."""
         board = self.dev.board
 
         pp = board.get_pp_dev()

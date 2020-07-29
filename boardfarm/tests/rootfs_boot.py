@@ -61,7 +61,7 @@ else:
 
         @removals.remove(removal_version="> 1.1.1", category=UserWarning)
         def recover(self):
-            """Recover DUT incase of Boot fails."""
+            """Recover DUT in case of Boot fails."""
             board = self.dev.board
             if self.__class__.__name__ == "RootFSBootTest":
                 board.close()

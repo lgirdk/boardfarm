@@ -82,7 +82,7 @@ class SyslogServer(debian.DebianBox):
 
         :param IP: IP address of the DUT
         :type IP: string
-        :param check_string: Chcek string or message for which the time to be fetched
+        :param check_string: Check string or message for which the time to be fetched
         :type check_string: string
         :return: Time of the syslog message
         :rtype: string

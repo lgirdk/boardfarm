@@ -5,7 +5,7 @@
 -- $Header: /home/rainbow/rj/cvs/snacc/asn1specs/rfc1213-mib2.asn1,v 1.3 1995/07/27 08:29:19 rj Exp $
 -- $Log: rfc1213-mib2.asn1,v $
 -- Revision 1.3  1995/07/27  08:29:19  rj
--- rfc1155-smi.asn1, rfc1157-snmp.asn1 and rfc1213-mib2.asn1 renamed from 1155-smi.asn1, 1157-snmp.asn1 and 1213-mib2.asn1 to accomodate to snacc's new file name generation scheme.
+-- rfc1155-smi.asn1, rfc1157-snmp.asn1 and rfc1213-mib2.asn1 renamed from 1155-smi.asn1, 1157-snmp.asn1 and 1213-mib2.asn1 to accommodate to snacc's new file name generation scheme.
 --
 -- Revision 1.2  1995/07/25  19:53:14  rj
 -- changed `_' to `-' in file names.
@@ -647,7 +647,7 @@ RFC1213-MIB DEFINITIONS ::= BEGIN
                       Setting this object to a null string (one of zero
                       length) has the effect of invaliding the
                       corresponding entry in the atTable object.  That
-                      is, it effectively dissasociates the interface
+                      is, it effectively disassociates the interface
                       identified with said entry from the mapping
                       identified with said entry.  It is an
                       implementation-specific matter as to whether the
@@ -1166,7 +1166,7 @@ RFC1213-MIB DEFINITIONS ::= BEGIN
                       Setting this object to the value invalid(2) has
                       the effect of invalidating the corresponding entry
                       in the ipRouteTable object.  That is, it
-                      effectively dissasociates the destination
+                      effectively disassociates the destination
                       identified with said entry from the route
                       identified with said entry.  It is an
                       implementation-specific matter as to whether the
@@ -1368,7 +1368,7 @@ RFC1213-MIB DEFINITIONS ::= BEGIN
                       Setting this object to the value invalid(2) has
                       the effect of invalidating the corresponding entry
                       in the ipNetToMediaTable.  That is, it effectively
-                      dissasociates the interface identified with said
+                      disassociates the interface identified with said
                       entry from the mapping identified with said entry.
                       It is an implementation-specific matter as to
                       whether the agent removes an invalidated entry

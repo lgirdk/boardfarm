@@ -367,7 +367,7 @@ class wifi_stub:
         raise Exception("Not implemented!")
 
     def set_broadcast(self, *args, **kwargs):
-        """Stub to set boardcast.
+        """Stub to set broadcast.
 
         :param self: self object
         :type self: object
@@ -621,7 +621,7 @@ class wifi_client_stub:
         raise Exception("Not implemented!")
 
     def disable_and_enable_wifi(self):
-        """Wifi client stub used to disbale and enable WiFi/.
+        """Wifi client stub used to disable and enable WiFi/.
 
          Make the WiFi interface DOWN and UP
 
@@ -645,7 +645,7 @@ class wifi_client_stub:
         raise Exception("Not implemented!")
 
     def wifi_check_ssid(self, ssid_name):
-        """Wifi client stub used to scan for paticular SSID.
+        """Wifi client stub used to scan for particular SSID.
 
         Note: this code does not execute, but rather serves as an example for
         the API

@@ -228,7 +228,7 @@ def parse():
         metavar="",
         type=str,
         default=None,
-        help="bootargs to set or append to default args (board dependant)",
+        help="bootargs to set or append to default args (board dependent)",
     )
     parser.add_argument(
         "--nfsroot",
