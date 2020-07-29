@@ -34,7 +34,99 @@ from . import base_acs
 warnings.simplefilter("always")
 
 
-class AxirosACS(base_acs.BaseACS):
+class Intercept(object):
+    """Any calls on Axiros RPC functions "GPV","SPV", "GPA","GPN", "SPA","AddObject","DelObject","FactoryReset","Reboot","ScheduleInform","GetRPCMethods","Download" will capture tcpdump if the ssh session is connected.
+    And also adds a wait time of 10 seconds when 507 HTTPError is thrown.
+    """
+
+    __dump_on = [
+        "GPV",
+        "SPV",
+        "GPA",
+        "SPA",
+        "GPN",
+        "AddObject",
+        "DelObject",
+        "FactoryReset",
+        "Reboot",
+        "ScheduleInform",
+        "GetRPCMethods",
+        "Download",
+    ]
+
+    def __getattribute__(self, name):
+        attr = object.__getattribute__(self, name)
+        if callable(attr):
+            d_flag = False
+            if name in Intercept.__dump_on and self.session_connected:
+                # sets the flag to true only if ssh session is connected
+                d_flag = True
+
+            def newfunc(*args, **kwargs):
+                count = 1
+                if d_flag:
+                    stack = inspect.stack()
+                    pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
+                    capture = (
+                        get_class_name_in_stack(
+                            self,
+                            ["test_main", "mvx_tst_setup"],
+                            stack,
+                            not_found="TestNameNotFound",
+                        )
+                        + pcap
+                    )
+
+                    tcpdump_output = tcpdump_capture(
+                        self, "any", capture_file=capture, return_pid=True
+                    )
+                    count = 2
+                for retry in range(count):
+                    result = None
+                    try:
+                        result = attr(*args, **kwargs)
+                        if d_flag:
+                            kill_process(self, process="tcpdump", pid=tcpdump_output)
+                            self.sendline("rm %s" % capture)
+                        break
+                    except Exception as e:
+                        if "507" not in str(e):
+                            if d_flag:
+                                print(
+                                    "\x1b[6;30;42m"
+                                    + "TCPdump is saved in %s" % capture
+                                    + "\x1b[0m"
+                                )
+                            raise (e)
+                        else:
+                            if retry == 0:
+                                if d_flag:
+                                    kill_process(
+                                        self, process="tcpdump", pid=tcpdump_output
+                                    )
+                                    self.sendline("rm %s" % capture)
+                                    # adding 10 sec timeout
+                                    warnings.warn(
+                                        "Ten seconds of timeout is added to compensate DOS attack."
+                                    )
+                                    self.expect(pexpect.TIMEOUT, timeout=10)
+                            if retry == 1:
+                                if d_flag:
+                                    print(
+                                        "\x1b[6;30;42m"
+                                        + "TCPdump is saved in %s" % capture
+                                        + "\x1b[0m"
+                                    )
+                                raise (e)
+
+                return result
+
+            return newfunc
+        else:
+            return attr
+
+
+class AxirosACS(Intercept, base_acs.BaseACS):
     """ACS connection class used to perform TR069 operations on stations/board."""
 
     model = "axiros_acs_soap"
@@ -656,7 +748,6 @@ class AxirosACS(base_acs.BaseACS):
                     return value.text
         return None
 
-    @tcp_dump
     def GPA(self, param):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
@@ -719,7 +810,6 @@ class AxirosACS(base_acs.BaseACS):
             print(e)
             return None
 
-    @tcp_dump
     def SPA(self, param, **kwargs):
         """Get parameter attribute on ACS of the parameter specified i.e a remote procedure call (GetParameterAttribute).
 
@@ -759,7 +849,6 @@ class AxirosACS(base_acs.BaseACS):
         """
         return {i["key"]: i["value"] for i in self.AddObject(param)}
 
-    @tcp_dump
     def AddObject(self, param):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
@@ -792,7 +881,6 @@ class AxirosACS(base_acs.BaseACS):
         """
         return str(self.DelObject(param)[0]["value"])
 
-    @tcp_dump
     def DelObject(self, param):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
@@ -887,7 +975,6 @@ class AxirosACS(base_acs.BaseACS):
                 continue
         return None
 
-    @tcp_dump
     def GPV(self, param):
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
@@ -900,26 +987,10 @@ class AxirosACS(base_acs.BaseACS):
 
         p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="GPV")
 
-        val = 0
-        while val <= 1:
-            try:
-                with self.client.settings(raw_response=True):
-                    response = self.client.service.GetParameterValues(p, cmd, cpe_id)
-                return AxirosACS._parse_soap_response(response)
-            except HTTPError as e:
-                if "507" not in str(e):
-                    raise (e)
-                else:
-                    # adding 10 sec timeout
-                    warnings.warn(
-                        "Ten seconds of timeout is added to compensate DOS attack."
-                    )
-                    self.expect(pexpect.TIMEOUT, timeout=10)
-                    if val == 1:
-                        raise (e)
-                    val += 1
+        with self.client.settings(raw_response=True):
+            response = self.client.service.GetParameterValues(p, cmd, cpe_id)
+        return AxirosACS._parse_soap_response(response)
 
-    @tcp_dump
     def SPV(self, param_value):
         """Modify the value of one or more CPE Parameters.
 
@@ -937,31 +1008,14 @@ class AxirosACS(base_acs.BaseACS):
             self.cpeid, param_value, action="SPV"
         )
 
-        val = 0
-        while val <= 1:
-            try:
-                with self.client.settings(raw_response=True):
-                    response = self.client.service.SetParameterValues(p, cmd, cpe_id)
-                result = AxirosACS._parse_soap_response(response)
-                break
-            except HTTPError as e:
-                if "507" not in str(e):
-                    raise (e)
-                else:
-                    # adding 10 sec timeout
-                    warnings.warn(
-                        "Ten seconds of timeout is added to compensate DOS attack."
-                    )
-                    self.expect(pexpect.TIMEOUT, timeout=10)
-                    if val == 1:
-                        raise (e)
-                    val += 1
+        with self.client.settings(raw_response=True):
+            response = self.client.service.SetParameterValues(p, cmd, cpe_id)
+        result = AxirosACS._parse_soap_response(response)
         status = int(result[0]["value"])
         if status not in [0, 1]:
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
 
-    @tcp_dump
     def GPN(self, param, next_level):
         """This method is used to  discover the Parameters accessible on a particular CPE
 
@@ -984,7 +1038,6 @@ class AxirosACS(base_acs.BaseACS):
             response = self.client.service.GetParameterNames(p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
-    @tcp_dump
     def FactoryReset(self):
         """Execute FactoryReset RPC.
 
@@ -1032,7 +1085,6 @@ class AxirosACS(base_acs.BaseACS):
         self.cpeid = old_cpeid
         return r
 
-    @tcp_dump
     def ScheduleInform(self, CommandKey="Test", DelaySeconds=20):
         """Execute ScheduleInform RPC
 
@@ -1056,7 +1108,6 @@ class AxirosACS(base_acs.BaseACS):
 
         return AxirosACS._parse_soap_response(response)
 
-    @tcp_dump
     def Reboot(self, CommandKey="Reboot Test"):
         """Execute Reboot.
 
@@ -1078,7 +1129,6 @@ class AxirosACS(base_acs.BaseACS):
 
         return AxirosACS._parse_soap_response(response)
 
-    @tcp_dump
     def GetRPCMethods(self):
         """Execute GetRPCMethods RPC.
 
@@ -1097,7 +1147,6 @@ class AxirosACS(base_acs.BaseACS):
             )
         return AxirosACS._parse_soap_response(response)
 
-    @tcp_dump
     def Download(
         self,
         url,
