@@ -66,15 +66,21 @@ class Intercept(object):
                 count = 1
                 if d_flag:
                     stack = inspect.stack()
+                    build_number = os.getenv("BUILD_NUMBER", "")
+                    job_name = os.getenv("JOB_NAME", "")
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     capture = (
-                        get_class_name_in_stack(
-                            self,
-                            ["test_main", "mvx_tst_setup"],
-                            stack,
-                            not_found="TestNameNotFound",
+                        job_name
+                        + build_number
+                        + (
+                            get_class_name_in_stack(
+                                self,
+                                ["test_main", "mvx_tst_setup"],
+                                stack,
+                                not_found="TestNameNotFound",
+                            )
+                            + pcap
                         )
-                        + pcap
                     )
 
                     tcpdump_output = tcpdump_capture(
