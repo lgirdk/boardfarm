@@ -1,3 +1,4 @@
+"""Global methods for handling fail scenarios."""
 import functools
 import sys
 import warnings

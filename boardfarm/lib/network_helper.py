@@ -5,7 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
-
+"""Global functions to permatting acctions on network related variables."""
 import ipaddress
 import re
 

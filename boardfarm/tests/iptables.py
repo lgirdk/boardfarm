@@ -1,3 +1,4 @@
+"""Class methods related to IPtables."""
 import os
 
 from boardfarm.tests import rootfs_boot

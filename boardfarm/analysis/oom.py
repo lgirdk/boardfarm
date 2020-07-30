@@ -1,3 +1,4 @@
+"""Parse logs for OOM kernel events."""
 # Copyright (c) 2015
 #
 # All rights reserved.
@@ -14,5 +15,6 @@ class OOMAnalysis(analysis.Analysis):
     """Parse logs for OOM kernel events."""
 
     def analyze(self, console_log, output_dir):
+        """Analyze the logs to find OOM events."""
         if len(re.findall("Out of memory", console_log)):
             print("ERROR: log had out of memory condition")

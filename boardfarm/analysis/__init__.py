@@ -1,3 +1,4 @@
+"""Import all analysis classes."""
 # Copyright (c) 2015
 #
 # All rights reserved.

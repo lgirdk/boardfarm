@@ -5,7 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
-
+"""Global Functions related to wifi."""
 import random
 import re
 import string
@@ -628,8 +628,7 @@ class wifi_client_stub:
         raise Exception("Not implemented!")
 
     def wifi_scan(self):
-        """Wifi client stub used to scan for SSIDs on a particular radio.
-        and return a list of SSID
+        """Wifi client stub used to scan for SSIDs on a particular radio and return a list of SSID.
 
         Note: this code does not execute, but rather serves as an example for
         the API

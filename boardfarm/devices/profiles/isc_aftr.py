@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Linux based DSLite server using ISC AFTR."""
 import ipaddress
 import os
 import sys
@@ -11,7 +12,7 @@ from boardfarm.lib.installers import apt_install, install_wget
 
 
 class AFTR(base_profile.BaseProfile):
-    """Linux based DSLite server using ISC AFTR
+    """Linux based DSLite server using ISC AFTR.
 
     This profile class should be inherited along
     with a Linux Derived Class.
@@ -27,8 +28,7 @@ class AFTR(base_profile.BaseProfile):
     profile = {}
 
     def __init__(self, *args, **kwargs):
-        """Constructor method to initialize the container details
-        """
+        """To initialize the container details."""
         self.aftr_conf = OrderedDict()
         self.is_installed = False
 
@@ -67,8 +67,7 @@ class AFTR(base_profile.BaseProfile):
         )
 
     def configure_aftr(self):
-        """Method to check the aftr exists already else configuring the same
-        """
+        """Check the aftr exists already else configuring the same."""
         self.install_aftr()
         start_conf = self.generate_aftr_conf()
         start_script = self.generate_aftr_script()
@@ -137,7 +136,9 @@ class AFTR(base_profile.BaseProfile):
         ), "Failed to bring up tun0 interface."
 
     def generate_aftr_conf(self):
-        """Generates aftr.conf file. Refers conf/aftr.conf template inside ds-lite package
+        """To generate aftr.conf file.
+
+        Refers conf/aftr.conf template inside ds-lite package.
 
         :return : aftr conf file
         :rtype : multiline string
@@ -181,8 +182,9 @@ class AFTR(base_profile.BaseProfile):
         return "\n".join(run_conf)
 
     def generate_aftr_script(self):
-        """Generates aftr-httpserverscript. Refers conf/aftr-script.linux
-        template inside ds-lite package
+        """To generate aftr-httpserverscript.
+
+        Refers conf/aftr-script.linux template inside ds-lite package.
 
         :return : aftr script
         :rtype : multiline string
@@ -255,7 +257,7 @@ class AFTR(base_profile.BaseProfile):
         return script
 
     def install_aftr(self):
-        """Method to check the aftr installation
+        """To check the aftr installation.
 
         :raise Exception : installation fails , throws exception
         """
@@ -307,9 +309,11 @@ class AFTR(base_profile.BaseProfile):
             raise Exception("failed to install AFTR.")
 
     def enable_aftr(self):
+        """To enable aftr."""
         pass
 
     def disable_aftr(self):
+        """To disable aftr."""
         pass
 
 
@@ -328,7 +332,10 @@ if __name__ == "__main__":
     from .debian import DebianBox as BaseCls
 
     class BfNode(BaseCls, AFTR):
+        """Base class to work with AFTR profile class."""
+
         def __init__(self, *args, **kwargs):
+            """Instance initialization."""
             BaseCls.__init__(self, *args, **kwargs)
             AFTR.__init__(self, *args, **kwargs)
 

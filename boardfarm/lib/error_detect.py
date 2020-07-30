@@ -4,7 +4,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""Global functions to detect errors occuring in Kernel."""
 import os
 import re
 

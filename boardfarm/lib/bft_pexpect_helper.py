@@ -1,3 +1,4 @@
+"""Class functions to help boardfarm with pexpect logging."""
 import getpass
 import inspect
 import os
@@ -75,6 +76,7 @@ class bft_pexpect_helper(pexpect.spawn):
     """Boardfarm helper for logging pexpect and making minor tweaks."""
 
     def __setattr__(self, key, value):
+        """Everytime when an attribute assignment is attempted, the function is called."""
         # pexpect name start with <.*>
         # idea is to check for all names before letting pexpect set the name
         if key == "name":
@@ -95,6 +97,8 @@ class bft_pexpect_helper(pexpect.spawn):
         super(bft_pexpect_helper, self).__setattr__(key, value)
 
     class spawn(pexpect.spawn):
+        """spwan pexpect session with password if sudo."""
+
         def __init__(self, *args, **kwargs):
             """Instance Initialization."""
             if IS_PYTHON_3:
@@ -191,7 +195,7 @@ class bft_pexpect_helper(pexpect.spawn):
         self._logfile_read.write(string)
 
     def interact(self, escape_character=chr(29), input_filter=None, output_filter=None):
-
+        """Provide with current session."""
         o = self._logfile_read
         self.logfile_read = None
         ret = super(bft_pexpect_helper, self).interact(
@@ -204,9 +208,11 @@ class bft_pexpect_helper(pexpect.spawn):
     # this is here for the debug parser to egress this file only
     # when printing calling stacks
     def sendline(self, s=""):
+        """Send input command to the active pexpect session."""
         return super(bft_pexpect_helper, self).sendline(s)
 
     def send(self, s):
+        """Send input command char by char to the active pexpect session."""
         if BFT_DEBUG:
             idx = frame_index_out_of_file()
             print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
@@ -222,6 +228,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
     @throw_pexpect_error
     def expect_helper(self, pattern, wrapper, *args, **kwargs):
+        """Check for expected pattern and raise exception."""
         if not BFT_DEBUG:
             return wrapper(pattern, *args, **kwargs)
 
@@ -242,16 +249,19 @@ class bft_pexpect_helper(pexpect.spawn):
             raise
 
     def expect(self, pattern, *args, **kwargs):
+        """Call expect helper function wrapping bft_pexpect_helper."""
         wrapper = super(bft_pexpect_helper, self).expect
 
         return self.expect_helper(pattern, wrapper, *args, **kwargs)
 
     def expect_exact(self, pattern, *args, **kwargs):
+        """Call expect helper function wrapping bft_pexpect_helper."""
         wrapper = super(bft_pexpect_helper, self).expect_exact
 
         return self.expect_helper(pattern, wrapper, *args, **kwargs)
 
     def sendcontrol(self, char):
+        """Send control char to pexecpt session."""
         if BFT_DEBUG:
             print_bold(
                 "%s = sending: control-%s"
@@ -276,17 +286,26 @@ def spawn_ssh_pexpect(
 
     (this avoids having to import the SshConnection class from devices)
     Uses hardcoded options: -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-    Parameters:
-    ip:         ip address to ssh to
-    user:       username used by ssh (default 'root')
-    pw:         password (default 'bigfoot1')
-    prompt:     expected prompt (default None, which creates one on the fly using the username in the "%s@.*$" pattern)
-    port:       ssh port (default "22")
-    via:        can be used to pass another pexpect session (default None, i.e. will ssh from localhost)
-    color:      fonts output color (default None)
-    o:          ssh output stream (defautl sys.stdout)
-    extra_args: additional arguments APPENDED to the ssh command line (default "")
-                E.g.: for a socks5 tunnnel with port 50000: extra_args="-D 50000 -N -v -v"
+
+    :param ip: ip address to ssh to
+    :type ip: string
+    :param user: username used by ssh (default 'root')
+    :type user: string
+    :param pw: password (default 'bigfoot1')
+    :type pw: string
+    :param prompt: expected prompt (default None, which creates one on the fly using the username in the "%s@.*$" pattern)
+    :type prompt: string
+    :param port: ssh port (default "22")
+    :type port: string
+    :param via: can be used to pass another pexpect session (default None, i.e. will ssh from localhost)
+    :type via: string
+    :param color: fonts output color (default None)
+    :type color: string
+    :param o: ssh output stream (defautl sys.stdout)
+    :type o: string
+    :param extra_args: additional arguments APPENDED to the ssh command line (default "")
+        E.g.: for a socks5 tunnnel with port 50000: extra_args="-D 50000 -N -v -v"
+    :type extra_args: string
     """
     if via:
         p = via.sendline(

@@ -4,7 +4,7 @@
 #
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
-
+"""Parse top for ps commands, and create graph of process memory usage over time."""
 import collections
 import os
 import re
@@ -16,6 +16,7 @@ class PSAnalysis(analysis.Analysis):
     """Parse top for ps commands, and create graph of process memory usage over time."""
 
     def analyze(self, console_log, output_dir):
+        """Find and analyze Ps command logs."""
         regex = "root\\@OpenWrt:[^#]+# ps.*?(?=root@OpenWrt)"
         results = re.findall(regex, repr(console_log))
 
@@ -30,7 +31,6 @@ class PSAnalysis(analysis.Analysis):
                     continue
                 ts = float(e.pop(0).strip("[]"))
                 pid = e.pop(0)
-                _ = e.pop(0)  # user
                 mem = e.pop(0)
                 while e[0] in ["S", "R", "SW", "SW<", "DW", "N", "<", "D", "Z"]:
                     e.pop(0)
