@@ -43,7 +43,11 @@ def randomSSIDName():
     :returns: The SSID generated randomly
     :rtype: string
     """
-    return "WIFI-" + "".join(random.sample(string.ascii_lowercase + string.digits, 10))
+    random_val = random.sample(string.ascii_lowercase, 8) + random.sample(
+        string.digits, 2
+    )
+    random.shuffle(random_val)
+    return "WIFI-" + "".join(random_val)
 
 
 def uciSetWifiSSID(console, ssid):
