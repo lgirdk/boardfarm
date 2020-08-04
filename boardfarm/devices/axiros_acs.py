@@ -224,48 +224,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         # this is under assumption that acs is having root credentials.
         self.sendline(cmd)
 
-    def tcp_dump(func):
-        """ Decorator to capture tcpdump in error cases
-        """
-
-        def wrapper(self, *args, **kwargs):
-            pid = capture_file = None
-            try:
-                if not self.session_connected:
-                    warnings.warn(
-                        "Tcp dump cannot be captured as no ssh session exists"
-                    )
-                else:
-                    pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
-                    stack = inspect.stack()
-                    test_name = get_class_name_in_stack(
-                        self,
-                        ["test_main", "mvx_tst_setup"],
-                        stack,
-                        not_found="TestNameNotFound",
-                    )
-                    capture_file = func.__name__ + "_" + test_name + pcap
-                    tcpdump_output = tcpdump_capture(
-                        self, "any", capture_file=capture_file
-                    )
-                    pid = re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", tcpdump_output).group(
-                        2
-                    )
-                    out = func(self, *args, **kwargs)
-                    kill_process(self, process="tcpdump", pid=pid)
-                    self.sendline("rm %s" % capture_file)
-                    return out
-            except Exception as e:
-                kill_process(self, process="tcpdump", pid=pid)
-                print(
-                    "\x1b[6;30;42m"
-                    + "TCPdump is saved in %s" % capture_file
-                    + "\x1b[0m"
-                )
-                raise (e)
-
-        return wrapper
-
     def __str__(self):
         """Format the string representation of self object (instance).
 
