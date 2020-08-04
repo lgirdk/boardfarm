@@ -395,9 +395,9 @@ def boot(config, env_helper, devices, reflash=True, logged=dict(), flashing_imag
     for i, v in enumerate(board.dev.lan_clients):
         if getattr(env_helper, "has_lan_advertise_identity", None):
             if env_helper.has_lan_advertise_identity(i):
-                v.add_lan_advertise_identity_cfg(i)
+                v.configure_dhclient((["125", True],))
             else:
-                v.remove_lan_advertise_identity_cfg()
+                v.configure_dhclient((["125", False],))
 
     if board.routing and lan and config.setup_device_networking:
         if wan is not None:

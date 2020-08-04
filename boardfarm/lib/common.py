@@ -25,6 +25,7 @@ from boardfarm.lib.bft_pexpect_helper import (
     bft_pexpect_helper,
     spawn_ssh_pexpect,
 )
+from boardfarm.lib.dhcpoption import configure_option125
 from boardfarm.lib.installers import (
     install_ovpn_client,
     install_ovpn_server,
@@ -2046,8 +2047,8 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
 
 def toggle_dhcp_lan_advertise_identity(lan_dev):
     """Toggle dhcp lan advertise identity."""
-    if lan_dev.add_lan_advertise_identity_cfg(lan_dev.dev.lan_clients.index(lan_dev)):
-        lan_dev.remove_lan_advertise_identity_cfg()
+    if configure_option125(lan_dev, True):
+        configure_option125(lan_dev, False)
 
     lan_dev.start_lan_client()
 
