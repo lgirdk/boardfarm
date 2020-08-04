@@ -92,7 +92,9 @@ class Intercept(object):
                     try:
                         result = attr(*args, **kwargs)
                         if d_flag:
-                            kill_process(self, process="tcpdump", pid=tcpdump_output)
+                            kill_process(
+                                self, process="tcpdump", pid=tcpdump_output, sync=False
+                            )
                             self.sendline("rm %s" % capture)
                         break
                     except Exception as e:
@@ -108,7 +110,10 @@ class Intercept(object):
                             if retry == 0:
                                 if d_flag:
                                     kill_process(
-                                        self, process="tcpdump", pid=tcpdump_output
+                                        self,
+                                        process="tcpdump",
+                                        pid=tcpdump_output,
+                                        sync=False,
                                     )
                                     self.sendline("rm %s" % capture)
                                     # adding 10 sec timeout
