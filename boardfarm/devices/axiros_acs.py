@@ -63,7 +63,7 @@ class Intercept(object):
                 d_flag = True
 
             def newfunc(*args, **kwargs):
-                count = 1
+                count = 2  # retries on 507 HTTPerror, even if ssh conn is not available
                 if d_flag:
                     stack = inspect.stack()
                     build_number = os.getenv("BUILD_NUMBER", "")
@@ -86,7 +86,6 @@ class Intercept(object):
                     tcpdump_output = tcpdump_capture(
                         self, "any", capture_file=capture, return_pid=True
                     )
-                    count = 2
                 for retry in range(count):
                     result = None
                     try:
