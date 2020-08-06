@@ -110,10 +110,10 @@ def apt_purge(device, name, timeout=120):
         device.sendline(
             "%sapt-get purge -q -y %s"
             % (
-                name,
                 device.get_shim_prefix()
                 if getattr(device, "get_shim_prefix", "")
                 else "",
+                name,
             )
         )
         device.expect("Reading package")
