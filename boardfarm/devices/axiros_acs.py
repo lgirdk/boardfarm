@@ -71,7 +71,9 @@ class Intercept(object):
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     capture = (
                         job_name
+                        + "_"
                         + build_number
+                        + "_"
                         + (
                             get_class_name_in_stack(
                                 self,
@@ -82,52 +84,47 @@ class Intercept(object):
                             + pcap
                         )
                     )
-
-                    tcpdump_output = tcpdump_capture(
-                        self, "any", capture_file=capture, return_pid=True
-                    )
+                ok = False
                 for retry in range(count):
                     result = None
+                    if d_flag:
+                        tcpdump_output = tcpdump_capture(
+                            self,
+                            "any",
+                            capture_file=capture,
+                            return_pid=True,
+                            additional_filters=self.tcpdump_filter,
+                        )
                     try:
                         result = attr(*args, **kwargs)
-                        if d_flag:
-                            kill_process(
-                                self, process="tcpdump", pid=tcpdump_output, sync=False
-                            )
-                            self.sendline("rm %s" % capture)
+                        ok = True  # will remove file in finally
                         break
                     except Exception as e:
                         if "507" not in str(e):
-                            if d_flag:
+                            raise (e)
+                        else:
+                            if retry != (count - 1):
+                                # adding 10 sec timeout
+                                warnings.warn(
+                                    "Ten seconds of timeout is added to compensate DOS attack."
+                                )
+                                self.expect(pexpect.TIMEOUT, timeout=10)
+                            else:
+                                raise (e)
+                    finally:
+                        # kill and if successful remove pcap file
+                        if d_flag:
+                            kill_process(
+                                self, process="tcpdump", pid=tcpdump_output, sync=False,
+                            )
+                            if ok:
+                                self.sendline("rm %s" % capture)
+                            else:
                                 print(
                                     "\x1b[6;30;42m"
                                     + "TCPdump is saved in %s" % capture
                                     + "\x1b[0m"
                                 )
-                            raise (e)
-                        else:
-                            if retry == 0:
-                                if d_flag:
-                                    kill_process(
-                                        self,
-                                        process="tcpdump",
-                                        pid=tcpdump_output,
-                                        sync=False,
-                                    )
-                                    self.sendline("rm %s" % capture)
-                                    # adding 10 sec timeout
-                                    warnings.warn(
-                                        "Ten seconds of timeout is added to compensate DOS attack."
-                                    )
-                                    self.expect(pexpect.TIMEOUT, timeout=10)
-                            if retry == 1:
-                                if d_flag:
-                                    print(
-                                        "\x1b[6;30;42m"
-                                        + "TCPdump is saved in %s" % capture
-                                        + "\x1b[0m"
-                                    )
-                                raise (e)
 
                 return result
 
@@ -166,6 +163,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.cli_password = self.kwargs.pop("cli_password", None)
         self.color = self.kwargs.pop("color", None)
         self.options = self.kwargs.pop("options", None)
+        self.tcpdump_filter = ""
         AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
 
         if self.options:
