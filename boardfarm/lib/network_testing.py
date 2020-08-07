@@ -25,6 +25,7 @@ def tcpdump_capture(
     capture_file="pkt_capture.pcap",
     filters=None,
     return_pid=False,
+    additional_filters="",
 ):
     """Capture network traffic using tcpdump.
     Note: This function will keep capturing until you Kill tcpdump.
@@ -48,6 +49,7 @@ def tcpdump_capture(
     base = "tcpdump -i %s -n -w %s " % (interface, capture_file)
     run_background = " &"
     filter_str = " ".join([" ".join(i) for i in filters.items()]) if filters else ""
+    filter_str += additional_filters
     if port:
         device.sudo_sendline(
             base + "'portrange %s' " % (port) + filter_str + run_background
