@@ -10,13 +10,7 @@ dnspython
 docutils<0.16
 easysnmp
 elasticsearch>=1.0.0
-eradicate
 Faker
-flake8
-flake8-bugbear
-flake8-docstrings
-flake8-rst
-flake8-rst-docstrings
 future
 ipaddress
 jira
@@ -51,6 +45,4 @@ termcolor
 unittest2
 xmltodict
 xvfbwrapper
-yamlfmt
-yamllint
 zeep
