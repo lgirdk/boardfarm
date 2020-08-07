@@ -207,3 +207,49 @@ EOF"""
         self.sendline("rm sip_config.py")
         self.expect_prompt()
         return output
+
+    def update_dial_timeout(self, user, dial_timeout=180):
+        """Update the dial timeout parameter in extensions.conf
+        :param user: user for which the dial_timeout needs to be updated
+        :type  oper: int/string
+        :param user: The dial timeout that needs to be set
+        :type user: int/string
+        :return: True on successful update
+        :rtpe: Boolean
+        """
+        user = str(user)
+        dial_timeout = str(dial_timeout)
+        file = "/etc/asterisk/extensions.conf"
+        self.sendline(
+            r'sed -i "s/'
+            + user
+            + ".*"
+            + user
+            + ",[0-9]*,/"
+            + user
+            + ",1,Dial(SIP\/"
+            + user
+            + ","
+            + dial_timeout
+            + ',/" '
+            + file
+        )
+        self.expect(self.prompt)
+        self.sendline(r'sed -n "s/[^/]*\/' + user + ',\([0-9]*\).*/\\1/p" ' + file)
+        self.expect(dial_timeout)
+        self.expect(self.prompt)
+        return True
+
+    def core_restart(self):
+        """Restart the asterisk service.
+        :return: Status of reload output in boolean
+        :rtype: Boolean
+        """
+        try:
+            self.enter_asterisk_console()
+            self.sendline("core restart now")
+            self.expect("Asterisk cleanly ending")
+            self.expect(self.prompt)
+            return True
+        except PexpectErrorTimeout:
+            return False
