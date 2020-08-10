@@ -395,6 +395,7 @@ def connect_to_devices(config):
 
         except boardfarm.exceptions.ConnectionRefused:
             logger.warning("Failed to connect to a board or device on %s" % name)
+            time.sleep(5)
             continue
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt")
