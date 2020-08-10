@@ -13,6 +13,7 @@ from collections import namedtuple
 
 import pexpect
 import six
+from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
@@ -167,19 +168,24 @@ def rtp_read_verify(device, capture_file):
     :type device: Object
     :param capture_file: Filename in which the packets were captured
     :type capture_file: String
-    :return: True if RTP messages found as expected
+    :return: True if RTP messages found else False
     :rtype: Boolean
     """
-    device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % (capture_file))
+    device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % capture_file)
     device.expect_prompt()
-    device.sendline("grep RTP rtp.txt|wc -l")
-    device.expect("[1-9]\d*")
-    device.expect_prompt()
-    device.sudo_sendline("rm rtp.txt")
-    device.expect_prompt()
-    device.sudo_sendline("rm %s" % (capture_file))
-    device.expect_prompt()
-    return True
+    try:
+        device.sendline("grep RTP rtp.txt|wc -l")
+        device.expect("[1-9]\d*\r\n", timeout=5)
+        return True
+    except PexpectErrorTimeout:
+        print("No RTP Packets found")
+        return False
+    finally:
+        device.expect_prompt()
+        device.sudo_sendline("rm rtp.txt")
+        device.expect_prompt()
+        device.sudo_sendline("rm %s" % capture_file)
+        device.expect_prompt()
 
 
 def basic_call_verify(output_sip, ip_src):
