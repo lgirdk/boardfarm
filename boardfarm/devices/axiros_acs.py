@@ -18,7 +18,7 @@ from boardfarm.exceptions import (
     TR069ResponseError,
 )
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.common import get_class_name_in_stack
+from boardfarm.lib.common import get_class_name_in_stack, scp_from
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 from debtcollector import moves
 from nested_lookup import nested_lookup
@@ -117,14 +117,23 @@ class Intercept(object):
                             kill_process(
                                 self, process="tcpdump", pid=tcpdump_output, sync=False,
                             )
-                            if ok:
-                                self.sendline("rm %s" % capture)
-                            else:
+                            if not ok:
                                 print(
                                     "\x1b[6;30;42m"
                                     + "TCPdump is saved in %s" % capture
                                     + "\x1b[0m"
                                 )
+                                # captured packet is moved to results folder
+                                dest = os.path.realpath("results")
+                                scp_from(
+                                    capture,
+                                    self.ipaddr,
+                                    self.cli_username,
+                                    self.cli_password,
+                                    self.cli_port,
+                                    dest,
+                                )
+                            self.sendline("rm %s" % capture)
 
                 return result
 
