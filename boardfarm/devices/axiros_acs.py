@@ -117,7 +117,7 @@ class Intercept(object):
                             kill_process(
                                 self, process="tcpdump", pid=tcpdump_output, sync=False,
                             )
-                            if not ok:
+                            if not ok and (retry == (count - 1)):
                                 print(
                                     "\x1b[6;30;42m"
                                     + "TCPdump is saved in %s" % capture
