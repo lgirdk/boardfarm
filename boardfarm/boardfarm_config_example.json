@@ -67,7 +67,7 @@
                         "color": "blue",
                         "img": "bft:node",
                         "name": "wan",
-                        "type": "debian"
+                        "type": "debian_wan"
                     }
                 ],
                 "type": "docker-factory"
@@ -81,14 +81,14 @@
                         "http_proxy": "localhost:9909",
                         "img": "bft:node",
                         "name": "lan",
-                        "type": "debian"
+                        "type": "debian_lan"
                     },
                     {
                         "color": "cyan",
                         "http_proxy": "localhost:9910",
                         "img": "bft:node",
                         "name": "lan2",
-                        "type": "debian"
+                        "type": "debian_lan"
                     }
                 ],
                 "type": "docker-factory"
