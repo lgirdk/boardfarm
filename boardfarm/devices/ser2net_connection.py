@@ -33,9 +33,19 @@ class Ser2NetConnection:
 
         :raises: Exception Board is in use (connection refused). / Password required and not supported
         """
-        bft_pexpect_helper.spawn.__init__(
-            self.device, command="/bin/bash", args=["-c", self.conn_cmd]
-        )
+        if "telnet" in self.conn_cmd:
+            bft_pexpect_helper.spawn.__init__(
+                self.device, command="/bin/bash", args=["-c", self.conn_cmd]
+            )
+        elif "ssh" in self.conn_cmd:
+            bft_pexpect_helper.spawn.__init__(
+                self.device,
+                command="/bin/bash",
+                args=[
+                    "-c",
+                    f"{self.conn_cmd} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 -o ServerAliveCountMax=5",
+                ],
+            )
 
         try:
             result = self.device.expect(
