@@ -11,6 +11,7 @@ import atexit
 import inspect
 import json
 import logging
+import logging.config
 import os
 import queue
 import random
@@ -38,9 +39,29 @@ from boardfarm.lib.common import check_url
 from boardfarm.lib.env_helper import EnvHelper
 from boardfarm.zephyr import zephyr_reporter
 
-logging.basicConfig(stream=sys.stdout, format="%(message)s")
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "formatters": {"bft_fmt": {"format": "%(message)s"},},
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
+                "formatter": "bft_fmt",
+            },
+        },
+        "loggers": {
+            "zeep.transports": {
+                "level": "DEBUG",
+                "propagate": False,
+                "handlers": ["console"],
+            },
+            "bft": {"level": "DEBUG", "propagate": False, "handlers": ["console"],},
+        },
+    }
+)
+# DEBUG, INFO, WARNING, ERROR, CRITICAL
 logger = logging.getLogger("bft")
-logger.setLevel(logging.DEBUG)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 # Try to catch common mistakes: not installing boardfarm, or
 # having wrong version installed.

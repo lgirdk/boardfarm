@@ -1,6 +1,7 @@
 import ast
 import inspect
 import ipaddress
+import logging
 import os
 import re
 import time
@@ -32,6 +33,8 @@ from zeep.wsse.username import UsernameToken
 from . import base_acs
 
 warnings.simplefilter("always")
+
+logger = logging.getLogger("zeep.transports")
 
 
 class Intercept(object):
