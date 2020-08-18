@@ -287,7 +287,7 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
     # This still needs some clean up, the fall back is to assuming the
     # WAN provides the tftpd server, but it's not always the case
     if wan:
-        wan.configure(kind="wan_device", config=config)
+        wan.configure(config=config)
         if tftp_device is None:
             tftp_device = wan
 
@@ -303,9 +303,9 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
         logged["boot_step"] = "board_provisioned_skipped"
 
     if lan:
-        lan.configure(kind="lan_device")
+        lan.configure()
     if lan2:
-        lan2.configure(kind="lan_device")
+        lan2.configure()
     logged["boot_step"] = "lan_device_configured"
 
     # tftp_device is always None, so we can set it from config

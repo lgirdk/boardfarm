@@ -487,7 +487,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("/etc/init.d/ssh reload")
         self.expect(self.prompt)
 
-    def configure(self, kind, config=None):
+    def configure(self, config=None):
         # TODO: wan needs to enable on more so we can route out?
         if config is None:
             config = []
