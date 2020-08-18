@@ -84,7 +84,7 @@ class SchemaValidator(object):
             print("ok -", jsonname)
         except jsonschema.exceptions.ValidationError as error:
             print("not ok -", jsonname)
-            print("Error: " + error.message + " in " + str(error.path))
+            print("Error: " + str(error) + " in " + str(error.path))
 
     def validate_json_schema_dict(self, dict):
         """Place holder to validate json dictionary."""

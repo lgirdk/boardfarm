@@ -194,8 +194,11 @@ class bft_pexpect_helper(pexpect.spawn):
         """Log file write."""
         self._logfile_read.write(string)
 
-    def interact(self, escape_character=chr(29), input_filter=None, output_filter=None):
+    def interact(self, escape_character=None, input_filter=None, output_filter=None):
         """Provide with current session."""
+        if escape_character is None:
+            escape_character = chr(29)
+
         o = self._logfile_read
         self.logfile_read = None
         ret = super(bft_pexpect_helper, self).interact(

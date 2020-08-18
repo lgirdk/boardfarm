@@ -353,7 +353,7 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def check_sip_endpoints_registration(self, lines={0: "TRUE", 1: "TRUE"}):
+    def check_sip_endpoints_registration(self, lines=None):
         """To validate the Registration status of the sip endpoint(s) connected
         to the MTA lines 0 and/or 1.
         :param lines: dictionary containing the line numbers as keys(0/1) and
@@ -367,6 +367,9 @@ class BaseBoard(linux.LinuxDevice):
         :type lines: dict, optional
         :raises Exception: failed to verify the expected Status
         """
+        if lines is None:
+            lines = {0: "TRUE", 1: "TRUE"}
+
         raise Exception("Not implemented!")
 
     def send_sip_offhook_onhook(self, flag="offhook", tcid="0"):
@@ -533,12 +536,18 @@ class BaseBoard(linux.LinuxDevice):
         """
         raise Exception("Not implemented!")
 
-    def collect_stats(self, stats=[]):
+    def collect_stats(self, stats=None):
         """Collect board stats for multiple functionalities to monitor
         """
+        if stats is None:
+            stats = []
+
         raise Exception("Not implemented!")
 
-    def parse_stats(self, dict_to_log={}):
+    def parse_stats(self, dict_to_log=None):
         """Parse collected stats of board for logging.
         """
+        if dict_to_log is None:
+            dict_to_log = {}
+
         raise Exception("Not implemented!")

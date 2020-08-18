@@ -41,7 +41,7 @@ def find_directory_in_tree(pattern, root_dir):
     Returns a list of dirs
     """
     dirs_list = []
-    for root, dirs, files in os.walk(root_dir):
+    for root, dirs, _files in os.walk(root_dir):
         for name in dirs:
             if "mib" in name or "mibs" in name:
                 d = os.path.join(root, name)
@@ -52,7 +52,7 @@ def find_directory_in_tree(pattern, root_dir):
     return dirs_list
 
 
-def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
+def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=None):
     """
     Look for all the files in a directory tree.
 
@@ -61,6 +61,9 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
 
     Returns a list of files
     """
+    if ignore is None:
+        ignore = []
+
     if (type(root_dir) is not list) and len(root_dir):
         root_dir = [root_dir]
 
@@ -68,7 +71,7 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=[]):
 
     if len(root_dir):
         for d in root_dir:
-            for root, dirs, files in os.walk(d):
+            for _root, _dirs, files in os.walk(d):
                 for f in files:
                     if any(map(lambda x: x in f, ignore)):
                         continue
@@ -265,7 +268,7 @@ def snmp_v2(
     """
     if not getattr(device, "pysnmp_installed", False):
         install_pysnmp(device)
-        setattr(device, "pysnmp_installed", True)
+        device.pysnmp_installed = True
 
     try:
         ObjectIdentifier(mib_name)

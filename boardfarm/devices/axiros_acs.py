@@ -708,9 +708,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 ticket_resp = self.client.service.get_generic_sb_result(ticketid)
 
             root = ElementTree.fromstring(ticket_resp.content)
-            for value in root.iter("code"):
+            for _value in root.iter("code"):
                 break
-            if value.text != "200":
+            if _value.text != "200":
                 for message in root.iter("message"):
                     if message.text:
                         if "faultcode" in message.text:
@@ -906,9 +906,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         for _ in range(wait):
             time.sleep(1)
             root = ElementTree.fromstring(response.content)
-            for value in root.iter("code"):
+            for _value in root.iter("code"):
                 break
-            if value.text != "200":
+            if _value.text != "200":
                 continue
             dict_value1 = {}
             num = 1
@@ -945,9 +945,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         for _ in range(wait):
             time.sleep(1)
             root = ElementTree.fromstring(response.content)
-            for value in root.iter("code"):
+            for _value in root.iter("code"):
                 break
-            if value.text == "200":
+            if _value.text == "200":
                 return True
             else:
                 continue

@@ -227,7 +227,7 @@ EOF"""
             + user
             + ",[0-9]*,/"
             + user
-            + ",1,Dial(SIP\/"
+            + r",1,Dial(SIP\/"
             + user
             + ","
             + dial_timeout
@@ -235,7 +235,7 @@ EOF"""
             + file
         )
         self.expect(self.prompt)
-        self.sendline(r'sed -n "s/[^/]*\/' + user + ',\([0-9]*\).*/\\1/p" ' + file)
+        self.sendline(r'sed -n "s/[^/]*\/' + user + r',\([0-9]*\).*/\\1/p" ' + file)
         self.expect(dial_timeout)
         self.expect(self.prompt)
         return True

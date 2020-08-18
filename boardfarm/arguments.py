@@ -368,7 +368,7 @@ def parse():
             % ("Name", "Model", "Auto", "LAN", "WAN", "Notes")
         )
         bf = config.boardfarm_config
-        for i, b in enumerate(sorted(bf)):
+        for _i, b in enumerate(sorted(bf)):
             if args.board_type is None or bf[b].get("board_type") in args.board_type:
                 if not args.board_names or b in args.board_names:
                     info = {

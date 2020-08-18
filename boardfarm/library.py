@@ -134,8 +134,12 @@ def check_devices(devices, func_name="check_status"):
     return ret
 
 
-def process_test_results(raw_test_results, golden={}):
+def process_test_results(raw_test_results, golden=None):
     """Process the test results."""
+
+    if golden is None:
+        golden = {}
+
     full_results = {
         "test_results": [],
         "tests_pass": 0,
@@ -153,10 +157,10 @@ def process_test_results(raw_test_results, golden={}):
         grade = getattr(cls, "result_grade", None)
         try:
             if hasattr(cls, "elapsed_time"):
-                elapsed_time = getattr(cls, "elapsed_time")
+                elapsed_time = getattr(cls.elapsed_time)
             else:
-                start_time = getattr(cls, "start_time")
-                stop_time = getattr(cls, "stop_time")
+                start_time = getattr(cls.start_time)
+                stop_time = getattr(cls.stop_time)
                 elapsed_time = stop_time - start_time
         except Exception as error:
             print(error)
@@ -209,7 +213,7 @@ def process_test_results(raw_test_results, golden={}):
             }
         )
 
-    for i, x in enumerate(raw_test_results):
+    for _i, x in enumerate(raw_test_results):
         try:
             parse_and_add_results(x)
 

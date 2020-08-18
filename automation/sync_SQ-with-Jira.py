@@ -71,7 +71,7 @@ def get_sonar_jira_issues():
         projects_list = sonar_projects.split(",")
         issue_type_list = sonar_issue_type.split(",")
         for sonar_project in projects_list:
-            for issue_type in issue_type_list:
+            for _issue_type in issue_type_list:
                 response = requests.get(
                     sonar_auth_url
                     + "/api/issues/search?additionalFields=comments&types="

@@ -62,3 +62,12 @@ repos:
           - id: black
             description: 'Black: The uncompromising Python code formatter'
             args: [--safe]
+    - repo: https://gitlab.com/pycqa/flake8
+      rev: 3.8.3
+      hooks:
+          - id: flake8
+            additional_dependencies:
+                - flake8-docstrings
+                - flake8-rst
+                - flake8-rst-docstrings
+                - flake8-bugbear

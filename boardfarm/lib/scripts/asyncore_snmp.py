@@ -106,7 +106,7 @@ def SnmpwalkAsync(
                         )
 
                 # Stop on EOM
-                for oid, val in varBindTable[-1]:
+                for _oid, val in varBindTable[-1]:
                     if not isinstance(val, v2c.Null):
                         break
                     else:

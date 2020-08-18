@@ -12,14 +12,16 @@ def find_plugins():
     value = imported module
     """
     result = {}
-    for finder, name, ispkg in pkgutil.iter_modules():
+    for _finder, name, _ispkg in pkgutil.iter_modules():
         if name.startswith("boardfarm_"):
             result[name] = importlib.import_module(name)
     return result
 
 
-def walk_library(module, filter_pkgs=[]):
+def walk_library(module, filter_pkgs=None):
     module_list = []
+    if filter_pkgs is None:
+        filter_pkgs = []
 
     def _walk_library(module):
         for info in pkgutil.walk_packages(module.__path__):

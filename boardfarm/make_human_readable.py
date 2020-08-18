@@ -66,9 +66,13 @@ def xmlresults_to_html(
     test_results,
     output_name=owrt_tests_dir + "/results/results.html",
     title=None,
-    board_info={},
+    board_info=None,
 ):
     """Parse XML result and convert to HTML."""
+
+    if board_info is None:
+        board_info = {}
+
     parameters = {
         "build_url": os.environ.get("BUILD_URL"),
         "total_test_time": "unknown",

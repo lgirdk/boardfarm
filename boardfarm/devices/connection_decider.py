@@ -51,6 +51,6 @@ def connection(conn_type, device, **kwargs):
     if hasattr(out, "close"):
         unbound_method = out.close.__func__
         bounded_method = unbound_method.__get__(out.device, out.device.__class__)
-        setattr(out.device, "close", bounded_method)
+        out.device.close = bounded_method
 
     return out

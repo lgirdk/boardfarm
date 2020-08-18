@@ -285,7 +285,7 @@ class DebianLAN(debian.DebianBox):
 if __name__ == "__main__":
     # Example use
     try:
-        ipaddr, port = sys.argv[1].split(":")
+        ipaddr, port = sys.argv[1].split(":")  # noqa : F821
     except Exception:
         raise Exception("First argument should be in form of ipaddr:port")
     dev = DebianLAN(
@@ -296,9 +296,9 @@ if __name__ == "__main__":
     dev.expect(dev.prompt)
 
     dev.configure("lan_device")
-    if sys.argv[2] == "test_voip":
-        sys.path.insert(0, os.getcwd())
-        sys.path.insert(0, os.getcwd() + "/tests")
+    if sys.argv[2] == "test_voip":  # noqa : F821
+        sys.path.insert(0, os.getcwd())  # noqa : F821
+        sys.path.insert(0, os.getcwd() + "/tests")  # noqa : F821
         from boardfarm.lib import installers
 
         installers.install_asterisk(dev)

@@ -25,7 +25,7 @@ class VmStatAnalysis(analysis.Analysis):
         if len(data) == 0:
             return
 
-        sz = len(data.itervalues().next())
+        sz = len(data.itervalues().__next__())
         for k in data:
             if len(data[k]) > 1:
                 sz = min(len(data[k]), sz)

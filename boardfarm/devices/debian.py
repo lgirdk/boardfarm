@@ -547,9 +547,12 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("/etc/init.d/ssh reload")
         self.expect(self.prompt)
 
-    def configure(self, kind, config=[]):
+    def configure(self, kind, config=None):
         """Configuring the device as WAN or LAN."""
         # TODO: wan needs to enable on more so we can route out?
+        if config is None:
+            config = []
+
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()
@@ -640,9 +643,12 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
         self.expect(self.prompt)
 
-    def add_hosts(self, addn_host={}, config=None):
+    def add_hosts(self, addn_host=None, config=None):
         """Add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container."""
         # this is a hack, the add_host should have been called from RootFs
+        if addn_host is None:
+            addn_host = {}
+
         self.hosts = getattr(self, "hosts", defaultdict(list))
         restart = False
 

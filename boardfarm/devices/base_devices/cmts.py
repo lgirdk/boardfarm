@@ -369,7 +369,7 @@ class BaseCmts(base.BaseDevice):
         """
         raise Exception("Not implemented!")
 
-    def add_ip_bundle(self, index, helper_ip, ipaddr, secondary_ips=[]):
+    def add_ip_bundle(self, index, helper_ip, ipaddr, secondary_ips=None):
         """Add ip bundle to a cable mac.
 
         :param index: cable mac index,
@@ -382,9 +382,12 @@ class BaseCmts(base.BaseDevice):
         :type secondary_ips: list
         :raises Exception: Not implemented
         """
+        if secondary_ips is None:
+            secondary_ips = []
+
         raise Exception("Not implemented!")
 
-    def add_ipv6_bundle_addrs(self, index, helper_ip, ip, secondary_ips=[]):
+    def add_ipv6_bundle_addrs(self, index, helper_ip, ip, secondary_ips=None):
         """Add ipv6 bundle to a cable mac.
 
         :param index: cable mac index
@@ -397,6 +400,9 @@ class BaseCmts(base.BaseDevice):
         :type secondary_ips: list
         :raises Exception: Not implemented
         """
+        if secondary_ips is None:
+            secondary_ips = []
+
         raise Exception("Not implemented!")
 
     def set_iface_qam(self, index, sub, annex, interleave, power):

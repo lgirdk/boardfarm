@@ -281,4 +281,4 @@ class device_manager(UserList):
                 setattr(self, attribute_name, new_dev.obj)
                 # Alias board to DUT
                 if attribute_name == "DUT":
-                    setattr(self, "board", new_dev.obj)
+                    self.board = new_dev.obj

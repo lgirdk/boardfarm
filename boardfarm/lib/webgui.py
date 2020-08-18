@@ -39,13 +39,16 @@ class web_gui:
 
     prefix = ""
 
-    def __init__(self, output_dir=os.path.join(os.getcwd(), "results"), **kwargs):
+    def __init__(self, output_dir=None, **kwargs):
         """Instance initialisation.
 
         To set the path for saving the gui page screenshots
         To set the driver and display port as None for gui
         initialisation
         """
+        if output_dir is None:
+            output_dir = os.path.join(os.getcwd(), "results")
+
         self.output_dir = output_dir
         self.default_delay = kwargs.get("default_delay", 20)
         self.driver = None
@@ -545,9 +548,10 @@ class ScreenshotListener(AbstractEventListener):
             + "."
             + ext
         )
-        gui_page_size = lambda dimension: driver.execute_script(
-            "return document.body.parentNode.scroll" + dimension
-        )
+
+        def gui_page_size(dimension):
+            driver.execute_script("return document.body.parentNode.scroll" + dimension)
+
         driver.set_window_size(gui_page_size("Width"), gui_page_size("Height"))
         driver.get_screenshot_as_file(abs_path)
         print("Screenshot saved as '{}'".format(abs_path))

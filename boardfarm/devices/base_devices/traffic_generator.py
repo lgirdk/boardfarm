@@ -108,7 +108,7 @@ class TrafficGenerator(base.BaseDevice):
         :type project: str
         """
         config = self.load_project(project)
-        for conf, value in config.items():
+        for _conf, _value in config.items():
             # decide to add server_port / client_port / wifi_port
             # e.g.
             raise Exception("Not implemented!")

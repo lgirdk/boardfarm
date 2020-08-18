@@ -264,9 +264,11 @@ def provision(board, prov, wan, tftp_device):
     wan.expect(wan.prompt)
 
 
-def boot(config, env_helper, devices, reflash=True, logged=dict(), flashing_image=True):
+def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=True):
     """Define Boot method for configuring to device."""
     logged["boot_step"] = "start"
+    if logged is None:
+        logged = dict()
 
     board = devices.board
     wan = devices.wan

@@ -162,7 +162,7 @@ class WindowsTelnet(base.BaseDevice):
         if ip is not None:
             return ip
         else:
-            assert False, "Can't get interface ip"
+            raise AssertionError("Can't get interface ip")
 
     def get_interface_ip6addr(self, interface):
         """Get the ipv6 address in windows client using interface.

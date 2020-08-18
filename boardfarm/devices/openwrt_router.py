@@ -329,7 +329,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.uprompt)
         if self.tftp_server_int:
             passed = False
-            for attempt in range(5):
+            for _attempt in range(5):
                 try:
                     self.sendcontrol("c")
                     self.expect("<INTERRUPT>")
@@ -456,7 +456,9 @@ class OpenWrtRouter(linux.LinuxDevice):
     def get_pp_dev(self):
         return self
 
-    def collect_stats(self, stats=[]):
+    def collect_stats(self, stats=None):
+        if stats is None:
+            stats = []
         pp = self.get_pp_dev()
         self.stats = []
         self.failed_stats = {}

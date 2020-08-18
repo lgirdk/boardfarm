@@ -5,8 +5,7 @@ from zeep import Client
 from zeep.wsse.username import UsernameToken
 
 
-class FriendlyACS:
-    __metaclass__ = LoggerMeta
+class FriendlyACS(metaclass=LoggerMeta):
     log = ""
     log_calls = ""
 

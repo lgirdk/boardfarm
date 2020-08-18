@@ -7,14 +7,14 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
-import os
+import os  # noqa : F401
 import re
 import sys
 import time
 from collections import defaultdict
 
 import pexpect
-from boardfarm.devices import connection_decider, linux
+from boardfarm.devices import connection_decider, linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.installers import apt_install
@@ -71,10 +71,12 @@ class DebianBox(linux.LinuxDevice):
                 elif opt == "wan-dhcp-client":
                     self.wan_dhcp = True
                 elif opt.startswith("wan-static-ip:"):
-                    value = six.text_type(opt.replace("wan-static-ip:", ""))
+                    value = six.text_type(  # noqa : F401
+                        opt.replace("wan-static-ip:", "")
+                    )
                     if "/" not in value:
                         value = value + (u"/24")
-                    self.gw_ng = ipaddress.IPv4Interface(value)
+                    self.gw_ng = ipaddress.IPv4Interface(value)  # noqa : F821
                     self.nw = self.gw_ng.network
                     self.gw_prefixlen = self.nw._prefixlen
                     self.gw = self.gw_ng.ip
@@ -85,10 +87,16 @@ class DebianBox(linux.LinuxDevice):
                         "-", " via "
                     )
                 elif opt.startswith("wan-static-ipv6:"):
-                    ipv6_address = six.text_type(opt.replace("wan-static-ipv6:", ""))
+                    ipv6_address = six.text_type(  # noqa : F821
+                        opt.replace("wan-static-ipv6:", "")
+                    )
                     if "/" not in opt:
-                        ipv6_address += "/%s" % six.text_type(str(self.ipv6_prefix))
-                    self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
+                        ipv6_address += "/%s" % six.text_type(  # noqa : F821
+                            str(self.ipv6_prefix)
+                        )
+                    self.ipv6_interface = ipaddress.IPv6Interface(  # noqa : F821
+                        ipv6_address
+                    )
                     self.ipv6_prefix = self.ipv6_interface._prefixlen
                     self.gwv6 = self.ipv6_interface.ip
                 elif opt.startswith("wan-static-route:"):
@@ -96,8 +104,8 @@ class DebianBox(linux.LinuxDevice):
                         "-", " via "
                     )
                 elif opt.startswith("mgmt-dns:"):
-                    value = six.text_type(opt.replace("mgmt-dns:", ""))
-                    self.mgmt_dns = ipaddress.IPv4Interface(value).ip
+                    value = six.text_type(opt.replace("mgmt-dns:", ""))  # noqa : F821
+                    self.mgmt_dns = ipaddress.IPv4Interface(value).ip  # noqa : F821
                 elif opt == "lan-fixed-route-to-wan":
                     self.lan_fixed_route_to_wan = self.options[opt]
 
@@ -468,8 +476,10 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("/etc/init.d/ssh reload")
         self.expect(self.prompt)
 
-    def configure(self, kind, config=[]):
+    def configure(self, kind, config=None):
         # TODO: wan needs to enable on more so we can route out?
+        if config is None:
+            config = []
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()
@@ -508,9 +518,11 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
         self.expect(self.prompt)
 
-    def add_hosts(self, addn_host={}, config=None):
+    def add_hosts(self, addn_host=None, config=None):
         # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         # this is a hack, the add_host should have been called from RootFs
+        if addn_host is None:
+            addn_host = {}
         self.hosts = getattr(self, "hosts", defaultdict(list))
         restart = False
 

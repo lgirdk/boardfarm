@@ -251,7 +251,7 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
 
     if rate == 0:
         print("\nWiFi did not come up. Bit Rate still 0.")
-        assert False
+        raise AssertionError(False)
 
 
 def wifi_add_vap(console, phy, ssid):

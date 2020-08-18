@@ -85,8 +85,11 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         # to maintain an id for each action.
         self.action_id = 1
 
-    def log_msg(self, msg, attr=["bold"], no_time=False, wrap=True):
+    def log_msg(self, msg, attr=None, no_time=False, wrap=True):
         """Test step log parsing and append to log file."""
+        if attr is None:
+            attr = ["bold"]
+
         time = datetime.now().strftime("%b %d %Y %H:%M:%S")
         indent = ""
         if not no_time:
@@ -172,7 +175,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
 
         self.execute_flag = True
 
-        for a_id, action in enumerate(self.actions):
+        for _a_id, action in enumerate(self.actions):
             func_name = action.action.func.__name__
             prefix = "[{}]:[{} Step {}.{}]::[{}]".format(
                 self.parent_test.__class__.__name__,
@@ -360,12 +363,12 @@ class ExpectException(object):
         self.called_with = True
         self.old_add = self.ts.add
         self.ts.execute_flag = False
-        setattr(self.ts, "add", self.add)
+        self.ts.add = self.add
         return self
 
     def __exit__(self, ex_type, ex_value, tb):
         """If test step not able to capture exception and raise the message."""
-        setattr(self.ts, "add", self.old_add)
+        self.ts.add = self.old_add
         if not self.ts.execute_flag:
             raise CodeError(
                 "TestSteps added but not executed. Cannot capture exceptions!!"

@@ -17,6 +17,13 @@ class TestError(BftBaseException):
     pass
 
 
+class IndexError(BftBaseException):
+    """Raise this if the cli is wrong"
+    """
+
+    pass
+
+
 class TestImportError(Exception):
     """Raise this if there is an exception when importing a test."""
 
