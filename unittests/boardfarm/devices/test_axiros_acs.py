@@ -155,3 +155,23 @@ def test_HTTP_exception_parse_soap_response(
 ):
     with pytest.raises(HTTPError):
         AxirosACS._parse_soap_response(HTTP_exception_parse_soap_response)
+
+
+def test_retry_intercept(mocker):
+    func_call = []
+
+    def func_called():
+        func_call.append("called")
+
+    def GPV():
+        func_called()
+        raise (HTTPError("507"))
+
+    mocker.patch.object(AxirosACS, "__init__", return_value=None, autospec=True)
+    mocker.patch.object(AxirosACS, "expect", return_value=None, autospec=True)
+    axiros = AxirosACS()
+    axiros.session_connected = False
+    axiros.GPV = GPV
+    with pytest.raises(HTTPError):
+        axiros.GPV()
+    assert len(func_call) == 2, "GPV not called twice"
