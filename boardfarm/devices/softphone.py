@@ -109,7 +109,8 @@ class SoftPhone(object):
 
     def phone_kill(self):
         """To kill the pjsip session."""
-        self.sendcontrol("c")
+        # De-Registration is required before quit a phone and q will handle it
+        self.sendline("q")
         self.expect(self.prompt)
 
     def validate_state(self, msg):
