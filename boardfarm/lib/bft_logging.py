@@ -89,8 +89,7 @@ class LoggerMeta(type):
         :rtype: Object
         """
         if "model" in attrs:
-            check_bases = [i for i in bases if getattr(i, "sign_check", False)]
-            cls.check_signature(name, check_bases, attrs)
+            cls.check_signature(name, bases, attrs)
 
         for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
@@ -173,11 +172,23 @@ class LoggerMeta(type):
 
         :return: Return None
         """
+        check_bases = []
+        for base in bases:
+            all_bases = base.__mro__
+            for i in all_bases:
+                if (
+                    i is not object
+                    and "sign_check" in i.__dict__
+                    and i not in check_bases
+                ):
+                    check_bases.append(i)
+
         for methodName in attr:
             f = attr[methodName]
             if not isinstance(f, types.FunctionType):
                 continue
-            for baseClass in bases:
+
+            for baseClass in check_bases:
                 try:
                     fBase = getattr(baseClass, methodName)
                     if isinstance(fBase, types.FunctionType):

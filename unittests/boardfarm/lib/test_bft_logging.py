@@ -18,6 +18,7 @@ def test_check_signature():
 
     class B(A):
         model = "lan"
+        sign_check = True
 
         def set(self):
             """This override shouldn't work because the signature is wrong"""
@@ -30,9 +31,8 @@ def test_check_signature():
         def show(self):
             print(self.x)
 
-    class C(object):
+    class C(B):
         model = "lan1"
-        sign_check = True
 
         def set(self):
             """This override shouldn't work because the signature is wrong"""
@@ -43,7 +43,11 @@ def test_check_signature():
             print("get class D")
             return self.x
 
-    class D(A, C):
+    class D(B):
+        model = "lan1"
+        sign_check = True
+
+    class E(D, A):
         model = "lan1"
 
         def set(self, x):
@@ -59,6 +63,7 @@ def test_check_signature():
     B()
     C()
     D()
+    E()
 
 
 if __name__ == "__main__":
