@@ -5,9 +5,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import ipaddress
-
-import six
 from boardfarm.devices.platform import debian
 
 
@@ -31,14 +28,6 @@ class DebianWAN(debian.DebianBox):
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "wan_clients"
-        self.configure_gw_ip()
-
-    def configure_gw_ip(self):
-        if self.gw is None:
-            self.gw_ng = ipaddress.IPv4Interface(six.text_type("192.168.0.1/24"))
-            self.gw = self.gw_ng.ip
-            self.nw = self.gw_ng.network
-            self.gw_prefixlen = self.nw.prefixlen
 
     def setup(self, config):
         self.setup_dnsmasq(config)
@@ -173,6 +162,9 @@ class DebianWAN(debian.DebianBox):
 
 if __name__ == "__main__":
     # Example use
+    import os
+    import sys
+
     try:
         ipaddr, port = sys.argv[1].split(":")  # noqa : F821
     except Exception:

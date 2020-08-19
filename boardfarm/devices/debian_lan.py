@@ -284,6 +284,9 @@ class DebianLAN(debian.DebianBox):
 
 if __name__ == "__main__":
     # Example use
+    import os
+    import sys
+
     try:
         ipaddr, port = sys.argv[1].split(":")  # noqa : F821
     except Exception:
