@@ -163,7 +163,7 @@ def test_retry_intercept(mocker):
     def func_called():
         func_call.append("called")
 
-    def GPV():
+    def GPV(param):
         func_called()
         raise (HTTPError("507"))
 
@@ -173,5 +173,5 @@ def test_retry_intercept(mocker):
     axiros.session_connected = False
     axiros.GPV = GPV
     with pytest.raises(HTTPError):
-        axiros.GPV()
+        axiros.GPV("dummy_param")
     assert len(func_call) == 2, "GPV not called twice"
