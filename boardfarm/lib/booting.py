@@ -202,7 +202,8 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
                     strategy != "meta_build"
                 ), "meta_build strategy needs to run alone!!!"
 
-            stage[2][strategy] = img
+            if stage[1].get(strategy, None) != img:
+                stage[2][strategy] = img
 
     for k, v in stage[1].items():
         boot_sequence.append({k: v})
