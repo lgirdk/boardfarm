@@ -157,10 +157,10 @@ def process_test_results(raw_test_results, golden=None):
         grade = getattr(cls, "result_grade", None)
         try:
             if hasattr(cls, "elapsed_time"):
-                elapsed_time = getattr(cls.elapsed_time)
+                elapsed_time = cls.elapsed_time
             else:
-                start_time = getattr(cls.start_time)
-                stop_time = getattr(cls.stop_time)
+                start_time = cls.start_time
+                stop_time = cls.stop_time
                 elapsed_time = stop_time - start_time
         except Exception as error:
             print(error)
