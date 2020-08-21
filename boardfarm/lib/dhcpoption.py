@@ -46,7 +46,10 @@ def configure_option61(device, enable=False):
     :type enable: Boolean
     """
     if enable:
-        cmd = "sed -i -e 's/^#send dhcp-client-identifier/send dhcp-client-identifier/' /etc/dhcp/dhclient.conf"
+        mac = device.get_interface_macaddr(device.iface_dut)
+        cmd = "sed -i -e 's/^#send dhcp-client-identifier .*/send dhcp-client-identifier {};/' /etc/dhcp/dhclient.conf".format(
+            mac
+        )
     else:
         cmd = "sed -i -e 's/^send dhcp-client-identifier/#send dhcp-client-identifier/' /etc/dhcp/dhclient.conf"
     device.check_output(cmd)
