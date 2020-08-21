@@ -550,7 +550,9 @@ class ScreenshotListener(AbstractEventListener):
         )
 
         def gui_page_size(dimension):
-            driver.execute_script("return document.body.parentNode.scroll" + dimension)
+            return driver.execute_script(
+                "return document.body.parentNode.scroll" + dimension
+            )
 
         driver.set_window_size(gui_page_size("Width"), gui_page_size("Height"))
         driver.get_screenshot_as_file(abs_path)
