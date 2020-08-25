@@ -192,3 +192,15 @@ class BftCommandNotFound(BftBaseException):
 
     let the recipient take the appropriate action
     """
+
+    pass
+
+
+class BftSysExit(BftBaseException):
+    """Raise this exception to notify that the system should bail out.
+
+    Used instead of sys.exit(n)
+    let the recipient take the appropriate action
+    """
+
+    pass
