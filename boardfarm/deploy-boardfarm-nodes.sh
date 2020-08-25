@@ -235,7 +235,8 @@ create_container_eth1_static () {
 
     docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
     docker exec $cname ip -6 addr add $ipv6_addr dev eth1
-    docker exec $cname ip -6 route add default via $ipv6_default dev eth1
+    # if default route by link local does not get configured
+    docker exec $cname ip -6 route add default via $ipv6_default dev eth1 || true
     sleep 3
     docker exec $cname bash -c "ping -c3 $ipv6_default"
 }
@@ -305,7 +306,8 @@ create_container_eth1_static_linked () {
 
     docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
     docker exec $cname ip -6 addr add $ipv6_addr dev eth1
-    docker exec $cname ip -6 route add default via $ipv6_default dev eth1
+    # if default route by link local does not get configured
+    docker exec $cname ip -6 route add default via $ipv6_default dev eth1 || true
     sleep 3
     docker exec $cname bash -c "ping -c3 $ipv6_default"
 }
