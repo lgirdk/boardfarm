@@ -301,6 +301,7 @@ def connect_to_devices(config):
         logger.debug("WARN: running regex replacement = %s" % regex)
         walk_dict(regex, config.boardfarm_config)
 
+    board = None
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
         device_mgr = DeviceManager.device_manager()
@@ -406,6 +407,8 @@ def connect_to_devices(config):
 
         except boardfarm.exceptions.ConnectionRefused:
             logger.warning("Failed to connect to a board or device on %s" % name)
+            if board:
+                board.close()
             time.sleep(5)
             continue
         except KeyboardInterrupt:
@@ -415,6 +418,8 @@ def connect_to_devices(config):
             logger.debug(e)
             traceback.print_exc(file=sys.stdout)
             connected_to_board = False
+            if board:
+                board.close()
             continue
         connected_to_board = True
         break
