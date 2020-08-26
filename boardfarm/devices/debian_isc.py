@@ -9,10 +9,10 @@ from boardfarm.exceptions import CodeError
 from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
-from . import debian
+from . import debian_wan
 
 
-class DebianISCProvisioner(debian.DebianBox):
+class DebianISCProvisioner(debian_wan.DebianWAN):
     """Linux based provisioner using ISC DHCP server."""
 
     model = "debian-isc-provisioner"
@@ -148,6 +148,7 @@ class DebianISCProvisioner(debian.DebianBox):
             """cat > /etc/dhcp/dhcpd6.conf-"""
             + board_config.get_station()
             + """.master << EOF
+log-facility local0;
 preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
@@ -353,7 +354,7 @@ EOF"""
             """cat > /etc/dhcp/dhcpd.conf-"""
             + board_config.get_station()
             + """.master << EOF
-log-facility local7;
+log-facility local0;
 option log-servers ###LOG_SERVER###;
 option time-servers ###TIME_SERVER###;
 default-lease-time 604800;
@@ -632,6 +633,43 @@ EOF"""
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
 
+    def setup_dhcp_logging(self):
+        out = self.check_output("ls /var/log/dhcp/dhcpd.log")
+        if "No such file or directory" in out:
+            self.sendline("mkdir -p /var/log/dhcp")
+            self.expect(self.prompt)
+
+        self.sendline("touch /var/log/dhcp/dhcpd.log")
+        self.expect(self.prompt)
+
+        out = self.check_output("ls /etc/rsyslog.d/dhcpd.conf")
+        if "No such file or directory" in out:
+            self.sendline(
+                """cat > /etc/rsyslog.d/dhcpd.conf << EOF
+# DHCP
+local0.debug             /var/log/dhcp/dhcpd.log
+EOF"""
+            )
+            self.expect(self.prompt)
+
+        out = self.check_output("ls /etc/logrotate.d/dhcpd")
+        if "No such file or directory" in out:
+            self.sendline(
+                """cat > /etc/logrotate.d/dhcpd << EOF
+/var/log/dhcp/dhcpd.log
+{
+        rotate 3
+        weekly
+        missingok
+        notifempty
+        compress
+        delaycompress
+        sharedscripts
+}
+EOF"""
+            )
+            self.expect(self.prompt)
+
     # this needs to be cleaned up a bit. Other devices should use this method to configure a dhcp server.
     # e.g. debian won't require start dhcp_server_server method. it should call this static method.
     # this will help in removing reprovision_board at a later time.
@@ -639,12 +677,13 @@ EOF"""
     def setup_dhcp_env(device):
         """Set up DHCP environment."""
         device.install_pkgs()
-        device.sendline("/etc/init.d/rsyslog start")
+        device.setup_dhcp_logging()
+        device.sendline("/etc/init.d/rsyslog restart")
         device.expect(device.prompt)
 
         # if we are not a full blown wan+provisoner then offer to route traffic
         if not device.wan_cmts_provisioner:
-            device.setup_as_wan_gateway()
+            device.setup([])
         """ Setup DHCP and time server etc for CM provisioning"""
         device.sendline(
             'echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % device.iface_dut
@@ -952,3 +991,13 @@ EOF"""
         self.sendline("cat /var/log/syslog | grep dhcpd | tail -n 100")
         self.expect(self.prompt)
         super(DebianISCProvisioner, self).check_status()
+
+    def get_dhcp_logs(self, mac_addr):
+        print("{0} Provisioner DHCP Logs START {0}".format("=" * 10))
+        self.sendline(
+            'tac /var/log/dhcp/dhcpd.log | grep -n -B3 -m 4 -A7 "{}"|tac'.format(
+                mac_addr.lower()
+            )
+        )
+        self.expect(self.prompt)
+        print("{0} Provisioner DHCP Logs END {0}".format("=" * 10))
