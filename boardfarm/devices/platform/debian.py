@@ -7,6 +7,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
+import ipaddress
 import os
 import re
 import sys
@@ -14,7 +15,8 @@ import time
 from collections import defaultdict
 
 import pexpect
-from boardfarm.devices import connection_decider, linux
+import six
+from boardfarm.devices import linux
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.installers import apt_install
@@ -60,6 +62,7 @@ class DebianBox(linux.LinuxDevice):
         self.legacy_add = False
         if "options" in kwargs:
             for opt in kwargs["options"].split(","):
+                opt = opt.strip()
                 if opt == "dante":
                     self.dante = True
                 elif opt == "wan-dhcp-client-v6":
@@ -70,6 +73,19 @@ class DebianBox(linux.LinuxDevice):
                     self.wan_no_eth0 = True
                 elif opt == "wan-dhcp-client":
                     self.wan_dhcp = True
+                elif opt.startswith("wan-static-ipv6:"):
+                    ipv6_address = six.text_type(  # noqa : F821
+                        opt.replace("wan-static-ipv6:", "")
+                    )
+                    if "/" not in opt:
+                        ipv6_address += "/%s" % six.text_type(  # noqa : F821
+                            str(self.ipv6_prefix)
+                        )
+                    self.ipv6_interface = ipaddress.IPv6Interface(  # noqa : F821
+                        ipv6_address
+                    )
+                    self.ipv6_prefix = self.ipv6_interface._prefixlen
+                    self.gwv6 = self.ipv6_interface.ip
                 elif opt.startswith("wan-static-ip:"):
                     value = six.text_type(opt.replace("wan-static-ip:", ""))
                     if "/" not in value:
@@ -84,13 +100,6 @@ class DebianBox(linux.LinuxDevice):
                     self.static_route = opt.replace("static-route:", "").replace(
                         "-", " via "
                     )
-                elif opt.startswith("wan-static-ipv6:"):
-                    ipv6_address = six.text_type(opt.replace("wan-static-ipv6:", ""))
-                    if "/" not in opt:
-                        ipv6_address += "/%s" % six.text_type(str(self.ipv6_prefix))
-                    self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
-                    self.ipv6_prefix = self.ipv6_interface._prefixlen
-                    self.gwv6 = self.ipv6_interface.ip
                 elif opt.startswith("wan-static-route:"):
                     self.static_route = opt.replace("wan-static-route:", "").replace(
                         "-", " via "
@@ -191,6 +200,14 @@ class DebianBox(linux.LinuxDevice):
             self.reset()
 
         self.logfile_read = self.output
+        self.configure_gw_ip()
+
+    def configure_gw_ip(self):
+        if self.gw is None:
+            self.gw_ng = ipaddress.IPv4Interface(six.text_type("192.168.0.1/24"))
+            self.gw = self.gw_ng.ip
+            self.nw = self.gw_ng.network
+            self.gw_prefixlen = self.nw.prefixlen
 
     def check_connection(self, username, name, password):
         """To check ssh connection in debian box.
@@ -468,8 +485,10 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("/etc/init.d/ssh reload")
         self.expect(self.prompt)
 
-    def configure(self, kind, config=[]):
+    def configure(self, config=None):
         # TODO: wan needs to enable on more so we can route out?
+        if config is None:
+            config = []
         self.enable_ipv6(self.iface_dut)
         self.install_pkgs()
         self.start_sshd_server()

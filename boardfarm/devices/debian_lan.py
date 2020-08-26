@@ -284,6 +284,9 @@ class DebianLAN(debian.DebianBox):
 
 if __name__ == "__main__":
     # Example use
+    import os
+    import sys
+
     try:
         ipaddr, port = sys.argv[1].split(":")
     except Exception:
@@ -295,7 +298,7 @@ if __name__ == "__main__":
     dev.expect("Hello", timeout=4)
     dev.expect(dev.prompt)
 
-    dev.configure("lan_device")
+    dev.configure()
     if sys.argv[2] == "test_voip":
         sys.path.insert(0, os.getcwd())
         sys.path.insert(0, os.getcwd() + "/tests")
