@@ -83,7 +83,8 @@ class SoftPhone(object):
         self.sendline("m")
         self.expect(r"Make call\:")
         self.sendline("sip:" + dial_number + "@" + receiver_ip)
-        self.expect("Call 0 state changed to CALLING")
+        self.expect("Call [0-9]* state changed to CALLING")
+        self.sendline("/n")
         self.expect(self.pjsip_prompt)
 
     def answer(self):
@@ -94,7 +95,7 @@ class SoftPhone(object):
         self.sendline("a")
         self.expect(r"Answer with code \(100\-699\) \(empty to cancel\)\:")
         self.sendline("200")
-        self.expect("Call 0 state changed to CONFIRMED")
+        self.expect("Call [0-9]* state changed to CONFIRMED")
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
 
