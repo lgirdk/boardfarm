@@ -47,12 +47,14 @@ def configure_option61(device, enable=False):
     """
     if enable:
         mac = device.get_interface_macaddr(device.iface_dut)
-        cmd = "sed -i -e 's/^#send dhcp-client-identifier .*/send dhcp-client-identifier {};/' /etc/dhcp/dhclient.conf".format(
-            mac
+        cmd = (
+            "sed -i -e 's/^#\{0,\}send dhcp-client-identifier.*/send dhcp-client-identifier %s;/' /etc/dhcp/dhclient.conf"  # noqa: W605
+            % (mac)
         )
     else:
         cmd = "sed -i -e 's/^send dhcp-client-identifier/#send dhcp-client-identifier/' /etc/dhcp/dhclient.conf"
     device.check_output(cmd)
+    device.check_output("cat /etc/dhcp/dhclient.conf |grep dhcp-client-identifier")
 
 
 def configure_option125(device, enable=False):
