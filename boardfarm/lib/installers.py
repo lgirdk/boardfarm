@@ -1170,54 +1170,23 @@ def check_pjsua(device):
         return False
 
 
-def install_pjsua(
-    device, url="https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
-):
+def install_pjsua(device, url):
     """Install softphone if not present.
 
     pjsua is a command line SIP user agent
     :param device: lan or wan
     :type device: Object
-    :param url: url to download pjsua package,
-    defaults to "https://www.pjsip.org/release/2.9/pjproject-2.9.tar.bz2"
-    :type url: String, optional
+    :param url: url to download pjsua package
+    :type url: String
     :raises assertion:
-    1. Unable to find executable
     2. Unable to start Pjsua.Service is not installed
     """
     result = check_pjsua(device)
     if not result:
-        apt_install(device, "make")
-        apt_install(device, "gcc")
-        apt_install(device, "pkg-config")
-        apt_install(device, "libasound2-dev")
         install_wget(device)
         device.sendline("wget %s" % url)
         device.expect(device.prompt, timeout=100)
-        device.sendline("tar -xjf %s" % url.split("/")[-1])
-        device.expect(device.prompt, timeout=70)
-        device.sendline("rm %s" % url.split("/")[-1])
-        device.expect(device.prompt, timeout=60)
-        device.sendline("ls")
-        device.expect(device.prompt)
-        folder_name = re.findall(r"(pjproject\-[\d\.]*)\s", device.before)[0]
-        device.sendline("cd %s" % folder_name)
-        device.expect(device.prompt)
-        device.sendline(
-            "./configure && make dep && make && make clean &&  make install 2>&1 & "
-        )
-        # this takes more than 4 mins to install
-        device.expect(pexpect.TIMEOUT, timeout=400)
-        device.expect(device.prompt)
-        device.sendline("ls pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu")
-        assert 0 == device.expect(
-            ["pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu"] + device.prompt
-        ), "Unable to find executable"
-        device.expect(device.prompt)
-        device.sendline(
-            "cp pjsip-apps/bin/pjsua-x86_64-unknown-linux-gnu /usr/local/bin/pjsua"
-        )
-        device.expect(device.prompt)
+        apt_install(device, "./pjsip-local.deb")
         result = check_pjsua(device)
         assert 0 != result, "Unable to start Pjsua.Service is not installed."
 
