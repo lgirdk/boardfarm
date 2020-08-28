@@ -137,6 +137,7 @@ class Intercept(object):
                                     dest,
                                 )
                             self.sendline("rm %s" % capture)
+                            self.expect(self.prompt)
 
                 return result
 
