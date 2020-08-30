@@ -156,7 +156,9 @@ class BoardfarmWebClient(object):
             return
         try:
             url = self.server_url + "/stations/" + name
-            requests.post(url, json={"note": note}, headers=self.headers)
+            requests.post(
+                url, json={"_meta.note": note, "note": note}, headers=self.headers
+            )
         except Exception as e:
             if self.debug:
                 print(e)
@@ -190,6 +192,7 @@ class BoardfarmWebClient(object):
             w1.start()
             if self.debug:
                 print(self.checked_out)
+            self.post_note(config.get("station", None), "")
         except Exception as e:
             if self.debug:
                 print(e)

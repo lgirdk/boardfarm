@@ -323,14 +323,24 @@ def connect_to_devices(config):
             )
             break
 
-        logger.info(
-            "Connecting to board named = %s, type = %s ..."
-            % (name, config.board["board_type"])
-        )
         try:
+            # Store name of station in config for convenience
+            config.board["station"] = name
+            atexit.register(bfcleanup)
+
+            # Notify boardfarm server of station & devices we are using
+            bfweb.checkout(config.board)
+            logger.debug(
+                "Checked out board named = %s, type = %s ..."
+                % (name, config.board["board_type"])
+            )
+
+            time.sleep(5)  # let it appear as taken on the dash
+            connected_to_board = True
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
             tftp_server = None
             tftp_port = "22"
+            reason = None
 
             # Connect to board
             board = devices.board_decider(
@@ -363,7 +373,7 @@ def connect_to_devices(config):
                 v = getattr(config, x, "")
                 if v is not None and "mirror://" in v:
                     logger.debug(config.board)
-                    r = getattr(config, x).replace("mirror://", config.board[u"mirror"])
+                    r = getattr(config, x).replace("mirror://", config.board["mirror"])
                     if not check_url(r):
                         raise Exception(
                             "Unable to reach board mirror, trying next board"
@@ -408,22 +418,32 @@ def connect_to_devices(config):
                     break
 
         except boardfarm.exceptions.ConnectionRefused:
-            logger.warning("Failed to connect to a board or device on %s" % name)
-            if board:
-                board.close()
-            time.sleep(5)
+            connected_to_board = False
+            reason = "ConnectionRefused"
             continue
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt")
+            connected_to_board = False
+            reason = "KeyboardInterrupt"
             sys.exit(2)
         except Exception as e:
             logger.debug(e)
             traceback.print_exc(file=sys.stdout)
             connected_to_board = False
-            if board:
-                board.close()
+            reason = str(e)
+            bfweb.post_note(name, "last connected: " + reason)
             continue
-        connected_to_board = True
+        finally:
+            if not connected_to_board:
+                logger.warning(
+                    f"Failed to connect to a board or device on {name} {reason}"
+                )
+                if board:
+                    board.close()
+                bfweb.checkin()
+                time.sleep(5)
+            else:
+                atexit.register(bfweb.checkin)
         break
     if not connected_to_board:
         logger.warning("Failed to connect to any board")
@@ -434,16 +454,6 @@ def connect_to_devices(config):
     except Exception as e:
         logger.debug(e)
         logger.info("Using Board %s, User %s" % (name, os.environ["USER"]))
-
-    # Store name of station in config for convenience
-    config.board["station"] = name
-
-    # Notify boardfarm server of station & devices we are using
-    bfweb.checkout(config.board)
-    # Checkin station & devices when we exit
-    atexit.register(bfweb.checkin)
-
-    atexit.register(bfcleanup)
 
     # Update config from board info
     if hasattr(board, "update_config"):
