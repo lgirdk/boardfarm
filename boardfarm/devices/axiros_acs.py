@@ -447,7 +447,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                         "Name": k,
                         "Notification": d[k],
                         "AccessListChange": kwargs.get("access_param", "0"),
-                        "AccessList": {"item": "Subscriber"},
+                        "AccessList": kwargs.get("access_list", []),
                         "NotificationChange": kwargs.get("notification_param", "1"),
                     }
                 )
@@ -795,7 +795,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         Example usage : acs_server.SPA({'Device.WiFi.SSID.1.SSID':'1'}),could be parameter list of dicts/dict containing param name and notifications
         :param param: parameter to be used in set
         :type param: string
-        :param kwargs : access_param,notification_param
+        :param kwargs : access_param,access_list,notification_param
         :returns: SPA response
         :rtype: dict
         """
