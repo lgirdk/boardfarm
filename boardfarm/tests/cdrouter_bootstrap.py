@@ -40,9 +40,9 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         from boardfarm.devices import cdrouter
 
-        self.cdrouter_server = "http://" + cdrouter.ipaddr
-        self.cdrouter_wan_iface = cdrouter.wan_iface
-        self.cdrouter_lan_iface = cdrouter.lan_iface
+        self.cdrouter_server = cdrouter.bf_args.cdrouter_server
+        self.cdrouter_wan_iface = cdrouter.bf_args.wan_iface
+        self.cdrouter_lan_iface = cdrouter.bf_args.lan_iface
 
         if self.tests is None:
             self.skipTest("No tests defined!")
@@ -57,7 +57,7 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
             wan.sendline("ifconfig %s down" % wan.iface_dut)
             wan.expect(prompt)
 
-        c = CDRouter(self.cdrouter_server)
+        c = cdrouter
 
         wandutmac = None
         if board.has_cmts:
@@ -223,14 +223,14 @@ testvar wanDnsServer %s
 """
                 % (
                     fixed_prefix6,
-                    cdrouter.wanispip_v6,
-                    cdrouter.wanispgateway_v6,
+                    cdrouter.bf_args.wanispip_v6,
+                    cdrouter.bf_args.wanispgateway_v6,
                     wan_ip6,
-                    cdrouter.wanispip,
-                    cdrouter.wanispgateway,
+                    cdrouter.bf_args.wanispip,
+                    cdrouter.bf_args.wanispgateway,
                     wan_ip,
                     wan_ip,
-                    cdrouter.ipv4hopcount,
+                    cdrouter.bf_args.ipv4hopcount,
                     board.get_dns_server(),
                     board.get_dns_server_upstream(),
                 )
@@ -391,7 +391,7 @@ testvar wanDnsServer %s
         try:
             from boardfarm.devices import cdrouter
 
-            url = "http://" + cdrouter.ipaddr
+            url = "http://" + cdrouter.bf_args.ipaddr
         except Exception:
             return []
 
