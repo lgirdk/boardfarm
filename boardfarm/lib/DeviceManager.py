@@ -121,6 +121,15 @@ class device_descriptor(object):
 all_device_managers = []
 
 
+# very hacky, needs to be cleaned.
+# will be done when DM becomes a singleton
+def get_device_by_name(name):
+    for dm in all_device_managers:
+        for _dev in dm:
+            if _dev.name == name:
+                return _dev
+
+
 class device_manager(UserList):
     """Manages all your devices, for getting and creating (if needed)."""
 
