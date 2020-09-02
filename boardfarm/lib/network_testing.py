@@ -276,6 +276,65 @@ def get_mta_details(capture_file, device, mta_user=[]):
     return mta_line_info
 
 
+def check_mta_media_attribute(
+    device,
+    capture_file,
+    sip_no,
+    media_attr="sendonly",
+    port="5060",
+    src_ip=None,
+    dst_ip=None,
+):
+    """This function used to parse and verify the invite message media attribute
+    :param capture_file: Filename where the packets captured in sipserver
+    :type capture_file: file
+    :param device: object
+    :param sip_no: SIP specific number example(sip:2000@<sip_host>) only the number
+    :type sip_no: String
+    :param media_attr: Hold what type of media attribute needs to be captured; default is sendonly
+    :type media_attr: String
+    :param port: port hold what port the packet needs to be filtered; default is 5060
+    :type port: String
+    :param src_ip: source ip address to be used as filter; default is None
+    :type src_ip: String
+    :param dst_ip: destination ip address to be used as filter; default is None
+    :type dst_ip: String
+    :param return: Returns dictionary as result
+    :type return: Dictionary
+    """
+
+    result = {}
+
+    if src_ip and dst_ip:
+        protocol_attribute = "-vvv 'port {} and src {} and dst {}'".format(
+            port, src_ip, dst_ip
+        )
+    elif src_ip:
+        protocol_attribute = "-vvv 'port {} and src {}'".format(port, src_ip)
+    elif dst_ip:
+        protocol_attribute = "-vvv 'port {} and dst {}'".format(port, dst_ip)
+    else:
+        protocol_attribute = "-vvv 'port {}'".format(port)
+
+    output = tcpdump_read(device, capture_file, protocol=protocol_attribute)
+    out_rep = output.replace("\r\n", "").replace("\t", "")
+    packets = re.compile(r"\d\d:\d\d:\d\d").split(out_rep)
+
+    for packet in packets:
+        regex_pattern = (
+            r".*INVITE (sip:{}@.*)\sSIP.*CSeq:"
+            r"\s(\d*)\sINVITE.*a=({}).*".format(sip_no, media_attr)
+        )
+        match = re.search(regex_pattern, packet)
+        if match:
+            result["status"] = True
+            result["matched_packet"] = match.group(0)
+            return result
+    result["status"] = False
+    result["matched_packet"] = None
+    return result
+
+
 def nmap_cli(device, ip_address, port, protocol=None, retry=0, timing="", optional=""):
     """To run port scanning on the specified target.Port scan is a method for determining which ports on a interface are open.
     This method is used to perform port scanning on the specified port range of the target ip specified from the device specified.
