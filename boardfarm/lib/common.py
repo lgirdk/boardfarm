@@ -1274,10 +1274,13 @@ def snmp_mib_walk(
     :return: Output value of SNMP walk request
     :rtype: String
     """
-    if not isinstance(parser, SnmpMibs):
-        oid = parser.mib[mib_name]
+    if mib_name:
+        if not isinstance(parser, SnmpMibs):
+            oid = parser.mib[mib_name]
+        else:
+            oid = parser.get_mib_oid(mib_name)
     else:
-        oid = parser.get_mib_oid(mib_name)
+        oid = ""
 
     device.sendline(
         "snmpwalk -v 2c -c "
