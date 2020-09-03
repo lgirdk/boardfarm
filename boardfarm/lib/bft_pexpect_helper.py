@@ -185,8 +185,8 @@ class bft_pexpect_helper(pexpect.spawn):
         except Exception:
             self.sendcontrol("c")
             raise Exception(
-                "Command did not complete within %s seconds. Prompt was not seen."
-                % timeout
+                "Command did not complete within %s seconds. %s prompt was not seen."
+                % (timeout, self.name)
             )
         return self.before.strip()
 
