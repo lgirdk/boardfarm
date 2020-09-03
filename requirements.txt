@@ -19,6 +19,7 @@ marshmallow<3 #required for cdrouter https://github.com/qacafe/cdrouter.py/issue
 matplotlib
 nested_lookup==0.2.19
 netaddr
+pandas
 pexpect
 pre-commit
 psutil
