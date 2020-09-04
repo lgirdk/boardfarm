@@ -530,7 +530,18 @@ def snmp_asyncore_walk(
         "time python %s %s %s %s %s %s > snmp_output.txt"
         % (asyncore_script, ip_address, mib_oid, community, time_out, mode)
     )
-    device.expect(device.prompt, timeout=time_out)
+    try:
+        device.expect(device.prompt, timeout=time_out)
+    except pexpect.TIMEOUT:
+        print(
+            f"Failed to complete walk within the given {time_out}s. Sending ctrl+c to get prompt"
+        )
+        for _ in range(3):
+            device.sendcontrol("c")
+            try:
+                device.expect_prompt()
+            except pexpect.TIMEOUT:
+                pass
     device.sendline("rm %s" % asyncore_script)
     device.expect(device.prompt)
     device.sendline("ls -l snmp_output.txt --block-size=kB")
