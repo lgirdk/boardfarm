@@ -90,3 +90,15 @@ def valid_ipv6(ip_str):
     :type ip_str: string
     """
     ipaddress.IPv6Address(six.text_type(ip_str))
+
+
+def block_board_to_device_traffic(device, unblock=False):
+    """block traffic to device IPs from board.
+
+    :param device : clas device which will get block from board
+    :type device: device object
+    :param unblock : set true to unblock traffic to dest ip
+    :type unblock : boolean
+    """
+    if device in [device.dev.acs_server]:
+        device.block_traffic(unblock)

@@ -1191,6 +1191,16 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             )
         return AxirosACS._parse_soap_response(response)
 
+    def block_traffic(self, unblock=False):
+        """block traffic to ACS server.
+
+        :param unblock : set true to unblock traffic to dest ip
+        :param type : boolean
+        """
+        self.dev.board.block_traffic(self.ipaddr, unblock)
+        if getattr(self, "ipv6_interface", None):
+            self.dev.board.block_traffic(self.ipv6_interface.ip, unblock)
+
 
 if __name__ == "__main__":
     from pprint import pprint
