@@ -17,6 +17,7 @@ from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
+rtp_msg = namedtuple("RTPMessage", ["src_ip", "dest_ip"])
 
 
 def tcpdump_capture(
@@ -160,7 +161,7 @@ def sip_read(device, capture_file, rm_pcap_file=True):
     return output_sip
 
 
-def rtp_read_verify(device, capture_file):
+def rtp_read_verify(device, capture_file, msg_list=None):
     """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
     Real-time Transport Protocol is for delivering audio and video over IP networks.
 
@@ -168,24 +169,48 @@ def rtp_read_verify(device, capture_file):
     :type device: Object
     :param capture_file: Filename in which the packets were captured
     :type capture_file: String
+    :param msg_list: list of 'rtp_msg' named_tuples having the source and
+                    destination IPs of the endpoints.
+    :type msg_list: list
     :return: True if RTP messages found else False
     :rtype: Boolean
     """
     device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % capture_file)
     device.expect_prompt()
-    try:
-        device.sendline("grep RTP rtp.txt|wc -l")
-        device.expect("[1-9]\d*\r\n", timeout=5)
-        return True
-    except PexpectErrorTimeout:
-        print("No RTP Packets found")
-        return False
-    finally:
+    result_list = []
+    if not msg_list:
+        try:
+            device.sendline("grep RTP rtp.txt|wc -l")
+            device.expect("[1-9]\d*\r\n", timeout=5)
+            result_list.append(True)
+        except PexpectErrorTimeout:
+            print("No RTP Packets found")
+            result_list.append(False)
         device.expect_prompt()
-        device.sudo_sendline("rm rtp.txt")
-        device.expect_prompt()
-        device.sudo_sendline("rm %s" % capture_file)
-        device.expect_prompt()
+    else:
+        for msg in msg_list:
+            try:
+                device.sendline(
+                    'grep ".*'
+                    + msg.src_ip
+                    + ".*"
+                    + msg.dest_ip
+                    + '.*RTP.*" rtp.txt | wc -l'
+                )
+                device.expect("[1-9]\d*\r\n", timeout=10)
+                device.expect_prompt()
+                result_list.append(True)
+            except PexpectErrorTimeout:
+                print(
+                    f"No RTP Packets found with source {msg.src_ip} and destination {msg.dest_ip}"
+                )
+                device.expect_prompt()
+                result_list.append(False)
+    device.sudo_sendline("rm rtp.txt")
+    device.expect_prompt()
+    device.sudo_sendline("rm %s" % capture_file)
+    device.expect_prompt()
+    return all(result_list)
 
 
 def basic_call_verify(output_sip, ip_src):
