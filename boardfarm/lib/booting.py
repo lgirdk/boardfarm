@@ -187,9 +187,6 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
     if not stage[2]:
         d = env_helper.get_software()
         if d:
-            fr = d.get("factory_reset", False)
-            if fr:
-                stage[2]["factory_reset"] = fr
             if "load_image" in d:
                 strategy = "meta_build"
                 img = _check_override(strategy, d.get("load_image"))
@@ -204,6 +201,9 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
 
             if stage[1].get(strategy, None) != img:
                 stage[2][strategy] = img
+            fr = d.get("factory_reset", False)
+            if fr:
+                stage[2]["factory_reset"] = fr
 
     for k, v in stage[1].items():
         boot_sequence.append({k: v})
