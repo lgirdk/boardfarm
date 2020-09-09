@@ -113,7 +113,9 @@ def tcpdump_read(device, capture_file, protocol="", opts=""):
     return output
 
 
-def tshark_read(device, capture_file, packet_details=False, filter_str=None):
+def tshark_read(
+    device, capture_file, packet_details=False, filter_str=None, timeout=30
+):
     """Read the packets via tshark
 
     :param device: lan or wan...
@@ -124,6 +126,8 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
     :type packet_details: Bool
     :param filter_str: capture filter, ex. 'data.len == 1400'
     :type filter_str: String
+    :param timeout: timeout after executing the read command; default is 30 seconds
+    :type timeout: int
     """
     command_string = "tshark -r {} ".format(capture_file)
     if packet_details:
@@ -132,7 +136,7 @@ def tshark_read(device, capture_file, packet_details=False, filter_str=None):
         command_string += "{}".format(filter_str)
 
     device.sendline(command_string)
-    device.expect(pexpect.TIMEOUT, timeout=5)
+    device.expect(device.prompt, timeout=timeout)
     output = device.before
     device.sudo_sendline("rm %s" % (capture_file))
     device.expect(device.prompt)
