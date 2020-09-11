@@ -171,17 +171,18 @@ class BoardfarmWebClient(object):
         try:
             # Gather all the '_id' keys out of the config
             station_id = config.get("_id", None)
+            station = config.get("station", None)
             device_ids = []
             if "devices" in config:
                 device_ids = [x["_id"] for x in config["devices"] if "_id" in x]
             self.checked_out = {
                 "ids": [station_id] + device_ids,
-                "name": config.get("station", None),
+                "name": station,
             }
             self.checked_out.update(self.default_data)
             url = self.server_url + "/checkout"
             requests.post(url, json=self.checked_out, headers=self.headers)
-            print("Notified boardfarm server of checkout")
+            print(f"Notified boardfarm server of {station} checkout")
             # Periodically let server know we're still using devices
             self.done_with_devices = multiprocessing.Event()
             w1 = multiprocessing.Process(
@@ -192,7 +193,7 @@ class BoardfarmWebClient(object):
             w1.start()
             if self.debug:
                 print(self.checked_out)
-            self.post_note(config.get("station", None), "")
+            self.post_note(station, "")
         except Exception as e:
             if self.debug:
                 print(e)
