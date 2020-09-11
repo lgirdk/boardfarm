@@ -879,7 +879,7 @@ EOF"""
         return None
 
     def get_conf_file_from_tftp(self, _tmpdir, board_config):
-        """Retrieve the files in the cfg_list from the tftp sever, puts them in localhost:/tmp/."""
+        """Retrieve the files in the cfg_list from the tftp server, puts them in localhost:/tmp/."""
         cfg_list = self.get_cfgs(board_config)
         if cfg_list is None:
             return False

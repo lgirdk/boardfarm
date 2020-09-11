@@ -234,7 +234,7 @@ def start_dhcp_servers(config):
     """Start DHCP server."""
     # start dhcp servers
     for device in config.board["devices"]:
-        if "options" in device and "no-dhcp-sever" in device["options"]:
+        if "options" in device and "no-dhcp-server" in device["options"]:
             continue
         if "options" in device and "dhcp-server" in device["options"]:
             getattr(config, device["name"]).setup_dhcp_server()
