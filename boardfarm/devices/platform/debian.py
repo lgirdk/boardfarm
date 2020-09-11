@@ -67,7 +67,7 @@ class DebianBox(linux.LinuxDevice):
                     self.dante = True
                 elif opt == "wan-dhcp-client-v6":
                     self.wan_dhcpv6 = True
-                elif opt == "wan-no-dhcp-sever":
+                elif opt == "wan-no-dhcp-server":
                     self.wan_dhcp_server = False
                 elif opt == "wan-no-eth0":
                     self.wan_no_eth0 = True
