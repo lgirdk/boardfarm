@@ -26,10 +26,6 @@ class ConfigHelper(dict):
     so that some control can be maintained.
     """
 
-    def __init__(self, *args, **kwargs):
-        """Instance initialisation."""
-        self.update(*args, **kwargs)
-
     def __getitem__(self, key):
         if key == "mirror":
             print("WARNING " * 9)
@@ -52,6 +48,11 @@ class ConfigHelper(dict):
             raise ConfigKeyError
 
         return dict.__getitem__(self, key)
+
+    def update(self, config):
+        """Important: used at board setup. Not to be invoked in tests"""
+        super().update(config)
+        return self
 
     def get_station(self):
         """Get station."""
