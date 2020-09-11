@@ -62,6 +62,19 @@ mongodb = {
     "password": os.environ.get("BFT_MONGOPASS", None),
 }
 
+# LDAP credentials to connect to the board in OpenGear.
+ldap = os.environ.get("LDAP_CREDENTIALS", None)
+
+if not ldap:
+    print(
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        "\nWarning:\nPlease provide your LDAP credentials in the environment variables:"
+        "\nexport LDAP_CREDENTIALS='username;password'"
+        "\nOtherwise you won't be able to connect to any board once "
+        "boardfarm will be moved to authenticated protocol"
+        "\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    )
+
 # Code change server like gerrit, github, etc... Used only in display
 # of the results html file to list links to code changes tested.
 code_change_server = None
