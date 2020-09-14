@@ -135,6 +135,11 @@ class LinuxDevice(base.BaseDevice):
         self.sudo_sendline("dhclient -r {!s}".format(interface))
         self.expect(self.prompt)
 
+    def renew_dhcp(self, interface):
+        """Renew ip of the interface."""
+        self.sudo_sendline("dhclient -v {!s}".format(interface))
+        self.expect(self.prompt)
+
     def check_access_url(self, url, source_ip=None):
         """Check source_ip can access url.
 
