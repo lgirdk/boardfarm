@@ -556,6 +556,7 @@ EOFEOFEOFEOF"""
         index = self.expect(
             ["Connected to"]
             + ["DOCTYPE html PUBLIC"]
+            + ["doctype html"]
             + ["Connection timed out"]
             + ["Failed to connect to"]
             + self.prompt,
@@ -566,7 +567,7 @@ EOFEOFEOFEOF"""
         except pexpect.exceptions.TIMEOUT:
             self.sendcontrol("c")
             self.expect_prompt()
-        return index in [0, 1]
+        return index in [0, 1, 2]
 
     def get_lease_time(self):
         """Get DHCP lease time from dhclient.leases file.
