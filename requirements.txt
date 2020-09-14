@@ -2,7 +2,7 @@ aenum
 argparse
 beautifulsoup4
 boto3
-cdrouter
+cdrouter>=0.5.5
 debtcollector
 distro
 dlipower
@@ -15,7 +15,6 @@ future
 ipaddress
 jira
 jsonschema
-marshmallow<3 #required for cdrouter https://github.com/qacafe/cdrouter.py/issues/5
 matplotlib
 nested_lookup==0.2.19
 netaddr
