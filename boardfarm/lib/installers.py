@@ -435,7 +435,33 @@ def install_java(device):
             device.expect(device.prompt, timeout=60)
 
 
-def install_telnet_server(device, remove=False):
+def install_telnet_server(device):
+    """Install xinetd/telnetd if not present.
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: xinetd/telnetd installation failed
+    """
+    try:
+        _configure_telnet_server(device)
+    except Exception as e:
+        raise Exception("Telnet server Installation Failed: {}".format(e))
+
+
+def uninstall_telnet_server(device):
+    """uninstall xinetd/telnetd if present.
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: xinetd/telnetd uninstall failed
+    """
+    try:
+        _configure_telnet_server(device, True)
+    except Exception as e:
+        raise Exception("Telnet server Uninstall Failed: {}".format(e))
+
+
+def _configure_telnet_server(device, remove=False):
     """Install xinetd/telnetd if not present.
 
     :param device: lan or wan
@@ -653,7 +679,34 @@ def install_snmp(device):
         apt_install(device, "snmp")
 
 
-def install_vsftpd(device, remove=False):
+def install_vsftpd(device):
+    """Install vsftpd if not present.
+
+    vsftpd is a FTP server for Unix-like systems, including Linux
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: vsftpd install failed
+    """
+    try:
+        _configure_vsftpd(device)
+    except Exception as e:
+        raise Exception("vsftpd Installation Failed: {}".format(e))
+
+
+def uninstall_vsftpd(device):
+    """UnInstall vsftpd if present.
+
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: vsftpd uninstall failed
+    """
+    try:
+        _configure_vsftpd(device, True)
+    except Exception as e:
+        raise Exception("vsftpd Uninstall Failed: {}".format(e))
+
+
+def _configure_vsftpd(device, remove=False):
     """Install vsftpd if not present.
 
     vsftpd is a FTP server for Unix-like systems, including Linux
@@ -760,7 +813,39 @@ def install_jmeter(device):
         device.sendline("rm apache-jmeter-*")
 
 
-def install_IRCserver(device, remove=False):
+def install_IRCserver(device):
+    """Install irc server if not present.
+
+    Internet Relay Chat (IRC) is an application layer protocol
+    that facilitates communication in the form of text.
+    The chat process works on a client/server model.
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: IRC Server install failed
+    """
+    try:
+        _configure_IRCserver(device)
+    except Exception as e:
+        raise Exception("IRCserver install Failed: {}".format(e))
+
+
+def uninstall_IRCserver(device):
+    """UnInstall irc server if present.
+
+    Internet Relay Chat (IRC) is an application layer protocol
+    that facilitates communication in the form of text.
+    The chat process works on a client/server model.
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: IRC Server uninstall failed
+    """
+    try:
+        _configure_IRCserver(device, True)
+    except Exception as e:
+        raise Exception("IRCserver Uninstall Failed: {}".format(e))
+
+
+def _configure_IRCserver(device, remove=False):
     """Install irc server if not present.
 
     Internet Relay Chat (IRC) is an application layer protocol
@@ -790,7 +875,35 @@ def install_IRCserver(device, remove=False):
         apt_install(device, "inspircd")
 
 
-def install_dovecot(device, remove=False):
+def install_dovecot(device):
+    """UnInstall dovecot server if not present.
+
+    Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: dovecot uninstall failed
+    """
+    try:
+        _configure_dovecot(device)
+    except Exception as e:
+        raise Exception("vsftpd Installation Failed: {}".format(e))
+
+
+def uninstall_dovecot(device):
+    """UnInstall dovecot server if not present.
+
+    Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: dovecot uninstall failed
+    """
+    try:
+        _configure_dovecot(device, True)
+    except Exception as e:
+        raise Exception("dovecot Uninstall Failed: {}".format(e))
+
+
+def _configure_dovecot(device, remove=False):
     """Un/Install dovecot server if not present.
 
     Dovecot is an open source IMAP and POP3 server for Unix-like operating systems.
@@ -845,7 +958,45 @@ def install_dovecot(device, remove=False):
         ), "Failed to install dovecot"
 
 
-def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
+def install_ovpn_server(device, _user="lan", _ip="ipv4"):
+    """Install the OpenVPN server via a handy script.
+
+    OpenVPN implements virtual private network techniques
+    to create secure point-to-point or site-to-site connections
+    :param device: lan or wan
+    :type device: Object
+    :param _user: lan or wan, defaults to lan
+    :type _user: String, optional
+    :param _ip: ipv4 or ipv6, defaults to ipv4
+    :type _ip: string, optional
+    :raises assertion: ovpn server install failed
+    """
+    try:
+        _configure_ovpn_server(device, False, _user, _ip)
+    except Exception as e:
+        raise Exception("ovpn server install Failed: {}".format(e))
+
+
+def uninstall_ovpn_server(device, _user="lan", _ip="ipv4"):
+    """Uninstall the OpenVPN server via a handy script.
+
+    OpenVPN implements virtual private network techniques
+    to create secure point-to-point or site-to-site connections
+    :param device: lan or wan
+    :type device: Object
+    :param _user: lan or wan, defaults to lan
+    :type _user: String, optional
+    :param _ip: ipv4 or ipv6, defaults to ipv4
+    :type _ip: string, optional
+    :raises assertion: ovpn server uninstall failed
+    """
+    try:
+        _configure_ovpn_server(device, True, _user, _ip)
+    except Exception as e:
+        raise Exception("ovpn server uninstall Failed: {}".format(e))
+
+
+def _configure_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
     """Un/Install the OpenVPN server via a handy script.
 
     OpenVPN implements virtual private network techniques
@@ -979,7 +1130,39 @@ def install_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
     device.expect(device.prompt)
 
 
-def install_ovpn_client(device, remove=False):
+def install_ovpn_client(device):
+    """Install the OpenVPN Client via a handy script.
+
+    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
+    To run the client as a daemon use:
+    openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: ovpn client install failed
+    """
+    try:
+        _configure_ovpn_client(device)
+    except Exception as e:
+        raise Exception("ovpn client install Failed: {}".format(e))
+
+
+def uninstall_ovpn_client(device):
+    """Uninstall the OpenVPN Client via a handy script.
+
+    OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
+    To run the client as a daemon use:
+    openvpn --daemon vpn   --log ovpn.log --config ./<user>.ovpn
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: ovpn client uninstall failed
+    """
+    try:
+        _configure_ovpn_client(device, True)
+    except Exception as e:
+        raise Exception("ovpn client uninstall Failed: {}".format(e))
+
+
+def _configure_ovpn_client(device, remove=False):
     """Un/Install the OpenVPN client.
 
     OpenVPN implements virtual private network techniques to create secure point-to-point or site-to-site connections
@@ -1005,7 +1188,35 @@ def install_ovpn_client(device, remove=False):
     apt_install(device, "openvpn")
 
 
-def install_pptpd_server(device, remove=False):
+def install_pptpd_server(device):
+    """Install the pptpd.
+
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: pptpd server install failed
+    """
+    try:
+        _configure_pptpd_server(device)
+    except Exception as e:
+        raise Exception("pptpd server install Failed: {}".format(e))
+
+
+def uninstall_pptpd_server(device):
+    """Uninstall the pptpd.
+
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: pptpd server uninstall failed
+    """
+    try:
+        _configure_pptpd_server(device)
+    except Exception as e:
+        raise Exception("pptpd server uninstall Failed: {}".format(e))
+
+
+def _configure_pptpd_server(device, remove=False):
     """Un/Install the pptpd.
 
     pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
@@ -1036,7 +1247,35 @@ def install_pptpd_server(device, remove=False):
     device.expect(device.prompt, timeout=60)
 
 
-def install_pptp_client(device, remove=False):
+def install_pptp_client(device):
+    """Install the pptp-linux package.
+
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: pptp client install failed
+    """
+    try:
+        _configure_pptp_client(device)
+    except Exception as e:
+        raise Exception("pptp client install Failed: {}".format(e))
+
+
+def uninstall_pptp_client(device):
+    """Uninstall the pptp-linux package.
+
+    pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
+    :param device: lan or wan
+    :type device: Object
+    :raises assertion: pptp client install failed
+    """
+    try:
+        _configure_pptp_client(device)
+    except Exception as e:
+        raise Exception("pptp client install Failed: {}".format(e))
+
+
+def _configure_pptp_client(device, remove=False):
     """Un/Install the pptp-linux package.
 
     pptpd is the Poptop PPTP daemon, which manages tunnelled PPP connections encapsulated in GRE using the PPTP VPN protocol
