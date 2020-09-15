@@ -143,6 +143,14 @@ class FriendlyACS(metaclass=LoggerMeta):
         """Reset to default on the ACS server."""
         self.client.service.FTResetToDefault(devicesn=cpeid)
 
+    def rpc_Download(self, cpeid, filetype, url):
+        """RPC Download file."""
+        content = (
+            '<cwmp:Download xmlns:cwmp="urn:dslforum-org:cwmp-1-0"> <CommandKey></CommandKey> <FileType>%s</FileType> <URL>%s</URL> <Username></Username> <Password></Password> <FileSize></FileSize> <TargetFileName></TargetFileName> <DelaySeconds>0</DelaySeconds> <SuccessURL></SuccessURL> <FailureURL></FailureURL></cwmp:Download>'
+            % (filetype, url)
+        )
+        self.rpc(cpeid=cpeid, name=" ", content=content)
+
 
 if __name__ == "__main__":
     import sys
