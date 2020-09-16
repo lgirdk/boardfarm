@@ -438,7 +438,10 @@ def ssh_service_verify(
         device.expect(device.prompt, timeout=20)
     except Exception as e:
         print(e)
-        raise Exception("Failed to connect SSH to :%s" % device.before)
+        value = device.before
+        device.sendcontrol("c")
+        device.expect(device.prompt)
+        raise Exception("Failed to connect SSH to :%s" % value)
 
 
 def telnet_service_verify(device, dest_device, ip, opts=""):
