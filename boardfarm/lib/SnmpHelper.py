@@ -212,7 +212,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
 
         for k, v in json.loads(jsonDoc).items():
             if "oid" in v:
-                if "objects" in v or "revisions" in v:
+                if "objects" in v:
                     # we want to skip objects that have no use
                     continue
                 # add it to my dict
