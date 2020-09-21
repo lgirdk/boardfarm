@@ -108,6 +108,17 @@ class SoftPhone(object):
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
 
+    def reinvite(self):
+        """To re-trigger the Invite message"""
+        self.sendline("\n")
+        self.expect(self.pjsip_prompt)
+        self.sendline("v")
+        self.expect("Sending re-INVITE on call [0-9]*")
+        self.expect("Call [0-9]* sending re-INVITE for updating media session")
+        self.expect("SDP negotiation done: Success")
+        self.sendline("\n")
+        self.expect(self.pjsip_prompt)
+
     def phone_kill(self):
         """To kill the pjsip session."""
         # De-Registration is required before quit a phone and q will handle it
