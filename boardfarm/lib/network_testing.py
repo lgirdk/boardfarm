@@ -89,7 +89,7 @@ def kill_process(device, process="tcpdump", pid=None, sync=True):
     return device.before
 
 
-def tcpdump_read(device, capture_file, protocol="", opts=""):
+def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30):
     """Read the tcpdump packets and deletes the capture file after read
 
     :param device: lan or wan
@@ -100,13 +100,15 @@ def tcpdump_read(device, capture_file, protocol="", opts=""):
     :type protocol: String, Optional
     :param opts: can be more than one parameter but it should be joined with "and" eg: ('host '+dest_ip+' and port '+port). Defaults to ''
     :type opts: String, Optional
+    :param timeout: timeout after executing the tcpdump read; default 30 seconds
+    :type timeout: int
     :return: Output of tcpdump read command.
     :rtype: string
     """
     if opts:
         protocol = protocol + " and " + opts
     device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
-    device.expect(device.prompt)
+    device.expect(device.prompt, timeout=timeout)
     output = device.before
     device.sudo_sendline("rm %s" % (capture_file))
     device.expect(device.prompt)
@@ -288,6 +290,7 @@ def check_mta_media_attribute(
     port="5060",
     src_ip=None,
     dst_ip=None,
+    timeout=30,
 ):
     """This function used to parse and verify the invite message media attribute
     :param capture_file: Filename where the packets captured in sipserver
@@ -303,6 +306,8 @@ def check_mta_media_attribute(
     :type src_ip: String
     :param dst_ip: destination ip address to be used as filter; default is None
     :type dst_ip: String
+    :param timeout: timeout value sent to tcpdump read; default is 30 seconds
+    :type timeout: int
     :param return: Returns dictionary as result
     :type return: Dictionary
     """
@@ -320,7 +325,9 @@ def check_mta_media_attribute(
     else:
         protocol_attribute = "-vvv 'port {}'".format(port)
 
-    output = tcpdump_read(device, capture_file, protocol=protocol_attribute)
+    output = tcpdump_read(
+        device, capture_file, protocol=protocol_attribute, timeout=timeout
+    )
     out_rep = output.replace("\r\n", "").replace("\t", "")
     packets = re.compile(r"\d\d:\d\d:\d\d").split(out_rep)
 
