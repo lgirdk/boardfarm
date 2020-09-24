@@ -216,7 +216,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def send(self, s):
         """Send input command char by char to the active pexpect session."""
-        if BFT_DEBUG:
+        if BFT_DEBUG and self.getecho():
             idx = frame_index_out_of_file()
             print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
 

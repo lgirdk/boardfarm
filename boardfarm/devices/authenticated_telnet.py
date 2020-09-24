@@ -49,7 +49,9 @@ class AuthenticatedTelnetConnection:
             self.device.expect(["login:"])
             self.device.sendline(self.username)
             self.device.expect(["Password:"])
+            self.device.setecho(False)
             self.device.sendline(self.password)
+            self.device.setecho(True)
             self.device.expect(["OpenGear Serial Server"])
         except Exception:
             raise
