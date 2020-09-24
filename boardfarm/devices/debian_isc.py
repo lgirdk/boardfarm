@@ -148,7 +148,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             """cat > /etc/dhcp/dhcpd6.conf-"""
             + board_config.get_station()
             + """.master << EOF
-log-facility local0;
+log-facility local1;
 preferred-lifetime 7200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
@@ -639,7 +639,7 @@ EOF"""
             self.sendline("mkdir -p /var/log/dhcp")
             self.expect(self.prompt)
 
-        self.sendline("touch /var/log/dhcp/dhcpd.log")
+        self.sendline("touch /var/log/dhcp/dhcpd.log /var/log/dhcp/dhcpd6.log")
         self.expect(self.prompt)
 
         out = self.check_output("ls /etc/rsyslog.d/dhcpd.conf")
@@ -648,6 +648,7 @@ EOF"""
                 """cat > /etc/rsyslog.d/dhcpd.conf << EOF
 # DHCP
 local0.debug             /var/log/dhcp/dhcpd.log
+local1.debug             /var/log/dhcp/dhcpd6.log
 EOF"""
             )
             self.expect(self.prompt)
@@ -656,10 +657,10 @@ EOF"""
         if "No such file or directory" in out:
             self.sendline(
                 """cat > /etc/logrotate.d/dhcpd << EOF
-/var/log/dhcp/dhcpd.log
+/var/log/dhcp/*.log
 {
-        rotate 3
-        weekly
+        rotate 4
+        daily
         missingok
         notifempty
         compress
@@ -992,11 +993,17 @@ EOF"""
         self.expect(self.prompt)
         super(DebianISCProvisioner, self).check_status()
 
-    def get_dhcp_logs(self, mac_addr):
-        print("{0} Provisioner DHCP Logs START {0}".format("=" * 10))
+    def get_dhcp_logs(self, mac_addr, board_reset_time, v4=True):
+        """print dhcp logs for provided mac_address starting from board_reset_time
+        """
+        print(
+            "{0} Provisioner DHCP Logs START (Last CM Reset time - {1}) {0}".format(
+                "=" * 10, board_reset_time
+            )
+        )
         self.sendline(
-            'tac /var/log/dhcp/dhcpd.log | grep -n -B3 -m 4 -A7 "{}"|tac'.format(
-                mac_addr.lower()
+            """grep {0} /var/log/dhcp/dhcpd{1}.log | awk '$0 >= "{2}"'""".format(
+                mac_addr.lower(), "" if v4 else "6", board_reset_time[4:]
             )
         )
         self.expect(self.prompt)
