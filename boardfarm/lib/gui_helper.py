@@ -55,6 +55,26 @@ def click_button_id(web_gui, clickbutton):
         return False
 
 
+def click_button_name(web_gui, clickbutton):
+    """To click the button using the element name.
+
+    :param web_gui: web driver after initializing page
+    :type web_gui: string
+    :param clickbutton: web element id of the button
+    :type clickbutton: string
+    :raises Exception: If error thrown returns False
+    :return: True
+    :rtype: boolean
+    """
+    try:
+        click_tab = web_gui.find_element_by_name(clickbutton)
+        click_tab.click()
+        time.sleep(5)
+        return True
+    except NoSuchElementException:
+        return False
+
+
 def click_button_xpath(web_gui, clickbutton):
     """To click the page button using the xpath.
 
