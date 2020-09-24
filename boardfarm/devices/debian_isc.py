@@ -642,21 +642,17 @@ EOF"""
         self.sendline("touch /var/log/dhcp/dhcpd.log /var/log/dhcp/dhcpd6.log")
         self.expect(self.prompt)
 
-        out = self.check_output("ls /etc/rsyslog.d/dhcpd.conf")
-        if "No such file or directory" in out:
-            self.sendline(
-                """cat > /etc/rsyslog.d/dhcpd.conf << EOF
+        self.sendline(
+            """cat > /etc/rsyslog.d/dhcpd.conf << EOF
 # DHCP
 local0.debug             /var/log/dhcp/dhcpd.log
 local1.debug             /var/log/dhcp/dhcpd6.log
 EOF"""
-            )
-            self.expect(self.prompt)
+        )
+        self.expect(self.prompt)
 
-        out = self.check_output("ls /etc/logrotate.d/dhcpd")
-        if "No such file or directory" in out:
-            self.sendline(
-                """cat > /etc/logrotate.d/dhcpd << EOF
+        self.sendline(
+            """cat > /etc/logrotate.d/dhcpd << EOF
 /var/log/dhcp/*.log
 {
         rotate 4
@@ -668,8 +664,8 @@ EOF"""
         sharedscripts
 }
 EOF"""
-            )
-            self.expect(self.prompt)
+        )
+        self.expect(self.prompt)
 
     # this needs to be cleaned up a bit. Other devices should use this method to configure a dhcp server.
     # e.g. debian won't require start dhcp_server_server method. it should call this static method.
