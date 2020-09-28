@@ -86,6 +86,35 @@ class LinuxDevice(base.BaseDevice):
         print("Failed ifconfig {} IPV6 {}".format(interface, ips))
         raise Exception("Did not find non-link-local ipv6 address")
 
+    def get_interface_link_local_ip6addr(self, interface):
+        """function helps in getting ipv6 link local address of the interface
+        :param device: device name
+        :param interface: interface name to get the link local
+        :return link_local: Link local address of the interface
+        : return type: string
+        """
+
+        regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
+        self.expect(pexpect.TIMEOUT, timeout=0.5)
+        self.before = ""
+
+        self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
+        self.expect(self.prompt)
+        print(self.before)
+
+        ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
+        for i in ips:
+            try:
+                # we use IPv6Interface for convenience (any exception will be ignored)
+                ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
+                if ipv6_iface and ipv6_iface.is_link_local:
+                    print("ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip)))
+                    return str(ipv6_iface.ip)
+            except Exception:
+                continue
+        print("Failed ifconfig {} IPV6 {}".format(interface, ips))
+        raise Exception("Did not find link-local ipv6 address")
+
     def get_interface_macaddr(self, interface):
         """Get the interface macaddress."""
         self.sendline("cat /sys/class/net/{}/address | \\".format(interface))
