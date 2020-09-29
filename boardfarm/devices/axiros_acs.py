@@ -73,7 +73,7 @@ class Intercept(object):
                     job_name = os.getenv("JOB_NAME", "")
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
                     capture = (
-                        job_name
+                        job_name.replace("/", "_")
                         + "_"
                         + build_number
                         + "_"
