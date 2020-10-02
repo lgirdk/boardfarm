@@ -11,6 +11,7 @@ import string
 import tempfile
 
 import pytest
+
 from boardfarm import lib
 from boardfarm.devices import debian, linux
 from boardfarm.lib import ConfigHelper, SnmpHelper, common
@@ -470,8 +471,8 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
         wan = self.dev.wan
         lan = self.dev.lan
 
-        from boardfarm.lib.installers import install_snmp, install_snmpd
         from boardfarm.lib.common import snmp_mib_get
+        from boardfarm.lib.installers import install_snmp, install_snmpd
 
         wrong_mibs = ["PsysDescr", "sys123ObjectID", "sysServiceS"]
         linux_mibs = [

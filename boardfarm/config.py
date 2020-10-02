@@ -10,8 +10,9 @@ import importlib
 import json
 import os
 
-import boardfarm
 import requests
+
+import boardfarm
 
 local_path = os.path.dirname(os.path.realpath(__file__))
 

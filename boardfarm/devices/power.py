@@ -7,9 +7,9 @@
 # The full text can be found in LICENSE in the root directory.
 
 try:
-    from urllib.request import urlopen
-    from urllib.error import HTTPError
     import urllib as _urllib
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
 except Exception:
     from urllib2 import urlopen, HTTPError
     import urllib2 as _urllib
@@ -19,8 +19,9 @@ import time
 
 import dlipower
 import pexpect
-from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from easysnmp import Session
+
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 
 def get_default_for_arg(function, arg):
@@ -28,8 +29,8 @@ def get_default_for_arg(function, arg):
 
 
 try:
-    from ouimeaux.environment import Environment as WemoEnv
     from ouimeaux.device.switch import Switch as WemoSwitch
+    from ouimeaux.environment import Environment as WemoEnv
 except Exception:
     WemoEnv = None
     WemoSwitch = None

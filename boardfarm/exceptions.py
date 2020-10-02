@@ -18,8 +18,7 @@ class TestError(BftBaseException):
 
 
 class IndexError(BftBaseException):
-    """Raise this if the cli is wrong"
-    """
+    """Raise this if the cli is wrong" """
 
     pass
 

@@ -57,8 +57,7 @@ class TrafficGenerator(base.BaseDevice):
         raise Exception("Not implemented!")
 
     def close(self):
-        """Close connection to traffic generator
-        """
+        """Close connection to traffic generator"""
         raise Exception("Not implemented!")
 
     def reset(self, **kwargs):

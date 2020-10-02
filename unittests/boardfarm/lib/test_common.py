@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Unit tests for boardfarm.lib.common.py."""
 import pytest
+
 from boardfarm.lib import common
 
 

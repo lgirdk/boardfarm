@@ -15,8 +15,9 @@ import types
 from functools import wraps
 
 import debtcollector
-from boardfarm.lib.ConfigHelper import ConfigHelper
 from termcolor import colored
+
+from boardfarm.lib.ConfigHelper import ConfigHelper
 
 
 def now_short(_format="%Y%m%d-%H%M%S"):

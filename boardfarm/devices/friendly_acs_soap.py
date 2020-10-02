@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import xmltodict
-from boardfarm.lib.bft_logging import LoggerMeta
 from zeep import Client
 from zeep.wsse.username import UsernameToken
+
+from boardfarm.lib.bft_logging import LoggerMeta
 
 
 class FriendlyACS(metaclass=LoggerMeta):

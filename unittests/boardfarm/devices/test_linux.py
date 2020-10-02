@@ -2,6 +2,7 @@ import ipaddress
 import re
 
 import pytest
+
 from boardfarm.devices.linux import LinuxDevice
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 

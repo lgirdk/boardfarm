@@ -6,9 +6,10 @@ from random import randint
 
 import pexpect
 import six
+from faker import Factory
+
 from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
-from faker import Factory
 
 fake_generator = Factory.create()
 

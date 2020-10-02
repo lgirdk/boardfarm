@@ -2,6 +2,7 @@
 from datetime import datetime
 
 import pexpect
+
 from boardfarm.devices import prompt
 from boardfarm.lib.common import print_bold
 from boardfarm.tests import rootfs_boot

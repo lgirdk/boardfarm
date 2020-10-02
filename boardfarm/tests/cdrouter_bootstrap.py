@@ -11,14 +11,15 @@ import time
 
 import pexpect
 import six
-from boardfarm import lib
-from boardfarm.devices import prompt
-from boardfarm.orchestration import TestResult
-from boardfarm.tests import rootfs_boot
 from cdrouter import CDRouter
 from cdrouter.configs import Config
 from cdrouter.jobs import Job
 from cdrouter.packages import Package
+
+from boardfarm import lib
+from boardfarm.devices import prompt
+from boardfarm.orchestration import TestResult
+from boardfarm.tests import rootfs_boot
 
 
 class CDrouterStub(rootfs_boot.RootFSBootTest):
@@ -190,9 +191,7 @@ testvar lanVlanId """
                     raise exp
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
-            contents = (
-                contents
-                + """
+            contents = contents + """
 testvar ipv6LanIp %s%%eui64%%
 testvar ipv6LanPrefixLen 64
 testvar healthCheckEnable yes
@@ -220,20 +219,18 @@ testvar FreeNetworkStop  201.0.0.0
 testvar IPv4HopCount %s
 testvar lanDnsServer %s
 testvar wanDnsServer %s
-"""
-                % (
-                    fixed_prefix6,
-                    cdrouter.bf_args.wanispip_v6,
-                    cdrouter.bf_args.wanispgateway_v6,
-                    wan_ip6,
-                    cdrouter.bf_args.wanispip,
-                    cdrouter.bf_args.wanispgateway,
-                    wan_ip,
-                    wan_ip,
-                    cdrouter.bf_args.ipv4hopcount,
-                    board.get_dns_server(),
-                    board.get_dns_server_upstream(),
-                )
+""" % (
+                fixed_prefix6,
+                cdrouter.bf_args.wanispip_v6,
+                cdrouter.bf_args.wanispgateway_v6,
+                wan_ip6,
+                cdrouter.bf_args.wanispip,
+                cdrouter.bf_args.wanispgateway,
+                wan_ip,
+                wan_ip,
+                cdrouter.bf_args.ipv4hopcount,
+                board.get_dns_server(),
+                board.get_dns_server_upstream(),
             )
 
         print("Using below for config:")

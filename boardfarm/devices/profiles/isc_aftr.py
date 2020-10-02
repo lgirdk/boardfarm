@@ -7,6 +7,7 @@ from collections import Counter, OrderedDict
 
 import pexpect
 import six
+
 from boardfarm.devices.profiles import base_profile
 from boardfarm.lib.installers import apt_install, install_wget
 

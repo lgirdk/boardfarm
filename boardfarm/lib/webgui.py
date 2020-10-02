@@ -404,6 +404,7 @@ class web_gui:
     def open_display(self):
         """Display of the gui page after connecting through some random port."""
         from pyvirtualdisplay.randomize import Randomizer
+
         from boardfarm import config
 
         if config.default_headless:

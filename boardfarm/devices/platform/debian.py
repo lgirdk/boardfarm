@@ -16,13 +16,14 @@ from collections import defaultdict
 
 import pexpect
 import six
+from nested_lookup import nested_lookup
+from termcolor import colored, cprint
+
 from boardfarm.devices import linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
-from nested_lookup import nested_lookup
-from termcolor import colored, cprint
 
 
 class DebianBox(linux.LinuxDevice):

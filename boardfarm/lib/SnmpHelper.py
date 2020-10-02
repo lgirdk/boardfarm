@@ -10,7 +10,6 @@ import json
 import os
 import re
 
-import boardfarm
 import debtcollector
 import pexpect
 import six
@@ -21,6 +20,8 @@ from pysmi.reader import FileReader, HttpReader
 from pysmi.searcher import StubSearcher
 from pysmi.writer import CallbackWriter
 from pysnmp.hlapi import ObjectIdentifier
+
+import boardfarm
 
 from .installers import install_pysnmp
 from .regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex

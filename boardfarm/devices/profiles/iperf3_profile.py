@@ -26,8 +26,7 @@ class IPerf3(base_profile.BaseProfile):
     }
 
     def __init__(self, *args, **kwargs):
-        """Constructor method to initialize the container details
-        """
+        """Constructor method to initialize the container details"""
         self.iperf_server_data = []
         self.iperf_client_data = []
         self.first_iteration = {"server": True, "client": True}

@@ -1,6 +1,7 @@
 """Holds device class to connect to a device."""
-import boardfarm.exceptions
 import pexpect
+
+import boardfarm.exceptions
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 

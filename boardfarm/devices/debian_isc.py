@@ -5,6 +5,7 @@ import traceback
 
 import pexpect
 import six
+
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
@@ -990,8 +991,7 @@ EOF"""
         super(DebianISCProvisioner, self).check_status()
 
     def get_dhcp_logs(self, mac_addr, board_reset_time, v4=True):
-        """print dhcp logs for provided mac_address starting from board_reset_time
-        """
+        """print dhcp logs for provided mac_address starting from board_reset_time"""
         print(
             "{0} Provisioner DHCP Logs START (Last CM Reset time - {1}) {0}".format(
                 "=" * 10, board_reset_time

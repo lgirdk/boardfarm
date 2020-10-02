@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 """Captures traces for WAN and LAN devices."""
 import pexpect
+
 from boardfarm.tests import rootfs_boot
 
 

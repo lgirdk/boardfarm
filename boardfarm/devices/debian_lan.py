@@ -10,6 +10,7 @@ import re
 
 import pexpect
 import six
+
 from boardfarm.devices.platform import debian
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.dhcpoption import configure_option
@@ -275,8 +276,8 @@ class DebianLAN(debian.DebianBox):
     def configure_dhclient(self, dhcpopt):
         """configure dhclient options in lan dhclient.conf
 
-           param dhcpopt: contains list of dhcp options to configure enable or disable
-           type dhcpopt: list)
+        param dhcpopt: contains list of dhcp options to configure enable or disable
+        type dhcpopt: list)
         """
         for opt, enable in dhcpopt:
             configure_option(opt, (self, enable))

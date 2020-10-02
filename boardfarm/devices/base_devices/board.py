@@ -181,23 +181,19 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def wait_for_network(self):
-        """Wait for network will wait until board's status is operational after a reboot
-        """
+        """Wait for network will wait until board's status is operational after a reboot"""
         raise Exception("Not implemented!")
 
     def wait_for_linux(self):
-        """Verify if board is able to initialize prompt after bootup.
-        """
+        """Verify if board is able to initialize prompt after bootup."""
         raise Exception("Not implemented!")
 
     def enable_pp(self):
-        """Enable packet processing for the board.
-        """
+        """Enable packet processing for the board."""
         raise Exception("Not implemented!")
 
     def disable_pp(self):
-        """Disable packet processing for the board
-        """
+        """Disable packet processing for the board"""
         raise Exception("Not implemented!")
 
     def get_current_cfg_name(self, mta=False):
@@ -290,14 +286,12 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def waiting_on_board(self):
-        """Waits for the board to become functional/usable after boot-up
-        """
+        """Waits for the board to become functional/usable after boot-up"""
         self.wait_for_linux()
         self.wait_for_network()
 
     def reboot_modem_os(self, s=None):
-        """ Reboots the OS via board console
-        """
+        """Reboots the OS via board console"""
         raise Exception("Not implemented!")
 
     def upload_config_to_tftp(self, cfg_path, tftp_ip):
@@ -338,8 +332,7 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def reset(self, break_into_uboot=False):
-        """Perform a soft/hard reset on board
-        """
+        """Perform a soft/hard reset on board"""
         raise Exception("Not implemented!")
 
     def enable_logs(self, flag="enable", component=None):
@@ -394,8 +387,7 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def enter_voice_menu(self):
-        """To enter voice menu of board.
-        """
+        """To enter voice menu of board."""
         raise Exception("Not implemented!")
 
     def capture_stopping_signal(self, signal_num="30", dial_flag=False):
@@ -429,8 +421,7 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def check_status(self):
-        """Checks status on all cores of a board
-        """
+        """Checks status on all cores of a board"""
         raise Exception("Not implemented!")
 
     def check_iface_exists(self, iface):
@@ -444,8 +435,7 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def close(self, *args, **kwargs):
-        """Close console connections of a board
-        """
+        """Close console connections of a board"""
         raise Exception("Not implemented!")
 
     def enable_time_display(self, flag="1"):
@@ -465,8 +455,7 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def reset_defaults_via_console(self):
-        """ Factory Reset Board
-        """
+        """Factory Reset Board"""
         raise Exception("Not implemented!")
 
     def unlock_bootloader(self):
@@ -537,16 +526,14 @@ class BaseBoard(linux.LinuxDevice):
         raise Exception("Not implemented!")
 
     def collect_stats(self, stats=None):
-        """Collect board stats for multiple functionalities to monitor
-        """
+        """Collect board stats for multiple functionalities to monitor"""
         if stats is None:
             stats = []
 
         raise Exception("Not implemented!")
 
     def parse_stats(self, dict_to_log=None):
-        """Parse collected stats of board for logging.
-        """
+        """Parse collected stats of board for logging."""
         if dict_to_log is None:
             dict_to_log = {}
 

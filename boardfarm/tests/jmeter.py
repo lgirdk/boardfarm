@@ -3,6 +3,7 @@ import os
 import shutil
 
 import pexpect
+
 from boardfarm.devices import prompt
 from boardfarm.lib.common import scp_from
 from boardfarm.lib.installers import install_jmeter

@@ -17,14 +17,15 @@ from collections import defaultdict
 
 import pexpect
 import six
+from nested_lookup import nested_lookup
+from termcolor import colored, cprint
+
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.network_helper import valid_ipv4
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
-from nested_lookup import nested_lookup
-from termcolor import colored, cprint
 
 from . import linux
 
@@ -1073,8 +1074,8 @@ class DebianBox(linux.LinuxDevice):
     def configure_dhclient(self, dhcpopt):
         """configure dhclient options in lan dhclient.conf
 
-           param dhcpopt: contains list of dhcp options to configure enable or disable
-           type dhcpopt: list)
+        param dhcpopt: contains list of dhcp options to configure enable or disable
+        type dhcpopt: list)
         """
         for opt, enable in dhcpopt:
             configure_option(opt, (self, enable))

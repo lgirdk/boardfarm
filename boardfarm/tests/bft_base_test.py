@@ -10,19 +10,20 @@ import time
 import traceback
 import warnings
 
+import debtcollector
+import six
+from unittest2 import TestCase as UTest
+
 import boardfarm.config
 import boardfarm.exceptions
 import boardfarm.lib.ConfigHelper
 import boardfarm.lib.DeviceManager
 import boardfarm.lib.env_helper
 import boardfarm.lib.test_configurator
-import debtcollector
-import six
 from boardfarm import lib
 from boardfarm.lib.bft_logging import LoggerMeta, now_short
 from boardfarm.library import check_devices
 from boardfarm.orchestration import TearDown
-from unittest2 import TestCase as UTest
 
 warnings.simplefilter("always", UserWarning)
 

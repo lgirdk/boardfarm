@@ -8,6 +8,7 @@
 import re
 
 import pexpect
+
 from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
 

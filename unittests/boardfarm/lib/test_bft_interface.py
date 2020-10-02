@@ -1,6 +1,7 @@
 import ipaddress
 
 import pytest
+
 from boardfarm.exceptions import BftIfaceNoIpV4Addr, BftIfaceNoIpV6Addr
 from boardfarm.lib.bft_interface import bft_iface
 

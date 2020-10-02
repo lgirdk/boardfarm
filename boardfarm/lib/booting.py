@@ -9,8 +9,9 @@ import time
 import warnings
 from collections import OrderedDict
 
-import boardfarm.exceptions
 import debtcollector
+
+import boardfarm.exceptions
 from boardfarm.lib.common import run_once
 
 warnings.simplefilter("always", UserWarning)

@@ -21,9 +21,10 @@ import time
 import traceback
 from datetime import datetime
 
-import boardfarm.exceptions
 import matplotlib
 import psutil
+
+import boardfarm.exceptions
 from boardfarm import devices, library, tests
 from boardfarm.dbclients import (
     boardfarmwebclient,

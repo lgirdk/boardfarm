@@ -88,8 +88,10 @@ class TestSimpleBoardfarm(unittest.TestCase):
         self.assertEqual(result, False)
 
     def test_kibana_datagen(self):
-        from boardfarm.library import generate_test_info_for_kibana
-        from boardfarm.library import get_test_name
+        from boardfarm.library import (
+            generate_test_info_for_kibana,
+            get_test_name,
+        )
 
         class Dummy:
             logged = {}
@@ -116,8 +118,8 @@ class TestSimpleBoardfarm(unittest.TestCase):
         self.assertGreater(len(names), 0)
 
     def test_skip_on_fail_decorator(self):
-        from boardfarm.tests_wrappers import skip_on_fail
         from boardfarm.tests.bft_base_test import BftBaseTest
+        from boardfarm.tests_wrappers import skip_on_fail
 
         global ran
         ran = False
@@ -133,7 +135,10 @@ class TestSimpleBoardfarm(unittest.TestCase):
                 global ran
                 ran = True
 
-                super(test_stub, self,).skipTest(msg)
+                super(
+                    test_stub,
+                    self,
+                ).skipTest(msg)
 
         @skip_on_fail
         def test_func(test, arg1, arg2):

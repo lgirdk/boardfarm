@@ -6,6 +6,7 @@ import re
 
 import pexpect
 import six
+
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,

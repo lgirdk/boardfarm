@@ -2,6 +2,7 @@ import traceback
 from json import load
 
 import jsonschema
+
 from boardfarm.exceptions import ConfigKeyError
 
 

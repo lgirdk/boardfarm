@@ -8,9 +8,10 @@
 
 import sys
 
+from six.moves import input
+
 from boardfarm import lib, tests
 from boardfarm.tests import rootfs_boot
-from six.moves import input
 
 
 class Interact(rootfs_boot.RootFSBootTest):

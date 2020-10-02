@@ -4,6 +4,7 @@ import re
 import sys
 
 import six
+
 from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, WindowsMacFormat
 
 from . import base, connection_decider

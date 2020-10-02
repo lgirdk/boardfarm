@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import pexpect
+
 from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot, socat
 

@@ -7,8 +7,9 @@ import sys
 import uuid
 
 from aenum import Enum, extend_enum
-from boardfarm.exceptions import DeviceDoesNotExistError
 from six.moves import UserList
+
+from boardfarm.exceptions import DeviceDoesNotExistError
 
 logging.basicConfig(stream=sys.stdout, format="%(message)s")
 logger = logging.getLogger("DeviceManager")

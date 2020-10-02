@@ -3,6 +3,7 @@ import re
 
 import pexpect
 import pycountry
+
 from boardfarm.lib.wifi import wifi_client_stub
 
 from . import debian

@@ -4,6 +4,7 @@ import re
 import sys
 
 import pexpect
+
 from boardfarm.devices import connection_decider, debian
 
 

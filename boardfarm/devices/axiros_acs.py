@@ -12,6 +12,15 @@ from xml.etree import ElementTree
 
 import pexpect
 import xmltodict
+from debtcollector import moves
+from nested_lookup import nested_lookup
+from requests import HTTPError, Session
+from requests.auth import HTTPBasicAuth
+from zeep import Client
+from zeep.cache import InMemoryCache
+from zeep.transports import Transport
+from zeep.wsse.username import UsernameToken
+
 from boardfarm.exceptions import (
     ACSFaultCode,
     CodeError,
@@ -21,14 +30,6 @@ from boardfarm.exceptions import (
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import get_class_name_in_stack, scp_from
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
-from debtcollector import moves
-from nested_lookup import nested_lookup
-from requests import HTTPError, Session
-from requests.auth import HTTPBasicAuth
-from zeep import Client
-from zeep.cache import InMemoryCache
-from zeep.transports import Transport
-from zeep.wsse.username import UsernameToken
 
 from . import base_acs
 
@@ -118,7 +119,10 @@ class Intercept(object):
                         # kill and if successful remove pcap file
                         if d_flag:
                             kill_process(
-                                self, process="tcpdump", pid=tcpdump_output, sync=False,
+                                self,
+                                process="tcpdump",
+                                pid=tcpdump_output,
+                                sync=False,
                             )
                             if not ok and (retry == (count - 1)):
                                 print(
@@ -517,8 +521,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         GetParameterValuesParametersClassArray_type = self.client.get_type(
             "ns0:GetParameterValuesParametersClassArray"
         )
-        GetParameterValuesParametersClassArray_data = GetParameterValuesParametersClassArray_type(
-            [param]
+        GetParameterValuesParametersClassArray_data = (
+            GetParameterValuesParametersClassArray_type([param])
         )
 
         CommandOptionsTypeStruct_type = self.client.get_type(
@@ -1203,8 +1207,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
 
 if __name__ == "__main__":
-    from pprint import pprint
     import sys
+    from pprint import pprint
 
     """Good values to test:
     Device.DeviceInfo.ModelNumber

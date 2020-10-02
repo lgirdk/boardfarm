@@ -6,9 +6,10 @@ from datetime import datetime
 from functools import partial, wraps
 
 import six
+from termcolor import cprint
+
 from boardfarm.exceptions import CodeError, ContOnFailError, TestError
 from boardfarm.tests_wrappers import continue_on_fail
-from termcolor import cprint
 
 
 class TestResult:

@@ -1,7 +1,8 @@
 import pytest
+from requests import HTTPError
+
 from boardfarm.devices.axiros_acs import AxirosACS
 from boardfarm.exceptions import TR069FaultCode
-from requests import HTTPError
 
 
 class Response:
@@ -137,7 +138,10 @@ def test_parse_soap_response(test_parse_soap_response, expected_result):
 
 
 @pytest.mark.parametrize(
-    "TR069_exception_parse_soap_response, expected_result", [(response_2, None),]
+    "TR069_exception_parse_soap_response, expected_result",
+    [
+        (response_2, None),
+    ],
 )
 def test_TR069_exception_parse_soap_response(
     TR069_exception_parse_soap_response, expected_result
@@ -148,7 +152,11 @@ def test_TR069_exception_parse_soap_response(
 
 @pytest.mark.parametrize(
     "HTTP_exception_parse_soap_response, expected_result",
-    [(response_3, None), (response_4, None), (response_5, None),],
+    [
+        (response_3, None),
+        (response_4, None),
+        (response_5, None),
+    ],
 )
 def test_HTTP_exception_parse_soap_response(
     HTTP_exception_parse_soap_response, expected_result

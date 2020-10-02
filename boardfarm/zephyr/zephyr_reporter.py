@@ -6,9 +6,10 @@ import glob
 import json
 import os
 
-import boardfarm
 import requests
 from jira import JIRA
+
+import boardfarm
 
 from . import zapi
 

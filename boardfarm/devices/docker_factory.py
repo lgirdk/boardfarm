@@ -9,6 +9,7 @@ from collections import defaultdict
 from threading import Lock
 
 import pexpect
+
 from boardfarm.devices import get_device, linux
 from boardfarm.exceptions import DeviceDoesNotExistError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper

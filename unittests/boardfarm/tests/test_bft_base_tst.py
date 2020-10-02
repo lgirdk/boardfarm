@@ -30,8 +30,7 @@ class test_teardown1(BftBaseTest):
         return self.action2_op
 
     def set_action_3(self):
-        """This one will throw an exception
-        """
+        """This one will throw an exception"""
         raise KeyError("Intended unset error")
 
     def test_main(self):

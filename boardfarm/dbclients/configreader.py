@@ -119,8 +119,9 @@ class TestsuiteConfigReader(object):
 
 
 if __name__ == "__main__":
-    import os
     import glob
+    import os
+
     import boardfarm
 
     for modname in sorted(boardfarm.plugins):

@@ -5,6 +5,7 @@ import re
 import netaddr
 import pexpect
 import six
+
 from boardfarm.exceptions import BftIfaceNoIpV4Addr, BftIfaceNoIpV6Addr
 from boardfarm.lib.regexlib import (
     InterfaceIPv4_AddressRegex,
@@ -173,6 +174,7 @@ class bft_iface(object):
 
 if __name__ == "__main__":
     import sys
+
     from boardfarm.devices.base import BaseDevice
 
     class DummyDevice(BaseDevice):

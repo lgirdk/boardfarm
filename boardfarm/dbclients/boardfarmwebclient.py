@@ -17,6 +17,7 @@ import warnings
 
 import distro
 import requests
+
 from boardfarm.lib.common import run_once
 
 

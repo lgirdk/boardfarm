@@ -12,6 +12,7 @@ import signal
 import sys
 
 import pexpect
+
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import cmd_exists
 

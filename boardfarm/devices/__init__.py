@@ -9,12 +9,13 @@ import sys
 import traceback
 import types  # noqa: F401
 
-import boardfarm
 import pexpect
 import termcolor
+from six.moves import UserList
+
+import boardfarm
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
 from boardfarm.lib.DeviceManager import all_device_managers
-from six.moves import UserList
 
 # TODO: this probably should not the generic device
 from . import openwrt_router

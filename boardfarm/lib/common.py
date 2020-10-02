@@ -21,6 +21,9 @@ from datetime import datetime
 
 import pexpect
 import termcolor
+from selenium import webdriver
+from termcolor import cprint
+
 from boardfarm.lib.bft_pexpect_helper import (
     bft_pexpect_helper,
     spawn_ssh_pexpect,
@@ -34,20 +37,18 @@ from boardfarm.lib.installers import (
     install_pptpd_server,
 )
 from boardfarm.lib.SnmpHelper import SnmpMibs
-from selenium import webdriver
-from termcolor import cprint
 
 from .installers import install_pysnmp
 
 try:
     # Python3
     from urllib.parse import urlparse
-    from urllib.request import urlopen, Request
+    from urllib.request import Request, urlopen
 except Exception as error:
     print(error)
     # Python2
+    from urllib2 import Request, urlopen
     from urlparse import urlparse
-    from urllib2 import urlopen, Request
 
 ubootprompt = ["ath>", r"\(IPQ\) #", "ar7240>"]
 linuxprompt = ["root\\@.*:.*#", "@R7500:/# "]

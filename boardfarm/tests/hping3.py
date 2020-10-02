@@ -1,5 +1,6 @@
 """Floods hping3, creating lots of firewall entries in router."""
 import pexpect
+
 from boardfarm.devices import prompt
 from boardfarm.lib.installers import install_hping3
 from boardfarm.tests import rootfs_boot

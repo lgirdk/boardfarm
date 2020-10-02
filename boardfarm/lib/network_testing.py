@@ -13,6 +13,7 @@ from collections import namedtuple
 
 import pexpect
 import six
+
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.common import retry_on_exception
 

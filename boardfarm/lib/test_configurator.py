@@ -2,8 +2,9 @@ import json
 import os
 import re
 
-import boardfarm
 import six
+
+import boardfarm
 from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient
 from boardfarm.lib.common import print_bold
 

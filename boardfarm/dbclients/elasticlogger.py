@@ -15,8 +15,8 @@ from math import isnan
 
 try:
     import elasticsearch
-    from elasticsearch.serializer import JSONSerializer
     from elasticsearch import RequestError
+    from elasticsearch.serializer import JSONSerializer
 except Exception as e:
     print(e)
     print("Please install needed module:\n" "  sudo pip install -U elasticsearch")

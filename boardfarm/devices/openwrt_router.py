@@ -14,6 +14,7 @@ import sys
 from datetime import datetime
 
 import pexpect
+
 from boardfarm.lib import common
 from boardfarm.lib.common import print_bold
 
@@ -21,10 +22,15 @@ from . import connection_decider, linux, power
 
 try:
     # Python 3
-    from urllib.request import build_opener, install_opener, ProxyHandler, urlopen
+    from urllib.request import (
+        ProxyHandler,
+        build_opener,
+        install_opener,
+        urlopen,
+    )
 except Exception:
     # Python 2
-    from urllib2 import build_opener, install_opener, ProxyHandler, urlopen
+    from urllib2 import ProxyHandler, build_opener, install_opener, urlopen
 
 
 class OpenWrtRouter(linux.LinuxDevice):

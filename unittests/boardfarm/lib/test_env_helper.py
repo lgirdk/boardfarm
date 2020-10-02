@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """Unit tests for boardfarm.lib.env_helper.py."""
-import boardfarm.exceptions
 import pytest
+
+import boardfarm.exceptions
 from boardfarm.lib import env_helper
 
 
@@ -55,22 +56,38 @@ class TestEnvHelper_env_check:
     }
 
     env_prov_mode_dual = {
-        "environment_def": {"board": {"eRouter_prov_mode": "dual",},},
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "dual",
+            },
+        },
         "version": "1.0",
     }
 
     env_prov_mode_ipv4 = {
-        "environment_def": {"board": {"eRouter_prov_mode": "ipv4",},},
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "ipv4",
+            },
+        },
         "version": "1.0",
     }
 
     env_prov_mode_bridge = {
-        "environment_def": {"board": {"eRouter_prov_mode": "bridge",},},
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": "bridge",
+            },
+        },
         "version": "1.0",
     }
 
     env_prov_mode_none = {
-        "environment_def": {"board": {"eRouter_prov_mode": None,},},
+        "environment_def": {
+            "board": {
+                "eRouter_prov_mode": None,
+            },
+        },
         "version": "1.0",
     }
 
@@ -235,7 +252,11 @@ class TestEnvHelper_env_check:
         """Test against an EnvHelper with a None value, MUST throw a BftEnvMismatch!!!
         Probably EnvHelper schema will catch this"""
         tcenv = {
-            "environment_def": {"board": {"eRouter_prov_mode": "some_prov",},},
+            "environment_def": {
+                "board": {
+                    "eRouter_prov_mode": "some_prov",
+                },
+            },
             "version": "1.0",
         }
         with pytest.raises(boardfarm.exceptions.BftEnvMismatch):

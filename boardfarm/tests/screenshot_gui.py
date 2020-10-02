@@ -8,10 +8,11 @@
 import os
 
 import pexpect
+from pyvirtualdisplay import Display
+
 from boardfarm import lib
 from boardfarm.devices import prompt
 from boardfarm.tests import rootfs_boot
-from pyvirtualdisplay import Display
 
 
 class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):

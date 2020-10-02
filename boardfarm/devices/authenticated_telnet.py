@@ -1,5 +1,6 @@
-import boardfarm.config as config
 import pexpect
+
+import boardfarm.config as config
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 

@@ -7,6 +7,7 @@ import time
 
 import pexpect
 import termcolor
+
 from boardfarm.lib.bft_logging import o_helper
 from boardfarm.tests_wrappers import throw_pexpect_error
 

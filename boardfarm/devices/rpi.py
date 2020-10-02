@@ -10,6 +10,7 @@ import ipaddress
 import os
 
 import pexpect
+
 from boardfarm.lib import common
 
 from . import openwrt_router
