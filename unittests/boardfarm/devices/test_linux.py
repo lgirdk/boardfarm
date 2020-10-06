@@ -208,3 +208,32 @@ def test_get_interface_ipaddr(mocker, output, expected_ip):
     dev.match = max([re.search(i, output) for i in regex], key=bool)
     print(dev.match)
     assert expected_ip == dev.get_interface_ipaddr("erouter0")
+
+
+@pytest.mark.parametrize(
+    "output, expected_mask",
+    [
+        (test2_1, "255.255.254.0"),
+        (test1_2, "255.255.255.128"),
+        (test1_1, "255.255.255.128"),
+        (test2_2, "255.255.254.0"),
+        (test3_1, "255.255.255.128"),
+        (test4_1, "255.255.255.0"),
+        (test4_2, "255.255.255.0"),
+        (test4_4, "255.255.255.128"),
+    ],
+)
+def test_get_interface_mask(mocker, output, expected_mask):
+    mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "sendline", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "check_output", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "expect", return_value=None, autospec=True)
+    regex = [
+        r"(?<=netmask )" + ValidIpv4AddressRegex,
+        r"(?<=Mask:)" + ValidIpv4AddressRegex,
+    ]
+
+    dev = LinuxDevice()
+    dev.match = max([re.search(i, output) for i in regex], key=bool)
+    print(dev.match)
+    assert expected_mask == dev.get_interface_mask("erouter0")
