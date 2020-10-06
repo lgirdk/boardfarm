@@ -57,6 +57,19 @@ class LinuxDevice(base.BaseDevice):
         print("ifconfig {} IPV4 {}".format(interface, ipv4address))
         return ipv4address
 
+    def get_interface_mask(self, interface):
+        """Get ipv4 mask of interface."""
+        self.sendline("\nifconfig %s" % interface)
+        regex = [
+            r"(?<=netmask )" + ValidIpv4AddressRegex,
+            r"(?<=Mask:)" + ValidIpv4AddressRegex,
+        ]
+        self.expect(regex)
+        ipaddr = self.match.group(0)
+        self.expect(self.prompt)
+        print("ifconfig {} IPV4 Mask {}".format(interface, ipaddr))
+        return ipaddr
+
     def get_interface_ip6addr(self, interface):
         """Get ipv6 address of interface."""
         # to minimise the chance of getting stray ipv6 addresses from the pexpect
