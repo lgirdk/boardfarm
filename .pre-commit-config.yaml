@@ -6,28 +6,45 @@ repos:
       rev: v3.2.0
       hooks:
           - id: check-ast
+            stages: [commit]
           - id: end-of-file-fixer
+            stages: [commit]
           - id: mixed-line-ending
+            stages: [commit]
           - id: trailing-whitespace
+            stages: [commit]
           - id: check-docstring-first
+            stages: [commit]
           - id: check-yaml
+            stages: [commit]
           - id: check-json
+            stages: [commit]
           - id: pretty-format-json
             args: [--autofix, --indent=4]
+            stages: [commit]
           - id: check-added-large-files
+            stages: [commit]
           - id: requirements-txt-fixer
+            stages: [commit]
           - id: check-merge-conflict
+            stages: [commit]
           - id: debug-statements
+            stages: [commit]
           - id: check-executables-have-shebangs
             language: python
             files: \.py$
+            stages: [commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
       rev: v1.1.9
       hooks:
           - id: remove-crlf
+            stages: [commit]
           - id: remove-tabs
+            stages: [commit]
           - id: forbid-crlf
+            stages: [commit]
           - id: forbid-tabs
+            stages: [commit]
     - repo: https://github.com/myint/eradicate
       rev: v2.0.0
       hooks:
@@ -38,6 +55,7 @@ repos:
             language: python
             files: \.py$
             args: [--in-place]
+            stages: [commit]
     - repo: https://github.com/timothycrosley/isort
       rev: 5.5.4
       hooks:
@@ -47,21 +65,25 @@ repos:
             require_serial: true
             language: python
             types: [python]
+            stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.1.0
       hooks:
           - id: yamlfmt
+            stages: [commit]
     - repo: https://github.com/adrienverge/yamllint.git
       rev: v1.25.0
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
+            stages: [commit]
     - repo: https://github.com/ambv/black
       rev: 20.8b1
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'
             args: [--safe]
+            stages: [commit]
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.8.3
       hooks:
@@ -71,3 +93,24 @@ repos:
                 - flake8-rst
                 - flake8-rst-docstrings
                 - flake8-bugbear
+            stages: [commit]
+    - repo: local
+      hooks:
+          - id: unittests
+            name: unittests
+            entry: pytest -v
+            language: python
+            pass_filenames: false
+            args: [unittests]
+            stages: [push]
+            verbose: true
+    - repo: local
+      hooks:
+          - id: integrationtests
+            name: integrationtests
+            entry: pytest -v
+            language: python
+            pass_filenames: false
+            args: [integrationtests]
+            stages: [push]
+            verbose: true
