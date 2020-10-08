@@ -98,19 +98,19 @@ repos:
       hooks:
           - id: unittests
             name: unittests
-            entry: pytest -v
+            entry: pytest
             language: python
             pass_filenames: false
-            args: [unittests]
+            args: [--disable-warnings, -r N, unittests]
             stages: [push]
             verbose: true
     - repo: local
       hooks:
           - id: integrationtests
             name: integrationtests
-            entry: pytest -v
+            entry: pytest
             language: python
             pass_filenames: false
-            args: [integrationtests]
+            args: [--disable-warnings, -r N, integrationtests]
             stages: [push]
             verbose: true
