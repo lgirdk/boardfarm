@@ -96,9 +96,9 @@ class BftBaseTest(inherit_class):
 
     def skipTest(self, reason):
         if _using_pytest:
-            pytest.skip(reason)
-        else:
-            raise boardfarm.exceptions.SkipTest(reason)
+            if self.result_grade == "SKIP":
+                pytest.skip(reason)
+        raise boardfarm.exceptions.SkipTest(reason)
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
@@ -225,7 +225,6 @@ class BftBaseTest(inherit_class):
                     "\n\n=========== Test skipped! Board is not alive... ============="
                 )
                 self.skipTest("Board is not alive")
-
         try:
             if hasattr(self.dev, "wan") and hasattr(self, "wan_setup"):
                 self.wan_setup()
