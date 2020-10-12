@@ -183,6 +183,18 @@ class LinuxDevice(base.BaseDevice):
         self.sudo_sendline("dhclient -v {!s}".format(interface))
         self.expect(self.prompt)
 
+    def release_ipv6(self, interface, stateless=False):
+        """Release ipv6 for the interface."""
+        mode = "-S" if stateless else "-6"
+        self.sudo_sendline("dhclient {} -r {!s}".format(mode, interface))
+        self.expect(self.prompt)
+
+    def renew_ipv6(self, interface, stateless=False):
+        """Renew ipv6 for the interface."""
+        mode = "-S" if stateless else "-6"
+        self.sudo_sendline("dhclient {} -v {!s}".format(mode, interface))
+        self.expect(self.prompt)
+
     def check_access_url(self, url, source_ip=None):
         """Check source_ip can access url.
 
