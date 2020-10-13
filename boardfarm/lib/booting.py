@@ -402,11 +402,11 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
                 v.configure_dhclient((["125", True],))
             else:
                 v.configure_dhclient((["125", False],))
-
-    if board.routing and lan and config.setup_device_networking:
-        if wan is not None:
-            lan.start_lan_client(wan_gw=wan.gw)
-        else:
-            lan.start_lan_client()
+    if flashing_image:
+        if board.routing and lan and config.setup_device_networking:
+            if wan is not None:
+                lan.start_lan_client(wan_gw=wan.gw)
+            else:
+                lan.start_lan_client()
 
     logged["boot_step"] = "lan_ok"
