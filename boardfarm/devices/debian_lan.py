@@ -15,6 +15,7 @@ from boardfarm.devices.platform import debian
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.installers import apt_install
+from boardfarm.lib.linux_nw_utility import NwDnsLookup
 from boardfarm.lib.network_helper import valid_ipv4
 
 
@@ -43,6 +44,7 @@ class DebianLAN(debian.DebianBox):
         self.lan_gateway = ipaddress.IPv4Interface(
             six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
+        self.nslookup_util = NwDnsLookup(self)
 
     def setup(self, config=None):
         # potential cleanup so this wan device works

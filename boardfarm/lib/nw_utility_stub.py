@@ -23,3 +23,9 @@ class NwFirewallStub:
     @abc.abstractmethod
     def is_ip6table_empty(self, opts="", extra_opts=""):
         raise Exception("Method not implemented")
+
+
+class NwDnsLookupStub:
+    @abc.abstractmethod
+    def nslookup(self, domain_name, opts="", extra_opts=""):
+        raise Exception("Method not implemented")
