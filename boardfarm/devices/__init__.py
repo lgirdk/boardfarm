@@ -16,13 +16,18 @@ from six.moves import UserList
 import boardfarm
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
 from boardfarm.lib.DeviceManager import all_device_managers
+from boardfarm.tests_wrappers import check_plugin_for_probe_devices
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
 
-device_mappings = {}
+
+class DeviceMappings:
+    dev_mappings = {}
+    dev_sw_mappings = {}
 
 
+@check_plugin_for_probe_devices(DeviceMappings)
 def probe_devices():
     """Dynamically find all devices classes across all boardfarm projects."""
     all_boardfarm_modules = dict(boardfarm.plugins)
@@ -50,6 +55,10 @@ def probe_devices():
                 # else we skip
                 if thing.__module__ == module.__name__:
                     device_mappings[module].append(thing)
+
+
+device_mappings = DeviceMappings.dev_mappings
+device_sw_mappings = DeviceMappings.dev_sw_mappings
 
 
 def check_for_cmd_on_host(cmd, msg=None):

@@ -6,6 +6,7 @@ import warnings
 import pexpect
 from debtcollector import removals
 
+from boardfarm import plugins
 from boardfarm.exceptions import (
     BftDeprecate,
     ContOnFailError,
@@ -79,3 +80,19 @@ def run_with_lock(lock):
         return wrapper
 
     return run_with_lock_decorator
+
+
+def check_plugin_for_probe_devices(cls):
+    def wrapper(func):
+        for _, mod in plugins.find_plugins().items():
+            if getattr(mod, "override_probe_devices", False):
+                devices = getattr(mod, "devices", None)
+                if devices:
+                    new_probe_func = getattr(devices, "probe_devices", None)
+                    if new_probe_func:
+                        cls.dev_mappings = getattr(devices, "device_mappings", {})
+                        cls.dev_sw_mappings = getattr(devices, "device_sw_mappings", {})
+                        return new_probe_func
+        return func
+
+    return wrapper
