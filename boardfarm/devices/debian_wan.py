@@ -54,6 +54,10 @@ class DebianWAN(debian.DebianBox):
             self.expect(self.prompt)
             self.sendline("ifconfig %s up" % self.iface_dut)
             self.expect(self.prompt)
+            if self.static_route is not None:
+                self.send("ip route del %s; " % self.static_route.split(" via ")[0])
+                self.sendline("ip route add %s" % self.static_route)
+                self.expect(self.prompt)
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
