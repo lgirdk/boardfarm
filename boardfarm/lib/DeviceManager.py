@@ -60,6 +60,8 @@ class device_type(Enum):
     booster = 22
     softphone = 23
     mac_sniffer = 24
+    mitm = 25
+    mini_cmts = 26
 
 
 class device_array_type(Enum):
