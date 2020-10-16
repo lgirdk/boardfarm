@@ -15,7 +15,7 @@ if ! docker inspect --type=image $BF_IMG > /dev/null 2>&1 ; then
 fi
 
 random_private_mac () {
-    python - <<END
+    python3 - <<END
 import random
 
 def randomMAC():
