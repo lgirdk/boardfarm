@@ -7,6 +7,7 @@ import pexpect
 import six
 
 from boardfarm.exceptions import CodeError
+from boardfarm.lib.bft_pexpect_helper import spawn_ssh_pexpect
 from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
@@ -114,12 +115,36 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             )
         )
 
+        # In order to add a route for every delegated prefix.
+        # We'll maintain fix ip route for each host.
+        self.erouter_fixed_ip_start = kwargs.pop("erouter_fixed_ip_start", None)
+        if self.erouter_fixed_ip_start:
+            # IP syntax : <ipv6>/<prefixlen>
+            self.erouter_fixed_ip_start = ipaddress.IPv6Interface(
+                self.erouter_fixed_ip_start
+            )
+
         self.sip_fqdn = kwargs.pop(
-            "sip_fqdn", u"08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00"
+            "sip_fqdn", "08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00"
         )
-        self.time_server = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("time_server", str(self.prov_ip)))
-        )
+
+        self.configure_time_server = True
+        self.time_server = ipaddress.IPv4Address(str(self.prov_ip))
+
+        self.dhcp_snooping = kwargs.pop("dhcp_snooping", False)
+        if self.dhcp_snooping:
+            snoop_ip, snoop_port = kwargs.pop("dhcp_snooping_target").split(";")
+            self.snooper = spawn_ssh_pexpect(
+                snoop_ip, prompt=self.prompt, port=snoop_port, color="yellow"
+            )
+            self.snooper.sendline("echo 'snooper connected!!'")
+            self.snooper.expect(self.snooper.prompt)
+
+        time_server = kwargs.pop("time_server", None)
+        if time_server:
+            self.configure_time_server = False
+            self.time_server = ipaddress.IPv4Address(time_server)
+
         self.timezone = self.get_timzone_offset(
             six.text_type(kwargs.pop("timezone", "UTC"))
         )
@@ -299,11 +324,23 @@ EOF"""
 
         # the IPv6 subnet for erouter_net in json, should be large enough
         # len(erouter_net) >= no. of boards + 10
-        board_config["extra_provisioning_v6"]["erouter"]["fixed-prefix6"] = str(
-            self.erouter_net[
-                int(board_config.get_station().split("-")[-1]) % len(self.erouter_net)
-            ]
-        )
+
+        station_no = int(board_config.get_station().split("-")[-1])
+        erouter_net = str(self.erouter_net[station_no])
+        board_config["extra_provisioning_v6"]["erouter"]["fixed-prefix6"] = erouter_net
+
+        if self.erouter_fixed_ip_start:
+            erouter_fixed_ip = str(self.erouter_fixed_ip_start.ip + station_no)
+            board_config["extra_provisioning_v6"]["erouter"][
+                "fixed-address6"
+            ] = erouter_fixed_ip
+
+            # Fake DHCP snooping.
+            if self.dhcp_snooping:
+                self.snooper.sendline(
+                    f"ip -6 route add {erouter_net} via {erouter_fixed_ip}"
+                )
+                self.snooper.expect(self.snooper.prompt)
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config["extra_provisioning_v6"].items():
@@ -715,36 +752,43 @@ EOF"""
             device.sendline("ip route add %s" % device.static_route)
             device.expect(device.prompt)
 
-        for nw in [device.cm_network, device.mta_network, device.open_network]:
-            device.sendline("ip route add %s via %s" % (nw, device.prov_gateway))
-            device.expect(device.prompt)
+        if device.prov_gateway != device.prov_ip:
+            for nw in [device.cm_network, device.mta_network, device.open_network]:
+                device.sendline("ip route add %s via %s" % (nw, device.prov_gateway))
+                device.expect(device.prompt)
 
-        for nw in [device.cm_gateway_v6, device.open_gateway_v6]:
-            device.sendline(
-                "ip -6 route add %s/%s via %s dev %s"
-                % (nw, device.ipv6_prefix, device.prov_gateway_v6, device.iface_dut)
-            )
-            device.expect(device.prompt)
+        if device.prov_gateway_v6 != device.prov_ipv6:
+            for nw in [device.cm_gateway_v6, device.open_gateway_v6]:
+                device.sendline(
+                    "ip -6 route add %s/%s via %s dev %s"
+                    % (nw, device.ipv6_prefix, device.prov_gateway_v6, device.iface_dut)
+                )
+                device.expect(device.prompt)
 
-        for nw in device.erouter_net:
-            device.sendline("ip -6 route add %s via %s" % (nw, device.prov_gateway_v6))
-            device.expect(device.prompt)
+        # if fixed IP range is set, routes need to be configured based on individual host IPs.
+        if not device.erouter_fixed_ip_start:
+            for nw in device.erouter_net:
+                device.sendline(
+                    "ip -6 route add %s via %s" % (nw, device.prov_gateway_v6)
+                )
+                device.expect(device.prompt)
 
         # only start tftp server if we are a full blown wan+provisioner
         if device.wan_cmts_provisioner:
             device.start_tftp_server()
 
-        device.sendline(
-            "sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time"
-        )
-        device.expect(device.prompt)
-        device.sendline(
-            "grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a\\\\tflags\\t\\t= IPv6' -i /etc/xinetd.d/time"
-        )
-        device.expect(device.prompt)
-        device.sendline("/etc/init.d/xinetd restart")
-        device.expect("Starting internet superserver: xinetd.")
-        device.expect(device.prompt)
+        if device.configure_time_server:
+            device.sendline(
+                "sed 's/disable\\t\\t= yes/disable\\t\\t= no/g' -i /etc/xinetd.d/time"
+            )
+            device.expect(device.prompt)
+            device.sendline(
+                "grep -q flags.*=.*IPv6 /etc/xinetd.d/time || sed '/wait.*=/a\\\\tflags\\t\\t= IPv6' -i /etc/xinetd.d/time"
+            )
+            device.expect(device.prompt)
+            device.sendline("/etc/init.d/xinetd restart")
+            device.expect("Starting internet superserver: xinetd.")
+            device.expect(device.prompt)
         device.is_env_setup_done = True
 
     def print_dhcp_config(self):
