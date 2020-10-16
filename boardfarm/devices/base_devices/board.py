@@ -58,17 +58,17 @@ class BaseBoard(linux.LinuxDevice):
         for _ in self.connection_cmd:
             # create ur connect statement to the core
             # append the object to self.consoles
-            raise Exception("Not implemented!")
+            raise NotImplementedError
 
         atexit.register(self.kill_console_at_exit)
 
     def get_logfile_read(self):
         """Returns logfile_read for main core (ARM)"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_logfile_read(self, value):
         """Sets logfile_read for each core af board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     logfile_read = property(get_logfile_read, set_logfile_read)
 
@@ -76,14 +76,14 @@ class BaseBoard(linux.LinuxDevice):
         """Sets the prompt of a given console.
         This method is idempotent.
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enter_mainMenu(self):
         """Enter into main menu of system core for board.
 
         View will differ based on board type.
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _check_link(self, board, reset):
         """Verify error messages during BIOS setup phase.
@@ -91,7 +91,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: True if no error messages are found
         :rtype: bool
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wait_for_boot(self):
         """Enter boot loader menu, by interrupting boot-up of board's core.
@@ -101,7 +101,7 @@ class BaseBoard(linux.LinuxDevice):
 
         This method is called to flash new kernel images.
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_dns_server(self):
         """Get the DNS server configure on board by provisioner
@@ -110,7 +110,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: Ip of the nameserver
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _flash_linux(self, KERNEL):
         """This method will download the new kernel images using tftp and
@@ -122,7 +122,7 @@ class BaseBoard(linux.LinuxDevice):
         :Param KERNEL: Pass the kernel image which is passed via argument -k <image>
         :type KERNEL: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def flash_linux(self, KERNEL):
         "Ensure safe exit in case of flash failure"
@@ -142,7 +142,7 @@ class BaseBoard(linux.LinuxDevice):
         :Param ROOTFS: Pass the rootfs image which is passed via argument -r <image>
         :type ROOTFS: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def flash_rootfs(self, ROOTFS):
         "Ensure safe exit in case of flash failure"
@@ -162,7 +162,7 @@ class BaseBoard(linux.LinuxDevice):
         :Param ALL: Pass the combined SDK image
         :type ALL: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def flash_all(self, COMBINED):
         "Ensure safe exit in case of flash failure"
@@ -178,23 +178,23 @@ class BaseBoard(linux.LinuxDevice):
         :return: True if it is operational else False
         :rtype: Boolean
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wait_for_network(self):
         """Wait for network will wait until board's status is operational after a reboot"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wait_for_linux(self):
         """Verify if board is able to initialize prompt after bootup."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_pp(self):
         """Enable packet processing for the board."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def disable_pp(self):
         """Disable packet processing for the board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_current_cfg_name(self, mta=False):
         """Gets the name of the current board/mta config file from the board device
@@ -206,7 +206,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: config file name which is booted in the device
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def cfg_sha3(self, mta=False):
         """Get sha3sum output of config file booted on the device
@@ -216,7 +216,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: secure has algorithm of config
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def show_board_config(self):
         """Prints the current decompiled config (if present) on board console
@@ -225,7 +225,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: checks the config file and return the name of the file
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_interface_ipaddr(self, iface):
         """Intercept and handle some interface queries depending on the core of board.
@@ -233,7 +233,7 @@ class BaseBoard(linux.LinuxDevice):
         :param iface: to get the ipaddress
         :type ifcae: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_interface_ip6addr(self, iface):
         """Intercept and handle some interface queries depending on the core of board.
@@ -241,7 +241,7 @@ class BaseBoard(linux.LinuxDevice):
         :param iface: to get ipv6 address
         :type iface: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def flash_meta(
         self,
@@ -263,7 +263,7 @@ class BaseBoard(linux.LinuxDevice):
         :param check_version: True or False , defaults to False
         :param nosh_image: True or False , defaults to False
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_interface_macaddr(self, iface):
         """Get the interface mac address of an iface from arm console
@@ -273,7 +273,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: Mac address of the interface
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cm_mac_addr(self, iface="wan0"):
         """Get CM MAC Address for an iface for given interface.
@@ -283,7 +283,7 @@ class BaseBoard(linux.LinuxDevice):
         :return: Mac address of the interface
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def waiting_on_board(self):
         """Waits for the board to become functional/usable after boot-up"""
@@ -292,7 +292,7 @@ class BaseBoard(linux.LinuxDevice):
 
     def reboot_modem_os(self, s=None):
         """Reboots the OS via board console"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def upload_config_to_tftp(self, cfg_path, tftp_ip):
         """Pushes board's config file to remote TFTP server.
@@ -303,11 +303,11 @@ class BaseBoard(linux.LinuxDevice):
         :param tftp_ip: remote ip of TFTP server
         :type tftp_ip: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def setup(self, provisioner, **kwargs):
         "Generate config file, perform necessary configuration in provisioner."
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def kill_console_at_exit(self):
         """Kill board console while exiting.
@@ -316,7 +316,7 @@ class BaseBoard(linux.LinuxDevice):
         Yields:
         os.kill(pexpect_pid, signal.SIGKILL)
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def restart_tr069(self, ip_mode="ipv4", recheck_times=5):
         """Initialize TR069 component in a board
@@ -329,11 +329,11 @@ class BaseBoard(linux.LinuxDevice):
         :return: return a message Connection to ACS succeeded
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def reset(self, break_into_uboot=False):
         """Perform a soft/hard reset on board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_logs(self, flag="enable", component=None):
         """Enable or disable console logs from board main menu
@@ -344,7 +344,7 @@ class BaseBoard(linux.LinuxDevice):
         :type component: string, optional
         :raises assert: failed to enable/disable logger component
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_sip_endpoints_registration(self, lines=None):
         """To validate the Registration status of the sip endpoint(s) connected
@@ -363,7 +363,7 @@ class BaseBoard(linux.LinuxDevice):
         if lines is None:
             lines = {0: "TRUE", 1: "TRUE"}
 
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def send_sip_offhook_onhook(self, flag="offhook", tcid="0"):
         """send offhook/onhook event on sip server
@@ -373,7 +373,7 @@ class BaseBoard(linux.LinuxDevice):
         :param tcid: tcid of the number, defaults to "0"
         :type tcid: string, optional
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_media_started(self, tcid="0"):
         """To expect media started string after the device answers the call
@@ -384,11 +384,11 @@ class BaseBoard(linux.LinuxDevice):
         :return: output of the answer function
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enter_voice_menu(self):
         """To enter voice menu of board."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def capture_stopping_signal(self, signal_num="30", dial_flag=False):
         """This function could be called along with offhook or with dial function
@@ -398,7 +398,7 @@ class BaseBoard(linux.LinuxDevice):
         :param dial_flag: True or False, defaults to False
         :type dial_flag: boolean
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ifaces_ip_dict(self, ifaces=None):
         """To return the dict of ipaddress of interfaces.
@@ -408,7 +408,7 @@ class BaseBoard(linux.LinuxDevice):
         return: dictionary containing the ip details.
         rtype: dictionary
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def print_info(self, c):
         """Runs a a series of diagnostic commands on the given core.
@@ -418,11 +418,11 @@ class BaseBoard(linux.LinuxDevice):
         :param c: the console to run the commands on (Atom or Arm)
         :type c: console object
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_status(self):
         """Checks status on all cores of a board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_iface_exists(self, iface):
         """Verify if an interface exist on requested core of board.
@@ -432,11 +432,11 @@ class BaseBoard(linux.LinuxDevice):
         :return: True or False
         :rtype: bool
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def close(self, *args, **kwargs):
         """Close console connections of a board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_time_display(self, flag="1"):
         """Enable or disable from board's main menu.
@@ -444,7 +444,7 @@ class BaseBoard(linux.LinuxDevice):
         :param flag: "1"(enable) or "0"(disable); defaults to 1(enable)
         :type flag: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_seconds_uptime(self):
         """Provide uptime value of a board
@@ -452,11 +452,11 @@ class BaseBoard(linux.LinuxDevice):
         :return: string version of datetime
         :rtype: str
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def reset_defaults_via_console(self):
         """Factory Reset Board"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def unlock_bootloader(self):
         """Simple function to unlock the bootloader of a board
@@ -464,32 +464,32 @@ class BaseBoard(linux.LinuxDevice):
             - the mirror server is racheable by the board
             - the board is online
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_file(self, fname, lan_ip=""):
         """Download the file via a webproxy from webserver.
 
         E.g. A device on the board's LAN
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def tftp_get_file(self, host, filename, timeout=30):
         """Download file from tftp server."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def prepare_file(
         self, fname, tserver=None, tusername=None, tpassword=None, tport=None
     ):
         """Copy file to tftp server, so that it it available to tftp or
         to the board itself."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def network_restart(self):
         """Restart networking.
 
         Equivalent to ``/etc/init.d/networking restart``
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def firewall_restart(self):
         """Restart the firewall. Return how long it took.
@@ -499,23 +499,23 @@ class BaseBoard(linux.LinuxDevice):
         :return: time taken to restart firewall
         :rtype: str(datetime.datetime)
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_wan_iface(self):
         """Return name of WAN interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def config_wan_proto(self, proto):
         """Set protocol for WAN interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_mgmt_gui(self):
         """Allow access to webgui from devices on WAN interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_ssh(self):
         """Allow ssh on wan interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_pp_dev(self):
         """Return packet processing core of the board
@@ -523,18 +523,18 @@ class BaseBoard(linux.LinuxDevice):
         :return: instance of PP core
         :rtype: object
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def collect_stats(self, stats=None):
         """Collect board stats for multiple functionalities to monitor"""
         if stats is None:
             stats = []
 
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def parse_stats(self, dict_to_log=None):
         """Parse collected stats of board for logging."""
         if dict_to_log is None:
             dict_to_log = {}
 
-        raise Exception("Not implemented!")
+        raise NotImplementedError

@@ -50,22 +50,22 @@ class TrafficGenerator(base.BaseDevice):
         :return: True or False
         :rtype: bool
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def touch(self):
         # No need to keep the console alive
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def close(self):
         """Close connection to traffic generator"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def reset(self, **kwargs):
         """Reset settings done to client or server ports.
 
         Can also be done via a power reset.
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def __str__(self):
         return """
@@ -98,7 +98,7 @@ class TrafficGenerator(base.BaseDevice):
         :return: Dictionary of configuratios for TG
         :rtype: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def update_project(self, project):
         """Apply settings of a project to the traffic generator.
@@ -110,8 +110,8 @@ class TrafficGenerator(base.BaseDevice):
         for _conf, _value in config.items():
             # decide to add server_port / client_port / wifi_port
             # e.g.
-            raise Exception("Not implemented!")
-        raise Exception("Not implemented!")
+            raise NotImplementedError
+        raise NotImplementedError
 
     def add_server_port(self, address, port, interface, protocol):
         """Initialize a server port.
@@ -125,11 +125,11 @@ class TrafficGenerator(base.BaseDevice):
         :param protocol: TCP or UDP
         :type protocol: str
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def remove_server_port(self, port):
         """"Reset server port"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_client_port(self, address, port, interface, protocol):
         """Initialize a client port.
@@ -143,11 +143,11 @@ class TrafficGenerator(base.BaseDevice):
         :param protocol: TCP or UDP
         :type protocol: str
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def remove_client_port(self, port):
         """Reset client port"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_wifi_port(self, address, port, interface, ssid, protocol):
         """Initialize a Wi-Fi client port.
@@ -163,11 +163,11 @@ class TrafficGenerator(base.BaseDevice):
         :param protocol: TCP or UDP
         :type protocol: str
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def remove_wifi_port(self, port):
         """reset WIFI port"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def run_traffic_gen(self, flow_direction="down"):
         """Initiate traffic flow based on direction provided as arg.
@@ -180,11 +180,11 @@ class TrafficGenerator(base.BaseDevice):
         :param flow_direction: Upstream or Downstream
         :type flow_direction: str
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def run_status(self, *args, **kwargs):
         """Fetch execution details created by run_traffic_gen"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_results(self):
         """Fetch execution results.
@@ -192,12 +192,12 @@ class TrafficGenerator(base.BaseDevice):
         Fetch execution status, and verify if result is generated.
         Throw an exception in case result is not generated.
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     @staticmethod
     def get_flow_details(results, protocol, flow_direction="down"):
         """Parse results for verification of tests."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
 
 class TrafficGeneratorPort(object):
@@ -213,7 +213,7 @@ class TrafficGeneratorPort(object):
 
     def check_status(self):
         """Ensure if port is configurared, ARP is resolved and pingable"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def __str__(self):
         return 'Port "{}" ({}@{})'.format(self.port_name, self.interface, self.address)

@@ -46,7 +46,7 @@ class BaseACS(base.BaseDevice):
 
     def connect(self):
         """Based on kwargs perform a establish a connection with ACS server"""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def __str__(self):
         """Format the string representation of self object (instance).
@@ -65,7 +65,7 @@ class BaseACS(base.BaseDevice):
         :param d: data returned from executing an RPC on ACS
         :type d: str / list / dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     @staticmethod
     def _parse_xml_response(data_values):
@@ -76,7 +76,7 @@ class BaseACS(base.BaseDevice):
         :param data_values: data returned from executing an RPC on ACS
         :type data_values: str / list / dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     @staticmethod
     def _get_xml_key(resp, k="text"):
@@ -91,7 +91,7 @@ class BaseACS(base.BaseDevice):
         :return: values for particular element
         :rtype: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     @staticmethod
     def _parse_soap_response(response):
@@ -106,7 +106,7 @@ class BaseACS(base.BaseDevice):
         :return: data
         :rtype: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _get_cmd_data(self, *args, **kwagrs):
         """Helper method to generate TR069 query.
@@ -114,7 +114,7 @@ class BaseACS(base.BaseDevice):
         Fetch the CommandOptionsTypeStruct from WSDL of ACS
         i.e. ``ns0:CommandOptionsTypeStruct``
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _get_class_data(self, *args, **kwagrs):
         """Helper method to generate TR069 query.
@@ -122,14 +122,14 @@ class BaseACS(base.BaseDevice):
         Fetch the CPEIdentifierClassStruct from WSDL of ACS
         i.e. ``ns0:CPEIdentifierClassStruct``
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _get_pars_val_data(self, p_arr_type, *args, **kwargs):
         """Helper method to generate TR069 query.
 
         Restructure values to be queried based on p_arr_type from WSDL of ACS
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
@@ -147,11 +147,11 @@ class BaseACS(base.BaseDevice):
         :raises: NA
         :returns: param_data, cmd_data, cpeid_data
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def close(self):
         """Implementation to close ACS connection."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def GPA(self, param):
         """Get parameter attribute on ACS for the parameter specified.
@@ -164,7 +164,7 @@ class BaseACS(base.BaseDevice):
         :returns: dictionary with keys Name, AccessList, Notification indicating the GPA
         :rtype: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def SPA(self, param, **kwargs):
         """Get parameter attribute on ACS for the parameter specified.
@@ -179,7 +179,7 @@ class BaseACS(base.BaseDevice):
         :returns: SPA response
         :rtype: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def AddObject(self, param):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
@@ -190,7 +190,7 @@ class BaseACS(base.BaseDevice):
         :returns: list of dictionary with key, value, type indicating the AddObject
         :rtype: dictionary
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def DelObject(self, param):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
@@ -200,7 +200,7 @@ class BaseACS(base.BaseDevice):
         :returns: list of dictionary with key, value, type indicating the DelObject
         :rtype: string
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def GPV(self, param):
         """Get value from CM by ACS for a single given parameter key path synchronously.
@@ -208,7 +208,7 @@ class BaseACS(base.BaseDevice):
         :param param: path to the key that assigned value will be retrieved
         :return: value as a dictionary
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def SPV(self, param_value):
         """Modify the value of one or more CPE Parameters.
@@ -219,7 +219,7 @@ class BaseACS(base.BaseDevice):
         :return: status of the SPV as int (0/1)
         :raises: TR069ResponseError if the status is not (0/1)
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def GPN(self, param, next_level):
         """This method is used to  discover the Parameters accessible on a particular CPE
@@ -230,7 +230,7 @@ class BaseACS(base.BaseDevice):
         :type next_level: boolean
         :return: value as a dictionary
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def FactoryReset(self):
         """Execute FactoryReset RPC.
@@ -241,7 +241,7 @@ class BaseACS(base.BaseDevice):
 
         :return: returns factory reset response
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def connectivity_check(self, cpeid):
         """Check the connectivity between the ACS and the DUT by\
@@ -255,7 +255,7 @@ class BaseACS(base.BaseDevice):
 
         :return: True for a successful ScheduleInform, False otherwise
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def ScheduleInform(self, CommandKey="Test", DelaySeconds=20):
         """Execute ScheduleInform RPC
@@ -267,7 +267,7 @@ class BaseACS(base.BaseDevice):
 
         :return: returns ScheduleInform response
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def Reboot(self, CommandKey="Reboot Test"):
         """Execute Reboot.
@@ -276,11 +276,11 @@ class BaseACS(base.BaseDevice):
 
         :return: returns reboot RPC response
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def GetRPCMethods(self):
         """Execute GetRPCMethods RPC.
 
         :return: returns GetRPCMethods response of supported functions
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError

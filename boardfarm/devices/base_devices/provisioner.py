@@ -32,30 +32,30 @@ class Provisioner(debian.DebianBox):
 
     def setup_dhcp6_config(self, board_config):
         """Set up DHCP 6 Config."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def setup_dhcp_config(self, board_config):
         """Set up DHCP Config."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_timzone_offset(self, timezone):
         """Get time zone offset."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def update_cmts_isc_dhcp_config(self, board_config):
         """Update cmts isc DHCP config."""
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     @staticmethod
     def setup_dhcp_env(device):
         """Yet to define the function. Throws exception for now."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def print_dhcp_config(self):
         """Print DHCP config."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def provision_board(self, board_config):
         """Reprovisions current board with new board cfg.
@@ -66,28 +66,28 @@ class Provisioner(debian.DebianBox):
         :param board_config: board configurations
         :type board_config: dict
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ipv4_time_server(self):
         """Return ipv4 time server."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_aftr_name(self):
         """Return after name."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def start_tftp_server(self):
         """Yet to be implemented. Throws exception for now."""
         self.install_pkgs()
         if self.shared_tftp_server:
             # perform the rest
-            raise Exception("Not implemented!")
-        raise Exception("Not implemented!")
+            raise NotImplementedError
+        raise NotImplementedError
 
     # mode can be "ipv4" or "ipv6"
     def restart_tftp_server(self, mode=None):
         """To apply configuration changes made to TFTP server."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def copy_file_to_server(file_path):
         """Copy a config file to remote/local server.
@@ -98,4 +98,4 @@ class Provisioner(debian.DebianBox):
             - use gunzip approach to write file in remote. use parent method of linux.
               ``super().copy_file_to_server(file_path)``
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError

@@ -48,14 +48,14 @@ class BaseCmts(base.BaseDevice):
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def logout(self):
         """Logout of the CMTS device.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_online(self, cmmac=None):
         """Check the board status from CMTS.
@@ -66,7 +66,7 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def is_online(self, cmmac=None, encrypted=True):
         """Check if board is online on CMTS.
@@ -80,7 +80,7 @@ class BaseCmts(base.BaseDevice):
         :type encrypted: bool
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cmip(self, cmmac):
         """Get the IP of the board from CMTS.
@@ -89,7 +89,7 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cmipv6(self, cmmac):
         """Get IPv6 address of the board from CMTS.
@@ -98,7 +98,7 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_mtaip(self, cmmac, mtamac):
         """Get the MTA IP from CMTS.
@@ -109,7 +109,7 @@ class BaseCmts(base.BaseDevice):
         :type mtamac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cm_bundle(self, mac_domain):
         """
@@ -121,7 +121,7 @@ class BaseCmts(base.BaseDevice):
         :type mac_domain: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cm_mac_domain(self, cm_mac):
         """Get the Mac-domain ID of board.
@@ -130,7 +130,7 @@ class BaseCmts(base.BaseDevice):
         :type cm_mac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cmts_ip_bundle(self, cm_mac, gw_ip=None):
         """Get subnet details of IP bundle of a MAC domain.
@@ -143,7 +143,7 @@ class BaseCmts(base.BaseDevice):
         :type gw_ip: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cmts_model(self):
         """Get CMTS model.
@@ -161,7 +161,7 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def clear_cm_reset(self, cmmac):
         """Reset the board from CMTS using cli.
@@ -170,14 +170,14 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def save_running_to_startup_config(self):
         """Save the running config to startup.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def save_running_config_to_local(self, filename):
         """Copy running config to local machine.
@@ -186,21 +186,21 @@ class BaseCmts(base.BaseDevice):
         :type filename: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_qam_module(self):
         """Get the module of the qam.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ups_module(self):
         """Get the upstream module of the qam.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_iface_ipaddr(self, iface, ipaddr):
         """Set an IPv4 address on a CMTS interface.
@@ -211,7 +211,7 @@ class BaseCmts(base.BaseDevice):
         :type ipaddr: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_iface_ipv6addr(self, iface, ipaddr):
         """Set an IPv6 address on a CMTS interface.
@@ -222,7 +222,7 @@ class BaseCmts(base.BaseDevice):
         :type ipaddr: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def unset_iface_ipaddr(self, iface):
         """Unset an IPv4 address of an interface on CMTS.
@@ -231,7 +231,7 @@ class BaseCmts(base.BaseDevice):
         :type iface: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def unset_iface_ipv6addr(self, iface):
         """Unset an IPv6 address of an interface on CMTS.
@@ -240,7 +240,7 @@ class BaseCmts(base.BaseDevice):
         :type iface: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def del_file(self, f):
         """Delete file on CMTS.
@@ -249,7 +249,7 @@ class BaseCmts(base.BaseDevice):
         :type f: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_docsis_mac_ip_provisioning_mode(self, index):
         """Get the provisioning mode of the board from CMTS.
@@ -258,14 +258,14 @@ class BaseCmts(base.BaseDevice):
         :type index: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wait_for_ready(self):
         """Check the CMTS status.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def modify_docsis_mac_ip_provisioning_mode(self, index, ip_pvmode="dual-stack"):
         """Change the IP provisioning mode.
@@ -276,7 +276,7 @@ class BaseCmts(base.BaseDevice):
         :type ip_pvmode: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ertr_ipv4(self, mac, offset=2):
         """Get erouter ipv4 from CMTS.
@@ -286,7 +286,7 @@ class BaseCmts(base.BaseDevice):
         :param offset: ignored based on model
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ertr_ipv6(self, mac, offset=2):
         """Get erouter ipv6 from CMTS.
@@ -296,7 +296,7 @@ class BaseCmts(base.BaseDevice):
         :param offset: ignored based on model
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_center_freq(self, mac_domain=None):
         """Return the center frequency of CMTS.
@@ -305,7 +305,7 @@ class BaseCmts(base.BaseDevice):
         :type mac_domain: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def check_PartialService(self, cmmac):
         """Check the board is in partial service.
@@ -314,7 +314,7 @@ class BaseCmts(base.BaseDevice):
         :type cmmac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def DUT_chnl_lock(self, cm_mac):
         """Check the board channel locks based on CMTS type.
@@ -323,7 +323,7 @@ class BaseCmts(base.BaseDevice):
         :type cm_mac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_route(self, ipaddr, gw):
         """Add route in CMTS.
@@ -334,7 +334,7 @@ class BaseCmts(base.BaseDevice):
         :type gw: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_route6(self, net, gw):
         """Add route6 in CMTS.
@@ -345,7 +345,7 @@ class BaseCmts(base.BaseDevice):
         :type gw: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def del_route(self, ipaddr, gw):
         """Delete a route in CMTS.
@@ -356,7 +356,7 @@ class BaseCmts(base.BaseDevice):
         :type gw: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def del_route6(self, net, gw):
         """Delete a ipv6 route in CMTS.
@@ -367,7 +367,7 @@ class BaseCmts(base.BaseDevice):
         :type gw: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_ip_bundle(self, index, helper_ip, ipaddr, secondary_ips=None):
         """Add ip bundle to a cable mac.
@@ -385,7 +385,7 @@ class BaseCmts(base.BaseDevice):
         if secondary_ips is None:
             secondary_ips = []
 
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_ipv6_bundle_addrs(self, index, helper_ip, ip, secondary_ips=None):
         """Add ipv6 bundle to a cable mac.
@@ -403,7 +403,7 @@ class BaseCmts(base.BaseDevice):
         if secondary_ips is None:
             secondary_ips = []
 
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_iface_qam(self, index, sub, annex, interleave, power):
         """Configure the qam interface with annex, interleave and power.
@@ -420,7 +420,7 @@ class BaseCmts(base.BaseDevice):
         :type power: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_iface_qam_freq(self, index, sub, channel, freq):
         """Configure the qam interface with channel and frequency.
@@ -435,7 +435,7 @@ class BaseCmts(base.BaseDevice):
         :type freq: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_iface_qam_freq(self, cm_mac):
         """Get the qam interface with channel and frequency.
@@ -454,7 +454,7 @@ class BaseCmts(base.BaseDevice):
         :rtype: dict
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_iface_upstream(self, ups_idx, ups_ch, freq, width, power):
         """Configure the interface for upstream.
@@ -471,14 +471,14 @@ class BaseCmts(base.BaseDevice):
         :type power: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def reset(self):
         """Delete the startup config and Reboot the CMTS.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def is_cm_bridged(self, mac, offset=2):
         """Check if the modem is in bridge mode.
@@ -487,7 +487,7 @@ class BaseCmts(base.BaseDevice):
         :param offset: ignored based on model
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ip_from_regexp(self, cmmac, ip_regexpr):
         """Get an ip address according to a regexpr.
@@ -498,7 +498,7 @@ class BaseCmts(base.BaseDevice):
         :type ip_regexpr: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_service_class(
         self, index, name, max_rate, max_burst, max_tr_burst=None, downstream=False
@@ -519,7 +519,7 @@ class BaseCmts(base.BaseDevice):
         :type downstream: boolean
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_iface_docsis_mac(
         self,
@@ -552,14 +552,14 @@ class BaseCmts(base.BaseDevice):
         :type prov_mode: string, optional
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cmts_type(self):
         """Get the product type on CMTS.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def add_service_group(
         self, index, qam_idx, qam_sub, qam_channels, ups_idx, ups_channels
@@ -580,7 +580,7 @@ class BaseCmts(base.BaseDevice):
         :type ups_channels: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def mirror_traffic(self, macaddr=""):
         """Send the mirror traffic.
@@ -589,14 +589,14 @@ class BaseCmts(base.BaseDevice):
         :type macaddr: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def unmirror_traffic(self):
         """Stop mirroring the traffic.
 
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def run_tcpdump(self, time, iface="any", opts=""):
         """Tcpdump capture on the cmts interface.
@@ -609,7 +609,7 @@ class BaseCmts(base.BaseDevice):
         :type opts: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_qos_parameter(self, cm_mac):
         """Get the QoS related parameters of the board.
@@ -625,7 +625,7 @@ class BaseCmts(base.BaseDevice):
         :type cm_mac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_cm_mac_cmts_format(self, mac):
         """Convert mac address to the format that to be used on CMTS.
@@ -649,7 +649,7 @@ class BaseCmts(base.BaseDevice):
         :type cm_mac: string
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_downstream_qam(self, get_downstream_qam):
         """Set downstream modulation type(64qam, 256qam...).
@@ -658,7 +658,7 @@ class BaseCmts(base.BaseDevice):
         :type get_downstream_qam: dict
         :raises Exception: Not implemented
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def ping(self, ping_ip, ping_count=3, timeout=10):
         """Ping the device from CMTS.
@@ -671,4 +671,4 @@ class BaseCmts(base.BaseDevice):
         :type timeout: integer
         :return: True if ping passed else False
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
