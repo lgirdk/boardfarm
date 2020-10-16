@@ -90,7 +90,7 @@ def kill_process(device, process="tcpdump", pid=None, sync=True):
     return device.before
 
 
-def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30):
+def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30, rm_pcap=True):
     """Read the tcpdump packets and deletes the capture file after read
 
     :param device: lan or wan
@@ -103,6 +103,8 @@ def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30):
     :type opts: String, Optional
     :param timeout: timeout after executing the tcpdump read; default 30 seconds
     :type timeout: int
+    :param rm_pcap: Argument determining if the pcap file needs to be removed.
+    :type rm_pcap: Boolean default to True
     :return: Output of tcpdump read command.
     :rtype: string
     """
@@ -111,8 +113,9 @@ def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30):
     device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
     device.expect(device.prompt, timeout=timeout)
     output = device.before
-    device.sudo_sendline("rm %s" % (capture_file))
-    device.expect(device.prompt)
+    if rm_pcap:
+        device.sudo_sendline("rm %s" % (capture_file))
+        device.expect(device.prompt)
     return output
 
 
@@ -168,7 +171,7 @@ def sip_read(device, capture_file, rm_pcap_file=True):
     return output_sip
 
 
-def rtp_read_verify(device, capture_file, msg_list=None):
+def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
     """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
     Real-time Transport Protocol is for delivering audio and video over IP networks.
 
@@ -213,10 +216,11 @@ def rtp_read_verify(device, capture_file, msg_list=None):
                 )
                 device.expect_prompt()
                 result_list.append(False)
-    device.sudo_sendline("rm rtp.txt")
-    device.expect_prompt()
-    device.sudo_sendline("rm %s" % capture_file)
-    device.expect_prompt()
+    if rm_pcap:
+        device.sudo_sendline("rm rtp.txt")
+        device.expect_prompt()
+        device.sudo_sendline("rm %s" % capture_file)
+        device.expect_prompt()
     return all(result_list)
 
 
@@ -292,6 +296,7 @@ def check_mta_media_attribute(
     src_ip=None,
     dst_ip=None,
     timeout=30,
+    **kwargs,
 ):
     """This function used to parse and verify the invite message media attribute
     :param capture_file: Filename where the packets captured in sipserver
@@ -313,6 +318,11 @@ def check_mta_media_attribute(
     :type return: Dictionary
     """
 
+    msg_type = kwargs.pop("msg_type", "INVITE")
+    verify_IN4 = kwargs.pop("verify_IN4", False)
+    IN4_ip = kwargs.pop("IN4_ip", "0.0.0.0")
+    rm_pcap = kwargs.pop("rm_pcap", True)
+
     result = {}
 
     if src_ip and dst_ip:
@@ -327,16 +337,33 @@ def check_mta_media_attribute(
         protocol_attribute = "-vvv 'port {}'".format(port)
 
     output = tcpdump_read(
-        device, capture_file, protocol=protocol_attribute, timeout=timeout
+        device,
+        capture_file,
+        protocol=protocol_attribute,
+        timeout=timeout,
+        rm_pcap=rm_pcap,
     )
     out_rep = output.replace("\r\n", "").replace("\t", "")
     packets = re.compile(r"\d\d:\d\d:\d\d").split(out_rep)
 
     for packet in packets:
-        regex_pattern = (
-            r".*INVITE (sip:{}@.*)\sSIP.*CSeq:"
-            r"\s(\d*)\sINVITE.*a=({}).*".format(sip_no, media_attr)
-        )
+        if msg_type == "INVITE":
+            if verify_IN4:
+                regex_pattern = (
+                    r".*INVITE (sip:{}@.*)\sSIP.*CSeq:"
+                    r"\s(\d*)\sINVITE.*c=IN\sIP4\s({}).*a=({}).*".format(
+                        sip_no, IN4_ip, media_attr
+                    )
+                )
+            else:
+                regex_pattern = (
+                    r".*INVITE (sip:{}@.*)\sSIP.*CSeq:"
+                    r"\s(\d*)\sINVITE.*a=({}).*".format(sip_no, media_attr)
+                )
+        elif msg_type == "response":
+            regex_pattern = r".*SIP.*200\sOK.*Contact:\s<sip:{}@.*a=({})".format(
+                sip_no, media_attr
+            )
         match = re.search(regex_pattern, packet)
         if match:
             result["status"] = True
