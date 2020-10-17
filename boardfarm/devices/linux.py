@@ -278,7 +278,7 @@ class LinuxDevice(base.BaseDevice):
             return True
         else:
             match = re.search(
-                "%s packets transmitted, %s received, 0%% packet loss"
+                "%s packets transmitted, %s [packets ]*received, 0%% packet loss"
                 % (ping_count, ping_count),
                 self.before,
             )
