@@ -125,7 +125,8 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             )
 
         self.sip_fqdn = kwargs.pop(
-            "sip_fqdn", "08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00"
+            "sip_fqdn",
+            "09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
         )
 
         self.configure_time_server = True
@@ -614,9 +615,9 @@ EOF"""
                 "options": {
                     "bootfile-name": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
                     "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
-                    "domain-name": '"sipcenter.com"',
+                    "domain-name": '"sipcenter.boardfarm.com"',
                     "domain-name-servers": "%s" % sip_server,
-                    "docsis-mta.provision-server": "0 08:54:43:4F:4D:4C:41:42:53:03:43:4F:4D:00",
+                    "docsis-mta.provision-server": "00 09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
                     "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
                     "routers": self.mta_gateway,
                     "log-servers": self.prov_ip,
