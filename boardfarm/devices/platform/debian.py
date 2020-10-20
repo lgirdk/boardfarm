@@ -530,6 +530,18 @@ class DebianBox(linux.LinuxDevice):
         self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
         self.expect(self.prompt)
 
+    def modify_dns_hosts(self, dns_entry=None):
+        self.hosts = getattr(self, "hosts", defaultdict(list))
+
+        if dns_entry and not self.hosts:
+            self.hosts.update(dns_entry)
+            self.sendline("cat > /etc/dnsmasq.hosts << EOF")
+            for host, ips in self.hosts.items():
+                for ip in set(ips):
+                    self.sendline(ip + " " + host)
+            self.check_output("EOF")
+            self.restart_dns_server()
+
     def add_hosts(self, addn_host=None, config=None):
         # to add extra hosts(dict) to dnsmasq.hosts if dns has to run in wan container
         # this is a hack, the add_host should have been called from RootFs
