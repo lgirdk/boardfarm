@@ -307,6 +307,12 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                         "Notification": data["value"]["Notification"]["text"],
                     }
                 )
+            # added a warning to skip unsupported parameters
+            elif re.search(
+                r"Device\.IP\.Diagnostics\.DownloadDiagnostics\..*Time",
+                data["key"]["text"],
+            ):
+                data_list.append({"Warning": "Param unsupported"})
             else:
                 v = data["value"].get("text", "")
                 if v == "":
