@@ -33,7 +33,7 @@ from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 
 from . import base_acs
 
-warnings.simplefilter("always")
+warnings.simplefilter("always", UserWarning)
 
 logger = logging.getLogger("zeep.transports")
 
@@ -69,6 +69,11 @@ class Intercept(object):
             def newfunc(*args, **kwargs):
                 count = 2  # retries on 507 HTTPerror, even if ssh conn is not available
                 if d_flag:
+                    arg = [x for x in args]
+                    if arg[0] in self.dev.board.unsupported_objects:
+                        warnings.warn("Unsupported parameter")
+                        print("Warning!!! Unsupported parameter")
+                        return
                     stack = inspect.stack()
                     build_number = os.getenv("BUILD_NUMBER", "")
                     job_name = os.getenv("JOB_NAME", "")
