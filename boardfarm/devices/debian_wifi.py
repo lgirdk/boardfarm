@@ -70,6 +70,23 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         self.sudo_sendline("iwconfig wlan0 channel {}".format(channel))
         self.expect(self.prompt)
 
+    def wifi_support_channel(self, wifi_frequency):
+        """list of wifi client support channel.
+
+        :param wifi_mode: wifi frequency ['2' or '5']
+        :type wifi_mode: string
+        :return: list of channel in wifi mode
+        :rtype: list
+        """
+        self.sudo_sendline("iwlist %s channel" % (self.iface_wifi))
+        self.expect(self.prompt)
+        channel_list = []
+        for line in self.before.split("\r\n"):
+            match = re.search(r"Channel\ \d+\ \:\ %s.\d+\ GHz" % (wifi_frequency), line)
+            if match:
+                channel_list.append(match.group().split(" ")[1])
+        return channel_list
+
     def wifi_scan(self):
         """Scan the SSID associated with the wifi interface.
 
