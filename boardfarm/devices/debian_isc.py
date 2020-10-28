@@ -695,15 +695,17 @@ EOF"""
 /var/log/dhcp/*.log
 {
         rotate 4
-        daily
+        weekly
         missingok
         notifempty
         compress
-        delaycompress
+        create 0644 root
         sharedscripts
 }
 EOF"""
         )
+        self.expect(self.prompt)
+        self.sendline("/etc/init.d/cron restart")
         self.expect(self.prompt)
 
     # this needs to be cleaned up a bit. Other devices should use this method to configure a dhcp server.
