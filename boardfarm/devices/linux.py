@@ -223,6 +223,22 @@ class LinuxDevice(base.BaseDevice):
         else:
             return False
 
+    def kill_dhclient(self, ipv6=False):
+        """To kill dhclient process
+
+        param ipv6: True/False; defaults to false
+        type ipv6: boolean
+        """
+        var = "6" if ipv6 else ""
+        self.sendline("kill $(</run/dhclient%s.pid)" % var)
+        self.expect(self.prompt)
+
+        self.sendline("ps aux")
+        if self.expect(["dhclient"] + self.prompt) == 0:
+            print("WARN: dhclient still running, something started rogue client!")
+            self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+            self.expect(self.prompt)
+
     def set_password(self, password):
         """Set password using passwd command."""
         self.sendline("passwd")
