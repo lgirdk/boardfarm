@@ -32,11 +32,10 @@ class DnsParser(object):
                 self.dns_dict_obj["domain_name"] = re.search(
                     r"(?:[\da-z\.-]+)\.(\w+)", i
                 ).group(0)
-                ips = [
-                    re.search(k, i).group(0)
-                    for k in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]
-                    if re.search(k, i)
-                ]
+                ips = []
+                for value in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]:
+                    for match in re.finditer(value, i):
+                        ips.append(match.group(0))
                 self.dns_dict_obj["domain_ip_addr"] = ips
             elif "AAAA" in i:
                 self.dns_dict_obj["domain_name"] = re.search(
