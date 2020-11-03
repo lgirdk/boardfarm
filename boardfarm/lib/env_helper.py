@@ -133,6 +133,17 @@ class EnvHelper(object):
                 out[k] = v
         return out
 
+    def get_flash_strategy(self):
+        """Get software flash strategy."""
+        sw = self.env["environment_def"]["board"].get("software", {})
+        out = {}
+        for k, v in sw.items():
+            if k == "dependent_software":
+                continue
+            if k == "flash_strategy":
+                out[k] = f"{v}"
+        return out
+
     def env_check(self, test_environment):
         """Test environment check.
 

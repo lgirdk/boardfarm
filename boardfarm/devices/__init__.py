@@ -5,9 +5,9 @@ import importlib
 import inspect
 import os
 import pkgutil
+import re
 import sys
 import traceback
-import types  # noqa: F401
 
 import pexpect
 import termcolor
@@ -248,7 +248,6 @@ def board_decider(model, **kwargs):
 and works exactly the same way (e.g. kermit -J <ipaddr> [<port>])\n\
 You are seeing this message as your configuration is now using kermit instead of telnet.",
             )
-
     dynamic_dev = get_device(model, **kwargs)
     if dynamic_dev is not None:
         return dynamic_dev
@@ -273,3 +272,14 @@ You are seeing this message as your configuration is now using kermit instead of
         print("No BFT_CONFIG is set, do you need one?")
 
     return openwrt_router.OpenWrtRouter(model, **kwargs)
+
+
+def get_device_mapping_class(sw: str):
+    for k, v in device_sw_mappings.items():
+        if type(v) is not list:
+            v = [v]
+        for _p in v:
+            pattern = re.compile(_p)
+            if re.match(pattern, sw):
+                return k
+    return None
