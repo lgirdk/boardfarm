@@ -484,7 +484,10 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         elif action in ["AO", "DO"]:
             p_arr_type = "ns0:AddDelObjectArgumentsStruct"
-            ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, param, "")
+            param_key = kwargs.get("param_key", "")
+            ParValsParsClassArray_data = self._get_pars_val_data(
+                p_arr_type, param, param_key
+            )
 
         elif action == "REBOOT":
             p_arr_type = "xsd:string"
@@ -837,18 +840,21 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """
         return {i["key"]: i["value"] for i in self.AddObject(param)}
 
-    def AddObject(self, param):
+    def AddObject(self, param, **kwargs):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
         :param param: parameter to be used to add
         :type param: string
+        :param kwargs : param_key
         :raises assertion: On failure
         :returns: list of dictionary with key, value, type indicating the AddObject
         :rtype: dictionary
         """
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="AO")
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param, action="AO", **kwargs
+        )
 
         # get raw soap response
         with self.client.settings(raw_response=True):
@@ -869,17 +875,20 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """
         return str(self.DelObject(param)[0]["value"])
 
-    def DelObject(self, param):
+    def DelObject(self, param, **kwargs):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
         :param param: parameter to be used to delete
         :type param: string
+        :param kwargs : param_key
         :returns: list of dictionary with key, value, type indicating the DelObject
         :rtype: string
         """
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="DO")
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param, action="DO", **kwargs
+        )
 
         # get raw soap response
         with self.client.settings(raw_response=True):
