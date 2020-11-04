@@ -120,7 +120,12 @@ def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30, rm_pcap
 
 
 def tshark_read(
-    device, capture_file, packet_details=False, filter_str=None, timeout=30
+    device,
+    capture_file,
+    packet_details=False,
+    filter_str=None,
+    timeout=60,
+    rm_file=True,
 ):
     """Read the packets via tshark
 
@@ -134,6 +139,8 @@ def tshark_read(
     :type filter_str: String
     :param timeout: timeout after executing the read command; default is 30 seconds
     :type timeout: int
+    :param rm_file: Flag to remove capture file
+    :type rm_file: bool
     """
     command_string = "tshark -r {} ".format(capture_file)
     if packet_details:
@@ -144,8 +151,9 @@ def tshark_read(
     device.sendline(command_string)
     device.expect(device.prompt, timeout=timeout)
     output = device.before
-    device.sudo_sendline("rm %s" % (capture_file))
-    device.expect(device.prompt)
+    if rm_file:
+        device.sudo_sendline("rm %s" % (capture_file))
+        device.expect(device.prompt)
     return output
 
 
@@ -605,3 +613,72 @@ def verify_sip_status(device, capture_file, msg_list, rm_pcap=True):
         else:
             result_list.append(False)
     return all(result_list)
+
+
+def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=False):
+    """Function to check the RTP flow based on SIP/SDP Invite for given src and dst IP's
+    and return bool based on validation
+    Examples:
+    -To validate RTP flow between userA and userB
+    for src, dst, file in zip(["userA_ip", "sipcenter_ip"], ["sipcenter_ip", "userB_ip"], [False, True])
+        rtp_flow_check(self.dev.sipcenter, "test.pcap", src, dst, rm_file)
+    -To validate no RTP flow between userA and userB
+    for src, dst, file in zip(["userA_ip", "sipcenter_ip"], ["sipcenter_ip", "userB_ip"], [False, True])
+        rtp_flow_check(self.dev.sipcenter, "test.pcap", src, dst, rm_file, negate=True)
+    :param device: sipcenter where traces are collected
+    :type device: object
+    :param capture_file: pcap filename
+    :type capture_file: str
+    :param src_ip: src_ip of sip invite/rtp
+    :type src_ip: str
+    :param dst_ip: dst_ip of sip invite/rtp
+    :type dst_ip: str
+    :param rm_file: Flag if same pcap is required for further verification
+    :type rm_file: bool
+    :param negate: To validate negative cases like no RTP flow
+    :type negate: bool
+    :return: Return bool based on validation
+    :rtype: bool
+    """
+    sip_pcap = tshark_read(
+        device, capture_file, filter_str="sip.Method == 'INVITE'", rm_file=False
+    )
+    split_sip_pcap = sip_pcap.splitlines()
+    invite = []
+    for sip_trace in split_sip_pcap:
+        if re.search(f".*{src_ip}.*{dst_ip}", sip_trace):
+            invite.append(sip_trace)
+    if invite:
+        set_num = re.search(r"\d+", invite[-1]).group(0)
+        try:
+            device.sendline(
+                f"tshark -r {capture_file} rtp.setup-frame == {set_num} | wc -l"
+            )
+            device.expect("[1-9]\d*\r\n", timeout=10)
+            device.expect(device.prompt)
+            if negate:
+                rtp_pcap = tshark_read(
+                    device,
+                    capture_file,
+                    filter_str=f"rtp.setup-frame == {set_num}",
+                    rm_file=False,
+                )
+                split_rtp_pcap = rtp_pcap.splitlines()
+                rtp = []
+                for rtp_trace in split_rtp_pcap:
+                    if re.match(r"\d+", rtp_trace.strip()):
+                        rtp.append(True) if re.search(
+                            f".*{src_ip}.*{dst_ip}", rtp_trace
+                        ) else rtp.append(False)
+                return all(rtp)
+            return True
+        except PexpectErrorTimeout:
+            device.expect(device.prompt)
+            return True if negate else False
+        finally:
+            if rm_file:
+                device.sudo_sendline("rm %s" % capture_file)
+                device.expect(device.prompt)
+            pass
+    else:
+        raise ValueError(f"{capture_file} doesnt have SIP invite")
