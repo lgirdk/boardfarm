@@ -797,7 +797,7 @@ EOF"""
     def print_dhcp_config(self):
         """Print DHCP config."""
         self.sendline("cat /etc/dhcp/dhcpd.conf")
-        self.sendline("cat /etc/dhcp/dhcpd.conf")
+        self.expect_exact("cat /etc/dhcp/dhcpd.conf")
         self.expect(self.prompt)
         self.sendline("cat /etc/dhcp/dhcpd6.conf")
         self.expect_exact("cat /etc/dhcp/dhcpd6.conf")
