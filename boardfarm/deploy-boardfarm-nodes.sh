@@ -335,12 +335,13 @@ create_container_eth1_phys () {
 # eth0 is docker private network, eth1 with device
 create_container_eth1_wifi () {
     local dev=$1
-    local offset=${2:-40000}
-    local proxy_dir=${3:-"0"}
-    local proxy_ip=${4:-"0"}
+    local band=${2:-"2.4GHz"}
+    local proxy_ip=${3:-"0"}
+    local proxy_port=${4:-"8080"}
+    local offset=${5:-"501"}
 
-    cname=bft-node-$dev
-    docker stop $cname && docker rm $cname
+    cname=bft-wifi-node-$dev-$band
+    docker stop $cname && docker rm $cname || true
     docker run --name $cname --privileged -h $cname --restart=always \
         -p $(( $STARTSSHPORT + $offset )):22 \
         -p $(( $STARTWEBPORT + $offset )):8080 \
@@ -350,19 +351,24 @@ create_container_eth1_wifi () {
 
     #add proxy details if specified
     local docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-    if [ "$proxy_dir" != "0" ] && [ "$proxy_ip" != "0" ]
+    if [ "$proxy_ip" != "0" ]
     then
-        docker cp $proxy_dir/proxy.conf $cname:/etc/apt/apt.conf.d/
+        docker exec -e proxy_ip=$proxy_ip -e proxy_port=$proxy_port $cname \
+                bash -c 'cat > /etc/apt/apt.conf.d/proxy.conf<<EOF
+Acquire::http::Proxy "http://$proxy_ip:$proxy_port/";
+Acquire::https::Proxy "http://$proxy_ip:$proxy_port/";
+EOF
+'
+
         docker exec $cname ip route add $proxy_ip via $docker_gw_ip table mgmt
     fi
     cspace=$(docker inspect --format {{.State.Pid}} $cname)
-    isolate_management ${cname}
 
     # create lab network access port
     # rfkill and ip need to be added as rootLessCommands on the host
-        # if Wi-Fi was associated to an SSID on the host, on pushing the interface
-        # to container rfkill releases the wifi resource from host.
-        sudo rfkill unblock wifi
+    # if Wi-Fi was associated to an SSID on the host, on pushing the interface
+    # to container rfkill releases the wifi resource from host.
+    sudo rfkill unblock wifi
     sudo iw phy $(cat /sys/class/net/"$dev"/phy80211/name) set netns $cspace
     docker exec $cname ip link set $dev name wlan1
     docker exec $cname ip link set wlan1 up
