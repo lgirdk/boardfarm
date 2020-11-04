@@ -68,6 +68,8 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
                 if password:
                     kwargs["password"] = password
                 return PX2(outlet=outlet, **kwargs)
+            if "netio://" in outlet:
+                return NetioPDU(outlet=outlet)
 
         return HumanButtonPusher()
 
@@ -247,6 +249,60 @@ class PX2(PowerDevice):
 
         # no extraneous messages in console log
         assert not self.pcon.before.strip()
+
+    def turn_off(self):
+        try:
+            self.pcon.sendline("")
+            self.pcon.expect("# ")
+        except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
+            print("Telnet session has expired, establishing the session again")
+            self.do_login()
+        self.pcon.sendline("power outlets %s off /y" % self.outlet)
+        self.pcon.expect_exact("power outlets %s off /y" % self.outlet)
+        self.pcon.expect("# ")
+
+        # no extraneous messages in console log
+        assert not self.pcon.before.strip()
+
+
+class NetioPDU(PowerDevice):
+    """Power Unit from Netio"""
+
+    def __init__(self, outlet, username="admin", password="admin"):
+        self.username, self.password = username, password
+
+        conn, self.outlet = outlet.replace("netio://", "").split(";")
+        if ":" in conn:
+            self.ip_address, self.conn_port = conn.split(":")
+        else:
+            self.ip_address = conn
+            self.conn_port = 23
+
+        self.pcon = None
+
+    def connect(self):
+        self.pcon = bft_pexpect_helper.spawn(
+            f"telnet {self.ip_address} {self.conn_port}"
+        )
+        self.pcon.expect("100 HELLO 00000000 - KSHELL V1.5")
+        self.pcon.sendline(f"login {self.username} {self.password}")
+        self.pcon.expect("250 OK")
+
+    def quit(self):
+        self.pcon.sendline("quit")
+        self.pcon = None
+
+    def reset(self):
+        self.connect()
+        self.pcon.sendline(f"port {self.outlet} 2")
+        self.pcon.expect("250 OK")
+        self.quit()
+
+    def turn_off(self):
+        self.connect()
+        self.pcon.sendline(f"port {self.outlet} 0")
+        self.pcon.expect("250 OK")
+        self.quit()
 
 
 class HumanButtonPusher(PowerDevice):
