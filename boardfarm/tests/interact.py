@@ -113,6 +113,20 @@ class Interact(rootfs_boot.RootFSBootTest):
                         )
                         print(e)
                         continue
+                    finally:
+                        func = getattr(
+                            tests.available_tests[test].__class__,
+                            "teardown_class",
+                            None,
+                        )
+                        if func:
+                            try:
+                                tests.available_tests[test].teardown_wrapper(func)
+                            except Exception as e:
+                                print(e)
+                                print(
+                                    "This should never happen. TearDown should be fail-safe"
+                                )
 
                 continue
             i += 1
