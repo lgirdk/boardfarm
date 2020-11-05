@@ -207,7 +207,10 @@ def get_device(model, device_mgr, **kwargs):
         if len(cls_list) == 0:
             raise BftNotSupportedDevice("Unable to spawn instance of model: %s" % model)
         ret = bf_node(cls_list, model, device_mgr, **kwargs)
-        device_mgr._add_device(ret, override, plugin)
+
+        # Allow a device to initialize without registering to device_mgr
+        if device_mgr is not None:
+            device_mgr._add_device(ret, override, plugin)
         return ret
     except BftNotSupportedDevice:
         raise

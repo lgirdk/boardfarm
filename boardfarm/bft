@@ -202,6 +202,33 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
     config.board["devices"].extend(dynamic_devices)
 
 
+def connect_to_board(config, rootfs, kernel, device_mgr):
+    tftp_server = None
+    tftp_port = "22"
+
+    # Connect to board
+    board = devices.board_decider(
+        config["board_type"],
+        conn_cmd=config["conn_cmd"],
+        power_ip=config.get("powerip", None),
+        power_outlet=config.get("powerport", None),
+        web_proxy=config.get("lan_device", None),
+        tftp_server=config.get("wan_device", tftp_server),
+        tftp_username=config.get("wan_username", "root"),
+        tftp_password=config.get("wan_password", "bigfoot1"),
+        tftp_port=config.get("wan_port", tftp_port),
+        connection_type=config.get("connection_type", None),
+        ssh_password=config.get("ssh_password", None),
+        power_username=config.get("power_username", None),
+        power_password=config.get("power_password", None),
+        rootfs=rootfs,
+        kernel=kernel,
+        config=config,
+        device_mgr=device_mgr,
+    )
+    return board
+
+
 def connect_and_run(config):
     """Connect to device and run the configurations."""
     config, device_mgr, env_helper, bfweb = connect_to_devices(config)
@@ -303,6 +330,7 @@ def connect_to_devices(config):
         walk_dict(regex, config.boardfarm_config)
 
     board = None
+    deny_list = []
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
         device_mgr = DeviceManager.device_manager()
@@ -339,30 +367,28 @@ def connect_to_devices(config):
             time.sleep(5)  # let it appear as taken on the dash
             connected_to_board = True
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
-            tftp_server = None
-            tftp_port = "22"
             reason = None
-
-            # Connect to board
-            board = devices.board_decider(
-                config.board["board_type"],
-                conn_cmd=config.board["conn_cmd"],
-                power_ip=config.board.get("powerip", None),
-                power_outlet=config.board.get("powerport", None),
-                web_proxy=config.board.get("lan_device", None),
-                tftp_server=config.board.get("wan_device", tftp_server),
-                tftp_username=config.board.get("wan_username", "root"),
-                tftp_password=config.board.get("wan_password", "bigfoot1"),
-                tftp_port=config.board.get("wan_port", tftp_port),
-                connection_type=config.board.get("connection_type", None),
-                ssh_password=config.board.get("ssh_password", None),
-                power_username=config.board.get("power_username", None),
-                power_password=config.board.get("power_password", None),
-                rootfs=config.ROOTFS,
-                kernel=config.KERNEL,
-                config=config.board,
-                device_mgr=device_mgr,
+            board = connect_to_board(
+                config.board, config.ROOTFS, config.KERNEL, device_mgr
             )
+
+            deny_list_names = config.board.get("deny_conn_to", [])
+            if deny_list_names:
+                for idx, board_name in enumerate(deny_list_names):
+                    # get the deny board details
+                    logger.debug(f"Denying access to board = {board_name}")
+
+                    board_config = config.boardfarm_config[board_name]
+                    aux_board = connect_to_board(board_config, None, None, None)
+
+                    # This will be done in booting, once env schema is updated.
+                    aux_board.power.turn_off()
+
+                    deny_list.append(aux_board)
+                    setattr(device_mgr, f"__board{idx+2}", aux_board)
+
+                    logger.debug(f"Locked access to board = {board_name}")
+
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
             board.dev = device_mgr
@@ -441,6 +467,10 @@ def connect_to_devices(config):
                 )
                 if board:
                     board.close()
+                if deny_list:
+                    for dev in deny_list:
+                        if dev:
+                            dev.close()
                 bfweb.checkin()
                 time.sleep(5)
             else:
