@@ -40,6 +40,7 @@ class device_type(Enum):
     wan = 2
     wan2 = 3
     lan = 4
+    lan1 = 4
     lan2 = 5
     sipcenter = 6
     acs_server = 7
@@ -62,6 +63,9 @@ class device_type(Enum):
     mac_sniffer = 24
     mitm = 25
     mini_cmts = 26
+    wlan1 = 18
+    wlan3 = 28
+    wlan4 = 29
 
 
 class device_array_type(Enum):
@@ -69,6 +73,7 @@ class device_array_type(Enum):
 
     wan_clients = 1
     lan_clients = 2
+    wlan_clients = 3
 
 
 class device_location(Enum):

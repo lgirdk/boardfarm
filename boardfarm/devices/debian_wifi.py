@@ -1,15 +1,19 @@
 """Extension of Debian class with wifi functions."""
+import ipaddress
 import re
 
 import pexpect
 import pycountry
+from debtcollector import moves
 
+from boardfarm.lib.installers import install_iw
+from boardfarm.lib.linux_nw_utility import NwDnsLookup
 from boardfarm.lib.wifi import wifi_client_stub
 
-from . import debian
+from . import debian_lan
 
 
-class DebianWifi(debian.DebianBox, wifi_client_stub):
+class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     """Extension of Debian class with wifi functions.
 
     wifi_client_stub is inherited from lib/wifi.py.
@@ -19,10 +23,32 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
 
     def __init__(self, *args, **kwargs):
         """Initialise wifi interface."""
-        super(DebianWifi, self).__init__(*args, **kwargs)
+
+        self.wifi_band = kwargs.get("band", None)
+        self.parse_device_options(*args, **kwargs)
         self.iface_dut = self.iface_wifi = self.kwargs.get("dut_interface", "wlan1")
 
+        # introducing same hack as lan_clients till json schema does not get updated
+        if not self.dev_array:
+            self.legacy_add = True
+            self.dev_array = "wlan_clients"
+
+        # This is being maintained for backward compatibility.
+        # Ideally LAN network should be decided after connecting to SSID
+        self.lan_network = ipaddress.IPv4Interface(
+            kwargs.pop("lan_network", "192.168.1.0/24")
+        ).network
+        self.lan_gateway = ipaddress.IPv4Interface(
+            kwargs.pop("lan_gateway", "192.168.1.1/24")
+        ).ip
+
+        self.nslookup_util = NwDnsLookup(self)
+
+    @moves.moved_method("reset_wifi_iface")
     def disable_and_enable_wifi(self):
+        self.reset_wifi_iface()
+
+    def reset_wifi_iface(self):
         """Disable and enable wifi interface.
 
         i.e., set the interface link to "down" and then to "up"
@@ -45,16 +71,23 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         """
         self.set_link_state(self.iface_wifi, "up")
 
+    @moves.moved_method("dhcp_release_wlan_iface")
     def release_wifi(self):
-        """DHCP release of the wifi interface."""
-        iface = self.iface_wifi
-        self.release_dhcp(iface)
+        self.dhcp_release_wlan_iface()
 
+    def dhcp_release_wlan_iface(self):
+        """DHCP release of the wifi interface."""
+        self.release_dhcp(self.iface_wifi)
+
+    @moves.moved_method("dhcp_renew_wlan_iface")
     def renew_wifi(self):
+        return self.dhcp_renew_wlan_iface()
+
+    def dhcp_renew_wlan_iface(self):
         """DHCP renew of the wifi interface."""
-        self.sudo_sendline("dhclient {}".format(self.iface_wifi))
         try:
-            self.expect(self.prompt, timeout=10)
+            self.renew_dhcp(self.iface_wifi)
+            return True
         except pexpect.TIMEOUT:
             self.sendcontrol("c")
             self.expect(self.prompt)
@@ -62,15 +95,22 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
             self.expect(self.prompt)
             return False
 
-        match = re.search("File exist", self.before)
-        return match
-
+    @moves.moved_method("set_wlan_scan_channel")
     def change_channel(self, channel):
+        self.set_wlan_scan_channel(channel)
+
+    def set_wlan_scan_channel(self, channel):
         """Change wifi client scan channel."""
-        self.sudo_sendline("iwconfig wlan0 channel {}".format(channel))
+        install_iw(self)
+
+        self.sudo_sendline(f"iwconfig {self.iface_wifi} channel {channel}")
         self.expect(self.prompt)
 
+    @moves.moved_method("iwlist_supported_channels")
     def wifi_support_channel(self, wifi_frequency):
+        return self.list_wifi_supported_channels(self, wifi_frequency)
+
+    def iwlist_supported_channels(self, wifi_band):
         """list of wifi client support channel.
 
         :param wifi_mode: wifi frequency ['2' or '5']
@@ -78,28 +118,32 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         :return: list of channel in wifi mode
         :rtype: list
         """
-        self.sudo_sendline("iwlist %s channel" % (self.iface_wifi))
+        install_iw(self)
+
+        self.sudo_sendline(f"iwlist {self.iface_wifi} channel")
         self.expect(self.prompt)
         channel_list = []
         for line in self.before.split("\r\n"):
-            match = re.search(r"Channel\ \d+\ \:\ %s.\d+\ GHz" % (wifi_frequency), line)
+            match = re.search(r"Channel\ \d+\ \:\ %s.\d+\ GHz" % (wifi_band), line)
             if match:
                 channel_list.append(match.group().split(" ")[1])
         return channel_list
 
+    @moves.moved_method("list_wifi_ssids")
     def wifi_scan(self):
+        self.list_wifi_ssids(self)
+
+    def list_wifi_ssids(self):
         """Scan the SSID associated with the wifi interface.
 
         :return: List of SSID
         :rtype: string
         """
-        from boardfarm.lib.installers import install_iw
-
-        install_iw(self)
-
-        self.sudo_sendline("iw %s scan | grep SSID:" % self.iface_wifi)
+        cmd = f"iw dev {self.iface_wifi} scan | grep SSID: | sed 's/[[:space:]]*SSID: //g'"
+        self.sudo_sendline(cmd)
+        self.expect_exact(cmd)
         self.expect(self.prompt)
-        return self.before
+        return self.before.strip().splitlines()
 
     def wifi_check_ssid(self, ssid_name):
         """Check the SSID provided is present in the scan list.
@@ -109,19 +153,7 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
         :return: True or False
         :rtype: boolean
         """
-        from boardfarm.lib.installers import install_iw
-
-        install_iw(self)
-
-        self.sudo_sendline(
-            'iw %s scan | grep "SSID: %s"' % (self.iface_wifi, ssid_name)
-        )
-        self.expect(self.prompt)
-        match = re.search(r"%s\"\s+.*(%s)" % (ssid_name, ssid_name), self.before)
-        if match:
-            return True
-        else:
-            return False
+        return ssid_name in self.list_wifi_ssids()
 
     def wifi_connect(
         self,
@@ -259,11 +291,6 @@ class DebianWifi(debian.DebianBox, wifi_client_stub):
             return match.group(0)
         else:
             return None
-
-    def start_lan_client(self):
-        """Start_lan_method execution for the wifi interface."""
-        self.iface_dut = self.iface_wifi
-        super(DebianWifi, self).start_lan_client()
 
     def wifi_client_connect(self, ssid_name, password=None, security_mode=None):
         """Scan for SSID and verify wifi connectivity.

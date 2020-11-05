@@ -783,7 +783,7 @@ def install_iw(device):
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
-        apt_install(device, "iw")
+        apt_install(device, "iw wireless-tools")
 
 
 def install_jmeter(device):
