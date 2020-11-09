@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Linux based DSLite server using ISC AFTR."""
 import re
+from ast import literal_eval
 
 import pexpect
 
@@ -19,7 +20,7 @@ class MITM(base_profile.BaseProfile):
 
     model = "mitm"
     aftr_dir = "/root/addons/"
-    base_exec_cmd = "mitmdump --mode transparent --showhost --set global_block=false"
+    base_exec_cmd = "mitmdump --mode transparent --showhost --set block_global=false"
 
     # this can be used to override behavior.
     # base device's method can be key.
@@ -30,6 +31,7 @@ class MITM(base_profile.BaseProfile):
         """To initialize the MITM container details."""
         self.quiet_mode = False
         self.mitm_pid = None
+        self.mitm_dns_active = list()
 
         # Allow to skip re-executing iptable rules
         self.is_configured = kwargs.pop("mitm_configured", False)
@@ -37,6 +39,9 @@ class MITM(base_profile.BaseProfile):
         # allowing MITM to have access to all devices to intercept.
         self.dev_mgr = kwargs.get("mgr")
         self.intercepts = kwargs.pop("intercepts", {})
+
+        self.log_name = self.dev_mgr.board.config.get_station() + ".mitm"
+        self._tr069_ips = None
 
         MITM.configure_profile(self)
 
@@ -48,7 +53,7 @@ class MITM(base_profile.BaseProfile):
         self.check_output("iptables -t nat -F")
         self.check_output("ip6tables -t nat -F")
 
-        if "mitmproxy" in self.check_output("pip3 freeze | grep mitmproxy"):
+        if "mitmproxy" not in self.check_output("pip3 freeze | grep mitmproxy"):
             apt_install(self, "python3-dev python3-pip libffi-dev libssl-dev")
             self.check_output("pip3 install mitmproxy")
 
@@ -75,24 +80,59 @@ class MITM(base_profile.BaseProfile):
 
         self.is_configured = True
 
-    def configure_dns_server(self):
-        """DNS should be updated only before running before mitm"""
-        pass
+    def _set_dns_to_mitm(self, device_name: str) -> None:
+        """Rewrite DNS entry on wan container to point to MITM'ed device
+        if it is present in intercept block in ams.json/inventory server
 
-    def run_mitm_proxy(self, log=None, script=None):
+        :param device_name: device name to be mitm'ed
+        """
+        try:
+            mitmed_dns_entries = {
+                f"{device_name}.boardfarm.com": [
+                    self.intercepts[device_name]["v4"].split("; ")[-1],
+                    self.intercepts[device_name]["v6"].split("; ")[-1],
+                ]
+            }
+        except KeyError:
+            raise KeyError(
+                f"{device_name} is not found in intercepts block in the mitm config."
+            )
+
+        self.dev_mgr.wan.modify_dns_hosts(mitmed_dns_entries)
+        self.mitm_dns_active.append(device_name)
+
+    def _unset_dns_mitm(self, device_name: str) -> None:
+        """Rollback DNS entry on wan container to point to real ACS server"""
+        device = getattr(self.dev_mgr, device_name)
+        host = f"{device_name}.boardfarm.com"
+        if device:
+            self.dev_mgr.wan.modify_dns_hosts(
+                {host: device.dns.dnsv4[host] + device.dns.dnsv6[host]}
+            )
+            self.mitm_dns_active.remove(device_name)
+        else:
+            print(f"Device {device_name} is not found in device manager.")
+
+    def start_capture(self, devices: list) -> None:
+        """Add iptables rules if not done yet.
+        Rewrite DNS for each provided device if not rewritten yet.
+        Start capturing traffic in background to log file if not started yet.
+        """
+        if type(devices) is not list:
+            raise TypeError(
+                f"Expected devices parameter to be list, got {type(devices)} instead"
+            )
+
         if not self.is_configured:
             self.configure_mitm()
 
-        cmd = MITM.base_exec_cmd
-        if log:
-            cmd = f"{cmd} -w /root/{log}"
-            self.quiet_mode = True
-        if script:
-            cmd = f"{cmd} -s {script}"
+        for device in set(devices) - set(self.mitm_dns_active):
+            self._set_dns_to_mitm(device)
 
-        try:
-            if self.quiet_mode:
-                self.sendline(f"{cmd} -q &")
+        if not self.mitm_pid:
+            cmd = f"{MITM.base_exec_cmd} -w /root/{self.log_name} -q &"
+            try:
+                self.sendline(cmd)
                 self.expect_prompt()
                 self.mitm_pid = re.findall(r"\[\d+\]\s(\d+)", self.before).pop()
                 self.expect(pexpect.TIMEOUT, timeout=1)
@@ -103,32 +143,55 @@ class MITM(base_profile.BaseProfile):
                     raise CodeError(
                         f"MITM pid:{self.pid} got killed.\nReason:\n{running}"
                     )
-            else:
-                self.sendline(f"{cmd} -v")
-                if (
-                    self.expect(
-                        [r"Proxy server listening at http:.*:8080"] + self.prompt,
-                        timeout=5,
-                    )
-                    != 0
-                ):
-                    raise CodeError(
-                        f"MITM process did not start.\nReason :\n{self.before}"
-                    )
-        except pexpect.TIMEOUT:
-            raise CodeError()
+            except pexpect.TIMEOUT:
+                raise CodeError()
+        else:
+            print(f"MITM is already running with pid {self.mitm_pid}")
 
-        self.kill_mitm = True
+    def stop_capture(self):
+        """Rollback DNS for all mitm'ed devices.
+        Kill mitm process on mitm container
+        """
+        for device in self.mitm_dns_active:
+            self._unset_dns_mitm(device)
+        self.check_output(f"kill {self.mitm_pid}")
 
-    def kill_mitm_proxy(self):
-        out = None
-        if self.kill_mitm:
-            if self.mitm_pid:
-                self.check_output(f"kill {self.mitm_pid}")
-                self.check_output("")
-            else:
-                self.sendcontrol("c")
-                self.expect_prompt()
-                out = self.before
-            self.kill_mitm = False
-        return out
+    def get_tr069_headers(self, filter_str=None) -> [str, None]:
+        """Return headers for last captured packet that comply with filter.
+
+        :param filter_str: string to find in XML contents of tr069 packet.
+        :return: dict with headers in case at least 1 packet found, None otherwise
+        """
+        filter_string = f"--set filter={filter_str}" if filter_str else ""
+        cmd = (
+            f"mitmdump -ns addons/tr069_reader.py -q -r {self.log_name} {filter_string}"
+        )
+        self.check_output(cmd)
+        headers = re.findall(r"(?<=HEADERS:).*", self.before)
+        if not headers:
+            print(
+                f"Did not find headers. Dump file is empty or no packets satisfy {filter_str} filter"
+            )
+            return
+        headers = literal_eval(headers.pop().strip("\r"))
+        return headers
+
+    def get_tr069_body(self, filter_str=None):
+        """Return body for last captured packet that comply with filter.
+
+        :param filter_str: string to find in XML contents of tr069 packet.
+        :return: dict with body in case at least 1 packet found, None otherwise
+        """
+        filter_string = f"--set filter='{filter_str}'" if filter_str else ""
+        cmd = (
+            f"mitmdump -ns addons/tr069_reader.py -q -r {self.log_name} {filter_string}"
+        )
+        self.check_output(cmd)
+        bodies = re.findall(r"(?<=BODY:).*", self.before)
+        if not bodies:
+            print(
+                f"Did not find body. Dump file is empty or no packets satisfy {filter_str} filter"
+            )
+            return
+        body = literal_eval(bodies.pop().strip("\r"))
+        return body

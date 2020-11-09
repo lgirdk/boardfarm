@@ -534,7 +534,7 @@ class DebianBox(linux.LinuxDevice):
     def modify_dns_hosts(self, dns_entry=None):
         self.hosts = getattr(self, "hosts", defaultdict(list))
 
-        if dns_entry and not self.hosts:
+        if dns_entry:
             self.hosts.update(dns_entry)
             self.sendline("cat > /etc/dnsmasq.hosts << EOF")
             for host, ips in self.hosts.items():
