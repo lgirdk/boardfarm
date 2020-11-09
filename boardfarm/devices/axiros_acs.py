@@ -70,7 +70,11 @@ class Intercept(object):
                 count = 2  # retries on 507 HTTPerror, even if ssh conn is not available
                 if d_flag:
                     arg = [x for x in args]
-                    if arg[0] in self.dev.board.unsupported_objects:
+                    if (
+                        args
+                        and hasattr(self.dev.board, "unsupported_objects")
+                        and arg[0] in self.dev.board.unsupported_objects
+                    ):
                         warnings.warn("Unsupported parameter")
                         print("Warning!!! Unsupported parameter")
                         return
