@@ -24,6 +24,22 @@ class NwFirewallStub:
     def is_ip6table_empty(self, opts="", extra_opts=""):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def add_drop_rule_iptables(self, option, valid_ip):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def add_drop_rule_ip6tables(self, option, valid_ip):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def del_drop_rule_iptables(self, option, valid_ip):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def del_drop_rule_ip6tables(self, option, valid_ip):
+        raise NotImplementedError
+
 
 class NwDnsLookupStub:
     @abc.abstractmethod

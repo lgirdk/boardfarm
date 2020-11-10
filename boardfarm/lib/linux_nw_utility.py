@@ -46,6 +46,46 @@ class NwFirewall(NwFirewallStub):
         )
         return check_empty
 
+    def add_drop_rule_iptables(self, option, valid_ip):
+        """
+        :type option : set -s for source and -d for destination
+        :type option : string
+        :param valid_ip : dest_ip to be blocked from device
+        :type valid_ip : valid ip string
+        """
+        out = self.dev.check_output(
+            "iptables -C INPUT {} {} -j DROP".format(option, valid_ip)
+        )
+        if "Bad rule" in out:
+            self.dev.check_output(
+                "iptables -I INPUT 1 {} {} -j DROP".format(option, valid_ip)
+            )
+
+    def add_drop_rule_ip6tables(self, option, valid_ip):
+        out = self.dev.check_output(
+            "ip6tables -C INPUT {} {} -j DROP".format(option, valid_ip)
+        )
+        if "Bad rule" in out:
+            self.dev.check_output(
+                "ip6tables -I INPUT 1 {} {} -j DROP".format(option, valid_ip)
+            )
+
+    def del_drop_rule_iptables(self, option, valid_ip):
+        """
+        :type option : set -s for source and -d for destination
+        :type option : string
+        :param valid_ip : dest_ip to be blocked
+        :type valid_ip : valid ip string
+        """
+        self.dev.check_output(
+            "iptables -D INPUT {} {} -j DROP".format(option, valid_ip)
+        )
+
+    def del_drop_rule_ip6tables(self, option, valid_ip):
+        self.dev.check_output(
+            "ip6tables -D INPUT {} {} -j DROP".format(option, valid_ip)
+        )
+
 
 class NwDnsLookup(NwDnsLookupStub):
     def __init__(self, parent_device):

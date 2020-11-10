@@ -7,6 +7,7 @@
 
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dns import DNS
+from boardfarm.lib.linux_nw_utility import NwFirewall
 
 
 class DebianWAN(debian.DebianBox):
@@ -30,6 +31,7 @@ class DebianWAN(debian.DebianBox):
             self.legacy_add = True
             self.dev_array = "wan_clients"
         self.dns = DNS(self, kwargs.get("options", {}), kwargs.get("aux_ip", {}))
+        self.firewall = NwFirewall(self)
 
     def setup(self, config):
         self.setup_dnsmasq(config)
