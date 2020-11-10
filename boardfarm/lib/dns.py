@@ -2,6 +2,7 @@ import ipaddress
 import re
 from collections import defaultdict
 
+from boardfarm.lib.linux_nw_utility import NwDnsLookup
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,
     ValidIpv4AddressRegex,
@@ -29,6 +30,8 @@ class DNS:
             self._add_auxv6_hosts()
         self.hosts_v4.update(self.dnsv4)
         self.hosts_v6.update(self.dnsv6)
+
+        self.nslookup = NwDnsLookup(device)
 
     def _add_dns_hosts(self):
         if self.device_options:

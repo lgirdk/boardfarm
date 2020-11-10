@@ -29,6 +29,7 @@ from boardfarm.exceptions import (
 )
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import get_class_name_in_stack, scp_from
+from boardfarm.lib.dns import DNS
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 
 from . import base_acs
@@ -189,6 +190,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.cli_password = self.kwargs.pop("cli_password", None)
         self.color = self.kwargs.pop("color", None)
         self.options = self.kwargs.pop("options", None)
+        self.aux_ip = self.kwargs.pop("aux_ip", None)
         self.tcpdump_filter = ""
         AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
 
@@ -246,6 +248,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
+        self.dns = DNS(self, self.options, self.aux_ip)
 
     def sudo_sendline(self, cmd):
         # overwriting linux behaviour

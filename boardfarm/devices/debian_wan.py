@@ -6,7 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 from boardfarm.devices.platform import debian
-from boardfarm.lib.linux_nw_utility import NwDnsLookup
+from boardfarm.lib.dns import DNS
 
 
 class DebianWAN(debian.DebianBox):
@@ -29,7 +29,7 @@ class DebianWAN(debian.DebianBox):
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "wan_clients"
-        self.dns = NwDnsLookup(self)
+        self.dns = DNS(self, kwargs.get("options", {}), kwargs.get("aux_ip", {}))
 
     def setup(self, config):
         self.setup_dnsmasq(config)

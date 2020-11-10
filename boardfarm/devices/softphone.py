@@ -1,4 +1,5 @@
 """Class functions related to softphone software."""
+from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_pjsua
 
 
@@ -20,6 +21,7 @@ class SoftPhone(object):
         self.profile[self.name] = self.profile.get(self.name, {})
         softphone_profile = self.profile[self.name] = {}
         softphone_profile["on_boot"] = self.install_softphone
+        self.dns = DNS(self, kwargs.get("options", {}), kwargs.get("aux_ip", {}))
 
     def __str__(self):
         """Magic method to return a printable string."""

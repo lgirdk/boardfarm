@@ -50,6 +50,9 @@ class NwDnsLookup(NwDnsLookupStub):
     def __init__(self, parent_device):
         self.dev = parent_device
 
+    def __call__(self, *args, **kwargs):
+        self.nslookup(*args, **kwargs)
+
     def nslookup(self, domain_name, opts="", extra_opts=""):
         out = self.dev.check_output(f"nslookup {opts} {domain_name} {extra_opts}")
         return DnsParser().parse_nslookup_output(out)
