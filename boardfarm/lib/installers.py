@@ -228,9 +228,9 @@ def install_upnp(device):
     :type device: Object
     :raises assertion: upnp installation failed
     """
-    device.sendline("\nupnpc --version")
+    device.sendline("\nwhich upnpc")
     try:
-        device.expect("upnpc : miniupnpc", timeout=5)
+        device.expect("/usr/bin/upnpc", timeout=5)
         device.expect(device.prompt)
     except Exception:
         device.expect(device.prompt)
