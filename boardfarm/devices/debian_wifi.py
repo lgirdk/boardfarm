@@ -131,7 +131,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     @moves.moved_method("list_wifi_ssids")
     def wifi_scan(self):
-        self.list_wifi_ssids(self)
+        self.list_wifi_ssids()
 
     def list_wifi_ssids(self):
         """Scan the SSID associated with the wifi interface.
