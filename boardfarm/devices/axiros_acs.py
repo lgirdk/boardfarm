@@ -829,20 +829,23 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         return AxirosACS._parse_soap_response(response)
 
     @moves.moved_method("AddObject")
-    def rpc_AddObject(self, cpeid, param, wait=8):
+    def rpc_AddObject(self, cpeid, param, **kwargs):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
         :param param: parameter to be used to add
         :type param: string
-        :param wait: the number of tries to be done if we are not getting proper ACS response, defaults to 8
-        :type wait: integer, optional
+        :param kwargs : param_key (parameterkey to set), wait (wait to retry)
         :raises assertion: rpc_AddObject failed to lookup for the param
         :returns: ticket response on ACS
         :rtype: dictionary
         """
-        return {i["key"]: i["value"] for i in self.AddObject(param)}
+        # setting no of tries default to 8
+        if kwargs.get("wait", None) is None:
+            kwargs["wait"] = 8
+
+        return {i["key"]: i["value"] for i in self.AddObject(param, **kwargs)}
 
     def AddObject(self, param, **kwargs):
         """Add object ACS of the parameter specified i.e a remote procedure call (AddObject).
@@ -867,17 +870,18 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         return AxirosACS._parse_soap_response(response)
 
     @moves.moved_method("DelObject")
-    def rpc_DelObject(self, cpeid, param):
+    def rpc_DelObject(self, cpeid, param, **kwargs):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
 
         :param cpeid: the serial number of the modem through which ACS communication happens.
         :type cpeid: string
         :param param: parameter to be used to delete
         :type param: string
+        :param kwargs : param_key
         :returns: ticket response on ACS ('0' is returned)
         :rtype: string
         """
-        return str(self.DelObject(param)[0]["value"])
+        return str(self.DelObject(param, **kwargs)[0]["value"])
 
     def DelObject(self, param, **kwargs):
         """Delete object ACS of the parameter specified i.e a remote procedure call (DeleteObject).
