@@ -512,6 +512,7 @@ class DebianBox(linux.LinuxDevice):
 
     def setup_dnsmasq(self, config=None):
         self.sendline("cat > /etc/dnsmasq.conf << EOF")
+        self.sendline("local-ttl=60")
         self.sendline("server=8.8.4.4")
         self.sendline("listen-address=127.0.0.1")
         self.sendline("listen-address=%s" % self.gw)
