@@ -113,16 +113,22 @@ class bft_pexpect_helper(pexpect.spawn):
                 or True in ["sudo" in x for x in kwargs.get("args", [])]
             ):
                 print_bold("NOTE: sudo helper running")
-                if 0 != self.expect(
-                    [r"\[sudo\] password for [^:]*: ", pexpect.TIMEOUT, pexpect.EOF],
-                    timeout=5,
+                if (
+                    self.expect(
+                        [
+                            r"\[sudo\] password for [^:]*: ",
+                            pexpect.TIMEOUT,
+                            pexpect.EOF,
+                        ],
+                        timeout=5,
+                    )
+                    != 0
                 ):
                     return
-                if password is not None:
-                    self.sendline(password)
-                else:
+                if password is None:
                     password = getpass.getpass(self.match.group(0))
-                    self.sendline(password)
+
+                self.sendline(password)
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
