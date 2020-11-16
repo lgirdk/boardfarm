@@ -351,7 +351,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_ssid(self, *args, **kwargs):
         """Stub to set SSID.
@@ -364,7 +364,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_broadcast(self, *args, **kwargs):
         """Stub to set broadcast.
@@ -377,7 +377,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_security(self, *args, **kwargs):
         """Stub to set security.
@@ -390,7 +390,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_password(self, *args, **kwargs):
         """Stub to set password.
@@ -403,7 +403,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def enable_channel_utilization(self, *args, **kwargs):
         """Stub to enable channel utilization.
@@ -416,7 +416,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_operating_mode(self, *args, **kwargs):
         """Stub to set operating mode.
@@ -429,7 +429,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_bandwidth(self, *args, **kwargs):
         """Stub to set bandwidth.
@@ -442,7 +442,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_channel_number(self, *args, **kwargs):
         """Stub to enable channel utilization.
@@ -455,7 +455,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_wifi_enabled(self, *args, **kwargs):
         """Stub to get WiFi enabled.
@@ -468,7 +468,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_ssid(self, *args, **kwargs):
         """Stub to get SSID.
@@ -481,7 +481,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_security(self, *args, **kwargs):
         """Stub to get security mode.
@@ -494,7 +494,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_password(self, *args, **kwargs):
         """Stub to get password.
@@ -507,7 +507,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_channel_utilization(self, *args, **kwargs):
         """Stub to get channel utilization.
@@ -520,7 +520,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_operating_mode(self, *args, **kwargs):
         """Stub to get operating mode.
@@ -533,7 +533,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_bandwidth(self, *args, **kwargs):
         """Stub to get bandwidth.
@@ -546,7 +546,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_broadcast(self, *args, **kwargs):
         """Stub to get the broadcast.
@@ -559,7 +559,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_channel_number(self, *args, **kwargs):
         """Stub to get the channel number.
@@ -572,7 +572,7 @@ class wifi_stub:
         :type kwargs: NA
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def prepare(self):
         """Stub to prepare.
@@ -609,7 +609,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def disable_wifi(self):
         """Wifi client stub used to enable WiFi/ make the WiFi interface DOWN.
@@ -618,7 +618,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def disable_and_enable_wifi(self):
         """Wifi client stub used to disable and enable WiFi/.
@@ -629,7 +629,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_scan(self):
         """Wifi client stub used to scan for SSIDs on a particular radio and return a list of SSID.
@@ -642,7 +642,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_check_ssid(self, ssid_name):
         """Wifi client stub used to scan for particular SSID.
@@ -658,7 +658,7 @@ class wifi_client_stub:
         :type ssid_name: string
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_connect(self, ssid_name, password, security_mode):
         """Wifi client stub used to connect to wifi.
@@ -675,7 +675,7 @@ class wifi_client_stub:
         :type security_mode: string
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_connectivity_verify(self):
         """Wifi client stub used to verify wifi connectivity.
@@ -688,7 +688,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_disconnect(self):
         """Wifi client stub used to disconnect WiFi.
@@ -697,7 +697,7 @@ class wifi_client_stub:
         :type self: object
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def wifi_change_region(self, country):
         """Wifi client stub used to change the country.
@@ -708,4 +708,4 @@ class wifi_client_stub:
         :tSype country: string
         :raises: Exception "Not implemented"
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError

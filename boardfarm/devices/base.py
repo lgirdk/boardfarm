@@ -23,19 +23,19 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
     def get_interface_ipaddr(self, interface):
         """Get ipv4 address of interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_interface_ip6addr(self, interface):
         """Get ipv6 address of interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_interface_macaddr(self, interface):
         """Get the interface mac address."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def get_seconds_uptime(self):
         """Return seconds since last reboot. Stored in /proc/uptime."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     # perf related
     def parse_sar_iface_pkts(self, wan, lan):
@@ -99,15 +99,15 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
     def enable_ipv6(self, interface):
         """Enable ipv6 in interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def disable_ipv6(self, interface):
         """Disable IPv6 in interface."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def set_printk(self, CUR=1, DEF=1, MIN=1, BTDEF=7):
         """Print the when debug enabled."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def prefer_ipv4(self, pref=True):
         """Edits the /etc/gai.conf file.
@@ -115,11 +115,11 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
         This is to give/remove ipv4 preference (by default ipv6 is preferred)
         See /etc/gai.conf inline comments for more details
         """
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def ping(self, ping_ip, source_ip=None, ping_count=4, ping_interface=None):
         """Check Ping verification from device."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def reset(self, break_into_uboot=False):
         """Power-cycle this device."""
@@ -146,7 +146,7 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
     def check_memory_addresses(self):
         """Check/set memory addresses and size for proper flashing."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def flash_uboot(self, uboot):
         raise Exception(
@@ -179,7 +179,7 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
     def get_dns_server(self):
         """Get dns server ip address."""
-        raise Exception("Not implemented!")
+        raise NotImplementedError
 
     def touch(self):
         """Keep consoles active, so they don't disconnect for long running activities."""
