@@ -45,12 +45,8 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
         wan_pps = None
         client_pps = None
-        if lan is None:
-            exp = [wan]
-        else:
-            exp = [wan, lan]
-
-        for _ in range(0, len(exp)):
+        exp = [wan] if lan is None else [wan, lan]
+        for _ in range(len(exp)):
             i = self.expect(exp)
             if i == 0:  # parse wan stats
                 self.expect(r"(\d+.\d+)\s+(\d+.\d+)")
@@ -72,10 +68,7 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
         i = self.expect(["not found", "perf version"])
         self.expect(self.prompt)
 
-        if i == 0:
-            return False
-
-        return True
+        return i != 0
 
     def check_output_perf(self, cmd, events):
         perf_args = self.perf_args(events)
