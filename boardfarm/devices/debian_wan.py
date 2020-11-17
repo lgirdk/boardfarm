@@ -29,7 +29,7 @@ class DebianWAN(debian.DebianBox):
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "wan_clients"
-        self.nslookup_util = NwDnsLookup(self)
+        self.dns = NwDnsLookup(self)
 
     def setup(self, config):
         self.setup_dnsmasq(config)

@@ -42,7 +42,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             kwargs.pop("lan_gateway", "192.168.1.1/24")
         ).ip
 
-        self.nslookup_util = NwDnsLookup(self)
+        self.dns = NwDnsLookup(self)
 
     @moves.moved_method("reset_wifi_iface")
     def disable_and_enable_wifi(self):

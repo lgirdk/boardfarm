@@ -44,7 +44,7 @@ class DebianLAN(debian.DebianBox):
         self.lan_gateway = ipaddress.IPv4Interface(
             six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
-        self.nslookup_util = NwDnsLookup(self)
+        self.dns = NwDnsLookup(self)
 
     def setup(self, config=None):
         # potential cleanup so this wan device works
