@@ -7,7 +7,7 @@ import re
 import pexpect
 import six
 
-from boardfarm.exceptions import PexpectErrorTimeout
+from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,
     InterfaceIPv6_AddressRegex,
@@ -97,8 +97,9 @@ class LinuxDevice(base.BaseDevice):
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
+
         print("Failed ifconfig {} IPV6 {}".format(interface, ips))
-        raise Exception("Did not find non-link-local ipv6 address")
+        raise BftIfaceNoIpV6Addr("Did not find non link-local ipv6 address")
 
     def get_interface_link_local_ip6addr(self, interface):
         """function helps in getting ipv6 link local address of the interface

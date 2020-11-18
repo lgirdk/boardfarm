@@ -4,6 +4,7 @@ import re
 import pytest
 
 from boardfarm.devices.linux import LinuxDevice
+from boardfarm.exceptions import BftIfaceNoIpV6Addr
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
 test1_1 = """# ifconfig erouter0
@@ -82,8 +83,8 @@ erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:0D
           collisions:0 txqueuelen:0
           RX bytes:2066 (2.0 KiB)  TX bytes:3638 (3.5 KiB)"""
 
-out_str1 = """(venv3) testuser@sree-VirtualBox:~/Sreelekshmi/boardfarm/unittests/boardfarm/lib$ ip a show dev enp0s3
-2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+out_str1 = """(venv3) $ ifconfig erouter0
+2: erouter0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 08:00:27:cb:9c:89 brd ff:ff:ff:ff:ff:ff
     inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
        valid_lft 76520sec preferred_lft 76520sec
@@ -134,6 +135,26 @@ erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:F7
           collisions:0 txqueuelen:0
           RX bytes:146716 (143.2 KiB)  TX bytes:135837 (132.6 KiB)"""
 
+ipv6ex_1 = """# ifconfig erouter0
+erouter0  Link encap:Ethernet  HWadr 34:2C:C4:54:2E:08
+          inet addr:10.15.80.16  Bcast:10.1580.127 Mask:255.255.255.128
+          inet6 addr: fe80::362c:c4ff:f54:2e08/64 Scope:Link
+          UP BROADCAST RUNNING PROMISC MULTICAT  MTU:1500  Metric:1
+          RX packets:70 errors:0 droppe:0 overruns:0 frame:0
+          TX packets:32 errors:0 dropped: overruns:0 carrier:0
+          collsions:0 txqueuelen:0
+          RX bytes:5630 (5.4 KiB)  TX bytes:4158 (4.0 KiB)
+#"""
+
+ipv6ex_2 = """(venv3)$ ifconfig erouter0
+ erouter0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:cb:9c:89 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 76520sec preferred_lft 76520sec
+    inet6 fe80::b2f7:5059:2879:3dfc/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+"""
+
 
 @pytest.mark.parametrize(
     "output, expected_ip",
@@ -147,7 +168,6 @@ erouter0  Link encap:Ethernet  HWaddr 34:2C:C4:54:2F:F7
     ],
 )
 def test_get_interface_ip6addr(mocker, output, expected_ip):
-    mocker.patch.object(LinuxDevice, "check_output", return_value=output, autospec=True)
     mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
     mocker.patch.object(LinuxDevice, "expect", return_value=None, autospec=True)
     mocker.patch.object(LinuxDevice, "sendline", return_value=None, autospec=True)
@@ -160,18 +180,18 @@ def test_get_interface_ip6addr(mocker, output, expected_ip):
 
 
 @pytest.mark.parametrize(
-    "output, expected_ip",
-    [
-        (out_str1, None),
-        (test1_1, "2001:730:1f:60c:e:92"),
-        (test1_2, "2001:730:1f:60c:e:92"),
-    ],
+    "output",
+    [ipv6ex_1, ipv6ex_2],
 )
-def test_exception_get_interface_ip6addr(mocker, output, expected_ip):
-    mocker.patch.object(LinuxDevice, "check_output", return_value=output, autospec=True)
+def test_exception_get_interface_ip6addr(mocker, output):
     mocker.patch.object(LinuxDevice, "__init__", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "expect", return_value=None, autospec=True)
+    mocker.patch.object(LinuxDevice, "sendline", return_value=None, autospec=True)
+
     dev = LinuxDevice()
-    with pytest.raises(Exception) or pytest.raises(ipaddress.AddressValueError):
+    type(dev).before = mocker.PropertyMock(return_value=output)
+
+    with pytest.raises(BftIfaceNoIpV6Addr):
         dev.get_interface_ip6addr("erouter0")
 
 
