@@ -419,6 +419,17 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         ParValsParsClassArray_data = ParValsClassArray_type(*args, **kwargs)
         return ParValsParsClassArray_data
 
+    def spa_param_struct(self, k, v, o):
+        """Returns the structure of parameters to be passed in SPA
+        This is a helper method used by _build_input_structs function"""
+        return {
+            "Name": k,
+            "Notification": v,
+            "AccessListChange": o.get("access_param", "0"),
+            "AccessList": o.get("access_list", []),
+            "NotificationChange": o.get("notification_param", "1"),
+        }
+
     def _build_input_structs(self, cpeid, param, action, next_level=None, **kwargs):
         """Helper function to create the get structs used in the get/set param values
 
@@ -458,15 +469,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             list_kv = []
             for d in param:
                 k = next(iter(d))
-                list_kv.append(
-                    {
-                        "Name": k,
-                        "Notification": d[k],
-                        "AccessListChange": kwargs.get("access_param", "0"),
-                        "AccessList": kwargs.get("access_list", []),
-                        "NotificationChange": kwargs.get("notification_param", "1"),
-                    }
-                )
+                value_list = d[k] if type(d[k]) is list else [d[k]]
+                for i in value_list:
+                    list_kv.append(self.spa_param_struct(k, i, kwargs))
             p_arr_type = "ns0:SetParameterAttributesParametersClassArray"
             ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, list_kv)
 
@@ -813,7 +818,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         Example usage : acs_server.SPA({'Device.WiFi.SSID.1.SSID':'1'}),could be parameter list of dicts/dict containing param name and notifications
         :param param: parameter to be used in set
-        :type param: string
+        :type param: List of Dictionary or Dictionary
         :param kwargs : access_param,access_list,notification_param
         :returns: SPA response
         :rtype: dict
