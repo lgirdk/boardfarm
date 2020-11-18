@@ -56,13 +56,9 @@ class DNS:
                 self.dnsv4[self.device.name + ".boardfarm.com"].append(final)
 
     def _add_dnsv6_hosts(self):
-        gwv6 = ipaddress.IPv6Address(
-            re.search(
-                "wan-static-ipv6:" + "(" + AllValidIpv6AddressesRegex + ")",
-                self.device_options,
-            ).group(1)
-        )
-        self.dnsv6[self.device.name + ".boardfarm.com"].append(str(gwv6))
+        gwv6 = getattr(self.device, "gwv6", None)
+        if gwv6:
+            self.dnsv6[self.device.name + ".boardfarm.com"].append(str(gwv6))
 
     def _add_aux_hosts(self):
         self.auxv4 = ipaddress.IPv4Address(
