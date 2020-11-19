@@ -327,12 +327,14 @@ class DebianBox(linux.LinuxDevice):
         )
         self.expect(self.prompt)
 
+        set_iface_again = False
         if (
             not self.wan_no_eth0
             and not self.wan_dhcp
             and not self.install_pkgs_after_dhcp
             and not getattr(self, "standalone_provisioner", False)
         ):
+            set_iface_again = True
             self.sendline("ifconfig %s down" % self.iface_dut)
             self.expect(self.prompt)
 
@@ -391,6 +393,15 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("ip route del default via %s" % undo_default_route)
             self.expect(self.prompt)
 
+        if set_iface_again:
+            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+            self.expect(self.prompt)
+            self.sendline("ifconfig %s up" % self.iface_dut)
+            self.expect(self.prompt)
+            if self.static_route is not None:
+                self.sendline("ip route add %s" % self.static_route)
+                self.expect(self.prompt)
+
     def turn_on_pppoe(self):
         self.sendline("cat > /etc/ppp/pppoe-server-options << EOF")
         self.sendline("noauth")
@@ -415,19 +426,6 @@ class DebianBox(linux.LinuxDevice):
         # the entire reason to start tftp is to copy files to devices
         # which we do via ssh so let's start that as well
         self.start_sshd_server()
-
-        try:
-            eth1_addr = self.get_interface_ipaddr(self.iface_dut)
-        except Exception:
-            eth1_addr = None
-
-        # set WAN ip address, for now this will always be this address for the device side
-        # TODO: fix gateway for non-WAN tftp_server
-        if self.gw != eth1_addr:
-            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
-            self.expect(self.prompt)
-        self.sendline("ifconfig %s up" % self.iface_dut)
-        self.expect(self.prompt)
 
         # configure tftp server
         self.sendline("/etc/init.d/tftpd-hpa stop")
