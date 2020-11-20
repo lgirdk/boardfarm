@@ -37,6 +37,7 @@ class DebianBox(linux.LinuxDevice):
     tftp_dir = "/tftpboot"
     iface_dut = "eth1"
     gw = None
+    init_static_ip = ipaddress.ip_address("192.168.0.10")
 
     def parse_device_options(self, *args, **kwargs):
         self.args = args
@@ -92,7 +93,7 @@ class DebianBox(linux.LinuxDevice):
                         opt.replace("wan-static-ip:", "")
                     )
                     if "/" not in value:
-                        value = value + (u"/24")
+                        value = value + ("/24")
                     self.gw_ng = ipaddress.IPv4Interface(value)  # noqa : F821
                     self.nw = self.gw_ng.network
                     self.gw_prefixlen = self.nw._prefixlen
@@ -207,7 +208,8 @@ class DebianBox(linux.LinuxDevice):
 
     def configure_gw_ip(self):
         if self.gw is None:
-            self.gw_ng = ipaddress.IPv4Interface(six.text_type("192.168.0.1/24"))
+            self.gw_ng = ipaddress.ip_interface(f"{DebianBox.init_static_ip}/24")
+            DebianBox.init_static_ip += 1
             self.gw = self.gw_ng.ip
             self.nw = self.gw_ng.network
             self.gw_prefixlen = self.nw.prefixlen
