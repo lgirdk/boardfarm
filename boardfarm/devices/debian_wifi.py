@@ -7,7 +7,7 @@ import pycountry
 from debtcollector import moves
 
 from boardfarm.lib.installers import install_iw
-from boardfarm.lib.linux_nw_utility import NwDnsLookup
+from boardfarm.lib.linux_nw_utility import DHCP, NwDnsLookup
 from boardfarm.lib.wifi import wifi_client_stub
 
 from . import debian_lan
@@ -43,6 +43,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         ).ip
 
         self.dns = NwDnsLookup(self)
+        self.dhcp = DHCP.get_dhcp_object("client", self)
 
     @moves.moved_method("reset_wifi_iface")
     def disable_and_enable_wifi(self):

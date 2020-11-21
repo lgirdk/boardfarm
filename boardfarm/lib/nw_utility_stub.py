@@ -29,3 +29,10 @@ class NwDnsLookupStub:
     @abc.abstractmethod
     def nslookup(self, domain_name, opts="", extra_opts=""):
         raise NotImplementedError
+
+
+class DHCPStub:
+    class DHCPClientStub:
+        @abc.abstractmethod
+        def dhclient(self, interface, opts="", extra_opts=""):
+            raise NotImplementedError

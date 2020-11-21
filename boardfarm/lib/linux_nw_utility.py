@@ -2,6 +2,7 @@ from boardfarm.lib.dns_parser import DnsParser
 from boardfarm.lib.firewall_parser import iptable_parser
 from boardfarm.lib.netstat_parser import NetstatParser
 from boardfarm.lib.nw_utility_stub import (
+    DHCPStub,
     NwDnsLookupStub,
     NwFirewallStub,
     NwUtilityStub,
@@ -56,3 +57,24 @@ class NwDnsLookup(NwDnsLookupStub):
     def nslookup(self, domain_name, opts="", extra_opts=""):
         out = self.dev.check_output(f"nslookup {opts} {domain_name} {extra_opts}")
         return DnsParser().parse_nslookup_output(out)
+
+
+class DHCP(DHCPStub):
+    class DHCPClient(DHCPStub.DHCPClientStub):
+        def __init__(self, parent_device):
+            self.dev = parent_device
+
+        def dhclient(self, interface, opts="", extra_opts=""):
+            return self.dev.check_output(f"dhclient {opts} {interface} {extra_opts}")
+
+    class DHCPServer(DHCPClient):
+        """Operation on provisioner"""
+
+        pass
+
+    @staticmethod
+    def get_dhcp_object(role, parent_device):
+        if role == "client":
+            return DHCP.DHCPClient(parent_device)
+        if role == "server":
+            return DHCP.DHCPServer(parent_device)
