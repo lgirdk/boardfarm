@@ -4,18 +4,7 @@ from json import load
 import jsonschema
 
 from boardfarm.exceptions import ConfigKeyError
-
-
-def singleton(cls):
-    instances = {}
-
-    def getinstance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-
-        return instances[cls]
-
-    return getinstance
+from boardfarm.lib.wrappers import singleton
 
 
 @singleton

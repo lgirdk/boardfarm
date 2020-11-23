@@ -107,8 +107,8 @@ class DebianBox(linux.LinuxDevice):
                     self.static_route = opt.replace("wan-static-route:", "").replace(
                         "-", " via "
                     )
-                elif opt.startswith("mgmt-dns:"):
-                    value = six.text_type(opt.replace("mgmt-dns:", ""))  # noqa : F821
+                elif opt.startswith("mgmt_dns:"):
+                    value = opt.replace("mgmt_dns:", "").strip()
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip  # noqa : F821
                 elif opt == "lan-fixed-route-to-wan":
                     self.lan_fixed_route_to_wan = self.options[opt]
