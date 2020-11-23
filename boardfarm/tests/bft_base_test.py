@@ -5,6 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import logging
 import sys
 import time
 import traceback
@@ -26,6 +27,8 @@ from boardfarm.library import check_devices
 from boardfarm.orchestration import TearDown
 
 warnings.simplefilter("always", UserWarning)
+
+logger = logging.getLogger("bft")
 
 
 class _UnitTestCls(UTest):
@@ -253,6 +256,12 @@ class BftBaseTest(inherit_class):
                         self.test_main()
                     self.dev.board.touch()
                     break
+                except boardfarm.exceptions.BftSysExit:
+                    logger.critical("received BftSysExit exception, bailing out!")
+                    if _using_pytest:
+                        pytest.exit(msg="received BftSysExit exception, bailing out!")
+                    else:
+                        sys.exit(1)
                 except boardfarm.exceptions.SkipTest:
                     raise
                 except boardfarm.exceptions.ContingencyCheckError:
