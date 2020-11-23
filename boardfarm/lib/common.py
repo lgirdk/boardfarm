@@ -2086,3 +2086,38 @@ def get_class_name_in_stack(self, needle, haystack, not_found="needle_not_found"
     except IndexError:
         print(f"Needle: {needle} not found in given stack strace")
     return s
+
+
+def domain_ip_reach_check(device, reachable_count, unreachable_count, nslookup_output):
+    """To check the reachablility/unreachbility of IP in a domain
+        Resolve the domain and ping the IP from the domain
+
+    :param device: device name in which the nslookup and ping has to be done
+    :type device: object
+    :param reachable_count: count of IP address in domain to be reachable
+    :type reachable_count: int
+    :param unreachable_count: count of IP address in domain to be unreachable
+    :type unreachable_count: int
+    :param nslookup_output: output from nslookup command
+    :type nslookup_output: dictionary
+    :rtype: boolean
+    """
+    reachable = 0
+    unreachable = 0
+    ping_ip = nslookup_output["domain_ip_addr"]
+    for ip in ping_ip:
+        output = device.check_output(f"ping -c 4 {ip}")
+        match = re.search("4 packets transmitted, 4.*received, 0% packet loss", output)
+        if match:
+            reachable += 1
+        else:
+            unreachable += 1
+    # We check for ipv6 and ipv4 address reachablility/unreachability, but the count is common
+    # Hence we divide by 2 to match with the count
+    if (
+        int(reachable / 2) == reachable_count
+        and int(unreachable / 2) == unreachable_count
+    ):
+        return True
+    else:
+        return False
