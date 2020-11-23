@@ -5,11 +5,12 @@ import logging
 import os
 import sys
 import uuid
+from collections import UserList
 
 from aenum import Enum, extend_enum
-from six.moves import UserList
 
 from boardfarm.exceptions import DeviceDoesNotExistError
+from boardfarm.lib.wifi_lib.manager import WiFiMgr
 
 logging.basicConfig(stream=sys.stdout, format="%(message)s")
 logger = logging.getLogger("DeviceManager")
@@ -74,6 +75,8 @@ class device_array_type(Enum):
     wan_clients = 1
     lan_clients = 2
     wlan_clients = 3
+
+    _arrays = {"wan_clients": [], "lan_clients": [], "wlan_clients": WiFiMgr()}
 
 
 class device_location(Enum):
@@ -174,7 +177,9 @@ class device_manager(UserList):
     def set_device_array(self, array_name, dev, override):
         """Set Device Array details."""
         if getattr(device_array_type, array_name, None):
-            dev_array = getattr(self, array_name, [])
+            dev_array = getattr(
+                self, array_name, device_array_type._arrays.value[array_name]
+            )
             for i in dev_array:
                 if i.ipaddr == dev.ipaddr:
                     if i.port == dev.port:
