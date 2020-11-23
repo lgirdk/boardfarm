@@ -25,7 +25,10 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def __init__(self, *args, **kwargs):
         """Initialise wifi interface."""
 
-        self.wifi_band = kwargs.get("band", None)
+        # WLAN parameters
+        self.band = kwargs.get("band", None)
+        self.authentication = "NONE"
+
         self.parse_device_options(*args, **kwargs)
         self.iface_dut = self.iface_wifi = self.kwargs.get("dut_interface", "wlan1")
 
@@ -315,3 +318,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.expect(pexpect.TIMEOUT, timeout=20)
         verify_connect = self.wifi_connectivity_verify()
         assert verify_connect is True, "Connection establishment in WIFI"
+
+    def set_authentication(self, auth_type):
+        pass
