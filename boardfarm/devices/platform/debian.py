@@ -23,6 +23,7 @@ from boardfarm.devices import linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.installers import apt_install
+from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
 
 class DebianBox(linux.LinuxDevice):
@@ -566,16 +567,40 @@ class DebianBox(linux.LinuxDevice):
                 for i in host_dicts:
                     _update_host_dict(i)
             if config is not None and hasattr(config, "board"):
-                for dev in config.devices:
-                    d = getattr(config, dev, None)
-                    if hasattr(d, "dns"):
-                        v4_hosts = d.dns.hosts_v4
-                        v6_hosts = d.dns.hosts_v6
-                        for host_val in v4_hosts, v6_hosts:
-                            for host, ips in host_val.items():
-                                for ip in set(ips):
-                                    self.hosts[host].append(ip)
+                for device in config.board["devices"]:
+                    # TODO: this should be different...
+                    if "lan" in device["name"]:
+                        continue
+                    d = getattr(config, device["name"])
+                    domain_name = device["name"] + ".boardfarm.com"
+                    final = None
+                    if "wan-static-ip:" in str(device):
+                        final = str(
+                            re.search(
+                                "wan-static-ip:" + "(" + ValidIpv4AddressRegex + ")",
+                                device["options"],
+                            ).group(1)
+                        )
+                    elif "ipaddr" in device:
+                        final = str(device["ipaddr"])
+                    elif hasattr(d, "ipaddr"):
+                        final = str(d.ipaddr)
 
+                    if final == "localhost":
+                        if hasattr(d, "gw"):
+                            final = str(d.gw)
+                        elif hasattr(d, "iface_dut"):
+                            final = d.get_interface_ipaddr(d.iface_dut)
+                        else:
+                            final = None
+                    if final is not None:
+                        self.hosts[domain_name].append(final)
+
+                    # for IPv6 part:
+                    # each device should setup it's own v6 host
+                    # TODO: need to change iteration of device via device manager.
+                    if getattr(d, "gwv6", None):
+                        self.hosts[domain_name].append(str(d.gwv6))
         if self.hosts:
             self.sendline("cat > /etc/dnsmasq.hosts << EOF")
             for host, ips in self.hosts.items():
