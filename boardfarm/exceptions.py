@@ -23,6 +23,12 @@ class IndexError(BftBaseException):
     pass
 
 
+class TeardownError(BftBaseException):
+    """Raise this if the teardown Fails" """
+
+    pass
+
+
 class TestImportError(Exception):
     """Raise this if there is an exception when importing a test."""
 
