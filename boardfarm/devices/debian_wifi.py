@@ -6,8 +6,9 @@ import pexpect
 import pycountry
 from debtcollector import moves
 
+from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_iw
-from boardfarm.lib.linux_nw_utility import DHCP, NwDnsLookup
+from boardfarm.lib.linux_nw_utility import DHCP
 from boardfarm.lib.wifi import wifi_client_stub
 
 from . import debian_lan
@@ -42,7 +43,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             kwargs.pop("lan_gateway", "192.168.1.1/24")
         ).ip
 
-        self.dns = NwDnsLookup(self)
+        self.dns = DNS(self, {}, {})
         self.dhcp = DHCP.get_dhcp_object("client", self)
 
     @moves.moved_method("reset_wifi_iface")
