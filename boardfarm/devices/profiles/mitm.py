@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Linux based DSLite server using ISC AFTR."""
+import atexit
 import re
 from ast import literal_eval
+from typing import List
 
 import pexpect
 
@@ -42,6 +44,7 @@ class MITM(base_profile.BaseProfile):
 
         self.log_name = self.dev_mgr.board.config.get_station() + ".mitm"
         self._tr069_ips = None
+        atexit.register(self.stop_capture)
 
         MITM.configure_profile(self)
 
@@ -113,7 +116,7 @@ class MITM(base_profile.BaseProfile):
         else:
             print(f"Device {device_name} is not found in device manager.")
 
-    def start_capture(self, devices: list) -> None:
+    def start_capture(self, devices: List[str]) -> None:
         """Add iptables rules if not done yet.
         Rewrite DNS for each provided device if not rewritten yet.
         Start capturing traffic in background to log file if not started yet.
@@ -173,8 +176,9 @@ class MITM(base_profile.BaseProfile):
                 f"Did not find headers. Dump file is empty or no packets satisfy {filter_str} filter"
             )
             return
-        headers = literal_eval(headers.pop().strip("\r"))
-        return headers
+        headers = headers.pop().strip("\r")
+        self.logfile_read.write(headers)
+        return literal_eval(headers)
 
     def get_tr069_body(self, filter_str=None):
         """Return body for last captured packet that comply with filter.
@@ -193,5 +197,6 @@ class MITM(base_profile.BaseProfile):
                 f"Did not find body. Dump file is empty or no packets satisfy {filter_str} filter"
             )
             return
-        body = literal_eval(bodies.pop().strip("\r"))
-        return body
+        body = bodies.pop().strip("\r")
+        self.logfile_read.write(body)
+        return literal_eval(body)
