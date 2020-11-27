@@ -10,13 +10,12 @@ import re
 
 import pexpect
 import six
+from debtcollector import moves
 
 from boardfarm.devices.platform import debian
-from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import apt_install
-from boardfarm.lib.network_helper import valid_ipv4
 
 
 class DebianLAN(debian.DebianBox):
@@ -83,68 +82,42 @@ class DebianLAN(debian.DebianBox):
             self.sendcontrol("c")
             self.expect(self.prompt)
 
-    def start_lan_client(self, wan_gw=None, ipv4_only=False):
-        ipv4, ipv6 = None, None
+    def __kill_dhclient(self, ipv4=True):
+        dhclient_str = f"dhclient {'-4' if ipv4 else '-6'}"
+
+        # bring ip link down and up
         self.sendline(
             "ip link set down %s && ip link set up %s"
             % (self.iface_dut, self.iface_dut)
         )
         self.expect(self.prompt)
-
-        self.sendline("dhclient -4 -r %s" % self.iface_dut)
-        self.expect(self.prompt)
-        self.sendline("dhclient -6 -r -i %s" % self.iface_dut)
-        self.expect(self.prompt, timeout=60)
-
-        self.sendline("kill $(</run/dhclient6.pid)")
-        self.expect(self.prompt)
-
-        self.sendline("kill $(</run/dhclient.pid)")
-        self.expect(self.prompt)
+        if ipv4:
+            self.release_dhcp(self.iface_dut)
+        else:
+            self.release_ipv6(self.iface_dut)
 
         self.sendline("ps aux")
-        if self.expect(["dhclient"] + self.prompt) == 0:
+        if self.expect([dhclient_str] + self.prompt) == 0:
             print("WARN: dhclient still running, something started rogue client!")
-            self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+            self.sendline(f"pkill --signal 9 -f {dhclient_str}.*{self.iface_dut}")
             self.expect(self.prompt)
 
-        if not ipv4_only:
+        self.sendline(f"kill $(</run/dhclient{'' if ipv4 else 6}.pid)")
+        self.expect(self.prompt)
 
-            self.disable_ipv6(self.iface_dut)
-            self.enable_ipv6(self.iface_dut)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
-
-            # check if board is providing an RA, if yes use that detail to perform DHCPv6
-            # default method used will be statefull DHCPv6
-            output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
-            M_bit, O_bit = True, True
-            if "Prefix" in output:
-                M_bit, O_bit = map(
-                    lambda x: "Yes" in x, re.findall(r"Stateful.*\W", output)
-                )
-
-            # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
-            if not M_bit and O_bit:
-                self.sendline("dhclient -S -v %s" % self.iface_dut)
-                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
-                    self.sendcontrol("c")
-                    self.expect(self.prompt)
-
-            # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
-            elif M_bit and O_bit:
-                self.sendline("dhclient -6 -i -v %s" % self.iface_dut)
-                if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
-                    self.sendcontrol("c")
-                    self.expect(self.prompt)
-
-            # if env is dual, code should always return an IPv6 address
-            # need to actually throw an error, for IPv6 not receiving an IP
-            try:
-                ipv6 = self.get_interface_ip6addr(self.iface_dut)
-            except Exception:
-                pass
-
+    def configure_docker_iface(self):
+        """configure eth0 changes"""
         self.disable_ipv6("eth0")
+
+        # TODO: don't hard code eth0
+        self.sendline("ip route del default dev eth0")
+        self.expect(self.prompt)
+
+    def start_ipv4_lan_client(self, wan_gw=None):
+        """restart ipv4 dhclient on lan device"""
+        ipv4 = None
+
+        self.__kill_dhclient()
 
         self.sendline("\nifconfig %s 0.0.0.0" % self.iface_dut)
         self.expect(self.prompt)
@@ -168,24 +141,13 @@ class DebianLAN(debian.DebianBox):
 
         self.configure_dhclient((["60", True], ["61", True]))
 
-        # TODO: don't hard code eth0
-        self.sendline("ip route del default dev eth0")
-        self.expect(self.prompt)
         for _ in range(3):
             try:
-                self.sendline("dhclient -4 -v %s" % self.iface_dut)
-                if 0 == self.expect(["DHCPOFFER"] + self.prompt, timeout=30):
-                    self.expect(self.prompt)
-                    break
-                else:
-                    retry_on_exception(
-                        valid_ipv4,
-                        (self.get_interface_ipaddr(self.iface_dut),),
-                        retries=5,
-                    )
-                    break
+                self.renew_dhcp(self.iface_dut)
+                ipv4 = self.get_interface_ipaddr(self.iface_dut)
+                break
             except Exception:
-                self.sendline("killall dhclient")
+                self.__kill_dhclient()
                 self.sendcontrol("c")
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
@@ -218,10 +180,75 @@ class DebianLAN(debian.DebianBox):
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
             self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
-        self.sendline("ip -6 route")
-        self.expect(self.prompt)
 
-        # Setup HTTP proxy, so board webserver is accessible via this device
+        if wan_gw is not None and hasattr(self, "lan_fixed_route_to_wan"):
+            self.sendline("ip route add %s via %s" % (wan_gw, self.lan_gateway))
+            self.expect(self.prompt)
+        ipv4 = self.get_interface_ipaddr(self.iface_dut)
+
+        return ipv4
+
+    def start_ipv6_lan_client(self, wan_gw=None):
+        """restart ipv6 dhclient on lan device"""
+        ipv6 = None
+
+        self.__kill_dhclient(False)
+
+        self.disable_ipv6(self.iface_dut)
+        self.enable_ipv6(self.iface_dut)
+        self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+
+        # check if board is providing an RA, if yes use that detail to perform DHCPv6
+        # default method used will be statefull DHCPv6
+        output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
+        M_bit, O_bit = True, True
+        if "Prefix" in output:
+            M_bit, O_bit = map(
+                lambda x: "Yes" in x, re.findall(r"Stateful.*\W", output)
+            )
+
+        # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
+        if not M_bit and O_bit:
+            self.renew_ipv6(self.iface_dut, stateless=True)
+
+        # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
+        elif M_bit and O_bit:
+            self.renew_ipv6(self.iface_dut)
+
+        # if env is dual, code should always return an IPv6 address
+        # need to actually throw an error, for IPv6 not receiving an IP
+        try:
+            ipv6 = self.get_interface_ip6addr(self.iface_dut)
+        except Exception:
+            pass
+
+        return ipv6
+
+    @moves.moved_method("start_ipv6_lan_client & start_ipv4_lan_client")
+    def start_lan_client(self, wan_gw=None, ipv4_only=False):
+        ipv4, ipv6 = None, None
+
+        self.configure_docker_iface()
+
+        if not ipv4_only:
+            ipv6 = self.start_ipv6_lan_client(wan_gw)
+
+        ipv4 = self.start_ipv4_lan_client(wan_gw)
+
+        self.configure_proxy_pkgs()
+
+        return ipv4, ipv6
+
+    def configure_proxy_pkgs(self):
+        self.__start_http_proxy()
+        self.__add_ssh_proxy()
+        self.__passwordless_setting()
+
+        if self.install_pkgs_after_dhcp:
+            self.install_pkgs()
+
+    def __start_http_proxy(self):
+        """Setup HTTP proxy, so board webserver is accessible via this device"""
         self.sendline("curl --version")
         self.expect_exact("curl --version")
         self.expect(self.prompt)
@@ -230,7 +257,9 @@ class DebianLAN(debian.DebianBox):
         self.sendline("nmap --version")
         self.expect(self.prompt)
         self.start_webproxy(self.dante)
-        # Write a useful ssh config for routers
+
+    def __add_ssh_proxy(self):
+        """Write a useful ssh config for routers"""
         self.sendline("mkdir -p ~/.ssh")
         self.sendline("cat > ~/.ssh/config << EOF")
         self.sendline("Host %s" % self.lan_gateway)
@@ -243,7 +272,9 @@ class DebianLAN(debian.DebianBox):
         self.sendline("UserKnownHostsFile=/dev/null")
         self.sendline("EOF")
         self.expect(self.prompt)
-        # Copy an id to the router so people don't have to type a password to ssh or scp
+
+    def __passwordless_setting(self):
+        """Copy an id to the router so people don't have to type a password to ssh or scp"""
         self.sendline("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
         self.expect_exact("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
         if 0 == self.expect(["SSH"] + self.prompt, timeout=5) and not self.is_bridged:
@@ -264,16 +295,6 @@ class DebianLAN(debian.DebianBox):
         else:
             self.sendcontrol("c")
             self.expect(self.prompt)
-
-        if self.install_pkgs_after_dhcp:
-            self.install_pkgs()
-
-        if wan_gw is not None and hasattr(self, "lan_fixed_route_to_wan"):
-            self.sendline("ip route add %s via %s" % (wan_gw, self.lan_gateway))
-            self.expect(self.prompt)
-        ipv4 = self.get_interface_ipaddr(self.iface_dut)
-
-        return ipv4, ipv6
 
     def configure_dhclient(self, dhcpopt):
         """configure dhclient options in lan dhclient.conf
