@@ -57,6 +57,7 @@ class SoftPhone(object):
             + """
         echo --password=1234
         echo --null-audio
+        echo --max-calls=1
         )> """
             + self.config_name
         )
