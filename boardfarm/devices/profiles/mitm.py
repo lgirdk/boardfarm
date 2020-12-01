@@ -157,7 +157,8 @@ class MITM(base_profile.BaseProfile):
         """
         for device in self.mitm_dns_active:
             self._unset_dns_mitm(device)
-        self.check_output(f"kill {self.mitm_pid}")
+        if self.mitm_pid:
+            self.check_output(f"kill {self.mitm_pid}")
 
     def get_tr069_headers(self, filter_str=None) -> [str, None]:
         """Return headers for last captured packet that comply with filter.
