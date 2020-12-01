@@ -359,9 +359,12 @@ def connect_to_devices(config):
 
             # Notify boardfarm server of station & devices we are using
             bfweb.checkout(config.board)
-            logger.debug(
-                "Checked out board named = %s, type = %s ..."
-                % (name, config.board["board_type"])
+            logger.info(
+                colored(
+                    f"Checked out board named = {name}, type = {config.board['board_type']} ...",
+                    color="green",
+                    attrs=["bold"],
+                )
             )
 
             time.sleep(5)  # let it appear as taken on the dash
@@ -463,7 +466,11 @@ def connect_to_devices(config):
         finally:
             if not connected_to_board:
                 logger.warning(
-                    f"Failed to connect to a board or device on {name} {reason}"
+                    colored(
+                        f"Failed to connect to a board or device on {name}: {reason}",
+                        color="red",
+                        attrs=["bold"],
+                    )
                 )
                 if board:
                     board.close()
@@ -472,6 +479,11 @@ def connect_to_devices(config):
                         if dev:
                             dev.close()
                 bfweb.checkin()
+                logger.info(
+                    colored(
+                        f"Checking in board named = {name}", color="red", attrs=["bold"]
+                    )
+                )
                 time.sleep(5)
             else:
                 atexit.register(bfweb.checkin)
