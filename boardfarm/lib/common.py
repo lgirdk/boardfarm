@@ -24,6 +24,7 @@ import termcolor
 from selenium import webdriver
 from termcolor import cprint
 
+from boardfarm.dbclients import elasticlogger
 from boardfarm.lib.bft_pexpect_helper import (
     bft_pexpect_helper,
     spawn_ssh_pexpect,
@@ -2121,3 +2122,21 @@ def domain_ip_reach_check(device, reachable_count, unreachable_count, nslookup_o
         return True
     else:
         return False
+
+
+def send_to_elasticsearch(elastic_url, data):
+    """Send data to ElasticSearch Server, if configured
+
+    :param elastic_url : elastic_search url (Eg: "http://172.19.17.134:9200/")
+    :type  elastic_url : string
+    :param data : Json/dict data to send
+    :type data : dict/json
+    """
+    try:
+        if elastic_url:
+            elasticlogger.ElasticsearchLogger(elastic_url).log(data)
+        else:
+            print("Empty url received.")
+    except Exception as e:
+        print(e)
+        print(f"Unable to store results to elasticsearch_server '{elastic_url}'")

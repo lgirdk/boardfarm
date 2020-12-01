@@ -26,16 +26,11 @@ import psutil
 
 import boardfarm.exceptions
 from boardfarm import devices, library, tests
-from boardfarm.dbclients import (
-    boardfarmwebclient,
-    elasticlogger,
-    logstash,
-    mongodblogger,
-)
+from boardfarm.dbclients import boardfarmwebclient, logstash, mongodblogger
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.lib import DeviceManager
 from boardfarm.lib.bft_logging import create_file_logs, write_test_log
-from boardfarm.lib.common import check_url
+from boardfarm.lib.common import check_url, send_to_elasticsearch
 from boardfarm.lib.env_helper import EnvHelper
 from boardfarm.zephyr import zephyr_reporter
 
@@ -700,21 +695,7 @@ def main():
         )
 
     # Send Results to ElasticSearch, if configured
-    try:
-        if config.elasticsearch_server is not None:
-            elasticlogger.ElasticsearchLogger(config.elasticsearch_server).log(
-                info_for_remote_log
-            )
-        else:
-            logger.debug(
-                "No elasticsearch_server specified in config. Results stored locally"
-            )
-    except Exception as e:
-        logger.warning(e)
-        logger.warning(
-            "Unable to store results to elasticsearch_server specified in config. "
-            "Results stored locally."
-        )
+    send_to_elasticsearch(config.elasticsearch_server, info_for_remote_log)
 
     # Send Results to MongoDB, if configured
     try:
