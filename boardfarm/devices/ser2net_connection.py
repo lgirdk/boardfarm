@@ -52,6 +52,7 @@ class Ser2NetConnection:
             result = self.device.expect(
                 [
                     "assword:",
+                    "Connection refused",
                     "ser2net.*\r\n",
                     "OpenGear Serial Server",
                     "to access the port escape menu",
@@ -61,6 +62,9 @@ class Ser2NetConnection:
             raise Exception("Board is in use (connection refused).")
         if result == 0:
             raise Exception("Password required and not supported")
+        elif result == 1:
+            raise Exception("Board is in use (connection refused).")
+        return True
 
     def close(self, force=True):
         """Close the connection."""
