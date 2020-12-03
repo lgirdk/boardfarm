@@ -2103,8 +2103,7 @@ def domain_ip_reach_check(device, reachable_count, unreachable_count, nslookup_o
     :type nslookup_output: dictionary
     :rtype: boolean
     """
-    reachable = 0
-    unreachable = 0
+    reachable = unreachable = 0
     ping_ip = nslookup_output["domain_ip_addr"]
     for ip in ping_ip:
         output = device.check_output(f"ping -c 4 {ip}")
@@ -2113,15 +2112,7 @@ def domain_ip_reach_check(device, reachable_count, unreachable_count, nslookup_o
             reachable += 1
         else:
             unreachable += 1
-    # We check for ipv6 and ipv4 address reachablility/unreachability, but the count is common
-    # Hence we divide by 2 to match with the count
-    if (
-        int(reachable / 2) == reachable_count
-        and int(unreachable / 2) == unreachable_count
-    ):
-        return True
-    else:
-        return False
+    return int(reachable) == reachable_count and int(unreachable) == unreachable_count
 
 
 def send_to_elasticsearch(elastic_url, data):

@@ -78,13 +78,32 @@ class DNS:
         )
         self.dnsv6[self.device.name + ".boardfarm.com"].append(str(self.auxv6))
 
-    def configure_hosts(self, reachable_ips: int, unreachable_ips: int):
-        val_v4 = self.hosts_v4[self.device.name + ".boardfarm.com"][:reachable_ips]
-        val_v6 = self.hosts_v6[self.device.name + ".boardfarm.com"][:reachable_ips]
+    def configure_hosts(
+        self,
+        reachable_ipv4: int,
+        unreachable_ipv4: int,
+        reachable_ipv6: int,
+        unreachable_ipv6: int,
+    ):
+        """
+        Method to create the given number of reachable and unreachable ACS domain IP's
+
+        :param reachable_ipv4: no.of reachable IPv4 address for acs url
+        :type reachable_ipv4: int
+        :param unreachable_ipv4: no.of unreachable IPv4 address for acs url
+        :type unreachable_ipv4: int
+        :param reachable_ipv6: no.of reachable IPv6 address for acs url
+        :type reachable_ipv6: int
+        :param unreachable_ipv6: no.of unreachable IPv6 address for acs url
+        :type unreachable_ipv6: int
+        """
+        val_v4 = self.hosts_v4[self.device.name + ".boardfarm.com"][:reachable_ipv4]
+        val_v6 = self.hosts_v6[self.device.name + ".boardfarm.com"][:reachable_ipv6]
         self.hosts_v4[self.device.name + ".boardfarm.com"] = val_v4
         self.hosts_v6[self.device.name + ".boardfarm.com"] = val_v6
-        for val in range(unreachable_ips):
+        for val in range(unreachable_ipv4):
             ipv4 = self.auxv4 + (val + 1)
-            ipv6 = self.auxv6 + (val + 1)
             self.hosts_v4[self.device.name + ".boardfarm.com"].append(str(ipv4))
+        for val in range(unreachable_ipv6):
+            ipv6 = self.auxv6 + (val + 1)
             self.hosts_v6[self.device.name + ".boardfarm.com"].append(str(ipv6))
