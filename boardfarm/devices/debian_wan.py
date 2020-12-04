@@ -22,6 +22,7 @@ class DebianWAN(debian.DebianBox):
     shared_tftp_server = False
     gwv6 = None
     ipv6_prefix = 64
+    auth_dns = False
 
     def __init__(self, *args, **kwargs):
         self.parse_device_options(*args, **kwargs)
