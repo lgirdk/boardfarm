@@ -105,6 +105,13 @@ EOF"""
         self.sendline("killall -9 asterisk")
         self.expect(self.prompt)
 
+    def stop(self):
+        """This function kills all the asterisk instances.
+
+        The description of the function is subjected to change during Sipcenter Interface addition.
+        """
+        self.kill_asterisk()
+
     def enter_asterisk_console(self):
         """Enter the asterisk console."""
         self.sendline("asterisk -rv")
