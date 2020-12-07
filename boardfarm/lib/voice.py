@@ -66,7 +66,7 @@ def voice_devices_configure(voice_devices_list, sip_server):
                         sip_server.get_interface_ipaddr(sip_server.iface_dut)
                     )
     except Exception as e:
-        sip_server.kill_asterisk()
+        sip_server.stop()
         raise Exception(
             "Unable to initialize Voice devices, failed due to the error : ", e
         )
