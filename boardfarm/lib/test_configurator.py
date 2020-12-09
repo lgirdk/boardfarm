@@ -40,6 +40,7 @@ class BoardfarmTestConfig:
         self.regex_config = []
         self.retry = 0
         self.test_args_location = os.environ.get("BFT_ARGS", None)
+        self.elasticsearch_server = os.environ.get("BFT_ELASTICSERVER", None)
         self.test_args = None
         self.err_injection_dict = {}
 

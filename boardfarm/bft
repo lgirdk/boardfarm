@@ -52,6 +52,11 @@ logging.config.dictConfig(
                 "handlers": ["console"],
             },
             "bft": {"level": "DEBUG", "propagate": False, "handlers": ["console"]},
+            "elk-reporter": {
+                "level": "DEBUG",
+                "propagate": False,
+                "handlers": ["console"],
+            },
         },
     }
 )
