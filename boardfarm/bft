@@ -23,6 +23,7 @@ from datetime import datetime
 
 import matplotlib
 import psutil
+from termcolor import colored
 
 import boardfarm.exceptions
 from boardfarm import devices, library, tests
@@ -242,9 +243,13 @@ def connect_to_devices(config):
             with open(config.test_args_location, "r") as fp:
                 config.test_args = json.load(fp)
         except Exception as e:
-            print(e)
-            print(
-                "ERROR: unable to fetch test args from %s" % config.test_args_location
+            logger.error(e)
+            logger.error(
+                colored(
+                    f"ERROR: unable to fetch test args from {repr(config.test_args_location)}",
+                    color="red",
+                    attrs=["bold"],
+                )
             )
             sys.exit(1)
 
@@ -252,8 +257,6 @@ def connect_to_devices(config):
 
     # Find & import all available device classes
     devices.probe_devices()
-
-    from termcolor import colored
 
     os.environ["TERM"] = "dumb"
 

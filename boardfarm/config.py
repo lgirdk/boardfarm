@@ -8,12 +8,15 @@
 import glob
 import importlib
 import json
+import logging
 import os
 
 import requests
+from termcolor import colored
 
 import boardfarm
 
+logger = logging.getLogger("bft")
 local_path = os.path.dirname(os.path.realpath(__file__))
 
 # Boardfarm configuration describes test stations - see boardfarm doc.
@@ -171,6 +174,16 @@ META_BUILD = None
 # BFT_ARGS points to json file for test args.
 # File needs to be a flat json.
 test_args_location = os.environ.get("BFT_ARGS", None)
+if not test_args_location:
+    logger.warning(
+        colored(
+            "BFT_ARGS not set, is this intentional?",
+            color="yellow",
+            attrs=["bold"],
+        )
+    )
+
+
 test_args = None
 
 # The following is a dictionary use for the error injection feature
