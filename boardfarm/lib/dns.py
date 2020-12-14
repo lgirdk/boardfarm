@@ -107,3 +107,18 @@ class DNS:
         for val in range(unreachable_ipv6):
             ipv6 = self.auxv6 + (val + 1)
             self.hosts_v6[self.device.name + ".boardfarm.com"].append(str(ipv6))
+
+    def configure_backup_domain(self, count: int):
+        """
+        To configure number of duplicate domain names for the device IP
+
+        :param count: number of required duplicate domain name
+        :type count: int
+        """
+        for cnt in range(count):
+            self.hosts_v4[
+                self.device.name + str(cnt) + ".boardfarm.com"
+            ] = self.hosts_v4.get(self.device.name + ".boardfarm.com")
+            self.hosts_v6[
+                self.device.name + str(cnt) + ".boardfarm.com"
+            ] = self.hosts_v6.get(self.device.name + ".boardfarm.com")
