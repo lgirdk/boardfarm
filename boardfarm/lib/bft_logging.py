@@ -7,6 +7,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import inspect
+import logging
 import os
 import re
 import sys
@@ -18,6 +19,8 @@ import debtcollector
 from termcolor import colored
 
 from boardfarm.lib.ConfigHelper import ConfigHelper
+
+logger = logging.getLogger("bft")
 
 
 def now_short(_format="%Y%m%d-%H%M%S"):
@@ -231,10 +234,10 @@ def log_message(s, msg, header=False):
     line_sep = "=" * min(len(msg), 80)
     full_msg = "\n\t\t" + line_sep + "\n\t\t" + msg + "\n\t\t" + line_sep + "\n"
     if header:
-        print("\n\n\t\t\t***" + msg + "***\n\n")
+        logger.debug("\n\n\t\t\t***" + msg + "***\n\n")
         s.log_to_file += now_short() + full_msg + "\r\n"
     else:
-        print(full_msg)
+        logger.debug(full_msg)
         s.log_to_file += now_short() + msg + "\r\n"
 
 
@@ -323,7 +326,7 @@ def create_file_logs(config, board, tests_to_run, logger):
                     {"time": timestamp, "text": str(text), "name": name}
                 )
             except Exception as error:
-                print(error)
+                logger.error(error)
                 logger.debug("Failed to parse log line = %s" % repr(line))
 
     idx = 1
@@ -347,7 +350,7 @@ def create_file_logs(config, board, tests_to_run, logger):
                             "%s: [%s] %s\n" % (e["name"], e["time"], repr(e["text"]))
                         )
                 except Exception as error:
-                    print(error)
+                    logger.error(error)
                     logger.debug("failed to parse line: %s" % repr(e))
 
     import operator

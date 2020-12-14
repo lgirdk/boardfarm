@@ -11,7 +11,6 @@ import atexit
 import inspect
 import json
 import logging
-import logging.config
 import os
 import queue
 import random
@@ -35,33 +34,6 @@ from boardfarm.lib.common import check_url, send_to_elasticsearch
 from boardfarm.lib.env_helper import EnvHelper
 from boardfarm.zephyr import zephyr_reporter
 
-logging.config.dictConfig(
-    {
-        "version": 1,
-        "formatters": {"bft_fmt": {"format": "%(message)s"}},
-        "handlers": {
-            "console": {
-                "level": "DEBUG",
-                "class": "logging.StreamHandler",
-                "formatter": "bft_fmt",
-            },
-        },
-        "loggers": {
-            "zeep.transports": {
-                "level": "DEBUG",
-                "propagate": False,
-                "handlers": ["console"],
-            },
-            "bft": {"level": "DEBUG", "propagate": False, "handlers": ["console"]},
-            "elk-reporter": {
-                "level": "DEBUG",
-                "propagate": False,
-                "handlers": ["console"],
-            },
-        },
-    }
-)
-# DEBUG, INFO, WARNING, ERROR, CRITICAL
 logger = logging.getLogger("bft")
 
 # Try to catch common mistakes: not installing boardfarm, or
@@ -102,10 +74,10 @@ def bfcleanup():
     pid = os.getpid()
     for child in psutil.Process(pid).children(recursive=True):
         try:
-            print("Killing process '{}'".format(child.name()))
+            logger.debug("Killing process '{}'".format(child.name()))
             child.kill()
         except Exception as e:
-            print("Failed to kill '{}':  {}".format(child.name(), e))
+            logger.error("Failed to kill '{}':  {}".format(child.name(), e))
 
 
 def threaded_device_helper(device, device_mgr, ret):
@@ -264,7 +236,7 @@ def connect_to_devices(config):
     try:
         os.mkdir(config.output_dir)
     except Exception as error:
-        print(error)
+        logger.error(error)
 
     # Setup boardfarm client even if config is a local file (in which
     # case this will do nothing)
@@ -558,7 +530,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                 try:
                     t = tests.available_tests[name]
                 except Exception as error:
-                    print(error)
+                    logger.error(error)
                     raise Exception(
                         "Unable to load %s test from tests class!!!! Parsing of test selected via -e failed"
                         % name

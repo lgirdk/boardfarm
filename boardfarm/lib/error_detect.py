@@ -5,15 +5,18 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 """Global functions to detect errors occurring in Kernel."""
+import logging
 import os
 import re
 
 import termcolor
 
+logger = logging.getLogger("bft")
+
 
 def print_bold(msg):
-    """Print the message in bold."""
-    termcolor.cprint(msg, None, attrs=["bold"])
+    """Print the message in bold when debugging is enabled."""
+    logger.debug(termcolor.colored(msg, None, attrs=["bold"]))
 
 
 # Add this to your env if you need to disable this for some reason
@@ -55,7 +58,7 @@ def detect_crashdump_error(console, s):
                     tftp_expect + ["Resetting with watch dog!"] + console.uprompt
                 )
         except Exception as error:
-            print(error)
+            logger.error(error)
             print_bold("Crashdump upload failed")
         else:
             print_bold("Crashdump upload succeeded")

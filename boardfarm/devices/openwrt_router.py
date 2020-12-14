@@ -7,6 +7,7 @@
 
 import atexit
 import ipaddress
+import logging
 import os
 import os.path
 import socket
@@ -19,6 +20,8 @@ from boardfarm.lib import common
 from boardfarm.lib.common import print_bold
 
 from . import connection_decider, linux, power
+
+logger = logging.getLogger("bft")
 
 try:
     # Python 3
@@ -94,7 +97,7 @@ class OpenWrtRouter(linux.LinuxDevice):
             conn_cmd = self.conn_list[0]
 
         if connection_type is None:
-            print("\nWARNING: Unknown connection type using ser2net\n")
+            logger.warning("\nWARNING: Unknown connection type using ser2net\n")
             connection_type = "ser2net"
 
         self.connection = connection_decider.connection(
@@ -142,7 +145,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         proxy = ProxyHandler({"http": self.web_proxy + ":8080"})
         opener = build_opener(proxy)
         install_opener(opener)
-        print(
+        logger.info(
             "\nAttempting download of %s via proxy %s" % (url, self.web_proxy + ":8080")
         )
         return urlopen(url, timeout=30)
@@ -185,7 +188,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect(self.uprompt)
                 return ret
             except Exception:
-                print("\nTFTP failed, let us try that again")
+                logger.error("\nTFTP failed, let us try that again")
                 self.sendcontrol("c")
                 self.expect(self.uprompt)
         raise Exception("TFTP failed, try rebooting the board.")
@@ -233,7 +236,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect("U-Boot", timeout=30)
                 i = self.expect(["Hit any key ", "gpio 17 value 1"] + self.uprompt)
                 if i == 1:
-                    print(
+                    logger.warning(
                         "\n\nWARN: possibly need to hold down reset button to break into U-Boot\n\n"
                     )
                     self.expect("Hit any key ")
@@ -248,11 +251,11 @@ class OpenWrtRouter(linux.LinuxDevice):
                 self.expect(self.uprompt, timeout=4)
                 break
             except Exception:
-                print("\n\nFailed to break into uboot, try again.")
+                logger.error("\n\nFailed to break into uboot, try again.")
                 self.reset()
         else:
             # Tried too many times without success
-            print("\nUnable to break into U-Boot, test will likely fail")
+            logger.error("\nUnable to break into U-Boot, test will likely fail")
 
         self.check_memory_addresses()
 
@@ -291,7 +294,7 @@ class OpenWrtRouter(linux.LinuxDevice):
             ]
         )
         if "StreamBoost" in self.before:
-            print("test_msg: Sleeping for Streamboost")
+            logger.debug("test_msg: Sleeping for Streamboost")
             self.expect(pexpect.TIMEOUT, timeout=45)
         else:
             self.expect(pexpect.TIMEOUT, timeout=15)
@@ -346,7 +349,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     passed = True
                     break
                 except Exception:
-                    print("ping failed, trying again")
+                    logger.error("ping failed, trying again")
                     # Try other interface
                     self.sendcontrol("c")
                     self.expect("<INTERRUPT>")
@@ -446,7 +449,7 @@ class OpenWrtRouter(linux.LinuxDevice):
             except Exception:
                 pass
         else:
-            print("WARN: Overlay still not mounted")
+            logger.warning("WARN: Overlay still not mounted")
 
     def get_dns_server(self):
         """Get dns server ip address."""
@@ -546,7 +549,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
         # TODO: verify we got 'em all
         if idx != len(self.stats):
-            print("WARN: did not match all stats collected!")
+            logger.warning("WARN: did not match all stats collected!")
 
         dict_to_log.update(self.failed_stats)
 
@@ -568,4 +571,4 @@ if __name__ == "__main__":
     local_fname = "/tmp/dhcp.leases"
     with open(local_fname, "wb") as local_file:
         local_file.write(board.get_file(remote_fname).read())
-        print("\nCreated %s" % local_fname)
+        logger.debug("\nCreated %s" % local_fname)

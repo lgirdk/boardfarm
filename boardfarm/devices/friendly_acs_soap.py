@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
+import logging
+
 import xmltodict
 from zeep import Client
 from zeep.wsse.username import UsernameToken
 
 from boardfarm.lib.bft_logging import LoggerMeta
+
+logger = logging.getLogger("bft")
 
 
 class FriendlyACS(metaclass=LoggerMeta):
@@ -38,7 +42,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def get(self, cpeid, param, source=0):
         """Get FriendlyACS param."""
-        print("FriendlyACS.get : param = {}".format(param))
+        logger.debug("FriendlyACS.get : param = {}".format(param))
         # source = 0 (CPE), source = 1 (DB)
         ret = self.client.service.FTGetDeviceParameters(
             devicesn=cpeid, source=source, arraynames=[param]
@@ -50,7 +54,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def set(self, cpeid, attr, value):
         """Set FriendlyACS param."""
-        print("FriendlyACS.set : attr = {}, value = {}".format(attr, value))
+        logger.debug("FriendlyACS.set : attr = {}, value = {}".format(attr, value))
         array_of_param = self.client.get_type(
             "{http://www.friendly-tech.com}ArrayOfParam"
         )
@@ -69,7 +73,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def rpc(self, cpeid, name, content):
         """RPC FriendlyACS on specific CM."""
-        print("FriendlyACS.rpc : name = {}, content = {}".format(name, content))
+        logger.debug("FriendlyACS.rpc : name = {}, content = {}".format(name, content))
         """Invoke custom RPC on specific CM."""
         ret = self.client.service.FTRPCInvoke(
             devicesn=cpeid, rpcname=name, soapcontent=content
@@ -166,10 +170,10 @@ if __name__ == "__main__":
     acs = FriendlyACS(ipaddr=ip, port=port, username=sys.argv[2], password=sys.argv[3])
 
     ret = acs.rpc_GetParameterAttributes("DEAP815610DA", "Device.WiFi.SSID.1.SSID")
-    print(ret["Notification"])
+    logger.debug(ret["Notification"])
 
     ret = acs.get("DEAP815610DA", "Device.DeviceInfo.SoftwareVersion")
-    print(ret)
+    logger.debug(ret)
 
     ret = acs.get("DEAP815610DA", "Device.WiFi.SSID.1.SSID")
-    print(ret)
+    logger.debug(ret)

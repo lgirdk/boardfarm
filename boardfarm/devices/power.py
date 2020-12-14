@@ -15,6 +15,7 @@ except Exception:
     import urllib2 as _urllib
 
 import inspect
+import logging
 import time
 
 import dlipower
@@ -22,6 +23,8 @@ import pexpect
 from easysnmp import Session
 
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
+logger = logging.getLogger("bft")
 
 
 def get_default_for_arg(function, arg):
@@ -54,7 +57,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         if outlet is not None:
             if "wemo://" in outlet:
                 if WemoEnv is None:
-                    print("Please install ouimeaux: pip install ouimeaux")
+                    logger.error("Please install ouimeaux: pip install ouimeaux")
                 else:
                     return WemoPowerSwitch(outlet=outlet)
             if "serial://" in outlet:
@@ -84,7 +87,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
         # still try to read data
         data = e.read().decode()
     except Exception as e:
-        print(e)
+        logger.error(e)
         raise Exception("\nError connecting to %s" % ip_address)
 
     def check_data(data):
@@ -181,8 +184,8 @@ class SentrySwitchedCDU(PowerDevice):
                 raise Exception("\nOutlet %s not found" % self.outlet)
             pcon.close()
         except Exception as e:
-            print(e)
-            print("\nError with power device %s" % ip_address)
+            logger.error(e)
+            logger.error("\nError with power device %s" % ip_address)
             raise Exception("Error with power device %s" % ip_address)
 
     def __connect(self):
@@ -196,12 +199,12 @@ class SentrySwitchedCDU(PowerDevice):
         if i == 0:
             return pcon
         else:
-            print("\nCritical failure in %s, skipping PDU\n" % self.power_ip)
+            logger.error("\nCritical failure in %s, skipping PDU\n" % self.power_ip)
             raise Exception("critical failure in %s" % self.power_ip)
 
     def reset(self, retry_attempts=2):
         """Connect to pdu, send reboot command."""
-        print("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
+        logger.info("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
         for _ in range(retry_attempts):
             try:
                 pcon = self.__connect()
@@ -210,7 +213,7 @@ class SentrySwitchedCDU(PowerDevice):
                 pcon.close()
                 return
             except Exception as e:
-                print(e)
+                logger.error(e)
                 continue
         raise Exception("\nProblem resetting outlet %s." % self.outlet)
 
@@ -241,7 +244,7 @@ class PX2(PowerDevice):
             self.pcon.sendline("")
             self.pcon.expect("# ")
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
-            print("Telnet session has expired, establishing the session again")
+            logger.error("Telnet session has expired, establishing the session again")
             self.do_login()
         self.pcon.sendline("power outlets %s cycle /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s cycle /y" % self.outlet)
@@ -255,7 +258,7 @@ class PX2(PowerDevice):
             self.pcon.sendline("")
             self.pcon.expect("# ")
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
-            print("Telnet session has expired, establishing the session again")
+            logger.error("Telnet session has expired, establishing the session again")
             self.do_login()
         self.pcon.sendline("power outlets %s off /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s off /y" % self.outlet)
@@ -313,7 +316,7 @@ class HumanButtonPusher(PowerDevice):
         PowerDevice.__init__(self, None)
 
     def reset(self):
-        print("\n\nUser power-cycle the device now!\n")
+        logger.info("\n\nUser power-cycle the device now!\n")
 
 
 class APCPower(PowerDevice):
@@ -474,7 +477,7 @@ class Ip9258(PowerDevice):
 
     def on(self):
         """Send ON command."""
-        print("Power On Port(%s)\n" % self.port)
+        logger.info("Power On Port(%s)\n" % self.port)
         return _urllib.request.urlopen(
             "http://"
             + self._ip_address
@@ -485,7 +488,7 @@ class Ip9258(PowerDevice):
 
     def off(self):
         """Send OFF command."""
-        print("Power Off Port(%s)\n" % self.port)
+        logger.info("Power Off Port(%s)\n" % self.port)
         return _urllib.request.urlopen(
             "http://"
             + self._ip_address
@@ -548,7 +551,7 @@ class Ip9820(PowerDevice):
 
     def on(self):
         """Send ON command."""
-        print("Power On Port(%s)\n" % self.port)
+        logger.info("Power On Port(%s)\n" % self.port)
         return _urllib.request.urlopen(
             "http://"
             + self._ip_address
@@ -559,7 +562,7 @@ class Ip9820(PowerDevice):
 
     def off(self):
         """Send OFF command."""
-        print("Power Off Port(%s)\n" % self.port)
+        logger.info("Power Off Port(%s)\n" % self.port)
         return _urllib.request.urlopen(
             "http://"
             + self._ip_address
@@ -576,23 +579,23 @@ class Ip9820(PowerDevice):
 
 
 if __name__ == "__main__":
-    print("Gathering info about power outlets...")
+    logger.debug("Gathering info about power outlets...")
 
     if WemoEnv is not None:
         env = WemoEnv()
         env.start()
         scan_time = 10
-        print("Scanning for WeMo switches for %s seconds..." % scan_time)
+        logger.debug("Scanning for WeMo switches for %s seconds..." % scan_time)
         env.discover(scan_time)
         if len(env.list_switches()) > 0:
-            print("Found the following switches:")
+            logger.debug("Found the following switches:")
             for switch_name in env.list_switches():
                 switch = env.get_switch(switch_name)
-                print("%s ip address is %s" % (switch_name, switch.host))
-            print(
+                logger.debug("%s ip address is %s" % (switch_name, switch.host))
+            logger.debug(
                 "The switches above can be added by ip address" " for example use the"
             )
-            print("following to use %s" % switch_name)
-            print("\twemo://%s" % switch.host)
+            logger.debug("following to use %s" % switch_name)
+            logger.debug("\twemo://%s" % switch.host)
         else:
-            print("No WeMo switches found")
+            logger.error("No WeMo switches found")

@@ -5,10 +5,13 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import logging
 import signal
 
 from boardfarm.lib.bft_logging import LoggerMeta
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+
+logger = logging.getLogger("bft")
 
 
 class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
@@ -134,8 +137,8 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
                 self.expect(self.uprompt, timeout=4)
                 return
             except Exception as e:
-                print(e)
-                print("\new appeared to have failed to break into U-Boot...")
+                logger.error(e)
+                logger.error("\new appeared to have failed to break into U-Boot...")
 
     def check_memory_addresses(self):
         """Check/set memory addresses and size for proper flashing."""

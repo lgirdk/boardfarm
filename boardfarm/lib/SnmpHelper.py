@@ -7,6 +7,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import json
+import logging
 import os
 import re
 
@@ -25,6 +26,8 @@ import boardfarm
 
 from .installers import install_pysnmp
 from .regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
+
+logger = logging.getLogger("bft")
 
 
 def find_directory_in_tree(pattern, root_dir):
@@ -141,8 +144,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             location = os.path.dirname(boardfarm.plugins[modname].__file__)
             snmp_mib_dirs.extend(find_directory_in_tree("mib", location))
 
-        if "BFT_DEBUG" in os.environ:
-            print("Mibs directory list: %s" % snmp_mib_dirs)
+        logger.debug("Mibs directory list: %s" % snmp_mib_dirs)
 
         # if the mibs file are given, we do not want to add other mibs, as it may
         # results in unresolved ASN.1 imports
@@ -152,8 +154,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             snmp_mib_files = find_files_in_tree(
                 snmp_mib_dirs, ignore=["miblist.txt", "__", ".py"]
             )
-        if "BFT_DEBUG" in os.environ:
-            print("Mibs file list: %s" % snmp_mib_files)
+        logger.debug("Mibs file list: %s" % snmp_mib_files)
 
         # creates the snmp parser object
         cls.snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
@@ -191,20 +192,19 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         err = False
 
         if mib_dict is None or mib_dict == {}:
-            print(
+            logger.error(
                 "ERROR: failed on mib compilation (mibCompiler.compile returned an empty dictionary)"
             )
             err = True
 
         for key, value in mib_dict.items():
             if value == "unprocessed":
-                print("ERROR: failed on mib compilation: " + key + ": " + value)
+                logger.error("ERROR: failed on mib compilation: " + key + ": " + value)
                 err = True
 
         if err:
             raise Exception("SnmpMibs failed to initialize.")
-        elif "BFT_DEBUG" in os.environ:
-            print("# %d MIB modules compiled" % len(mib_dict))
+        logger.debug("# %d MIB modules compiled" % len(mib_dict))
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         """Add and prints the mib dict for mib name passed."""
@@ -425,10 +425,10 @@ if __name__ == "__main__":
                 self.snmp_obj = SnmpMibs.get_mib_parser(
                     self.mib_files, self.src_directories
                 )
-                print("Using class singleton: %r" % self.snmp_obj)
+                logger.debug("Using class singleton: %r" % self.snmp_obj)
             else:
                 self.snmp_obj = SnmpMibs(self.mib_files, self.src_directories)
-                print("Using object instance: %r" % self.snmp_obj)
+                logger.debug("Using object instance: %r" % self.snmp_obj)
 
             if mibs:
                 self.mibs = mibs
@@ -446,11 +446,11 @@ if __name__ == "__main__":
                 for k in self.snmp_obj.mib_dict:
                     print(k, ":", self.snmp_obj.mib_dict[k])
 
-            print("Testing get mib oid")
+            logger.debug("Testing get mib oid")
 
             for i in self.mibs:
                 oid = self.snmp_obj.get_mib_oid(i)
-                print("mib: %s - oid=%s" % (i, oid))
+                logger.debug("mib: %s - oid=%s" % (i, oid))
 
             return True
 
@@ -469,7 +469,7 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    print("sys.argv=" + str(sys.argv))
+    logger.debug("sys.argv=" + str(sys.argv))
     location = sys.argv[1:]
 
     SnmpMibsUnitTest.test_singleton = False
@@ -480,7 +480,7 @@ if __name__ == "__main__":
     unit_test = SnmpMibsUnitTest(mibs_location=location)
     assert unit_test.unitTest()
 
-    print("Done.")
+    logger.debug("Done.")
 
 
 def snmp_asyncore_walk(
@@ -534,7 +534,7 @@ def snmp_asyncore_walk(
     try:
         device.expect(device.prompt, timeout=time_out)
     except pexpect.TIMEOUT:
-        print(
+        logger.error(
             f"Failed to complete walk within the given {time_out}s. Sending ctrl+c to get prompt"
         )
         for _ in range(3):

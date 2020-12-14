@@ -1,4 +1,5 @@
 import ipaddress
+import logging
 import os
 import re
 import traceback
@@ -12,6 +13,8 @@ from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
 
 from . import debian_wan
+
+logger = logging.getLogger("bft")
 
 
 class DebianISCProvisioner(debian_wan.DebianWAN):
@@ -584,7 +587,7 @@ EOF"""
             if offset in range(-11, 13):
                 return 3600 * offset
             else:
-                print("Invalid Timezone. Using UTC standard")
+                logger.error("Invalid Timezone. Using UTC standard")
                 return 0
 
     # TODO: This needs to be pushed to boardfarm-docsis at a later stage
@@ -864,7 +867,7 @@ EOF"""
             matching.append("Starting ISC DHCPv6 server: dhcpd(6)?.\r\n")
             match_num += 1
         else:
-            print(
+            logger.debug(
                 "NOTE: not starting IPv6 because this provisioner is not setup properly"
             )
 
@@ -988,7 +991,9 @@ EOF"""
                 pass
 
             try:
-                print("Downloading " + server + ":" + conf_file + " to " + dest_fname)
+                logger.info(
+                    "Downloading " + server + ":" + conf_file + " to " + dest_fname
+                )
                 scp_from(
                     conf_file,
                     server,
@@ -1001,14 +1006,14 @@ EOF"""
                 if not os.path.isfile(dest_fname):
                     # Something has gone wrong as the tftp client has not thrown an
                     # exception, but the file is not where it should be!!
-                    print(
+                    logger.error(
                         "Tftp completed but %s not found in destination dir: "
                         % dest_fname
                     )
                     return False
-                print("Downloaded: " + conf_file)
+                logger.info("Downloaded: " + conf_file)
             except Exception:
-                print("Failed to download %s from %s" % (conf_file, self.ipaddr))
+                logger.error("Failed to download %s from %s" % (conf_file, self.ipaddr))
                 return False
 
         return True
@@ -1026,7 +1031,7 @@ EOF"""
 
         for cmd in bad_commands:
             if cmd in s:
-                traceback.print_exc()
+                logger.debug(traceback.print_exc())
                 raise Exception("ERROR: can not turn off shared interface!")
 
         super(DebianISCProvisioner, self).send(s)
@@ -1039,7 +1044,7 @@ EOF"""
 
     def get_dhcp_logs(self, mac_addr, board_reset_time, v4=True):
         """print dhcp logs for provided mac_address starting from board_reset_time"""
-        print(
+        logger.info(
             "{0} Provisioner DHCP Logs START (Last CM Reset time - {1}) {0}".format(
                 "=" * 10, board_reset_time
             )
@@ -1050,4 +1055,4 @@ EOF"""
             )
         )
         self.expect(self.prompt)
-        print("{0} Provisioner DHCP Logs END {0}".format("=" * 10))
+        logger.info("{0} Provisioner DHCP Logs END {0}".format("=" * 10))

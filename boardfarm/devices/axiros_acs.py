@@ -77,7 +77,7 @@ class Intercept(object):
                         and arg[0] in self.dev.board.unsupported_objects
                     ):
                         warnings.warn("Unsupported parameter")
-                        print("Warning!!! Unsupported parameter")
+                        logger.error("Warning!!! Unsupported parameter")
                         return
                     stack = inspect.stack()
                     build_number = os.getenv("BUILD_NUMBER", "")
@@ -135,7 +135,7 @@ class Intercept(object):
                                 sync=False,
                             )
                             if not ok and (retry == (count - 1)):
-                                print(
+                                logger.info(
                                     "\x1b[6;30;42m"
                                     + "TCPdump is saved in %s" % capture
                                     + "\x1b[0m"
@@ -355,9 +355,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     def _parse_soap_response(response):
         """Parse the ACS response and return a\
         list of dictionary with {key,type,value} pair."""
-        if "BFT_DEBUG" in os.environ:
-            msg = xml.dom.minidom.parseString(response.text)
-            print(msg.toprettyxml(indent=" ", newl=""))
+        msg = xml.dom.minidom.parseString(response.text)
+        logger.debug(msg.toprettyxml(indent=" ", newl=""))
 
         result = AxirosACS._get_xml_key(response)
         if len(result) > 1:
@@ -592,7 +591,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         try:
             return self.GPV(param)[0]["value"]
         except Exception as e:
-            print(e)
+            logger.error(e)
             return None
 
     @moves.moved_method("GPV")
@@ -615,7 +614,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             dict_key_value = {item["key"]: item["value"] for item in out}
             return dict_key_value
         except Exception as e:
-            print(e)
+            logger.error(e)
             return {}
 
     @moves.moved_method("SPV")
@@ -788,7 +787,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             return self.GPA(param)
 
         except Exception as e:
-            print(e)
+            logger.error(e)
             return {}
 
     @moves.moved_method("SPA")
@@ -810,7 +809,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             param[attr] = value
             return self.SPA(param)
         except Exception as e:
-            print(e)
+            logger.error(e)
             return None
 
     def SPA(self, param, **kwargs):
@@ -1092,8 +1091,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             self.ScheduleInform(DelaySeconds=1)
         except Exception as e:
             # on ANY exception assume ScheduleInform failed-> comms failed
-            print(e)
-            print(f"connectivity_check failed for {cpeid}")
+            logger.error(e)
+            logger.error(f"connectivity_check failed for {cpeid}")
             r = False
         self.cpeid = old_cpeid
         return r
@@ -1271,14 +1270,14 @@ if __name__ == "__main__":
     """
 
     if len(sys.argv) < 3:
-        print("Usage:")
-        print(
+        logger.info("Usage:")
+        logger.info(
             "\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> \"'<parameter>'\"  NOTE: the quotes are importand"
         )
-        print(
+        logger.info(
             "\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> \"'Device.DeviceInfo.SoftwareVersion.']\""
         )
-        print(
+        logger.info(
             "\tpython3 axiros_acs.py ip:port <user> <passwd> <cpeid> <action> \"['Device.DeviceInfo.ModelNumber', 'Device.DeviceInfo.SoftwareVersion.']"
         )
         sys.exit(1)
@@ -1292,9 +1291,9 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 4:
         cpe_id = sys.argv[4]
-        print("Using CPEID: {}".format(cpe_id))
+        logger.info("Using CPEID: {}".format(cpe_id))
     else:
-        print("Error: missing cpeid")
+        logger.error("Error: missing cpeid")
         sys.exit(1)
 
     acs = AxirosACS(
@@ -1312,12 +1311,12 @@ if __name__ == "__main__":
         ret = action(param)
         pprint(ret)
     except TR069FaultCode as fault:
-        print("==== Received TR069FaultCode exception:====")
-        pprint(fault.faultdict)
-        print("=========================================")
+        logger.error("==== Received TR069FaultCode exception:====")
+        logger.debug(pprint(fault.faultdict))
+        logger.debug("=========================================")
         raise
     except Exception as e:
-        print("==== Received UNEXPECTED exception:======")
-        pprint(e)
-        print("=========================================")
+        logger.error("==== Received UNEXPECTED exception:======")
+        logger.debug(pprint(e))
+        logger.debug("=========================================")
         raise

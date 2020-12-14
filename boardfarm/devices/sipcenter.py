@@ -1,7 +1,10 @@
+import logging
 import re
 
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.installers import apt_install
+
+logger = logging.getLogger("bft")
 
 
 class SipCenter(object):
@@ -156,13 +159,13 @@ EOF"""
         output = self.before
         self.exit_asterisk_console()
         if re.search(".*" + user + ".+" + mta_ip, output):
-            print(f"User {user} is registered")
+            logger.debug(f"User {user} is registered")
             return "Registered"
         elif re.search(".*" + user + r".+\(Unspecified\)", output):
-            print(f"User {user} is unregistered")
+            logger.debug(f"User {user} is unregistered")
             return "Unregistered"
         else:
-            print(f"User {user} unavailable")
+            logger.debug(f"User {user} unavailable")
             return "User Unavailable"
 
     def modify_sip_config(self, oper="", user=""):

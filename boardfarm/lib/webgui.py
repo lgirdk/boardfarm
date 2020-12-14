@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import inspect
+import logging
 import os
 import pathlib
 import time
@@ -32,6 +33,8 @@ from .gui_helper import (
     get_text_value,
     select_option_by_id,
 )
+
+logger = logging.getLogger("bft")
 
 
 class web_gui:
@@ -243,7 +246,7 @@ class web_gui:
                 EC.visibility_of_element_located(element)
             )
         except Exception:
-            print(
+            logger.error(
                 "check_element_visibility({}): timeout to find "
                 "element".format(element)
             )
@@ -265,7 +268,7 @@ class web_gui:
                 EC.element_to_be_clickable(element)
             )
         except Exception:
-            print(
+            logger.error(
                 "check_element_clickable({}): timeout to find "
                 "element".format(element)
             )
@@ -287,7 +290,7 @@ class web_gui:
                 EC.element_selection_state_to_be(element)
             )
         except Exception:
-            print(
+            logger.error(
                 "check_element_selection_state_to_be({}): timeout to find "
                 "element".format(element)
             )
@@ -310,7 +313,7 @@ class web_gui:
 
         self.driver.implicitly_wait(self.default_delay)
 
-        print(
+        logger.error(
             "wait_for_element(): check_element_visibility(%s, %s)"
             % (str(by), ele_index)
         )
@@ -331,10 +334,10 @@ class web_gui:
         """
         try:
             element = self.driver.find_element_by_xpath(text)
-            print("Element '" + text + "' found")
+            logger.debug("Element '" + text + "' found")
             return element
         except NoSuchElementException:
-            print("check_element_exists No element '" + text + "' found")
+            logger.error("check_element_exists No element '" + text + "' found")
             return None
 
     def check_element_exists_by_name(self, text):
@@ -348,10 +351,10 @@ class web_gui:
         """
         try:
             element = self.driver.find_element_by_name(text)
-            print("Element '" + text + "' found")
+            logger.debug("Element '" + text + "' found")
             return element
         except NoSuchElementException:
-            print("No element '" + text + "' found")
+            logger.error("No element '" + text + "' found")
             return None
 
     def wait_for_redirects(self):
@@ -377,10 +380,10 @@ class web_gui:
             ele_button = self.check_element_clickable(By.ID, id_value, timeout=3)
             if ele_button is not None:
                 ele_button.click()
-                print("Logout clicked")
+                logger.debug("Logout clicked")
             return True
         except NoSuchElementException:
-            print("No logout button element ('id', %s) found " % id_value)
+            logger.error("No logout button element ('id', %s) found " % id_value)
             return False
 
     def driver_close(self, logout_id, logout_check=True):
@@ -394,10 +397,10 @@ class web_gui:
         if logout_check:
             self.gui_logout(logout_id)
         self.driver.quit()
-        print("driver quit")
+        logger.debug("driver quit")
         if self.display is not None:
             self.display.stop()
-            print("display stop")
+            logger.debug("display stop")
 
     # Starts the python wrapper for Xvfb, Xephyr and Xvnc
     # the backend can be set via BFT_OPTIONS
@@ -472,7 +475,7 @@ class web_gui:
         # verify $button is exist
         button = self.check_element_visibility(by, ele_index)
         assert button is not None, "timeout: not found %s in page" % ele_index
-        print("get button value: %s" % button.get_attribute("value"))
+        logger.debug("get button value: %s" % button.get_attribute("value"))
 
         self._save_screenshot("%s_click.png" % ele_index)
         self.check_element_clickable(by, ele_index).click()
@@ -489,7 +492,7 @@ class web_gui:
         self.wait_for_redirects()
         time.sleep(10)
         assert home_page is not None, "timeout: not found home page"
-        print(home_page.text)
+        logger.debug(home_page.text)
         self._save_screenshot(self.prefix + "home_page.png")
 
     def navigate_to_target_page(self, navi_path):
@@ -504,7 +507,7 @@ class web_gui:
             temp = resolv_dict(self.config, temp)
             button = click_button_id(self.driver, temp)
             assert button, "Error in click %s" % path
-            print("Click %s : PASS" % path)
+            logger.info("Click %s : PASS" % path)
             time.sleep(2)
 
     def __del__(self):
@@ -557,7 +560,7 @@ class ScreenshotListener(AbstractEventListener):
 
         driver.set_window_size(gui_page_size("Width"), gui_page_size("Height"))
         driver.get_screenshot_as_file(abs_path)
-        print("Screenshot saved as '{}'".format(abs_path))
+        logger.debug("Screenshot saved as '{}'".format(abs_path))
 
     def on_exception(self, exception, driver):
         self.capture_screenshot(driver, "Exception")
