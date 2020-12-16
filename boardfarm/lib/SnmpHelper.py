@@ -267,6 +267,10 @@ def snmp_v2(
     Returns:
         (str) result : snmp result
     """
+    debtcollector.deprecate(
+        "Using snmp_v2 function is deprecated! Please use snmpget/snmpset/snmpwalk from SNMPv2",
+        category=UserWarning,
+    )
     if not getattr(device, "pysnmp_installed", False):
         install_pysnmp(device)
         device.pysnmp_installed = True

@@ -20,6 +20,7 @@ import sys
 import time
 from datetime import datetime
 
+import debtcollector
 import pexpect
 from selenium import webdriver
 from termcolor import colored
@@ -878,6 +879,10 @@ def snmp_mib_set(
     :rtype: String
     :raise Assertion: Asserts when Snmp set requests timeout
     """
+    debtcollector.deprecate(
+        "Using snmp_mib_set function is deprecated! Please use snmpset of SNMPv2",
+        category=UserWarning,
+    )
     time_out = (timeout * retry) + 30
     extra_arg = ""
 
@@ -1097,6 +1102,10 @@ def snmp_mib_get(
     :rtype: String
     :raise Assertion: Asserts when Snmp get requests timeout
     """
+    debtcollector.deprecate(
+        "Using snmp_mib_get function is deprecated! Please use snmpget of SNMPv2",
+        category=UserWarning,
+    )
     time_out = (timeout * retry) + 30
     extra_arg = ""
 
@@ -1298,6 +1307,10 @@ def snmp_mib_walk(
     :return: Output value of SNMP walk request
     :rtype: String
     """
+    debtcollector.deprecate(
+        "Using snmp_mib_walk function is deprecated! Please use snmpwalk of SNMPv2",
+        category=UserWarning,
+    )
     if mib_name:
         if not isinstance(parser, SnmpMibs):
             oid = parser.mib[mib_name]

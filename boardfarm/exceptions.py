@@ -209,3 +209,13 @@ class BftSysExit(BftBaseException):
     """
 
     pass
+
+
+class SNMPError(BftBaseException):
+    """Raise this if a code assert fails.
+    This exception is only meant for custom assert
+    clause used inside libraries.
+    Not to be used with TestStep verification.
+    """
+
+    pass
