@@ -204,11 +204,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
                     self.gwv6 = self.ipv6_interface.ip
 
-        if self.port is not None:
-            target = self.ipaddr + ":" + self.port
-        else:
-            target = self.ipaddr
-
+        target = self.ipaddr if self.port is None else self.ipaddr + ":" + self.port
         self.wsdl = "http://" + target + "/live/CPEManager/DMInterfaces/soap/getWSDL"
 
         session = Session()
@@ -303,9 +299,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     @staticmethod
     def _parse_xml_response(data_values):
         data_list = []
-        if type(data_values) is list:
-            pass
-        else:
+        if type(data_values) is not list:
             data_values = [data_values]
         for data in data_values:
             if "AccessList" in data["value"]:
@@ -321,9 +315,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 )
             else:
                 v = data["value"].get("text", "")
-                if v == "":
-                    if "item" in data["value"]:
-                        v = " ".join([val.get("text") for val in data["value"]["item"]])
+                if v == "" and "item" in data["value"]:
+                    v = " ".join(val.get("text") for val in data["value"]["item"])
                 val_type = data["value"]["type"]
                 if val_type == "SOAP-ENC:Array":
                     val_type = data["value"][
@@ -339,7 +332,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
     @staticmethod
     def _get_xml_key(resp, k="text"):
-        result = nested_lookup(
+        return nested_lookup(
             "Result",
             xmltodict.parse(
                 resp.content,
@@ -349,7 +342,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 namespaces=AxirosACS.namespaces,
             ),
         )
-        return result
 
     @staticmethod
     def _parse_soap_response(response):
@@ -402,21 +394,18 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """Return CmdOptTypeStruct_data. It is a helper method."""
         c_opt_type = "ns0:CommandOptionsTypeStruct"
         CmdOptTypeStruct_type = self.client.get_type(c_opt_type)
-        CmdOptTypeStruct_data = CmdOptTypeStruct_type(*args, **kwagrs)
-        return CmdOptTypeStruct_data
+        return CmdOptTypeStruct_type(*args, **kwagrs)
 
     def _get_class_data(self, *args, **kwagrs):
         """Return CPEIdClassStruct_data. It is a helper method."""
         cpe__id_type = "ns0:CPEIdentifierClassStruct"
         CPEIdClassStruct_type = self.client.get_type(cpe__id_type)
-        CPEIdClassStruct_data = CPEIdClassStruct_type(*args, **kwagrs)
-        return CPEIdClassStruct_data
+        return CPEIdClassStruct_type(*args, **kwagrs)
 
     def _get_pars_val_data(self, p_arr_type, *args, **kwargs):
         """Return ParValsParsClassArray_data.It is a helper method."""
         ParValsClassArray_type = self.client.get_type(p_arr_type)
-        ParValsParsClassArray_data = ParValsClassArray_type(*args, **kwargs)
-        return ParValsParsClassArray_data
+        return ParValsClassArray_type(*args, **kwargs)
 
     def spa_param_struct(self, k, v, o):
         """Returns the structure of parameters to be passed in SPA
@@ -611,8 +600,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """
         try:
             out = self.GPV(param)
-            dict_key_value = {item["key"]: item["value"] for item in out}
-            return dict_key_value
+            return {item["key"]: item["value"] for item in out}
         except Exception as e:
             logger.error(e)
             return {}
@@ -637,8 +625,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :rtype: string
         """
         try:
-            param = {}
-            param[attr] = value
+            param = {attr: value}
             return str(self.SPV(param))
         except Exception as e:
             print(e)
@@ -690,10 +677,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             CPESearchOptionsClassStruct_data, CommandOptionsForCPESearchStruct_data
         )
         print(response)
-        if response["code"] != 200:
-            return False
-
-        return True
+        return response["code"] == 200
 
     delete_cpe = Axiros_DeleteCPEs
 
@@ -736,9 +720,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 break
             if _value.text != "200":
                 for message in root.iter("message"):
-                    if message.text:
-                        if "faultcode" in message.text:
-                            raise ACSFaultCode(message.text)
+                    if message.text and "faultcode" in message.text:
+                        raise ACSFaultCode(message.text)
                     break
                 continue
             for value in root.iter("value"):
@@ -805,8 +788,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :rtype: string
         """
         try:
-            param = {}
-            param[attr] = value
+            param = {attr: value}
             return self.SPA(param)
         except Exception as e:
             logger.error(e)
@@ -945,13 +927,11 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             if _value.text != "200":
                 continue
             dict_value1 = {}
-            num = 1
-            for key, value in zip(root.iter("ts"), root.iter("message")):
-                dict_value = {}
-                dict_value["time"] = key.text
-                dict_value["msg"] = value.text
+            for num, (key, value) in enumerate(
+                zip(root.iter("ts"), root.iter("message")), start=1
+            ):
+                dict_value = {"time": key.text, "msg": value.text}
                 dict_value1["log_msg" + str(num)] = dict_value
-                num += 1
             return dict_value1
         return None
 
