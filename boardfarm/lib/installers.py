@@ -760,7 +760,7 @@ def install_pysnmp(device):
     :raises assertion: Failed to install pysnmp library
     """
     install_flag = False
-    for i in range(1, 3):
+    for i in range(1, 4):
         try:
             device.sendline("\npip freeze | grep pysnmp")
             device.expect("pysnmp==", timeout=i * (5 * i))
@@ -770,9 +770,14 @@ def install_pysnmp(device):
         except Exception:
             device.sendcontrol("c")
             device.expect_prompt()
-            device.sendline("pip install -q pysnmp")
-            device.expect_prompt(timeout=150)
-            device.expect(pexpect.TIMEOUT, timeout=5)
+            try:
+                device.sendline("pip install -q pysnmp")
+                device.expect_prompt(timeout=150)
+                device.expect(pexpect.TIMEOUT, timeout=5)
+            except Exception:
+                device.sendcontrol("c")
+                device.expect_prompt()
+                continue
 
     assert install_flag, "Failed to install pysnmp library"
 
