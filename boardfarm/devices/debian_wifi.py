@@ -67,6 +67,10 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
         setting the interface link to "down"
         """
+        self.sudo_sendline("rm /etc/wpa_supplicant/{}".format(self.iface_wifi))
+        self.expect(self.prompt)
+        self.sudo_sendline("killall wpa_supplicant")
+        self.expect(self.prompt)
         self.set_link_state(self.iface_wifi, "down")
 
     def enable_wifi(self):
@@ -90,6 +94,13 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def dhcp_renew_wlan_iface(self):
         """DHCP renew of the wifi interface."""
+        # Remove static ip if any
+        self.sendline(f"ifconfig {self.iface_wifi} 0.0.0.0")
+        self.expect(self.prompt)
+        # Kill dhcp client
+        self.sudo_sendline("kill -9 $(pgrep dhclient)")
+        self.expect(self.prompt)
+
         try:
             self.renew_dhcp(self.iface_wifi)
             return True
@@ -168,6 +179,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         hotspot_id="cbn",
         hotspot_pwd="cbn",
         broadcast=True,
+        bssid=None,
     ):
         """Initialise wpa supplicant file.
 
@@ -183,6 +195,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         :type hotspot_pwd: string
         :param broadcast: Enable/Disable broadcast for ssid scan
         :type broadcast: bool
+        :param bssid: Network BSSID
+        :type bssid: string, optional
         :return: True or False
         :rtype: boolean
         """
@@ -191,7 +205,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         config["ssid"] = ssid_name
         config["key_mgmt"] = security_mode
 
-        if security_mode == "WPA-PSK":
+        if security_mode in ["WPA-PSK", "WPA2-PSK"]:
             config["psk"] = password
         elif security_mode == "WPA-EAP":
             config["eap"] = "PEAP"
@@ -199,12 +213,17 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             config["password"] = hotspot_pwd
         config["scan_ssid"] = int(not broadcast)
 
+        if bssid:
+            config["bssid"] = bssid
+
         config_str = ""
         for k, v in config.items():
             if k in ["ssid", "psk", "identity", "password"]:
                 v = '"{}"'.format(v)
             config_str += "{}={}\n".format(k, v)
-        final_config = "network={{\n{}}}".format(config_str)
+        final_config = "ctrl_interface=DIR=/etc/wpa_supplicant GROUP=root\nnetwork={{\n{}}}".format(
+            config_str
+        )
         """Create wpa_supplicant config."""
         self.sudo_sendline("rm {}.conf".format(ssid_name))
         self.expect(self.prompt)
@@ -213,19 +232,22 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.sendline("cat {}.conf".format(ssid_name))
         self.expect(self.prompt)
         """Generate WPA supplicant connect."""
-        driver_name = "nl80211"
-        if security_mode == "WPA-EAP":
-            driver_name = "wext"
+        driver_name = "wext"
         self.sudo_sendline(
-            "wpa_supplicant -B -D{} -i {} -c {}.conf".format(
+            "wpa_supplicant -B -D{} -i {} -c {}.conf -d".format(
                 driver_name, self.iface_wifi, ssid_name
             )
         )
         self.expect(self.prompt)
-        match = re.search("Successfully initialized wpa_supplicant", self.before)
+        match = re.search("Daemonize..", self.before)
         return bool(match)
 
     def wifi_connectivity_verify(self):
+        """Backward compatibility"""
+        return self.is_connected
+
+    @property
+    def is_connected(self):
         """Verify wifi is in the connected state.
 
         :return: True or False
@@ -297,7 +319,9 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         else:
             return None
 
-    def wifi_client_connect(self, ssid_name, password=None, security_mode=None):
+    def wifi_client_connect(
+        self, ssid_name, password=None, security_mode=None, bssid=None
+    ):
         """Scan for SSID and verify wifi connectivity.
 
         :param ssid_name: SSID name
@@ -305,6 +329,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         :param password: wifi password, defaults to None
         :type password: string, optional
         :param security_mode: Security mode for the wifi, defaults to None
+        :param bssid: BSSID of the desired network. Used to differentialte between 2.4\5 GHz networks with same SSID
+        :type bssid: string, optional
         :type security_mode: string, optional
         :raise assertion: If SSID value check in WLAN container fails,
                           If connection establishment in WIFI fails
@@ -312,12 +338,17 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.disable_and_enable_wifi()
         self.expect(pexpect.TIMEOUT, timeout=20)
         output = self.wifi_check_ssid(ssid_name)
-        assert output is True, "SSID value check in WLAN container"
+        assert (
+            output is True
+        ), f"{ssid_name} network is not found. Aborting connection process"
 
-        self.wifi_connect(ssid_name, password)
-        self.expect(pexpect.TIMEOUT, timeout=20)
+        self.wifi_connect(ssid_name, password, bssid=bssid, security_mode=security_mode)
+        self.expect(pexpect.TIMEOUT)
         verify_connect = self.wifi_connectivity_verify()
-        assert verify_connect is True, "Connection establishment in WIFI"
+        assert (
+            verify_connect is True
+        ), f"Wlan client failed to connect to {ssid_name} network"
+        self.dhcp_renew_wlan_iface()
 
     def set_authentication(self, auth_type):
         pass
