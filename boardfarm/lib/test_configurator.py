@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import re
 
@@ -8,8 +7,6 @@ import six
 import boardfarm
 from boardfarm.dbclients.boardfarmwebclient import BoardfarmWebClient
 from boardfarm.lib.common import print_bold
-
-logger = logging.getLogger("bft")
 
 
 class BoardfarmTestConfig:
@@ -56,12 +53,10 @@ def get_station_config(location=None, ignore_redir=False):
     """
     boardfarm_config = read_station_config(location)
     if "_redirect" in boardfarm_config and not ignore_redir:
-        logger.debug(
-            "Using boardfarm config file at %s" % boardfarm_config["_redirect"]
-        )
-        logger.debug("Please set your default config by doing:")
-        logger.debug('    export BFT_CONFIG="%s"' % boardfarm_config["_redirect"])
-        logger.debug("If you want to use local config, remove the _redirect line.")
+        print("Using boardfarm config file at %s" % boardfarm_config["_redirect"])
+        print("Please set your default config by doing:")
+        print('    export BFT_CONFIG="%s"' % boardfarm_config["_redirect"])
+        print("If you want to use local config, remove the _redirect line.")
         location = boardfarm_config["_redirect"]
         boardfarm_config = read_station_config(boardfarm_config["_redirect"])
         boardfarm_config.pop("_redirect", None)
@@ -125,7 +120,7 @@ def filter_boards(board_config, filter, name=None):
 
     if all(re.findall(f, s) for f in filter):
         if name:
-            logger.info("matched %s on %s, adding %s" % (filter, board_config, name))
+            print("matched %s on %s, adding %s" % (filter, board_config, name))
         return True
     return False
 
@@ -147,7 +142,7 @@ def filter_station_config(
         print_bold("Selecting board from board type = %s" % board_type)
         possible_names = boardfarm_config
         if board_names:
-            logger.info("Board names = %s" % board_names)
+            print("Board names = %s" % board_names)
             # Allow selection only from given set of board names
             possible_names = set(boardfarm_config) & set(board_names)
         for b in possible_names:

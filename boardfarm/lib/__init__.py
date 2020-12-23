@@ -6,12 +6,9 @@
 # The full text can be found in LICENSE in the root directory.
 
 import glob
-import logging
 import os
 
 from .ConfigHelper import ConfigHelper  # noqa: F401
-
-logger = logging.getLogger("bft")
 
 
 def find_subdirs(directories, name):
@@ -29,8 +26,8 @@ def find_subdirs(directories, name):
         if len(tmp) > 1:
             # By design there shouldn't be more than one "devices" or "tests" directory in
             # a given boardfarm project
-            logger.error(
+            print(
                 "WARNING: Multiple directories of the name %s found in %s." % (name, d)
             )
-            logger.error("All will be used to find python classes")
+            print("All will be used to find python classes")
     return result

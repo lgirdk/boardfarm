@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Linux based DSLite server using ISC AFTR."""
 import atexit
-import logging
 import re
 from ast import literal_eval
 from typing import List
@@ -11,8 +10,6 @@ import pexpect
 from boardfarm.devices.profiles import base_profile
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.installers import apt_install
-
-logger = logging.getLogger("bft")
 
 
 class MITM(base_profile.BaseProfile):
@@ -117,7 +114,7 @@ class MITM(base_profile.BaseProfile):
             )
             self.mitm_dns_active.remove(device_name)
         else:
-            logger.debug(f"Device {device_name} is not found in device manager.")
+            print(f"Device {device_name} is not found in device manager.")
 
     def start_capture(self, devices: List[str]) -> None:
         """Add iptables rules if not done yet.
@@ -152,7 +149,7 @@ class MITM(base_profile.BaseProfile):
             except pexpect.TIMEOUT:
                 raise CodeError()
         else:
-            logger.debug(f"MITM is already running with pid {self.mitm_pid}")
+            print(f"MITM is already running with pid {self.mitm_pid}")
 
     def stop_capture(self):
         """Rollback DNS for all mitm'ed devices.
@@ -176,7 +173,7 @@ class MITM(base_profile.BaseProfile):
         self.check_output(cmd)
         headers = re.findall(r"(?<=HEADERS:).*", self.before)
         if not headers:
-            logger.debug(
+            print(
                 f"Did not find headers. Dump file is empty or no packets satisfy {filter_str} filter"
             )
             return
@@ -197,7 +194,7 @@ class MITM(base_profile.BaseProfile):
         self.check_output(cmd)
         bodies = re.findall(r"(?<=BODY:).*", self.before)
         if not bodies:
-            logger.debug(
+            print(
                 f"Did not find body. Dump file is empty or no packets satisfy {filter_str} filter"
             )
             return

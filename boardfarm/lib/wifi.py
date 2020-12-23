@@ -6,7 +6,6 @@
 # The full text can be found in LICENSE in the root directory.
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 """Global Functions related to wifi."""
-import logging
 import random
 import re
 import string
@@ -14,7 +13,6 @@ import time
 
 from boardfarm.lib.wifi_lib.stubs import WiFiClientStub, WiFiStub
 
-logger = logging.getLogger("bft")
 wlan_iface = None
 wifi_stub = WiFiStub
 wifi_client_stub = WiFiClientStub
@@ -217,7 +215,7 @@ def wifi_get_info(board, wlan_iface):
                 rate = -1.0
             board.expect_prompt()
         else:
-            logger.error("Unknown wireless type")
+            print("Unknown wireless type")
     except Exception:
         board.sendline("dmesg")
         board.expect_prompt()
@@ -255,7 +253,7 @@ def wait_wifi_up(board, num_tries=10, sleep=15, wlan_iface="ath0"):
             return
 
     if rate == 0:
-        logger.error("\nWiFi did not come up. Bit Rate still 0.")
+        print("\nWiFi did not come up. Bit Rate still 0.")
         raise AssertionError(False)
 
 
@@ -312,11 +310,11 @@ def uciSetWifiSecurity(board, vap_iface, security):
     :type security: string
     """
     if security.lower() in ["none"]:
-        logger.debug("Setting security to none.")
+        print("Setting security to none.")
         board.sendline("uci set wireless.@wifi-iface[%s].encryption=none" % vap_iface)
         board.expect_prompt()
     elif security.lower() in ["wpa-psk"]:
-        logger.debug("Setting security to WPA-PSK.")
+        print("Setting security to WPA-PSK.")
         board.sendline(
             "uci set wireless.@wifi-iface[%s].encryption=psk+tkip" % vap_iface
         )
@@ -326,7 +324,7 @@ def uciSetWifiSecurity(board, vap_iface, security):
         )
         board.expect_prompt()
     elif security.lower() in ["wpa2-psk"]:
-        logger.debug("Setting security to WPA2-PSK.")
+        print("Setting security to WPA2-PSK.")
         board.sendline(
             "uci set wireless.@wifi-iface[%s].encryption=psk2+ccmp" % vap_iface
         )

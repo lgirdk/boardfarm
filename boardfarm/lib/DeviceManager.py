@@ -2,6 +2,8 @@
 # Setup logging
 """Class functions to Manage device."""
 import logging
+import os
+import sys
 import uuid
 from collections import UserList
 
@@ -10,7 +12,9 @@ from aenum import Enum, extend_enum
 from boardfarm.exceptions import DeviceDoesNotExistError
 from boardfarm.lib.wifi_lib.manager import WiFiMgr
 
+logging.basicConfig(stream=sys.stdout, format="%(message)s")
 logger = logging.getLogger("DeviceManager")
+logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
 class DeviceNone(object):
@@ -246,13 +250,13 @@ class device_manager(UserList):
         if location is not None:
             matching[:] = [d for d in matching if d.location == location]
 
-        if len(matching) > 1:
-            logger.debug(
+        if len(matching) > 1 and "BFT_DEBUG" in os.environ:
+            print(
                 "multiple matches, returning first hit (%s, %s, %s)"
                 % (t, feature, location)
             )
             for m in matching:
-                logger.debug(m)
+                print(m)
 
         if len(matching) == 0:
             return DeviceNone()
@@ -268,7 +272,7 @@ class device_manager(UserList):
                 extend_enum(device_type, dev.name, self.plugin_counter)
                 self.plugin_counter -= 1
             else:
-                logger.error(
+                print(
                     "WARNING!! WARNING!! this device cannot be added as a plugin"
                     "\nCode will fail, if two devices found with same name."
                 )

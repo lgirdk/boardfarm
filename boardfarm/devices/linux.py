@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import binascii
 import ipaddress
-import logging
 import os
 import re
 
@@ -19,7 +18,6 @@ from boardfarm.lib.regexlib import (
 from . import base
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
-logger = logging.getLogger("bft")
 
 
 class LinuxDevice(base.BaseDevice):
@@ -30,7 +28,7 @@ class LinuxDevice(base.BaseDevice):
 
     def check_status(self):
         """Check the state of the device."""
-        logger.debug("\n\nRunning check_status() on %s" % self.name)
+        print("\n\nRunning check_status() on %s" % self.name)
         self.sendline(
             "\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
         )
@@ -57,7 +55,7 @@ class LinuxDevice(base.BaseDevice):
         ipaddr = self.match.group(1)
         ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
         self.expect(self.prompt)
-        logger.debug("ifconfig {} IPV4 {}".format(interface, ipv4address))
+        print("ifconfig {} IPV4 {}".format(interface, ipv4address))
         return ipv4address
 
     def get_interface_mask(self, interface):
@@ -70,7 +68,7 @@ class LinuxDevice(base.BaseDevice):
         self.expect(regex)
         ipaddr = self.match.group(0)
         self.expect(self.prompt)
-        logger.debug("ifconfig {} IPV4 Mask {}".format(interface, ipaddr))
+        print("ifconfig {} IPV4 Mask {}".format(interface, ipaddr))
         return ipaddr
 
     def get_interface_ip6addr(self, interface):
@@ -87,7 +85,7 @@ class LinuxDevice(base.BaseDevice):
 
         self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
         self.expect(self.prompt)
-        logger.debug(self.before)
+        print(self.before)
 
         ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
         for i in ips:
@@ -95,14 +93,12 @@ class LinuxDevice(base.BaseDevice):
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_global:
-                    logger.debug(
-                        "ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip))
-                    )
+                    print("ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip)))
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
 
-        logger.debug("Failed ifconfig {} IPV6 {}".format(interface, ips))
+        print("Failed ifconfig {} IPV6 {}".format(interface, ips))
         raise BftIfaceNoIpV6Addr("Did not find non link-local ipv6 address")
 
     def get_interface_link_local_ip6addr(self, interface):
@@ -119,7 +115,7 @@ class LinuxDevice(base.BaseDevice):
 
         self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
         self.expect(self.prompt)
-        logger.debug(self.before)
+        print(self.before)
 
         ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
         for i in ips:
@@ -127,13 +123,11 @@ class LinuxDevice(base.BaseDevice):
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_link_local:
-                    logger.debug(
-                        "ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip))
-                    )
+                    print("ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip)))
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
-        logger.debug("Failed ifconfig {} IPV6 {}".format(interface, ips))
+        print("Failed ifconfig {} IPV6 {}".format(interface, ips))
         raise Exception("Did not find link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
@@ -242,9 +236,7 @@ class LinuxDevice(base.BaseDevice):
 
         self.sendline("ps aux")
         if self.expect(["dhclient"] + self.prompt) == 0:
-            logger.warning(
-                "WARN: dhclient still running, something started rogue client!"
-            )
+            print("WARN: dhclient still running, something started rogue client!")
             self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
             self.expect(self.prompt)
 
@@ -389,7 +381,7 @@ class LinuxDevice(base.BaseDevice):
             bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
             dst = self.tftp_dir + "/" + os.path.basename(src)
-        logger.info("Copying %s to %s" % (src, dst))
+        print("Copying %s to %s" % (src, dst))
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
         self.sendline(
@@ -509,7 +501,7 @@ EOFEOFEOFEOF"""
 
                 return ret
             except Exception as e:
-                logger.error(e)
+                print(e)
                 continue
             else:
                 raise Exception("Unable to parse /proc/vmstat!")
@@ -527,7 +519,7 @@ EOFEOFEOFEOF"""
                         self.expect(interface, timeout=2)
                         self.expect(self.prompt)
                 except PexpectErrorTimeout:
-                    logger.error("waiting for wan/lan ipaddr")
+                    print("waiting for wan/lan ipaddr")
                 else:
                     break
 

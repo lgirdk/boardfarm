@@ -9,7 +9,6 @@
 """make_human_readable : libraries to convert env and results in XML/JSON/HTML formats."""
 import glob
 import json
-import logging
 import os
 import sys
 import time
@@ -19,7 +18,6 @@ from string import Template
 import boardfarm
 
 owrt_tests_dir = os.path.dirname(os.path.realpath(__file__))
-logger = logging.getLogger("bft")
 
 
 def pick_template_filename():
@@ -87,7 +85,7 @@ def xmlresults_to_html(
         parameters.update(board_info)
         parameters["misc"] = build_station_info(board_info)
     except Exception as e:
-        logger.error(e)
+        print(e)
 
     # categorize the results data
     results_table_lines = []
@@ -153,7 +151,7 @@ def xmlresults_to_html(
         minutes = round((test_seconds / 60), 1)
         parameters["total_test_time"] = "%s minutes" % minutes
     except Exception as error:
-        logger.error(error)
+        print(error)
 
     # Report completion time
     try:
@@ -162,7 +160,7 @@ def xmlresults_to_html(
         format_time = time.strftime("%Y-%m-%d %H:%M:%S", struct_time)
         parameters["report_time"] = "%s" % (format_time)
     except Exception as error:
-        logger.error(error)
+        print(error)
 
     # Substitute parameters into template html to create new html file
     template_filename = pick_template_filename()
@@ -179,11 +177,11 @@ def get_title():
         if title:
             return title
     except Exception as error:
-        logger.error(error)
+        print(error)
     try:
         return os.environ.get("JOB_NAME")
     except Exception as error:
-        logger.error(error)
+        print(error)
         return None
 
 
@@ -192,6 +190,6 @@ if __name__ == "__main__":
         list_results = json.load(open(sys.argv[1], "r"))["test_results"]
         xmlresults_to_html(list_results, title="Test Results")
     except Exception as e:
-        logger.error(e)
-        logger.error("To use make_human_readable.py:")
-        logger.error("./make_human_readable.py results/test_results.json")
+        print(e)
+        print("To use make_human_readable.py:")
+        print("./make_human_readable.py results/test_results.json")

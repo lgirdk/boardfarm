@@ -3,7 +3,6 @@ devices over a network."""
 
 import importlib
 import inspect
-import logging
 import os
 import pkgutil
 import re
@@ -21,8 +20,6 @@ from boardfarm.tests_wrappers import check_plugin_for_probe_devices
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
-
-logger = logging.getLogger("bft")
 
 
 class DeviceMappings:
@@ -69,28 +66,24 @@ def check_for_cmd_on_host(cmd, msg=None):
     from boardfarm.lib.common import cmd_exists
 
     if not cmd_exists(cmd):
-        logger.info(
-            termcolor.colored(
-                "\nThe  command '"
-                + cmd
-                + "' is NOT installed on your system. Please install it.",
-                None,
-                attrs=["bold"],
-            )
+        termcolor.cprint(
+            "\nThe  command '"
+            + cmd
+            + "' is NOT installed on your system. Please install it.",
+            None,
+            attrs=["bold"],
         )
         if msg is not None:
-            logger.info(cmd + ": " + msg)
+            print(cmd + ": " + msg)
         import sys
 
         if sys.platform == "linux2":
             import platform
 
             if "Ubuntu" in platform.dist() or "debian" in platform.dist():
-                logger.error(
-                    "To install run:\n\tsudo apt install <package with " + cmd + ">"
-                )
+                print("To install run:\n\tsudo apt install <package with " + cmd + ">")
                 exit(1)
-        logger.debug("To install refer to your system SW app installation instructions")
+        print("To install refer to your system SW app installation instructions")
 
 
 __loader__ = None
@@ -204,15 +197,15 @@ def get_device(model, device_mgr, **kwargs):
                     if dev not in cls_list:
                         profile_list.append(dev)
                     else:
-                        logger.info("Skipping duplicate device type: %s" % attr)
+                        print("Skipping duplicate device type: %s" % attr)
                         continue
                     common_keys = set(kwargs) & set(profile_kwargs)
                     if len(common_keys) > 0:
-                        logger.debug(
+                        print(
                             "Identified duplicate keys in profile and base device : %s"
                             % str(list(common_keys))
                         )
-                        logger.debug("Removing duplicate keys from profile!")
+                        print("Removing duplicate keys from profile!")
                         for i in list(common_keys):
                             profile_kwargs.pop(i)
                     kwargs.update(profile_kwargs)
@@ -239,7 +232,7 @@ def get_device(model, device_mgr, **kwargs):
         )
         raise Exception(msg)
     except Exception as e:
-        logger.debug(traceback.print_exc())
+        traceback.print_exc()
         raise Exception(str(e))
 
     return None
@@ -260,23 +253,23 @@ You are seeing this message as your configuration is now using kermit instead of
         return dynamic_dev
 
     # Default for all other models
-    logger.info("\nWARNING: Unknown board model '%s'." % model)
-    logger.info(
+    print("\nWARNING: Unknown board model '%s'." % model)
+    print(
         "Please check spelling, your environment setup, or write an appropriate class "
         "to handle that kind of board."
     )
 
     if len(boardfarm.plugins) > 0:
-        logger.info("The following boardfarm plugins are installed.")
-        logger.info("Do you need to update them or install others?")
-        logger.info("\n".join(boardfarm.plugins))
+        print("The following boardfarm plugins are installed.")
+        print("Do you need to update them or install others?")
+        print("\n".join(boardfarm.plugins))
     else:
-        logger.error("No boardfarm plugins are installed, do you need to install some?")
+        print("No boardfarm plugins are installed, do you need to install some?")
 
     if "BFT_CONFIG" in os.environ:
-        logger.info("\nIs this correct? BFT_CONFIG=%s\n" % os.environ["BFT_CONFIG"])
+        print("\nIs this correct? BFT_CONFIG=%s\n" % os.environ["BFT_CONFIG"])
     else:
-        logger.error("No BFT_CONFIG is set, do you need one?")
+        print("No BFT_CONFIG is set, do you need one?")
 
     return openwrt_router.OpenWrtRouter(model, **kwargs)
 

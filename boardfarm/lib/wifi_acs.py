@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """Class for wifi acs methods."""
-import logging
 import re
 
 import pexpect
 
 from .wifi import wifi_stub
-
-logger = logging.getLogger("bft")
 
 
 class wifi_acs(wifi_stub):
@@ -111,7 +108,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Setting the channel mode")
+        print("Setting the channel mode")
         table_path = self._check_acspath_spectrum(wifi_mode)
         if int(channel_number) > 0:
             acs_value = self.acs_server.set(
@@ -137,7 +134,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("setting bandwidth")
+        print("setting bandwidth")
         bandwidth = re.sub(" ", "", bandwidth)
         table_path = self._check_acspath_spectrum(wifi_mode)
         acs_value = self.acs_server.set(
@@ -157,7 +154,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("setting operating mode")
+        print("setting operating mode")
         if "2.4" in wifi_mode:
             if operating_mode == "802.11n":
                 spectrummode = self.acs_data["operating_mode"]["802.11n"]
@@ -190,7 +187,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Setting ssid name")
+        print("Setting ssid name")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=1)
         acs_value = self.acs_server.set(
             self.cpeid, table_path + "." + "SSID", ssid_name
@@ -209,7 +206,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("setting the password")
+        print("setting the password")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         acs_value = self.acs_server.set(
             self.cpeid, table_path + "." + "Security" + "." + "KeyPassphrase", password
@@ -226,7 +223,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("setting the broadcast")
+        print("setting the broadcast")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         acs_value = self.acs_server.set(
             self.cpeid, table_path + "." + "SSIDAdvertisementEnabled", 1
@@ -245,7 +242,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("setting security")
+        print("setting security")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         if security == "Disabled":
             security_value = self.acs_data["security_mode"]["Disabled"]
@@ -283,7 +280,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting the channel number")
+        print("Getting the channel number")
         table_path = self._check_acspath_spectrum(wifi_mode)
         acs_value = self.acs_server.get(self.cpeid, table_path + "." + "Channel")
         return acs_value
@@ -297,7 +294,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting bandwidth")
+        print("Getting bandwidth")
         table_path = self._check_acspath_spectrum(wifi_mode)
         acs_value = self.acs_server.get(
             self.cpeid, table_path + "." + "OperatingChannelBandwidth"
@@ -313,7 +310,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting operating mode")
+        print("Getting operating mode")
         table_path = self._check_acspath_spectrum(wifi_mode)
         acs_value = self.acs_server.get(
             self.cpeid, table_path + "." + "OperatingStandards"
@@ -329,7 +326,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting ssid name")
+        print("Getting ssid name")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=1)
         acs_value = self.acs_server.get(self.cpeid, table_path + "." + "SSID")
         return acs_value
@@ -343,7 +340,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting password")
+        print("Getting password")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         vendor_path = self.acs_data["password_object"]["password_data"]
         acs_value = self.acs_server.get(
@@ -360,7 +357,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting the broadcast")
+        print("Getting the broadcast")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         acs_value = self.acs_server.get(
             self.cpeid, table_path + "." + "SSIDAdvertisementEnabled"
@@ -376,7 +373,7 @@ class wifi_acs(wifi_stub):
         :return: ACS value or None
         :rtype: string or boolean
         """
-        logger.debug("Getting security")
+        print("Getting security")
         table_path = self._check_acspath_spectrum(wifi_mode, ssid_flag=2)
         acs_value = self.acs_server.get(
             self.cpeid, table_path + "." + "Security" + "." + "ModeEnabled"

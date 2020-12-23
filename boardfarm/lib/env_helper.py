@@ -1,8 +1,4 @@
-import logging
-
 from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
-
-logger = logging.getLogger("bft")
 
 
 class EnvHelper(object):
@@ -196,12 +192,12 @@ class EnvHelper(object):
             return True
 
         if not contained(test_environment, self.env):
-            logger.error("---------------------")
-            logger.error(" test case env: ")
-            logger.error(test_environment)
-            logger.error(" env_helper   : ")
-            logger.error(self.env)
-            logger.error("---------------------")
+            print("---------------------")
+            print(" test case env: ")
+            print(test_environment)
+            print(" env_helper   : ")
+            print(self.env)
+            print("---------------------")
             raise BftEnvMismatch()
 
         return True

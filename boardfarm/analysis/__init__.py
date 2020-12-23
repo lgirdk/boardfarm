@@ -9,11 +9,8 @@
 import glob
 import importlib
 import inspect
-import logging
 import os
 import traceback
-
-logger = logging.getLogger("bft")
 
 # import all analysis classes
 classes = {}
@@ -22,8 +19,14 @@ for x in sorted([os.path.basename(f)[:-3] for f in analysis_files if "__" not in
     try:
         module = importlib.import_module("boardfarm.analysis.%s" % x)
     except Exception:
-        traceback.print_exc()
-        logger.error("Warning: could not import from file %s.py" % x)
+        if "BFT_DEBUG" in os.environ:
+            traceback.print_exc()
+            print("Warning: could not import from file %s.py" % x)
+        else:
+            print(
+                "Warning: could not import from file %s.py. Run with BFT_DEBUG=y for more details"
+                % x
+            )
         continue
     for thing_name in dir(module):
         thing = getattr(module, thing_name)

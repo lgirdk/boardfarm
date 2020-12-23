@@ -6,7 +6,6 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import logging
 import sys
 
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
@@ -15,7 +14,6 @@ from . import linux
 
 # Netgear Switch Prompt
 prompt = r"\(M4100-50G\) "
-logger = logging.getLogger("bft")
 
 
 class NetgearM4100(linux.LinuxDevice):
@@ -195,12 +193,12 @@ class NetgearM4100(linux.LinuxDevice):
                     if vlan not in vlan_macs:
                         vlan_macs[vlan] = []
                     vlan_macs[vlan].append(mac)
-        logger.info("\n\n")
-        logger.info("VLAN Devices")
-        logger.info("---- -----------------")
+        print("\n\n")
+        print("VLAN Devices")
+        print("---- -----------------")
         for vlan in sorted(vlan_macs):
             devices = [x for x in vlan_macs[vlan]]
-            logger.info("%4s %s" % (vlan, " <-> ".join(devices)))
+            print("%4s %s" % (vlan, " <-> ".join(devices)))
 
 
 if __name__ == "__main__":

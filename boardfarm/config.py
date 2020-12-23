@@ -70,7 +70,7 @@ mongodb = {
 ldap = os.environ.get("LDAP_CREDENTIALS", None)
 
 if not ldap:
-    logging.info(
+    print(
         "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         "\nWarning:\nPlease provide your LDAP credentials in the environment variables:"
         "\nexport LDAP_CREDENTIALS='username;password'"
@@ -118,15 +118,13 @@ if "BFT_OPTIONS" in os.environ:
             # quick validation
             i = int(v)  # if not a valid num python will throw and exception
             if i != 0 and not 1024 <= i <= 65535:
-                logger.warning(
-                    "Warning: display backend port: %i not in range (1024-65535)" % i
-                )
+                print("Warning: display backend port: %i not in range (1024-65535)" % i)
                 exit(1)
             default_display_backend_port = v
         elif k == "disp_size":
             default_display_backend_size = v
         else:
-            logger.warning("Warning: Ignoring option: %s (misspelled?)" % option)
+            print("Warning: Ignoring option: %s (misspelled?)" % option)
 
 
 def get_display_backend_size():
@@ -141,15 +139,16 @@ def get_display_backend_size():
     return x, y
 
 
-logger.debug("Using proxy:" + default_proxy_type)
-logger.debug("Using webdriver:" + default_web_driver)
-if default_headless:
-    logger.debug("Using webdriver headless")
-else:
-    logger.debug("Webdriver WILL show GUI")
-logger.debug("Using disp:" + default_display_backend)
-logger.debug("Using disp_port:" + default_display_backend_port)
-logger.debug("Using disp_size:" + default_display_backend_size)
+if "BFT_DEBUG" in os.environ:
+    print("Using proxy:" + default_proxy_type)
+    print("Using webdriver:" + default_web_driver)
+    if default_headless:
+        print("Using webdriver headless")
+    else:
+        print("Webdriver WILL show GUI")
+    print("Using disp:" + default_display_backend)
+    print("Using disp_port:" + default_display_backend_port)
+    print("Using disp_size:" + default_display_backend_size)
 
 # Default Test Config Settings
 output_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), "results", "")), "")
@@ -216,7 +215,8 @@ def update_error_injection_dict(err_dict):
 
     for d in err_dict:
         try:
-            logger.debug("Processing: '{}'".format(d))
+            if "BFT_DEBUG" in os.environ:
+                print("Processing: '{}'".format(d))
             if d.startswith("http"):
                 data = requests.get(d).json()
                 err_injection_dict.update(requests.get(d).json())
@@ -224,14 +224,12 @@ def update_error_injection_dict(err_dict):
                 data = open(d, "r").read()
                 err_injection_dict.update(json.loads(data))
         except Exception as error:
-            logger.error(error)
-            logger.error(
-                "Failed to fetch error dictionary at '{}', skipping...".format(d)
-            )
+            print(error)
+            print("Failed to fetch error dictionary at '{}', skipping...".format(d))
 
     if err_injection_dict:
-        logger.error("Error injection dictionary:")
-        logger.error(json.dumps(err_injection_dict, indent=4))
+        print("Error injection dictionary:")
+        print(json.dumps(err_injection_dict, indent=4))
     return err_injection_dict
 
 

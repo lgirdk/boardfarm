@@ -1,4 +1,3 @@
-import logging
 import os
 import textwrap
 import traceback
@@ -11,8 +10,6 @@ from termcolor import cprint
 
 from boardfarm.exceptions import CodeError, ContOnFailError, TestError
 from boardfarm.tests_wrappers import continue_on_fail
-
-logger = logging.getLogger("bft")
 
 
 class TestResult:
@@ -385,7 +382,7 @@ class ExpectException(object):
                     self.exception = i.result
                     break
                 else:
-                    logger.debug(i.result)
+                    print(i.result)
                     raise AssertionError(
                         "Expected Exceptions - {} Caught - {}".format(
                             self.exc_list, type(i.result)
@@ -401,23 +398,19 @@ if __name__ == "__main__":
 
     def action1(a, m=2):
         """Perform multiplication with default value is 2."""
-        logger.debug(
+        print(
             "\nAction 1 performed multiplication\nWill return value: {}\n".format(a * m)
         )
         return a * m
 
     def action2(a, m=3):
         """Perform Division with default value is 3."""
-        logger.debug(
-            "\nAction 2 performed division\nWill return value: {}\n".format(a / m)
-        )
+        print("\nAction 2 performed division\nWill return value: {}\n".format(a / m))
         return a / m
 
     def add_100(a):
         """Perform addition with return value."""
-        logger.debug(
-            "\nAction addition performed \nWill return value: {}\n".format(a + 100)
-        )
+        print("\nAction addition performed \nWill return value: {}\n".format(a + 100))
         return a + 100
 
     def raise_exc(exc, code=99):
@@ -505,9 +498,7 @@ if __name__ == "__main__":
                         ts.call(action1, 2, 3)
                         ts.call(action1, 3, 4)
                 except Exception as e:
-                    logger.error(
-                        "To show if an exception did not occur, test will fail", e
-                    )
+                    print("To show if an exception did not occur, test will fail", e)
 
     obj = Test1()
     obj1 = Test2()
@@ -515,10 +506,8 @@ if __name__ == "__main__":
         obj.runTest()
     except Exception as e:
         # handle retry condition for TC
-        logger.error(e)
+        print(e)
 
     obj1.test_main()
 
-    logger.debug(
-        "\n\nHow stuff will look like in txt file:\n{}".format(obj.log_to_file)
-    )
+    print("\n\nHow stuff will look like in txt file:\n{}".format(obj.log_to_file))

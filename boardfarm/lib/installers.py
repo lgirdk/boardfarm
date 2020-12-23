@@ -7,7 +7,6 @@
 # The full text can be found in LICENSE in the root directory.
 """Libraries to install linux packages."""
 
-import logging
 import re
 import warnings
 
@@ -16,8 +15,6 @@ from debtcollector import deprecate
 from retry.api import retry_call
 
 warnings.simplefilter("always", UserWarning)
-
-logger = logging.getLogger("bft")
 
 
 def apt_install(device, name, timeout=120, dpkg_options=""):
@@ -35,7 +32,7 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
     def _kill_stale_apt():
         pids = device.check_output("pgrep apt")
         if pids:
-            logger.debug(
+            print(
                 "Stale apt PIDs identified!! - {}\nKilling them before installation".format(
                     pids.splitlines()
                 )
@@ -68,14 +65,12 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
             pid = device.check_output("fuser -k {}".format(lock))
             pid = pid.replace("{}:".format(lock), "").strip()
             device.check_output("kill -9 {}".format(pid))
-            logger.info(
-                "Retrying apt installation, after releasing {} lock!".format(lock)
-            )
+            print("Retrying apt installation, after releasing {} lock!".format(lock))
         elif "apt --fix-broken install" in device.before:
             device.check_output(
                 "{}apt --fix-broken -y install".format(shim_prefix), timeout=timeout
             )
-            logger.info("Retrying apt installation, after fixing broken packages!")
+            print("Retrying apt installation, after fixing broken packages!")
         else:
             break
 
@@ -101,7 +96,7 @@ def apt_purge(device, name, timeout=120):
     def _kill_stale_apt():
         pids = device.check_output("pgrep apt")
         if pids:
-            logger.debug(
+            print(
                 "Stale apt PIDs identified!! - {}\nKilling them before installation".format(
                     pids.splitlines()
                 )
@@ -135,9 +130,7 @@ def apt_purge(device, name, timeout=120):
             pid = device.check_output("fuser -k {}".format(lock))
             pid = pid.replace("{}:".format(lock), "").strip()
             device.check_output("kill -9 {}".format(pid))
-            logger.info(
-                "Retrying apt installation, after releasing {} lock!".format(lock)
-            )
+            print("Retrying apt installation, after releasing {} lock!".format(lock))
         else:
             break
     device.sendline("dpkg -l %s" % name)
@@ -1345,7 +1338,7 @@ def install_postfix(device):
         if 0 == device.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             device.expect(device.prompt, timeout=300)
         else:
-            logger.error("Failed to download packages, things might not work")
+            print("Failed to download packages, things might not work")
             for _ in range(3):
                 device.sendcontrol("c")
                 device.expect(device.prompt, timeout=10)
@@ -1370,7 +1363,7 @@ def install_postfix(device):
             + device.prompt,
             timeout=120,
         )
-        logger.debug(install_settings)
+        print(install_settings)
         if install_settings == 0:
             device.sendline("2")
             assert 0 == device.expect(
@@ -1620,14 +1613,14 @@ client.send('join #channel\\r\\n')
 
 while True:
     data = client.recv(8192)
-    logger.debug('Received Messages: '+data)
+    print('Received Messages: '+data)
     if 2 == %s:
         validate_msg = "client1"
     else:
         validate_msg = "client2"
     if validate_msg in data:
         client.send(str.encode("PRIVMSG #channel : Yes, the clients are able to communicate\\n"))
-        logger.debug("connection success")
+        print("connection success")
         client.send('quit #channel\\r\\n')
     else:
         client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))

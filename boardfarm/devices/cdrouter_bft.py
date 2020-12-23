@@ -1,7 +1,6 @@
 """Class to initiate CD-Router testsuite and close the connection to DUT."""
 
 import json
-import logging
 import sys
 import time
 import traceback
@@ -15,8 +14,6 @@ from cdrouter.cdr_error import CDRouterError
 from cdrouter.configs import Config
 from cdrouter.jobs import Job
 from cdrouter.packages import Package
-
-logger = logging.getLogger("bft")
 
 
 class CDrouterDevice(CDRouter):
@@ -105,7 +102,7 @@ class CDrouterDevice(CDRouter):
                     f"Empty File! name: {file_name}"
                 )
         except Exception:
-            logger.error(f"Error: Failed to load csv file! name: {file_name}")
+            print(f"Error: Failed to load csv file! name: {file_name}")
             raise
 
         # Find number of jobs to be triggered.
@@ -121,26 +118,24 @@ class CDrouterDevice(CDRouter):
 
     def validate_config(self, config):
         try:
-            logger.info("Trying to parse config ...\n")
+            print("Trying to parse config ...\n")
             cfg = self.configs.get_by_name(config)
             check = self.configs.check_config(cfg.contents)
 
             # code is throwing a bug here.
             # config is compared with only original contents.
             # not the updated one
-            logger.error(
-                "Warning! : Config contains {} error(s):".format(len(check.errors))
-            )
+            print("Warning! : Config contains {} error(s):".format(len(check.errors)))
             for e in check.errors:
-                logger.error("    {}: {}".format(e.lines, e.error))
-                logger.error("")
+                print("    {}: {}".format(e.lines, e.error))
+                print("")
 
-            logger.info("Config parsing succeeded!!")
+            print("Config parsing succeeded!!")
             return True
 
         except Exception as e:
-            logger.error(f"Error: Could not load config : {config}\nParsing Failed!!")
-            logger.error(e)
+            print(f"Error: Could not load config : {config}\nParsing Failed!!")
+            print(e)
             return False
 
     def validate_package(self, package, config, testlist):
@@ -154,31 +149,27 @@ class CDrouterDevice(CDRouter):
         Any failure in validation, will delete the package and create a new one.
         """
         try:
-            logger.info("Trying to parse package ...\n")
+            print("Trying to parse package ...\n")
             cfg = self.configs.get_by_name(config)
             pkg = self.packages.get_by_name(package)
 
             if pkg.config_id != cfg.id:
-                logger.error(
-                    f"Config IDs do not match! cfg : {cfg.id}     pkg : {pkg.id}"
-                )
-                logger.error(f"Deleting package: {package}!")
+                print(f"Config IDs do not match! cfg : {cfg.id}     pkg : {pkg.id}")
+                print(f"Deleting package: {package}!")
                 self.packages.delete(pkg.id)
                 return False
 
             if self.packages.testlist_expanded(pkg.id) != list(testlist):
-                logger.error("Testlist do not match!")
-                logger.error(f"Deleting package: {package}!")
+                print("Testlist do not match!")
+                print(f"Deleting package: {package}!")
                 self.packages.delete(pkg.id)
                 return False
 
-            logger.info("Package parsing succeeded!!")
+            print("Package parsing succeeded!!")
             return True
         except Exception as e:
-            logger.error(
-                f"Error: Could not validate package : {package}\nParsing Failed!!"
-            )
-            logger.debug(e)
+            print(f"Error: Could not validate package : {package}\nParsing Failed!!")
+            print(e)
             return False
 
     def create_package(self, name, config, test_list):
@@ -207,8 +198,8 @@ class CDrouterDevice(CDRouter):
         for job, tests in self.bf_args.jobs.items():
 
             j = None
-            logger.info(f"Loading job with config : {job[0]} and package : {job[1]}")
-            logger.info("#" * 80)
+            print(f"Loading job with config : {job[0]} and package : {job[1]}")
+            print("#" * 80)
             try:
                 # if a config does not exist bail out
                 config = job[0]
@@ -237,7 +228,7 @@ class CDrouterDevice(CDRouter):
 
                     j = self.jobs.get(j.id)
 
-                logger.info(f"Successfully created job. Result_id : {j.result_id}")
+                print(f"Successfully created job. Result_id : {j.result_id}")
 
                 result = self.results.get(j.result_id)
                 self.bf_args.results.append(self.results.get(j.result_id))
@@ -249,15 +240,15 @@ class CDrouterDevice(CDRouter):
             except Exception as e:
                 if j:
                     self.cleanup_jobs(j)
-                logger.error(
+                print(
                     f"\n\nFailed to load job with config : {job[0]} and package : {job[1]}"
                 )
                 for _data in tests:
                     _data.append("error")
-                logger.debug(e)
-                logger.debug(traceback.print_exc(file=sys.stdout))
+                print(e)
+                traceback.print_exc(file=sys.stdout)
             finally:
-                logger.debug("#" * 80, end="\n\n")
+                print("#" * 80, end="\n\n")
 
     def create_config(self, config_file, path=None):
         # config file must be JSON file
@@ -274,7 +265,7 @@ class CDrouterDevice(CDRouter):
     def list_packages(self):
         packages = self.cdr.packages.list()
         for i, j in enumerate(packages.data):
-            logger.info(f"{i}.) ID: {j.id} \tname:{j.name}")
+            print(f"{i}.) ID: {j.id} \tname:{j.name}")
 
     def stop_result(self, result):
         self.bf_args.start_time = time.time()
@@ -285,7 +276,7 @@ class CDrouterDevice(CDRouter):
             except CDRouterError:
                 break
             if (time.time() - self.bf_args.start_time) > 300:
-                logger.debug("Please stop this job manually..")
+                print("Please stop this job manually..")
                 raise CDrouterDevice.InvalidCDRJob(
                     f"Failed to stop Job result : {result.id}"
                 )
@@ -335,7 +326,7 @@ class CDrouterDevice(CDRouter):
         while test_running:
             r = self.results.get(result.id)
             if r.status == "paused":
-                logger.error("Error: test is still paused")
+                print("Error: test is still paused")
                 self.stop_result(r)
                 break
 
@@ -344,7 +335,7 @@ class CDrouterDevice(CDRouter):
 
             time.sleep(5)
 
-        logger.info(r.result)
+        print(r.result)
         summary = self.results.summary_stats(result.id)
 
         output = {}

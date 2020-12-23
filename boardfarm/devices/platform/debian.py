@@ -8,7 +8,6 @@
 
 import atexit
 import ipaddress
-import logging
 import os  # noqa : F401
 import re
 import sys
@@ -18,14 +17,12 @@ from collections import defaultdict
 import pexpect
 import six
 from nested_lookup import nested_lookup
-from termcolor import colored
+from termcolor import colored, cprint
 
 from boardfarm.devices import linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.installers import apt_install
-
-logger = logging.getLogger("bft")
 
 
 class DebianBox(linux.LinuxDevice):
@@ -123,7 +120,7 @@ class DebianBox(linux.LinuxDevice):
                 command="bash", args=["-c", pre_cmd_host], env=self.dev.env
             )
             phc.expect(pexpect.EOF, timeout=120)
-            logger.info("\tpre_cmd_host done")
+            print("\tpre_cmd_host done")
 
         if ipaddr is not None:
             bft_pexpect_helper.spawn.__init__(
@@ -157,7 +154,7 @@ class DebianBox(linux.LinuxDevice):
                 self, command="bash", args=["-c", cmd], env=self.dev.env
             )
             self.ipaddr = None
-            logger.info("\tcmd done")
+            print("\tcmd done")
 
         self.name = name
         self.color = color
@@ -187,9 +184,9 @@ class DebianBox(linux.LinuxDevice):
             )
             i = phc.expect([pexpect.EOF, pexpect.TIMEOUT, "password"])
             if i > 0:
-                logger.error("\tpost_cmd_host did not complete, it likely failed\n")
+                print("\tpost_cmd_host did not complete, it likely failed\n")
             else:
-                logger.info("\tpost_cmd_host done")
+                print("\tpost_cmd_host done")
 
         if post_cmd is not None:
             sys.stdout.write("\tRunning post_cmd.... ")
@@ -200,7 +197,7 @@ class DebianBox(linux.LinuxDevice):
 
             self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
-            logger.info("\tpost_cmd done")
+            print("\tpost_cmd done")
 
         if reboot:
             self.reset()
@@ -237,7 +234,7 @@ class DebianBox(linux.LinuxDevice):
             raise Exception("Unable to connect to %s." % name)
         except pexpect.EOF:
             if hasattr(self, "before"):
-                logger.debug(self.before)
+                print(self.before)
                 raise Exception("Unable to connect to %s." % name)
         if i == 0:
             self.sendline("yes")
@@ -267,7 +264,7 @@ class DebianBox(linux.LinuxDevice):
             cmsg += "%s port " % port
         cmsg += "device console = "
         cmsg += colored("%s (%s)" % (color, name), color)
-        logger.debug(colored(cmsg, None, attrs=["bold"]))
+        cprint(cmsg, None, attrs=["bold"])
 
     def get_default_gateway(self, interface):
         self.sendline("ip route | grep {!s}".format(interface))
@@ -304,9 +301,9 @@ class DebianBox(linux.LinuxDevice):
                     "64 bytes", timeout=1
                 )
             except Exception:
-                logger.error(self.name + " not up yet, after %s seconds." % (i + 15))
+                print(self.name + " not up yet, after %s seconds." % (i + 15))
             else:
-                logger.info(
+                print(
                     "%s is back after %s seconds, waiting for network daemons to spawn."
                     % (self.name, i + 14)
                 )

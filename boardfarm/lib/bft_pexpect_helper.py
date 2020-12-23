@@ -1,7 +1,7 @@
 """Class functions to help boardfarm with pexpect logging."""
 import getpass
 import inspect
-import logging
+import os
 import sys
 import time
 
@@ -13,12 +13,12 @@ from boardfarm.tests_wrappers import throw_pexpect_error
 
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
-logger = logging.getLogger("bft")
+BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 
 def print_bold(msg):
-    """Print bold when debug logs are enabled."""
-    logger.debug(termcolor.colored(msg, None, attrs=["bold"]))
+    """Print bold."""
+    termcolor.cprint(msg, None, attrs=["bold"])
 
 
 def frame_index_out_of_file(this_file=__file__):
@@ -223,7 +223,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def send(self, s):
         """Send input command char by char to the active pexpect session."""
-        if self.getecho():
+        if BFT_DEBUG and self.getecho():
             idx = frame_index_out_of_file()
             print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
 
@@ -239,6 +239,9 @@ class bft_pexpect_helper(pexpect.spawn):
     @throw_pexpect_error
     def expect_helper(self, pattern, wrapper, *args, **kwargs):
         """Check for expected pattern and raise exception."""
+        if not BFT_DEBUG:
+            return wrapper(pattern, *args, **kwargs)
+
         idx = frame_index_out_of_file()
         print_bold("%s = expecting: %s" % (caller_file_line(idx), repr(pattern)))
         try:
@@ -269,10 +272,11 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def sendcontrol(self, char):
         """Send control char to pexecpt session."""
-        print_bold(
-            "%s = sending: control-%s"
-            % (caller_file_line(frame_index_out_of_file()), repr(char))
-        )
+        if BFT_DEBUG:
+            print_bold(
+                "%s = sending: control-%s"
+                % (caller_file_line(frame_index_out_of_file()), repr(char))
+            )
 
         return super(bft_pexpect_helper, self).sendcontrol(char)
 
