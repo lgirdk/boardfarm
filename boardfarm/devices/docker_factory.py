@@ -1,6 +1,7 @@
 import atexit
 import codecs
 import json
+import logging
 import os
 import pkgutil
 import re
@@ -16,6 +17,7 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.tests_wrappers import run_with_lock
 
 lock = Lock()
+logger = logging.getLogger("bft")
 
 
 class DockerFactory(linux.LinuxDevice):
@@ -184,7 +186,7 @@ class DockerFactory(linux.LinuxDevice):
         self.expect(self.prompt)
 
         if self.ipaddr != "localhost":
-            print(self.dev.env)
+            logger.debug(self.dev.env)
             for k, v in self.dev.env.items():
                 self.sendline("export %s=%s" % (k, v))
                 self.expect(self.prompt)
@@ -495,7 +497,7 @@ class DockerFactory(linux.LinuxDevice):
         )
         if " is already using parent interface " in self.before:
             # should we exit if we find this scenario?
-            print(
+            logger.warning(
                 "Warning!! a docker-network network with same parent exists. Switching to that docker-network"
             )
             self.docker_network = re.findall("dm-(.*) is already", self.before)[0]

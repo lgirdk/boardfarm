@@ -6,12 +6,14 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 """Read config file (in our case testsuite.cfg)."""
+import logging
 import re
 
+logger = logging.getLogger("bft")
 try:
     from urllib.request import urlopen
 except Exception as error:
-    print(error)
+    logger.error(error)
     from urllib2 import urlopen
 
 
@@ -53,7 +55,7 @@ class TestsuiteConfigReader(object):
             try:
                 self.read_config(f)
             except Exception as e:
-                print(e)
+                logger.error(e)
                 continue
 
     def read_config(self, fname):
@@ -73,7 +75,7 @@ class TestsuiteConfigReader(object):
                 with open(fname, "r") as f:
                     s_config = f.read()
         except Exception as e:
-            print(e)
+            logger.error(e)
             raise Exception("Warning: Unable to read/access %s" % fname)
         current_section = None
         for i, line in enumerate(s_config.split("\n")):
@@ -88,8 +90,8 @@ class TestsuiteConfigReader(object):
                     if current_section:
                         self.section[current_section].append(line)
             except Exception as e:
-                print(e)
-                print("Error line %s of %s" % (i + 1, fname))
+                logger.error(e)
+                logger.error("Error line %s of %s" % (i + 1, fname))
                 continue
 
         for section in self.section:
@@ -100,7 +102,7 @@ class TestsuiteConfigReader(object):
                     if ref_section in self.section:
                         new_section += self.section[ref_section]
                     else:
-                        print(
+                        logger.error(
                             "Failed to find '%s' testsuite referenced by '%s'."
                             % (ref_section, section)
                         )
@@ -133,4 +135,4 @@ if __name__ == "__main__":
 
     t = TestsuiteConfigReader()
     t.read(filenames)
-    print(t)
+    logger.debug(t)

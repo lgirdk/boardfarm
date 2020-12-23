@@ -11,6 +11,7 @@ import base64
 import binascii
 import ipaddress
 import json
+import logging
 import netrc
 import os
 import re
@@ -20,9 +21,8 @@ import time
 from datetime import datetime
 
 import pexpect
-import termcolor
 from selenium import webdriver
-from termcolor import cprint
+from termcolor import colored
 
 from boardfarm.dbclients import elasticlogger
 from boardfarm.lib.bft_pexpect_helper import (
@@ -41,12 +41,13 @@ from boardfarm.lib.SnmpHelper import SnmpMibs
 
 from .installers import install_pysnmp
 
+logger = logging.getLogger("bft")
 try:
     # Python3
     from urllib.parse import urlparse
     from urllib.request import Request, urlopen
 except Exception as error:
-    print(error)
+    logger.error(error)
     # Python2
     from urllib2 import Request, urlopen
     from urlparse import urlparse
@@ -92,7 +93,7 @@ def clear_buffer(console):
     try:
         console.read_nonblocking(size=2000, timeout=1)
     except Exception as error:
-        print(error)
+        logger.error(error)
         pass
 
 
@@ -174,7 +175,7 @@ class socks5_proxy_helper(object):
         )
         if len(socks5_proxy_list):
             if len(socks5_proxy_list) > 1:
-                print(
+                logger.error(
                     "WARNING: more than 1 socks5 proxy found {} returning 1st".format(
                         socks5_proxy_list
                     )
@@ -204,7 +205,7 @@ class socks5_proxy_helper(object):
         if len(p):
             if len(p) > 1:
                 # this should never happen...
-                print(
+                logger.error(
                     "WARNING: more than 1 proxy tunnel found for {}: {}".format(
                         device.name, p
                     )
@@ -240,8 +241,9 @@ class socks5_proxy_helper(object):
         for _ in range(retries):
             try:
                 self.socks5_port = randrange(start_port, end_port)
-                if "BFT_DEBUG" in os.environ:
-                    print("Creating Socks5 tunnel on port {}".format(self.socks5_port))
+                logger.debug(
+                    "Creating Socks5 tunnel on port {}".format(self.socks5_port)
+                )
 
                 # DO NOT use -N [-v -v] as it seems to kill the tunnel,
                 # if you want to use -N you need to change the prompt expect pattern
@@ -259,9 +261,10 @@ class socks5_proxy_helper(object):
                 )
                 break
             except Exception as e:
-                print(e)
-                if "BFT_DEBUG" in os.environ:
-                    print("Sock5 failed on port {} - retyring".format(self.socks5_port))
+                logger.error(e)
+                logger.debug(
+                    "Sock5 failed on port {} - retyring".format(self.socks5_port)
+                )
                 self.socks5_port = None
         if self.socks5_port:
             # if we have a hop the proxy will be hop:port
@@ -310,7 +313,7 @@ def phantom_webproxy_driver(ipport):
         "--proxy=" + ipport,
         "--proxy-type=http",
     ]
-    print("Attempting to setup Phantom.js via proxy %s" % ipport)
+    logger.info("Attempting to setup Phantom.js via proxy %s" % ipport)
     driver = webdriver.PhantomJS(service_args=service_args)
     driver.set_window_size(1024, 768)
     driver.set_page_load_timeout(30)
@@ -440,13 +443,22 @@ def get_webproxy_driver(ipport, config, default_delay=20):
         raise Exception(msg)
 
 
+def print_bold(msg):
+    """Print the message in Bold
+
+    :param msg: Message to print in bold
+    :type msg: String
+    """
+    logger.info(colored(msg, None, attrs=["bold"]))
+
+
 def test_msg(msg):
     """Print the message in Bold.
 
     :param msg: Message to print in bold
     :type msg: String
     """
-    cprint(msg, None, attrs=["bold"])
+    logger.info(colored(msg, None, attrs=["bold"]))
 
 
 def _hash_file(filename, block_size, hashobj):
@@ -536,12 +548,12 @@ def start_ipbound_httpservice(device, ip="0.0.0.0", port="9000", options=""):
         % (ip, port, options)
     )
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Failed to start service on " + ip + ":" + port)
+        logger.debug(
+            colored("Failed to start service on " + ip + ":" + port, attrs=["bold"])
+        )
         return False
     else:
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Service started on " + ip + ":" + port)
+        logger.debug(colored("Service started on " + ip + ":" + port, attrs=["bold"]))
         return True
 
 
@@ -579,12 +591,12 @@ EOF"""
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Failed to start service on [" + ip + "]:" + port)
+        logger.debug(
+            colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
+        )
         return False
     else:
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Service started on [" + ip + "]:" + port)
+        logger.debug(colored("Service started on [" + ip + "]:" + port, attrs=["bold"]))
         return True
 
 
@@ -625,7 +637,9 @@ def start_ipbound_httpsservice(
     device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
-        print_bold("Failed to create certificate for HTTPs service")
+        logger.error(
+            colored("Failed to create certificate for HTTPs service", attrs=["bold"])
+        )
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
@@ -652,11 +666,12 @@ EOF"""
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
-        print_bold("Failed to start service on [" + ip + "]:" + port)
+        logger.debug(
+            colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
+        )
         return False
     else:
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Service started on [" + ip + "]:" + port)
+        logger.debug(colored("Service started on [" + ip + "]:" + port, attrs=["bold"]))
         return True
 
 
@@ -697,7 +712,9 @@ def start_ip6bound_httpsservice(
     device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
-        print_bold("Failed to create certificate for HTTPs service")
+        logger.error(
+            colored("Failed to create certificate for HTTPs service", attrs=["bold"])
+        )
         return False
     device.expect(device.prompt)
     # create and run the "secure" server
@@ -720,11 +737,12 @@ EOF"""
     device.expect(device.prompt)
     device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
-        print_bold("Failed to start service on [" + ip + "]:" + port)
+        logger.error(
+            colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
+        )
         return False
     else:
-        if "BFT_DEBUG" in os.environ:
-            print_bold("Service started on [" + ip + "]:" + port)
+        logger.debug(colored("Service started on [" + ip + "]:" + port, attrs=["bold"]))
         return True
 
 
@@ -816,7 +834,7 @@ def file_open_json(file):
         with open(file) as f:
             return json.load(f)
     except Exception as e:
-        print(e)
+        logger.error(e)
         raise Exception("Could not open the json file")
 
 
@@ -1230,7 +1248,11 @@ def retry_on_exception(method, args, retries=10, tout=5):
         try:
             return method(*args)
         except Exception as e:  # pylint: disable=broad-except
-            print_bold("method failed %d time (%s)" % ((not_used + 1), e))
+            logger.debug(
+                colored(
+                    "method failed %d time (%s)" % ((not_used + 1), e), attrs=["bold"]
+                )
+            )
             time.sleep(tout)
     return method(*args)
 
@@ -1367,7 +1389,7 @@ def snmp_set_counter32(device, wan_ip, parser, mib_set, value="1024"):
             device.expect(device.prompt)
         return True
     except Exception as error:
-        print(error)
+        logger.error(error)
         raise Exception("Failed in setting mib using pysnmp")
 
 
@@ -1458,7 +1480,7 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
     """
     for _ in range(5):
         try:
-            print_bold(cmd)
+            logger.debug(colored(cmd, attrs=["bold"]))
             p = bft_pexpect_helper.spawn(
                 command="/bin/bash", args=["-c", cmd], timeout=240
             )
@@ -1474,19 +1496,24 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
                 p.expect("%s.*" % target, timeout=120)
 
             fname = p.match.group(0).strip()
-            print_bold("\nfile: %s" % fname)
+            logger.info(colored("\nfile: %s" % fname, attrs=["bold"]))
         except pexpect.EOF:
-            print_bold(
-                "EOF exception: unable to extract filename (should be echoed by command)!"
+            logger.error(
+                colored(
+                    "EOF exception: unable to extract filename (should be echoed by command)!",
+                    attrs=["bold"],
+                )
             )
-            print_bold("EOF exception: command: %s" % cmd)
+            logger.error(colored("EOF exception: command: %s" % cmd, attrs=["bold"]))
         except Exception as e:
-            print_bold(e)
-            print_bold("tried to copy file to server and failed!")
+            logger.error(colored(e, attrs=["bold"]))
+            logger.error(
+                colored("tried to copy file to server and failed!", attrs=["bold"])
+            )
         else:
             return fname[10:]
 
-        print_bold("Unable to copy file to server, exiting")
+        logger.error(colored("Unable to copy file to server, exiting", attrs=["bold"]))
         raise Exception("Unable to copy file to server")
 
 
@@ -1536,7 +1563,11 @@ def scp_to_tftp_server(fname, server, username, password, port):
     """
     # local file verify it exists first
     if not os.path.isfile(fname):
-        print_bold("File passed as parameter does not exist! Failing!\n")
+        logger.error(
+            colored(
+                "File passed as parameter does not exist! Failing!\n", attrs=["bold"]
+            )
+        )
         sys.exit(10)
 
     pipe = ""
@@ -1571,15 +1602,6 @@ def scp_from(fname, server, username, password, port, dest):
     """
     cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
     copy_file_to_server(cmd, password, target="DONE")
-
-
-def print_bold(msg):
-    """Print the input message in Bold.
-
-    :param msg: Message to print in bold
-    :type msg: String
-    """
-    termcolor.cprint(msg, None, attrs=["bold"])
 
 
 def check_url(url):
@@ -1620,8 +1642,8 @@ def check_url(url):
         urlopen(req, timeout=20, context=context)
         return True
     except Exception as e:
-        print(e)
-        print("Error trying to access %s" % url)
+        logger.error(e)
+        logger.eror("Error trying to access %s" % url)
         return False
 
 
@@ -1701,7 +1723,7 @@ def ftp_device_login(device, ip_mode, device_ip):
         device.expect(["230 Login successful"], timeout=10)
         device.expect("ftp>", timeout=10)
     except Exception as error:
-        print(error)
+        logger.error(error)
         check = False
         ftp_close(device)
     return check
@@ -1825,7 +1847,7 @@ def openssl_verify(device, ip_address, port, options=""):
     try:
         device.expect_prompt()
     except Exception as error:
-        print(error)
+        logger.error(error)
         for _ in range(3):
             device.sendcontrol("c")
             device.expect_prompt()
@@ -1992,14 +2014,16 @@ def curl_page(
         dev.sendline("curl {} {} | tee page.curl".format(opts, waddr))
         dev.expect(expected)
         dev.expect_prompt()
-        print("Curl from device '{}' url '{}' successful".format(dev.name, waddr))
+        logger.debug(
+            "Curl from device '{}' url '{}' successful".format(dev.name, waddr)
+        )
     except Exception as e:
         dev.sendcontrol("c")
         dev.expect_prompt()
-        print(
+        logger.error(
             "ERROR: failed to curl from device '{}', url '{}'".format(dev.name, waddr)
         )
-        print(e)
+        logger.error(e)
         return False
     return True
 
@@ -2044,8 +2068,8 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
         client2.expect_prompt()
         client1.sendcontrol("c")
         client1.expect_prompt()
-        print("IRC communicate Failed.")
-        print(e)
+        logger.error("IRC communicate Failed.")
+        logger.error(e)
         return False
     return True
 
@@ -2085,7 +2109,7 @@ def get_class_name_in_stack(self, needle, haystack, not_found="needle_not_found"
             if st.function in needle
         ][0]
     except IndexError:
-        print(f"Needle: {needle} not found in given stack strace")
+        logger.error(f"Needle: {needle} not found in given stack strace")
     return s
 
 
@@ -2127,7 +2151,7 @@ def send_to_elasticsearch(elastic_url, data):
         if elastic_url:
             elasticlogger.ElasticsearchLogger(elastic_url).log(data)
         else:
-            print("Empty url received.")
+            logger.info("Empty url received.")
     except Exception as e:
-        print(e)
-        print(f"Unable to store results to elasticsearch_server '{elastic_url}'")
+        logger.error(e)
+        logger.error(f"Unable to store results to elasticsearch_server '{elastic_url}'")

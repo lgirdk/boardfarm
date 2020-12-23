@@ -6,6 +6,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import ipaddress
+import logging
 import re
 
 import pexpect
@@ -16,6 +17,8 @@ from boardfarm.devices.platform import debian
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import apt_install
+
+logger = logging.getLogger("bft")
 
 
 class DebianLAN(debian.DebianBox):
@@ -78,7 +81,7 @@ class DebianLAN(debian.DebianBox):
         if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             self.expect(self.prompt, timeout=60)
         else:
-            print("Failed to download packages, things might not work")
+            logger.error("Failed to download packages, things might not work")
             self.sendcontrol("c")
             self.expect(self.prompt)
 
@@ -98,7 +101,9 @@ class DebianLAN(debian.DebianBox):
 
         self.sendline("ps aux")
         if self.expect([dhclient_str] + self.prompt) == 0:
-            print("WARN: dhclient still running, something started rogue client!")
+            logger.warning(
+                "WARN: dhclient still running, something started rogue client!"
+            )
             self.sendline(f"pkill --signal 9 -f {dhclient_str}.*{self.iface_dut}")
             self.expect(self.prompt)
 

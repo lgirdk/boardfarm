@@ -5,6 +5,7 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import logging
 import time
 import warnings
 from collections import OrderedDict
@@ -15,6 +16,8 @@ import boardfarm.exceptions
 from boardfarm.lib.common import run_once
 
 warnings.simplefilter("always", UserWarning)
+
+logger = logging.getLogger("bft")
 
 
 @run_once
@@ -55,7 +58,7 @@ def flash_image(config, env_helper, board, lan, wan, tftp_device, reflash=True):
                         flash_meta_helper(board, env_helper.get_image(), wan, lan)
                     break
                 except Exception as e:
-                    print(e)
+                    logger.error(e)
                     tftp_device.restart_tftp_server()
                     board.reset(break_into_uboot=True)
                     board.setup_uboot_network(tftp_device.gw)
@@ -89,7 +92,7 @@ def boot_image(config, env_helper, board, lan, wan, tftp_device):
         try:
             flash_meta_helper(board, img, wan, lan)
         except Exception as e:
-            print(e)
+            logger.error(e)
             tftp_device.restart_tftp_server()
             board.reset(break_into_uboot=True)
             board.setup_uboot_network(tftp_device.gw)
@@ -355,7 +358,7 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
                 board.config_wan_proto(config.WAN_PROTO)
                 break
             except Exception:
-                print("\nFailed to check/set the router's WAN protocol.")
+                logger.error("\nFailed to check/set the router's WAN protocol.")
         board.wait_for_network()
     board.wait_for_mounts()
     logged["boot_step"] = "network_ok"
@@ -369,7 +372,7 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
     try:
         board.set_password(password="password")
     except Exception:
-        print("WARNING: Unable to set root password on router.")
+        logger.warning("WARNING: Unable to set root password on router.")
 
     board.sendline("cat /proc/cmdline")
     board.expect(board.prompt)
@@ -389,7 +392,7 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
 
     # Try to verify router has stayed up (and, say, not suddenly rebooted)
     end_seconds_up = board.get_seconds_uptime()
-    print("\nThe router has been up %s seconds." % end_seconds_up)
+    logger.info("\nThe router has been up %s seconds." % end_seconds_up)
     if config.setup_device_networking:
         assert end_seconds_up > linux_booted_seconds_up
 

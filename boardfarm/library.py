@@ -8,11 +8,14 @@
 import datetime
 import ipaddress
 import json
+import logging
 import os
 import traceback
 
 import boardfarm
 from boardfarm.lib.common import print_bold
+
+logger = logging.getLogger("bft")
 
 
 class HelperEncoder(json.JSONEncoder):
@@ -35,8 +38,8 @@ class HelperEncoder(json.JSONEncoder):
             try:
                 return json.JSONEncoder.default(self, obj)
             except Exception as error:
-                print(error)
-                print(
+                logger.error(error)
+                logger.warning(
                     "WARNING: HelperEncoder doesn't know how to convert %s to a string or number"
                     % type(obj)
                 )
@@ -54,7 +57,7 @@ def clean_for_json(data):
 
 def printd(data):
     """Pretty-print as a JSON data object."""
-    print(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
+    logger.info(json.dumps(data, sort_keys=True, indent=4, cls=HelperEncoder))
 
 
 def get_test_name(test, override_name=None):
@@ -100,7 +103,7 @@ def check_devices(devices, func_name="check_status"):
     """
     ret = []
 
-    print("\n" + "=" * 20 + " BEGIN Status Check " + "=" * 20)
+    logger.info("\n" + "=" * 20 + " BEGIN Status Check " + "=" * 20)
     for d in devices:
         if d is None:
             continue
@@ -112,24 +115,23 @@ def check_devices(devices, func_name="check_status"):
                 if hasattr(d, "logfile_read"):
                     saved_logfile_read = d.logfile_read.out
                     d.logfile_read.out = None
-                print(
+                logger.info(
                     "Checking status for "
                     + d.__class__.__name__
                     + " (see log in result dir for data)"
                 )
                 getattr(d, func_name)()
             except Exception as error:
-                print(error)
+                logger.error(error)
                 ret.append(d)
-                print("Status check for %s failed." % d.__class__.__name__)
+                logger.debug("Status check for %s failed." % d.__class__.__name__)
             if saved_logfile_read is not None:
                 d.logfile_read.out = saved_logfile_read
-        elif "BFT_DEBUG" in os.environ:
-            print(
-                "Pro Tip: Write a function %s.%s() to run between tests."
-                % (d.__class__.__name__, func_name)
-            )
-    print("\n" + "=" * 20 + " END Status Check " + "=" * 20)
+        logger.debug(
+            "Pro Tip: Write a function %s.%s() to run between tests."
+            % (d.__class__.__name__, func_name)
+        )
+    logger.info("\n" + "=" * 20 + " END Status Check " + "=" * 20)
 
     return ret
 
@@ -163,7 +165,7 @@ def process_test_results(raw_test_results, golden=None):
                 stop_time = cls.stop_time
                 elapsed_time = stop_time - start_time
         except Exception as error:
-            print(error)
+            logger.error(error)
             elapsed_time = 0
 
         unexpected = None
@@ -197,7 +199,7 @@ def process_test_results(raw_test_results, golden=None):
             try:
                 message = cls.__doc__.split("\n")[0]
             except Exception as error:
-                print(error)
+                logger.error(error)
                 message = "Missing description of class (no docstring)"
                 print_bold("WARN: Please add docstring to %s." % cls)
 
@@ -220,7 +222,7 @@ def process_test_results(raw_test_results, golden=None):
             for subtest in x.subtests:
                 parse_and_add_results(subtest, prefix=x.__class__.__name__ + "-")
         except Exception as e:
-            print("Failed to parse test result: %s" % e)
+            logger.error("Failed to parse test result: %s" % e)
 
     full_results["tests_total"] = len(raw_test_results)
     return full_results

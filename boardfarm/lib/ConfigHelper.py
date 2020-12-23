@@ -1,3 +1,4 @@
+import logging
 import traceback
 from json import load
 
@@ -5,6 +6,8 @@ import jsonschema
 
 from boardfarm.exceptions import ConfigKeyError
 from boardfarm.lib.wrappers import singleton
+
+logger = logging.getLogger("bft")
 
 
 @singleton
@@ -18,23 +21,27 @@ class ConfigHelper(dict):
 
     def __getitem__(self, key):
         if key == "mirror":
-            print("WARNING " * 9)
-            print(
+            logger.error("WARNING " * 9)
+            logger.error(
                 'Support for calling config["mirror"] directly is going to be removed.'
             )
-            print("Please change your test as soon as possible to this file transfer")
-            print("in the proper way.")
-            print("WARNING " * 9)
+            logger.error(
+                "Please change your test as soon as possible to this file transfer"
+            )
+            logger.error("in the proper way.")
+            logger.error("WARNING " * 9)
 
         if key in ("cm_cfg", "mta_cfg", "erouter_cfg"):
-            print("ERROR: use of cm_cfg or mta_cfg in config object is deprecated!")
-            print("Use board.cm_cfg or board.mta_cfg directly!")
-            traceback.print_exc()
+            logger.error(
+                "ERROR: use of cm_cfg or mta_cfg in config object is deprecated!"
+            )
+            logger.debug("Use board.cm_cfg or board.mta_cfg directly!")
+            logger.debug(traceback.print_exc())
             raise ConfigKeyError
 
         if key in ("station"):
-            print("ERROR: use get_station() not ['station']")
-            traceback.print_exc()
+            logger.error("ERROR: use get_station() not ['station']")
+            logger.debug(traceback.print_exc())
             raise ConfigKeyError
 
         return dict.__getitem__(self, key)
@@ -72,10 +79,10 @@ class SchemaValidator(object):
                 resolver=self.resolver,
                 format_checker=jsonschema.FormatChecker(),
             )
-            print("ok -", jsonname)
+            logger.info("ok -", jsonname)
         except jsonschema.exceptions.ValidationError as error:
-            print("not ok -", jsonname)
-            print("Error: " + str(error) + " in " + str(error.path))
+            logger.error("not ok -", jsonname)
+            logger.error("Error: " + str(error) + " in " + str(error.path))
 
     def validate_json_schema_dict(self, dict):
         """Place holder to validate json dictionary."""

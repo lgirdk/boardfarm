@@ -2,7 +2,6 @@
 # Setup logging
 """Class functions to Manage device."""
 import logging
-import os
 import sys
 import uuid
 from collections import UserList
@@ -250,13 +249,13 @@ class device_manager(UserList):
         if location is not None:
             matching[:] = [d for d in matching if d.location == location]
 
-        if len(matching) > 1 and "BFT_DEBUG" in os.environ:
-            print(
+        if len(matching) > 1:
+            logger.debug(
                 "multiple matches, returning first hit (%s, %s, %s)"
                 % (t, feature, location)
             )
             for m in matching:
-                print(m)
+                logger.debug(m)
 
         if len(matching) == 0:
             return DeviceNone()
@@ -272,7 +271,7 @@ class device_manager(UserList):
                 extend_enum(device_type, dev.name, self.plugin_counter)
                 self.plugin_counter -= 1
             else:
-                print(
+                logger.warning(
                     "WARNING!! WARNING!! this device cannot be added as a plugin"
                     "\nCode will fail, if two devices found with same name."
                 )

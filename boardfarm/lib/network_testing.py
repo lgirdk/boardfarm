@@ -8,6 +8,7 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 
 import ipaddress
+import logging
 import re
 from collections import namedtuple
 
@@ -19,6 +20,7 @@ from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
 rtp_msg = namedtuple("RTPMessage", ["src_ip", "dest_ip"])
+logger = logging.getLogger("bft")
 
 
 def tcpdump_capture(
@@ -202,7 +204,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
             device.expect("[1-9]\d*\r\n", timeout=5)
             result_list.append(True)
         except PexpectErrorTimeout:
-            print("No RTP Packets found")
+            logger.error("No RTP Packets found")
             result_list.append(False)
         device.expect_prompt()
     else:
@@ -219,7 +221,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
                 device.expect_prompt()
                 result_list.append(True)
             except PexpectErrorTimeout:
-                print(
+                logger.error(
                     f"No RTP Packets found with source {msg.src_ip} and destination {msg.dest_ip}"
                 )
                 device.expect_prompt()
@@ -480,7 +482,7 @@ def ssh_service_verify(
         device.sendline("exit")
         device.expect(device.prompt, timeout=20)
     except Exception as e:
-        print(e)
+        logger.error(e)
         value = device.before
         device.sendcontrol("c")
         device.expect(device.prompt)

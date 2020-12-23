@@ -6,8 +6,10 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import logging
 import os
 
+logger = logging.getLogger("bft")
 # no repr
 newline = r"\r\n\[[^\]]+\]"
 newline_match = r"\r\n\[([^\]]+)\]"
@@ -53,7 +55,7 @@ class Analysis:
         try:
             data = [float(i) for i in data]
         except Exception as error:
-            print(error)
+            logger.error(error)
             data = [int(i) for i in data]
 
         import matplotlib.pyplot as plt
