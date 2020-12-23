@@ -26,7 +26,6 @@ import psutil
 from termcolor import colored
 
 import boardfarm.exceptions
-import boardfarm.logging_config  # noqa  F401
 from boardfarm import devices, library, tests
 from boardfarm.dbclients import boardfarmwebclient, logstash, mongodblogger
 from boardfarm.exceptions import BftNotSupportedDevice
