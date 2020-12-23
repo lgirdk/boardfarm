@@ -9,7 +9,6 @@
 
 import atexit
 import ipaddress
-import os
 import re
 import sys
 import time
@@ -17,6 +16,7 @@ from collections import defaultdict
 
 import pexpect
 import six
+from debtcollector import deprecate
 from nested_lookup import nested_lookup
 from termcolor import colored, cprint
 
@@ -58,6 +58,11 @@ class DebianBox(linux.LinuxDevice):
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
+        deprecate(
+            "Warning!",
+            message="This DebianBox class is deprecated",
+            category=UserWarning,
+        )
         self.args = args
         self.kwargs = kwargs
         name = kwargs.pop("name", None)
@@ -1098,9 +1103,3 @@ if __name__ == "__main__":
         dev.configure("lan_device")
     if sys.argv[2] == "setup_as_wan_gateway":
         dev.configure("wan_device")
-    if sys.argv[2] == "test_voip":
-        sys.path.insert(0, os.getcwd())
-        sys.path.insert(0, os.getcwd() + "/tests")
-        from boardfarm.lib import installers
-
-        installers.install_asterisk(dev)
