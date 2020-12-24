@@ -85,15 +85,17 @@ class DebianLAN(debian.DebianBox):
             self.sendcontrol("c")
             self.expect(self.prompt)
 
-    def __kill_dhclient(self, ipv4=True):
-        dhclient_str = f"dhclient {'-4' if ipv4 else '-6'}"
-
+    def prepare_interface(self):
         # bring ip link down and up
         self.sendline(
             "ip link set down %s && ip link set up %s"
             % (self.iface_dut, self.iface_dut)
         )
         self.expect(self.prompt)
+
+    def __kill_dhclient(self, ipv4=True):
+        dhclient_str = f"dhclient {'-4' if ipv4 else '-6'}"
+
         if ipv4:
             self.release_dhcp(self.iface_dut)
         else:
@@ -118,9 +120,12 @@ class DebianLAN(debian.DebianBox):
         self.sendline("ip route del default dev eth0")
         self.expect(self.prompt)
 
-    def start_ipv4_lan_client(self, wan_gw=None):
+    def start_ipv4_lan_client(self, wan_gw=None, prep_iface=False):
         """restart ipv4 dhclient on lan device"""
         ipv4 = None
+
+        if prep_iface:
+            self.prepare_interface()
 
         self.__kill_dhclient()
 
@@ -193,9 +198,12 @@ class DebianLAN(debian.DebianBox):
 
         return ipv4
 
-    def start_ipv6_lan_client(self, wan_gw=None):
+    def start_ipv6_lan_client(self, wan_gw=None, prep_iface=False):
         """restart ipv6 dhclient on lan device"""
         ipv6 = None
+
+        if prep_iface:
+            self.prepare_interface()
 
         self.__kill_dhclient(False)
 
@@ -234,6 +242,7 @@ class DebianLAN(debian.DebianBox):
         ipv4, ipv6 = None, None
 
         self.configure_docker_iface()
+        self.prepare_interface()
 
         if not ipv4_only:
             ipv6 = self.start_ipv6_lan_client(wan_gw)
