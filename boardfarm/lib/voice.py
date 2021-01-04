@@ -120,3 +120,31 @@ def basic_call(sipcenter, caller, callee, board, sipserver_ip, dial_number, tcid
     caller.phone_kill()
     callee.phone_kill()
     return media_out
+
+
+def rtpproxy_install(dev):
+    """Install rtpproxy"""
+    apt_install(dev, "rtpproxy", timeout=60)
+
+
+def rtpproxy_start(dev):
+    """Start the rtpproxy in background."""
+    dev.sendline("service rtpproxy start")
+    dev.expect("Starting")
+    dev.expect(dev.prompt)
+
+
+def rtpproxy_configuration(dev):
+    """To generate rtpproxy configuration files"""
+    ip_address = dev.get_interface_ipaddr(dev.iface_dut)
+    gen_rtpproxy_conf = (
+        """cat > /etc/default/rtpproxy << EOF
+CONTROL_SOCK=udp:127.0.0.1:7722
+EXTRA_OPTS="-l %s"
+USER=kamailio
+GROUP=kamailio
+EOF"""
+        % ip_address
+    )
+    dev.sendline(gen_rtpproxy_conf)
+    dev.expect(dev.prompt)
