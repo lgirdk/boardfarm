@@ -141,7 +141,7 @@ EOF"""
         finally:
             self.exit_asterisk_console()
 
-    def peer_reg_status(self, user, mta_ip):
+    def sipserver_user_registration_status(self, user, mta_ip):
         """To check the status of a user in sip server.
         which can be either 'Registered' or 'Unregistered'
         or 'Not Present'
