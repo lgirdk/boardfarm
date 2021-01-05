@@ -67,7 +67,7 @@ def tcpdump_capture(
     return device.before
 
 
-def kill_process(device, process="tcpdump", pid=None, sync=True):
+def kill_process(device, process="tcpdump", pid=None, sync=True, port=None):
     """Kill any active process
 
     :param device: lan or wan
@@ -78,11 +78,15 @@ def kill_process(device, process="tcpdump", pid=None, sync=True):
     :type pid: String, Optional
     :param sync: Marked False if sync should not be executed;defaults to True
     :type sync: Boolean,optional
+    :param port: port number to kill
+    :type port: int
     :return: Console output of sync sendline command after kill process
     :rtype: string
     """
     if pid:
         device.sudo_sendline("kill %s" % pid)
+    if port:
+        device.sudo_sendline(r"kill $(lsof -t -i:%s)" % str(port))
     else:
         device.sudo_sendline("killall %s" % process)
     device.expect(device.prompt)
