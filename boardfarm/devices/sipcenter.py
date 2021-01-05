@@ -1,6 +1,8 @@
 import logging
 import re
 
+from debtcollector import deprecate
+
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.installers import apt_install
 
@@ -40,11 +42,21 @@ class SipCenter(object):
 
     def install_asterisk(self):
         """Install asterisk from internet."""
+        deprecate(
+            "Warning!",
+            message="install_asterisk() is deprecated",
+            category=UserWarning,
+        )
         self.install_essentials()
         apt_install(self, "asterisk", timeout=300)
 
     def setup_asterisk_config(self):
         """Generate sip.conf and extensions.conf file."""
+        deprecate(
+            "Warning!",
+            message="setup_asterisk_config() is deprecated",
+            category=UserWarning,
+        )
         gen_conf = """cat > /etc/asterisk/sip.conf << EOF
 [general]
 context=default
@@ -98,6 +110,11 @@ EOF"""
 
     def start_asterisk(self):
         """Start the asterisk server if executable is present."""
+        deprecate(
+            "Warning!",
+            message="start_asterisk() is deprecated",
+            category=UserWarning,
+        )
         self.install_asterisk()
         self.setup_asterisk_config()
         self.sendline("nohup asterisk -vvvvvvvd &> ./log.ast &")
@@ -105,6 +122,11 @@ EOF"""
 
     def kill_asterisk(self):
         """Kill  the asterisk server."""
+        deprecate(
+            "Warning!",
+            message="kill_asterisk() is deprecated",
+            category=UserWarning,
+        )
         self.sendline("killall -9 asterisk")
         self.expect(self.prompt)
 
@@ -113,6 +135,11 @@ EOF"""
 
         The description of the function is subjected to change during Sipcenter Interface addition.
         """
+        deprecate(
+            "Warning!",
+            message="stop() is deprecated",
+            category=UserWarning,
+        )
         self.kill_asterisk()
 
     def enter_asterisk_console(self):
@@ -178,6 +205,11 @@ EOF"""
         :return: output: return a tuple with bool and defined message
         :rtype output: tuple
         """
+        deprecate(
+            "Warning!",
+            message="modify_sip_config() is deprecated",
+            category=UserWarning,
+        )
         apt_install(self, "python3")
         py_steps = [
             "import configparser",
