@@ -1,8 +1,10 @@
 import pexpect
+from boardfarm_docsis.exceptions import VoiceSetupConfigureFailure
 from nested_lookup import nested_lookup
 
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
+from boardfarm.lib.network_testing import kill_process
 
 
 def add_dns_auth_record(dns, sipserver_name):
@@ -70,6 +72,35 @@ def voice_devices_configure(voice_devices_list, sip_server):
         raise Exception(
             "Unable to initialize Voice devices, failed due to the error : ", e
         )
+
+
+def voice_configure(voice_devices_list, sip_server, config):
+    """
+    Initialize the Voice test setup.
+
+    Parameters:
+    voice_devices_list(list of obj): list of voice devices
+    sip_server(obj): sipserver device
+    config(obj): config object
+    """
+
+    try:
+        kill_process(sip_server, port=5060)
+        dns_setup_sipserver(sip_server, config)
+        for voice_device in voice_devices_list:
+            if hasattr(voice_device, "profile"):
+                boot_list = nested_lookup(
+                    "on_boot", voice_device.profile.get(voice_device.name, {})
+                )
+                for profile_boot in boot_list:
+                    profile_boot()
+                if "softphone" in voice_device.name:
+                    voice_device.phone_config(
+                        sip_server.get_interface_ipaddr(sip_server.iface_dut)
+                    )
+    except Exception as e:
+        kill_process(sip_server, port=5060)
+        raise VoiceSetupConfigureFailure(e)
 
 
 def dns_setup_sipserver(sip_server, config):
