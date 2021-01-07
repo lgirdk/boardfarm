@@ -96,14 +96,7 @@ class SoftPhone(object):
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
         if exp_ans_msg:
-            self.expect("Press a to answer or h to reject call")
-        else:
-            self.expect(r"\[INCOMING\]")
-        self.sendline("a")
-        self.expect(r"Answer with code \(100\-699\) \(empty to cancel\)\:")
-        self.sendline("180")
-        self.expect("180 Ringing")
-        self.expect(self.pjsip_prompt)
+            pass
         self.sendline("a")
         self.expect(r"Answer with code \(100\-699\) \(empty to cancel\)\:")
         self.sendline("200")
