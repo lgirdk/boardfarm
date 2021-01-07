@@ -58,6 +58,7 @@ class SoftPhone(object):
         echo --password=1234
         echo --null-audio
         echo --max-calls=1
+        echo --auto-answer=180
         )> """
             + self.config_name
         )
@@ -149,6 +150,8 @@ class SoftPhone(object):
         """
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
+        if msg == "INCOMING":
+            msg = "180 Ringing"
         self.expect(msg)
         self.expect(self.pjsip_prompt)
         return True
