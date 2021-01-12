@@ -85,7 +85,7 @@ def kill_process(device, process="tcpdump", pid=None, sync=True, port=None):
     """
     if pid:
         device.sudo_sendline("kill %s" % pid)
-    if port:
+    elif port:
         device.sudo_sendline(r"kill $(lsof -t -i:%s)" % str(port))
     else:
         device.sudo_sendline("killall %s" % process)
