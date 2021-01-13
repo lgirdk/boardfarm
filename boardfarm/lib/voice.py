@@ -165,6 +165,13 @@ def rtpproxy_start(dev):
     dev.expect(dev.prompt)
 
 
+def rtpproxy_stop(dev):
+    """Stop the rtpproxy in background."""
+    dev.sendline("service rtpproxy stop")
+    dev.expect("Stopping")
+    dev.expect(dev.prompt)
+
+
 def rtpproxy_configuration(dev):
     """To generate rtpproxy configuration files"""
     ip_address = dev.get_interface_ipaddr(dev.iface_dut)
