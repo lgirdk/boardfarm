@@ -8,6 +8,7 @@ from boardfarm.lib.voice import (
     rtpproxy_configuration,
     rtpproxy_install,
     rtpproxy_start,
+    rtpproxy_stop,
 )
 
 from .base_devices.sipcenter_interface import ISIPCenter
@@ -54,9 +55,9 @@ class SIPcenterKamailio(DebianBox, ISIPCenter):
         """Generate kamailio basic db and configuration file."""
         # basic configurations
         self.mysql.start()
-        rtpproxy_start(self)
         self.mysql.setup_root_user()
         rtpproxy_configuration(self)
+        rtpproxy_start(self)
         gen_db_conf = """cat > /etc/kamailio/kamctlrc << EOF
 SIP_DOMAIN=sipcenter.boardfarm.com
 DBENGINE=MYSQL
@@ -210,6 +211,7 @@ EOF"""
         try:
             self.sipserver_kill()
             self.sipserver_purge()
+            rtpproxy_stop(self)
             self.sipserver_install()
             self.sipserver_configuration()
             self.sipserver_kill()
