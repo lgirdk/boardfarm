@@ -78,9 +78,15 @@ EOF"""
             + """ > temp && mv temp """
             + self.kamailio_cfg
         )
+        tm_param_sed = (
+            """sed -i '/tm params/ a modparam("tm", "auto_inv_100", 1)\\nmodparam("tm", "auto_inv_100_reason", "Trying")' """
+            + self.kamailio_cfg
+        )
         self.sendline(gen_sed)
         self.expect(self.prompt)
         self.sendline(gen_kamailio_cfg)
+        self.expect(self.prompt)
+        self.sendline(tm_param_sed)
         self.expect(self.prompt)
         db_exists = self.mysql.check_db_exists(self.db_name)
         if not db_exists:
