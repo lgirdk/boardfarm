@@ -25,6 +25,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
     wan_cmts_provisioner = False
     standalone_provisioner = True
     wan_dhcp_server = False
+    vendor_opts_acs_url = False
 
     # default CM specific settings
     default_lease_time = 604800
@@ -199,7 +200,9 @@ option docsis.time-servers code 37 = array of ip6-address;
 option docsis.time-offset code 38 = signed integer 32;
 option docsis.cm-mac-address code 1026 = string;
 option docsis.PKTCBL-CCCV4 code 2170 = { integer 16, integer 16, ip-address, integer 16, integer 16, ip-address };
+option docsis.acsserver code 40 = { integer 8, string };
 option vsio.docsis code 4491 = encapsulate docsis;
+
 
 # TODO: move to host section
 option dhcp6.aftr-name  code 64 = string ;
@@ -425,6 +428,13 @@ option docsis-mta.tgs-util code 7 = integer 8;
 option docsis-mta.timer code 8 = integer 8;
 option docsis-mta.ticket-ctrl-mask code 9 = integer 16;
 option docsis-mta-pkt code 122 = encapsulate docsis-mta;
+
+option space docsis code width 1 length width 1;
+option docsis.acsserver code 6 = { integer 8, string };
+option space vivso code width 4 length width 1;
+option vivso.iana code 0 = string;
+option vivso.docsis code 4491 = encapsulate docsis;
+option option-125 code 125 = encapsulate vivso;
 
 subnet ###PROV_IP### netmask ###PROV_NETMASK### {
   interface ###IFACE###;
@@ -671,6 +681,16 @@ EOF"""
             "hardware ethernet": board_config["erouter_mac"],
             "options": {"dhcp6.name-servers": "%s" % tftp_server},
         }
+        if self.vendor_opts_acs_url:
+            board_config["extra_provisioning"]["erouter"]["options"][
+                "docsis.acsserver"
+            ] = "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72:6d:2e:63:6f:6d"
+            board_config["extra_provisioning_v6"]["erouter"]["options"][
+                "docsis.acsserver"
+            ] = (
+                "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72"
+                ":6d:2e:63:6f:6d"
+            )
 
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
