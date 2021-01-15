@@ -219,3 +219,13 @@ class SNMPError(BftBaseException):
     """
 
     pass
+
+
+class RTPNotFound(BftBaseException):
+    """Raise this if RTP packets are not found.
+
+    RTP is checked for the source and destination IP.
+    If the real time mediapackets are not found throw this error.
+    """
+
+    pass
