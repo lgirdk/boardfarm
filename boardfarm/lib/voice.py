@@ -168,7 +168,7 @@ def rtpproxy_start(dev):
 def rtpproxy_stop(dev):
     """Stop the rtpproxy in background."""
     dev.sendline("service rtpproxy stop")
-    dev.expect("Stopping")
+    dev.expect(["Stopping", "unrecognized service"])
     dev.expect(dev.prompt)
 
 
