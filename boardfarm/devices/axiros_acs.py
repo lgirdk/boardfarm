@@ -500,9 +500,10 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         else:
             raise CodeError("Invalid action: " + action)
 
-        CmdOptTypeStruct_data = self._get_cmd_data(
-            Sync=True, Lifetime=AxirosACS.CPE_wait_time
-        )
+        sync = kwargs.get("sync", True)
+        wait_time = kwargs.get("wait_time", AxirosACS.CPE_wait_time)
+
+        CmdOptTypeStruct_data = self._get_cmd_data(Sync=sync, Lifetime=wait_time)
 
         CPEIdClassStruct_data = self._get_class_data(cpeid=cpeid)
 
@@ -967,7 +968,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 continue
         return None
 
-    def GPV(self, param):
+    def GPV(self, param, timeout=60):
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
         :param param: path to the key that assigned value will be retrieved
@@ -977,7 +978,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         if self.cpeid is None:
             self.cpeid = self.dev.board._cpeid
 
-        p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="GPV")
+        p, cmd, cpe_id = self._build_input_structs(
+            self.cpeid, param, action="GPV", wait_time=timeout
+        )
 
         with self.client.settings(raw_response=True):
             response = self.client.service.GetParameterValues(p, cmd, cpe_id)
