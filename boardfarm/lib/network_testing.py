@@ -14,7 +14,11 @@ from collections import namedtuple
 
 import six
 
-from boardfarm.exceptions import PexpectErrorTimeout, RTPNotFound
+from boardfarm.exceptions import (
+    ConnectionRefused,
+    PexpectErrorTimeout,
+    RTPNotFound,
+)
 from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
@@ -489,7 +493,7 @@ def ssh_service_verify(
         value = device.before
         device.sendcontrol("c")
         device.expect(device.prompt)
-        raise Exception("Failed to connect SSH to :%s" % value)
+        raise ConnectionRefused(f"Failed to connect to SSH due to {value}")
 
 
 def telnet_service_verify(device, dest_device, ip, opts=""):
@@ -518,7 +522,7 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
         for _ in range(2):
             device.sendcontrol("c")
             device.expect(device.prompt)
-        raise Exception("Failed to connect telnet due to : %s" % e)
+        raise ConnectionRefused(f"Failed to connect to telnet due to {e}")
 
 
 def custom_telnet_service(device, dest_prompt, ip, username, password, opts="", cmd=[]):
