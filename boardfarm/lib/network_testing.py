@@ -12,10 +12,9 @@ import logging
 import re
 from collections import namedtuple
 
-import pexpect
 import six
 
-from boardfarm.exceptions import PexpectErrorTimeout
+from boardfarm.exceptions import PexpectErrorTimeout, RTPNotFound
 from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
@@ -650,18 +649,28 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
         device, capture_file, filter_str="sip.Method == 'INVITE'", rm_file=False
     )
     split_sip_pcap = sip_pcap.splitlines()
-    invite = []
-    for sip_trace in split_sip_pcap:
-        if re.search(f".*{src_ip}.*{dst_ip}", sip_trace):
-            invite.append(sip_trace)
+    invite = [
+        re.search(r"\d+", trace).group(0)
+        for trace in split_sip_pcap
+        if re.search(f".*{src_ip}.*{dst_ip}.*SIP", trace)
+    ]
+    invite_num_reverse = invite[::-1]
     if invite:
-        set_num = re.search(r"\d+", invite[-1]).group(0)
         try:
-            device.sendline(
-                f"tshark -r {capture_file} rtp.setup-frame == {set_num} | wc -l"
-            )
-            device.expect("[1-9]\d*\r\n", timeout=10)
-            device.expect(device.prompt)
+            count = 0
+            set_num = ""
+            for setup_frame in invite_num_reverse:
+                device.sendline(
+                    f"tshark -r {capture_file} rtp.setup-frame == {setup_frame} | wc -l"
+                )
+                idx = device.expect(["[1-9]\d*\r\n", "0\r\n"], timeout=10)
+                device.expect(device.prompt)
+                count = count + 1
+                set_num == setup_frame
+                if idx == 0:
+                    break
+                elif idx == 1 & count == 2:
+                    raise RTPNotFound
             if negate:
                 rtp_pcap = tshark_read(
                     device,
@@ -678,7 +687,7 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
                         ) else rtp.append(False)
                 return all(rtp)
             return True
-        except PexpectErrorTimeout:
+        except (PexpectErrorTimeout, RTPNotFound):
             device.expect(device.prompt)
             return True if negate else False
         finally:
