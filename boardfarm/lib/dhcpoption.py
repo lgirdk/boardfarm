@@ -9,6 +9,7 @@ def configure_option(opt, args):
         "60": configure_option60,
         "61": configure_option61,
         "125": configure_option125,
+        "17": configure_v6_option17,
     }
     dhcp_opt[opt](*args)
 
@@ -103,3 +104,40 @@ def configure_option125(device, enable=False):
             return False
 
     return True
+
+
+def configure_v6_option17(device, enable=False):
+    """
+    Configure LAN identity DHCPv6 option 17.
+    :param device: LAN device to configure option 17
+    :type device: LAN object
+    :param enable: Add or remove dhcpv6 option 17
+    :type enable: bool
+    """
+    if not enable:
+        device.sendline(
+            "sed -i -e 's|ntp-servers, dhcp6.vendor-opts|ntp-servers|' /etc/dhcp/dhclient.conf"
+        )
+        device.expect(device.prompt)
+        device.sendline("sed -i '/dhcp6.vendor-opts/d' /etc/dhcp/dhclient.conf")
+        device.expect(device.prompt)
+    else:
+        out = device.check_output("egrep 'dhcp6.vendor-opts' /etc/dhcp/dhclient.conf")
+        if not re.search("request dhcp6.vendor-opts,", out):
+            device.sendline(
+                "sed -i -e 's|ntp-servers;|ntp-servers, dhcp6.vendor-opts; |' /etc/dhcp/dhclient.conf"
+            )
+            device.expect(device.prompt)
+            # Enterprise code (3561) 00:00:0D:E9
+            # code 11  length 06  (BFVER0) 42:46:56:45:52:30
+            # code 13  length 06  (BFCLAN)  42:46:43:4c:41:4e
+            encoded_name = str.encode(device.name)
+            hex_name = iter(binascii.hexlify(encoded_name).decode("utf-8"))
+            code_12 = ":".join([f"{j}{k}" for j, k in zip(hex_name, hex_name)])
+            len_12 = hex(len(device.name)).replace("0x", "").zfill(2)
+            option_17 = f"00:00:0D:E9:00:0b:00:06:42:46:56:45:52:30:00:0c:00:{len_12}:{code_12}:00:0d:00:06:42:46:43:4c:41:4e"
+            device.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
+            device.sendline(f"send dhcp6.vendor-opts {option_17};")
+            device.sendline("")
+            device.sendline("EOF")
+            device.expect(device.prompt)
