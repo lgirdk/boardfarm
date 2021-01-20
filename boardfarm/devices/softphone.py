@@ -119,7 +119,6 @@ class SoftPhone(object):
         self.expect(self.pjsip_prompt)
         self.sendline("v")
         self.expect("Sending re-INVITE on call [0-9]*")
-        self.expect("Call [0-9]* sending re-INVITE for updating media session")
         self.expect("SDP negotiation done: Success")
         self.sendline("\n")
         self.expect(self.pjsip_prompt)
