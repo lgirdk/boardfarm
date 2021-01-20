@@ -12,10 +12,11 @@ from boardfarm.lib.regexlib import (
 class DNS:
     """To get the dns IPv4 and IPv6"""
 
-    def __init__(self, device, device_options, aux_options):
+    def __init__(self, device, device_options, aux_options, aux_url=None):
         self.device = device
         self.device_options = device_options
         self.aux_options = aux_options
+        self.aux_url = aux_url
 
         self.dnsv4 = defaultdict(list)
         self.dnsv6 = defaultdict(list)
@@ -68,6 +69,8 @@ class DNS:
             ).group(1)
         )
         self.dnsv4[self.device.name + ".boardfarm.com"].append(str(self.auxv4))
+        if self.aux_url:
+            self.dnsv4[self.aux_url].append(str(self.auxv4))
 
     def _add_auxv6_hosts(self):
         self.auxv6 = ipaddress.IPv6Address(
@@ -77,6 +80,8 @@ class DNS:
             ).group(1)
         )
         self.dnsv6[self.device.name + ".boardfarm.com"].append(str(self.auxv6))
+        if self.aux_url:
+            self.dnsv6[self.aux_url].append(str(self.auxv6))
 
     def configure_hosts(
         self,
@@ -107,18 +112,3 @@ class DNS:
         for val in range(unreachable_ipv6):
             ipv6 = self.auxv6 + (val + 1)
             self.hosts_v6[self.device.name + ".boardfarm.com"].append(str(ipv6))
-
-    def configure_backup_domain(self, count: int):
-        """
-        To configure number of duplicate domain names for the device IP
-
-        :param count: number of required duplicate domain name
-        :type count: int
-        """
-        for cnt in range(count):
-            self.hosts_v4[
-                self.device.name + str(cnt) + ".boardfarm.com"
-            ] = self.hosts_v4.get(self.device.name + ".boardfarm.com")
-            self.hosts_v6[
-                self.device.name + str(cnt) + ".boardfarm.com"
-            ] = self.hosts_v6.get(self.device.name + ".boardfarm.com")

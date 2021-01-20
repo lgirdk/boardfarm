@@ -191,6 +191,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.color = self.kwargs.pop("color", None)
         self.options = self.kwargs.pop("options", None)
         self.aux_ip = self.kwargs.pop("aux_ip", None)
+        self.aux_url = self.kwargs.pop("aux_url", None)
         self.tcpdump_filter = ""
         AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
 
@@ -244,7 +245,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
-        self.dns = DNS(self, self.options, self.aux_ip)
+        self.dns = DNS(self, self.options, self.aux_ip, self.aux_url)
 
     def sudo_sendline(self, cmd):
         # overwriting linux behaviour
