@@ -592,7 +592,7 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
     return True if out else False
 
 
-def verify_sip_status(device, capture_file, msg_list, rm_pcap=True):
+def verify_sip_status(device, capture_file, msg_list, rm_pcap=True, user_num=None):
     """This function is used to validate the SIP messages
     :param device: device where the SIP traces are generated. The SIP server.
     :type device: object
@@ -602,15 +602,36 @@ def verify_sip_status(device, capture_file, msg_list, rm_pcap=True):
     :type msg_list: list
     :param rm_pcap: True if pcap needs to be removed else False
     :type rm_pcap: Boolean
+    :param user_num: Number of the user to filter sip messages
+    :type user_num: Integer/String
     :return: boolean value based on success of the message(s) being found or not
     :rtype: Boolean
     """
-    output = sip_read(device, capture_file, rm_pcap)
+    if user_num:
+        num = str(num)
+        output = tshark_read(
+            device,
+            capture_file,
+            filter_str=f"-Y sip -z sip,stat,sip.contact.user=={num}",
+            rm_file=rm_pcap,
+        )
+    else:
+        output = sip_read(device, capture_file, rm_pcap)
+
     out_rep = output.replace("\r\n", "").replace("\t", "")
     split_out = out_rep.split("|")
     result_list = []
     for msg in msg_list:
-        regex_str = f".*{msg.src_ip}.*{msg.dest_ip}.*{msg.message}"
+        split = msg.message.split()
+        code_list = []
+        text_list = []
+        for x in split:
+            if re.search("\d+", x):
+                code_list.append(x)
+            else:
+                text_list.append(x)
+        checker = code_list[0] if code_list else text_list[0]
+        regex_str = f".*{msg.src_ip}.*{msg.dest_ip}.*{checker}"
         for line in split_out:
             if re.search(regex_str, line):
                 result_list.append(True)
