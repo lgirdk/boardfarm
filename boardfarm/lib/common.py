@@ -1690,7 +1690,7 @@ def ftp_useradd(device):
 
 
 def ftp_file_create_delete(
-    device, create_file=None, extension=".txt", remove_file=None
+    device, create_file=None, extension=".txt", remove_file=None, size=1
 ):
     """Create and delete ftp file for upload and download.
 
@@ -1700,10 +1700,12 @@ def ftp_file_create_delete(
     :type create_file: any , Optional
     :param remove_file: Flag to remove file, can be anything except 0, defaults to None
     :type remove_file: any , Optional
+    :param size: size of the file needs to be created
+    :type size: int (file should be create of MB)
     """
     if create_file:
         filename = create_file + extension
-        device.sendline("dd if=/dev/zero of=%s count=5 bs=1M" % filename)
+        device.sendline(f"dd if=/dev/zero of={filename} count=5 bs={size}M")
         device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
@@ -1754,7 +1756,7 @@ def ftp_upload_download(device, ftp_load):
         device.sendline("get %s.txt" % ftp_load)
     elif "upload" in str(ftp_load):
         device.sendline("put %s.txt" % ftp_load)
-    device.expect("226 Transfer complete.", timeout=60)
+    device.expect("226 Transfer complete.", timeout=200)
     device.sendline()
     device.expect("ftp>", timeout=10)
 
