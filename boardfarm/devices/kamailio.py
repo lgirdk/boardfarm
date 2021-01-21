@@ -27,7 +27,7 @@ class SIPcenterKamailio(DebianBox, ISIPCenter):
         self.kwargs = kwargs
         self.ast_prompt = ".*>"
         self.users = self.kwargs.get("users", ["1000", "2000", "3000"])
-        self.password = "1234"
+        self.user_password = "1234"
         self.db_name = "kamailio"
         self.kamailio_cfg = "/etc/kamailio/kamailio.cfg"
         self.mysql = MySQL(self)
@@ -224,6 +224,6 @@ EOF"""
             self.sipserver_start()
             for i in self.users:
                 if not self._check_kamailio_db(i):
-                    self.sipserver_user_add(i, self.password)
+                    self.sipserver_user_add(i, self.user_password)
         except Exception as error:
             raise error
