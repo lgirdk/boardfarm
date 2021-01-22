@@ -46,6 +46,10 @@ class ISIPCenter:
         """Add user to the directory."""
         raise NotImplementedError
 
+    def sipserver_user_remove(self, user):
+        """Add user to the directory."""
+        raise NotImplementedError
+
     def sipserver_user_update(self, user, password):
         """Remove user from the directory."""
         raise NotImplementedError
