@@ -60,9 +60,11 @@ class BftBaseTest(inherit_class):
     _format = "%a %d %b %Y %H:%M:%S"
     start_time = 0
     stop_time = 0
+    config = None
+    dev = None
+    env_helper = None
 
     def __init__(self, *args, **kwargs):
-        self.config = self.dev = self.env_helper = None
         if args and len(args) == 3:
             if (
                 type(args[0]) is boardfarm.lib.test_configurator.BoardfarmTestConfig
