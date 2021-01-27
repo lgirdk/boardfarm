@@ -312,6 +312,87 @@ create_container_eth1_static_linked () {
     docker exec $cname bash -c "ping -c3 $ipv6_default"
 }
 
+add_docker_network () {
+    local cname=$1
+    local nw_name=$2
+    local ip=$3
+    local ipv6_addr=$4
+    local table=$5
+
+    prefix=$(docker inspect $nw_name | grep iface_prefix | awk -F '"' '{print $4}')
+    local ip_default=$(docker network inspect $nw_name | grep Gateway | sed -n "1p" | awk -F '"' '{print $4}')
+    local ipv6_default=$(docker network inspect $nw_name | grep Gateway | sed -n "2p" | awk -F '"' '{print $4}')
+    local ip_nw=$(docker network inspect $nw_name | grep Subnet | sed -n "1p" | awk -F '"' '{print $4}')
+    local ipv6_nw=$(docker network inspect $nw_name | grep Subnet | sed -n "2p" | awk -F '"' '{print $4}')
+
+    docker network connect --ip $ip --ip6 $ipv6_addr $nw_name $cname
+
+    docker exec $cname bash -c "echo \"$table $prefix\" >> /etc/iproute2/rt_tables"
+    docker exec $cname ip route add default via $ip_default table $prefix
+    docker exec $cname ip -6 route add default via $ipv6_default table $prefix
+    # gateway lookups
+    docker exec $cname ip rule add from $ip_default table $prefix
+    docker exec $cname ip rule add to $ip_default table $prefix
+    docker exec $cname ip -6 rule add from $ipv6_default table $prefix
+    docker exec $cname ip -6 rule add to $ipv6_default table $prefix
+    # subnet lookups
+    docker exec $cname ip rule add from $ip_nw table $prefix
+    docker exec $cname ip rule add to $ip_nw table $prefix
+    docker exec $cname ip -6 rule add from $ipv6_nw table $prefix
+    docker exec $cname ip -6 rule add to $ipv6_nw table $prefix
+}
+
+remove_docker_network () {
+    local cname=$1
+    local nw_name=$2
+    local prefix=$(docker inspect $nw_name | grep iface_prefix | awk -F '"' '{print $4}')
+
+    # delete ipv4 rules
+    for i in $(docker exec $cname ip rule | grep $prefix | awk -F ":" '{print $1}'); do
+        docker exec $cname ip rule del prio $i;
+    done
+
+    # delete ipv6 rules
+    for i in $(docker exec $cname ip -6 rule | grep $prefix | awk -F ":" '{print $1}'); do
+        docker exec $cname ip -6 rule del prio $i;
+    done
+
+    # delete routes and routing table
+    docker exec $cname ip route flush table $prefix
+    docker exec $cname ip -6 route flush table $prefix
+    docker exec wan-mv1-docsis2-1 bash -c "sed -i '/${prefix}/d' /etc/iproute2/rt_tables"
+    docker network disconnect $nw_name $cname
+}
+
+create_container_docker_network_linked () {
+    local cname=$1
+    local ip=$2
+    local ipv6_addr=$3
+    local offset=${4:-0}
+    local nw_name=${5:-"0"}
+
+    docker stop $cname && docker rm $cname
+    docker run --name $cname --privileged -h $cname --restart=always \
+        -p $(( $STARTSSHPORT + $offset )):22 \
+        -p $(( $STARTWEBPORT + $offset )):8080 \
+        -d $BF_IMG /usr/sbin/sshd -D
+
+    cspace=$(docker inspect --format {{.State.Pid}} $cname)
+    isolate_management ${cname}
+    docker exec $cname ip route del default
+
+    docker network connect --ip $ip --ip6 $ipv6_addr $nw_name $cname
+    # com.docker.network.container_interface_prefix
+    docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
+    docker exec $cname sysctl net.ipv6.conf.eth1.autoconf=0
+
+    local ip_default=$(docker network inspect $nw_name | grep Gateway | sed -n "1p" | awk -F '"' '{print $4}')
+    local ipv6_default=$(docker network inspect $nw_name | grep Gateway | sed -n "2p" | awk -F '"' '{print $4}')
+
+    docker exec $cname bash -c "ping -c3 $ip_default"
+    docker exec $cname bash -c "ping6 -c3 $ipv6_default"
+}
+
 # eth0 is docker private network, eth1 physical device
 create_container_eth1_phys () {
     local dev=$1
