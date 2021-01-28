@@ -50,11 +50,12 @@ local_route () {
 # needs to be isolated
 isolate_management() {
     local cname=${1}
+    local br_name=${2:-"docker0"}
 
     docker_dev=$(docker exec $cname ip route list | grep ^default |  awk '{print $5}' )
-    docker_gw_ip=$(ip -4 addr show docker0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+    docker_gw_ip=$(ip -4 addr show $br_name | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
     docker_dev_ip=$(docker exec $cname ip -4 addr show $docker_dev | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-    docker_nw=$(ip route | grep "dev docker0" | grep src | awk '{print $1}' | head -n1)
+    docker_nw=$(ip route | grep "dev ${br_name}" | grep src | awk '{print $1}' | head -n1)
 
     docker exec $cname bash -c "echo \"1 mgmt\" >> /etc/iproute2/rt_tables"
     docker exec $cname ip route add default via $docker_gw_ip table mgmt
@@ -370,15 +371,21 @@ create_container_docker_network_linked () {
     local ipv6_addr=$3
     local offset=${4:-0}
     local nw_name=${5:-"0"}
+    local br_name=${6:-"bridge"}
 
     docker stop $cname && docker rm $cname
     docker run --name $cname --privileged -h $cname --restart=always \
+        --network $br_name \
         -p $(( $STARTSSHPORT + $offset )):22 \
         -p $(( $STARTWEBPORT + $offset )):8080 \
         -d $BF_IMG /usr/sbin/sshd -D
 
     cspace=$(docker inspect --format {{.State.Pid}} $cname)
-    isolate_management ${cname}
+
+    nw_gw=$(docker inspect -f '{{ index (index .IPAM.Config 0) "Gateway" }}' $br_name)
+    br_iface=$(ifconfig | grep -B1 "inet $nw_gw" | head -1 | cut -d: -f1)
+
+    isolate_management ${cname} $br_iface
     docker exec $cname ip route del default
 
     docker network connect --ip $ip --ip6 $ipv6_addr $nw_name $cname
