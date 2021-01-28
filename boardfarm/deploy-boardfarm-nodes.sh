@@ -399,6 +399,8 @@ create_container_docker_network_linked () {
     local ip_default=$(docker network inspect $nw_name | grep Gateway | sed -n "1p" | awk -F '"' '{print $4}')
     local ipv6_default=$(docker network inspect $nw_name | grep Gateway | sed -n "2p" | awk -F '"' '{print $4}')
 
+    docker exec $cname ip route add default via $ip_default
+    docker exec $cname ip route add default via $ipv6_default
     docker exec $cname bash -c "ping -c3 $ip_default"
     docker exec $cname bash -c "ping6 -c3 $ipv6_default"
 }
