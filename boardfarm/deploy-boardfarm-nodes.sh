@@ -393,6 +393,9 @@ create_container_docker_network_linked () {
     docker exec $cname sysctl net.ipv6.conf.eth1.disable_ipv6=0
     docker exec $cname sysctl net.ipv6.conf.eth1.autoconf=0
 
+    # disable ipv6 on eth0 for installation of packages via ipv4
+    docker exec $cname sysctl net.ipv6.conf.eth0.disable_ipv6=1
+
     local ip_default=$(docker network inspect $nw_name | grep Gateway | sed -n "1p" | awk -F '"' '{print $4}')
     local ipv6_default=$(docker network inspect $nw_name | grep Gateway | sed -n "2p" | awk -F '"' '{print $4}')
 
