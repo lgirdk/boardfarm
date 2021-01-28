@@ -188,7 +188,7 @@ class LinuxDevice(base.BaseDevice):
     def renew_dhcp(self, interface):
         """Renew ip of the interface."""
         self.sudo_sendline("dhclient -v {!s}".format(interface))
-        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
+        if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=30):
             self.sendcontrol("c")
             self.expect(self.prompt)
 

@@ -97,6 +97,9 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         # Remove static ip if any
         self.sendline(f"ifconfig {self.iface_wifi} 0.0.0.0")
         self.expect(self.prompt)
+        # Clean IP lease if any
+        self.sendline(f"dhclient -r {self.iface_wifi}")
+        self.expect(self.prompt)
         # Kill dhcp client
         self.sudo_sendline("kill -9 $(pgrep dhclient)")
         self.expect(self.prompt)
