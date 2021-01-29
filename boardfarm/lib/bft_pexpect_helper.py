@@ -219,6 +219,10 @@ class bft_pexpect_helper(pexpect.spawn):
     # when printing calling stacks
     def sendline(self, s=""):
         """Send input command to the active pexpect session."""
+        if BFT_DEBUG:
+            idx = frame_index_out_of_file()
+            print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
+
         return super(bft_pexpect_helper, self).sendline(s)
 
     def send(self, s):
