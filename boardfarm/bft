@@ -432,6 +432,9 @@ def connect_to_devices(config):
             connected_to_board = False
             reason = "KeyboardInterrupt"
             sys.exit(2)
+        except boardfarm.exceptions.BftSysExit as e:
+            logger.error(f"BftSysExit: {str(e)}")
+            sys.exit(3)
         except Exception as e:
             logger.debug(e)
             traceback.print_exc(file=sys.stdout)
