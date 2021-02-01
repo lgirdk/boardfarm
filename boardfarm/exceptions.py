@@ -229,3 +229,12 @@ class RTPNotFound(BftBaseException):
     """
 
     pass
+
+
+class VersionMismatch(BftBaseException):
+    """Raise exception when version comparison fails
+
+    Example: CWMP version >= 1.4
+    """
+
+    pass
