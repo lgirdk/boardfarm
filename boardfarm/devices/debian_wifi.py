@@ -247,10 +247,9 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def wifi_connectivity_verify(self):
         """Backward compatibility"""
-        return self.is_connected
+        return self.is_wlan_connected()
 
-    @property
-    def is_connected(self):
+    def is_wlan_connected(self):
         """Verify wifi is in the connected state.
 
         :return: True or False
@@ -263,6 +262,21 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             return True
         else:
             return False
+
+    def check_wlan_client_ipv4(self):
+        """Verify if container has an ipv4
+
+        :return: True or False
+        :rtype: boolean
+        """
+        try:
+            ip = self.get_interface_ipaddr(self.iface_wifi)
+            if not ip:
+                return False
+        # get_interface_ipaddr() raises an error if no ip found
+        except pexpect.TIMEOUT:
+            return False
+        return True
 
     def wifi_connect_check(self, ssid_name, password=None):
         """Connect to a SSID and verify WIFI connectivity.
