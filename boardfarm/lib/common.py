@@ -355,11 +355,15 @@ def firefox_webproxy_driver(ipport, config, default_delay=20):
         profile.set_preference("network.proxy.ftp_port", int(port))
     # number 2 is to save the file to the above current location instead of downloads
     profile.set_preference("browser.download.folderList", 2)
+    # added the download dir as /tmp
+    profile.set_preference("browser.download.dir", "/tmp")
     # added this line to open the file without asking any questions
     profile.set_preference(
         "browser.helperApps.neverAsk.openFile",
-        "text/anytext,text/comma-separated-values,text/csv,application/octet-stream",
+        "text/anytext,text/comma-separated-values,text/csv,application/octet-stream,text/plain",
     )
+    # added this line to save the file without asking any questions
+    profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "text/plain")
     profile.update_preferences()
     opts = webdriver.FirefoxOptions()
     opts.headless = config.default_headless
