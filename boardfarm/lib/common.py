@@ -2174,3 +2174,12 @@ def send_to_elasticsearch(elastic_url, data):
     except Exception as e:
         logger.error(e)
         logger.error(f"Unable to store results to elasticsearch_server '{elastic_url}'")
+
+
+def get_pytest_name():
+    """To get the pytest name from the test filename during runtime
+
+    Returns:
+        [string]: test name
+    """
+    return (os.environ.get("PYTEST_CURRENT_TEST").split(" (setup)")[0]).split("::")[1]
