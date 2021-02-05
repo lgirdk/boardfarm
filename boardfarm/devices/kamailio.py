@@ -191,6 +191,21 @@ EOF"""
         self.expect(self.prompt)
         return self.before
 
+    def sipserver_set_expire_timer(self, from_timer=3600, to_timer=60):
+        """Modify the call expires timer in kamailio.cfg
+
+        :param from_timer: Expire timer value change from
+        :type from_timer: int 'default to 3600'
+        :param to_timer: Expire timer value change to
+        :type to_timer: int 'default to 60'
+        """
+        self.sendline(
+            f"""sed -i -e 's|"max_expires", {from_timer}|"max_expires", {to_timer}|' """
+            + self.kamailio_cfg
+        )
+        self.expect(self.prompt)
+        self.sipserver_restart()
+
     def _check_kamailio_db(self, user):
         """check if the subscriber entries are added"""
         self.sendline("kamctl db smatch subscriber username %s" % user)
