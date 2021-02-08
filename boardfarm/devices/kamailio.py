@@ -2,6 +2,9 @@
 
 This module consists of SIPcenterKamailio class.
 """
+import pathlib
+import re
+
 from boardfarm.dbclients.mysql import MySQL
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.voice import (
@@ -65,28 +68,6 @@ DBRWUSER="kamailio"
 DBRWPW="test"
 EOF"""
         self.sendline(gen_db_conf)
-        self.expect(self.prompt)
-        gen_sed = """sed -i '1d' """ + self.kamailio_cfg
-        gen_kamailio_cfg = (
-            """echo '#!KAMAILIO
-#!define WITH_MYSQL
-#!define WITH_AUTH
-#!define WITH_NAT
-#!define WITH_USRLOCDB
-#!define DBURL "mysql://kamailio:test@localhost/kamailio"' | cat - """
-            + self.kamailio_cfg
-            + """ > temp && mv temp """
-            + self.kamailio_cfg
-        )
-        tm_param_sed = (
-            """sed -i '/tm params/ a modparam("tm", "auto_inv_100", 1)\\nmodparam("tm", "auto_inv_100_reason", "Trying")' """
-            + self.kamailio_cfg
-        )
-        self.sendline(gen_sed)
-        self.expect(self.prompt)
-        self.sendline(gen_kamailio_cfg)
-        self.expect(self.prompt)
-        self.sendline(tm_param_sed)
         self.expect(self.prompt)
         db_exists = self.mysql.check_db_exists(self.db_name)
         if not db_exists:
@@ -235,6 +216,7 @@ EOF"""
             rtpproxy_stop(self)
             self.sipserver_install()
             self.sipserver_configuration()
+            self.generate_kamailio_cfg()
             self.sipserver_kill()
             self.sipserver_start()
             for i in self.users:
@@ -242,3 +224,35 @@ EOF"""
                     self.sipserver_user_add(i, self.user_password)
         except Exception as error:
             raise error
+
+    def generate_kamailio_cfg(self, update_cfg_dict=None):
+        if update_cfg_dict is None:
+            update_cfg_dict = {}
+        self.txt = []
+        dir = pathlib.Path(__file__).parent
+        with open(dir.joinpath("../resources/configs/kamailio.cfg"), "r") as cf:
+            config = cf.read()
+        kamailio_conf_dict = {
+            "startup": None,
+            "local_config": None,
+            "defined_values": None,
+            "global_parameters": None,
+            "custom_parameters": None,
+            "module_section": None,
+            "routing logic": None,
+        }
+        for k, v in zip(
+            kamailio_conf_dict.keys(), re.split(r"#######.*#######", config)
+        ):
+            kamailio_conf_dict[k] = v
+        if update_cfg_dict:
+            kamailio_conf_dict.update(update_cfg_dict)
+        for k, v in kamailio_conf_dict.items():
+            self.txt.append(f"####### {k} #######")
+            for lines in v.splitlines():
+                self.txt.append(lines)
+        self.txt.append("EOF")
+        self.sendline(f"cat > {self.kamailio_cfg} << EOF")
+        for data in self.txt:
+            self.sendline(data)
+        self.expect(self.prompt, timeout=50)
