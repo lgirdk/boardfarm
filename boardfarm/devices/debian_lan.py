@@ -7,7 +7,9 @@
 
 import ipaddress
 import logging
+import os
 import re
+import time
 
 import pexpect
 import six
@@ -16,7 +18,12 @@ from debtcollector import moves
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
-from boardfarm.lib.installers import apt_install
+from boardfarm.lib.installers import apt_install, install_tshark
+from boardfarm.lib.network_testing import (
+    kill_process,
+    tcpdump_capture,
+    tshark_read,
+)
 
 logger = logging.getLogger("bft")
 
@@ -151,6 +158,12 @@ class DebianLAN(debian.DebianBox):
 
         self.configure_dhclient((["60", True], ["61", True]))
 
+        install_tshark(self)
+        build_tag = os.getenv("BUILD_TAG", "")
+        now = time.strftime("%Y%m%d_%H%M%S")
+        capture_file = build_tag + "_" + now + "_lan_dhcp_capture.pcap"
+        tcpdump_capture(self, self.iface_dut, capture_file=capture_file, port="67-68")
+        self.tshark_process = True
         for _ in range(3):
             try:
                 self.renew_dhcp(self.iface_dut)
@@ -161,7 +174,25 @@ class DebianLAN(debian.DebianBox):
                 self.sendcontrol("c")
                 self.expect_prompt()
         else:
-            raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
+            kill_process(self, "tcpdump")
+            self.tshark_process = False
+            tshark_logs = tshark_read(self, capture_file, packet_details=True)
+            raise Exception(
+                """Error: Device on LAN couldn't obtain address via DHCP.
+            #########################################
+            #######TShark Logs for DHCP Starts#######
+            #########################################
+            %s
+            #########################################
+            ########TShark Logs for DHCP Ends########
+            #########################################"""
+                % tshark_logs
+            )
+
+        if self.tshark_process:
+            kill_process(self, "tcpdump")
+            self.tshark_process = False
+            self.sudo_sendline("rm %s" % capture_file)
 
         self.sendline("cat /etc/resolv.conf")
         self.expect(self.prompt)
@@ -323,7 +354,6 @@ class DebianLAN(debian.DebianBox):
 
 if __name__ == "__main__":
     # Example use
-    import os
     import sys
 
     try:
