@@ -91,12 +91,10 @@ class SoftPhone(object):
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
 
-    def answer(self, exp_ans_msg=True):
+    def answer(self):
         """To answer the incoming call in soft phone."""
         self.sendline("/n")
         self.expect(self.pjsip_prompt)
-        if exp_ans_msg:
-            pass
         self.sendline("a")
         self.expect(r"Answer with code \(100\-699\) \(empty to cancel\)\:")
         self.sendline("200")
