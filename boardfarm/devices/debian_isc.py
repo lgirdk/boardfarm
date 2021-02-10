@@ -611,35 +611,38 @@ EOF"""
             board_config["extra_provisioning_v6"] = {}
 
         tftp_server = self.tftp_device.tftp_server_ip_int()
-        sip_server = [
-            re.search(
-                "wan-static-ip:" + "(" + ValidIpv4AddressRegex + ")", i["options"]
-            ).group(1)
-            for i in board_config["devices"]
-            if "sipcenter" in i["name"]
-        ][0]
-        # This can be later broken down to smaller chunks to add options specific to type of device.
-        mta_dhcp_options = {
-            "mta": {
-                "hardware ethernet": board_config["mta_mac"],
-                "default-lease-time": self.default_lease_time,
-                "min-lease-time": self.min_lease_time,
-                "max-lease-time": self.max_lease_time,
-                "filename": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
-                "options": {
-                    "bootfile-name": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
-                    "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
-                    "domain-name": '"sipcenter.boardfarm.com"',
-                    "domain-name-servers": "%s" % sip_server,
-                    "docsis-mta.provision-server": "00 09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
-                    "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
-                    "routers": self.mta_gateway,
-                    "log-servers": self.prov_ip,
-                    "host-name": '"' + board_config.get_station() + '"',
-                },
+        if "voice" in str(board_config.get("feature")):
+            sip_server = [
+                re.search(
+                    "wan-static-ip:" + "(" + ValidIpv4AddressRegex + ")", i["options"]
+                ).group(1)
+                for i in board_config["devices"]
+                if "sipcenter" in i["name"]
+            ][0]
+            # This can be later broken down to smaller chunks to add options specific to type of device.
+            mta_dhcp_options = {
+                "mta": {
+                    "hardware ethernet": board_config["mta_mac"],
+                    "default-lease-time": self.default_lease_time,
+                    "min-lease-time": self.min_lease_time,
+                    "max-lease-time": self.max_lease_time,
+                    "filename": '"' + self.dev.board.mta_cfg.encoded_fname + '"',
+                    "options": {
+                        "bootfile-name": '"'
+                        + self.dev.board.mta_cfg.encoded_fname
+                        + '"',
+                        "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
+                        "domain-name": '"sipcenter.boardfarm.com"',
+                        "domain-name-servers": "%s" % sip_server,
+                        "docsis-mta.provision-server": "00 09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
+                        "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
+                        "routers": self.mta_gateway,
+                        "log-servers": self.prov_ip,
+                        "host-name": '"' + board_config.get_station() + '"',
+                    },
+                }
             }
-        }
-        board_config["extra_provisioning"].update(mta_dhcp_options)
+            board_config["extra_provisioning"].update(mta_dhcp_options)
 
         # This can be later broken down to smaller chunks to add options specific to type of device.
         cm_dhcp_options = {
