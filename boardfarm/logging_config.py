@@ -23,8 +23,8 @@ logging.config.dictConfig(
         "loggers": {
             "zeep.transports": {
                 "level": "DEBUG",
-                "propagate": False,
-                "handlers": ["console"],
+                "propagate": True,
+                "handlers": ["console_bf_logger"],
             },
             "bft": {"level": "DEBUG", "propagate": False, "handlers": ["console"]},
             "tests_logger": {
