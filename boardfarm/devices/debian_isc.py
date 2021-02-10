@@ -1,3 +1,4 @@
+import datetime
 import ipaddress
 import logging
 import os
@@ -1064,14 +1065,22 @@ EOF"""
 
     def get_dhcp_logs(self, mac_addr, board_reset_time, v4=True):
         """print dhcp logs for provided mac_address starting from board_reset_time"""
+
         logger.info(
             "{0} Provisioner DHCP Logs START (Last CM Reset time - {1}) {0}".format(
                 "=" * 10, board_reset_time
             )
         )
+        board_reset_time = (
+            datetime.datetime.strptime(board_reset_time[:10], "%Y-%m-%d").strftime(
+                "%b %d"
+            )
+            + " "
+            + board_reset_time[11:]
+        )
         self.sendline(
             """grep {0} /var/log/dhcp/dhcpd{1}.log | awk '$0 >= "{2}"'""".format(
-                mac_addr.lower(), "" if v4 else "6", board_reset_time[4:]
+                mac_addr.lower(), "" if v4 else "6", board_reset_time
             )
         )
         self.expect(self.prompt)
