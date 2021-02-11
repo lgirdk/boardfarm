@@ -6,12 +6,16 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+import logging
 import sys
 
 from six.moves import input
+from termcolor import colored
 
 from boardfarm import lib, tests
 from boardfarm.tests import rootfs_boot
+
+logger = logging.getLogger("bft")
 
 
 class Interact(rootfs_boot.RootFSBootTest):
@@ -29,6 +33,15 @@ class Interact(rootfs_boot.RootFSBootTest):
 
     def test_main(self):
         """Function to interact menu."""
+        if "pytest" in sys.modules:
+            logger.warning(
+                colored(
+                    f"DEPRECATION WARNING: use pytest interact to have test discovery and fixture invocation",
+                    color="red",
+                    attrs=["bold"],
+                )
+            )
+
         board = self.dev.board
         lib.common.test_msg("Press Ctrl-] to stop interaction and return to menu")
         board.sendline()
