@@ -512,7 +512,7 @@ EOF"""
         to_send = to_send.replace("###OPEN_IP###", str(self.open_network[0]))
         to_send = to_send.replace("###OPEN_NETMASK###", str(self.open_network.netmask))
         to_send = to_send.replace("###OPEN_START_RANGE###", str(self.open_network[10]))
-        to_send = to_send.replace("###OPEN_END_RANGE###", str(self.open_network[60]))
+        to_send = to_send.replace("###OPEN_END_RANGE###", str(self.open_network[100]))
         to_send = to_send.replace("###OPEN_GATEWAY###", str(self.open_gateway))
         to_send = to_send.replace("###OPEN_BROADCAST###", str(self.open_network[-1]))
         to_send = to_send.replace("###TIMEZONE###", str(self.timezone))
