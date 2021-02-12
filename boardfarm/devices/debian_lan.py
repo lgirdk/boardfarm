@@ -159,6 +159,7 @@ class DebianLAN(debian.DebianBox):
             except Exception:
                 self.__kill_dhclient()
                 self.sendcontrol("c")
+                self.expect_prompt()
         else:
             raise Exception("Error: Device on LAN couldn't obtain address via DHCP.")
 
