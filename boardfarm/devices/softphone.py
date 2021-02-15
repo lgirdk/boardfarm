@@ -14,7 +14,7 @@ class SoftPhone(object):
         self.args = args
         self.kwargs = kwargs
         self.own_number = self.kwargs.get("number", "3000")
-        self.port = self.kwargs.get("num_port", "5060")
+        self.num_port = self.kwargs.get("num_port", "5060")
         self.config_name = "pjsip.conf"
         self.pjsip_local_url = kwargs.get("local_site", None)
         self.pjsip_prompt = ">>>"
@@ -41,7 +41,7 @@ class SoftPhone(object):
         conf = (
             """(
         echo --local-port="""
-            + self.port
+            + self.num_port
             + """
         echo --id=sip:"""
             + self.own_number

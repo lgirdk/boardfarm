@@ -66,6 +66,7 @@ class device_type(Enum):
     wlan1 = 18
     wlan3 = 28
     wlan4 = 29
+    softphone2 = 30
 
 
 class device_array_type(Enum):
