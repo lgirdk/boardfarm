@@ -9,7 +9,7 @@ class ContingencyCheck:
     spec_type = "base"
 
     @hookspec
-    def contingency_check(self, env_req, dev_mgr):
+    def contingency_check(self, env_req, dev_mgr, env_helper):
         """Perform contingency checks based on key-value pair in ENV req.
 
         :param env_req: ENV request provided by a test
@@ -23,7 +23,7 @@ class ServiceCheck:
     spec_type = "feature"
 
     @contingency_spec
-    def service_check(self, env_req, dev_mgr):
+    def service_check(self, env_req, dev_mgr, env_helper):
         """Validate a service based on ENV params provded by Contingency Check.
 
         :param env_params: key-value pair for particular service
