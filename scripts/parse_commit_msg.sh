@@ -30,3 +30,11 @@ if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Boa
 else
     export boards=$board
 fi
+
+if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Features:; then
+    echo export BFT_FEATURES=\"$(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Features: | sed 's/.*Features: //g')\" >> .env
+fi
+
+if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Filters:; then
+    echo export BFT_FILTERS=\"$(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Filters: | sed 's/.*Filters: //g')\" >> .env
+fi
