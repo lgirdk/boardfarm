@@ -26,7 +26,7 @@ class SIPcenterKamailio(DebianBox, ISIPCenter):
         self.args = args
         self.kwargs = kwargs
         self.ast_prompt = ".*>"
-        self.users = self.kwargs.get("users", ["1000", "2000", "3000"])
+        self.users = self.kwargs.get("users", ["1000", "2000", "3000", "4000"])
         self.user_password = "1234"
         self.db_name = "kamailio"
         self.kamailio_cfg = "/etc/kamailio/kamailio.cfg"
