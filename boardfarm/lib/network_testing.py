@@ -722,3 +722,203 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
             pass
     else:
         raise ValueError(f"{capture_file} doesnt have SIP invite")
+
+
+class Iperf3Lib:
+    """Iperf3Lib run iperf3 results are obtained"""
+
+    def __init__(
+        self,
+        server=None,
+        client=None,
+        serverIPAddr=None,
+        clientOpts="",
+        serverOpts="",
+        port="5002",
+        udp_data=False,
+    ):
+        """constructor to Iperf3Lib class
+        :param server : device on which iperf3 server will be ran
+        :type server : devices
+        :param client : device on which iperf3 client will be ran
+        :type client : devices
+        :param serverIPAddr : IP address of the iperf3 server
+        :type serverIPAddr : str
+        :param clientOpts : holds the options of iperf3 client
+        :type clientOpts : str
+        :param serverOpts : holds the option of iperf3 server
+        :type serverOpts : str
+        :param port : contains port number on which the iperf3 server and client should run
+        :type port : str
+        :param udp_data : flag that is set when UDP packet needs to be checked
+        :type udp_data : boolean
+        """
+        self.udp_data = udp_data
+        self.server = server
+        self.client = client
+        self.serverIPAddr = serverIPAddr
+        self.clientOpts = clientOpts
+        self.serverOpts = serverOpts
+        self.port = port
+        if not self.server:
+            self.server = self.dev.by_type(device_type.wan)
+        if not self.client:
+            self.client = self.dev.by_type(device_type.lan)
+        if not serverIPAddr:
+            raise AssertionError(
+                "Iperf3 server IP Address missing to perform iperf testing"
+            )
+
+    def run_iperf3_server(self, stop_previous_instance=True, nohup=False):
+        """function to run iperf3 server
+        :param stop_previous_instance : if True stops existing server
+        :type stop_previous_instance : bool
+        :param nohup : server variable, if True then it redirects to /dev/null
+        :type nohup : bool
+        """
+        if stop_previous_instance:
+            self.kill_iperf3(self.server)
+        if nohup:
+            self.server.sendline(f"nohup iperf3 {self.serverOpts} -s -p {self.port} &")
+            self.server.expect(self.server.prompt)
+        else:
+            self.server.sendline(f"iperf3 {self.serverOpts} -s -p {self.port} &")
+            self.server.expect("Server listening on %s" % (self.port))
+
+    def kill_iperf3(self, device):
+        """function to kill all iperf3 instance that is spawned on the device
+        :param device : device on which iperf run instance to be killed
+        :type device : devices object
+        """
+        try:
+            device.sendline("killall -9 iperf3")
+            device.expect(device.prompt)
+        except Exception as error:
+            print(error)
+            device.sendcontrol("c")
+            device.sendcontrol("c")
+            device.expect(device.prompt)
+            device.sendline("killall -9 iperf3")
+            device.expect(device.prompt)
+
+    def run_iperf(
+        self,
+        DS=False,
+        timeout=300,
+        process_bg=False,
+        stop_previous_instance=True,
+        nohup=False,
+    ):
+        """function to start the execution of iperf3
+        :param DS : Downstream flag is used to change the data flow between iperf client and server
+        :type DS : bool
+        :param timeout : max timeout to wait
+        :type timeout : int
+        :param process_bg : if True runs command in background (client side),
+        defaults to False
+        :type process_bg : bool
+        :param stop_previous_instance : True to stop the existing server,
+        defaults to True
+        :type stop_previous_instance : bool
+        :param nohup : server variable, if True then it redirects to /dev/null
+        :type nohup : bool
+        :return : returns the output data according to iperf results
+        :rtype : dict
+        """
+        self.run_iperf3_server(stop_previous_instance, nohup)
+        if process_bg:
+            # -R can be given as part of ClientOpts to run Downstream traffic
+            commandBuilder = "iperf3 -c {} -p {} {} &".format(
+                self.serverIPAddr,
+                self.port,
+                self.clientOpts,
+            )
+            self.client.sendline(commandBuilder)
+            self.client.expect(self.client.prompt, timeout=timeout)
+        else:
+            commandBuilder = "iperf3 {} -c {} -p {}".format(
+                self.clientOpts,
+                self.serverIPAddr,
+                self.port,
+            )
+            if DS:
+                commandBuilder = commandBuilder + " -R"
+            self.client.sendline(commandBuilder)
+            self.client.expect(self.client.prompt, timeout=timeout)
+            self.output = self.parse_iperf3(self.client.before)
+            self.kill_iperf3(self.server)
+            return self.output
+
+    def get_parsed_value(self, data=None, rates=None):
+        """function used to parse the iperf3 results
+        :param data : data that has been sent/received via Iperf
+        :type data : str
+        :param rates : transfer rates /bandwidth that has been used to send the data
+        :type rates : str
+        :return : returns the convered float value to Mega
+        :rtype : float
+        """
+        value = None
+        if rates:
+            if "Mbits" in rates:
+                value = float(rates.split()[0])
+            elif "Kbits" in rates:
+                value = float(rates.split()[0]) / 1024
+            elif "Gbits" in rates:
+                value = float(rates.split()[0]) * 1024
+            else:
+                value = None
+        elif data:
+            if "MBytes" in data:
+                value = float(data.split()[0])
+            elif "KBytes" in data:
+                value = float(data.split()[0]) / 1024
+            elif "GBytes" in data:
+                value = float(data.split()[0]) * 1024
+            else:
+                value = None
+        else:
+            value = None
+        return value
+
+    def parse_iperf3(self, iperfResult):
+        """function used to compute the iperf3 results
+        :param iperfResult : contains the iperf output
+        :type iperfResult : str
+        :return : return the sent and received data and rates
+        :rtype : dict
+        """
+        errorMessage = re.findall(r"iperf3\:\s*error\s*.*", iperfResult)
+        if errorMessage:
+            return {"error": errorMessage[-1]}
+        if self.udp_data:
+            match = re.findall(
+                r".*sec\s*(.*\s*Bytes)\s*(.*\s*bits/sec)\s*(.*\s*s)\s*(.*)\/.*\((.*)\%.*",
+                iperfResult.split("Datagrams")[-1],
+            )[-1]
+            return {
+                "data": self.get_parsed_value(data=match[0]),
+                "rate": self.get_parsed_value(rates=match[1]),
+                "jitter": match[2],
+                "loss_percent": float(match[3]),
+                "error": None,
+            }
+        sent_rate = self.get_parsed_value(
+            rates=re.findall(r".*Bytes\s*(.*/sec).*sender", iperfResult)[-1]
+        )
+        recv_rate = self.get_parsed_value(
+            rates=re.findall(r".*Bytes\s*(.*/sec).*receiver", iperfResult)[-1]
+        )
+        sent_data = self.get_parsed_value(
+            data=re.findall(r".*sec\s*(.*Bytes)\s*.*/sec.*sender", iperfResult)[-1]
+        )
+        recv_data = self.get_parsed_value(
+            data=re.findall(r".*sec\s*(.*Bytes)\s*.*/sec.*receiver", iperfResult)[-1]
+        )
+        return {
+            "sent_rate": sent_rate,
+            "received_rate": recv_rate,
+            "sent_data": sent_data,
+            "received_data": recv_data,
+            "error": None,
+        }
