@@ -12,6 +12,7 @@ easysnmp
 elasticsearch>=1.0.0
 Faker
 future
+influxdb
 ipaddress
 jira
 jsonschema

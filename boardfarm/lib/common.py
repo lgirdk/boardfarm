@@ -26,6 +26,7 @@ from selenium import webdriver
 from termcolor import colored
 
 from boardfarm.dbclients import elasticlogger
+from boardfarm.dbclients.influx_wrapper import GenericWrapper
 from boardfarm.lib.bft_pexpect_helper import (
     bft_pexpect_helper,
     spawn_ssh_pexpect,
@@ -2174,6 +2175,42 @@ def send_to_elasticsearch(elastic_url, data):
     except Exception as e:
         logger.error(e)
         logger.error(f"Unable to store results to elasticsearch_server '{elastic_url}'")
+
+
+def send_to_influx(device, **kwargs):
+    """Push data like iperf, ACS response to influx DB
+
+    :param device: board
+    :type device: object
+    :param kwargs: server, client, s_name, c_name and response time
+    """
+    server = kwargs.get("server", None)
+    client = kwargs.get("client", None)
+    s_fname = kwargs.get("s_fname", ["iperf3_wan.log"])
+    c_fname = kwargs.get("c_fname", ["iperf3_lan.log"])
+    response_time = kwargs.get("response_time", None)
+    db_config = {
+        "db_host": os.getenv("influx_db"),
+        "db_port": 8086,
+        "db_username": "root",
+        "db_password": "root",
+        "database": "stability",
+        "test_run": os.getenv("Build_number", None),
+        "board": device.config.get("station"),
+    }
+    try:
+        if os.getenv("influx_db"):
+            db = GenericWrapper(**db_config)
+            if not response_time:
+                server_data = [db.get_details_dict(server, fname) for fname in s_fname]
+                client_data = [db.get_details_dict(client, fname) for fname in c_fname]
+                for s_dict, c_dict in zip(server_data, client_data):
+                    db.log_iperf_to_db(server, client, s_dict, c_dict)
+            else:
+                db.get_acs_data(response_time)
+    except Exception as e:
+        logger.error(e)
+        logger.error("unable to load data to influx db")
 
 
 def get_pytest_name():
