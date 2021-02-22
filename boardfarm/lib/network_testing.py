@@ -612,7 +612,7 @@ def verify_sip_status(device, capture_file, msg_list, rm_pcap=True, user_num=Non
     :rtype: Boolean
     """
     if user_num:
-        num = str(num)
+        num = str(user_num)
         output = tshark_read(
             device,
             capture_file,
