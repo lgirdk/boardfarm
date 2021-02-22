@@ -51,6 +51,7 @@ class EnvHelper(object):
             "2.12",
             "2.13",
             "2.14",
+            "2.15",
         ], "Unknown environment version!"
         self.env = env
         self.mirror = ""
