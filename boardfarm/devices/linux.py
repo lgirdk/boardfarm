@@ -4,6 +4,7 @@ import ipaddress
 import logging
 import os
 import re
+from typing import Union
 
 import pexpect
 import six
@@ -669,3 +670,36 @@ EOFEOFEOFEOF"""
         lease_time = int(self.match.group(1))
         self.expect(self.prompt)
         return lease_time
+
+    def scp(
+        self,
+        host: str,
+        port: Union[int, str],
+        username: str,
+        password: str,
+        src_path: str,
+        dst_path: str,
+        action: str = "download",
+    ) -> None:
+        """Scp file to remote host
+
+        :param host: remote host ssh IP
+        :param port: remote host ssh port number
+        :param username: ssh username
+        :param password: ssh password
+        :param src_path: copy this
+        :param dst_path: to that
+        :param action: download or upload.
+        """
+        if action == "download":
+            command = f"scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
+        else:
+            command = f"scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
+        print(f"Sending {command}")
+        self.sendline(command)
+        first_time = self.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=5)
+        if first_time:
+            self.sendline("y")
+        self.expect("assword:")
+        self.sendline(password)
+        self.expect_prompt()
