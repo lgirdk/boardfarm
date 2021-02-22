@@ -1,5 +1,7 @@
 import re
 
+from debtcollector import deprecate
+
 
 class SerialPhone(object):
     """Fax modem."""
@@ -103,6 +105,11 @@ class SerialPhone(object):
 
     def answer(self):
         """To answer the incoming call."""
+        deprecate(
+            "Warning!",
+            message="answer() is deprecated. Use offhook_onhook() method to answer the calls",
+            category=UserWarning,
+        )
         self.mta_readlines(time="10")
         self.expect("RING")
         self.sendline("set.write(b'ATA\\r')")
