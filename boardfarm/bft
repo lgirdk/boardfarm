@@ -22,6 +22,7 @@ from datetime import datetime
 
 import matplotlib
 import psutil
+from apscheduler.schedulers.background import BackgroundScheduler
 from termcolor import colored
 
 import boardfarm.exceptions
@@ -351,8 +352,11 @@ def connect_to_devices(config):
                 config.board, config.ROOTFS, config.KERNEL, device_mgr
             )
 
-            deny_list_names = config.board.get("deny_conn_to", [])
-            if deny_list_names:
+            deny_conn_to_dict = config.board.get("deny_conn_to", {})
+            if deny_conn_to_dict and deny_conn_to_dict.get("devices", []):
+                deny_list_names = deny_conn_to_dict["devices"]
+                deny_list_options = deny_conn_to_dict.get("options", [])
+                scheduler = BackgroundScheduler()
                 for idx, board_name in enumerate(deny_list_names):
                     # get the deny board details
                     logger.debug(f"Denying access to board = {board_name}")
@@ -366,7 +370,18 @@ def connect_to_devices(config):
                     deny_list.append(aux_board)
                     setattr(device_mgr, f"__board{idx+2}", aux_board)
 
-                    logger.debug(f"Locked access to board = {board_name}")
+                    if "keep_alive" in deny_list_options:
+                        scheduler.add_job(aux_board.touch, "interval", seconds=60)
+
+                    logger.info(
+                        colored(
+                            f"Locked access to board = {board_name}",
+                            color="yellow",
+                            attrs=["bold"],
+                        )
+                    )
+                if scheduler.get_jobs():
+                    scheduler.start()
 
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
@@ -454,6 +469,8 @@ def connect_to_devices(config):
                 if board:
                     board.close()
                 if deny_list:
+                    if scheduler.get_jobs():
+                        scheduler.shutdown()
                     for dev in deny_list:
                         if dev:
                             dev.close()
