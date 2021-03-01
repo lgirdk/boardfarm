@@ -1,0 +1,33 @@
+FROM debian:stable-slim
+
+RUN echo "root:bigfoot1" | chpasswd
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    dnsutils \
+    iproute2 \
+    iptables \
+    net-tools \
+    openssh-server \
+    traceroute \
+    tcpdump \
+    dnsmasq \
+    wget \
+    build-essential
+
+# NOTE: apparmor will interfere with dhclient, disable on HOST by running:
+# sudo service apparmor stop
+# sudo service apparmor teardown
+
+RUN mkdir /var/run/sshd
+RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/.*GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config && \
+    sed -i 's/.*PermitTunnel.*/PermitTunnel yes/' /etc/ssh/sshd_config
+
+# The following lines compile a shim to bind a process to an IP address
+# using LD_PRELOAD. To run the shim use the following syntax:
+# BIND_ADDR="X.X.X.X" LD_PRELOAD=/usr/lib/bind.so [command to run]
+RUN wget http://daniel-lange.com/software/bind.c -O /root/bind.c
+RUN cd /root; sed -i '/#include <errno.h>/a #include <arpa\/inet.h>' ./bind.c; gcc -nostartfiles -fpic -shared bind.c -o bind.so -ldl -D_GNU_SOURCE; strip bind.so; mv ./bind.so /usr/lib/
+
+EXPOSE 22

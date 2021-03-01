@@ -40,10 +40,10 @@ RUN apt-get update && \
 # sudo service apparmor stop
 # sudo service apparmor teardown
 
-RUN mkdir /var/run/sshd
-RUN sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/.*GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config
-RUN sed -i 's/.*PermitTunnel.*/PermitTunnel yes/' /etc/ssh/sshd_config
+RUN mkdir /var/run/sshd && \
+    sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/.*GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config && \
+    sed -i 's/.*PermitTunnel.*/PermitTunnel yes/' /etc/ssh/sshd_config
 
 # The following lines compile a shim to bind a process to an IP address
 # using LD_PRELOAD. To run the shim use the following syntax:
