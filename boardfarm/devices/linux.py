@@ -340,6 +340,19 @@ class LinuxDevice(base.BaseDevice):
         else:
             return None
 
+    def get_process_status(self, process_name, options=""):
+        """Return the process status output
+        Args:
+            process name (string): linux process name eg: "ping"
+            options (string): ps options eg "-ef", "-aux"
+            eg command: "ps -ef | grep ping"
+        """
+        command = "ps {} | grep {}".format(options, process_name)
+        self.sendline(command)
+        self.expect_exact(command)
+        self.expect(self.prompt)
+        return self.before
+
     def set_link_state(self, interface, state):
         """Set the interface status."""
         self.sudo_sendline("ip link set %s %s" % (interface, state))
