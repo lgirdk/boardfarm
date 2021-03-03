@@ -5,6 +5,7 @@ import logging
 
 from nested_lookup import nested_lookup
 
+from boardfarm.exceptions import ContingencyCheckError
 from boardfarm.lib.common import (
     check_prompts,
     domain_ip_reach_check,
@@ -187,7 +188,9 @@ class ACS:
                 acs_server.get(board.get_cpeid(), "Device.DeviceInfo.SoftwareVersion")
             )
 
-        check_acs_connection()
+        acs_connection = check_acs_connection()
+        if not acs_connection:
+            raise ContingencyCheckError("ACS service check Failed.")
 
         if packet_analysis:
 
