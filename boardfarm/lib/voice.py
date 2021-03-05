@@ -47,33 +47,6 @@ def rm_dns_auth_record(dns):
     dns.expect(dns.prompt)
 
 
-def voice_devices_configure(voice_devices_list, sip_server):
-    """
-    Initialize the Voice test setup.
-
-    Parameters:
-    voice_devices_list(list of obj): list of voice devices
-    sip_server(obj): sipserver device
-    """
-    try:
-        for voice_device in voice_devices_list:
-            if hasattr(voice_device, "profile"):
-                boot_list = nested_lookup(
-                    "on_boot", voice_device.profile.get(voice_device.name, {})
-                )
-                for profile_boot in boot_list:
-                    profile_boot()
-                if "softphone" in voice_device.name:
-                    voice_device.phone_config(
-                        sip_server.get_interface_ipaddr(sip_server.iface_dut)
-                    )
-    except Exception as e:
-        sip_server.stop()
-        raise Exception(
-            "Unable to initialize Voice devices, failed due to the error : ", e
-        )
-
-
 def voice_configure(voice_devices_list, sip_server, config):
     """
     Initialize the Voice test setup.
@@ -86,6 +59,7 @@ def voice_configure(voice_devices_list, sip_server, config):
 
     try:
         kill_process(sip_server, port=5060)
+        apt_install(sip_server, "tshark")
         dns_setup_sipserver(sip_server, config)
         for voice_device in voice_devices_list:
             if hasattr(voice_device, "profile"):
