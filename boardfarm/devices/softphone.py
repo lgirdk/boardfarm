@@ -121,6 +121,15 @@ class SoftPhone(object):
         self.sendline("\n")
         self.expect(self.pjsip_prompt)
 
+    def hold(self):
+        """To hold the current call"""
+        self.sendline("\n")
+        self.expect(self.pjsip_prompt)
+        self.sendline("H")
+        self.expect("Putting call [0-9]* on hold")
+        self.sendline("\n")
+        self.expect(self.pjsip_prompt)
+
     def phone_kill(self):
         """To kill the pjsip session."""
         # De-Registration is required before quit a phone and q will handle it
