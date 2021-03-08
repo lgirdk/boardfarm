@@ -371,6 +371,8 @@ def connect_to_devices(config):
                     setattr(device_mgr, f"__board{idx+2}", aux_board)
 
                     if "keep_alive" in deny_list_options:
+                        if hasattr(aux_board, "setecho"):
+                            aux_board.setecho(False)
                         scheduler.add_job(aux_board.touch, "interval", seconds=60)
 
                     logger.info(
