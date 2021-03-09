@@ -135,7 +135,7 @@ class LoggerMeta(type):
 
             clsname = args[0].__class__.__name__
 
-            err_injection_dict = ConfigHelper()["err_injection_dict"]
+            err_injection_dict = ConfigHelper().get("err_injection_dict", None)
             if (
                 err_injection_dict
                 and clsname in err_injection_dict
