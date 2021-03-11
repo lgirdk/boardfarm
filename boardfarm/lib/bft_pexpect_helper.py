@@ -76,6 +76,8 @@ password = None
 class bft_pexpect_helper(pexpect.spawn):
     """Boardfarm helper for logging pexpect and making minor tweaks."""
 
+    delaybetweenchar = None
+
     def __setattr__(self, key, value):
         """Every time when an attribute assignment is attempted, the function is called."""
         # pexpect name start with <.*>
