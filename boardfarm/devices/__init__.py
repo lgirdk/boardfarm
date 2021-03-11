@@ -1,7 +1,6 @@
 """This directory contains classes for connecting to and controlling \
 devices over a network."""
 
-import abc
 import importlib
 import inspect
 import logging
@@ -291,23 +290,3 @@ def get_device_mapping_class(sw: str):
             if re.match(pattern, sw):
                 return k
     return None
-
-
-class __MetaSignatureChecker(abc.ABCMeta):
-    def __init__(cls, name, bases, attrs):
-        errors = []
-        for base_cls in bases:
-            for meth_name in getattr(base_cls, "__abstractmethods__", ()):
-                if not callable(getattr(base_cls, meth_name)):
-                    continue
-                orig_argspec = inspect.getfullargspec(getattr(base_cls, meth_name))
-                target_argspec = inspect.getfullargspec(getattr(cls, meth_name))
-                if orig_argspec != target_argspec:
-                    errors.append(
-                        f"Abstract method {meth_name!r}  not implemented"
-                        f" with correct signature in {cls.__name__!r}."
-                        f" Expected {orig_argspec}."
-                    )
-        if errors:
-            raise TypeError("\n".join(errors))
-        super().__init__(name, bases, attrs)
