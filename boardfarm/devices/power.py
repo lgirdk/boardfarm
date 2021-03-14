@@ -17,11 +17,13 @@ except Exception:
 import inspect
 import logging
 import time
+from typing import Any
 
 import dlipower
 import pexpect
 from easysnmp import Session
 
+from boardfarm.devices.base_devices.pdu_templates import PDUTemplate
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 logger = logging.getLogger("bft")
@@ -39,7 +41,9 @@ except Exception:
     WemoSwitch = None
 
 
-def get_power_device(ip_address, username=None, password=None, outlet=None):
+def get_power_device(
+    ip_address: str, username: str = None, password: str = None, outlet: str = None
+):
     """Try to determine the type of network-controlled power switch\
     at a given IP address.
 
@@ -48,7 +52,7 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     login_failed = False
     all_login_defaults = []
     for _name, obj in list(globals().items()):
-        if inspect.isclass(obj) and issubclass(obj, PowerDevice):
+        if inspect.isclass(obj) and issubclass(obj, PDUTemplate):
             defaults = get_default_for_arg(obj.__init__, "username")
             if defaults is not None and len(defaults) == 2:
                 all_login_defaults.append((defaults[0], defaults[1]))
@@ -150,45 +154,34 @@ def get_power_device(ip_address, username=None, password=None, outlet=None):
     raise Exception("No code written to handle power device found at %s" % ip_address)
 
 
-class PowerDevice:
-    """At minimum, power devices let users reset an outlet over a network."""
-
-    def __init__(self, ip_address, username=None, password=None):
-        """Instance initialization."""
-        self.ip_address = ip_address
-        self.username = username
-        self.password = password
-        # Maybe verify connection is working here
-
-    def reset(self, outlet):
-        """Turn an outlet OFF, maybe wait, then back ON."""
-        raise Exception(
-            "Code not written to reset with this type of power device at %s"
-            % self.ip_address
-        )
-
-
-class SentrySwitchedCDU(PowerDevice):
+class SentrySwitchedCDU(PDUTemplate):
     """Power Unit from Server Technology."""
 
-    def __init__(self, ip_address, outlet, username="admin", password="admin"):
+    def __init__(
+        self,
+        ip_address: str,
+        outlet: str,
+        username: str = "admin",
+        password: str = "admin",
+    ):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
-        self.outlet = outlet
+        super().__init__(ip_address, username, password, outlet=outlet)
         # Verify connection
         try:
-            pcon = self.__connect()
-            pcon.sendline("status .a%s" % self.outlet)
-            i = pcon.expect(["Command successful", "User/outlet -- name not found"])
+            self._connect()
+            self.pcon.sendline("status .a%s" % self.outlet)
+            i = self.pcon.expect(
+                ["Command successful", "User/outlet -- name not found"]
+            )
             if i == 1:
                 raise Exception("\nOutlet %s not found" % self.outlet)
-            pcon.close()
+            self.pcon.close()
         except Exception as e:
             logger.error(e)
-            logger.error("\nError with power device %s" % ip_address)
-            raise Exception("Error with power device %s" % ip_address)
+            logger.error("\nError with power device %s" % self.ip_address)
+            raise Exception("Error with power device %s" % self.ip_address)
 
-    def __connect(self):
+    def _connect(self):
         pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
         pcon.expect("Sentry Switched CDU Version", timeout=15)
         pcon.expect("Username:")
@@ -197,47 +190,51 @@ class SentrySwitchedCDU(PowerDevice):
         pcon.sendline(self.password)
         i = pcon.expect(["Switched CDU:", "Critical Alert"])
         if i == 0:
-            return pcon
+            self.pcon = pcon
         else:
-            logger.error("\nCritical failure in %s, skipping PDU\n" % self.power_ip)
-            raise Exception("critical failure in %s" % self.power_ip)
+            logger.error("\nCritical failure in %s, skipping PDU\n" % self.ip_address)
+            raise Exception("critical failure in %s" % self.ip_address)
 
-    def reset(self, retry_attempts=2):
+    def reset(self):
         """Connect to pdu, send reboot command."""
+        retry_attempts = 2
         logger.info("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
         for _ in range(retry_attempts):
             try:
-                pcon = self.__connect()
-                pcon.sendline("reboot .a%s" % self.outlet)
-                pcon.expect("Command successful")
-                pcon.close()
+                self._connect()
+                self.pcon.sendline("reboot .a%s" % self.outlet)
+                self.pcon.expect("Command successful")
+                self.pcon.close()
                 return
             except Exception as e:
                 logger.error(e)
                 continue
         raise Exception("\nProblem resetting outlet %s." % self.outlet)
 
+    def turn_off(self):
+        raise NotImplementedError
 
-class PX2(PowerDevice):
+
+class PX2(PDUTemplate):
     """Power Unit from Raritan."""
 
-    def __init__(self, outlet, username="admin", password="scripter99"):
+    def __init__(
+        self, outlet: str, username: str = "admin", password: str = "scripter99"
+    ):
         """Instance initialization."""
-        ip_address, self.outlet = outlet.replace("px2://", "").split(";")
-        PowerDevice.__init__(self, ip_address, username, password)
-        self.do_login()
+        ip_address, outlet = outlet.replace("px2://", "").split(";")
+        super().__init__(ip_address, username, password, outlet=outlet)
+        self._connect()
 
-    def do_login(self):
-        pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
-        pcon.expect(r"Login for PX\d CLI")
-        pcon.expect("Username:")
-        pcon.sendline(self.username)
-        pcon.expect("Password:")
-        pcon.sendline(self.password)
-        pcon.expect(r"Welcome to PX\d CLI!")
-        pcon.expect("# ")
-
-        self.pcon = pcon
+    def _connect(self):
+        self.pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
+        self.pcon.expect(r"Login for PX\d CLI")
+        self.pcon.expect("Username:")
+        self.pcon.sendline(self.username)
+        self.pcon.expect("Password:")
+        self.pcon.sendline(self.password)
+        self.pcon.expect(r"Welcome to PX\d CLI!")
+        self.pcon.expect("# ")
 
     def reset(self):
         try:
@@ -245,7 +242,7 @@ class PX2(PowerDevice):
             self.pcon.expect("# ")
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
-            self.do_login()
+            self._connect()
         self.pcon.sendline("power outlets %s cycle /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s cycle /y" % self.outlet)
         self.pcon.expect("# ")
@@ -259,7 +256,7 @@ class PX2(PowerDevice):
             self.pcon.expect("# ")
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
-            self.do_login()
+            self._connect()
         self.pcon.sendline("power outlets %s off /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s off /y" % self.outlet)
         self.pcon.expect("# ")
@@ -268,22 +265,19 @@ class PX2(PowerDevice):
         assert not self.pcon.before.strip()
 
 
-class NetioPDU(PowerDevice):
+class NetioPDU(PDUTemplate):
     """Power Unit from Netio"""
 
-    def __init__(self, outlet, username="admin", password="admin"):
-        self.username, self.password = username, password
+    def __init__(self, outlet: str, username: str = "admin", password: str = "admin"):
 
-        conn, self.outlet = outlet.replace("netio://", "").split(";")
+        conn, outlet = outlet.replace("netio://", "").split(";")
         if ":" in conn:
-            self.ip_address, self.conn_port = conn.split(":")
+            ip_address, conn_port = conn.split(":")
+            super().__init__(ip_address, username, password, conn_port, outlet)
         else:
-            self.ip_address = conn
-            self.conn_port = 23
+            super().__init__(conn, username, password, 23, outlet)
 
-        self.pcon = None
-
-    def connect(self):
+    def _connect(self):
         self.pcon = bft_pexpect_helper.spawn(
             f"telnet {self.ip_address} {self.conn_port}"
         )
@@ -291,91 +285,111 @@ class NetioPDU(PowerDevice):
         self.pcon.sendline(f"login {self.username} {self.password}")
         self.pcon.expect("250 OK")
 
-    def quit(self):
+    def __quit(self):
         self.pcon.sendline("quit")
         self.pcon = None
 
     def reset(self):
-        self.connect()
+        self._connect()
         self.pcon.sendline(f"port {self.outlet} 2")
         self.pcon.expect("250 OK")
-        self.quit()
+        self.__quit()
 
     def turn_off(self):
-        self.connect()
+        self._connect()
         self.pcon.sendline(f"port {self.outlet} 0")
         self.pcon.expect("250 OK")
-        self.quit()
+        self.__quit()
 
 
-class HumanButtonPusher(PowerDevice):
+class HumanButtonPusher(PDUTemplate):
     """Tell a person to physically reboot the router."""
 
     def __init__(self):
         """Instance initialization."""
-        PowerDevice.__init__(self, None)
+        super().__init__(None)
+
+    def _connect(self):
+        raise NotImplementedError
 
     def reset(self):
         logger.info("\n\nUser power-cycle the device now!\n")
 
+    def turn_off(self):
+        logger.info("\n\nUser turn-off the device now!\n")
 
-class APCPower(PowerDevice):
+
+class APCPower(PDUTemplate):
     """A network-managed power unit from APC."""
 
-    def __init__(self, ip_address, outlet, username="apc", password="apc"):
+    def __init__(
+        self, ip_address: str, outlet: str, username: str = "apc", password: str = "apc"
+    ):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
-        self.outlet = outlet
+        super().__init__(ip_address, username, password, outlet=outlet)
+
+    def _connect(self):
+        self.pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
+        self.pcon.expect("User Name :")
+        self.pcon.send(self.username + "\r\n")
+        self.pcon.expect("Password  :")
+        self.pcon.send(self.password + "\r\n")
+        self.pcon.expect("> ")
 
     def reset(self):
         """Connect, login, and send commands to reset power on an outlet."""
-        pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
-        pcon.expect("User Name :")
-        pcon.send(self.username + "\r\n")
-        pcon.expect("Password  :")
-        pcon.send(self.password + "\r\n")
-        pcon.expect("> ")
-        pcon.send("1" + "\r\n")
-        pcon.expect("> ")
-        pcon.send("2" + "\r\n")
-        pcon.expect("> ")
-        pcon.send("1" + "\r\n")
-        pcon.expect("> ")
-        pcon.send(self.outlet + "\r\n")
-        pcon.expect("> ")
-        pcon.send("1" + "\r\n")
-        pcon.expect("> ")
-        pcon.send("6" + "\r\n")
-        pcon.send("YES")
-        pcon.send("" + "\r\n")
-        pcon.expect("> ")
+        self._connect()
+        self.pcon.send("1" + "\r\n")
+        self.pcon.expect("> ")
+        self.pcon.send("2" + "\r\n")
+        self.pcon.expect("> ")
+        self.pcon.send("1" + "\r\n")
+        self.pcon.expect("> ")
+        self.pcon.send(self.outlet + "\r\n")
+        self.pcon.expect("> ")
+        self.pcon.send("1" + "\r\n")
+        self.pcon.expect("> ")
+        self.pcon.send("6" + "\r\n")
+        self.pcon.send("YES")
+        self.pcon.send("" + "\r\n")
+        self.pcon.expect("> ")
+
+    def turn_off(self):
+        raise NotImplementedError
 
 
-class DLIPowerSwitch(PowerDevice):
+class DLIPowerSwitch(PDUTemplate):
     """A network-managed power switch from Digital Loggers (DLI)."""
 
-    def __init__(self, ip_address, outlet, username, password):
+    def __init__(self, ip_address: str, outlet: str, username: str, password: str):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
+        super().__init__(ip_address, username, password, outlet=outlet)
         self.switch = dlipower.PowerSwitch(
             hostname=ip_address, userid=username, password=password
         )
-        self.outlet = outlet
 
-    def reset(self, outlet=None):
+    def _connect(self):
+        raise NotImplementedError
+
+    def reset(self):
         """Turn an outlet off and then on."""
-        if outlet is None:
-            outlet = self.outlet
-        self.switch.cycle(outlet)
+        self.switch.cycle(self.outlet)
+
+    def turn_off(self):
+        raise NotImplementedError
 
 
-class WemoPowerSwitch(PowerDevice):
+class WemoPowerSwitch(PDUTemplate):
     """Control a Wemo switch given an ipaddress."""
 
-    def __init__(self, outlet):
+    def __init__(self, outlet: str):
         """Instance initialization."""
         addr = "http://" + outlet.replace("wemo://", "") + ":49153/setup.xml"
-        self.switch = WemoSwitch(addr)
+        super().__init__(None, outlet=addr)
+        self.switch = WemoSwitch(self.outlet)
+
+    def _connect(self):
+        raise NotImplementedError
 
     def reset(self):
         """Turn an outlet off, wait 5 seconds, turn it back on."""
@@ -383,14 +397,17 @@ class WemoPowerSwitch(PowerDevice):
         time.sleep(5)
         self.switch.on()
 
+    def turn_off(self):
+        raise NotImplementedError
 
-class SimpleCommandPower(PowerDevice):
+
+class SimpleCommandPower(PDUTemplate):
     """Run a simple command to turn power on/off."""
 
     on_cmd = "true"
     off_cmd = "false"
 
-    def __init__(self, outlet):
+    def __init__(self, outlet: str):
         """Instance initialization."""
         parsed = outlet.replace("cmd://", "").split(";")
         for param in parsed:
@@ -398,14 +415,20 @@ class SimpleCommandPower(PowerDevice):
                 if attr + "=" in param:
                     setattr(self, attr, param.replace(attr + "=", "").encode())
 
+    def _connect(self):
+        raise NotImplementedError
+
     def reset(self):
         """Send off command, wait 5 seconds, send on command."""
         bft_pexpect_helper.spawn(self.off_cmd).expect(pexpect.EOF)
         time.sleep(5)
         bft_pexpect_helper.spawn(self.on_cmd).expect(pexpect.EOF)
 
+    def turn_off(self):
+        raise NotImplementedError
 
-class SimpleSerialPower(PowerDevice):
+
+class SimpleSerialPower(PDUTemplate):
     """Simple serial based relay or power on off. Send a\
     string for "off" then "on" over serial."""
 
@@ -415,7 +438,7 @@ class SimpleSerialPower(PowerDevice):
     delay = 5
     on_cmd = b"relay off 0"
 
-    def __init__(self, outlet):
+    def __init__(self, outlet: str):
         """Instance initialization."""
         parsed = outlet.replace("serial://", "").split(";")
         self.serial_dev = "/dev/" + parsed[0]
@@ -423,6 +446,9 @@ class SimpleSerialPower(PowerDevice):
             for attr in ["on_cmd", "off_cmd"]:
                 if attr + "=" in param:
                     setattr(self, attr, param.replace(attr + "=", "").encode())
+
+    def _connect(self):
+        raise NotImplementedError
 
     def reset(self):
         """Send off command, wait 5 seconds, send on command."""
@@ -436,6 +462,9 @@ class SimpleSerialPower(PowerDevice):
             set.write(self.on_cmd + "\r")
 
             set.close()
+
+    def turn_off(self):
+        raise NotImplementedError
 
     """
     IP Power 9258 networked power switch class.
@@ -458,124 +487,163 @@ class SimpleSerialPower(PowerDevice):
     """
 
 
-class Ip9258(PowerDevice):
+class Ip9258(PDUTemplate):
     """Network Power controller, IP Power 9258."""
 
-    def __init__(self, ip_address, port, username="admin", password="12345678"):
+    def __init__(
+        self,
+        ip_address: str,
+        port: str,
+        username: str = "admin",
+        password: str = "12345678",
+    ):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
-        self._ip_address = ip_address
-        self.port = port
+        super().__init__(ip_address, username, password, port)
+        self._connect()
 
+    def _connect(self):
         # create a password manager
         password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, "http://" + ip_address, username, password)
+        password_mgr.add_password(
+            None, "http://" + self.ip_address, self.username, self.password
+        )
         handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
         opener = _urllib.request.build_opener(handler)
         # Now all calls to urllib2.urlopen use our opener.
         _urllib.request.install_opener(opener)
 
-    def on(self):
+    def __on(self):
         """Send ON command."""
-        logger.info("Power On Port(%s)\n" % self.port)
+        logger.info("Power On Port(%s)\n" % self.conn_port)
         return _urllib.request.urlopen(
             "http://"
-            + self._ip_address
+            + self.ip_address
             + "/set.cmd?cmd=setpower+p6"
-            + str(self.port)
+            + str(self.conn_port)
             + "=1"
         )
 
-    def off(self):
+    def __off(self):
         """Send OFF command."""
-        logger.info("Power Off Port(%s)\n" % self.port)
+        logger.info("Power Off Port(%s)\n" % self.conn_port)
         return _urllib.request.urlopen(
             "http://"
-            + self._ip_address
+            + self.ip_address
             + "/set.cmd?cmd=setpower+p6"
-            + str(self.port)
+            + str(self.conn_port)
             + "=0"
         )
 
     def reset(self):
         """Turn off, wait 5 seconds, turn on."""
-        self.off()
+        self.__off()
         time.sleep(5)
-        self.on()
+        self.__on()
+
+    def turn_off(self):
+        """Send OFF command."""
+        self.__off()
 
 
-class CyberPowerPdu(PowerDevice):
+class CyberPowerPdu(PDUTemplate):
     """Power unit from CyberPower."""
 
-    def __init__(self, ip_address, outlet, username="cyber", password="cyber"):
+    def __init__(
+        self,
+        ip_address: str,
+        port: Any,
+        username: str = "cyber",
+        password: str = "cyber",
+    ):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
-        self.port = outlet
-        self.ip_address = ip_address
-        self.oid_Outlet = "1.3.6.1.4.1.3808.1.1.3.3.3.1.1.4"
+        super().__init__(
+            ip_address,
+            username,
+            password,
+            conn_port=port,
+            outlet="1.3.6.1.4.1.3808.1.1.3.3.3.1.1.4",
+        )
         self.session = Session(hostname=self.ip_address, community="private", version=2)
 
-    def on(self):
+    def _connect(self):
+        raise NotImplementedError
+
+    def __on(self):
         """Send ON command."""
-        oid = self.oid_Outlet + "." + str(self.port)
+        oid = self.outlet + "." + str(self.conn_port)
         self.session.set(oid, 1, "i")
 
-    def off(self):
+    def __off(self):
         """Send OFF command."""
-        oid = self.oid_Outlet + "." + str(self.port)
+        oid = self.oid_Outlet + "." + str(self.conn_port)
         self.session.set(oid, 2, "i")
 
     def reset(self):
-        """Send OFF command, wait 5 seconds, sned ON command."""
-        self.off()
+        """Send OFF command, wait 5 seconds, send ON command."""
+        self.__off()
         time.sleep(5)
-        self.on()
+        self.__on()
+
+    def turn_off(self):
+        """Send OFF command"""
+        self.__off()
 
 
-class Ip9820(PowerDevice):
+class Ip9820(PDUTemplate):
     """Network Power controller, IP Power 9820."""
 
-    def __init__(self, ip_address, port, username="admin", password="12345678"):
+    def __init__(
+        self,
+        ip_address: str,
+        port: Any,
+        username: str = "admin",
+        password: str = "12345678",
+    ):
         """Instance initialization."""
-        PowerDevice.__init__(self, ip_address, username, password)
-        self._ip_address = ip_address
-        self.port = port
+        super().__init__(ip_address, username, password, conn_port=port)
+        self._connect()
 
+    def _connect(self):
         # create a password manager
         password_mgr = _urllib.request.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None, "http://" + ip_address, username, password)
+        password_mgr.add_password(
+            None, "http://" + self.ip_address, self.username, self.password
+        )
         handler = _urllib.request.HTTPBasicAuthHandler(password_mgr)
         opener = _urllib.request.build_opener(handler)
         # Now all calls to _urllib.urlopen use our opener.
         _urllib.request.install_opener(opener)
 
-    def on(self):
+    def __on(self):
         """Send ON command."""
-        logger.info("Power On Port(%s)\n" % self.port)
+        logger.info("Power On Port(%s)\n" % self.conn_port)
         return _urllib.request.urlopen(
             "http://"
-            + self._ip_address
+            + self.ip_address
             + "/set.cmd?cmd=setpower+p6"
-            + str(self.port)
+            + str(self.conn_port)
             + "=1"
         )
 
-    def off(self):
+    def __off(self):
         """Send OFF command."""
-        logger.info("Power Off Port(%s)\n" % self.port)
+        logger.info("Power Off Port(%s)\n" % self.conn_port)
         return _urllib.request.urlopen(
             "http://"
-            + self._ip_address
+            + self.ip_address
             + "/set.cmd?cmd=setpower+p6"
-            + str(self.port)
+            + str(self.conn_port)
             + "=0"
         )
 
     def reset(self):
         """Send OFF command, wait 5 seconds, sned ON command."""
-        self.off()
+        self.__off()
         time.sleep(5)
-        self.on()
+        self.__on()
+
+    def turn_off(self):
+        self.__off()
 
 
 if __name__ == "__main__":
