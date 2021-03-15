@@ -38,3 +38,7 @@ fi
 if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Filters:; then
     echo export BFT_FILTERS=\"$(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Filters: | sed 's/.*Filters: //g')\" >> .env
 fi
+
+if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Inventory:; then
+    echo export BFT_CONFIG=\"$(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep Inventory: | sed 's/.*Inventory: //g')\" >> .env
+fi
