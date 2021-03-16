@@ -6,7 +6,10 @@ logging.config.dictConfig(
         "version": 1,
         "formatters": {
             "bft_fmt": {"format": "%(message)s"},
-            "tests_fmt": {"format": "%(asctime)s %(levelname)s %(message)s"},
+            "tests_fmt": {
+                "format": "%(asctime)s %(levelname)s %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            },
         },
         "handlers": {
             "console": {
@@ -29,7 +32,7 @@ logging.config.dictConfig(
             "bft": {"level": "DEBUG", "propagate": False, "handlers": ["console"]},
             "tests_logger": {
                 "level": "INFO",
-                "propagate": False,
+                "propagate": True,
                 "handlers": ["console_bf_logger"],
             },
             "DeviceManager": {
