@@ -228,3 +228,25 @@ class EnvHelper:
             raise BftEnvMismatch()
 
         return True
+
+    @staticmethod
+    def env_devices(env_json):
+        devices = {}
+
+        # find all possible devices.
+        # Selection criteria: they have a "device_type" key.
+        # They're always found inside a list
+        def find_device_arrays(env):
+            nonlocal devices
+            for k, v in env.items():
+                if type(v) == dict:
+                    if "device_type" in v:
+                        devices[k] = [v]
+                    find_device_arrays(v)
+                if type(v) == list and all(
+                    type(obj) == dict and "device_type" in obj for obj in v
+                ):
+                    devices[k] = v
+
+        find_device_arrays(env_json)
+        return devices
