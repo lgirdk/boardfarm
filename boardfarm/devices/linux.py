@@ -716,3 +716,32 @@ EOFEOFEOFEOF"""
         self.expect("assword:")
         self.sendline(password)
         self.expect_prompt()
+
+    def get_date(self):
+        """Get the system date and time
+
+        :return: CM date
+        :rtype: str
+        """
+        self.sendline("date '+%A, %B %d, %Y %T'")
+        self.expect_prompt()
+        date = re.search(
+            r"(\w+,\s\w+\s\d+,\s\d+\s(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]:[0-5][0-9])",
+            self.before,
+        )
+        if date:
+            return date.group(0)
+
+    def set_date(self, opt, format):
+        """Set the system date and time
+
+        :param format: value to be changed
+        :type fromat: str
+        :param opt: Option to set the date or time or day
+        :type opt: str
+        :return: True if set is successful
+        :rtype: bool
+        """
+        self.sendline(f"date {opt} {format}")
+        self.expect_prompt()
+        return format in self.before
