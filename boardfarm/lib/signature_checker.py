@@ -14,8 +14,9 @@ class __MetaSignatureChecker(abc.ABCMeta):
                 if orig_argspec != target_argspec:
                     errors.append(
                         f"Abstract method {meth_name!r}  not implemented"
-                        f" with correct signature in {cls.__name__!r}."
-                        f" Expected {orig_argspec}."
+                        f" with correct signature in {cls.__name__!r}.\n"
+                        f"Expected {orig_argspec}.\n"
+                        f"Got {target_argspec}"
                     )
         if errors:
             raise TypeError("\n".join(errors))
