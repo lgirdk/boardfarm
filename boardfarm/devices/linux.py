@@ -23,8 +23,8 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 logger = logging.getLogger("bft")
 
 
-class LinuxDevice(base.BaseDevice):
-    """Linux implementations."""
+class LinuxInterface:
+    """Linux implementations. Cannot be instantiated by itself."""
 
     tftp_dir = "/tftpboot"
     sign_check = True
@@ -745,3 +745,9 @@ EOFEOFEOFEOF"""
         self.sendline(f"date {opt} {format}")
         self.expect_prompt()
         return format in self.before
+
+
+class LinuxDevice(LinuxInterface, base.BaseDevice):
+    """This aggregates the basedevice and its implementation"""
+
+    pass
