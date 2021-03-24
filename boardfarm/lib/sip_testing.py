@@ -42,3 +42,36 @@ def duration_between_packets(
             float(time_list[idx + 1]) - float(time_list[idx]), 1
         )
     return interval_dict
+
+
+def get_sip_attributes(device, capture_file, src_ip, sip_auth=False):
+    """Return the SIP attributes like from/to URI and Auth parameters from SIP packet
+
+    :param device: lan or wan
+    :type device: object
+    :param capture_file: Filename in which the packets were captured
+    :type capture_file: str
+    :param src_ip: Source IP address of packet
+    :type src_ip: str
+    :param sip_auth: Include SIP authentication parameters into return dict default to False
+    :type sip_auth: bool
+    :return: return sip attributes
+    :rtype: dict
+    """
+    output = tshark_read(
+        device,
+        capture_file,
+        packet_details=True,
+        filter_str=f"ip.src == {src_ip} and sip.Method == 'INVITE'",
+    )
+    sip_attr = {}
+    try:
+        sip_attr["from_URI"] = re.search(r"From:.*sip:(.*)>", output).group(1)
+        sip_attr["to_URI"] = re.search(r"To:.*sip:(.*)", output).group(1).strip()
+        if sip_auth:
+            sip_attr["SIP_auth"] = (
+                re.search(r"Proxy-Authorization:\s\w+(.*)", output).group(0).strip()
+            )
+        return sip_attr
+    except AttributeError:
+        raise ValueError(f"{capture_file} doesn't have packet matching with filter")
