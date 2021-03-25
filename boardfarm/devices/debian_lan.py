@@ -19,6 +19,7 @@ from boardfarm.devices.platform import debian
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import apt_install, install_tshark
+from boardfarm.lib.linux_nw_utility import Ping
 from boardfarm.lib.network_testing import (
     kill_process,
     tcpdump_capture,
@@ -54,6 +55,7 @@ class DebianLAN(debian.DebianBox):
             six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
         self.dns = DNS(self, {}, {})
+        self.ping = Ping(self)
 
     def setup(self, config=None):
         # potential cleanup so this wan device works

@@ -1,3 +1,5 @@
+import re
+
 from boardfarm.lib.dns_parser import DnsParser
 from boardfarm.lib.firewall_parser import iptable_parser
 from boardfarm.lib.netstat_parser import NetstatParser
@@ -6,6 +8,7 @@ from boardfarm.lib.nw_utility_stub import (
     NwDnsLookupStub,
     NwFirewallStub,
     NwUtilityStub,
+    PingStub,
 )
 
 
@@ -118,3 +121,21 @@ class DHCP(DHCPStub):
             return DHCP.DHCPClient(parent_device)
         if role == "server":
             return DHCP.DHCPServer(parent_device)
+
+
+class Ping(PingStub):
+    def __init__(self, parent_device):
+        self.dev = parent_device
+
+    def ping_background(self, ip, opts):
+        output = self.dev.check_output(f"ping {opts} {ip} > ping.txt &")
+        return re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", output).group(2)
+
+    def loss_percentage(self, pid):
+        output = self.dev.check_output(f"kill -3 {pid}")
+        return re.search(r"(\d+)% loss", output).group(1)
+
+    def kill_ping_background(self, pid):
+        # SIGINT is used to get the ping statistics fetch it if any test required
+        self.dev.check_output(f"kill -2 {pid}")
+        return True

@@ -52,3 +52,17 @@ class DHCPStub:
         @abc.abstractmethod
         def dhclient(self, interface, opts="", extra_opts=""):
             raise NotImplementedError
+
+
+class PingStub:
+    @abc.abstractmethod
+    def ping_background(self, opts, ip):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def loss_percentage(self, pid):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def kill_ping_background(self, pid):
+        raise NotImplementedError
