@@ -52,7 +52,7 @@ def test_cannot_instantiate_derived_pdu_wrong_signature_reset():
             "127.0.0.1",
         )
     assert (
-        "Abstract method 'reset'  not implemented with correct signature in 'MyPDU'. Expected FullArgSpec"
+        "Abstract method 'reset'  not implemented with correct signature in 'MyPDU'."
         in str(err.value)
     )
 
