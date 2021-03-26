@@ -58,6 +58,7 @@ def voice_configure(voice_devices_list, sip_server, config):
     """
 
     try:
+        sip_server.prefer_ipv4()
         kill_process(sip_server, port=5060)
         apt_install(sip_server, "tshark")
         dns_setup_sipserver(sip_server, config)
