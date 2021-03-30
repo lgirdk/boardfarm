@@ -67,6 +67,8 @@ class device_type(Enum):
     wlan3 = 28
     wlan4 = 29
     softphone2 = 30
+    fxs1 = 31
+    fxs2 = 32
 
 
 class device_array_type(Enum):
@@ -75,8 +77,14 @@ class device_array_type(Enum):
     wan_clients = 1
     lan_clients = 2
     wlan_clients = 3
+    FXS = 4
 
-    _arrays = {"wan_clients": [], "lan_clients": [], "wlan_clients": WiFiMgr()}
+    _arrays = {
+        "wan_clients": [],
+        "lan_clients": [],
+        "wlan_clients": WiFiMgr(),
+        "FXS": [],
+    }
 
 
 class device_location(Enum):
