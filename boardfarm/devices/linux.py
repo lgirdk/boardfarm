@@ -651,7 +651,7 @@ EOFEOFEOFEOF"""
         :type options : str, default to empty
         """
         if port:
-            if re.search(AllValidIpv6AddressesRegex, host_ip):
+            if re.search(AllValidIpv6AddressesRegex, host_ip) and "[" not in host_ip:
                 host_ip = "[" + host_ip + "]"
             web_addr = "{}://{}:{}".format(protocol, host_ip, str(port))
         else:
