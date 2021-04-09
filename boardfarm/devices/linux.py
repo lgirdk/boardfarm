@@ -695,6 +695,7 @@ EOFEOFEOFEOF"""
         src_path: str,
         dst_path: str,
         action: str = "download",
+        scp_command: str = "scp",
     ) -> None:
         """Scp file to remote host
 
@@ -705,11 +706,12 @@ EOFEOFEOFEOF"""
         :param src_path: copy this
         :param dst_path: to that
         :param action: download or upload.
+        :param scp_command: command name. Could be used if scp name was changed to something else
         """
         if action == "download":
-            command = f"scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
+            command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
         else:
-            command = f"scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
+            command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
         print(f"Sending {command}")
         self.sendline(command)
         first_time = self.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=5)
