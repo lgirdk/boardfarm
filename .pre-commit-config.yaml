@@ -3,7 +3,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v3.3.0
+      rev: v3.4.0
       hooks:
           - id: check-ast
             stages: [commit]
@@ -57,7 +57,7 @@ repos:
             args: [--in-place]
             stages: [commit]
     - repo: https://github.com/timothycrosley/isort
-      rev: 5.6.4
+      rev: 5.8.0
       hooks:
           - id: isort
             name: isort
@@ -72,7 +72,7 @@ repos:
           - id: yamlfmt
             stages: [commit]
     - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.25.0
+      rev: v1.26.1
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
@@ -85,7 +85,7 @@ repos:
             args: [--safe]
             stages: [commit]
     - repo: https://gitlab.com/pycqa/flake8
-      rev: 3.8.4
+      rev: 3.9.0
       hooks:
           - id: flake8
             additional_dependencies:
