@@ -37,9 +37,7 @@ class ContingencyCheck:
         :param env_req: ENV request provided by a test
         :type env_req: dict
         """
-        # Print statement can be removed later. Kept for understand exec flow
-        # print(
-        #     "Executing all contingency service checks under boardfarm",
+
         logger.info("Executing all contingency service checks under boardfarm")
         # initialize a feature Plugin Manager for Contingency check
         pm = BFPluginManager("contingency")
@@ -85,8 +83,7 @@ class DefaultChecks:
     def service_check(self, env_req, dev_mgr, env_helper):
         """Implement Default Contingency Hook."""
 
-        # print("Executing Default service check for BF", end=("\n" + "-" * 80 + "\n"))
-        logger.info("Executing Default service check for BF")
+        logger.info("Executing Default service check [check_prompts] for BF")
 
         provisioner = dev_mgr.by_type(device_type.provisioner)
         wan = dev_mgr.by_type(device_type.wan)
@@ -103,8 +100,7 @@ class DefaultChecks:
 
         check_prompts(wan_devices + lan_devices)
 
-        # print("Default service checks for BF executed", end=("\n" + "-" * 80 + "\n"))
-        logger.info("Default service checks for BF executed")
+        logger.info("Default service check [check_prompts] for BF executed")
 
 
 class CheckInterface:
@@ -116,8 +112,6 @@ class CheckInterface:
     def service_check(self, env_req, dev_mgr, env_helper):
         """Implement Default Contingency Hook."""
 
-        # print(
-        #     "Executing CheckInterface service check for BF ",
         logger.info("Executing CheckInterface service check for BF ")
 
         ip = {}
@@ -138,8 +132,6 @@ class CheckInterface:
             ip[dev.name] = _start_lan_client(dev)
         ip["wan"] = _setup_as_wan_gateway()
 
-        # print(
-        #     "CheckInterface service checks for BF  executed",
         logger.info("CheckInterface service checks for BF executed")
 
         return ip
@@ -153,7 +145,7 @@ class DNS:
     @contingency_impl
     def service_check(self, env_req, dev_mgr):
         """Implement Contingency Hook for DNS."""
-        # print("Executing DNS service check for BF ", end=("\n" + "-" * 80 + "\n"))
+
         logger.info("Executing DNS service check for BF")
 
         board = dev_mgr.by_type(device_type.DUT)
@@ -170,7 +162,6 @@ class DNS:
                 output,
             )
 
-        # print("DNS service checks for BF executed", end=("\n" + "-" * 80 + "\n"))
         logger.info("DNS service checks for BF executed")
 
 
@@ -182,7 +173,7 @@ class ACS:
     @contingency_impl
     def service_check(self, env_req, dev_mgr):
         """Implement Contingency Hook for ACS."""
-        # print("Executing ACS service check for BF", end=("\n" + "-" * 80 + "\n"))
+
         logger.info("Executing ACS service check for BF")
 
         board = dev_mgr.by_type(device_type.DUT)
@@ -206,7 +197,6 @@ class ACS:
 
             check_packet_analysis_enable()
 
-        # print("ACS service checks for BF  executed", end=("\n" + "-" * 80 + "\n"))
         logger.info("ACS service checks for BF executed")
 
 
@@ -218,7 +208,7 @@ class Voice:
     @contingency_impl
     def service_check(self, env_req, dev_mgr):
         """Implement Contingency Hook for VOICE."""
-        # print("Executing Voice service check for BF", end=("\n" + "-" * 80 + "\n"))
+
         logger.info("Executing Voice service check for BF")
 
         dev_mgr.lan.check_tty()
@@ -226,5 +216,4 @@ class Voice:
         dev_mgr.board.mta_prov_check()
         dev_mgr.board.check_sip_endpoints_registration()
 
-        # print("Voice service checks for BF executed", end=("\n" + "-" * 80 + "\n"))
         logger.info("Voice service checks for BF executed")
