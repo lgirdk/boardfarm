@@ -43,6 +43,7 @@ class LocalSerialConnection:
                 [
                     telnet_ipv4_conn,
                     "----------------------------------------------------",
+                    "Connected.",
                 ]
             )
         except pexpect.EOF:
@@ -50,5 +51,5 @@ class LocalSerialConnection:
 
     def close(self):
         """Close the pexpect session to the device."""
-        self.sendline("~.")
+        self.device.sendline("~.")
         super(type(self), self).close()

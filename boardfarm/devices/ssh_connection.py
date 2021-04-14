@@ -6,7 +6,7 @@ from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 class SshConnection:
     """To use, set conn_cmd in your json to "ssh root@192.168.1.1 -i ~/.ssh/id_rsa" and set connection_type to ssh."""
 
-    def __init__(self, device=None, conn_cmd=None, ssh_password="None", **kwargs):
+    def __init__(self, device=None, conn_cmd=None, password="None", **kwargs):
         """Call connection-decider from device class which in return\
            initialize an SSH connection for the device class.
 
@@ -22,7 +22,7 @@ class SshConnection:
         """
         self.device = device
         self.conn_cmd = conn_cmd
-        self.ssh_password = ssh_password
+        self.ssh_password = password
 
     def connect(self):
         """Connect to the device via ssh using credentials\
