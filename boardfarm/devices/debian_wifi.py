@@ -27,6 +27,9 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
         # WLAN parameters
         self.band = kwargs.get("band", None)
+        self.band = (
+            str(self.band) if self.band else None
+        )  # Cast 'band' to str if it is present in inv.json
         self.authentication = "NONE"
 
         self.parse_device_options(*args, **kwargs)

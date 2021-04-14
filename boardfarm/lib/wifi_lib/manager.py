@@ -1,8 +1,14 @@
 import json
+import logging
 from collections import UserList
+
+from tabulate import tabulate
+from termcolor import colored
 
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.wrappers import singleton
+
+logger = logging.getLogger("bft")
 
 
 @singleton
@@ -18,14 +24,14 @@ class WiFiMgr(UserList):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Network type buckets
         self.private = []
         self.guest = []
         self.community = []
 
-        # used to pop elements from one bucket to another.
-        self.__available = {2.4: [], 5: []}
-
-        self.__used = {2.4: [], 5: []}
+        # Band buckets
+        self.__available = {"2.4": [], "5": [], "dual": []}
+        self.__used = {"2.4": [], "5": [], "dual": []}
 
     def register(self, wlan_options: dict):
         dev = None
@@ -36,8 +42,19 @@ class WiFiMgr(UserList):
             if self.__available[band]:
                 dev = self.__available[band].pop(0)
                 self.__used[band].append(dev)
+            # try 2: grab dual-band device if available
+            elif self.__available["dual"]:
+                dev = self.__available["dual"].pop(0)
+                logger.warning(
+                    colored(
+                        f"{band} GHz single-band device was not found. Registering dual-band {dev.name} as {band} GHz",
+                        color="yellow",
+                        attrs=["bold"],
+                    )
+                )
+                self.__used[band].append(dev)
 
-        # try 2: select first available device from in-built list
+        # try 3: select first available device from in-built list
         else:
             for dev in self.data:
                 if self.is_available(dev):
@@ -53,8 +70,8 @@ class WiFiMgr(UserList):
             )
 
         # WLAN_OPTIONS must specify network type
-        nw_bucket = getattr(self, wlan_options["network"].lower())
-        nw_bucket.append(dev)
+        network_type_bucket = getattr(self, wlan_options["network"].lower())
+        network_type_bucket.append(dev)
 
         # set authentication type, by default NONE
         if "authentication" in wlan_options:
@@ -83,9 +100,44 @@ class WiFiMgr(UserList):
 
         result = []
         if network:
-            nw_bucket = getattr(self, network.lower())
-            result.append(nw_bucket)
+            network_type_bucket = getattr(self, network.lower())
+            result.append(network_type_bucket)
         if band:
             result.append(self.__used[band])
 
         return list(set.intersection(*map(set, result)))
+
+    def registered_clients_summary(self):
+        """Print a table to a log with registered clients summary
+        Example:
+            ╒═════════════════════╤═════════════════╤════════════════╕
+            │ Client name(band)   │   Assigned band │ Network type   │
+            ╞═════════════════════╪═════════════════╪════════════════╡
+            │ wlan4(2.4)          │             2.4 │ private        │
+            ├─────────────────────┼─────────────────┼────────────────┤
+            │ wlan1(dual)         │             2.4 │ guest          │
+            ├─────────────────────┼─────────────────┼────────────────┤
+            │ wlan3(5)            │             5   │ private        │
+            ╘═════════════════════╧═════════════════╧════════════════╛
+        """
+        table = []
+        for band, devices in self.__used.items():
+            for device in devices:
+                row = []
+                row.append(f"{device.name}({device.band})")
+                row.append(band)
+                if device in self.private:
+                    row.append("private")
+                else:  # No community networks for now
+                    row.append("guest")
+                table.append(row)
+        logger.info(
+            colored(
+                tabulate(
+                    table,
+                    headers=["Client name(band)", "Assigned band", "Network type"],
+                    tablefmt="fancy_grid",
+                ),
+                color="green",
+            )
+        )
