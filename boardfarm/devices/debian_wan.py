@@ -7,6 +7,7 @@
 
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dns import DNS
+from boardfarm.lib.installers import install_tshark
 from boardfarm.lib.linux_nw_utility import NwFirewall
 
 
@@ -120,6 +121,8 @@ class DebianWAN(debian.DebianBox):
 
         if self.dante:
             self.start_webproxy(self.dante)
+        # Install tshark on wan devices
+        install_tshark(self)
 
     def setup_dhcp_server(self):
 
