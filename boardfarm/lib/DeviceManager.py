@@ -193,7 +193,7 @@ class device_manager(UserList):
                     if i.port == dev.port:
                         if not override:
                             raise Exception(
-                                "Device manager already had a device with same port and ip details."
+                                f"Device manager has {i.name}@{i.ipaddr}:{i.port} already: {dev.name}@{dev.ipaddr}:{dev.port}"
                             )
             dev_array.append(dev)
             setattr(self, array_name, dev_array)
