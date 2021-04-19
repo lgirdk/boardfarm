@@ -107,7 +107,11 @@ def get_power_device(
             return Ip9258(ip_address, outlet, username=username, password=password)
         if "Cyber Power Systems" in data:
             return CyberPowerPdu(
-                ip_address, outlet=outlet, username=username, password=password
+                ip_address,
+                port=outlet,
+                outlet=outlet,
+                username=username,
+                password=password,
             )
         if "IP9820" in data:
             return Ip9820(ip_address, outlet)
@@ -554,6 +558,7 @@ class CyberPowerPdu(PDUTemplate):
         port: Any,
         username: str = "cyber",
         password: str = "cyber",
+        outlet="",
     ):
         """Instance initialization."""
         super().__init__(
