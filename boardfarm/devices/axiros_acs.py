@@ -349,7 +349,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """Parse the ACS response and return a\
         list of dictionary with {key,type,value} pair."""
         msg = xml.dom.minidom.parseString(response.text)
-        print(msg.toprettyxml(indent=" ", newl=""))
+        logger.debug(msg.toprettyxml(indent=" ", newl=""))
 
         result = AxirosACS._get_xml_key(response)
         if len(result) > 1:

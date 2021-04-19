@@ -7,6 +7,7 @@
 # The full text can be found in LICENSE in the root directory.
 
 import atexit
+import copy
 import ipaddress
 import logging
 import os  # noqa : F401
@@ -23,6 +24,7 @@ from termcolor import colored
 from boardfarm.devices import linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
+from boardfarm.lib.DeviceManager import device_manager
 from boardfarm.lib.installers import apt_install
 
 logger = logging.getLogger("bft")
@@ -43,7 +45,10 @@ class DebianBox(linux.LinuxDevice):
 
     def parse_device_options(self, *args, **kwargs):
         self.args = args
-        self.kwargs = kwargs
+        self.kwargs = {}
+        for k, v in kwargs.items():
+            if not isinstance(kwargs[k], device_manager):
+                self.kwargs[k] = copy.deepcopy(v)
         self.username = kwargs.pop("username", "root")
         self.password = kwargs.pop("password", "bigfoot1")
         self.output = kwargs.pop("output", sys.stdout)

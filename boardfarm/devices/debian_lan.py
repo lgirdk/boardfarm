@@ -166,7 +166,7 @@ class DebianLAN(debian.DebianBox):
         capture_file = build_tag + "_" + now + "_lan_dhcp_capture.pcap"
         tcpdump_capture(self, self.iface_dut, capture_file=capture_file, port="67-68")
         self.tshark_process = True
-        for _ in range(3):
+        for _ in range(5):
             try:
                 self.renew_dhcp(self.iface_dut)
                 ipv4 = self.get_interface_ipaddr(self.iface_dut)

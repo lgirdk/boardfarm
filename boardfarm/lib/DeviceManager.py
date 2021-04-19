@@ -69,6 +69,8 @@ class device_type(Enum):
     softphone2 = 30
     fxs1 = 31
     fxs2 = 32
+    lan3 = 33
+    lan4 = 34
 
 
 class device_array_type(Enum):

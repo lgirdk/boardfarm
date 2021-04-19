@@ -18,7 +18,8 @@ BFT_DEBUG = "BFT_DEBUG" in os.environ
 
 def print_bold(msg):
     """Print bold."""
-    termcolor.cprint(msg, None, attrs=["bold"])
+    m = time.strftime("%Y-%m-%d %H:%M:%S: ") + msg
+    termcolor.cprint(m, None, attrs=["bold"])
 
 
 def frame_index_out_of_file(this_file=__file__):

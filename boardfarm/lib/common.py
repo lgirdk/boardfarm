@@ -1749,7 +1749,7 @@ def ftp_device_login(device, ip_mode, device_ip):
     return check
 
 
-def ftp_upload_download(device, ftp_load):
+def ftp_upload_download(device, ftp_load, timeout=200):
     """Upload or download file.
 
     :param device: Linux device(lan/wan)
@@ -1761,7 +1761,7 @@ def ftp_upload_download(device, ftp_load):
         device.sendline("get %s.txt" % ftp_load)
     elif "upload" in str(ftp_load):
         device.sendline("put %s.txt" % ftp_load)
-    device.expect("226 Transfer complete.", timeout=200)
+    device.expect("226 Transfer complete.", timeout=timeout)
     device.sendline()
     device.expect("ftp>", timeout=10)
 
@@ -2184,33 +2184,50 @@ def send_to_influx(device, **kwargs):
     :type device: object
     :param kwargs: server, client, s_name, c_name and response time
     """
+    database_host = os.getenv("influx_db_host")
+    if not database_host:
+        logger.error(
+            colored(
+                "send_to_influx failed: 'influx_db_host' not set (export influx_db_host='ip/host')",
+                color="red",
+                attrs=["bold"],
+            )
+        )
+        return
+    database_name = os.getenv("influx_db_name", os.getenv("BUILD_TAG", "stability"))
+    database_user = os.getenv("influx_db_user", "root")
+    database_pass = os.getenv("influx_db_pass", "root")
+    jenkins_build = os.getenv("Build_number", None)
     server = kwargs.get("server", None)
     client = kwargs.get("client", None)
     s_fname = kwargs.get("s_fname", ["iperf3_wan.log"])
     c_fname = kwargs.get("c_fname", ["iperf3_lan.log"])
     response_time = kwargs.get("response_time", None)
+    service = kwargs.get("service", "UNKNONW_SERVICE")
     db_config = {
-        "db_host": os.getenv("influx_db"),
+        "db_host": database_host,
         "db_port": 8086,
-        "db_username": "root",
-        "db_password": "root",
-        "database": "stability",
-        "test_run": os.getenv("Build_number", None),
+        "db_username": database_user,
+        "db_password": database_pass,
+        "database": database_name,
+        "test_run": jenkins_build,
         "board": device.config.get("station"),
     }
     try:
-        if os.getenv("influx_db"):
-            db = GenericWrapper(**db_config)
-            if not response_time:
-                server_data = [db.get_details_dict(server, fname) for fname in s_fname]
-                client_data = [db.get_details_dict(client, fname) for fname in c_fname]
-                for s_dict, c_dict in zip(server_data, client_data):
-                    db.log_iperf_to_db(server, client, s_dict, c_dict)
-            else:
-                db.get_acs_data(response_time)
+        db = GenericWrapper(**db_config)
+        if not response_time:
+            server_data = [db.get_details_dict(server, fname) for fname in s_fname]
+            client_data = [db.get_details_dict(client, fname) for fname in c_fname]
+            for s_dict, c_dict in zip(server_data, client_data):
+                db.log_iperf_to_db(server, client, s_dict, c_dict)
+        else:
+            db.get_response_data(
+                response_time, service, timestamp=kwargs.get("timestamp", None)
+            )
     except Exception as e:
         logger.error(e)
         logger.error("unable to load data to influx db")
+        raise
 
 
 def get_pytest_name():

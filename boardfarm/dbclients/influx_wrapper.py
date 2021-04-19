@@ -1,9 +1,11 @@
 import datetime
+import os
 import re
 
 import pexpect
 
 from boardfarm.dbclients.influx_db_helper import Influx_DB_Logger
+from boardfarm.exceptions import CodeError
 
 
 class GenericWrapper:
@@ -15,7 +17,7 @@ class GenericWrapper:
         """
         if bool(kwargs):
             self.logger = Influx_DB_Logger(**kwargs)
-            self.logger.debug = False
+            self.logger.debug = True
         else:
             self.logger = None
 
@@ -35,14 +37,19 @@ class GenericWrapper:
         }
 
     def check_file(self, device, fname):
-        device.sendline("ls " + fname)
-        idx = device.expect(["No such file or directory", pexpect.TIMEOUT], timeout=2)
-        if idx == 0:
-            assert "file " + fname + " not found"
-        device.expect(device.prompt)
+        output = device.check_output('ls -l --time-style="+%Y%m%d%H%M%S%6N" ' + fname)
+        if "No such file or directory" in output:
+            assert 0
+        timestamp = device.check_output(f"cat {fname}.timestamp")
+        # quick validation
+        if not re.match(re.compile(r"\d{20}"), timestamp):
+            timestamp = None
+        else:
+            timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
+        return timestamp
 
     def stat_file_timestamp(self, device, fname):
-        device.sendline('date +%Y%m%d%H%M%S%6N -d "$(stat -c %x "' + fname + '")"')
+        device.sendline('date +%Y%m%d%H%M%S%6N -d "$(stat -c %y "' + fname + '")"')
         device.expect("([0-9]{20})")
         timestamp = device.match.group(1)
         device.expect(device.prompt)
@@ -51,20 +58,29 @@ class GenericWrapper:
 
     def get_details_dict(self, device, fname):
         data_dict = {}
-        self.check_file(device, fname)
-        device.sendline(f"head -10 {fname}")
-        device.expect(device.prompt, timeout=300)
-        val = device.before
-        data_dict["mode"] = "udp" if "datagram" in val or "Cwnd" in val else "tcp"
-        data_dict["flow"] = fname.split("_")[1]
-        data_dict["port"] = re.search(r"_(\d+)", fname).group(1)
+        timestamp = self.check_file(device, fname)
+        if not timestamp:
+            timestamp = self.stat_file_timestamp(device, fname)
+        val = device.check_output(f"head -10 {fname}")
+        data_dict["mode"] = "udp" if "Datagrams" in val else "tcp"
+        data_dict["flow"] = "DS" if "Reverse mode" in val else "see client"
+        if "Connecting to host" in val:
+            data_dict["port"] = re.search(
+                r"Connecting to host (.*), port (\d+)\r", val
+            ).group(2)
+        elif "Server listening on" in val:
+            data_dict["port"] = re.search(r"(Server listening on (\d+)\r)", val).group(
+                2
+            )
+        else:
+            raise CodeError(f"Cannot find port in log {fname}\n{val}")
         data_dict["logfile"] = fname
         data_dict["last_index"] = None
         data_dict["fields"] = None
         data_dict["tag"] = "server" if "Server" in val else "client"
         data_dict["service"] = "iperf"
         data_dict["device"] = "server" if "Server" in val else "client"
-        data_dict["timestamp"] = self.stat_file_timestamp(device, fname)
+        data_dict["timestamp"] = timestamp
         return data_dict
 
     def log_data(self):
@@ -76,6 +92,36 @@ class GenericWrapper:
         self.collect_logs("client", client, client_data)
         self.log_data()
 
+    def _copy_file_locally(self, dev, fname, dir="/tmp/", prompt=r":.*(\$|#)"):
+        command = (
+            f"scp -o StrictHostKeyChecking=no -P {dev.port}"
+            f" {dev.username}@{dev.ipaddr}:{fname} {dir}"
+        )
+        cli = pexpect.spawn("/bin/bash", echo=False)
+        cli.sendline(command)
+        cli.expect("assword:")
+        cli.sendline(dev.password)
+        cli.expect(prompt)
+
+    def _get_data(self, device, data_list, idx):
+        lines = int(device.check_output(f"cat {data_list[idx]['logfile']}|wc -l"))
+        if lines < 2:
+            # for small files we can work off the propmt
+            startline = 1
+            buf = ""
+            while lines > 0:
+                buf += device.check_output(
+                    f"sed -n '{startline},{startline+10}p' {data_list[idx]['logfile']}"
+                )
+                lines -= 10
+                startline += 10
+        else:
+            # for big files we copy them to /tmp and load them directly
+            self._copy_file_locally(device, data_list[idx]["logfile"])
+            with open(f'/tmp/{os.path.basename(data_list[idx]["logfile"])}') as f:
+                buf = f.read()
+        return [i.strip() for i in buf.split("\n") if i.strip() != ""][1:]
+
     def collect_logs(self, tag, device, iperf_data):
         if tag == "client":
             data_list = self.iperf_client_data = [iperf_data]
@@ -85,24 +131,8 @@ class GenericWrapper:
             raise ValueError("Invalid tag value")
 
         for idx in range(len(data_list)):
-            meta = None
-            meta_dict = None
-            if tag == "server":
-                device.sendline(f"tail -750 {data_list[idx]['logfile']}")
-                device.expect(device.prompt, timeout=300)
-                meta = [
-                    i.strip() for i in device.before.split("\n") if i.strip() != ""
-                ][1:]
-                meta_dict = data_list[idx]
-
-            if tag == "client":
-                device.sendline(f"tail -750 {data_list[idx]['logfile']}")
-                device.expect(device.prompt, timeout=300)
-                meta = [
-                    i.strip() for i in device.before.split("\n") if i.strip() != ""
-                ][1:]
-                meta_dict = data_list[idx]
-
+            meta = self._get_data(device, data_list, idx)
+            meta_dict = data_list[idx]
             meta_dict["data"] = []
             last_index = None
             if meta_dict["last_index"] in meta:
@@ -136,11 +166,13 @@ class GenericWrapper:
                         meta_dict["data"].append(temp)
             meta_dict["last_index"] = last_index
 
-    def get_acs_data(self, response_time):
+    def get_response_data(self, response_time, service, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.datetime.utcnow()
         data_dict = {
             "fields": ["Response time"],
             "value": [response_time],
-            "service": "ACS",
-            "timestamp": datetime.datetime.now(),
+            "service": service,
+            "timestamp": timestamp,
         }
         self.logger["influx"] = [data_dict]
