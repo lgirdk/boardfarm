@@ -6,6 +6,10 @@ import pexpect
 
 from boardfarm.dbclients.influx_db_helper import Influx_DB_Logger
 from boardfarm.exceptions import CodeError
+from boardfarm.lib.regexlib import (
+    AllValidIpv6AddressesRegex,
+    ValidIpv4AddressRegex,
+)
 
 
 class GenericWrapper:
@@ -74,6 +78,16 @@ class GenericWrapper:
             )
         else:
             raise CodeError(f"Cannot find port in log {fname}\n{val}")
+
+        proto_dict = {ValidIpv4AddressRegex: "ipv4", AllValidIpv6AddressesRegex: "ipv6"}
+        for k, v in proto_dict.items():
+            match = re.search(f"local {k} port.*connected to {k}", val)
+            if match:
+                data_dict["protocol"] = v
+                break
+        else:
+            data_dict["protocol"] = "unknown"
+
         data_dict["logfile"] = fname
         data_dict["last_index"] = None
         data_dict["fields"] = None
@@ -139,11 +153,11 @@ class GenericWrapper:
                 meta = meta[meta.index(meta_dict["last_index"]) + 1 :]
             for i in meta:
                 if "[ ID]" in i and meta_dict["fields"] is None:
-                    meta_dict["fields"] = [j for j in i.split(" ") if j != ""][2:5]
+                    meta_dict["fields"] = i.split()[2:5]
                 if i.startswith("[SUM]"):
                     last_index = i
                     temp = {}
-                    line = [j for j in i.split(" ") if j != ""]
+                    line = i.split()
                     temp["type"] = (
                         "data"
                         if float(line[1].split("-")[1]) - float(line[1].split("-")[0])
