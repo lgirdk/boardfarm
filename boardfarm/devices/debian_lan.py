@@ -58,8 +58,9 @@ class DebianLAN(debian.DebianBox):
         self.nw_util_ping = Ping(self)
 
     def setup(self, config=None):
+        self.check_dut_iface()
         # potential cleanup so this wan device works
-        self.sendline("killall iperf ab hping3")
+        self.sendline("killall iperf ab hping3 iperf3")
         self.expect(self.prompt)
         self.sendline("\niptables -t nat -X")
         self.expect("iptables -t")
@@ -132,6 +133,8 @@ class DebianLAN(debian.DebianBox):
     def start_ipv4_lan_client(self, wan_gw=None, prep_iface=False):
         """restart ipv4 dhclient on lan device"""
         ipv4 = None
+
+        self.check_dut_iface()
 
         if prep_iface:
             self.prepare_interface()
@@ -235,6 +238,8 @@ class DebianLAN(debian.DebianBox):
     def start_ipv6_lan_client(self, wan_gw=None, prep_iface=False):
         """restart ipv6 dhclient on lan device"""
         ipv6 = None
+
+        self.check_dut_iface()
 
         if prep_iface:
             self.prepare_interface()

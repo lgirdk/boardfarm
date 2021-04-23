@@ -630,3 +630,25 @@ class DebianBox(linux.LinuxDevice):
             self.shim = ""
 
         return self.shim
+
+    def check_dut_iface(self):
+        """Check that the dut iface exists and has a carrier"""
+        output = self.check_output(f"ip link show {self.iface_dut}")
+        if self.iface_dut not in output:
+            output = self.check_output("ip link")
+            msg = colored(
+                f"{self.iface_dut} NOT found\n{output}",
+                color="red",
+                attrs=["bold"],
+            )
+            logger.error(msg)
+            raise Exception(msg)
+
+        if "NO-CARRIER" in output:
+            msg = colored(
+                f"{self.iface_dut} CARRIER DOWN\n{output}",
+                color="red",
+                attrs=["bold"],
+            )
+            logger.error(msg)
+            raise Exception(msg)
