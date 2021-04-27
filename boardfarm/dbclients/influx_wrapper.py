@@ -67,15 +67,18 @@ class GenericWrapper:
             timestamp = self.stat_file_timestamp(device, fname)
         val = device.check_output(f"head -10 {fname}")
         data_dict["mode"] = "udp" if "Datagrams" in val else "tcp"
-        data_dict["flow"] = "DS" if "Reverse mode" in val else "see client"
         if "Connecting to host" in val:
             data_dict["port"] = re.search(
                 r"Connecting to host (.*), port (\d+)\r", val
             ).group(2)
+            data_dict["device"] = data_dict["tag"] = "client"
+            data_dict["flow"] = "DS" if "Reverse mode" in val else "US"
         elif "Server listening on" in val:
             data_dict["port"] = re.search(r"(Server listening on (\d+)\r)", val).group(
                 2
             )
+            data_dict["device"] = data_dict["tag"] = "server"
+            data_dict["flow"] = "see client"
         else:
             raise CodeError(f"Cannot find port in log {fname}\n{val}")
 
@@ -91,9 +94,7 @@ class GenericWrapper:
         data_dict["logfile"] = fname
         data_dict["last_index"] = None
         data_dict["fields"] = None
-        data_dict["tag"] = "server" if "Server" in val else "client"
         data_dict["service"] = "iperf"
-        data_dict["device"] = "server" if "Server" in val else "client"
         data_dict["timestamp"] = timestamp
         return data_dict
 

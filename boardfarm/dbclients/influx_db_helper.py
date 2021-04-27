@@ -127,6 +127,7 @@ class Influx_DB_Logger(InfluxDBClient, dict):
                     data_unit["tags"]["mode"] = idx["mode"]
                     data_unit["tags"]["flow"] = idx["flow"]
                     data_unit["tags"]["device"] = idx["device"].split("-")[0]
+                    data_unit["tags"]["port"] = str(idx["port"])
                     data_unit["fields"] = {}
 
                     # being cheeky and adding port and protocol as we want
