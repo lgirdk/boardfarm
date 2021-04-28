@@ -572,7 +572,7 @@ EOFEOFEOFEOF"""
             "cat > /etc/danted.conf <<EOF",
             "logoutput: stderr",
             "internal: 0.0.0.0 port = 8080",
-            "external: eth1",
+            f"external: {self.iface_dut}",
             "clientmethod: none",
             "socksmethod: username none #rfc931",
             "user.privileged: root",
