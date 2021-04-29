@@ -110,15 +110,15 @@ class WiFiMgr(UserList):
     def registered_clients_summary(self):
         """Print a table to a log with registered clients summary
         Example:
-            ╒═════════════════════╤═════════════════╤════════════════╕
-            │ Client name(band)   │   Assigned band │ Network type   │
-            ╞═════════════════════╪═════════════════╪════════════════╡
-            │ wlan4(2.4)          │             2.4 │ private        │
-            ├─────────────────────┼─────────────────┼────────────────┤
-            │ wlan1(dual)         │             2.4 │ guest          │
-            ├─────────────────────┼─────────────────┼────────────────┤
-            │ wlan3(5)            │             5   │ private        │
-            ╘═════════════════════╧═════════════════╧════════════════╛
+          ╒═════════════════════╤═════════════════╤════════════════╕
+          │ Client name(band)   │   Assigned band │ Network type   │
+          ╞═════════════════════╪═════════════════╪════════════════╡
+          │ wlan4(2.4)          │             2.4 │ private        │
+          ├─────────────────────┼─────────────────┼────────────────┤
+          │ wlan1(dual)         │             2.4 │ guest          │
+          ├─────────────────────┼─────────────────┼────────────────┤
+          │ wlan3(5)            │             5   │ private        │
+          ╘═════════════════════╧═════════════════╧════════════════╛
         """
         table = []
         for band, devices in self.__used.items():
@@ -134,7 +134,7 @@ class WiFiMgr(UserList):
         logger.info(
             colored(
                 tabulate(
-                    table,
+                    sorted(table, key=lambda a: a[0]),  # Sort by device name
                     headers=["Client name(band)", "Assigned band", "Network type"],
                     tablefmt="fancy_grid",
                 ),
