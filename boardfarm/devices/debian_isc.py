@@ -431,6 +431,7 @@ option docsis-mta.ticket-ctrl-mask code 9 = integer 16;
 option docsis-mta-pkt code 122 = encapsulate docsis-mta;
 
 option space docsis code width 1 length width 1;
+option docsis.tftp_server code 2 = ip-address;
 option docsis.acsserver code 6 = { integer 8, string };
 option space vivso code width 4 length width 1;
 option vivso.iana code 0 = string;
@@ -651,6 +652,7 @@ EOF"""
                 "filename": '"' + self.dev.board.cm_cfg.encoded_fname + '"',
                 "options": {
                     "bootfile-name": '"' + self.dev.board.cm_cfg.encoded_fname + '"',
+                    "docsis.tftp_server": "%s" % tftp_server,
                     "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
                     "docsis-mta.dhcp-server-1": self.prov_ip,
                     "docsis-mta.dhcp-server-2": self.prov_ip,
