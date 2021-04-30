@@ -12,6 +12,7 @@ from boardfarm.lib.linux_nw_utility import DHCP
 from boardfarm.lib.wifi import wifi_client_stub
 
 from . import debian_lan
+from .platform.debian import DebianBox
 
 
 class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
@@ -372,3 +373,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def set_authentication(self, auth_type):
         pass
+
+    def check_dut_iface(self):
+        # skips the DebianLAN as it check for NO-CARRIER
+        return DebianBox.check_dut_iface(self)
