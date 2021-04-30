@@ -14,6 +14,7 @@ import time
 import pexpect
 import six
 from debtcollector import moves
+from termcolor import colored
 
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dhcpoption import configure_option
@@ -357,6 +358,18 @@ class DebianLAN(debian.DebianBox):
         """
         for opt, enable in dhcpopt:
             configure_option(opt, (self, enable))
+
+    def check_dut_iface(self):
+        output = super().check_dut_iface()
+        if "NO-CARRIER" in output:
+            msg = colored(
+                f"{self.name}: {self.iface_dut} CARRIER DOWN\n{output}",
+                color="red",
+                attrs=["bold"],
+            )
+            logger.error(msg)
+            raise Exception(msg)
+        return output
 
 
 if __name__ == "__main__":
