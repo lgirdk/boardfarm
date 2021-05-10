@@ -116,8 +116,10 @@ class CheckInterface:
 
         ip = {}
         wan = dev_mgr.by_type(device_type.wan)
-        # TODO: should be driven by env_req
-        lan_devices = [dev_mgr.lan, dev_mgr.lan2]
+        amount_of_clients_to_be_tested = len(
+            env_req.get("environment_def", {}).get("board", {}).get("lan_clients", [])
+        )
+        lan_devices = dev_mgr.lan_clients[:amount_of_clients_to_be_tested]
 
         def _start_lan_client(dev):
             ipv4, ipv6 = retry_on_exception(dev.start_lan_client, [], retries=1)
