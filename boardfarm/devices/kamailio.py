@@ -198,7 +198,7 @@ EOF"""
         return False
 
     def _create_kamailiodb(self):
-        """Create a kamailio db. """
+        """Create a kamailio db."""
         self.sendline("kamdbctl create")
         self.expect("MySQL password for root:")
         self.sendline(self.mysql.password)
@@ -209,7 +209,7 @@ EOF"""
             self.sendline("y")
 
     def _kamailio_boot(self):
-        """ Method to accumulate all the boot functionalities."""
+        """Method to accumulate all the boot functionalities."""
         try:
             self.sipserver_kill()
             self.sipserver_purge()

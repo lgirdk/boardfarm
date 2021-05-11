@@ -13,7 +13,7 @@ class NetstatParser(object):
     """
 
     def __init__(self, *options):
-        """"""
+        """ """
         self.inet_connections = []
 
     def parse_inet_output_linux(self, output):

@@ -128,7 +128,7 @@ class TrafficGenerator(base.BaseDevice):
         raise NotImplementedError
 
     def remove_server_port(self, port):
-        """"Reset server port"""
+        """ "Reset server port"""
         raise NotImplementedError
 
     def add_client_port(self, address, port, interface, protocol):

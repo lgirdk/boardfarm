@@ -612,7 +612,7 @@ class DebianBox(linux.LinuxDevice):
         return self.gwv6
 
     def setup(self, config):
-        """setup device """
+        """setup device"""
         Exception("Not implemented")
 
     def get_shim_prefix(self):

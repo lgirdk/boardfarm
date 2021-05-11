@@ -12,7 +12,7 @@ class DnsParser(object):
     """
 
     def __init__(self, *options):
-        """"""
+        """ """
         self.dns_dict_obj = {}
 
     def parse_nslookup_output(self, response):

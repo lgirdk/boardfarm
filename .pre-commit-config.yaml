@@ -35,7 +35,7 @@ repos:
             files: \.py$
             stages: [commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.1.9
+      rev: v1.1.10
       hooks:
           - id: remove-crlf
             stages: [commit]
@@ -78,14 +78,14 @@ repos:
             args: [--format, parsable, --strict]
             stages: [commit]
     - repo: https://github.com/ambv/black
-      rev: 20.8b1
+      rev: 21.5b1
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'
             args: [--safe]
             stages: [commit]
     - repo: https://gitlab.com/pycqa/flake8
-      rev: 3.9.0
+      rev: 3.9.2
       hooks:
           - id: flake8
             additional_dependencies:

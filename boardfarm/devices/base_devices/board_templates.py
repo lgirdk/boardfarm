@@ -51,7 +51,7 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
 
     @abstractmethod
     def connect(self, *args, **kwargs):
-        """This may not be needed. Connects to the DUT. """
+        """This may not be needed. Connects to the DUT."""
         for c in self.consoles:
             c.connect()
 

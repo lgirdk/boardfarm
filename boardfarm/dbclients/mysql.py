@@ -53,7 +53,7 @@ class MySQL:
         self.handle.expect(self.handle.prompt)
 
     def setup_root_user(self):
-        """ Setup the root user."""
+        """Setup the root user."""
         self.login_root_user()
         self.exit_root_user()
 
