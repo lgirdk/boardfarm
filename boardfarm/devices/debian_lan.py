@@ -368,7 +368,6 @@ class DebianLAN(debian.DebianBox):
                 attrs=["bold"],
             )
             logger.error(msg)
-            raise Exception(msg)
         return output
 
 
