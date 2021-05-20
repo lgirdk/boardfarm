@@ -7,6 +7,7 @@ import traceback
 
 import pexpect
 import six
+from termcolor import colored
 
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.bft_pexpect_helper import spawn_ssh_pexpect
@@ -903,7 +904,7 @@ EOF"""
         self.expect(self.prompt)
         return match_num
 
-    def _restart_dhcp(self):
+    def _restart_dhcp(self, retries=10):
         """Restart DHCP."""
         do_ipv6 = True
 
@@ -916,7 +917,9 @@ EOF"""
         except Exception:
             do_ipv6 = False
 
-        match_num = retry_on_exception(self._try_to_restart_dhcp, (do_ipv6,))
+        match_num = retry_on_exception(
+            self._try_to_restart_dhcp, (do_ipv6,), retries=retries
+        )
 
         if match_num != 0:
             self.sendline("tail /var/log/syslog -n 100")
@@ -1090,3 +1093,75 @@ EOF"""
         )
         self.expect(self.prompt)
         logger.info("{0} Provisioner DHCP Logs END {0}".format("=" * 10))
+
+    def update_static_board_cfg_file(self, station_name, cfg_txt, v6=False):
+        exc_to_raise = None
+        print_config = False
+        v6 = "6" if v6 else ""
+        try:
+            self.take_lock("/etc/init.d/isc-dhcp-server.lock")
+
+            check = self.check_output(f"ls /etc/dhcp/dhcpd{v6}.conf.{station_name}")
+            if "No such file" in check:
+                raise Exception(
+                    "Please select a board which is part of this DHCP server!!"
+                )
+            # store the old config in case the new config fails.
+            old_txt = self.check_output(f"cat /etc/dhcp/dhcpd{v6}.conf.{station_name}")
+
+            # push the new config
+            try:
+                self._modify_station_cfg_file(station_name, cfg_txt, v6)
+                self._concat_station_configs(station_name, v6)
+            except Exception:
+                self.expect(self.prompt)
+                logger.error(
+                    colored(
+                        "Configuration Failed to start DHCP server! Rolling back!!",
+                        color="red",
+                        attrs=["bold"],
+                    )
+                )
+                self._modify_station_cfg_file(station_name, old_txt, v6)
+                self._concat_station_configs(station_name, v6)
+            print_config = True
+        except Exception as e:
+            exc_to_raise = e
+        finally:
+            self.sendcontrol("c")
+            self.release_lock("/etc/init.d/isc-dhcp-server.lock")
+            self.sendline("rm /etc/init.d/isc-dhcp-server.lock")
+            self.expect(self.prompt)
+        if exc_to_raise:
+            logger.error(
+                colored(
+                    "Something terribly went WRONG! Please Run DOCSIS Boot!!",
+                    color="red",
+                    attrs=["bold"],
+                )
+            )
+            raise exc_to_raise
+        if print_config:
+            self.print_dhcp_config()
+
+    def _concat_station_configs(self, station_name, v6):
+        # Get the base DHCP configs stored.
+        self.check_output(
+            f"awk '/log-facility/,/host .* {{/' /etc/dhcp/dhcpd{v6}.conf | head -n-1 >"
+            f" /etc/dhcp/dhcpd{v6}.conf-{station_name}.master"
+        )
+        # concat all stations config files again.
+        self.check_output(
+            f"cat /etc/dhcp/dhcpd{v6}.conf.* >> /etc/dhcp/dhcpd{v6}.conf-{station_name}.master"
+        )
+        self.check_output(
+            f"mv /etc/dhcp/dhcpd{v6}.conf-{station_name}.master /etc/dhcp/dhcpd{v6}.conf"
+        )
+        self._restart_dhcp(retries=1)
+
+    def _modify_station_cfg_file(self, station_name, txt, v6):
+        self.sendline(f"cat > /etc/dhcp/dhcpd{v6}.conf.{station_name} << EOF")
+        for line in txt.splitlines():
+            self.sendline(line)
+        self.sendline("EOF")
+        self.expect(self.prompt)
