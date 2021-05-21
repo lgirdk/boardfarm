@@ -696,6 +696,7 @@ EOFEOFEOFEOF"""
         dst_path: str,
         action: str = "download",
         scp_command: str = "scp",
+        timeout: int = 30,
     ) -> None:
         """Scp file to remote host
 
@@ -707,6 +708,7 @@ EOFEOFEOFEOF"""
         :param dst_path: to that
         :param action: download or upload.
         :param scp_command: command name. Could be used if scp name was changed to something else
+        :param timeout: timeout value for the expect
         """
         if action == "download":
             command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
@@ -714,12 +716,14 @@ EOFEOFEOFEOF"""
             command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
         print(f"Sending {command}")
         self.sendline(command)
-        first_time = self.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=5)
+        first_time = self.expect(
+            [pexpect.TIMEOUT, "continue connecting?"], timeout=timeout
+        )
         if first_time:
             self.sendline("y")
-        self.expect("assword:")
+        self.expect("assword:", timeout=timeout)
         self.sendline(password)
-        self.expect_prompt()
+        self.expect_prompt(timeout=timeout)
 
     def get_date(self):
         """Get the system date and time
