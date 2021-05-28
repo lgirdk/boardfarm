@@ -148,9 +148,14 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             self.snooper.expect(self.snooper.prompt)
 
         time_server = kwargs.pop("time_server", None)
+        time_server6 = kwargs.pop("time_server6", None)
         if time_server:
             self.configure_time_server = False
             self.time_server = ipaddress.IPv4Address(time_server)
+
+        self.time_server6 = self.prov_ipv6
+        if time_server6:
+            self.time_server6 = ipaddress.IPv6Address(time_server6)
 
         self.timezone = self.get_timzone_offset(
             six.text_type(kwargs.pop("timezone", "UTC"))
@@ -231,7 +236,7 @@ shared-network boardfarm {
         pool6 {
             range6 ###CM_NETWORK_V6_START### ###CM_NETWORK_V6_END###;
             allow members of "CM";
-            option docsis.time-servers ###PROV_IPV6###;
+            option docsis.time-servers ###TIME_IPV6###;
             option docsis.syslog-servers ###PROV_IPV6### ;
             option docsis.time-offset 5000;
             option docsis.PKTCBL-CCCV4 1 4 ###MTA_DHCP_SERVER1### 2 4 ###MTA_DHCP_SERVER2###;
@@ -270,6 +275,7 @@ EOF"""
 
         to_send = to_send.replace("###IFACE###", self.iface_dut)
         to_send = to_send.replace("###PROV_IPV6###", str(self.prov_ipv6))
+        to_send = to_send.replace("###TIME_IPV6###", str(self.time_server6))
         to_send = to_send.replace("###PROV_NW_IPV6###", str(self.prov_nw_ipv6))
         to_send = to_send.replace("###CM_NETWORK_V6###", str(self.cm_network_v6))
         to_send = to_send.replace(
