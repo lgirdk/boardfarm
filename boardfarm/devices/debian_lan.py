@@ -88,7 +88,7 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
         self.expect(self.prompt)
-        apt_install(self, "ndisc6")
+        apt_install(self, "ndisc6 python-serial")
         if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             self.expect(self.prompt, timeout=60)
         else:
