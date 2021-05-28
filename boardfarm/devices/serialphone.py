@@ -1,6 +1,9 @@
 import re
+from functools import wraps
 
 from debtcollector import deprecate
+
+from boardfarm.exceptions import CodeError
 
 
 class SerialPhone(object):
@@ -22,6 +25,29 @@ class SerialPhone(object):
 
     def __str__(self):
         return "serialmodem %s" % self.line
+
+    class PyHandler:
+        @classmethod
+        def exit_python_on_exception(cls, func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                try:
+                    return func(*args, **kwargs)
+                except Exception:
+                    print(
+                        "Python Execution Failed!\n", "Bailing out of Python Console!!"
+                    )
+                    d = args[0]
+                    d.sendcontrol("c")
+                    d.sendcontrol("d")
+                    d.expect_prompt()
+
+            return wrapper
+
+    def pyexpect(self, *args, **kwargs):
+        self.expect(*args, **kwargs)
+        if "Traceback" in self.before:
+            raise CodeError(f"Python command Failed.Output :\n{self.before}")
 
     def check_tty(self):
         """To check if tty dev exists.
@@ -49,49 +75,51 @@ class SerialPhone(object):
         self.sendline("rm  /root/line-%s" % self.line)
         self.expect(self.prompt)
 
+    @PyHandler.exit_python_on_exception
     def phone_start(self, baud="115200", timeout="1"):
         """To start the softphone session."""
-        self.sendline("pip install pyserial")
-        self.expect(self.prompt)
         self.sendline("python")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("import serial,time")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline(
             "set = serial.Serial('/root/line-%s', %s ,timeout= %s)"
             % (self.line, baud, timeout)
         )
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("set.write(b'ATZ\\r')")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
         self.sendline("set.write(b'AT\\r')")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
         self.sendline("set.write(b'AT+FCLASS=1\\r')")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
+    @PyHandler.exit_python_on_exception
     def mta_readlines(self, time="3"):
         """To readlines from serial console."""
         self.sendline("set.flush()")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("time.sleep(%s)" % time)
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("l=set.readlines()")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("print(l)")
 
+    @PyHandler.exit_python_on_exception
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
         self.sendline("set.write(b'ATH%s\\r')" % hook_value)
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
+    @PyHandler.exit_python_on_exception
     def dial(self, number, receiver_ip=None):
         """To dial to another number.
 
@@ -99,10 +127,11 @@ class SerialPhone(object):
         receiver_ip(str) : receiver's ip; defaults to none
         """
         self.sendline("set.write(b'ATDT%s;\\r')" % number)
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
 
+    @PyHandler.exit_python_on_exception
     def answer(self):
         """To answer the incoming call."""
         deprecate(
@@ -113,24 +142,27 @@ class SerialPhone(object):
         self.mta_readlines(time="10")
         self.expect("RING")
         self.sendline("set.write(b'ATA\\r')")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("ATA")
 
+    @PyHandler.exit_python_on_exception
     def hangup(self):
         """To hangup the ongoing call."""
         self.sendline("set.write(b'ATH0\\r')")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
 
+    @PyHandler.exit_python_on_exception
     def phone_kill(self):
         """To kill the serial port console session."""
         self.sendline("set.close()")
-        self.expect(">>>")
+        self.pyexpect(">>>")
         self.sendline("exit()")
         self.expect(self.prompt)
 
+    @PyHandler.exit_python_on_exception
     def validate_state(self, state):
         """Read the mta_line message to validate the call state
 
@@ -143,5 +175,5 @@ class SerialPhone(object):
         self.mta_readlines()
         self.expect(state)
         self.sendline()
-        self.expect(">>>")
+        self.pyexpect(">>>")
         return True
