@@ -657,6 +657,8 @@ EOFEOFEOFEOF"""
         else:
             web_addr = "{}://{}".format(protocol, host_ip)
         command = "curl {} {}".format(options, web_addr)
+        logger.info(self.before)
+        self.before = None
         self.sendline(command)
         index = self.expect(
             ["Connected to"]
@@ -664,6 +666,7 @@ EOFEOFEOFEOF"""
             + ["doctype html"]
             + ["Connection timed out"]
             + ["Failed to connect to"]
+            + ["Couldn't connect to server"]
             + self.prompt,
             timeout=100,
         )
