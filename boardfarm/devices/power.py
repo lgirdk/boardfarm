@@ -222,6 +222,8 @@ class SentrySwitchedCDU(PDUTemplate):
 class PX2(PDUTemplate):
     """Power Unit from Raritan."""
 
+    prompt = ["\\[.*\\] # ", "# "]
+
     def __init__(
         self, outlet: str, username: str = "admin", password: str = "scripter99"
     ):
@@ -238,18 +240,18 @@ class PX2(PDUTemplate):
         self.pcon.expect("Password:")
         self.pcon.sendline(self.password)
         self.pcon.expect(r"Welcome to PX\d CLI!")
-        self.pcon.expect("# ")
+        self.pcon.expect(self.prompt)
 
     def reset(self):
         try:
             self.pcon.sendline("")
-            self.pcon.expect("# ")
+            self.pcon.expect(self.prompt)
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
             self._connect()
         self.pcon.sendline("power outlets %s cycle /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s cycle /y" % self.outlet)
-        self.pcon.expect("# ")
+        self.pcon.expect(self.prompt)
 
         # no extraneous messages in console log
         assert not self.pcon.before.strip()
@@ -257,13 +259,13 @@ class PX2(PDUTemplate):
     def turn_off(self):
         try:
             self.pcon.sendline("")
-            self.pcon.expect("# ")
+            self.pcon.expect(self.prompt)
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
             self._connect()
         self.pcon.sendline("power outlets %s off /y" % self.outlet)
         self.pcon.expect_exact("power outlets %s off /y" % self.outlet)
-        self.pcon.expect("# ")
+        self.pcon.expect(self.prompt)
 
         # no extraneous messages in console log
         assert not self.pcon.before.strip()
