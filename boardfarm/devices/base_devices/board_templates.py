@@ -22,6 +22,7 @@ class ConsoleTemplate(PexpectHelper, metaclass=__MetaSignatureChecker):
         self.conn_cmd = conn_cmd
         self.prompt = kwargs.get("prompt", None)
         self.spawn_device()
+        self.log = ""
 
     @abstractmethod
     def connect(self):
