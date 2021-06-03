@@ -254,7 +254,7 @@ class o_helper(object):
         :param color: text colour for the device(provided in Json)
         :type color: String
         """
-        self.color = color
+        self.color = color or "white"
         self.out = out
         self.parent = parent
         self.first_write = True
