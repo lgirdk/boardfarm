@@ -24,6 +24,17 @@ class SNMPv2:
             install_snmp(self.device)
             self.device.snmp_installed = True
 
+    def _get_mib_oid(self, mib_name):
+        oid_regex = r"^([1-9][0-9]{0,6}|0)(\.([1-9][0-9]{0,6}|0)){3,30}$"
+        if re.match(oid_regex, mib_name):
+            oid = mib_name
+        else:
+            try:
+                oid = self.snmpmibs_obj.get_mib_oid(mib_name)
+            except Exception as e:
+                raise SNMPError("MIB not available, Error: {}".format(e))
+        return oid
+
     def snmpget(
         self,
         mib_name,
@@ -45,11 +56,7 @@ class SNMPv2:
         Returns:
             (list) result : value, value type and complete output
         """
-        try:
-            oid = self.snmpmibs_obj.get_mib_oid(mib_name) + ".{}".format(str(index))
-        except Exception as e:
-            raise SNMPError("MIB not available, Error: {}".format(e))
-
+        oid = self._get_mib_oid(mib_name) + ".{}".format(str(index))
         output = self.run_snmp(
             "snmpget", community, oid, timeout, retries, extra_args=extra_args
         )
@@ -84,10 +91,7 @@ class SNMPv2:
         Returns:
             (list) result : value, value type and complete output
         """
-        try:
-            oid = self.snmpmibs_obj.get_mib_oid(mib_name) + ".{}".format(str(index))
-        except Exception as e:
-            raise SNMPError("MIB not available, Error: {}".format(e))
+        oid = self._get_mib_oid(mib_name) + ".{}".format(str(index))
 
         if re.findall(r"\s", value.strip()) and stype == "s":
             value = '"{}"'.format(value)
@@ -114,15 +118,14 @@ class SNMPv2:
         cmd = self.create_cmd(
             action, community, timeout, retries, oid, set_value, extra_args
         )
-        output = self.execute_snmp_cmd(cmd, timeout, retries)
-        return output
+        return self.execute_snmp_cmd(cmd, timeout, retries)
 
     def create_cmd(
         self, action, community, timeout, retries, oid, set_value="", extra_args=""
     ):
         if extra_args:
             extra_args = " " + extra_args.strip()
-        snmp_cmd = "%s -v 2c -On%s -c %s -t %s -r %s %s %s %s" % (
+        return "%s -v 2c -On%s -c %s -t %s -r %s %s %s %s" % (
             action,
             extra_args,
             community,
@@ -132,7 +135,6 @@ class SNMPv2:
             oid,
             set_value,
         )
-        return snmp_cmd
 
     def execute_snmp_cmd(self, cmd, timeout=10, retries=3):
         self.device.sendline(cmd)
@@ -144,8 +146,7 @@ class SNMPv2:
             self.device.expect_prompt()
             raise PexpectErrorTimeout("Timeout Occured while executing SNMP Command")
 
-        output = self.device.before
-        return output
+        return self.device.before
 
     def parse_snmp_output(self, oid, output, value=None):
         result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
@@ -197,7 +198,7 @@ class SNMPv2:
         """
         if mib_name:
             try:
-                oid = self.snmpmibs_obj.get_mib_oid(mib_name)
+                oid = self._get_mib_oid(mib_name)
                 if index:
                     oid = oid + ".{}".format(str(index))
             except Exception as e:
