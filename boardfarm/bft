@@ -387,7 +387,10 @@ def connect_to_devices(config):
 
             # Make it easy for the board to access other devices by giving it
             # a reference to the device manager
-            board.dev = device_mgr
+            if hasattr(board, "set_device_mgr"):
+                board.set_device_mgr(device_mgr)
+            else:
+                board.dev = device_mgr
 
             logger.info("dut device console = %s" % colored("black", "grey"))
 
