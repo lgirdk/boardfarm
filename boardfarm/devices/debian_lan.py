@@ -58,6 +58,12 @@ class DebianLAN(debian.DebianBox):
         self.dns = DNS(self, {}, {})
         self.nw_util_ping = Ping(self)
 
+    def get_lan_gateway(self):
+        self.sendline("ip route list 0/0 | awk '{print $3}'")
+        self.expect_exact("ip route list 0/0 | awk '{print $3}'")
+        self.expect(self.prompt)
+        return ipaddress.IPv4Address(six.text_type(self.before.strip()))
+
     def setup(self, config=None):
         self.check_dut_iface()
         # potential cleanup so this wan device works
