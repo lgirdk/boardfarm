@@ -78,6 +78,20 @@ class EnvHelper(object):
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
+    def get_prov_mode(self):
+        """
+        returns the provisioning mode of the desired environment.
+        possible values are: ipv4, ipv6, dslite, dualstack, disabled
+        """
+        pass
+
+    def has_prov_mode(self):
+        """
+        returns true or false depending if the environment has specified a
+        provisioning mode
+        """
+        pass
+
     def has_image(self):
         """Return true or false if the env has specified an image to load."""
         try:

@@ -6,11 +6,7 @@ import logging
 from nested_lookup import nested_lookup
 
 from boardfarm.exceptions import ContingencyCheckError
-from boardfarm.lib.common import (
-    check_prompts,
-    domain_ip_reach_check,
-    retry_on_exception,
-)
+from boardfarm.lib.common import check_prompts, domain_ip_reach_check
 from boardfarm.lib.DeviceManager import device_type
 from boardfarm.lib.hooks import contingency_impl, hookimpl
 from boardfarm.plugins import BFPluginManager
@@ -121,17 +117,35 @@ class CheckInterface:
         )
         lan_devices = dev_mgr.lan_clients[:amount_of_clients_to_be_tested]
 
-        def _start_lan_client(dev):
-            ipv4, ipv6 = retry_on_exception(dev.start_lan_client, [], retries=1)
-            return {"ipv4": ipv4, "ipv6": ipv6}
+        def call_lan_clients(dev, flags, **kwargs):
+            ip_lan = {}
+            call = {
+                "ipv4": dev.start_ipv4_lan_client,
+                "ipv6": dev.start_ipv6_lan_client,
+            }
+            for i in flags:
+                out = call[i](**kwargs)
+                assert out, f"{dev.name} failed to get {i} address!!"
+                ip_lan[i] = out
+            ip[dev.name] = ip_lan
+
+        prov_mode = env_helper.get_prov_mode() if env_helper.has_prov_mode() else "dual"
+        flags = []
+
+        flags.append("ipv4")
+        if prov_mode != "ipv4":
+            flags.append("ipv6")
+
+        for dev in lan_devices:
+            dev.configure_docker_iface()
+            call_lan_clients(dev, flags, prep_iface=True)
+            dev.configure_proxy_pkgs()
 
         def _setup_as_wan_gateway():
             ipv4 = wan.get_interface_ipaddr(wan.iface_dut)
             ipv6 = wan.get_interface_ip6addr(wan.iface_dut)
             return {"ipv4": ipv4, "ipv6": ipv6}
 
-        for dev in lan_devices:
-            ip[dev.name] = _start_lan_client(dev)
         ip["wan"] = _setup_as_wan_gateway()
 
         logger.info("CheckInterface service checks for BF executed")
