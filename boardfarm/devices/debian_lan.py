@@ -62,7 +62,15 @@ class DebianLAN(debian.DebianBox):
         self.sendline("ip route list 0/0 | awk '{print $3}'")
         self.expect_exact("ip route list 0/0 | awk '{print $3}'")
         self.expect(self.prompt)
-        return ipaddress.IPv4Address(six.text_type(self.before.strip()))
+        try:
+            return ipaddress.IPv4Address(six.text_type(self.before.strip()))
+        except ipaddress.AddressValueError:
+            logger.warning(
+                "Unable to resolve lan client gateway IP. "
+                "Did you run boot before tests? "
+                "Using default Ziggo address now. (192.168.178.1)"
+            )
+            return ipaddress.IPv4Address("192.168.178.1")
 
     def setup(self, config=None):
         self.check_dut_iface()
