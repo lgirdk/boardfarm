@@ -57,6 +57,7 @@ class DebianLAN(debian.DebianBox):
         ).ip
         self.dns = DNS(self, {}, {})
         self.nw_util_ping = Ping(self)
+        self.ipv4_client_started = False
 
     def get_lan_gateway(self):
         self.sendline("ip route list 0/0 | awk '{print $3}'")
@@ -247,6 +248,9 @@ class DebianLAN(debian.DebianBox):
             self.sendline("ip route add %s via %s" % (wan_gw, self.lan_gateway))
             self.expect(self.prompt)
         ipv4 = self.get_interface_ipaddr(self.iface_dut)
+
+        if ipv4:
+            self.ipv4_client_started = True
 
         return ipv4
 
