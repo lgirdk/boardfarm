@@ -558,8 +558,12 @@ class ScreenshotListener(AbstractEventListener):
                 "return document.body.parentNode.scroll" + dimension
             )
 
+        # Setting screen size twice because one is not enough for Selenium :)
         driver.set_window_size(gui_page_size("Width"), gui_page_size("Height"))
+        driver.set_window_size(gui_page_size("Width"), gui_page_size("Height"))
+
         driver.get_screenshot_as_file(abs_path)
+        driver.maximize_window()  # Restore window to fit screen in order to avoid corrupted GUI
         logger.debug("Screenshot saved as '{}'".format(abs_path))
 
     def on_exception(self, exception, driver):
