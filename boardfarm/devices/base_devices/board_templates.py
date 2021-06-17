@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from pathlib import Path
 
 import boardfarm.devices.connection_decider as conn_dec
 from boardfarm.devices import get_device_mapping_class
@@ -49,6 +50,9 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
         conn_type = kwargs.get("conn_type")
         self.consoles = [ConsoleTemplate(conn_type, c) for c in conn_cmd]
         self.connect(*args, **kwargs)
+
+    def get_mibs_path(self):
+        return [str(Path(__file__).parent.parent.parent.joinpath("resources/mibs"))]
 
     @abstractmethod
     def connect(self, *args, **kwargs):

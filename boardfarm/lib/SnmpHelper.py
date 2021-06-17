@@ -134,15 +134,16 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         thisfiledir = os.path.realpath(__file__)
         boardfarmdir = thisfiledir[: thisfiledir.rfind("boardfarm")]
 
-        # add the boardfarm dir as it is not in the overlays
-        snmp_mib_dirs.extend(find_directory_in_tree("mibs", boardfarmdir))
+        if not snmp_mib_dirs:
+            for modname in sorted(boardfarm.plugins):
+                # finds all dirs with the word mibs in it
+                # avoid adding a directory that is already
+                # contained in the directory tree
+                location = os.path.dirname(boardfarm.plugins[modname].__file__)
+                snmp_mib_dirs.extend(find_directory_in_tree("mib", location))
 
-        for modname in sorted(boardfarm.plugins):
-            # finds all dirs with the word mibs in it
-            # avoid adding a directory that is already
-            # contained in the directory tree
-            location = os.path.dirname(boardfarm.plugins[modname].__file__)
-            snmp_mib_dirs.extend(find_directory_in_tree("mib", location))
+            # add the boardfarm dir as it is not in the overlays
+            snmp_mib_dirs.extend(find_directory_in_tree("mibs", boardfarmdir))
 
         logger.debug("Mibs directory list: %s" % snmp_mib_dirs)
 
@@ -162,6 +163,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
 
     def __init__(self, mib_list, src_dir_list, http_sources=None):
         """Instance initialisation."""
+
         self.dbg = os.environ.get("BFT_DEBUG", "")
 
         if "yyy" in self.dbg:
