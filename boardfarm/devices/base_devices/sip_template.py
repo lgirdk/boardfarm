@@ -1,10 +1,10 @@
 from abc import abstractmethod
 
-from boardfarm.devices.debian import DebianBox
+from boardfarm.devices.linux import LinuxInterface
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
 
 
-class SIPTemplate(DebianBox, metaclass=__MetaSignatureChecker):
+class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
     """SIP server template class.
     Contains basic list of APIs to be able to use TR069 intercation with CPE
     All methods, marked with @abstractmethod annotation have to be implemented in derived
@@ -79,3 +79,71 @@ class SIPTemplate(DebianBox, metaclass=__MetaSignatureChecker):
     @abstractmethod
     def sipserver_user_registration_status(self, user: str, ip_address: str) -> str:
         """Return the registration status."""
+
+
+class SIPPhoneTemplate(LinuxInterface):
+    @property
+    @abstractmethod
+    def model(cls):
+        """This attribute is used by boardfarm device manager.
+
+        This is used to match parameters entry from config
+        and initialise correct object.
+
+        This property shall be any string value that matches the "type"
+        attribute of FSX entry in the inventory config file.
+        See devices/serialphone.py as a reference
+        """
+
+    @property
+    @abstractmethod
+    def number(self):
+        """To get the registered SIP number.
+
+        This property shall be dynamically populated during the post_boot
+        activities of environment setup for voice.
+        """
+
+    @abstractmethod
+    def phone_start(self, baud: str = "115200", timeout: str = "1") -> None:
+        """Connect to the serial line of FXS modem.
+
+        :param baud: serial baud rate, defaults to "115200"
+        :type baud: str, optional
+        :param timeout: connection timeout, defaults to "1"
+        :type timeout: str, optional
+        """
+
+    @abstractmethod
+    def phone_config(self, sip_server: str = "") -> None:
+        """Configure the phone with a SIP url using SIP server IP for registration."""
+
+    @abstractmethod
+    def phone_kill(self) -> None:
+        """Close the serial connection."""
+
+    @abstractmethod
+    def on_hook(self) -> None:
+        """Execute on_hook procedure to disconnect to a line."""
+
+    @abstractmethod
+    def off_hook(self) -> None:
+        """Execute off_hook procedure to connect to a line."""
+
+    @abstractmethod
+    def answer(self) -> None:
+        """To answer a call on RING state."""
+
+    @abstractmethod
+    def dial(self, number: str, receiver_ip: str = None) -> None:
+        """Execute Hayes ATDT command for dialing a number in FXS modems.
+
+        FXS modems simulate analog phones and requie ISDN/PSTN number to dial.
+        In case of dialing a SIP enabled phone, please specify receiver IP
+        to dial using an auto-generated SIP URL.
+
+        :param number: Phone number to dial
+        :type number: str
+        :param receiver_ip: SIP URL IP address, defaults to None
+        :type receiver_ip: str, optional
+        """
