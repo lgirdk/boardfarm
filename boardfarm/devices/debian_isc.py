@@ -188,6 +188,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             + """.master << EOF
 log-facility local1;
 preferred-lifetime 7200;
+default-lease-time 43200;
 option dhcp-renewal-time 3600;
 option dhcp-rebinding-time 5400;
 
