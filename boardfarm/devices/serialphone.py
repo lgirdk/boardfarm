@@ -83,19 +83,19 @@ class SerialPhone(object):
         self.sendline("import serial,time")
         self.pyexpect(">>>")
         self.sendline(
-            "set = serial.Serial('/root/line-%s', %s ,timeout= %s)"
+            "serial_line = serial.Serial('/root/line-%s', %s ,timeout= %s)"
             % (self.line, baud, timeout)
         )
         self.pyexpect(">>>")
-        self.sendline("set.write(b'ATZ\\r')")
+        self.sendline("serial_line.write(b'ATZ\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
-        self.sendline("set.write(b'AT\\r')")
+        self.sendline("serial_line.write(b'AT\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
-        self.sendline("set.write(b'AT+FCLASS=1\\r')")
+        self.sendline("serial_line.write(b'AT+FCLASS=1\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -103,18 +103,18 @@ class SerialPhone(object):
     @PyHandler.exit_python_on_exception
     def mta_readlines(self, time="3"):
         """To readlines from serial console."""
-        self.sendline("set.flush()")
+        self.sendline("serial_line.flush()")
         self.pyexpect(">>>")
         self.sendline("time.sleep(%s)" % time)
         self.pyexpect(">>>")
-        self.sendline("l=set.readlines()")
+        self.sendline("l=serial_line.readlines()")
         self.pyexpect(">>>")
         self.sendline("print(l)")
 
     @PyHandler.exit_python_on_exception
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
-        self.sendline("set.write(b'ATH%s\\r')" % hook_value)
+        self.sendline("serial_line.write(b'ATH%s\\r')" % hook_value)
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -126,7 +126,7 @@ class SerialPhone(object):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
-        self.sendline("set.write(b'ATDT%s;\\r')" % number)
+        self.sendline("serial_line.write(b'ATDT%s;\\r')" % number)
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("ATDT")
@@ -141,7 +141,7 @@ class SerialPhone(object):
         )
         self.mta_readlines(time="10")
         self.expect("RING")
-        self.sendline("set.write(b'ATA\\r')")
+        self.sendline("serial_line.write(b'ATA\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("ATA")
@@ -149,7 +149,7 @@ class SerialPhone(object):
     @PyHandler.exit_python_on_exception
     def hangup(self):
         """To hangup the ongoing call."""
-        self.sendline("set.write(b'ATH0\\r')")
+        self.sendline("serial_line.write(b'ATH0\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -157,7 +157,7 @@ class SerialPhone(object):
     @PyHandler.exit_python_on_exception
     def phone_kill(self):
         """To kill the serial port console session."""
-        self.sendline("set.close()")
+        self.sendline("serial_line.close()")
         self.pyexpect(">>>")
         self.sendline("exit()")
         self.expect(self.prompt)

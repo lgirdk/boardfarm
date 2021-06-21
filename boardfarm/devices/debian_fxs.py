@@ -119,28 +119,28 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         """To start the softphone session."""
         self.py.run("import serial,time")
         self.py.run(
-            f"set = serial.Serial('/dev/{self.line}', {baud} ,timeout= {timeout})"
+            f"serial_line = serial.Serial('/dev/{self.line}', {baud} ,timeout= {timeout})"
         )
-        self.py.run("set.write(b'ATZ\\r')")
+        self.py.run("serial_line.write(b'ATZ\\r')")
         self.mta_readlines(search="OK")
-        self.py.run("set.write(b'AT\\r')")
+        self.py.run("serial_line.write(b'AT\\r')")
         self.mta_readlines(search="OK")
-        self.py.run("set.write(b'AT+FCLASS=1\\r')")
+        self.py.run("serial_line.write(b'AT+FCLASS=1\\r')")
         self.mta_readlines(search="OK")
 
     # maintaining backward compatibility for legacy tests.
     def mta_readlines(self, time="3", search=""):
         """To readlines from serial console."""
-        self.py.run("set.flush()")
+        self.py.run("serial_line.flush()")
         self.py.run(f"time.sleep({time})")
-        self.py.run("l=set.readlines()")
+        self.py.run("l=serial_line.readlines()")
         self.py.run("print(l)", expect=search)
 
     # this is bad, maintaining just to support legacy.
     # breaking this down below
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
-        self.py.run(f"set.write(b'ATH{hook_value}\\r')")
+        self.py.run(f"serial_line.write(b'ATH{hook_value}\\r')")
         self.mta_readlines(search="OK")
 
     def on_hook(self):
@@ -149,7 +149,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         On hook. Hangs up the phone, ending any call in progress.
         Need to send ATH0 command over FXS modem
         """
-        self.py.run("set.write(b'ATH0\\r')")
+        self.py.run("serial_line.write(b'ATH0\\r')")
         self.mta_readlines(search="OK")
 
     def off_hook(self):
@@ -158,7 +158,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         Off hook. Picks up the phone line (typically you'll hear a dialtone)
         Need to send ATH1 command over FXS modem
         """
-        self.py.run("set.write(b'ATH1\\r')")
+        self.py.run("serial_line.write(b'ATH1\\r')")
         self.mta_readlines(search="OK")
 
     def answer(self):
@@ -168,7 +168,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         Need to send ATA command over FXS modem
         """
         self.mta_readlines(time="10", search="RING")
-        self.py.run("set.write(b'ATA\\r')")
+        self.py.run("serial_line.write(b'ATA\\r')")
         self.mta_readlines(search="ATA")
 
     def dial(self, number, receiver_ip=None):
@@ -177,7 +177,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
-        self.py.run(f"set.write(b'ATDT{number};\\r')")
+        self.py.run(f"serial_line.write(b'ATDT{number};\\r')")
         self.mta_readlines(search="ATDT")
 
     # maintaining backward compatibility for legacy tests.
@@ -192,7 +192,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
 
     def phone_kill(self):
         """To kill the serial port console session."""
-        self.py.run("set.close()")
+        self.py.run("serial_line.close()")
 
     def validate_state(self, state):
         """Read the mta_line message to validate the call state
