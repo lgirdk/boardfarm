@@ -77,7 +77,7 @@ repos:
           - id: yamllint
             args: [--format, parsable, --strict]
             stages: [commit]
-    - repo: https://github.com/ambv/black
+    - repo: https://github.com/psf/black
       rev: 21.5b1
       hooks:
           - id: black
