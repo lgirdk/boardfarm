@@ -127,6 +127,8 @@ class CheckInterface:
                 out = call[i](**kwargs)
                 assert out, f"{dev.name} failed to get {i} address!!"
                 ip_lan[i] = out
+                # We need to restart DUT interface only once
+                kwargs["prep_iface"] = False
             ip[dev.name] = ip_lan
 
         prov_mode = env_helper.get_prov_mode() if env_helper.has_prov_mode() else "dual"
