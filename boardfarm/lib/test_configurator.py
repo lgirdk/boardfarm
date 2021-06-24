@@ -185,7 +185,11 @@ def filter_station_config(
                 if set(board_features) != set(board_features) & set(features):
                     continue
             for t in board_type:
-                if boardfarm_config[b]["board_type"].lower() == t.lower():
+                __board_type = boardfarm_config[b]["board_type"]
+                if type(__board_type) is str:
+                    __board_type = [__board_type]
+                if t.lower() in (__bt.lower() for __bt in __board_type):
+                    boardfarm_config[b]["board_type"] = t
                     if board_filter:
                         if filter_boards(boardfarm_config[b], board_filter, b):
                             result.append(b)
