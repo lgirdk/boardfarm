@@ -1,11 +1,12 @@
 import datetime
+import logging
 import os
 import re
 
 import pexpect
+from termcolor import colored
 
 from boardfarm.dbclients.influx_db_helper import Influx_DB_Logger
-from boardfarm.exceptions import CodeError
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,
     ValidIpv4AddressRegex,
@@ -40,32 +41,35 @@ class GenericWrapper:
             "gbytes": 1024 * 1024 * 1024 * 8,
         }
 
-    def check_file(self, device, fname):
-        output = device.check_output('ls -l --time-style="+%Y%m%d%H%M%S%6N" ' + fname)
-        if "No such file or directory" in output:
-            assert 0
-        timestamp = device.check_output(f"cat {fname}.timestamp")
-        # quick validation
-        if not re.match(re.compile(r"\d{20}"), timestamp):
-            timestamp = None
-        else:
-            timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
-        return timestamp
-
-    def stat_file_timestamp(self, device, fname):
-        device.sendline('date +%Y%m%d%H%M%S%6N -d "$(stat -c %y "' + fname + '")"')
-        device.expect("([0-9]{20})")
-        timestamp = device.match.group(1)
-        device.expect(device.prompt)
-        timestamp = datetime.datetime.strptime(timestamp, "%Y%m%d%H%M%S%f")
-        return timestamp
-
     def get_details_dict(self, device, fname):
+        logger = logging.getLogger("bft")
         data_dict = {}
-        timestamp = self.check_file(device, fname)
-        if not timestamp:
-            timestamp = self.stat_file_timestamp(device, fname)
         val = device.check_output(f"head -10 {fname}")
+        if "iperf3: error - unable to connect to server" in val:
+            logger.warning(
+                colored(
+                    "Client could not connect to server",
+                    color="yellow",
+                    attrs=["bold"],
+                )
+            )
+            return
+
+        if "Time:" in val:
+            timestamp = re.search(r"Time: (.*)\r", val).group(1)
+            timestamp = datetime.datetime.strptime(
+                timestamp, "%a, %d %b %Y %H:%M:%S %Z"
+            )
+        else:
+            logger.warning(
+                colored(
+                    "Unable to find timestamp in result file. Either you missed to pass -V parameter OR unable to connect.",
+                    color="yellow",
+                    attrs=["bold"],
+                )
+            )
+            return
+
         data_dict["mode"] = "udp" if "Datagrams" in val else "tcp"
         if "Connecting to host" in val:
             data_dict["port"] = re.search(
@@ -80,7 +84,14 @@ class GenericWrapper:
             data_dict["device"] = data_dict["tag"] = "server"
             data_dict["flow"] = "see client"
         else:
-            raise CodeError(f"Cannot find port in log {fname}\n{val}")
+            logger.warning(
+                colored(
+                    "Server not listening on any port OR Client could not connect to server",
+                    color="yellow",
+                    attrs=["bold"],
+                )
+            )
+            return
 
         proto_dict = {ValidIpv4AddressRegex: "ipv4", AllValidIpv6AddressesRegex: "ipv6"}
         for k, v in proto_dict.items():

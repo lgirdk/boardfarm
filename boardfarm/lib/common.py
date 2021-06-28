@@ -2216,8 +2216,16 @@ def send_to_influx(device, **kwargs):
     try:
         db = GenericWrapper(**db_config)
         if not response_time:
-            server_data = [db.get_details_dict(server, fname) for fname in s_fname]
-            client_data = [db.get_details_dict(client, fname) for fname in c_fname]
+            server_data = [
+                val
+                for val in (db.get_details_dict(server, fname) for fname in s_fname)
+                if val
+            ]
+            client_data = [
+                val
+                for val in (db.get_details_dict(client, fname) for fname in c_fname)
+                if val
+            ]
             for s_dict, c_dict in zip(server_data, client_data):
                 db.log_iperf_to_db(server, client, s_dict, c_dict)
         else:
