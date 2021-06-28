@@ -88,11 +88,13 @@ def configure_option125(device, enable=False):
             # Enterprise code (3561) 00:00:0D:E9 length  (22)16
             # code 01  length 06  (BFVER0) 42:46:56:45:52:30
             # code 03  length 06  (BFCLAN)  42:46:43:4c:41:4e
-            encoded_name = str.encode(device.name)
+            mac = device.get_interface_macaddr(device.iface_dut)
+            value = "VAAU" + "".join(mac.split(":")[0:4]).upper()
+            encoded_name = str.encode(value)
             hex_name = iter(binascii.hexlify(encoded_name).decode("utf-8"))
             code_02 = ":".join([f"{j}{k}" for j, k in zip(hex_name, hex_name)])
-            len_02 = hex(len(device.name)).replace("0x", "").zfill(2)
-            total_len = hex(18 + len(device.name)).replace("0x", "").zfill(2)
+            len_02 = hex(len(value)).replace("0x", "").zfill(2)
+            total_len = hex(18 + len(value)).replace("0x", "").zfill(2)
             option_125 = "00:00:0D:E9:{}:01:06:42:46:56:45:52:30:02:{}:{}:03:06:42:46:43:4c:41:4e".format(
                 total_len, len_02, code_02
             )
