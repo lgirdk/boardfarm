@@ -12,6 +12,7 @@ import logging
 import re
 from collections import namedtuple
 
+import netaddr
 import six
 
 from boardfarm.exceptions import (
@@ -922,3 +923,19 @@ class Iperf3Lib:
             "received_data": recv_data,
             "error": None,
         }
+
+
+def mac_to_eui64(mac_address):
+    """Generate a IPv6 addr by EUI-64 with MAC
+    :param str mac: a MAC address
+    :return: an IPv6 Address
+    :rtype: netaddr.IPAddress
+    """
+    try:
+        eui64 = int(netaddr.EUI(mac_address).eui64())
+        return netaddr.IPAddress(eui64 ^ (1 << 57))
+    except (ValueError, netaddr.AddrFormatError):
+        raise TypeError(
+            "Bad mac format for generating IPv6"
+            "address by EUI-64:  %(mac_address)s:" % {"mac": mac_address}
+        )
