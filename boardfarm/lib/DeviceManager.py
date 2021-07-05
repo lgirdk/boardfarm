@@ -80,12 +80,14 @@ class device_array_type(Enum):
     lan_clients = 2
     wlan_clients = 3
     FXS = 4
+    softphones = 5
 
     _arrays = {
         "wan_clients": [],
         "lan_clients": [],
         "wlan_clients": WiFiMgr(),
         "FXS": [],
+        "softphones": [],
     }
 
 

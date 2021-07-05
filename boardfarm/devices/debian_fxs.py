@@ -1,5 +1,7 @@
 import atexit
+import functools
 from contextlib import suppress
+from time import sleep
 
 from debtcollector import deprecate
 from pexpect import TIMEOUT
@@ -46,6 +48,18 @@ class PythonExecutor:
             self.device.expect(self.device.prompt)
 
 
+class Checks:
+    @classmethod
+    def is_phone_started(cls, func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            if not self._phone_started:
+                raise CodeError("Please start the phone first!!")
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+
 class DebianFXS(SIPPhoneTemplate, DebianBox):
     """Fax modem."""
 
@@ -55,6 +69,8 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
+        self._phone_started = False
+        self._connected = False
 
         # legacy approach specify TCID, Serial Line via INV JSON
         self.own_number = self.kwargs.get("number")
@@ -92,13 +108,15 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         atexit.register(self.close)
 
     def __str__(self):
-        return f"FXS Phone {self.name}/{self.usb_port}/{self.fxs_ep}"
+        return f"FXS Phone {self.name}/{self.usb_port}/{self.fxs_port}"
 
     @property
     def number(self):
         return self.own_number
 
     def close(self):
+        if self._phone_started:
+            self.phone_kill()
         self.py.exit()
 
     def _tty_line_exists(self):
@@ -112,47 +130,61 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         self.expect(self.prompt)
         return "No such file or directory" not in self.before
 
-    def phone_config(self, sipserver):
-        super().phone_config(sipserver)
+    def phone_config(self, sip_server: str = "") -> None:
+        super().phone_config(sip_server)
 
-    def phone_start(self, baud="115200", timeout="1"):
+    def phone_start(self) -> None:
         """To start the softphone session."""
-        self.py.run("import serial,time")
-        self.py.run(
-            f"serial_line = serial.Serial('/dev/{self.line}', {baud} ,timeout= {timeout})"
-        )
-        self.py.run("serial_line.write(b'ATZ\\r')")
-        self.mta_readlines(search="OK")
-        self.py.run("serial_line.write(b'AT\\r')")
-        self.mta_readlines(search="OK")
-        self.py.run("serial_line.write(b'AT+FCLASS=1\\r')")
-        self.mta_readlines(search="OK")
+        self._phone_started = True
+        try:
+            self.py.run("import serial")
+            self.py.run(
+                f"serial_line = serial.Serial('/dev/{self.line}', 115200 ,timeout=1)"
+            )
+            self.py.run("serial_line.write(b'ATZ\\r')")
+            self.mta_readlines(search="OK")
+            self.py.run("serial_line.write(b'AT+FCLASS=1\\r')")
+            self.mta_readlines(search="OK")
+            self.py.run("serial_line.write(b'ATV1\\r')")
+            self.mta_readlines(search="OK")
+            self.py.run("serial_line.write(b'ATX4\\r')")
+            self.mta_readlines(search="OK")
+            self.py.run("serial_line.write(b'AT-STE=7\\r')")
+            self.mta_readlines(search="OK")
+        except TIMEOUT as e:
+            self._phone_started = False
+            raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
     # maintaining backward compatibility for legacy tests.
-    def mta_readlines(self, time="3", search=""):
+    @Checks.is_phone_started
+    def mta_readlines(self, time=4, search=""):
         """To readlines from serial console."""
         self.py.run("serial_line.flush()")
-        self.py.run(f"time.sleep({time})")
+        sleep(time)
         self.py.run("l=serial_line.readlines()")
-        self.py.run("print(l)", expect=search)
+        return self.py.run("for i in l: print(i.decode());\n", expect=search)
 
     # this is bad, maintaining just to support legacy.
     # breaking this down below
+    @Checks.is_phone_started
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
         self.py.run(f"serial_line.write(b'ATH{hook_value}\\r')")
         self.mta_readlines(search="OK")
 
-    def on_hook(self):
+    @Checks.is_phone_started
+    def on_hook(self) -> None:
         """Execute on_hook procedure to disconnect to a line.
 
         On hook. Hangs up the phone, ending any call in progress.
         Need to send ATH0 command over FXS modem
         """
         self.py.run("serial_line.write(b'ATH0\\r')")
-        self.mta_readlines(search="OK")
+        self.mta_readlines(time=5, search="OK")
+        self._connected = False
 
-    def off_hook(self):
+    @Checks.is_phone_started
+    def off_hook(self) -> None:
         """Execute off_hook procedure to connect to a line.
 
         Off hook. Picks up the phone line (typically you'll hear a dialtone)
@@ -161,26 +193,43 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         self.py.run("serial_line.write(b'ATH1\\r')")
         self.mta_readlines(search="OK")
 
-    def answer(self):
+    @Checks.is_phone_started
+    def answer(self) -> bool:
         """To answer a call on RING state.
 
         Answer. Picks up the phone line and answer the call manually.
         Need to send ATA command over FXS modem
         """
-        self.mta_readlines(time="10", search="RING")
         self.py.run("serial_line.write(b'ATA\\r')")
-        self.mta_readlines(search="ATA")
+        self.mta_readlines(search="CONNECT")
+        self._connected = True
+        self.mta_readlines(search="OK")
+        return True
 
-    def dial(self, number, receiver_ip=None):
-        """To dial to another number.
+    @Checks.is_phone_started
+    def dial(self, number: str, receiver_ip: str = None) -> None:
+        """Execute Hayes ATDT command for dialing a number in FXS modems."""
+        deprecate(
+            "Warning!",
+            message="dial() is deprecated. use call() method to make calls",
+            category=UserWarning,
+        )
+        self.py.run(f"serial_line.write(b'ATD{number}\\r')")
+        self.mta_readlines(search="ATD")
 
-        number(str) : number to be called
-        receiver_ip(str) : receiver's ip; defaults to none
+    @Checks.is_phone_started
+    def call(self, callee: "SIPPhoneTemplate") -> None:
+        """To dial a call to callee.
+
+        :param callee: Device which will act as the caller.
+        :type callee: SIPPhoneTemplate
         """
-        self.py.run(f"serial_line.write(b'ATDT{number};\\r')")
-        self.mta_readlines(search="ATDT")
+        number = callee.number
+        self.py.run(f"serial_line.write(b'ATD{number}\\r')")
+        self.mta_readlines(search="ATD")
 
     # maintaining backward compatibility for legacy tests.
+    @Checks.is_phone_started
     def hangup(self):
         """To hangup the ongoing call."""
         deprecate(
@@ -190,10 +239,13 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         )
         self.on_hook()
 
-    def phone_kill(self):
+    @Checks.is_phone_started
+    def phone_kill(self) -> None:
         """To kill the serial port console session."""
         self.py.run("serial_line.close()")
+        self._phone_started = False
 
+    @Checks.is_phone_started
     def validate_state(self, state):
         """Read the mta_line message to validate the call state
 
@@ -203,6 +255,53 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         :return: boolean True if success
         :rtype: Boolean
         """
-        self.mta_readlines(search=state)
-        self.py.run("")
-        return True
+        out = False
+        with suppress(TIMEOUT):
+            self.mta_readlines(search=state)
+            self.py.run("")
+            out = True
+        return out
+
+    @Checks.is_phone_started
+    def is_ringing(self) -> bool:
+        return self.validate_state("RING")
+
+    @Checks.is_phone_started
+    def is_connected(self) -> bool:
+        return self._connected
+
+    @Checks.is_phone_started
+    def detect_dialtone(self) -> bool:
+        with suppress(TIMEOUT) as out:
+            # ATDW ensures to first wait for a dialtone.
+            self.py.run("serial_line.write(b'ATDW;\\r')")
+            # IF RESULT CODE OK is received dial tone was detected
+            self.mta_readlines(search="OK")
+            out = True
+        return out is not None
+
+    @Checks.is_phone_started
+    def reply_with_code(self, code: int) -> None:
+        """Not required in case of FXS phones.
+
+        .. note::
+            - Maintaining it due to abstract base template.
+        """
+
+    @Checks.is_phone_started
+    def is_line_busy(self) -> bool:
+        """Check if the call is denied due to callee being busy.
+
+        :return: True if line is busy, else False
+        :rtype: bool
+        """
+        return self.validate_state("BUSY")
+
+    @Checks.is_phone_started
+    def is_call_not_answered(self) -> bool:
+        """Verify if caller's call was not answered
+
+        :return: True if not answered, else False
+        :rtype: bool
+        """
+        return self.validate_state("NO CARRIER")

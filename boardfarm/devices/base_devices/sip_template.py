@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from boardfarm.devices.linux import LinuxInterface
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
@@ -81,7 +81,7 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
         """Return the registration status."""
 
 
-class SIPPhoneTemplate(LinuxInterface):
+class SIPPhoneTemplate(LinuxInterface, ABC):
     @property
     @abstractmethod
     def model(cls):
@@ -105,7 +105,7 @@ class SIPPhoneTemplate(LinuxInterface):
         """
 
     @abstractmethod
-    def phone_start(self, baud: str = "115200", timeout: str = "1") -> None:
+    def phone_start(self) -> None:
         """Connect to the serial line of FXS modem.
 
         :param baud: serial baud rate, defaults to "115200"
@@ -131,19 +131,72 @@ class SIPPhoneTemplate(LinuxInterface):
         """Execute off_hook procedure to connect to a line."""
 
     @abstractmethod
-    def answer(self) -> None:
+    def answer(self) -> bool:
         """To answer a call on RING state."""
 
     @abstractmethod
-    def dial(self, number: str, receiver_ip: str = None) -> None:
-        """Execute Hayes ATDT command for dialing a number in FXS modems.
+    def call(self, callee: "SIPPhoneTemplate") -> None:
+        """To dial a call to callee.
 
         FXS modems simulate analog phones and requie ISDN/PSTN number to dial.
-        In case of dialing a SIP enabled phone, please specify receiver IP
-        to dial using an auto-generated SIP URL.
+        In case of dialing a SIP enabled phone, SIP proxy IP is used
+        to auto-generate a SIP URL for dialing.
 
-        :param number: Phone number to dial
-        :type number: str
-        :param receiver_ip: SIP URL IP address, defaults to None
-        :type receiver_ip: str, optional
+        :param callee: Device which will act as the callee.
+        :type callee: SIPPhoneTemplate
+        """
+
+    @abstractmethod
+    def is_ringing(self) -> bool:
+        """Check if Phone is ringing.
+
+        :return: True if the phone is ringing
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_connected(self) -> bool:
+        """Check if Phone is ringing.
+
+        :return: True if the phone is ringing
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def detect_dialtone(self) -> bool:
+        """Check if dialtone is detected off_hook
+
+        :return:
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_line_busy(self) -> bool:
+        """Check if the call is denied due to callee being busy.
+
+        :return: True if line is busy, else False
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def reply_with_code(self, code: int) -> None:
+        """To reply back to an incoming call with a SIP code value.
+
+        In case of certain phones, we need to explicitly send out SIP codes
+        such as:
+        - 486 Busy
+        - 200 OK
+        - 603 Decline
+        - 608 Rejected
+
+        :param code: SIP code value
+        :type code: int
+        """
+
+    @abstractmethod
+    def is_call_not_answered(self) -> bool:
+        """Verify if caller's call was not answered
+
+        :return: True if not answered, else False
+        :rtype: bool
         """

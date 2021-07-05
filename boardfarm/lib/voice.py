@@ -1,7 +1,10 @@
+from typing import List, Tuple
+
 import pexpect
 from boardfarm_docsis.exceptions import VoiceSetupConfigureFailure
 from nested_lookup import nested_lookup
 
+from boardfarm.devices.base_devices.sip_template import SIPTemplate
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.network_testing import kill_process
@@ -158,3 +161,77 @@ GROUP=kamailio
 EOF"""
     dev.sendline(gen_rtpproxy_conf)
     dev.expect(dev.prompt)
+
+
+def parse_sip_trace(
+    device: SIPTemplate, fname: str, fields: str = ""
+) -> List[List[str]]:
+    """Read and filter SIP packets from the captured file.
+
+    The Session Initiation Protocol is a signaling protocol used for initiating,
+    maintaining, and terminating real-time sessions that include voice,
+    video and messaging applications.
+
+    :param device: SIP server
+    :type device: SIPTemplate
+    :param fname: PCAP file to be read
+    :type fname: str
+    :param fields: Additional field which need to be , defaults to ""
+    :type fields: str, optional
+    :return: list of SIP packets as [src ip, dst ip, sip contact, sip msg]
+    :rtype: List[List[str]]
+    """
+    cmd = f"tshark -r {fname} -Y sip "
+    fields = (
+        "-T fields -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
+        "-e sip.Request-Line -e sip.Status-Line " + fields
+    )
+
+    device.sudo_sendline(cmd + fields)
+    device.expect(device.prompt)
+    out = device.before.splitlines()[1::]
+    if "This could be dangerous." in out[0]:
+        out = out[1::]
+
+    output = []
+    for line in out:
+        src, dst, sfrom, contact, req, status = line.split("\t")
+        output.append([src, dst, contact or sfrom, req or status])
+    return output
+
+
+def is_sip_sequence_matching(
+    sequence: List[Tuple[str]], captured_sequence: List[List[str]]
+) -> bool:
+    """Check if the expected ```sequence``` is a match with the ```captured_sequence```.
+
+    :param sequence: Expected sequence.
+    :type sequence: List[Tuple[str]]
+    :param captured_sequence: Captured sequence
+    :type captured_sequence: List[List[str]]
+    :return: True if sequences match, else False
+    :rtype: bool
+    """
+    last_check = 0
+    for src, dst, sip_contact, msg in sequence:
+        flag = False
+        for i in range(last_check, len(captured_sequence)):
+            result = []
+            src_o, dst_o, sip_contact_o, msg_o = captured_sequence[i]
+            result.append(str(src) == src_o)
+            result.append(str(dst) == dst_o)
+            result.append(sip_contact == sip_contact_o)
+            result.append(msg in msg_o)
+            if all(result):
+                last_check = i
+                print(
+                    f"Verified:\t{src_o}\t--->\t{dst_o}\t from: {sip_contact_o} | {msg_o}"
+                )
+                flag = True
+                break
+        if not flag:
+            print(f"Failed:\t{src}\t--->\t{dst}\t from: {sip_contact} | {msg}")
+            break
+    else:
+        return True
+    return False
