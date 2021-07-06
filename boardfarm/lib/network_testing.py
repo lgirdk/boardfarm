@@ -937,5 +937,5 @@ def mac_to_eui64(mac_address):
     except (ValueError, netaddr.AddrFormatError):
         raise TypeError(
             "Bad mac format for generating IPv6"
-            "address by EUI-64:  %(mac_address)s:" % {"mac": mac_address}
+            "address by EUI-64:  %(mac_address)s:" % {"mac_address": mac_address}
         )
