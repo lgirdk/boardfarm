@@ -749,6 +749,13 @@ EOFEOFEOFEOF"""
         self.expect_prompt()
         return format in self.before
 
+    def get_default_gw(self):
+        self.sendline("ip route show | grep default")
+        self.expect("default via (%s)" % ValidIpv4AddressRegex)
+        gw_ip = self.match.group(1)
+        self.expect_prompt()
+        return gw_ip
+
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
     """This aggregates the basedevice and its implementation"""
