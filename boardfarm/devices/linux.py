@@ -661,8 +661,7 @@ EOFEOFEOFEOF"""
             + ["doctype html"]
             + ["Connection timed out"]
             + ["Failed to connect to"]
-            + ["Couldn't connect to server"]
-            + self.prompt,
+            + ["Couldn't connect to server"],
             timeout=100,
         )
         try:
