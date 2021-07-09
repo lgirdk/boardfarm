@@ -51,9 +51,6 @@ class ContingencyCheck:
         # ACS reference from boardfarm-lgi
         if "tr-069" in env_req.get("environment_def", {}):
             plugins_to_register.append(all_impls["boardfarm.ACS"])
-        # Voice reference from boardfarm-lgi
-        if "voice" in env_req.get("environment_def", {}):
-            plugins_to_register.append(all_impls["boardfarm.Voice"])
 
         plugins_to_register.append(all_impls["boardfarm.CheckInterface"])
 
@@ -216,22 +213,3 @@ class ACS:
             check_packet_analysis_enable()
 
         logger.info("ACS service checks for BF executed")
-
-
-class Voice:
-    """VOICE contingency checks."""
-
-    impl_type = "feature"
-
-    @contingency_impl
-    def service_check(self, env_req, dev_mgr):
-        """Implement Contingency Hook for VOICE."""
-
-        logger.info("Executing Voice service check for BF")
-
-        dev_mgr.lan.check_tty()
-        dev_mgr.lan2.check_tty()
-        dev_mgr.board.mta_prov_check()
-        dev_mgr.board.check_sip_endpoints_registration()
-
-        logger.info("Voice service checks for BF executed")
