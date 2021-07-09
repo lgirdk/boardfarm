@@ -1700,7 +1700,7 @@ def ftp_file_create_delete(
     """
     if create_file:
         filename = create_file + extension
-        device.sendline(f"dd if=/dev/zero of={filename} count=5 bs={size}M")
+        device.sendline(f"dd if=/dev/zero of={filename} count=1 bs={size}M")
         device.expect([r"\d{6,8}\sbytes"] + device.prompt, timeout=90)
         device.expect(device.prompt, timeout=10)
     if remove_file:
@@ -1747,6 +1747,12 @@ def ftp_upload_download(device, ftp_load, timeout=200):
     :param ftp_load: "download" or "upload"
     :type ftp_load: String
     """
+    device.sendline("pass")
+    device.expect("ftp>", timeout=10)
+    if "Passive mode off" in device.before:
+        device.sendline("pass")
+        device.expect("Passive mode on", timeout=10)
+        device.expect("ftp>", timeout=10)
     if "download" in str(ftp_load):
         device.sendline(f"get {ftp_load}.txt")
     elif "upload" in str(ftp_load):
@@ -2199,7 +2205,7 @@ def send_to_influx(device, **kwargs):
     }
     try:
         db = GenericWrapper(**db_config)
-        if not response_time:
+        if response_time is None:
             server_data = [
                 val
                 for val in (db.get_details_dict(server, fname) for fname in s_fname)

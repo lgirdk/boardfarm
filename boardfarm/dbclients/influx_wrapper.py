@@ -41,7 +41,7 @@ class GenericWrapper:
     def get_details_dict(self, device, fname):
         logger = logging.getLogger("bft")
         data_dict = {}
-        val = device.check_output(f"head -10 {fname}")
+        val = device.check_output(f"head -20 {fname}")
         if "iperf3: error - unable to connect to server" in val:
             logger.warning(
                 colored(
@@ -60,7 +60,7 @@ class GenericWrapper:
         else:
             logger.warning(
                 colored(
-                    "Unable to find timestamp in result file. Either you missed to pass -V parameter OR unable to connect.",
+                    "Unable to find timestamp in result file. Either you missed to pass -V parameter in iperf OR unable to connect.",
                     color="yellow",
                     attrs=["bold"],
                 )

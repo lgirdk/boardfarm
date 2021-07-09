@@ -118,7 +118,7 @@ class Influx_DB_Logger(InfluxDBClient, dict):
                 for i in idx["data"]:
                     if idx["fields"] is None or i["value"] is None:
                         continue
-                    data_unit = {"measurement": "boardfarm", "tags": {}}
+                    data_unit = {"measurement": "throughput", "tags": {}}
                     data_unit["tags"]["board"] = self.board
                     data_unit["tags"]["test_run"] = self.test_run
                     data_unit["tags"]["service"] = idx["service"]
@@ -139,15 +139,13 @@ class Influx_DB_Logger(InfluxDBClient, dict):
                     )
                     iperf_data.append(data_unit)
             else:
-                data_unit = {"measurement": "boardfarm", "tags": {}}
+                data_unit = {"measurement": "response", "tags": {}}
                 data_unit["tags"]["board"] = self.board
                 data_unit["tags"]["test_run"] = self.test_run
                 data_unit["tags"]["service"] = idx["service"]
                 data_unit["fields"] = {}
                 data_unit["fields"] = dict(list(zip(idx["fields"], idx["value"])))
-                data_unit["time"] = datetimetostr(
-                    idx["timestamp"] + timedelta(seconds=float(idx["value"][0]))
-                )
+                data_unit["time"] = datetimetostr(idx["timestamp"])
                 iperf_data.append(data_unit)
 
         print(f"Update to DB : {self.write_points(iperf_data)!r}")
