@@ -12,6 +12,7 @@ repos:
           - id: mixed-line-ending
             stages: [commit]
           - id: trailing-whitespace
+            exclude: cm-cfg
             stages: [commit]
           - id: check-docstring-first
             stages: [commit]
@@ -40,10 +41,12 @@ repos:
           - id: remove-crlf
             stages: [commit]
           - id: remove-tabs
+            exclude: cm-cfg
             stages: [commit]
           - id: forbid-crlf
             stages: [commit]
           - id: forbid-tabs
+            exclude: cm-cfg
             stages: [commit]
     - repo: https://github.com/myint/eradicate
       rev: v2.0.0
