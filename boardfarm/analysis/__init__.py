@@ -18,7 +18,7 @@ logger = logging.getLogger("bft")
 # import all analysis classes
 classes = {}
 analysis_files = glob.glob(os.path.dirname(__file__) + "/*.py")
-for x in sorted([os.path.basename(f)[:-3] for f in analysis_files if "__" not in f]):
+for x in sorted(os.path.basename(f)[:-3] for f in analysis_files if "__" not in f):
     try:
         module = importlib.import_module(f"boardfarm.analysis.{x}")
     except Exception:

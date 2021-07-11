@@ -225,7 +225,7 @@ def test_get_interface_ipaddr(mocker, output, expected_ip):
     ]
 
     dev = LinuxDevice()
-    dev.match = max([re.search(i, output) for i in regex], key=bool)
+    dev.match = max((re.search(i, output) for i in regex), key=bool)
     print(dev.match)
     assert expected_ip == dev.get_interface_ipaddr("erouter0")
 
@@ -254,6 +254,6 @@ def test_get_interface_mask(mocker, output, expected_mask):
     ]
 
     dev = LinuxDevice()
-    dev.match = max([re.search(i, output) for i in regex], key=bool)
+    dev.match = max((re.search(i, output) for i in regex), key=bool)
     print(dev.match)
     assert expected_mask == dev.get_interface_mask("erouter0")

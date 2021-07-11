@@ -178,11 +178,11 @@ class SnmpMibs(metaclass=SnmpMibsMeta):
         )
 
         # search for source MIBs here
-        mibCompiler.addSources(*[FileReader(x) for x in src_dir_list])
+        mibCompiler.addSources(*(FileReader(x) for x in src_dir_list))
 
         if http_sources:
             # search for source MIBs at Web sites
-            mibCompiler.addSources(*[HttpReader(*x) for x in http_sources])
+            mibCompiler.addSources(*(HttpReader(*x) for x in http_sources))
 
         # never recompile MIBs with MACROs
         mibCompiler.addSearchers(StubSearcher(*JsonCodeGen.baseMibs))
