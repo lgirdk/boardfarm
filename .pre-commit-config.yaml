@@ -71,10 +71,12 @@ repos:
       hooks:
           - id: pyupgrade
             args: [--py36-plus]
+            stages: [commit]
     - repo: https://github.com/ikamensh/flynt/
       rev: '0.63'
       hooks:
           - id: flynt
+            stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.1.0
       hooks:
