@@ -14,7 +14,7 @@ import boardfarm
 from .dbclients import boardfarmwebclient
 
 
-class Boardfarm(object):
+class Boardfarm:
     """This class makes it easy to interact with the boardfarm server, and to run tests."""
 
     def __init__(self, bfconfig_url, debug=False):

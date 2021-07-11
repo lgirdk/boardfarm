@@ -28,7 +28,7 @@ except ImportError:
         tmp = os.path.abspath(
             os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
         )
-        cmd = "cd %s ; %s" % (tmp, cmd)
+        cmd = f"cd {tmp} ; {cmd}"
     print(cmd)
     sys.exit(1)
 
@@ -284,12 +284,14 @@ def parse():
     args = parser.parse_args()
 
     if args.version:
-        print("%s %s" % (os.path.basename(sys.argv[0]), boardfarm.__version__))
+        print(f"{os.path.basename(sys.argv[0])} {boardfarm.__version__}")
         if boardfarm.plugins:
             print("Installed Plugins:")
             for key in sorted(boardfarm.plugins):
                 print(
-                    "%s %s" % (key, getattr(boardfarm.plugins[key], "__version__", ""))
+                    "{} {}".format(
+                        key, getattr(boardfarm.plugins[key], "__version__", "")
+                    )
                 )
             print("Python: %s" % sys.version)
         sys.exit(0)
@@ -304,7 +306,7 @@ def parse():
             sys.exit(1)
         for k, v in sorted(tests.available_tests.items()):
             try:
-                print("%20s - %s" % (k, v.__doc__.split("\n")[0]))
+                print("{:>20} - {}".format(k, v.__doc__.split("\n")[0]))
             except Exception as error:
                 print(error)
                 print("%20s -" % k)
@@ -464,7 +466,7 @@ def parse():
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
                 sys.stdout.write("Running analysis class = %s... " % c)
-                console_log = open(args.analysis, "r").read()
+                console_log = open(args.analysis).read()
                 from boardfarm.analysis.analysis import prepare_log
 
                 try:
@@ -532,4 +534,4 @@ if __name__ == "__main__":
     for key in sorted(dir(configuration)):
         if key.startswith("__"):
             continue
-        print("%s: %s" % (key, getattr(configuration, key)))
+        print(f"{key}: {getattr(configuration, key)}")

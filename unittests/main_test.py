@@ -135,10 +135,7 @@ class TestSimpleBoardfarm(unittest.TestCase):
                 global ran
                 ran = True
 
-                super(
-                    test_stub,
-                    self,
-                ).skipTest(msg)
+                super().skipTest(msg)
 
         @skip_on_fail
         def test_func(test, arg1, arg2):

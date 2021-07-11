@@ -216,18 +216,16 @@ def update_error_injection_dict(err_dict):
 
     for d in err_dict:
         try:
-            logger.debug("Processing: '{}'".format(d))
+            logger.debug(f"Processing: '{d}'")
             if d.startswith("http"):
                 data = requests.get(d).json()
                 err_injection_dict.update(requests.get(d).json())
             else:
-                data = open(d, "r").read()
+                data = open(d).read()
                 err_injection_dict.update(json.loads(data))
         except Exception as error:
             logger.error(error)
-            logger.error(
-                "Failed to fetch error dictionary at '{}', skipping...".format(d)
-            )
+            logger.error(f"Failed to fetch error dictionary at '{d}', skipping...")
 
     if err_injection_dict:
         logger.error("Error injection dictionary:")

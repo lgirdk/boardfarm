@@ -55,11 +55,11 @@ def build_station_info(board_info):
     """Build station information details."""
     ret = ""
 
-    for device in board_info[u"devices"]:
+    for device in board_info["devices"]:
         conn = device.get("conn_cmd", None)
         if not conn:
             conn = ":".join([device.get("ipaddr", ""), device.get("port", "")])
-        ret += "    <li>%s %s %s</li>\n" % (device["name"], device["type"], conn)
+        ret += "    <li>{} {} {}</li>\n".format(device["name"], device["type"], conn)
 
     return ret
 
@@ -166,7 +166,7 @@ def xmlresults_to_html(
 
     # Substitute parameters into template html to create new html file
     template_filename = pick_template_filename()
-    with open(template_filename, "r") as fin, open(output_name, "w") as fout:
+    with open(template_filename) as fin, open(output_name, "w") as fout:
         f = fin.read()
         s = Template(f)
         fout.write(s.substitute(parameters))
@@ -189,7 +189,7 @@ def get_title():
 
 if __name__ == "__main__":
     try:
-        list_results = json.load(open(sys.argv[1], "r"))["test_results"]
+        list_results = json.load(open(sys.argv[1]))["test_results"]
         xmlresults_to_html(list_results, title="Test Results")
     except Exception as e:
         logger.error(e)

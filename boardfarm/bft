@@ -50,7 +50,7 @@ except Exception as e:
         tmp = os.path.abspath(
             os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
         )
-        cmd = "cd %s ; %s" % (tmp, cmd)
+        cmd = f"cd {tmp} ; {cmd}"
     logger.debug(cmd)
     sys.exit(1)
 
@@ -60,7 +60,7 @@ tests.init()
 matplotlib.use("Agg")
 
 
-class FailedDevice(object):
+class FailedDevice:
     """failed device."""
 
     name = None
@@ -76,10 +76,10 @@ def bfcleanup():
     pid = os.getpid()
     for child in psutil.Process(pid).children(recursive=True):
         try:
-            logger.debug("Killing process '{}'".format(child.name()))
+            logger.debug(f"Killing process '{child.name()}'")
             child.kill()
         except Exception as e:
-            logger.error("Failed to kill '{}':  {}".format(child.name(), e))
+            logger.error(f"Failed to kill '{child.name()}':  {e}")
 
 
 def threaded_device_helper(device, device_mgr, ret):
@@ -118,7 +118,7 @@ def threaded_device_helper(device, device_mgr, ret):
 
     if "BFT_DEBUG" in os.environ:
         logger.debug(
-            "Time to instantiate device %s = %s" % (device["name"], time.time() - s)
+            "Time to instantiate device {} = {}".format(device["name"], time.time() - s)
         )
 
     dyn_dev.name = device["name"]
@@ -214,7 +214,7 @@ def connect_to_devices(config):
     """Connect to devices."""
     if config.test_args_location is not None:
         try:
-            with open(config.test_args_location, "r") as fp:
+            with open(config.test_args_location) as fp:
                 config.test_args = json.load(fp)
         except Exception as e:
             logger.error(e)
@@ -494,10 +494,10 @@ def connect_to_devices(config):
         sys.exit(2)
 
     try:
-        logger.info("Using Board %s, User %s" % (name, os.environ["BUILD_USER_ID"]))
+        logger.info("Using Board {}, User {}".format(name, os.environ["BUILD_USER_ID"]))
     except Exception as e:
         logger.debug(e)
-        logger.info("Using Board %s, User %s" % (name, os.environ["USER"]))
+        logger.info("Using Board {}, User {}".format(name, os.environ["USER"]))
 
     # Update config from board info
     if hasattr(board, "update_config"):
@@ -542,7 +542,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
             test = tests.available_tests[name]
         else:
             test = name
-        logger.info("  %s %s from %s" % (i + 1, test.__name__, inspect.getfile(test)))
+        logger.info(f"  {i + 1} {test.__name__} from {inspect.getfile(test)}")
         # Create an instance of this test and give it a config and device manager.
         tests_to_run.append(test(config, device_mgr, env_helper))
     if hasattr(config, "EXTRA_TESTS") and config.EXTRA_TESTS:
@@ -645,7 +645,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     # also, never fail so we don't block automation
     try:
         fname = "console-combined.log"
-        with open(os.path.join(config.output_dir, fname), "r") as f:
+        with open(os.path.join(config.output_dir, fname)) as f:
             clog = f.read()
         if not clog:
             logger.debug("Skipping analysis because %s is empty..." % fname)
@@ -719,9 +719,9 @@ def main():
         )
 
     # Send Results to AWS, if configured
-    if set(
-        ("BFT_AWS_ACCESS_KEY", "BFT_AWS_SECRET_ACCESS_KEY", "BFT_AWS_BUCKET")
-    ).issubset(os.environ):
+    if {"BFT_AWS_ACCESS_KEY", "BFT_AWS_SECRET_ACCESS_KEY", "BFT_AWS_BUCKET"}.issubset(
+        os.environ
+    ):
         try:
             import boto3
 

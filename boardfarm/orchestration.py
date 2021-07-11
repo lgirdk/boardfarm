@@ -6,7 +6,6 @@ from collections.abc import Iterable
 from datetime import datetime
 from functools import partial, wraps
 
-import six
 from termcolor import cprint
 
 from boardfarm.exceptions import CodeError, ContOnFailError, TestError
@@ -49,7 +48,7 @@ class TestStepMeta(type):
     def __new__(cls, name, bases, dct):
         """Create instance."""
         dct["__init__"] = cls.set_args(dct["__init__"])
-        return super(TestStepMeta, cls).__new__(cls, name, bases, dct)
+        return super().__new__(cls, name, bases, dct)
 
     @classmethod
     def set_args(cls, func):
@@ -65,7 +64,7 @@ class TestStepMeta(type):
         return wrapper
 
 
-class TestStep(six.with_metaclass(TestStepMeta, object)):
+class TestStep(metaclass=TestStepMeta):
     """Test step class for creating test step for automation."""
 
     __test__ = False
@@ -98,7 +97,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         indent = ""
         if not no_time:
             indent = " " * (len(time) + 1)
-            msg = "{} {}".format(time, msg)
+            msg = f"{time} {msg}"
         if wrap:
             msg = textwrap.TextWrapper(width=80, subsequent_indent=indent).fill(
                 text=msg
@@ -131,8 +130,8 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         )
         print()
         self.log_msg(("#" * 80), no_time=True)
-        self.log_msg("{}: START".format(self.msg))
-        self.log_msg("Description: {}".format(self.name))
+        self.log_msg(f"{self.msg}: START")
+        self.log_msg(f"Description: {self.name}")
         self.log_msg(("#" * 80), no_time=True)
         self.called_with = True
         return self
@@ -141,7 +140,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         """Test Step pass and Fail based log message result creation."""
         r = "PASS" if not tb else "FAIL"
         self.log_msg(("-" * 80), no_time=True)
-        self.log_msg("{}: END\t\tResult: {}".format(self.msg, r))
+        self.log_msg(f"{self.msg}: END\t\tResult: {r}")
         if tb:
             trace = traceback.format_exception(ex_type, ex_value, tb)
             self.log_msg("".join(trace).strip(), attr=[], no_time=True, wrap=False)
@@ -149,7 +148,7 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
         if tb and "BFT_DEBUG" in os.environ:
             step_output = ["Logging step output:"]
             for i in self.result:
-                step_output.append("[{}] :: {}".format(i.step, i.result))
+                step_output.append(f"[{i.step}] :: {i.result}")
             self.log_msg("\n".join(step_output), no_time=True, wrap=False)
             self.log_msg(("-" * 80), no_time=True)
         self.called_with = False
@@ -158,24 +157,20 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
     def verify(self, cond, msg):
         """Log message of Result is based on condition of pass or fail."""
         if not cond:
-            self.log_msg("{}::[Verification] :\n{} - FAILED".format(self.msg, msg))
-            raise TestError("{}::[Verification] :\n{} - FAILED".format(self.msg, msg))
+            self.log_msg(f"{self.msg}::[Verification] :\n{msg} - FAILED")
+            raise TestError(f"{self.msg}::[Verification] :\n{msg} - FAILED")
         else:
-            self.log_msg("{}::[Verification] :\n{} - PASSED".format(self.msg, msg))
+            self.log_msg(f"{self.msg}::[Verification] :\n{msg} - PASSED")
 
     def execute(self):
         """Define Test step execute and Verifying test steps."""
         # enforce not to call execute without using with clause.
         if not self.called_with:
-            raise CodeError(
-                "{} - need to execute step using 'with' clause".format(self.msg)
-            )
+            raise CodeError(f"{self.msg} - need to execute step using 'with' clause")
 
         # enforce not to call execute without adding an action
         if not self.actions:
-            raise CodeError(
-                "{} - no actions added before calling execute".format(self.msg)
-            )
+            raise CodeError(f"{self.msg} - no actions added before calling execute")
 
         self.execute_flag = True
 
@@ -193,12 +188,10 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             try:
                 output = action.execute()
                 tr = TestResult(prefix, "OK", "", (func_name, output))
-                self.log_msg("{} : DONE".format(prefix))
+                self.log_msg(f"{prefix} : DONE")
             except Exception as e:
                 tr = TestResult(prefix, "FAIL", str(e), (func_name, str(e)))
-                self.log_msg(
-                    "{} : FAIL :: {}:{}".format(prefix, e.__class__.__name__, str(e))
-                )
+                self.log_msg(f"{prefix} : FAIL :: {e.__class__.__name__}:{str(e)}")
                 raise (e)
             finally:
                 self.result.append(tr)
@@ -208,13 +201,13 @@ class TestStep(six.with_metaclass(TestStepMeta, object)):
             try:
                 cond = self.verify_f()
             except Exception as e:
-                raise CodeError("{}::[Verification] :\n{}".format(self.msg, str(e)))
+                raise CodeError(f"{self.msg}::[Verification] :\n{str(e)}")
             self.verify(cond, self.v_msg)
 
         self.actions = []
 
 
-class TestAction(object):
+class TestAction:
     """TestAction initialized and return the action result."""
 
     __test__ = False
@@ -244,7 +237,7 @@ class TearDown(TestStep):
 
     def __init__(self, parent_test, name, prefix="TearDown"):
         """Instance initialization for TearDown class."""
-        super(TearDown, self).__init__(parent_test, name, prefix)
+        super().__init__(parent_test, name, prefix)
         self.td_result = True
         self.td_final_result = True
         self.print_enter = False
@@ -252,12 +245,12 @@ class TearDown(TestStep):
     def add(self, func, *args, **kwargs):
         """Define wrapper function for TearDown."""
         wrapped_func = continue_on_fail(func)
-        super(TearDown, self).add(wrapped_func, *args, **kwargs)
+        super().add(wrapped_func, *args, **kwargs)
 
     def enter(self):
         """Define print_enter True default."""
         self.print_enter = True
-        super(TearDown, self).__enter__()
+        super().__enter__()
 
     def call(self, func, *args, **kwargs):
         """Teardown function calling execute and check on ContOnFailError."""
@@ -312,11 +305,11 @@ class TearDown(TestStep):
                 ["FAIL", "PASS"][self.td_result],
             )
         )
-        self.log_msg("Output: {}".format(i.result), no_time=True)
+        self.log_msg(f"Output: {i.result}", no_time=True)
         self.log_msg(("-" * 80), no_time=True)
 
 
-class ExpectException(object):
+class ExpectException:
     """Initialize Exception."""
 
     def __init__(self, ts, exc, *args, **kwargs):
@@ -331,7 +324,7 @@ class ExpectException(object):
 
         if args:
             if not callable(args[0]):
-                raise CodeError("{} is not a function".format(args[0]))
+                raise CodeError(f"{args[0]} is not a function")
             if not self.called_with:
                 self.execute_callable(*args, **kwargs)
             else:
@@ -393,7 +386,7 @@ class ExpectException(object):
                     )
         if not self.exception:
             raise AssertionError(
-                "No exception caught!!\nExpected exceptions - {}".format(self.exc_list)
+                f"No exception caught!!\nExpected exceptions - {self.exc_list}"
             )
 
 
@@ -402,31 +395,27 @@ if __name__ == "__main__":
     def action1(a, m=2):
         """Perform multiplication with default value is 2."""
         logger.debug(
-            "\nAction 1 performed multiplication\nWill return value: {}\n".format(a * m)
+            f"\nAction 1 performed multiplication\nWill return value: {a * m}\n"
         )
         return a * m
 
     def action2(a, m=3):
         """Perform Division with default value is 3."""
-        logger.debug(
-            "\nAction 2 performed division\nWill return value: {}\n".format(a / m)
-        )
+        logger.debug(f"\nAction 2 performed division\nWill return value: {a / m}\n")
         return a / m
 
     def add_100(a):
         """Perform addition with return value."""
-        logger.debug(
-            "\nAction addition performed \nWill return value: {}\n".format(a + 100)
-        )
+        logger.debug(f"\nAction addition performed \nWill return value: {a + 100}\n")
         return a + 100
 
     def raise_exc(exc, code=99):
         """Raise exception."""
-        e = exc("Hi, this is an exception for {}".format(exc.__name__))
+        e = exc(f"Hi, this is an exception for {exc.__name__}")
         e.code = code
         raise e
 
-    class Test1(object):
+    class Test1:
         """Test 1 Class initialized for performing test step automation."""
 
         steps = []
@@ -460,7 +449,7 @@ if __name__ == "__main__":
                     ts.execute()
                     ts.verify(
                         ts.result[-1].output() == 100 + i,
-                        "Verification for input: {}".format(i),
+                        f"Verification for input: {i}",
                     )
 
             # variation 4
@@ -481,7 +470,7 @@ if __name__ == "__main__":
                 # since we didn't add a verification before,we can call one directly as well
                 ts.verify(ts.result[1].output() != 3, "verify step2 output")
 
-    class Test2(object):
+    class Test2:
         """Test2 Step for Automation define."""
 
         steps = []
@@ -519,6 +508,4 @@ if __name__ == "__main__":
 
     obj1.test_main()
 
-    logger.debug(
-        "\n\nHow stuff will look like in txt file:\n{}".format(obj.log_to_file)
-    )
+    logger.debug(f"\n\nHow stuff will look like in txt file:\n{obj.log_to_file}")
