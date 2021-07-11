@@ -38,7 +38,7 @@ class Boardfarm:
     def list_stations(self):
         """Query boardfarm server for stations and return a dict."""
         for name in self.server.bf_config:
-            print("%s" % name)
+            print(f"{name}")
 
     def _supported_devices(self):
         """Create list of supported device names that can be used in tests."""
@@ -55,11 +55,11 @@ class Boardfarm:
         print("Trying to run bft ...")
         cmd = ""
         if self.debug:
-            cmd += "export BFT_DEBUG=%s ; " % self.debug
+            cmd += f"export BFT_DEBUG={self.debug} ; "
         cmd += "bft -b {b} --testsuite {t} -c {c} -o {o}".format(
             b=board_type, t=testsuite, c=self.bfconfig_url, o=output_dir
         )
         print(cmd)
         subprocess.check_output(cmd, shell=True)
-        print("Results in %s" % output_dir)
+        print(f"Results in {output_dir}")
         print("\n".join(os.listdir(output_dir)))

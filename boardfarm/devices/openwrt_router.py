@@ -65,8 +65,8 @@ class OpenWrtRouter(linux.LinuxDevice):
     uboot_net_delay = 30
 
     routing = True
-    lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
-    lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
+    lan_network = ipaddress.IPv4Network("192.168.1.0/24")
+    lan_gateway = ipaddress.IPv4Address("192.168.1.1")
     tmpdir = "/tmp"
 
     def __init__(
@@ -86,7 +86,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         power_username=None,
         power_password=None,
         config=None,
-        **kwargs
+        **kwargs,
     ):
         """Instance initialization."""
         self.config = config
@@ -136,32 +136,32 @@ class OpenWrtRouter(linux.LinuxDevice):
         """
         if not self.web_proxy:
             raise Exception("No web proxy defined to access board.")
-        url = "http://%s/TEMP" % lan_ip
-        self.sendline("\nchmod a+r %s" % fname)
+        url = f"http://{lan_ip}/TEMP"
+        self.sendline(f"\nchmod a+r {fname}")
         self.expect("chmod ")
         self.expect(self.prompt)
-        self.sendline("ln -sf %s /www/TEMP" % fname)
+        self.sendline(f"ln -sf {fname} /www/TEMP")
         self.expect(self.prompt)
         proxy = ProxyHandler({"http": self.web_proxy + ":8080"})
         opener = build_opener(proxy)
         install_opener(opener)
         logger.info(
-            "\nAttempting download of %s via proxy %s" % (url, self.web_proxy + ":8080")
+            f"\nAttempting download of {url} via proxy {self.web_proxy + ':8080'}"
         )
         return urlopen(url, timeout=30)
 
     def tftp_get_file(self, host, filename, timeout=30):
         """Download file from tftp server."""
-        self.sendline("tftp-hpa %s" % host)
+        self.sendline(f"tftp-hpa {host}")
         self.expect("tftp>")
-        self.sendline("get %s" % filename)
+        self.sendline(f"get {filename}")
         t = timeout
         self.expect("tftp>", timeout=t)
         self.sendline("q")
         self.expect(self.prompt)
-        self.sendline("ls `basename %s`" % filename)
+        self.sendline(f"ls `basename {filename}`")
         new_fname = os.path.basename(filename)
-        self.expect("%s" % new_fname)
+        self.expect(f"{new_fname}")
         self.expect(self.prompt)
         return new_fname
 
@@ -176,8 +176,8 @@ class OpenWrtRouter(linux.LinuxDevice):
                     cmd = "tftpboot"
                 else:
                     cmd = "tftp"
-                self.sendline("%s %s %s" % (cmd, loadaddr, filename))
-                self.expect_exact("%s %s %s" % (cmd, loadaddr, filename))
+                self.sendline(f"{cmd} {loadaddr} {filename}")
+                self.expect_exact(f"{cmd} {loadaddr} {filename}")
                 i = self.expect(
                     [r"Bytes transferred = (\d+) (.* hex)"] + self.uprompt,
                     timeout=timeout,
@@ -220,12 +220,12 @@ class OpenWrtRouter(linux.LinuxDevice):
         new_fname = self.prepare_file(fname)
         local_file = self.tftp_get_file(self.tftp_server, new_fname, timeout=60)
         # opkg requires a correct file name
-        self.sendline("mv %s %s" % (local_file, target_file))
+        self.sendline(f"mv {local_file} {target_file}")
         self.expect(self.prompt)
-        self.sendline("opkg install --force-downgrade %s" % target_file)
+        self.sendline(f"opkg install --force-downgrade {target_file}")
         self.expect(["Installing", "Upgrading", "Downgrading"])
         self.expect(self.prompt, timeout=60)
-        self.sendline("rm -f /%s" % target_file)
+        self.sendline(f"rm -f /{target_file}")
         self.expect(self.prompt)
 
     def wait_for_boot(self):
@@ -323,7 +323,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         # Use standard eth1 address of wan-side computer
         self.sendline("setenv autoload no")
         self.expect(self.uprompt)
-        self.sendline("setenv ethact %s" % self.uboot_eth)
+        self.sendline(f"setenv ethact {self.uboot_eth}")
         self.expect(self.uprompt)
         self.expect(
             pexpect.TIMEOUT, timeout=self.uboot_net_delay
@@ -334,7 +334,7 @@ class OpenWrtRouter(linux.LinuxDevice):
         if i == 0:
             self.sendline("setenv ipaddr 192.168.0.2")
             self.expect(self.uprompt)
-        self.sendline("setenv serverip %s" % self.tftp_server_int)
+        self.sendline(f"setenv serverip {self.tftp_server_int}")
         self.expect(self.uprompt)
         if self.tftp_server_int:
             passed = False
@@ -344,7 +344,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                     self.expect("<INTERRUPT>")
                     self.expect(self.uprompt)
                     self.sendline("ping $serverip")
-                    self.expect("host %s is alive" % self.tftp_server_int)
+                    self.expect(f"host {self.tftp_server_int} is alive")
                     self.expect(self.uprompt)
                     passed = True
                     break
@@ -407,13 +407,13 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("uci set firewall.@redirect[-1].src=wan")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@redirect[-1].src_dport=%s" % port_wan)
+        self.sendline(f"uci set firewall.@redirect[-1].src_dport={port_wan}")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@redirect[-1].proto=%s" % tcp_udp)
+        self.sendline(f"uci set firewall.@redirect[-1].proto={tcp_udp}")
         self.expect(self.prompt)
         self.sendline("uci set firewall.@redirect[-1].dest=lan")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@redirect[-1].dest_ip=%s" % ip_lan)
+        self.sendline(f"uci set firewall.@redirect[-1].dest_ip={ip_lan}")
         self.expect(self.prompt)
         self.sendline("uci commit firewall")
         self.expect(self.prompt)
@@ -424,15 +424,15 @@ class OpenWrtRouter(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("uci set firewall.@rule[-1].src=wan")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@rule[-1].proto=%s" % tcp_udp)
+        self.sendline(f"uci set firewall.@rule[-1].proto={tcp_udp}")
         self.expect(self.prompt)
         self.sendline("uci set firewall.@rule[-1].dest=lan")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@rule[-1].dest_ip=%s" % ip)
+        self.sendline(f"uci set firewall.@rule[-1].dest_ip={ip}")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@rule[-1].dest_port=%s" % port)
+        self.sendline(f"uci set firewall.@rule[-1].dest_port={port}")
         self.expect(self.prompt)
-        self.sendline("uci set firewall.@rule[-1].target=%s" % target)
+        self.sendline(f"uci set firewall.@rule[-1].target={target}")
         self.expect(self.prompt)
         self.sendline("uci commit firewall")
         self.expect(self.prompt)
@@ -453,7 +453,7 @@ class OpenWrtRouter(linux.LinuxDevice):
 
     def get_dns_server(self):
         """Get dns server ip address."""
-        return "%s" % self.lan_gateway
+        return f"{self.lan_gateway}"
 
     def get_user_id(self, user_id):
         self.sendline("cat /etc/passwd | grep -w " + user_id)
@@ -492,7 +492,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                             print_bold("FAILED TO KILL MPSTAT!")
                             pp.sendcontrol("c")
 
-                pp.sendline("mpstat -P ALL 5  > %s/mpstat &" % self.tmpdir)
+                pp.sendline(f"mpstat -P ALL 5  > {self.tmpdir}/mpstat &")
                 if 0 == pp.expect(["mpstat: not found"] + pp.prompt):
                     self.failed_stats["mpstat"] = float("nan")
                     continue
@@ -524,8 +524,8 @@ class OpenWrtRouter(linux.LinuxDevice):
             if "mpstat" in pp.match.group():
                 pp.sendcontrol("c")
                 pp.expect(pp.prompt)
-                pp.sendline("cat %s/mpstat" % self.tmpdir)
-                pp.expect(["cat %s/mpstat" % self.tmpdir, pexpect.TIMEOUT])
+                pp.sendline(f"cat {self.tmpdir}/mpstat")
+                pp.expect([f"cat {self.tmpdir}/mpstat", pexpect.TIMEOUT])
 
                 idle_vals = []
                 start = datetime.now()
@@ -542,7 +542,7 @@ class OpenWrtRouter(linux.LinuxDevice):
                 else:
                     dict_to_log["mpstat"] = 0
 
-                pp.sendline("rm %s/mpstat" % self.tmpdir)
+                pp.sendline(f"rm {self.tmpdir}/mpstat")
                 pp.expect([pexpect.TIMEOUT] + pp.prompt)
 
                 idx += 1
@@ -571,4 +571,4 @@ if __name__ == "__main__":
     local_fname = "/tmp/dhcp.leases"
     with open(local_fname, "wb") as local_file:
         local_file.write(board.get_file(remote_fname).read())
-        logger.debug("\nCreated %s" % local_fname)
+        logger.debug(f"\nCreated {local_fname}")

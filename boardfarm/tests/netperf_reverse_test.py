@@ -34,7 +34,7 @@ class NetperfReverseTest(netperf_test.NetperfTest):
         board.expect("Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){10}\r\n")
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
-        lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
+        lib.common.test_msg(f"Average cpu usage was {avg_cpu}")
 
         self.result_message = (
             "Setup NetperfReverse and Ran Throughput (Speed = %s 10^6bits/sec, CPU = %s)"

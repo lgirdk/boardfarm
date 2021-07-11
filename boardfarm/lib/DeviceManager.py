@@ -167,8 +167,8 @@ class device_manager(UserList):
         # TODO: does self.env really belong here or in device class?
         self.uniqid = uuid.uuid4().hex[:15]  # Random, unique ID and use first 15 bytes
         self.env = {
-            "wan_iface": "wan%s" % self.uniqid[:12],
-            "lan_iface": "lan%s" % self.uniqid[:12],
+            "wan_iface": f"wan{self.uniqid[:12]}",
+            "lan_iface": f"lan{self.uniqid[:12]}",
             "uniq_id": self.uniqid,
         }
 
@@ -200,18 +200,18 @@ class device_manager(UserList):
             dev_array.append(dev)
             setattr(self, array_name, dev_array)
         else:
-            raise Exception("Invalid device array type %s" % array_name)
+            raise Exception(f"Invalid device array type {array_name}")
 
     def close_all(self):
         """Close connections to all devices."""
         for d in self.devices:
             try:
-                logger.debug("Closing connection to '%s'." % d.type.name)
+                logger.debug(f"Closing connection to '{d.type.name}'.")
                 d.obj.close()
             except Exception as e:
                 logger.warning(e)
                 logger.warning(
-                    "Problem trying to close connection to '%s'." % d.type.name
+                    f"Problem trying to close connection to '{d.type.name}'."
                 )
         # erase device list
         self.devices = []
@@ -262,8 +262,7 @@ class device_manager(UserList):
 
         if len(matching) > 1:
             logger.debug(
-                "multiple matches, returning first hit (%s, %s, %s)"
-                % (t, feature, location)
+                f"multiple matches, returning first hit ({t}, {feature}, {location})"
             )
             for m in matching:
                 logger.debug(m)

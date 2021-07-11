@@ -30,7 +30,7 @@ def find_subdirs(directories, name):
             # By design there shouldn't be more than one "devices" or "tests" directory in
             # a given boardfarm project
             logger.error(
-                "WARNING: Multiple directories of the name %s found in %s." % (name, d)
+                f"WARNING: Multiple directories of the name {name} found in {d}."
             )
             logger.error("All will be used to find python classes")
     return result

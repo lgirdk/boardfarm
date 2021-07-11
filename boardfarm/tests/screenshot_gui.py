@@ -55,7 +55,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
                 lan.expect(r"%s.*\|\s([0-9]+).*\|" % lan.iface_dut)
                 port = 8000 + int(lan.match.group(1))
                 lan.expect(prompt)
-                proxy = "%s:%s" % (ip, port)
+                proxy = f"{ip}:{port}"
             else:
                 # no proxy, use message below
                 assert False
@@ -67,7 +67,7 @@ class RunBrowserViaProxy(rootfs_boot.RootFSBootTest):
 
         board.enable_mgmt_gui(board, wan)
 
-        print("Using proxy %s" % proxy)
+        print(f"Using proxy {proxy}")
         driver = lib.common.get_webproxy_driver(proxy, self.config)
 
         return driver
@@ -109,8 +109,8 @@ class ScreenshotGUI(RunBrowserViaProxy):
 
         driver = self.start_browser()
 
-        print("taking ss of http://%s" % board.lan_gateway)
-        driver.get("http://%s" % board.lan_gateway)
+        print(f"taking ss of http://{board.lan_gateway}")
+        driver.get(f"http://{board.lan_gateway}")
 
         # wait for possible redirects to settle down
         url = driver.current_url

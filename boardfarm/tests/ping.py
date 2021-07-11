@@ -21,7 +21,7 @@ class RouterPingWanDev(rootfs_boot.RootFSBootTest):
             msg = "No WAN Device defined, skipping ping WAN test."
             lib.common.test_msg(msg)
             self.skipTest(msg)
-        board.sendline("\nping -c5 %s" % wan.gw)
+        board.sendline(f"\nping -c5 {wan.gw}")
         board.expect("5 (packets )?received", timeout=15)
         board.expect(board.prompt)
 
@@ -64,7 +64,7 @@ class LanDevPingRouter(rootfs_boot.RootFSBootTest):
             lib.common.test_msg(msg)
             self.skipTest(msg)
         router_ip = board.get_interface_ipaddr(board.lan_iface)
-        lan.sendline("\nping -i 0.2 -c 5 %s" % router_ip)
+        lan.sendline(f"\nping -i 0.2 -c 5 {router_ip}")
         lan.expect("PING ")
         lan.expect("5 (packets )?received", timeout=15)
         lan.expect(lan.prompt)
@@ -85,7 +85,7 @@ class LanDevPingWanDev(rootfs_boot.RootFSBootTest):
             msg = "No WAN Device defined, skipping ping WAN test."
             lib.common.test_msg(msg)
             self.skipTest(msg)
-        lan.sendline("\nping -i 0.2 -c 5 %s" % wan.gw)
+        lan.sendline(f"\nping -i 0.2 -c 5 {wan.gw}")
         lan.expect("PING ")
         lan.expect("5 (packets )?received", timeout=15)
         lan.expect(lan.prompt)

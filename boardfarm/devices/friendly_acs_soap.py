@@ -42,7 +42,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def get(self, cpeid, param, source=0):
         """Get FriendlyACS param."""
-        logger.debug("FriendlyACS.get : param = {}".format(param))
+        logger.debug(f"FriendlyACS.get : param = {param}")
         # source = 0 (CPE), source = 1 (DB)
         ret = self.client.service.FTGetDeviceParameters(
             devicesn=cpeid, source=source, arraynames=[param]
@@ -54,7 +54,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def set(self, cpeid, attr, value):
         """Set FriendlyACS param."""
-        logger.debug("FriendlyACS.set : attr = {}, value = {}".format(attr, value))
+        logger.debug(f"FriendlyACS.set : attr = {attr}, value = {value}")
         array_of_param = self.client.get_type(
             "{http://www.friendly-tech.com}ArrayOfParam"
         )
@@ -73,7 +73,7 @@ class FriendlyACS(metaclass=LoggerMeta):
 
     def rpc(self, cpeid, name, content):
         """RPC FriendlyACS on specific CM."""
-        logger.debug("FriendlyACS.rpc : name = {}, content = {}".format(name, content))
+        logger.debug(f"FriendlyACS.rpc : name = {name}, content = {content}")
         """Invoke custom RPC on specific CM."""
         ret = self.client.service.FTRPCInvoke(
             devicesn=cpeid, rpcname=name, soapcontent=content

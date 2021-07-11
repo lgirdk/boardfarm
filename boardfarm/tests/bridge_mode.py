@@ -17,8 +17,7 @@ class BridgedMode(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         board.sendline(
-            'uci set network.lan.ifname="%s %s"'
-            % (board.wan_iface, board.lan_gmac_iface)
+            f'uci set network.lan.ifname="{board.wan_iface} {board.lan_gmac_iface}"'
         )
         board.expect(prompt)
         board.sendline("uci set firewall.@defaults[0]=defaults")
@@ -62,5 +61,5 @@ class BridgedMode(rootfs_boot.RootFSBootTest):
         board.network_restart()
         board.firewall_restart()
 
-        lan.sendline("ifconfig %s 192.168.0.2" % lan.iface_dut)
+        lan.sendline(f"ifconfig {lan.iface_dut} 192.168.0.2")
         lan.expect(prompt)

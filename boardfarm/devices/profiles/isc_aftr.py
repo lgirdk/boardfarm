@@ -104,7 +104,7 @@ class AFTR(base_profile.BaseProfile):
         if Counter(
             [i.strip() for i in start_conf.split("\n") if i.strip() != ""]
         ) != Counter(run_conf):
-            to_send = "cat > /root/aftr/aftr.conf << EOF\n%s\nEOF" % start_conf
+            to_send = f"cat > /root/aftr/aftr.conf << EOF\n{start_conf}\nEOF"
             self.sendline(to_send)
             self.expect(self.prompt)
 
@@ -116,7 +116,7 @@ class AFTR(base_profile.BaseProfile):
                 if i.strip() != ""
             ]
         ) != Counter(run_script):
-            to_send = "cat > /root/aftr/aftr-script << EOF\n%s\nEOF" % start_script
+            to_send = f"cat > /root/aftr/aftr-script << EOF\n{start_script}\nEOF"
             self.sendline(to_send)
             self.expect(self.prompt)
             self.sendline("chmod +x /root/aftr/aftr-script")
@@ -163,21 +163,21 @@ class AFTR(base_profile.BaseProfile):
             [
                 ("address endpoint ", str(self.ipv6_ep.ip)),
                 ("address icmp ", self.ipv4_nat_ip),
-                ("pool %s tcp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
-                ("pool %s udp " % self.ipv4_nat_ip, self.ipv4_nat_pool),
-                ("pcp %s tcp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
-                ("pcp %s udp " % self.ipv4_nat_ip, self.ipv4_pcp_pool),
+                (f"pool {self.ipv4_nat_ip} tcp ", self.ipv4_nat_pool),
+                (f"pool {self.ipv4_nat_ip} udp ", self.ipv4_nat_pool),
+                (f"pcp {self.ipv4_nat_ip} tcp ", self.ipv4_pcp_pool),
+                (f"pcp {self.ipv4_nat_ip} udp ", self.ipv4_pcp_pool),
                 (
                     "#All IPv6 ACLs\n",
-                    "\n".join(map(lambda x: "acl6 %s" % x, self.ipv6_acl)),
+                    "\n".join(map(lambda x: f"acl6 {x}", self.ipv6_acl)),
                 ),
             ]
         )
 
         for k, v in self.aftr_conf.items():
-            run_conf.append("## %s\n" % k)
+            run_conf.append(f"## {k}\n")
             for option, value in v.items():
-                run_conf.append("%s%s" % (option, value))
+                run_conf.append(f"{option}{value}")
             run_conf[-1] += "\n"
 
         return "\n".join(run_conf)
@@ -198,15 +198,15 @@ class AFTR(base_profile.BaseProfile):
         # added a few sysctls to get it working inside a container.
         run_conf["aftr_start()"] = "\n".join(
             map(
-                lambda x: "%s%s" % (tab, x),
+                lambda x: f"{tab}{x}",
                 [
                     "ip link set tun0 up",
                     "sysctl -w net.ipv4.ip_forward=1",
                     "sysctl -w net.ipv6.conf.all.forwarding=1",
                     "sysctl -w net.ipv6.conf.all.disable_ipv6=0",
                     "ip addr add 192.0.0.1 peer 192.0.0.2 dev tun0",
-                    "ip route add %s dev tun0" % str(self.ipv4_nat.network),
-                    "ip -6 route add %s dev tun0" % str(self.ipv6_ep.network),
+                    f"ip route add {str(self.ipv4_nat.network)} dev tun0",
+                    f"ip -6 route add {str(self.ipv6_ep.network)} dev tun0",
                     "iptables -t nat -F",
                     r"iptables -t nat -A POSTROUTING -s %s -j SNAT --to-source \$PUBLIC"
                     % self.ipv4_nat_ip,
@@ -224,7 +224,7 @@ class AFTR(base_profile.BaseProfile):
 
         run_conf["aftr_stop()"] = "\n".join(
             map(
-                lambda x: "%s%s" % (tab, x),
+                lambda x: f"{tab}{x}",
                 ["iptables -t nat -F", "ip link set tun0 down"],
             )
         )
@@ -236,15 +236,15 @@ class AFTR(base_profile.BaseProfile):
                 % self.iface_dut,
                 "\n" + r'case "\$1" in',
                 "start)",
-                "%saftr_start" % tab,
-                "%s;;" % tab,
+                f"{tab}aftr_start",
+                f"{tab};;",
                 "stop)",
-                "%saftr_stop" % tab,
-                "%s;;" % tab,
+                f"{tab}aftr_stop",
+                f"{tab};;",
                 "*)",
                 r'%secho "Usage: \$0 start|stop"' % tab,
-                "%sexit 1" % tab,
-                "%s;;" % tab,
+                f"{tab}exit 1",
+                f"{tab};;",
                 "esac\n",
                 "exit 0",
             ]
@@ -288,7 +288,7 @@ class AFTR(base_profile.BaseProfile):
                         if self.aftr_local is not None
                         else self.aftr_url
                     )
-                    self.sendline("curl %s -o /root/aftr.tbz" % self.aftr_url)
+                    self.sendline(f"curl {self.aftr_url} -o /root/aftr.tbz")
                     self.expect(self.prompt, timeout=60)
                     self.sendline(
                         "tar -C /root -xvjf /root/aftr.tbz; mv /root/rt28354 /root/aftr"

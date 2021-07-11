@@ -31,7 +31,7 @@ class LinuxInterface:
 
     def check_status(self):
         """Check the state of the device."""
-        logger.debug("\n\nRunning check_status() on %s" % self.name)
+        logger.debug(f"\n\nRunning check_status() on {self.name}")
         self.sendline(
             "\ncat /proc/version; cat /proc/uptime; ip a; ifconfig; route -n; route -6 -n"
         )
@@ -43,7 +43,7 @@ class LinuxInterface:
 
     def get_interface_ipaddr(self, interface):
         """Get ipv4 address of interface."""
-        self.sendline("\nifconfig %s" % interface)
+        self.sendline(f"\nifconfig {interface}")
         regex = [
             r"addr:(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(Bcast|P-t-P):",
             r"inet:?\s*(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}).*(broadcast|P-t-P|Bcast)",
@@ -58,12 +58,12 @@ class LinuxInterface:
         ipaddr = self.match.group(1)
         ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
         self.expect(self.prompt)
-        logger.debug("ifconfig {} IPV4 {}".format(interface, ipv4address))
+        logger.debug(f"ifconfig {interface} IPV4 {ipv4address}")
         return ipv4address
 
     def get_interface_mask(self, interface):
         """Get ipv4 mask of interface."""
-        self.sendline("\nifconfig %s" % interface)
+        self.sendline(f"\nifconfig {interface}")
         regex = [
             r"(?<=netmask )" + ValidIpv4AddressRegex,
             r"(?<=Mask:)" + ValidIpv4AddressRegex,
@@ -71,7 +71,7 @@ class LinuxInterface:
         self.expect(regex)
         ipaddr = self.match.group(0)
         self.expect(self.prompt)
-        logger.debug("ifconfig {} IPV4 Mask {}".format(interface, ipaddr))
+        logger.debug(f"ifconfig {interface} IPV4 Mask {ipaddr}")
         return ipaddr
 
     def get_interface_ip6addr(self, interface):
@@ -86,7 +86,7 @@ class LinuxInterface:
         self.expect(pexpect.TIMEOUT, timeout=0.5)
         self.before = ""
 
-        self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
+        self.sendline(f"ifconfig {interface} | sed 's/inet6 /bft_inet6 /'")
         self.expect(self.prompt)
         logger.debug(self.before)
 
@@ -96,14 +96,12 @@ class LinuxInterface:
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_global:
-                    logger.debug(
-                        "ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip))
-                    )
+                    logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
 
-        logger.debug("Failed ifconfig {} IPV6 {}".format(interface, ips))
+        logger.debug(f"Failed ifconfig {interface} IPV6 {ips}")
         raise BftIfaceNoIpV6Addr("Did not find non link-local ipv6 address")
 
     def get_interface_link_local_ip6addr(self, interface):
@@ -118,7 +116,7 @@ class LinuxInterface:
         self.expect(pexpect.TIMEOUT, timeout=0.5)
         self.before = ""
 
-        self.sendline("ifconfig %s | sed 's/inet6 /bft_inet6 /'" % interface)
+        self.sendline(f"ifconfig {interface} | sed 's/inet6 /bft_inet6 /'")
         self.expect(self.prompt)
         logger.debug(self.before)
 
@@ -128,20 +126,18 @@ class LinuxInterface:
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
                 if ipv6_iface and ipv6_iface.is_link_local:
-                    logger.debug(
-                        "ifconfig {} IPV6 {}".format(interface, str(ipv6_iface.ip))
-                    )
+                    logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
-        logger.debug("Failed ifconfig {} IPV6 {}".format(interface, ips))
+        logger.debug(f"Failed ifconfig {interface} IPV6 {ips}")
         raise Exception("Did not find link-local ipv6 address")
 
     def get_interface_macaddr(self, interface):
         """Get the interface macaddress."""
-        self.sendline("cat /sys/class/net/{}/address | \\".format(interface))
+        self.sendline(f"cat /sys/class/net/{interface}/address | \\")
         self.sendline("awk '{print \"bft_macaddr : \"$1}'")
-        self.expect("bft_macaddr : {}".format(LinuxMacFormat))
+        self.expect(f"bft_macaddr : {LinuxMacFormat}")
         macaddr = self.match.group(1)
         self.expect(self.prompt)
         return macaddr
@@ -165,9 +161,7 @@ class LinuxInterface:
 
     def set_static_ip(self, interface, fix_ip, fix_mark):
         """Set static ip of the interface."""
-        self.sudo_sendline(
-            "ifconfig {} {} netmask {} up".format(interface, fix_ip, fix_mark)
-        )
+        self.sudo_sendline(f"ifconfig {interface} {fix_ip} netmask {fix_mark} up")
         self.expect(self.prompt)
 
         ip = self.get_interface_ipaddr(interface)
@@ -183,12 +177,12 @@ class LinuxInterface:
 
     def release_dhcp(self, interface):
         """Release ip of the interface."""
-        self.sudo_sendline("dhclient -r {!s}".format(interface))
+        self.sudo_sendline(f"dhclient -r {interface!s}")
         self.expect(self.prompt)
 
     def renew_dhcp(self, interface):
         """Renew ip of the interface."""
-        self.sudo_sendline("dhclient -v {!s}".format(interface))
+        self.sudo_sendline(f"dhclient -v {interface!s}")
         if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=30):
             self.sendcontrol("c")
             self.expect(self.prompt)
@@ -196,13 +190,13 @@ class LinuxInterface:
     def release_ipv6(self, interface, stateless=False):
         """Release ipv6 for the interface."""
         mode = "-S" if stateless else "-6"
-        self.sudo_sendline("dhclient {} -r {!s}".format(mode, interface))
+        self.sudo_sendline(f"dhclient {mode} -r {interface!s}")
         self.expect(self.prompt)
 
     def renew_ipv6(self, interface, stateless=False):
         """Renew ipv6 for the interface."""
         mode = "-S" if stateless else "-6"
-        self.sudo_sendline("dhclient {} -v {!s}".format(mode, interface))
+        self.sudo_sendline(f"dhclient {mode} -v {interface!s}")
         if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
             self.sendcontrol("c")
             self.expect(self.prompt)
@@ -216,9 +210,9 @@ class LinuxInterface:
         Output: True or False
         """
         if source_ip is None:
-            self.sendline("curl -I {!s}".format(url))
+            self.sendline(f"curl -I {url!s}")
         else:
-            self.sendline("curl --interface {!s} -I {!s}".format(source_ip, url))
+            self.sendline(f"curl --interface {source_ip!s} -I {url!s}")
         try:
             self.expect(self.prompt, timeout=10)
         except pexpect.TIMEOUT:
@@ -238,7 +232,7 @@ class LinuxInterface:
         type ipv6: boolean
         """
         var = "6" if ipv6 else ""
-        self.sendline("kill $(</run/dhclient%s.pid)" % var)
+        self.sendline(f"kill $(</run/dhclient{var}.pid)")
         self.expect(self.prompt)
 
         self.sendline("ps aux")
@@ -246,7 +240,7 @@ class LinuxInterface:
             logger.warning(
                 "WARN: dhclient still running, something started rogue client!"
             )
-            self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+            self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
             self.expect(self.prompt)
 
     def set_password(self, password):
@@ -291,15 +285,15 @@ class LinuxInterface:
     ):
         """Check ping from any device."""
         timeout = 50
-        basic_cmd = "ping -c {} {}".format(ping_count, ping_ip)
+        basic_cmd = f"ping -c {ping_count} {ping_ip}"
 
         if timetorun:
-            basic_cmd = "timeout {} ping {} {}".format(timetorun, ping_ip, options)
+            basic_cmd = f"timeout {timetorun} ping {ping_ip} {options}"
             timeout = int(timetorun) + 10
         elif ping_interface:
-            basic_cmd += " -I {} {}".format(ping_interface, options)
+            basic_cmd += f" -I {ping_interface} {options}"
         else:
-            basic_cmd += " {}".format(options)
+            basic_cmd += f" {options}"
         self.sendline(basic_cmd)
         self.expect(self.prompt, timeout=timeout)
 
@@ -320,8 +314,8 @@ class LinuxInterface:
     def traceroute(self, host_ip, version="", options="", timeout=60):
         """Traceroute returns the route that packets take to a network host."""
         try:
-            self.sendline("traceroute%s %s %s" % (version, options, host_ip))
-            self.expect_exact("traceroute%s %s %s" % (version, options, host_ip))
+            self.sendline(f"traceroute{version} {options} {host_ip}")
+            self.expect_exact(f"traceroute{version} {options} {host_ip}")
             self.expect_prompt(timeout=timeout)
             return self.before
         except pexpect.TIMEOUT:
@@ -331,7 +325,7 @@ class LinuxInterface:
 
     def is_link_up(self, interface, pattern="BROADCAST,MULTICAST,UP"):
         """Check the interface status."""
-        self.sendline("ip link show %s" % interface)
+        self.sendline(f"ip link show {interface}")
         self.expect(self.prompt)
         link_state = self.before
         match = re.search(pattern, link_state)
@@ -347,7 +341,7 @@ class LinuxInterface:
             options (string): ps options eg "-ef", "-aux"
             eg command: "ps -ef | grep ping"
         """
-        command = "ps {} | grep {}".format(options, process_name)
+        command = f"ps {options} | grep {process_name}"
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.prompt)
@@ -355,19 +349,19 @@ class LinuxInterface:
 
     def set_link_state(self, interface, state):
         """Set the interface status."""
-        self.sudo_sendline("ip link set %s %s" % (interface, state))
+        self.sudo_sendline(f"ip link set {interface} {state}")
         self.expect(self.prompt)
 
     def add_new_user(self, id, pwd):
         """Create new login ID. But check if already exists."""
-        self.sendline("\nadduser %s" % id)
+        self.sendline(f"\nadduser {id}")
         try:
             self.expect_exact("Enter new UNIX password", timeout=5)
-            self.sendline("%s" % pwd)
+            self.sendline(f"{pwd}")
             self.expect_exact("Retype new UNIX password")
-            self.sendline("%s" % pwd)
+            self.sendline(f"{pwd}")
             self.expect_exact("Full Name []")
-            self.sendline("%s" % id)
+            self.sendline(f"{id}")
             self.expect_exact("Room Number []")
             self.sendline("1")
             self.expect_exact("Work Phone []")
@@ -379,7 +373,7 @@ class LinuxInterface:
             self.expect_exact("Is the information correct?")
             self.sendline("y")
             self.expect(self.prompt)
-            self.sendline("usermod -aG sudo %s" % id)
+            self.sendline(f"usermod -aG sudo {id}")
             self.expect(self.prompt)
             # Remove "$" in the login prompt and replace it with "#"
             self.sendline(r"sed -i \'s/\\w\\\$ /\\\w# /g\' //home/%s/.bashrc" % id)
@@ -403,20 +397,19 @@ class LinuxInterface:
             bin_file = binascii.hexlify(gzip_str(file.read()))
         if dst is None:
             dst = self.tftp_dir + "/" + os.path.basename(src)
-        logger.info("Copying %s to %s" % (src, dst))
+        logger.info(f"Copying {src} to {dst}")
         saved_logfile_read = self.logfile_read
         self.logfile_read = None
         self.sendline(
-            """cat << EOFEOFEOFEOF | xxd -r -p | gunzip > %s
-%s
+            f"""cat << EOFEOFEOFEOF | xxd -r -p | gunzip > {dst}
+{bin_file}
 EOFEOFEOFEOF"""
-            % (dst, bin_file)
         )
         self.expect(self.prompt)
-        self.sendline("ls %s" % dst)
-        self.expect_exact("ls %s" % dst)
+        self.sendline(f"ls {dst}")
+        self.expect_exact(f"ls {dst}")
         i = self.expect(
-            ["ls: cannot access %s: No such file or directory" % dst] + self.prompt
+            [f"ls: cannot access {dst}: No such file or directory"] + self.prompt
         )
         if i == 0:
             raise Exception("Failed to copy file")
@@ -446,7 +439,7 @@ EOFEOFEOFEOF"""
 
     def set_cli_size(self, columns):
         """Set the terminal columns value."""
-        self.sendline("stty columns %s" % str(columns))
+        self.sendline(f"stty columns {str(columns)}")
         self.expect(self.prompt)
 
     def wait_for_linux(self):
@@ -605,17 +598,17 @@ EOFEOFEOFEOF"""
     def start_tinyproxy(self):
         # TODO: determine which config file is the correct one... but for now just modify both
         for f in ["/etc/tinyproxy.conf", "/etc/tinyproxy/tinyproxy.conf"]:
-            self.sendline("sed -i 's/^Port 8888/Port 8080/' %s" % f)
+            self.sendline(f"sed -i 's/^Port 8888/Port 8080/' {f}")
             self.expect(self.prompt)
-            self.sendline("sed 's/#Allow/Allow/g' -i %s" % f)
+            self.sendline(f"sed 's/#Allow/Allow/g' -i {f}")
             self.expect(self.prompt)
-            self.sendline("sed '/Listen/d' -i %s" % f)
+            self.sendline(f"sed '/Listen/d' -i {f}")
             self.expect(self.prompt)
-            self.sendline("sed '/ConnectPort/d' -i %s" % f)
+            self.sendline(f"sed '/ConnectPort/d' -i {f}")
             self.expect(self.prompt)
-            self.sendline('echo "Listen 0.0.0.0" >> %s' % f)
+            self.sendline(f'echo "Listen 0.0.0.0" >> {f}')
             self.expect(self.prompt)
-            self.sendline('echo "Listen ::" >> %s' % f)
+            self.sendline(f'echo "Listen ::" >> {f}')
             self.expect(self.prompt)
         self.sendline("/etc/init.d/tinyproxy restart")
         self.expect("Restarting")
@@ -626,14 +619,14 @@ EOFEOFEOFEOF"""
 
     def take_lock(self, file_lock, fd=9, timeout=200):
         """Take a file lock on file_lock."""
-        self.sendline("exec %s>%s" % (fd, file_lock))
+        self.sendline(f"exec {fd}>{file_lock}")
         self.expect(self.prompt)
-        self.sendline("flock -x %s" % fd)
+        self.sendline(f"flock -x {fd}")
         self.expect(self.prompt, timeout=timeout)
 
     def release_lock(self, file_lock, fd=9):
         """Releases a lock taken."""
-        self.sendline("flock -u %s" % fd)
+        self.sendline(f"flock -u {fd}")
         self.expect(self.prompt)
 
     def perform_curl(self, host_ip, protocol, port=None, options=""):
@@ -653,10 +646,10 @@ EOFEOFEOFEOF"""
         if port:
             if re.search(AllValidIpv6AddressesRegex, host_ip) and "[" not in host_ip:
                 host_ip = "[" + host_ip + "]"
-            web_addr = "{}://{}:{}".format(protocol, host_ip, str(port))
+            web_addr = f"{protocol}://{host_ip}:{str(port)}"
         else:
-            web_addr = "{}://{}".format(protocol, host_ip)
-        command = "curl {} {}".format(options, web_addr)
+            web_addr = f"{protocol}://{host_ip}"
+        command = f"curl {options} {web_addr}"
         logger.info(self.before)
         self.before = None
         self.sendline(command)

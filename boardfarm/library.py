@@ -124,7 +124,7 @@ def check_devices(devices, func_name="check_status"):
             except Exception as error:
                 logger.error(error)
                 ret.append(d)
-                logger.debug("Status check for %s failed." % d.__class__.__name__)
+                logger.debug(f"Status check for {d.__class__.__name__} failed.")
             if saved_logfile_read is not None:
                 d.logfile_read.out = saved_logfile_read
         logger.debug(
@@ -201,7 +201,7 @@ def process_test_results(raw_test_results, golden=None):
             except Exception as error:
                 logger.error(error)
                 message = "Missing description of class (no docstring)"
-                print_bold("WARN: Please add docstring to %s." % cls)
+                print_bold(f"WARN: Please add docstring to {cls}.")
 
         long_message = getattr(cls, "long_result_message", "")
 
@@ -222,7 +222,7 @@ def process_test_results(raw_test_results, golden=None):
             for subtest in x.subtests:
                 parse_and_add_results(subtest, prefix=x.__class__.__name__ + "-")
         except Exception as e:
-            logger.error("Failed to parse test result: %s" % e)
+            logger.error(f"Failed to parse test result: {e}")
 
     full_results["tests_total"] = len(raw_test_results)
     return full_results

@@ -92,7 +92,7 @@ def get_power_device(
         data = e.read().decode()
     except Exception as e:
         logger.error(e)
-        raise Exception("\nError connecting to %s" % ip_address)
+        raise Exception(f"\nError connecting to {ip_address}")
 
     def check_data(data):
         if "<title>Power Controller" in data:
@@ -155,7 +155,7 @@ def get_power_device(
         if ret is not None:
             return ret
 
-    raise Exception("No code written to handle power device found at %s" % ip_address)
+    raise Exception(f"No code written to handle power device found at {ip_address}")
 
 
 class SentrySwitchedCDU(PDUTemplate):
@@ -173,20 +173,20 @@ class SentrySwitchedCDU(PDUTemplate):
         # Verify connection
         try:
             self._connect()
-            self.pcon.sendline("status .a%s" % self.outlet)
+            self.pcon.sendline(f"status .a{self.outlet}")
             i = self.pcon.expect(
                 ["Command successful", "User/outlet -- name not found"]
             )
             if i == 1:
-                raise Exception("\nOutlet %s not found" % self.outlet)
+                raise Exception(f"\nOutlet {self.outlet} not found")
             self.pcon.close()
         except Exception as e:
             logger.error(e)
-            logger.error("\nError with power device %s" % self.ip_address)
-            raise Exception("Error with power device %s" % self.ip_address)
+            logger.error(f"\nError with power device {self.ip_address}")
+            raise Exception(f"Error with power device {self.ip_address}")
 
     def _connect(self):
-        pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
+        pcon = bft_pexpect_helper.spawn(f"telnet {self.ip_address}")
         pcon.expect("Sentry Switched CDU Version", timeout=15)
         pcon.expect("Username:")
         pcon.sendline(self.username)
@@ -196,24 +196,24 @@ class SentrySwitchedCDU(PDUTemplate):
         if i == 0:
             self.pcon = pcon
         else:
-            logger.error("\nCritical failure in %s, skipping PDU\n" % self.ip_address)
-            raise Exception("critical failure in %s" % self.ip_address)
+            logger.error(f"\nCritical failure in {self.ip_address}, skipping PDU\n")
+            raise Exception(f"critical failure in {self.ip_address}")
 
     def reset(self):
         """Connect to pdu, send reboot command."""
         retry_attempts = 2
-        logger.info("\n\nResetting board %s %s" % (self.ip_address, self.outlet))
+        logger.info(f"\n\nResetting board {self.ip_address} {self.outlet}")
         for _ in range(retry_attempts):
             try:
                 self._connect()
-                self.pcon.sendline("reboot .a%s" % self.outlet)
+                self.pcon.sendline(f"reboot .a{self.outlet}")
                 self.pcon.expect("Command successful")
                 self.pcon.close()
                 return
             except Exception as e:
                 logger.error(e)
                 continue
-        raise Exception("\nProblem resetting outlet %s." % self.outlet)
+        raise Exception(f"\nProblem resetting outlet {self.outlet}.")
 
     def turn_off(self):
         raise NotImplementedError
@@ -233,7 +233,7 @@ class PX2(PDUTemplate):
         self._connect()
 
     def _connect(self):
-        self.pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
+        self.pcon = bft_pexpect_helper.spawn(f"telnet {self.ip_address}")
         self.pcon.expect(r"Login for PX\d CLI")
         self.pcon.expect("Username:")
         self.pcon.sendline(self.username)
@@ -249,8 +249,8 @@ class PX2(PDUTemplate):
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
             self._connect()
-        self.pcon.sendline("power outlets %s cycle /y" % self.outlet)
-        self.pcon.expect_exact("power outlets %s cycle /y" % self.outlet)
+        self.pcon.sendline(f"power outlets {self.outlet} cycle /y")
+        self.pcon.expect_exact(f"power outlets {self.outlet} cycle /y")
         self.pcon.expect(self.prompt)
 
         # no extraneous messages in console log
@@ -263,8 +263,8 @@ class PX2(PDUTemplate):
         except (pexpect.exceptions.EOF, pexpect.exceptions.TIMEOUT):
             logger.error("Telnet session has expired, establishing the session again")
             self._connect()
-        self.pcon.sendline("power outlets %s off /y" % self.outlet)
-        self.pcon.expect_exact("power outlets %s off /y" % self.outlet)
+        self.pcon.sendline(f"power outlets {self.outlet} off /y")
+        self.pcon.expect_exact(f"power outlets {self.outlet} off /y")
         self.pcon.expect(self.prompt)
 
         # no extraneous messages in console log
@@ -335,7 +335,7 @@ class APCPower(PDUTemplate):
         super().__init__(ip_address, username, password, outlet=outlet)
 
     def _connect(self):
-        self.pcon = bft_pexpect_helper.spawn("telnet %s" % self.ip_address)
+        self.pcon = bft_pexpect_helper.spawn(f"telnet {self.ip_address}")
         self.pcon.expect("User Name :")
         self.pcon.send(self.username + "\r\n")
         self.pcon.expect("Password  :")
@@ -520,7 +520,7 @@ class Ip9258(PDUTemplate):
 
     def __on(self):
         """Send ON command."""
-        logger.info("Power On Port(%s)\n" % self.conn_port)
+        logger.info(f"Power On Port({self.conn_port})\n")
         return _urllib.request.urlopen(
             "http://"
             + self.ip_address
@@ -531,7 +531,7 @@ class Ip9258(PDUTemplate):
 
     def __off(self):
         """Send OFF command."""
-        logger.info("Power Off Port(%s)\n" % self.conn_port)
+        logger.info(f"Power Off Port({self.conn_port})\n")
         return _urllib.request.urlopen(
             "http://"
             + self.ip_address
@@ -623,7 +623,7 @@ class Ip9820(PDUTemplate):
 
     def __on(self):
         """Send ON command."""
-        logger.info("Power On Port(%s)\n" % self.conn_port)
+        logger.info(f"Power On Port({self.conn_port})\n")
         return _urllib.request.urlopen(
             "http://"
             + self.ip_address
@@ -634,7 +634,7 @@ class Ip9820(PDUTemplate):
 
     def __off(self):
         """Send OFF command."""
-        logger.info("Power Off Port(%s)\n" % self.conn_port)
+        logger.info(f"Power Off Port({self.conn_port})\n")
         return _urllib.request.urlopen(
             "http://"
             + self.ip_address
@@ -660,17 +660,17 @@ if __name__ == "__main__":
         env = WemoEnv()
         env.start()
         scan_time = 10
-        logger.debug("Scanning for WeMo switches for %s seconds..." % scan_time)
+        logger.debug(f"Scanning for WeMo switches for {scan_time} seconds...")
         env.discover(scan_time)
         if len(env.list_switches()) > 0:
             logger.debug("Found the following switches:")
             for switch_name in env.list_switches():
                 switch = env.get_switch(switch_name)
-                logger.debug("%s ip address is %s" % (switch_name, switch.host))
+                logger.debug(f"{switch_name} ip address is {switch.host}")
             logger.debug(
                 "The switches above can be added by ip address" " for example use the"
             )
-            logger.debug("following to use %s" % switch_name)
-            logger.debug("\twemo://%s" % switch.host)
+            logger.debug(f"following to use {switch_name}")
+            logger.debug(f"\twemo://{switch.host}")
         else:
             logger.error("No WeMo switches found")

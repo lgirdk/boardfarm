@@ -33,7 +33,7 @@ class SambaShare(rootfs_boot.RootFSBootTest):
         board.sendline("smbclient -N -L 127.0.0.1")
         board.expect("boardfarm-test")
         board.expect(prompt)
-        lan.sendline("smbclient -N -L %s" % board.get_interface_ipaddr(board.lan_iface))
+        lan.sendline(f"smbclient -N -L {board.get_interface_ipaddr(board.lan_iface)}")
         lan.expect("boardfarm-test")
         lan.expect(prompt)
         lan.sendline(

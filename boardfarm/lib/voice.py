@@ -19,11 +19,11 @@ def add_dns_auth_record(dns, sipserver_name):
     # removing the auth record lines if present
     rm_dns_auth_record(dns)
     dns.sendline("cat >> /etc/dnsmasq.conf << EOF")
-    dns.sendline("auth-zone=%s" % sip_domain)
-    dns.sendline("auth-soa=12345678,admin.%s" % sip_domain)
-    dns.sendline("srv-host=_sip._tcp,%s,5060,20,10" % sip_domain)
-    dns.sendline("srv-host=_sip._tcp,%s,5060,20,10" % sip_domain)
-    dns.sendline("mx-host=%s" % sip_domain)
+    dns.sendline(f"auth-zone={sip_domain}")
+    dns.sendline(f"auth-soa=12345678,admin.{sip_domain}")
+    dns.sendline(f"srv-host=_sip._tcp,{sip_domain},5060,20,10")
+    dns.sendline(f"srv-host=_sip._tcp,{sip_domain},5060,20,10")
+    dns.sendline(f"mx-host={sip_domain}")
     dns.sendline("EOF")
     dns.expect(dns.prompt)
     dns.sendline("/etc/init.d/dnsmasq restart")
@@ -150,14 +150,11 @@ def rtpproxy_stop(dev):
 def rtpproxy_configuration(dev):
     """To generate rtpproxy configuration files"""
     ip_address = dev.get_interface_ipaddr(dev.iface_dut)
-    gen_rtpproxy_conf = (
-        """cat > /etc/default/rtpproxy << EOF
+    gen_rtpproxy_conf = f"""cat > /etc/default/rtpproxy << EOF
 CONTROL_SOCK=udp:127.0.0.1:7722
-EXTRA_OPTS="-l %s"
+EXTRA_OPTS="-l {ip_address}"
 USER=kamailio
 GROUP=kamailio
 EOF"""
-        % ip_address
-    )
     dev.sendline(gen_rtpproxy_conf)
     dev.expect(dev.prompt)

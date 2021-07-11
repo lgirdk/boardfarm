@@ -35,7 +35,7 @@ class bft_iface(object):
 
     def refresh(self):
         """Single function to get the ipv4, ipv6 and mac address."""
-        output = self.dev.check_output("%s %s" % (self.ip_cmd, self.iface))
+        output = self.dev.check_output(f"{self.ip_cmd} {self.iface}")
         try:
             self.get_interface_ipv4addr(output)
         except BftIfaceNoIpV4Addr:
@@ -56,7 +56,7 @@ class bft_iface(object):
 
         """
         if output is None:
-            output = self.dev.check_output("%s %s" % (self.ip_cmd, self.iface))
+            output = self.dev.check_output(f"{self.ip_cmd} {self.iface}")
 
         ipaddr = re.search(InterfaceIPv4_AddressRegex, output)
         if ipaddr:
@@ -79,7 +79,7 @@ class bft_iface(object):
         This will return the object of ipv6 interface module.
         """
         if output is None:
-            output = self.dev.check_output("%s %s" % (self.ip_cmd, self.iface))
+            output = self.dev.check_output(f"{self.ip_cmd} {self.iface}")
 
         ip_list = re.findall(InterfaceIPv6_AddressRegex, output)
         for ip in ip_list:
@@ -101,8 +101,8 @@ class bft_iface(object):
         This will return the object of mac interface module.
 
         """
-        self.dev.sendline("cat /sys/class/net/%s/address" % self.iface)
-        self.dev.expect_exact("cat /sys/class/net/%s/address" % self.iface)
+        self.dev.sendline(f"cat /sys/class/net/{self.iface}/address")
+        self.dev.expect_exact(f"cat /sys/class/net/{self.iface}/address")
         self.dev.expect(LinuxMacFormat)
         self._mac = netaddr.EUI(self.dev.after)
         self.dev.expect(pexpect.TIMEOUT, timeout=1)

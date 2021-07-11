@@ -31,10 +31,7 @@ class InterfacesShow(rootfs_boot.RootFSBootTest):
             up_interfaces = re.findall(r"([A-Za-z0-9-\.]+)\s+Link", board.before)
         num_up = len(up_interfaces)
         if num_up >= 1:
-            msg = "%s interfaces are UP: %s." % (
-                num_up,
-                ", ".join(sorted(up_interfaces)),
-            )
+            msg = f"{num_up} interfaces are UP: {', '.join(sorted(up_interfaces))}."
         else:
             msg = "0 interfaces are UP."
         self.result_message = msg

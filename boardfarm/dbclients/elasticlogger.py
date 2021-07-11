@@ -84,14 +84,9 @@ class ElasticsearchLogger(object):
             print(e.info)
             raise
 
-        if result and u"result" in result and result[u"result"] == u"created":
-            doc_url = "%s%s/%s/%s" % (
-                self.server,
-                self.index,
-                self.doc_type,
-                result["_id"],
-            )
-            print("Elasticsearch: Data stored at %s" % (doc_url))
+        if result and "result" in result and result["result"] == "created":
+            doc_url = f"{self.server}{self.index}/{self.doc_type}/{result['_id']}"
+            print(f"Elasticsearch: Data stored at {doc_url}")
         else:
             print(result)
             raise Exception("Elasticsearch: problem storing data.")

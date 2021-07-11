@@ -65,7 +65,7 @@ def uciSetWifiSSID(console, ssid):
     :type ssid: string
     """
     console.sendline(
-        "uci set wireless.@wifi-iface[0].ssid=%s; uci commit wireless; wifi" % ssid
+        f"uci set wireless.@wifi-iface[0].ssid={ssid}; uci commit wireless; wifi"
     )
     console.expect_prompt()
 
@@ -81,7 +81,7 @@ def uciSetWifiMode(console, radio, hwmode):
     :type hwmode: string
     """
     console.sendline(
-        "uci set wireless.wifi%s.hwmode=%s; uci commit wireless" % (radio, hwmode)
+        f"uci set wireless.wifi{radio}.hwmode={hwmode}; uci commit wireless"
     )
     console.expect_prompt()
 
@@ -97,7 +97,7 @@ def uciSetChannel(console, radio, channel):
     :type channel: string
     """
     console.sendline(
-        "uci set wireless.wifi%s.channel=%s; uci commit wireless" % (radio, channel)
+        f"uci set wireless.wifi{radio}.channel={channel}; uci commit wireless"
     )
     console.expect_prompt()
 
@@ -111,7 +111,7 @@ def enable_wifi(board, index=0):
     :type index: int
     """
     board.sendline(
-        "\nuci set wireless.@wifi-device[%s].disabled=0; uci commit wireless" % index
+        f"\nuci set wireless.@wifi-device[{index}].disabled=0; uci commit wireless"
     )
     board.expect("uci set")
     board.expect_prompt()
@@ -136,7 +136,7 @@ def enable_all_wifi_interfaces(board):
     """
     settings = re.findall(r"([\w\.]+)=\d", board.before)
     for s in settings:
-        board.sendline("uci set %s=0" % s)
+        board.sendline(f"uci set {s}=0")
         board.expect_prompt()
     board.sendline("uci commit wireless")
     board.expect_prompt()
@@ -157,7 +157,7 @@ def disable_wifi(board, wlan_iface="ath0"):
     board.expect_prompt()
     board.sendline("wifi")
     board.expect_prompt()
-    board.sendline("iwconfig %s" % wlan_iface)
+    board.sendline(f"iwconfig {wlan_iface}")
     board.expect_prompt()
 
 
@@ -192,7 +192,7 @@ def wifi_get_info(board, wlan_iface):
     """
     try:
         if "ath" in wlan_iface:
-            board.sendline("iwconfig %s" % wlan_iface)
+            board.sendline(f"iwconfig {wlan_iface}")
             board.expect('ESSID:"(.*)"')
             essid = board.match.group(1)
             board.expect("Frequency:([^ ]+)")
@@ -273,13 +273,13 @@ def wifi_add_vap(console, phy, ssid):
     """
     console.sendline("uci add wireless wifi-iface")
     console.expect_prompt()
-    console.sendline('uci set wireless.@wifi-iface[-1].device="%s"' % phy)
+    console.sendline(f'uci set wireless.@wifi-iface[-1].device="{phy}"')
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].network="lan"')
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].mode="ap"')
     console.expect_prompt()
-    console.sendline('uci set wireless.@wifi-iface[-1].ssid="%s"' % ssid)
+    console.sendline(f'uci set wireless.@wifi-iface[-1].ssid="{ssid}"')
     console.expect_prompt()
     console.sendline('uci set wireless.@wifi-iface[-1].encryption="none"')
     console.expect_prompt()
@@ -295,7 +295,7 @@ def wifi_del_vap(console, index):
     :param index: index to be used
     :type index: int
     """
-    console.sendline("uci delete wireless.@wifi-iface[%s]" % index)
+    console.sendline(f"uci delete wireless.@wifi-iface[{index}]")
     console.expect_prompt()
     console.sendline("uci commit")
     console.expect_prompt()
@@ -313,25 +313,23 @@ def uciSetWifiSecurity(board, vap_iface, security):
     """
     if security.lower() in ["none"]:
         logger.debug("Setting security to none.")
-        board.sendline("uci set wireless.@wifi-iface[%s].encryption=none" % vap_iface)
+        board.sendline(f"uci set wireless.@wifi-iface[{vap_iface}].encryption=none")
         board.expect_prompt()
     elif security.lower() in ["wpa-psk"]:
         logger.debug("Setting security to WPA-PSK.")
-        board.sendline(
-            "uci set wireless.@wifi-iface[%s].encryption=psk+tkip" % vap_iface
-        )
+        board.sendline(f"uci set wireless.@wifi-iface[{vap_iface}].encryption=psk+tkip")
         board.expect_prompt()
         board.sendline(
-            "uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz" % vap_iface
+            f"uci set wireless.@wifi-iface[{vap_iface}].key=1234567890abcdexyz"
         )
         board.expect_prompt()
     elif security.lower() in ["wpa2-psk"]:
         logger.debug("Setting security to WPA2-PSK.")
         board.sendline(
-            "uci set wireless.@wifi-iface[%s].encryption=psk2+ccmp" % vap_iface
+            f"uci set wireless.@wifi-iface[{vap_iface}].encryption=psk2+ccmp"
         )
         board.expect_prompt()
         board.sendline(
-            "uci set wireless.@wifi-iface[%s].key=1234567890abcdexyz" % vap_iface
+            f"uci set wireless.@wifi-iface[{vap_iface}].key=1234567890abcdexyz"
         )
         board.expect_prompt()

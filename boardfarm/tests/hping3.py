@@ -20,8 +20,8 @@ class hping3_basic_udp(rootfs_boot.RootFSBootTest):
 
         install_hping3(lan)
         wan_ip = wan.get_interface_ipaddr(wan.iface_dut)
-        wan.sendline("nc -lvu %s 565" % wan_ip)
-        wan.expect_exact("nc -lvu %s 565" % wan_ip)
+        wan.sendline(f"nc -lvu {wan_ip} 565")
+        wan.expect_exact(f"nc -lvu {wan_ip} 565")
 
         board.collect_stats(stats=["mpstat"])
 

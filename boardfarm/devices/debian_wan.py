@@ -50,44 +50,41 @@ class DebianWAN(debian.DebianBox):
         if self.wan_dhcp:
             self.sendline("/etc/init.d/isc-dhcp-server stop")
             self.expect(self.prompt)
-            self.sendline(
-                "dhclient -r %s; dhclient %s" % (self.iface_dut, self.iface_dut)
-            )
+            self.sendline(f"dhclient -r {self.iface_dut}; dhclient {self.iface_dut}")
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
         elif not self.wan_no_eth0:
-            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+            self.sendline(f"ifconfig {self.iface_dut} {self.gw_ng}")
             self.expect(self.prompt)
-            self.sendline("ifconfig %s up" % self.iface_dut)
+            self.sendline(f"ifconfig {self.iface_dut} up")
             self.expect(self.prompt)
             if self.static_route is not None:
-                self.send("ip route del %s; " % self.static_route.split(" via ")[0])
-                self.sendline("ip route add %s" % self.static_route)
+                self.send(f"ip route del {self.static_route.split(' via ')[0]}; ")
+                self.sendline(f"ip route add {self.static_route}")
                 self.expect(self.prompt)
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
         if self.wan_dhcpv6:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+            self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
             self.expect(self.prompt)
             try:
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
             except Exception:
-                self.sendline("dhclient -6 -i -r %s" % self.iface_dut)
+                self.sendline(f"dhclient -6 -i -r {self.iface_dut}")
                 self.expect(self.prompt)
-                self.sendline("dhclient -6 -i -v %s" % self.iface_dut)
+                self.sendline(f"dhclient -6 -i -v {self.iface_dut}")
                 self.expect(self.prompt)
                 self.sendline("ip -6 addr")
                 self.expect(self.prompt)
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
         elif self.gwv6 is not None:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+            self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
             self.expect(self.prompt)
             self.sendline(
-                "ip -6 addr add %s/%s dev %s"
-                % (self.gwv6, self.ipv6_prefix, self.iface_dut)
+                f"ip -6 addr add {self.gwv6}/{self.ipv6_prefix} dev {self.iface_dut}"
             )
             self.expect(self.prompt)
 
@@ -114,7 +111,7 @@ class DebianWAN(debian.DebianBox):
         self.sendline("echo 0 > /proc/sys/net/ipv4/tcp_sack")
         self.expect(self.prompt)
 
-        self.sendline("ifconfig %s" % self.iface_dut)
+        self.sendline(f"ifconfig {self.iface_dut}")
         self.expect(self.prompt)
 
         self.turn_off_pppoe()
@@ -150,7 +147,7 @@ class DebianWAN(debian.DebianBox):
         self.sendline("cat > /etc/dhcp/dhcpd.conf << EOF")
         self.sendline("ddns-update-style none;")
         self.sendline('option domain-name "bigfoot-test";')
-        self.sendline("option domain-name-servers %s;" % self.gw)
+        self.sendline(f"option domain-name-servers {self.gw};")
         self.sendline("default-lease-time 600;")
         self.sendline("max-lease-time 7200;")
         # use the same netmask as the lan device
@@ -161,7 +158,7 @@ class DebianWAN(debian.DebianBox):
             "          range %s %s;"
             % (self.nw.network_address + 10, self.nw.network_address + 100)
         )
-        self.sendline("          option routers %s;" % self.gw)
+        self.sendline(f"          option routers {self.gw};")
         self.sendline("}")
         self.sendline("EOF")
         self.expect(self.prompt)

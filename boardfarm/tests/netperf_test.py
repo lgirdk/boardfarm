@@ -57,13 +57,13 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
     # takes too long to wait for the connection to be established
     # so we use this version
     def run_netperf_cmd_nowait(self, device, ip, opts="", quiet=False):
-        device.sendline("netperf -H %s %s &" % (ip, opts))
+        device.sendline(f"netperf -H {ip} {opts} &")
 
     def run_netperf_cmd(self, device, ip, opts="", quiet=False):
         if quiet:
-            device.sendline("netperf -H %s %s > /dev/null &" % (ip, opts))
+            device.sendline(f"netperf -H {ip} {opts} > /dev/null &")
         else:
-            device.sendline("netperf -H %s %s &" % (ip, opts))
+            device.sendline(f"netperf -H {ip} {opts} &")
             device.expect("TEST.*\r\n")
 
     def run_netperf_parse(self, device, timeout=60):
@@ -72,7 +72,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
             timeout=timeout,
         )
         ret = device.match.group(1)
-        lib.common.test_msg("Speed was %s 10^6bits/sec" % ret)
+        lib.common.test_msg(f"Speed was {ret} 10^6bits/sec")
         return float(ret)
 
     def run_netperf(self, device, ip, opts="", timeout=60):
@@ -93,7 +93,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
         board.arm.sendline("mpstat -P ALL 30 1")
         board.arm.expect("Linux")
 
-        speed = self.run_netperf(lan, "%s -c -C -l 30" % wan.gw)
+        speed = self.run_netperf(lan, f"{wan.gw} -c -C -l 30")
 
         board.sendcontrol("c")
         board.expect(
@@ -101,7 +101,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
         )
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
-        lib.common.test_msg("Average cpu usage was %s" % avg_cpu)
+        lib.common.test_msg(f"Average cpu usage was {avg_cpu}")
         self.kill_netserver(wan)
 
         self.result_message = (

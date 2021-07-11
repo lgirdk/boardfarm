@@ -71,7 +71,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
         setting the interface link to "down"
         """
-        self.sudo_sendline("rm /etc/wpa_supplicant/{}".format(self.iface_wifi))
+        self.sudo_sendline(f"rm /etc/wpa_supplicant/{self.iface_wifi}")
         self.expect(self.prompt)
         self.sudo_sendline("killall wpa_supplicant")
         self.expect(self.prompt)
@@ -226,17 +226,17 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         config_str = ""
         for k, v in config.items():
             if k in ["ssid", "psk", "identity", "password"]:
-                v = '"{}"'.format(v)
-            config_str += "{}={}\n".format(k, v)
+                v = f'"{v}"'
+            config_str += f"{k}={v}\n"
         final_config = "ctrl_interface=DIR=/etc/wpa_supplicant GROUP=root\nnetwork={{\n{}}}".format(
             config_str
         )
         """Create wpa_supplicant config."""
-        self.sudo_sendline("rm {}.conf".format(ssid_name))
+        self.sudo_sendline(f"rm {ssid_name}.conf")
         self.expect(self.prompt)
-        self.sudo_sendline("echo -e '{}' > {}.conf".format(final_config, ssid_name))
+        self.sudo_sendline(f"echo -e '{final_config}' > {ssid_name}.conf")
         self.expect(self.prompt)
-        self.sendline("cat {}.conf".format(ssid_name))
+        self.sendline(f"cat {ssid_name}.conf")
         self.expect(self.prompt)
         """Generate WPA supplicant connect."""
         driver_name = "wext"
@@ -259,7 +259,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         :return: True or False
         :rtype: boolean
         """
-        self.sendline("iw %s link" % self.iface_wifi)
+        self.sendline(f"iw {self.iface_wifi} link")
         self.expect(self.prompt)
         match = re.search("Connected", self.before)
         if match:
@@ -309,7 +309,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def wlan_ssid_disconnect(self):
         """Disconnect the wifi connectivity if connected through iwconfig method using ssid alone."""
-        self.sudo_sendline("iw dev %s disconnect" % self.iface_wifi)
+        self.sudo_sendline(f"iw dev {self.iface_wifi} disconnect")
         self.expect(self.prompt)
 
     def wifi_disconnect(self):
@@ -330,7 +330,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         :rtype: string or boolean
         """
         country = pycountry.countries.get(name=country).alpha_2
-        self.sudo_sendline("iw reg set %s" % (country))
+        self.sudo_sendline(f"iw reg set {country}")
         self.expect(self.prompt)
         self.sendline("iw reg get")
         self.expect(self.prompt)

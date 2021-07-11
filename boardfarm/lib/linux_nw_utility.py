@@ -56,22 +56,14 @@ class NwFirewall(NwFirewallStub):
         :param valid_ip : dest_ip to be blocked from device
         :type valid_ip : valid ip string
         """
-        out = self.dev.check_output(
-            "iptables -C INPUT {} {} -j DROP".format(option, valid_ip)
-        )
+        out = self.dev.check_output(f"iptables -C INPUT {option} {valid_ip} -j DROP")
         if "Bad rule" in out:
-            self.dev.check_output(
-                "iptables -I INPUT 1 {} {} -j DROP".format(option, valid_ip)
-            )
+            self.dev.check_output(f"iptables -I INPUT 1 {option} {valid_ip} -j DROP")
 
     def add_drop_rule_ip6tables(self, option, valid_ip):
-        out = self.dev.check_output(
-            "ip6tables -C INPUT {} {} -j DROP".format(option, valid_ip)
-        )
+        out = self.dev.check_output(f"ip6tables -C INPUT {option} {valid_ip} -j DROP")
         if "Bad rule" in out:
-            self.dev.check_output(
-                "ip6tables -I INPUT 1 {} {} -j DROP".format(option, valid_ip)
-            )
+            self.dev.check_output(f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP")
 
     def del_drop_rule_iptables(self, option, valid_ip):
         """
@@ -80,14 +72,10 @@ class NwFirewall(NwFirewallStub):
         :param valid_ip : dest_ip to be blocked
         :type valid_ip : valid ip string
         """
-        self.dev.check_output(
-            "iptables -D INPUT {} {} -j DROP".format(option, valid_ip)
-        )
+        self.dev.check_output(f"iptables -D INPUT {option} {valid_ip} -j DROP")
 
     def del_drop_rule_ip6tables(self, option, valid_ip):
-        self.dev.check_output(
-            "ip6tables -D INPUT {} {} -j DROP".format(option, valid_ip)
-        )
+        self.dev.check_output(f"ip6tables -D INPUT {option} {valid_ip} -j DROP")
 
 
 class NwDnsLookup(NwDnsLookupStub):

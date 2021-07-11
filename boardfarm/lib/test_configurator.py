@@ -56,11 +56,9 @@ def get_station_config(location=None, ignore_redir=False):
     """
     boardfarm_config = read_station_config(location)
     if "_redirect" in boardfarm_config and not ignore_redir:
-        logger.debug(
-            "Using boardfarm config file at %s" % boardfarm_config["_redirect"]
-        )
+        logger.debug(f"Using boardfarm config file at {boardfarm_config['_redirect']}")
         logger.debug("Please set your default config by doing:")
-        logger.debug('    export BFT_CONFIG="%s"' % boardfarm_config["_redirect"])
+        logger.debug(f"    export BFT_CONFIG=\"{boardfarm_config['_redirect']}\"")
         logger.debug("If you want to use local config, remove the _redirect line.")
         location = boardfarm_config["_redirect"]
         boardfarm_config = read_station_config(boardfarm_config["_redirect"])
@@ -121,11 +119,11 @@ def filter_boards(board_config, filter, name=None):
     """
     s = ""
     for k, v in board_config.items():
-        s += "%s : %s\n" % (k, v)
+        s += f"{k} : {v}\n"
 
     if all(re.findall(f, s) for f in filter):
         if name:
-            logger.info("matched %s on %s, adding %s" % (filter, board_config, name))
+            logger.info(f"matched {filter} on {board_config}, adding {name}")
         return True
     return False
 
@@ -144,10 +142,10 @@ def filter_station_config(
     result = []
 
     if board_type:
-        print_bold("Selecting board from board type = %s" % board_type)
+        print_bold(f"Selecting board from board type = {board_type}")
         possible_names = boardfarm_config
         if board_names:
-            logger.info("Board names = %s" % board_names)
+            logger.info(f"Board names = {board_names}")
             # Allow selection only from given set of board names
             possible_names = set(boardfarm_config) & set(board_names)
         for b in possible_names:

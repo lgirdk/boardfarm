@@ -38,7 +38,7 @@ class WebTest(rootfs_boot.RootFSBootTest):
 
         # Create a driver
         self.driver = lib.common.phantom_webproxy_driver("http://" + lan.name + ":8080")
-        self.driver.get("http://%s/cgi-bin/luci" % ip)
+        self.driver.get(f"http://{ip}/cgi-bin/luci")
         self.assertIn(ip, self.driver.current_url)
         self.assertIn("LuCI", self.driver.title)
         self.driver.find_element_by_name("luci_password").send_keys("password")

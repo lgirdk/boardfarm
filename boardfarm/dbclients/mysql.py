@@ -42,7 +42,7 @@ class MySQL:
 
     def login_root_user(self):
         """Login to root user."""
-        self.handle.sendline("mysql -u %s -p" % self.username)
+        self.handle.sendline(f"mysql -u {self.username} -p")
         self.handle.expect("Enter password:")
         self.handle.sendline(self.password)
         self.handle.expect(self.mysql_prompt)
@@ -65,8 +65,7 @@ class MySQL:
         """
         self.login_root_user()
         self.handle.sendline(
-            "SET PASSWORD FOR '%s'@'localhost' = PASSWORD('%s');"
-            % (user, self.password)
+            f"SET PASSWORD FOR '{user}'@'localhost' = PASSWORD('{self.password}');"
         )
         self.handle.expect(self.mysql_prompt)
         self.exit_root_user()
@@ -78,7 +77,7 @@ class MySQL:
         type db_name:string
         """
         self.login_root_user()
-        self.handle.sendline("SHOW DATABASES LIKE '%s';" % db_name)
+        self.handle.sendline(f"SHOW DATABASES LIKE '{db_name}';")
         index = self.handle.expect(["1 row in set", "Empty set"])
         self.exit_root_user()
         if index == 0:

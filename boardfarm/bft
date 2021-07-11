@@ -94,7 +94,7 @@ def threaded_device_helper(device, device_mgr, ret):
 
     s = time.time()
     if "BFT_DEBUG" in os.environ:
-        logger.debug("Connected to %s" % device["name"])
+        logger.debug(f"Connected to {device['name']}")
 
     try:
         dyn_dev = get_device(device["type"], **device, device_mgr=device_mgr)
@@ -117,9 +117,7 @@ def threaded_device_helper(device, device_mgr, ret):
         return
 
     if "BFT_DEBUG" in os.environ:
-        logger.debug(
-            "Time to instantiate device {} = {}".format(device["name"], time.time() - s)
-        )
+        logger.debug(f"Time to instantiate device {device['name']} = {time.time() - s}")
 
     dyn_dev.name = device["name"]
     ret.put(dyn_dev)
@@ -136,13 +134,13 @@ def setup_dynamic_devices(config, device_mgr, env_helper):
 
     for device in list(ret.queue):
         if type(device) is FailedDevice:
-            raise Exception("Failed to instantiate device %s" % device.name)
+            raise Exception(f"Failed to instantiate device {device.name}")
 
         if not hasattr(device, "name") and " " not in device.name:
             raise Exception("Device does not have a proper name, please add!")
 
         if device.name in config.devices:
-            logger.debug("Skipping duplicate device type: %s" % device.name)
+            logger.debug(f"Skipping duplicate device type: {device.name}")
             device.close()
             continue
 
@@ -303,7 +301,7 @@ def connect_to_devices(config):
             d[k] = update_value(regex, v)
 
     for regex in config.regex_config:
-        logger.debug("WARN: running regex replacement = %s" % regex)
+        logger.debug(f"WARN: running regex replacement = {regex}")
         walk_dict(regex, config.boardfarm_config)
 
     board = None
@@ -325,8 +323,7 @@ def connect_to_devices(config):
         except Exception as e:
             logger.debug(e)
             logger.debug(
-                "Error reading info about board %s from board farm configuration."
-                % name
+                f"Error reading info about board {name} from board farm configuration."
             )
             break
 
@@ -392,7 +389,7 @@ def connect_to_devices(config):
             else:
                 board.dev = device_mgr
 
-            logger.info("dut device console = %s" % colored("black", "grey"))
+            logger.info(f"dut device console = {colored('black', 'grey')}")
 
             # TODO: we should generically check these at one time in the future
             for x in ["UBOOT", "KERNEL", "ROOTFS", "META_BUILD"]:
@@ -494,10 +491,10 @@ def connect_to_devices(config):
         sys.exit(2)
 
     try:
-        logger.info("Using Board {}, User {}".format(name, os.environ["BUILD_USER_ID"]))
+        logger.info(f"Using Board {name}, User {os.environ['BUILD_USER_ID']}")
     except Exception as e:
         logger.debug(e)
-        logger.info("Using Board {}, User {}".format(name, os.environ["USER"]))
+        logger.info(f"Using Board {name}, User {os.environ['USER']}")
 
     # Update config from board info
     if hasattr(board, "update_config"):
@@ -522,14 +519,14 @@ def run_tests(config, device_mgr, env_helper, bfweb):
     from boardfarm import testsuites
 
     if config.TEST_SUITE not in testsuites.list_tests:
-        logger.warning("Unable to find testsuite %s, aborting..." % config.TEST_SUITE)
+        logger.warning(f"Unable to find testsuite {config.TEST_SUITE}, aborting...")
         sys.exit(1)
     for i, name in enumerate(testsuites.list_tests[config.TEST_SUITE]):
         if isinstance(name, str):
             if name not in tests.available_tests:
                 # we can either fail or ignore a missing test
                 if config.TEST_SUITE_NOSTRICT:
-                    logger.warning("\tWARNING: Test %s NOT FOUND" % name)
+                    logger.warning(f"\tWARNING: Test {name} NOT FOUND")
                     # add a place holder that will show up as skipped in the results
                     name = "selftest_fake_test"  # there must be a better way of getting the name!
                 else:
@@ -561,7 +558,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
                         "Unable to load %s test from tests class!!!! Parsing of test selected via -e failed"
                         % name
                     )
-                logger.info("  %s" % t)
+                logger.info(f"  {t}")
                 test = t(config, device_mgr, env_helper)
                 tests_to_run.append(test)
         except Exception as e:
@@ -648,7 +645,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
         with open(os.path.join(config.output_dir, fname)) as f:
             clog = f.read()
         if not clog:
-            logger.debug("Skipping analysis because %s is empty..." % fname)
+            logger.debug(f"Skipping analysis because {fname} is empty...")
         else:
             from boardfarm import analysis
 

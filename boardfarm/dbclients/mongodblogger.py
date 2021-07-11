@@ -103,4 +103,4 @@ class MongodbLogger(object):
             self.collection_name,
             post_id,
         )
-        print("Mongodb: Data stored at %s" % (doc_url))
+        print(f"Mongodb: Data stored at {doc_url}")

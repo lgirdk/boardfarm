@@ -27,7 +27,7 @@ def skip_on_fail(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            log_message(instance, "skip_on_fail is deprecated method %s" % repr(e))
+            log_message(instance, f"skip_on_fail is deprecated method {repr(e)}")
             raise BftDeprecate("skip_on_fail is deprecated method")
 
     return wrapper

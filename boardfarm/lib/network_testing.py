@@ -55,17 +55,17 @@ def tcpdump_capture(
     :return: Console output of tcpdump sendline command/pid depends on the return_pid flag
     :rtype: string
     """
-    base = "tcpdump -U -i %s -n -w %s " % (interface, capture_file)
+    base = f"tcpdump -U -i {interface} -n -w {capture_file} "
     run_background = " &"
     filter_str = " ".join([" ".join(i) for i in filters.items()]) if filters else ""
     filter_str += additional_filters
     if port:
         device.sudo_sendline(
-            base + "'portrange %s' " % (port) + filter_str + run_background
+            base + f"'portrange {port}' " + filter_str + run_background
         )
     else:
         device.sudo_sendline(base + filter_str + run_background)
-    device.expect_exact("tcpdump: listening on %s" % interface)
+    device.expect_exact(f"tcpdump: listening on {interface}")
     if return_pid:
         return re.search("(\[\d{1,10}\]\s(\d{1,6}))", device.before).group(2)
     return device.before
@@ -88,11 +88,11 @@ def kill_process(device, process="tcpdump", pid=None, sync=True, port=None):
     :rtype: string
     """
     if pid:
-        device.sudo_sendline("kill %s" % pid)
+        device.sudo_sendline(f"kill {pid}")
     elif port:
         device.sudo_sendline(r"kill $(lsof -t -i:%s)" % str(port))
     else:
-        device.sudo_sendline("killall %s" % process)
+        device.sudo_sendline(f"killall {process}")
     device.expect(device.prompt)
     if sync:
         device.sudo_sendline("sync")
@@ -120,11 +120,11 @@ def tcpdump_read(device, capture_file, protocol="", opts="", timeout=30, rm_pcap
     """
     if opts:
         protocol = protocol + " and " + opts
-    device.sudo_sendline("tcpdump -n -r %s %s" % (capture_file, protocol))
+    device.sudo_sendline(f"tcpdump -n -r {capture_file} {protocol}")
     device.expect(device.prompt, timeout=timeout)
     output = device.before
     if rm_pcap:
-        device.sudo_sendline("rm %s" % (capture_file))
+        device.sudo_sendline(f"rm {capture_file}")
         device.expect(device.prompt)
     return output
 
@@ -152,17 +152,17 @@ def tshark_read(
     :param rm_file: Flag to remove capture file
     :type rm_file: bool
     """
-    command_string = "tshark -r {} ".format(capture_file)
+    command_string = f"tshark -r {capture_file} "
     if packet_details:
         command_string += "-V "
     if filter_str:
-        command_string += "{}".format(filter_str)
+        command_string += f"{filter_str}"
 
     device.sendline(command_string)
     device.expect(device.prompt, timeout=timeout)
     output = device.before
     if rm_file:
-        device.sudo_sendline("rm %s" % (capture_file))
+        device.sudo_sendline(f"rm {capture_file}")
         device.expect(device.prompt)
     return output
 
@@ -180,11 +180,11 @@ def sip_read(device, capture_file, rm_pcap_file=True):
     :rtype: string
     """
 
-    device.sudo_sendline("tshark -r %s -Y sip" % (capture_file))
+    device.sudo_sendline(f"tshark -r {capture_file} -Y sip")
     device.expect(device.prompt)
     output_sip = device.before
     if rm_pcap_file:
-        device.sudo_sendline("rm %s" % (capture_file))
+        device.sudo_sendline(f"rm {capture_file}")
         device.expect(device.prompt)
     return output_sip
 
@@ -203,7 +203,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
     :return: True if RTP messages found else False
     :rtype: Boolean
     """
-    device.sudo_sendline("tshark -r %s -Y rtp > rtp.txt" % capture_file)
+    device.sudo_sendline(f"tshark -r {capture_file} -Y rtp > rtp.txt")
     device.expect_prompt()
     result_list = []
     if not msg_list:
@@ -237,7 +237,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
     if rm_pcap:
         device.sudo_sendline("rm rtp.txt")
         device.expect_prompt()
-        device.sudo_sendline("rm %s" % capture_file)
+        device.sudo_sendline(f"rm {capture_file}")
         device.expect_prompt()
     return all(result_list)
 
@@ -344,15 +344,13 @@ def check_mta_media_attribute(
     result = {}
 
     if src_ip and dst_ip:
-        protocol_attribute = "-vvv 'port {} and src {} and dst {}'".format(
-            port, src_ip, dst_ip
-        )
+        protocol_attribute = f"-vvv 'port {port} and src {src_ip} and dst {dst_ip}'"
     elif src_ip:
-        protocol_attribute = "-vvv 'port {} and src {}'".format(port, src_ip)
+        protocol_attribute = f"-vvv 'port {port} and src {src_ip}'"
     elif dst_ip:
-        protocol_attribute = "-vvv 'port {} and dst {}'".format(port, dst_ip)
+        protocol_attribute = f"-vvv 'port {port} and dst {dst_ip}'"
     else:
-        protocol_attribute = "-vvv 'port {}'".format(port)
+        protocol_attribute = f"-vvv 'port {port}'"
 
     output = tcpdump_read(
         device,
@@ -468,7 +466,7 @@ def ssh_service_verify(
     :type ssh_key: String, Optional
     :raises Exception: Exception thrown on SSH connection fail
     """
-    device.sendline("ssh %s@%s" % (dest_device.username, ip))
+    device.sendline(f"ssh {dest_device.username}@{ip}")
     try:
         idx = device.expect(
             ["no matching key exchange method found"] + ["(yes/no)"] + ["assword:"],
@@ -476,9 +474,7 @@ def ssh_service_verify(
         )
         if idx == 0:
             device.expect(device.prompt)
-            device.sendline(
-                "ssh %s %s@%s %s" % (ssh_key, dest_device.username, ip, opts)
-            )
+            device.sendline(f"ssh {ssh_key} {dest_device.username}@{ip} {opts}")
             idx = device.expect(["(yes/no)"] + ["assword:"], timeout=60)
             if idx == 0:
                 idx = 1
@@ -510,7 +506,7 @@ def telnet_service_verify(device, dest_device, ip, opts=""):
     :type opts: String, Optional
     :raises Exception: Exception thrown on telnet connection fail
     """
-    device.sendline("telnet%s %s" % (opts, ip))
+    device.sendline(f"telnet{opts} {ip}")
     try:
         device.expect(["Username:"] + ["login:"], timeout=60)
         device.sendline(dest_device.username)
@@ -548,7 +544,7 @@ def custom_telnet_service(device, dest_prompt, ip, username, password, opts="", 
     result = []
     send_control = False
     try:
-        device.sendline("telnet %s %s" % (opts, ip))
+        device.sendline(f"telnet {opts} {ip}")
         device.expect(["Username:"] + ["login:"], timeout=60)
         device.sendline(username)
         device.expect(["Password:"])
@@ -589,9 +585,9 @@ def dhcping_inform_trigger(device, server_ip, opts=None):
 
     client_ip = device.get_interface_ipaddr(device.iface_dut)
     mac = device.get_interface_macaddr(device.iface_dut).upper()
-    command_builder = 'dhcping -i -c {} -s {} -h "{}"'.format(client_ip, server_ip, mac)
+    command_builder = f'dhcping -i -c {client_ip} -s {server_ip} -h "{mac}"'
     if opts:
-        command_builder = "{} {}".format(command_builder, opts)
+        command_builder = f"{command_builder} {opts}"
     output = device.check_output(command_builder)
     out = re.search(r"(\wot\sanswer\s\w+)", output)
     return True if out else False
@@ -718,7 +714,7 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
             return True if negate else False
         finally:
             if rm_file:
-                device.sudo_sendline("rm %s" % capture_file)
+                device.sudo_sendline(f"rm {capture_file}")
                 device.expect(device.prompt)
             pass
     else:
@@ -784,7 +780,7 @@ class Iperf3Lib:
             self.server.expect(self.server.prompt)
         else:
             self.server.sendline(f"iperf3 {self.serverOpts} -s -p {self.port} &")
-            self.server.expect("Server listening on %s" % (self.port))
+            self.server.expect(f"Server listening on {self.port}")
 
     def kill_iperf3(self, device):
         """function to kill all iperf3 instance that is spawned on the device
@@ -936,6 +932,5 @@ def mac_to_eui64(mac_address):
         return netaddr.IPAddress(eui64 ^ (1 << 57))
     except (ValueError, netaddr.AddrFormatError):
         raise TypeError(
-            "Bad mac format for generating IPv6"
-            "address by EUI-64:  %(mac_address)s:" % {"mac_address": mac_address}
+            f"Bad mac format for generating IPv6address by EUI-64:  {mac_address}:"
         )

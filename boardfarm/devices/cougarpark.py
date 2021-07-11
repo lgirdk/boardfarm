@@ -33,8 +33,8 @@ class CougarPark(openwrt_router.OpenWrtRouter):
     wan_iface = "erouter0"
     lan_iface = "brlan0"
 
-    lan_network = ipaddress.IPv4Network(u"192.168.0.0/24")
-    lan_gateway = ipaddress.IPv4Address(u"192.168.0.1")
+    lan_network = ipaddress.IPv4Network("192.168.0.0/24")
+    lan_gateway = ipaddress.IPv4Address("192.168.0.1")
 
     uprompt = ["Shell>"]
     delaybetweenchar = 0.2
@@ -53,7 +53,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
             kwargs["connection_type"],
             device=self.arm,
             conn_cmd=self.conn_list[1],
-            **kwargs
+            **kwargs,
         )
         arm_conn.connect()
         self.consoles.append(self.arm)
@@ -122,7 +122,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
         self.sendline("ifconfig -l")
         self.expect_exact(self.uprompt)
-        self.sendline("ifconfig -c %s" % self.uboot_eth)
+        self.sendline(f"ifconfig -c {self.uboot_eth}")
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline(
             "ifconfig -s %s static %s 255.255.255.0 %s"
@@ -131,7 +131,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         self.expect_exact(self.uprompt, timeout=30)
         self.sendline("ifconfig -l")
         self.expect_exact(self.uprompt)
-        self.sendline("ping %s" % tftp_server)
+        self.sendline(f"ping {tftp_server}")
         if 0 == self.expect(
             [
                 "Echo request sequence 1 timeout",
@@ -148,8 +148,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         filename = self.prepare_file(KERNEL, tserver=lan.ipaddr, tport=lan.port)
 
         self.sendline(
-            "tftp -p %s -d %s %s"
-            % (self.uboot_ddr_addr, lan.tftp_server_ip_int(), filename)
+            f"tftp -p {self.uboot_ddr_addr} -d {lan.tftp_server_ip_int()} {filename}"
         )
         self.expect_exact("TFTP  general status Success")
         if 0 == self.expect_exact(
@@ -157,7 +156,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
         ):
             raise Exception("TFTP timed out")
 
-        self.sendline("update -a A -s %s" % self.uboot_ddr_addr)
+        self.sendline(f"update -a A -s {self.uboot_ddr_addr}")
         if 0 == self.expect_exact(
             [
                 "UImage has wrong version magic",
@@ -169,7 +168,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
     def boot_linux(self, rootfs=None, bootargs=None):
         """Booting the device."""
-        common.print_bold("\n===== Booting linux for %s =====" % self.model)
+        common.print_bold(f"\n===== Booting linux for {self.model} =====")
         self.switch_to_mode(MODE_DISABLED)
         self.sendline("npcpu start")
         self.sendline("bootkernel -c %kernel_cmd_line%")

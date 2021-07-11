@@ -63,13 +63,13 @@ def write_test_log(t, output_dir):
         testtime = t.stop_time - t.start_time
         with open(os.path.join(output_dir, filename), "w") as log:
             log.write("\t=======================================================")
-            log.write("\n\tTest case ID: %s" % (type(t).__name__))
-            log.write("\n\tTest case Description: %s" % (type(t).__doc__))
+            log.write(f"\n\tTest case ID: {type(t).__name__}")
+            log.write(f"\n\tTest case Description: {type(t).__doc__}")
             log.write("\n\t=======================================================\n")
             log.write(t.log_to_file)
             log.write("\n\t=======================================================")
-            log.write("\n\t%s test result: %s" % (type(t).__name__, t.result_grade))
-            log.write("\n\tTotal test time: %s seconds" % testtime)
+            log.write(f"\n\t{type(t).__name__} test result: {t.result_grade}")
+            log.write(f"\n\tTotal test time: {testtime} seconds")
             log.write("\n\t=======================================================")
 
 
@@ -128,10 +128,10 @@ class LoggerMeta(type):
                 # if in pytest bypass all this
                 return func(*args, **kwargs)
 
-            func_args_str = "%s %s" % (repr(args), repr(kwargs))
-            to_log = "%s.%s ( %s )" % (func.__module__, func.__name__, func_args_str)
+            func_args_str = f"{repr(args)} {repr(kwargs)}"
+            to_log = f"{func.__module__}.{func.__name__} ( {func_args_str} )"
 
-            args[0].log_calls += "[%.6f]calling %s\r\n" % (time.process_time(), to_log)
+            args[0].log_calls += f"[{time.process_time():.6f}]calling {to_log}\r\n"
 
             clsname = args[0].__class__.__name__
 
@@ -282,20 +282,20 @@ class o_helper(object):
             and self.parent.log[-1] == "\r"
             and string[0] == "\n"
         ):
-            tmp = "\n[%.6f]" % time.process_time()
+            tmp = f"\n[{time.process_time():.6f}]"
             tmp += string[1:]
             string = tmp
-        to_log = re.sub("\r\n", "\r\n[%.6f]" % time.process_time(), string)
+        to_log = re.sub("\r\n", f"\r\n[{time.process_time():.6f}]", string)
         self.parent.log += to_log
         if hasattr(self.parent, "test_to_log"):
             self.parent.test_to_log.log += re.sub(
-                r"\r\n\[", "\r\n%s: [" % self.parent.test_prefix, to_log
+                r"\r\n\[", f"\r\n{self.parent.test_prefix}: [", to_log
             )
 
     def extra_log(self, string):
         """Add process time with the log messages."""
         if hasattr(self.parent, "log"):
-            self.parent.log += "\r\n[%s] " % time.process_time()
+            self.parent.log += f"\r\n[{time.process_time()}] "
             self.parent.log += string + "\r\n"
 
     def flush(self):
@@ -327,15 +327,15 @@ def create_file_logs(config, board, tests_to_run, logger):
                 )
             except Exception as error:
                 logger.error(error)
-                logger.debug("Failed to parse log line = %s" % repr(line))
+                logger.debug(f"Failed to parse log line = {repr(line)}")
 
     idx = 1
     console_combined = []
     for console in board.consoles:
-        with open(os.path.join(config.output_dir, "console-%s.log" % idx), "w") as clog:
+        with open(os.path.join(config.output_dir, f"console-{idx}.log"), "w") as clog:
             clog.write(console.log)
-            add_to_combined_list(console.log, "console-%s" % idx)
-            add_to_combined_list(console.log_calls, "console-%s" % idx)
+            add_to_combined_list(console.log, f"console-{idx}")
+            add_to_combined_list(console.log_calls, f"console-{idx}")
             add_to_combined_list(console.log, "", console_combined)
         idx = idx + 1
 
@@ -344,14 +344,12 @@ def create_file_logs(config, board, tests_to_run, logger):
             for e in combined_list:
                 try:
                     if e["name"] == "":
-                        clog.write("[%s]%s\r\n" % (e["time"], repr(e["text"])))
+                        clog.write(f"[{e['time']}]{repr(e['text'])}\r\n")
                     else:
-                        clog.write(
-                            "%s: [%s] %s\n" % (e["name"], e["time"], repr(e["text"]))
-                        )
+                        clog.write(f"{e['name']}: [{e['time']}] {repr(e['text'])}\n")
                 except Exception as error:
                     logger.error(error)
-                    logger.debug("failed to parse line: %s" % repr(e))
+                    logger.debug(f"failed to parse line: {repr(e)}")
 
     import operator
 
@@ -369,7 +367,7 @@ def create_file_logs(config, board, tests_to_run, logger):
     for test in tests_to_run:
         if hasattr(test, "log") and test.log != "":
             with open(
-                os.path.join(config.output_dir, "%s.log" % test.__class__.__name__), "w"
+                os.path.join(config.output_dir, f"{test.__class__.__name__}.log"), "w"
             ) as clog:
                 clog.write(test.log)
         if hasattr(test, "log_calls"):

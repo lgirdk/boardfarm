@@ -27,9 +27,9 @@ class Interact(rootfs_boot.RootFSBootTest):
             d = getattr(self.config, device)
             # TODO: should move all classes to use string repr
             if hasattr(d, "username"):
-                print("  %s device:    ssh %s@%s" % (device, d.username, d.name))
+                print(f"  {device} device:    ssh {d.username}@{d.name}")
             else:
-                print("  %s device:    %s" % (d.name, d))
+                print(f"  {d.name} device:    {d}")
 
     def test_main(self):
         """Function to interact menu."""
@@ -53,7 +53,7 @@ class Interact(rootfs_boot.RootFSBootTest):
 
         while True:
             print("\n\nCurrent station")
-            print("  Board console: %s" % self.config.board.get("conn_cmd"))
+            print(f"  Board console: {self.config.board.get('conn_cmd')}")
             self.print_dynamic_devices()
             print(
                 "Pro-tip: Increase kernel message verbosity with\n"
@@ -67,19 +67,19 @@ class Interact(rootfs_boot.RootFSBootTest):
             else:
                 i = 1
                 for c in board.consoles:
-                    print("  %s: Enter console" % i)
+                    print(f"  {i}: Enter console")
                     i += 1
 
-            print("  %s: List all tests" % i)
+            print(f"  {i}: List all tests")
             i += 1
-            print("  %s: Run test" % i)
+            print(f"  {i}: Run test")
             i += 1
-            print("  %s: Reset board" % i)
+            print(f"  {i}: Reset board")
             i += 1
-            print("  %s: Enter interactive python shell" % i)
+            print(f"  {i}: Enter interactive python shell")
             i += 1
             if len(self.config.devices) > 0:
-                print("  Type a device name to connect: %s" % self.config.devices)
+                print(f"  Type a device name to connect: {self.config.devices}")
             print("  x: Exit")
             key = input("Please select: ")
 

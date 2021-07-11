@@ -31,8 +31,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
     wan_iface = "eth0"
     lan_iface = "brlan0"
 
-    lan_network = ipaddress.IPv4Network(u"10.0.0.0/24")
-    lan_gateway = ipaddress.IPv4Address(u"10.0.0.1")
+    lan_network = ipaddress.IPv4Network("10.0.0.0/24")
+    lan_gateway = ipaddress.IPv4Address("10.0.0.1")
 
     # allowed open ports (starting point, dns is on wan?)
     wan_open_ports = ["22", "53"]
@@ -59,7 +59,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
         rootfs=None,
         kernel=None,
         mgr=None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the variables that are used across function which include the tftp_server, credential, power_ip, credentials etc..
 
@@ -125,8 +125,8 @@ class Qemu(openwrt_router.OpenWrtRouter):
             self.cleanup_files.append(fname)
             atexit.register(self.run_cleanup_cmd)
             dl_console.logfile_read = sys.stdout
-            print("Temp downloaded file = %s" % url)
-            dl_console.sendline("curl -n -L -k '%s' > %s" % (url, fname))
+            print(f"Temp downloaded file = {url}")
+            dl_console.sendline(f"curl -n -L -k '{url}' > {fname}")
             dl_console.expect_exact("prompt>>", timeout=500)
             dl_console.logfile_read = None
             dl_console.sendline("exit")
@@ -136,12 +136,12 @@ class Qemu(openwrt_router.OpenWrtRouter):
         if rootfs.startswith("http://") or rootfs.startswith("https://"):
             rootfs = temp_download(rootfs)
 
-        cmd = "%s %s" % (conn_cmd, rootfs)
+        cmd = f"{conn_cmd} {rootfs}"
 
         if kernel is not None:
             if kernel.startswith("http://") or kernel.startswith("https://"):
                 kernel = temp_download(kernel)
-            cmd += " -kernel %s --append root=/dev/hda2" % kernel
+            cmd += f" -kernel {kernel} --append root=/dev/hda2"
 
         # check if we can run kvm
         kvm_chk = bft_pexpect_helper.spawn("sudo kvm-ok")

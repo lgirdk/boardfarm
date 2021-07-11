@@ -101,7 +101,7 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline("echo 0 > /proc/sys/net/ipv4/tcp_sack")
         self.expect(self.prompt)
-        self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+        self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
         self.expect(self.prompt)
         apt_install(self, "ndisc6 python-serial")
         if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
@@ -114,8 +114,7 @@ class DebianLAN(debian.DebianBox):
     def prepare_interface(self):
         # bring ip link down and up
         self.sendline(
-            "ip link set down %s && ip link set up %s"
-            % (self.iface_dut, self.iface_dut)
+            f"ip link set down {self.iface_dut} && ip link set up {self.iface_dut}"
         )
         self.expect(self.prompt)
 
@@ -157,7 +156,7 @@ class DebianLAN(debian.DebianBox):
 
         self.__kill_dhclient()
 
-        self.sendline("\nifconfig %s 0.0.0.0" % self.iface_dut)
+        self.sendline(f"\nifconfig {self.iface_dut} 0.0.0.0")
         self.expect(self.prompt)
         self.sendline("rm /var/lib/dhcp/dhclient.leases")
         self.expect(self.prompt)
@@ -199,32 +198,31 @@ class DebianLAN(debian.DebianBox):
             self.tshark_process = False
             tshark_logs = tshark_read(self, capture_file, packet_details=True)
             raise Exception(
-                """Error: Device on LAN couldn't obtain address via DHCP.
+                f"""Error: Device on LAN couldn't obtain address via DHCP.
             #########################################
             #######TShark Logs for DHCP Starts#######
             #########################################
-            %s
+            {tshark_logs}
             #########################################
             ########TShark Logs for DHCP Ends########
             #########################################"""
-                % tshark_logs
             )
 
         if self.tshark_process:
             kill_process(self, "tcpdump")
             self.tshark_process = False
-            self.sudo_sendline("rm %s" % capture_file)
+            self.sudo_sendline(f"rm {capture_file}")
 
         self.sendline("cat /etc/resolv.conf")
         self.expect(self.prompt)
-        self.sendline("ip addr show dev %s" % self.iface_dut)
+        self.sendline(f"ip addr show dev {self.iface_dut}")
         self.expect(self.prompt)
         self.sendline("ip route")
         # TODO: we should verify this so other way, because the they could be the same subnets
         # in theory
         i = self.expect(
             [
-                "default via %s dev %s" % (self.lan_gateway, self.iface_dut),
+                f"default via {self.lan_gateway} dev {self.iface_dut}",
                 pexpect.TIMEOUT,
             ],
             timeout=5,
@@ -245,7 +243,7 @@ class DebianLAN(debian.DebianBox):
             self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
 
         if wan_gw is not None and hasattr(self, "lan_fixed_route_to_wan"):
-            self.sendline("ip route add %s via %s" % (wan_gw, self.lan_gateway))
+            self.sendline(f"ip route add {wan_gw} via {self.lan_gateway}")
             self.expect(self.prompt)
         ipv4 = self.get_interface_ipaddr(self.iface_dut)
 
@@ -267,11 +265,11 @@ class DebianLAN(debian.DebianBox):
 
         self.disable_ipv6(self.iface_dut)
         self.enable_ipv6(self.iface_dut)
-        self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+        self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
 
         # check if board is providing an RA, if yes use that detail to perform DHCPv6
         # default method used will be statefull DHCPv6
-        output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
+        output = self.check_output(f"rdisc6 -1 {self.iface_dut}", timeout=60)
         M_bit, O_bit = True, True
         if "Prefix" in output:
             M_bit, O_bit = map(
@@ -334,12 +332,12 @@ class DebianLAN(debian.DebianBox):
         """Write a useful ssh config for routers"""
         self.sendline("mkdir -p ~/.ssh")
         self.sendline("cat > ~/.ssh/config << EOF")
-        self.sendline("Host %s" % self.lan_gateway)
+        self.sendline(f"Host {self.lan_gateway}")
         self.sendline("StrictHostKeyChecking no")
         self.sendline("UserKnownHostsFile=/dev/null")
         self.sendline("")
         self.sendline("Host krouter")
-        self.sendline("Hostname %s" % self.lan_gateway)
+        self.sendline(f"Hostname {self.lan_gateway}")
         self.sendline("StrictHostKeyChecking no")
         self.sendline("UserKnownHostsFile=/dev/null")
         self.sendline("EOF")
@@ -347,8 +345,8 @@ class DebianLAN(debian.DebianBox):
 
     def __passwordless_setting(self):
         """Copy an id to the router so people don't have to type a password to ssh or scp"""
-        self.sendline("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
-        self.expect_exact("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
+        self.sendline(f"nc {self.lan_gateway} 22 -w 1 | cut -c1-3")
+        self.expect_exact(f"nc {self.lan_gateway} 22 -w 1 | cut -c1-3")
         if 0 == self.expect(["SSH"] + self.prompt, timeout=5) and not self.is_bridged:
             self.sendcontrol("c")
             self.expect(self.prompt)

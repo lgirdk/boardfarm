@@ -21,5 +21,5 @@ class KernelModules(rootfs_boot.RootFSBootTest):
         tmp = re.search(r"\d+", board.before)
         num = int(tmp.group(0)) - 1  # subtract header line
         board.check_output("lsmod | sort")
-        self.result_message = "%s kernel modules are loaded." % num
+        self.result_message = f"{num} kernel modules are loaded."
         self.logged["num_loaded"] = num

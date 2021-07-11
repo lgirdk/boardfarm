@@ -116,7 +116,7 @@ class web_gui:
         select_value = resolv_dict(self.config, key_value)
         self.scroll_view(select_value)
         enter_value = enter_input(self.driver, select_value, input_value)
-        assert enter_value, "Unable to enter value %s" % input_value
+        assert enter_value, f"Unable to enter value {input_value}"
 
     def get_text(self, value):
         """To get the text from the text box in a gui page.
@@ -142,7 +142,7 @@ class web_gui:
         select_key_value = resolv_dict(self.config, select_id)
         self.scroll_view(select_key_value)
         Click_button = click_button_id(self.driver, select_key_value)
-        assert Click_button is True, "Click button : %s  " % Click_button
+        assert Click_button is True, f"Click button : {Click_button}  "
 
     def selected_option_by_id(self, key_id, value):
         """Select option in the dropdown by id.
@@ -157,7 +157,7 @@ class web_gui:
         select_key_value = resolv_dict(self.config, select_id)
         self.scroll_view(select_key_value)
         select_button = select_option_by_id(self.driver, select_key_value, value)
-        assert select_button, "Select button : %s  " % select_button
+        assert select_button, f"Select button : {select_button}  "
 
     def verify_radio(self, value):
         """Verify radio button in gui page.
@@ -247,8 +247,7 @@ class web_gui:
             )
         except Exception:
             logger.error(
-                "check_element_visibility({}): timeout to find "
-                "element".format(element)
+                f"check_element_visibility({element}): timeout to find element"
             )
         return query
 
@@ -268,10 +267,7 @@ class web_gui:
                 EC.element_to_be_clickable(element)
             )
         except Exception:
-            logger.error(
-                "check_element_clickable({}): timeout to find "
-                "element".format(element)
-            )
+            logger.error(f"check_element_clickable({element}): timeout to find element")
         return query
 
     def check_element_selection_state_to_be(self, *element, **kwargs):
@@ -314,8 +310,7 @@ class web_gui:
         self.driver.implicitly_wait(self.default_delay)
 
         logger.error(
-            "wait_for_element(): check_element_visibility(%s, %s)"
-            % (str(by), ele_index)
+            f"wait_for_element(): check_element_visibility({str(by)}, {ele_index})"
         )
         ele = self.check_element_visibility(by, ele_index)
         assert ele is not None, "check_element_visibility(%s, %s)=False" % (
@@ -383,7 +378,7 @@ class web_gui:
                 logger.debug("Logout clicked")
             return True
         except NoSuchElementException:
-            logger.error("No logout button element ('id', %s) found " % id_value)
+            logger.error(f"No logout button element ('id', {id_value}) found ")
             return False
 
     def driver_close(self, logout_id, logout_check=True):
@@ -474,10 +469,10 @@ class web_gui:
 
         # verify $button is exist
         button = self.check_element_visibility(by, ele_index)
-        assert button is not None, "timeout: not found %s in page" % ele_index
-        logger.debug("get button value: %s" % button.get_attribute("value"))
+        assert button is not None, f"timeout: not found {ele_index} in page"
+        logger.debug(f"get button value: {button.get_attribute('value')}")
 
-        self._save_screenshot("%s_click.png" % ele_index)
+        self._save_screenshot(f"{ele_index}_click.png")
         self.check_element_clickable(by, ele_index).click()
 
     def home_page(self, page_id):
@@ -506,8 +501,8 @@ class web_gui:
             temp = self.key[path]
             temp = resolv_dict(self.config, temp)
             button = click_button_id(self.driver, temp)
-            assert button, "Error in click %s" % path
-            logger.info("Click %s : PASS" % path)
+            assert button, f"Error in click {path}"
+            logger.info(f"Click {path} : PASS")
             time.sleep(2)
 
     def __del__(self):
@@ -564,7 +559,7 @@ class ScreenshotListener(AbstractEventListener):
 
         driver.get_screenshot_as_file(abs_path)
         driver.maximize_window()  # Restore window to fit screen in order to avoid corrupted GUI
-        logger.debug("Screenshot saved as '{}'".format(abs_path))
+        logger.debug(f"Screenshot saved as '{abs_path}'")
 
     def on_exception(self, exception, driver):
         self.capture_screenshot(driver, "Exception")

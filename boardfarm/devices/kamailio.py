@@ -124,7 +124,7 @@ EOF"""
         if isinstance(user, str):
             user = [user]
         for i in user:
-            self.sendline("kamctl add %s %s" % (i, password))
+            self.sendline(f"kamctl add {i} {password}")
             index = self.expect(["MySQL password for user"] + self.prompt)
             if index == 0:
                 self.sendline(self.mysql.password)
@@ -136,7 +136,7 @@ EOF"""
         param user: the user entry to be added
         type user: string
         """
-        self.sendline("kamctl rm %s" % user)
+        self.sendline(f"kamctl rm {user}")
         self.expect(self.prompt)
 
     def sipserver_user_update(self, user, password):
@@ -147,7 +147,7 @@ EOF"""
         param password: the password of the user
         type password: string
         """
-        self.sendline("kamctl passwd %s %s" % (user, password))
+        self.sendline(f"kamctl passwd {user} {password}")
         self.expect(self.prompt)
 
     def sipserver_user_registration_status(self, user, ip_address):
@@ -158,9 +158,9 @@ EOF"""
         param password: the password of the user
         type password: string
         """
-        self.sendline("kamctl ul show %s" % user)
+        self.sendline(f"kamctl ul show {user}")
         self.expect(self.prompt)
-        if "sip:%s@%s:5060" % (user, ip_address) in self.before:
+        if f"sip:{user}@{ip_address}:5060" in self.before:
             return "Registered"
         elif "404 AOR not found" in self.before:
             return "Unregistered"
@@ -189,7 +189,7 @@ EOF"""
 
     def _check_kamailio_db(self, user):
         """check if the subscriber entries are added"""
-        self.sendline("kamctl db smatch subscriber username %s" % user)
+        self.sendline(f"kamctl db smatch subscriber username {user}")
         self.expect(self.prompt)
         out = self.before + self.after
 

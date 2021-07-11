@@ -67,7 +67,7 @@ def caller_file_line(i):
     frame = caller[0]
     info = inspect.getframeinfo(frame)
 
-    return "%s: %s(): line %s" % (info.filename, info.function, info.lineno)
+    return f"{info.filename}: {info.function}(): line {info.lineno}"
 
 
 # global sudo password
@@ -224,7 +224,7 @@ class bft_pexpect_helper(pexpect.spawn):
         """Send input command to the active pexpect session."""
         if BFT_DEBUG and self.getecho():
             idx = frame_index_out_of_file()
-            print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
+            print_bold(f"{caller_file_line(idx)} = sending: {repr(s)}")
 
         return super(bft_pexpect_helper, self).sendline(s)
 
@@ -232,7 +232,7 @@ class bft_pexpect_helper(pexpect.spawn):
         """Send input command char by char to the active pexpect session."""
         if BFT_DEBUG and self.getecho():
             idx = frame_index_out_of_file()
-            print_bold("%s = sending: %s" % (caller_file_line(idx), repr(s)))
+            print_bold(f"{caller_file_line(idx)} = sending: {repr(s)}")
 
         if self.delaybetweenchar is not None:
             ret = 0
@@ -250,16 +250,16 @@ class bft_pexpect_helper(pexpect.spawn):
             return wrapper(pattern, *args, **kwargs)
 
         idx = frame_index_out_of_file()
-        print_bold("%s = expecting: %s" % (caller_file_line(idx), repr(pattern)))
+        print_bold(f"{caller_file_line(idx)} = expecting: {repr(pattern)}")
         try:
             ret = wrapper(pattern, *args, **kwargs)
 
             frame = caller_file_line(idx)
 
             if hasattr(self.match, "group"):
-                print_bold("%s = matched: %s" % (frame, repr(self.match.group())))
+                print_bold(f"{frame} = matched: {repr(self.match.group())}")
             else:
-                print_bold("%s = matched: %s" % (frame, repr(pattern)))
+                print_bold(f"{frame} = matched: {repr(pattern)}")
             return ret
         except Exception:
             print_bold("expired")
@@ -346,7 +346,7 @@ def spawn_ssh_pexpect(
         pass
 
     if prompt is None:
-        p.prompt = "%s@.*$" % user
+        p.prompt = f"{user}@.*$"
     else:
         p.prompt = prompt
 

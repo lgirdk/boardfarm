@@ -253,14 +253,14 @@ def provision(board, prov, wan, tftp_device):
         gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
 
         for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
-            wan.sendline("ip route add %s via %s" % (nw, gw))
+            wan.sendline(f"ip route add {nw} via {gw}")
             wan.expect(wan.prompt)
 
     # TODO: don't do this and sort out two interfaces with ipv6
     wan.disable_ipv6("eth0")
 
     if hasattr(prov, "prov_gateway_v6"):
-        wan.sendline("ip -6 route add default via %s" % str(prov.prov_gateway_v6))
+        wan.sendline(f"ip -6 route add default via {str(prov.prov_gateway_v6)}")
         wan.expect(wan.prompt)
 
     wan.sendline("ip route")
@@ -392,7 +392,7 @@ def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=
 
     # Try to verify router has stayed up (and, say, not suddenly rebooted)
     end_seconds_up = board.get_seconds_uptime()
-    logger.info("\nThe router has been up %s seconds." % end_seconds_up)
+    logger.info(f"\nThe router has been up {end_seconds_up} seconds.")
     if config.setup_device_networking:
         assert end_seconds_up > linux_booted_seconds_up
 

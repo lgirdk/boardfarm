@@ -19,9 +19,9 @@ class NetperfRFC2544(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         for sz in ["74", "128", "256", "512", "1024", "1280", "1518"]:
-            print("running %s UDP test" % sz)
-            lan.sendline("netperf -H 192.168.0.1 -t UDP_STREAM -l 60 -- -m %s" % sz)
-            lan.expect_exact("netperf -H 192.168.0.1 -t UDP_STREAM -l 60 -- -m %s" % sz)
+            print(f"running {sz} UDP test")
+            lan.sendline(f"netperf -H 192.168.0.1 -t UDP_STREAM -l 60 -- -m {sz}")
+            lan.expect_exact(f"netperf -H 192.168.0.1 -t UDP_STREAM -l 60 -- -m {sz}")
             lan.expect("UDP UNIDIRECTIONAL")
             lan.expect(prompt, timeout=90)
             board.sendline()

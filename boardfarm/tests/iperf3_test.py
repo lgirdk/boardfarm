@@ -31,7 +31,7 @@ class iPerf3Test(rootfs_boot.RootFSBootTest):
         if self.target_ip == None:
             self.target_ip = wan.get_interface_ipaddr(wan.iface_dut)
 
-        wan.sendline("iperf3 -s -p %s" % self.server_port)
+        wan.sendline(f"iperf3 -s -p {self.server_port}")
         wan.expect("-----------------------------------------------------------")
         wan.expect("-----------------------------------------------------------")
 

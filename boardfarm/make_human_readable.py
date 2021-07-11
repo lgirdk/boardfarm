@@ -59,7 +59,7 @@ def build_station_info(board_info):
         conn = device.get("conn_cmd", None)
         if not conn:
             conn = ":".join([device.get("ipaddr", ""), device.get("port", "")])
-        ret += "    <li>{} {} {}</li>\n".format(device["name"], device["type"], conn)
+        ret += f"    <li>{device['name']} {device['type']} {conn}</li>\n"
 
     return ret
 
@@ -125,9 +125,9 @@ def xmlresults_to_html(
         )
         if t["long_message"] != "":
             results_table_lines.append(
-                '<tr class="%(row_style)s"><td colspan=4><pre align="left">' % t
+                f"<tr class=\"{t['row_style']}\"><td colspan=4><pre align=\"left\">"
             )
-            results_table_lines.append("%(long_message)s" % t)
+            results_table_lines.append(f"{t['long_message']}")
             results_table_lines.append("</pre></td></tr>")
 
     # process the summary counter
@@ -151,7 +151,7 @@ def xmlresults_to_html(
             os.environ.get("TEST_START_TIME")
         )
         minutes = round((test_seconds / 60), 1)
-        parameters["total_test_time"] = "%s minutes" % minutes
+        parameters["total_test_time"] = f"{minutes} minutes"
     except Exception as error:
         logger.error(error)
 
@@ -160,7 +160,7 @@ def xmlresults_to_html(
         end_timestamp = int(os.environ.get("TEST_END_TIME"))
         struct_time = time.localtime(end_timestamp)
         format_time = time.strftime("%Y-%m-%d %H:%M:%S", struct_time)
-        parameters["report_time"] = "%s" % (format_time)
+        parameters["report_time"] = f"{format_time}"
     except Exception as error:
         logger.error(error)
 

@@ -26,7 +26,7 @@ class WindowsTelnet(base.BaseDevice):
         self.username = self.kwargs.get("username", "Administrator")
         self.password = self.kwargs.get("password", "bigfoot1")
 
-        conn_cmd = "telnet %s" % self.ip
+        conn_cmd = f"telnet {self.ip}"
 
         self.connection = connection_decider.connection(
             "local_cmd", device=self, conn_cmd=conn_cmd
@@ -81,9 +81,9 @@ class WindowsTelnet(base.BaseDevice):
         :rtype : string
         """
         if source_ip is None:
-            self.sendline("ping -n %s %s" % (ping_count, ping_ip))
+            self.sendline(f"ping -n {ping_count} {ping_ip}")
         else:
-            self.sendline("ping -S %s -n %s %s" % (source_ip, ping_count, ping_ip))
+            self.sendline(f"ping -S {source_ip} -n {ping_count} {ping_ip}")
 
         self.expect("(.+)>", timeout=wait_time)
         Wifi_log = self.match.group(1)
@@ -173,7 +173,7 @@ class WindowsTelnet(base.BaseDevice):
         :return : ipv6 address
         :rtype : string
         """
-        self.sendline("netsh interface ipv6 show addresses %s" % interface)
+        self.sendline(f"netsh interface ipv6 show addresses {interface}")
         self.expect(self.prompt)
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
             ipv6addr = ipaddress.IPv6Address(six.text_type(match))
@@ -192,7 +192,7 @@ class WindowsTelnet(base.BaseDevice):
         :rtype : string
         """
         self.sendline("getmac /V /NH")
-        self.expect("{!s}.*({!s}).*\r\n".format(interface, WindowsMacFormat))
+        self.expect(f"{interface!s}.*({WindowsMacFormat!s}).*\r\n")
         macaddr = self.match.group(1).replace("-", ":")
         self.expect(self.prompt)
         return macaddr

@@ -239,7 +239,7 @@ EOF"""
         self.sendline("python3 sip_config.py")
         self.expect_prompt(timeout=10)
         if "Traceback" in self.before:
-            output = False, "File error :\n%s" % self.before
+            output = False, f"File error :\n{self.before}"
         elif "True" in self.before or "None" in self.before:
             output = True, "Operation " + oper + " is successful"
         else:

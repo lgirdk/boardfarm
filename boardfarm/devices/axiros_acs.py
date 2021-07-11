@@ -137,7 +137,7 @@ class Intercept(object):
                             if not ok and (retry == (count - 1)):
                                 logger.info(
                                     "\x1b[6;30;42m"
-                                    + "TCPdump is saved in %s" % capture
+                                    + f"TCPdump is saved in {capture}"
                                     + "\x1b[0m"
                                 )
                                 # captured packet is moved to results folder
@@ -150,7 +150,7 @@ class Intercept(object):
                                     self.cli_port,
                                     dest,
                                 )
-                            self.sendline("rm %s" % capture)
+                            self.sendline(f"rm {capture}")
                             self.expect(self.prompt)
 
                 return result
@@ -224,7 +224,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 self,
                 command="ssh",
                 args=[
-                    "%s@%s" % (self.cli_username, self.ipaddr),
+                    f"{self.cli_username}@{self.ipaddr}",
                     "-p",
                     self.cli_port,
                     "-o",
@@ -1275,7 +1275,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 4:
         cpe_id = sys.argv[4]
-        logger.info("Using CPEID: {}".format(cpe_id))
+        logger.info(f"Using CPEID: {cpe_id}")
     else:
         logger.error("Error: missing cpeid")
         sys.exit(1)

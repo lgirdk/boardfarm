@@ -32,37 +32,37 @@ class JMeter(rootfs_boot.RootFSBootTest):
         board = self.dev.board
         lan = self.dev.lan
 
-        self.dir = "jmeter_%s" % self.shortname
+        self.dir = f"jmeter_{self.shortname}"
         install_jmeter(lan)
 
-        lan.sendline("rm -rf $HOME/%s" % self.dir)
+        lan.sendline(f"rm -rf $HOME/{self.dir}")
         lan.expect(prompt)
-        lan.sendline("mkdir -p $HOME/%s/wd" % self.dir)
+        lan.sendline(f"mkdir -p $HOME/{self.dir}/wd")
         lan.expect(prompt)
-        lan.sendline("mkdir -p $HOME/%s/results" % self.dir)
+        lan.sendline(f"mkdir -p $HOME/{self.dir}/results")
         lan.expect(prompt)
 
         if self.jmx.startswith("http"):
-            lan.sendline("curl %s > $HOME/%s/test.jmx" % (self.jmx, self.dir))
+            lan.sendline(f"curl {self.jmx} > $HOME/{self.dir}/test.jmx")
             lan.expect(prompt)
         else:
-            print("Copying %s to lan device" % self.jmx)
+            print(f"Copying {self.jmx} to lan device")
             lan.sendline("echo $HOME")
             lan.expect_exact("echo $HOME")
             lan.expect(prompt)
             lan.copy_file_to_server(
-                self.jmx, dst=lan.before.strip() + "/%s/test.jmx" % self.dir
+                self.jmx, dst=lan.before.strip() + f"/{self.dir}/test.jmx"
             )
 
         board.collect_stats(stats=["mpstat"])
 
-        lan.sendline("cd $HOME/%s/wd" % self.dir)
+        lan.sendline(f"cd $HOME/{self.dir}/wd")
         lan.expect(prompt)
         lan.sendline(
             'JVM_ARGS="-Xms4096m -Xmx8192m" jmeter -n -t ../test.jmx -l foo.log -e -o $HOME/%s/results'
             % self.dir
         )
-        lan.expect_exact("$HOME/%s/results" % self.dir)
+        lan.expect_exact(f"$HOME/{self.dir}/results")
         for i in range(self.default_time):
             if 0 != lan.expect([pexpect.TIMEOUT] + prompt, timeout=5):
                 break
@@ -93,9 +93,9 @@ class JMeter(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
         board.touch()
 
-        print("Copying files from lan to dir = %s" % self.config.output_dir)
-        lan.sendline("readlink -f $HOME/%s/" % self.dir)
-        lan.expect_exact("$HOME/%s/" % self.dir)
+        print(f"Copying files from lan to dir = {self.config.output_dir}")
+        lan.sendline(f"readlink -f $HOME/{self.dir}/")
+        lan.expect_exact(f"$HOME/{self.dir}/")
         board.touch()
         lan.expect(prompt)
         board.touch()

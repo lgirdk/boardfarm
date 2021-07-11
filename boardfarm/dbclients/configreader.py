@@ -76,7 +76,7 @@ class TestsuiteConfigReader(object):
                     s_config = f.read()
         except Exception as e:
             logger.error(e)
-            raise Exception("Warning: Unable to read/access %s" % fname)
+            raise Exception(f"Warning: Unable to read/access {fname}")
         current_section = None
         for i, line in enumerate(s_config.split("\n")):
             try:
@@ -91,7 +91,7 @@ class TestsuiteConfigReader(object):
                         self.section[current_section].append(line)
             except Exception as e:
                 logger.error(e)
-                logger.error("Error line %s of %s" % (i + 1, fname))
+                logger.error(f"Error line {i + 1} of {fname}")
                 continue
 
         for section in self.section:
@@ -114,7 +114,7 @@ class TestsuiteConfigReader(object):
         """Format the string representation of self object (instance)."""
         result = []
         for name in sorted(self.section):
-            result.append("* %s" % name)
+            result.append(f"* {name}")
             for i, x in enumerate(self.section[name]):
                 result.append(" %2s %s" % (i + 1, x))
         return "\n".join(result)

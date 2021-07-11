@@ -45,7 +45,7 @@ class DellSwitch(base.BaseDevice):
         """Create a Virtual LAN."""
         self.sendline("vlan database")
         self.expect(self.prompt)
-        self.sendline("vlan %s" % vlan)
+        self.sendline(f"vlan {vlan}")
         self.expect(self.prompt)
         self.sendline("exit")
         self.expect(self.prompt)
@@ -66,27 +66,27 @@ class DellSwitch(base.BaseDevice):
             vlan = override_vlan
 
         self.create_vlan(vlan)
-        self.sendline("interface ethernet 1/g%s" % port)
+        self.sendline(f"interface ethernet 1/g{port}")
         self.expect(self.prompt)
         self.sendline("spanning-tree disable")
         self.expect(self.prompt)
         self.sendline("switchport mode general")
         self.expect(self.prompt)
         # NOTE: we can't change the PVID otherwise it breaks other containers
-        self.sendline("switchport general pvid %s" % (100 + port))
+        self.sendline(f"switchport general pvid {100 + port}")
         self.expect(self.prompt)
         self.sendline("switchport general ingress-filtering disable")
         self.expect(self.prompt)
         self.sendline("switchport forbidden vlan add 1,4093")
         self.expect(self.prompt)
-        self.sendline("switchport general allowed vlan add %s" % vlan)
+        self.sendline(f"switchport general allowed vlan add {vlan}")
         self.expect(self.prompt)
         self.sendline("exit")
         self.expect(self.prompt)
 
     def configure_eth_trunk_port(self, port):
         """Set an ethernet port to tag traffic with VLAN identifiers."""
-        self.sendline("interface ethernet 1/g%s" % port)
+        self.sendline(f"interface ethernet 1/g{port}")
         self.expect(self.prompt)
         self.sendline("switchport mode trunk")
         self.expect(self.prompt)

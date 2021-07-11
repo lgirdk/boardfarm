@@ -112,7 +112,7 @@ class DebianBox(linux.LinuxDevice):
                 self,
                 command="ssh",
                 args=[
-                    "%s@%s" % (username, ipaddr),
+                    f"{username}@{ipaddr}",
                     "-p",
                     port,
                     "-o",
@@ -146,7 +146,7 @@ class DebianBox(linux.LinuxDevice):
         self.output = output
         self.username = username
         if username != "root":
-            self.prompt.append("%s\\@.*:.*$" % username)
+            self.prompt.append(f"{username}\\@.*:.*$")
         self.password = password
         self.port = port
         self.location = location
@@ -182,7 +182,7 @@ class DebianBox(linux.LinuxDevice):
                 if opt.startswith("wan-static-ip:"):
                     value = six.text_type(opt.replace("wan-static-ip:", ""))
                     if "/" not in value:
-                        value = value + (u"/24")
+                        value = value + ("/24")
                     self.gw_ng = ipaddress.IPv4Interface(value)
                     self.nw = self.gw_ng.network
                     self.gw_prefixlen = self.nw._prefixlen
@@ -191,7 +191,7 @@ class DebianBox(linux.LinuxDevice):
                 if opt.startswith("wan-static-ipv6:"):
                     ipv6_address = six.text_type(opt.replace("wan-static-ipv6:", ""))
                     if "/" not in opt:
-                        ipv6_address += "/%s" % six.text_type(str(self.ipv6_prefix))
+                        ipv6_address += f"/{six.text_type(str(self.ipv6_prefix))}"
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
                     self.ipv6_prefix = self.ipv6_interface._prefixlen
                     self.gwv6 = self.ipv6_interface.ip
@@ -245,7 +245,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.flush()
             env_prefix = ""
             for k, v in self.dev.env.items():
-                env_prefix += "export %s=%s; " % (k, v)
+                env_prefix += f"export {k}={v}; "
 
             self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
@@ -274,11 +274,11 @@ class DebianBox(linux.LinuxDevice):
                 timeout=30,
             )
         except PexpectErrorTimeout:
-            raise Exception("Unable to connect to %s." % name)
+            raise Exception(f"Unable to connect to {name}.")
         except pexpect.EOF:
             if hasattr(self, "before"):
                 print(self.before)
-                raise Exception("Unable to connect to %s." % name)
+                raise Exception(f"Unable to connect to {name}.")
         if i == 0:
             self.sendline("yes")
             i = self.expect(["Last login", "assword:"])
@@ -302,21 +302,19 @@ class DebianBox(linux.LinuxDevice):
         :param name: name of the debian device
         :type name: string
         """
-        cmsg = "%s " % ipaddr
+        cmsg = f"{ipaddr} "
         if self.port != 22:
-            cmsg += "%s port " % port
+            cmsg += f"{port} port "
         cmsg += "device console = "
-        cmsg += colored("%s (%s)" % (color, name), color)
+        cmsg += colored(f"{color} ({name})", color)
         cprint(cmsg, None, attrs=["bold"])
 
     def get_default_gateway(self, interface):
         """Get the default gateway from ip route output."""
-        self.sendline("ip route | grep {!s}".format(interface))
+        self.sendline(f"ip route | grep {interface!s}")
         self.expect(self.prompt)
 
-        match = re.search(
-            "default via (.*) dev {!s}.*\r\n".format(interface), self.before
-        )
+        match = re.search(f"default via (.*) dev {interface!s}.*\r\n", self.before)
         if match:
             return match.group(1)
         else:
@@ -324,7 +322,7 @@ class DebianBox(linux.LinuxDevice):
 
     def run_cleanup_cmd(self):
         """To clear the buffer."""
-        sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
+        sys.stdout.write(f"Running cleanup_cmd on {self.name}...")
         sys.stdout.flush()
         cc = bft_pexpect_helper.spawn(
             command="bash", args=["-c", self.cleanup_cmd], env=self.dev.env
@@ -347,7 +345,7 @@ class DebianBox(linux.LinuxDevice):
                     "64 bytes", timeout=1
                 )
             except Exception:
-                print(self.name + " not up yet, after %s seconds." % (i + 15))
+                print(self.name + f" not up yet, after {i + 15} seconds.")
             else:
                 print(
                     "%s is back after %s seconds, waiting for network daemons to spawn."
@@ -381,7 +379,7 @@ class DebianBox(linux.LinuxDevice):
             and not self.install_pkgs_after_dhcp
             and not getattr(self, "standalone_provisioner", False)
         ):
-            self.sendline("ifconfig %s down" % self.iface_dut)
+            self.sendline(f"ifconfig {self.iface_dut} down")
             self.expect(self.prompt)
 
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd dante-server"
@@ -419,7 +417,7 @@ class DebianBox(linux.LinuxDevice):
                 [r"(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n"] + self.prompt, timeout=5
             ):
                 possible_default_gw = self.match.group(1)
-                self.sendline("ip route add default via %s" % possible_default_gw)
+                self.sendline(f"ip route add default via {possible_default_gw}")
                 self.expect(self.prompt)
                 self.sendline("ping -c1 deb.debian.org")
                 self.expect(self.prompt)
@@ -448,7 +446,7 @@ class DebianBox(linux.LinuxDevice):
             _install_pkgs()
 
         if undo_default_route is not None:
-            self.sendline("ip route del default via %s" % undo_default_route)
+            self.sendline(f"ip route del default via {undo_default_route}")
             self.expect(self.prompt)
 
     def turn_on_pppoe(self):
@@ -460,7 +458,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("EOF")
         self.expect(self.prompt)
         self.sendline(
-            "pppoe-server -k -I %s -L 192.168.2.1 -R 192.168.2.10 -N 4" % self.iface_dut
+            f"pppoe-server -k -I {self.iface_dut} -L 192.168.2.1 -R 192.168.2.10 -N 4"
         )
         self.expect(self.prompt)
 
@@ -487,9 +485,9 @@ class DebianBox(linux.LinuxDevice):
         # set WAN ip address, for now this will always be this address for the device side
         # TODO: fix gateway for non-WAN tftp_server
         if self.gw != eth1_addr:
-            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+            self.sendline(f"ifconfig {self.iface_dut} {self.gw_ng}")
             self.expect(self.prompt)
-        self.sendline("ifconfig %s up" % self.iface_dut)
+        self.sendline(f"ifconfig {self.iface_dut} up")
         self.expect(self.prompt)
 
         # configure tftp server
@@ -576,8 +574,8 @@ class DebianBox(linux.LinuxDevice):
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
-            self.send("ip route del %s; " % self.static_route.split(" via ")[0])
-            self.sendline("ip route add %s" % self.static_route)
+            self.send(f"ip route del {self.static_route.split(' via ')[0]}; ")
+            self.sendline(f"ip route add {self.static_route}")
             self.expect(self.prompt)
 
     def setup_dhcp_server(self):
@@ -606,7 +604,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("cat > /etc/dhcp/dhcpd.conf << EOF")
         self.sendline("ddns-update-style none;")
         self.sendline('option domain-name "bigfoot-test";')
-        self.sendline("option domain-name-servers %s;" % self.gw)
+        self.sendline(f"option domain-name-servers {self.gw};")
         self.sendline("default-lease-time 600;")
         self.sendline("max-lease-time 7200;")
         # use the same netmask as the lan device
@@ -617,7 +615,7 @@ class DebianBox(linux.LinuxDevice):
             "          range %s %s;"
             % (self.nw.network_address + 10, self.nw.network_address + 100)
         )
-        self.sendline("          option routers %s;" % self.gw)
+        self.sendline(f"          option routers {self.gw};")
         self.sendline("}")
         self.sendline("EOF")
         self.expect(self.prompt)
@@ -632,9 +630,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("cat > /etc/dnsmasq.conf << EOF")
         self.sendline("server=8.8.4.4")
         self.sendline("listen-address=127.0.0.1")
-        self.sendline("listen-address=%s" % self.gw)
+        self.sendline(f"listen-address={self.gw}")
         if self.gwv6 is not None:
-            self.sendline("listen-address=%s" % self.gwv6)
+            self.sendline(f"listen-address={self.gwv6}")
         self.sendline(
             "addn-hosts=/etc/dnsmasq.hosts"
         )  # all additional hosts will be added to dnsmasq.hosts
@@ -748,41 +746,38 @@ class DebianBox(linux.LinuxDevice):
         if self.wan_dhcp:
             self.sendline("/etc/init.d/isc-dhcp-server stop")
             self.expect(self.prompt)
-            self.sendline(
-                "dhclient -r %s; dhclient %s" % (self.iface_dut, self.iface_dut)
-            )
+            self.sendline(f"dhclient -r {self.iface_dut}; dhclient {self.iface_dut}")
             self.expect(self.prompt)
             self.gw = self.get_interface_ipaddr(self.iface_dut)
         else:
             if not self.wan_no_eth0:
-                self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+                self.sendline(f"ifconfig {self.iface_dut} {self.gw_ng}")
                 self.expect(self.prompt)
-                self.sendline("ifconfig %s up" % self.iface_dut)
+                self.sendline(f"ifconfig {self.iface_dut} up")
                 self.expect(self.prompt)
             if self.wan_dhcp_server:
                 self.setup_dhcp_server()
 
         if self.wan_dhcpv6:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+            self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
             self.expect(self.prompt)
             try:
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
             except Exception:
-                self.sendline("dhclient -6 -i -r %s" % self.iface_dut)
+                self.sendline(f"dhclient -6 -i -r {self.iface_dut}")
                 self.expect(self.prompt)
-                self.sendline("dhclient -6 -i -v %s" % self.iface_dut)
+                self.sendline(f"dhclient -6 -i -v {self.iface_dut}")
                 self.expect(self.prompt)
                 self.sendline("ip -6 addr")
                 self.expect(self.prompt)
                 self.gwv6 = self.get_interface_ip6addr(self.iface_dut)
         elif self.gwv6 is not None:
             # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+            self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
             self.expect(self.prompt)
             self.sendline(
-                "ip -6 addr add %s/%s dev %s"
-                % (self.gwv6, self.ipv6_prefix, self.iface_dut)
+                f"ip -6 addr add {self.gwv6}/{self.ipv6_prefix} dev {self.iface_dut}"
             )
             self.expect(self.prompt)
 
@@ -809,7 +804,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("echo 0 > /proc/sys/net/ipv4/tcp_sack")
         self.expect(self.prompt)
 
-        self.sendline("ifconfig %s" % self.iface_dut)
+        self.sendline(f"ifconfig {self.iface_dut}")
         self.expect(self.prompt)
 
         self.turn_off_pppoe()
@@ -845,9 +840,9 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline("echo 0 > /proc/sys/net/ipv4/tcp_sack")
         self.expect(self.prompt)
-        self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+        self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
         self.expect(self.prompt)
-        self.sendline("%sapt install -qy ndisc6" % self.get_shim_prefix())
+        self.sendline(f"{self.get_shim_prefix()}apt install -qy ndisc6")
         if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
             self.expect(self.prompt, timeout=60)
         else:
@@ -859,14 +854,13 @@ class DebianBox(linux.LinuxDevice):
         """Start lan client and get ip addresses received from DUT."""
         ipv4, ipv6 = None, None
         self.sendline(
-            "ip link set down %s && ip link set up %s"
-            % (self.iface_dut, self.iface_dut)
+            f"ip link set down {self.iface_dut} && ip link set up {self.iface_dut}"
         )
         self.expect(self.prompt)
 
-        self.sendline("dhclient -4 -r %s" % self.iface_dut)
+        self.sendline(f"dhclient -4 -r {self.iface_dut}")
         self.expect(self.prompt)
-        self.sendline("dhclient -6 -r -i %s" % self.iface_dut)
+        self.sendline(f"dhclient -6 -r -i {self.iface_dut}")
         self.expect(self.prompt, timeout=60)
 
         self.sendline("kill $(</run/dhclient6.pid)")
@@ -878,18 +872,18 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("ps aux")
         if self.expect(["dhclient"] + self.prompt) == 0:
             print("WARN: dhclient still running, something started rogue client!")
-            self.sendline("pkill --signal 9 -f dhclient.*%s" % self.iface_dut)
+            self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
             self.expect(self.prompt)
 
         if not ipv4_only:
 
             self.disable_ipv6(self.iface_dut)
             self.enable_ipv6(self.iface_dut)
-            self.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % self.iface_dut)
+            self.sendline(f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0")
 
             # check if board is providing an RA, if yes use that detail to perform DHCPv6
             # default method used will be statefull DHCPv6
-            output = self.check_output("rdisc6 -1 %s" % self.iface_dut, timeout=60)
+            output = self.check_output(f"rdisc6 -1 {self.iface_dut}", timeout=60)
             M_bit, O_bit = True, True
             if "Prefix" in output:
                 M_bit, O_bit = map(
@@ -898,14 +892,14 @@ class DebianBox(linux.LinuxDevice):
 
             # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
             if not M_bit and O_bit:
-                self.sendline("dhclient -S -v %s" % self.iface_dut)
+                self.sendline(f"dhclient -S -v {self.iface_dut}")
                 if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
                     self.sendcontrol("c")
                     self.expect(self.prompt)
 
             # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
             elif M_bit and O_bit:
-                self.sendline("dhclient -6 -i -v %s" % self.iface_dut)
+                self.sendline(f"dhclient -6 -i -v {self.iface_dut}")
                 if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
                     self.sendcontrol("c")
                     self.expect(self.prompt)
@@ -919,7 +913,7 @@ class DebianBox(linux.LinuxDevice):
 
         self.disable_ipv6("eth0")
 
-        self.sendline("\nifconfig %s 0.0.0.0" % self.iface_dut)
+        self.sendline(f"\nifconfig {self.iface_dut} 0.0.0.0")
         self.expect(self.prompt)
         self.sendline("rm /var/lib/dhcp/dhclient.leases")
         self.expect(self.prompt)
@@ -946,7 +940,7 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         for _ in range(3):
             try:
-                self.sendline("dhclient -4 -v %s" % self.iface_dut)
+                self.sendline(f"dhclient -4 -v {self.iface_dut}")
                 if 0 == self.expect(["DHCPOFFER"] + self.prompt, timeout=30):
                     self.expect(self.prompt)
                     break
@@ -965,14 +959,14 @@ class DebianBox(linux.LinuxDevice):
 
         self.sendline("cat /etc/resolv.conf")
         self.expect(self.prompt)
-        self.sendline("ip addr show dev %s" % self.iface_dut)
+        self.sendline(f"ip addr show dev {self.iface_dut}")
         self.expect(self.prompt)
         self.sendline("ip route")
         # TODO: we should verify this so other way, because the they could be the same subnets
         # in theory
         i = self.expect(
             [
-                "default via %s dev %s" % (self.lan_gateway, self.iface_dut),
+                f"default via {self.lan_gateway} dev {self.iface_dut}",
                 pexpect.TIMEOUT,
             ],
             timeout=5,
@@ -1006,19 +1000,19 @@ class DebianBox(linux.LinuxDevice):
         # Write a useful ssh config for routers
         self.sendline("mkdir -p ~/.ssh")
         self.sendline("cat > ~/.ssh/config << EOF")
-        self.sendline("Host %s" % self.lan_gateway)
+        self.sendline(f"Host {self.lan_gateway}")
         self.sendline("StrictHostKeyChecking no")
         self.sendline("UserKnownHostsFile=/dev/null")
         self.sendline("")
         self.sendline("Host krouter")
-        self.sendline("Hostname %s" % self.lan_gateway)
+        self.sendline(f"Hostname {self.lan_gateway}")
         self.sendline("StrictHostKeyChecking no")
         self.sendline("UserKnownHostsFile=/dev/null")
         self.sendline("EOF")
         self.expect(self.prompt)
         # Copy an id to the router so people don't have to type a password to ssh or scp
-        self.sendline("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
-        self.expect_exact("nc %s 22 -w 1 | cut -c1-3" % self.lan_gateway)
+        self.sendline(f"nc {self.lan_gateway} 22 -w 1 | cut -c1-3")
+        self.expect_exact(f"nc {self.lan_gateway} 22 -w 1 | cut -c1-3")
         if 0 == self.expect(["SSH"] + self.prompt, timeout=5) and not self.is_bridged:
             self.sendcontrol("c")
             self.expect(self.prompt)
@@ -1046,7 +1040,7 @@ class DebianBox(linux.LinuxDevice):
             and "options" in self.kwargs
             and "lan-fixed-route-to-wan" in self.kwargs["options"]
         ):
-            self.sendline("ip route add %s via %s" % (wan_gw, self.lan_gateway))
+            self.sendline(f"ip route add {wan_gw} via {self.lan_gateway}")
             self.expect(self.prompt)
         ipv4 = self.get_interface_ipaddr(self.iface_dut)
 

@@ -13,7 +13,7 @@ from boardfarm.tests import rootfs_boot
 
 
 def ubus_call_raw(payload, lan, ipaddr="192.168.1.1"):
-    curl_cmd = "curl -d '%s' http://%s/ubus" % (json.dumps(payload), ipaddr)
+    curl_cmd = f"curl -d '{json.dumps(payload)}' http://{ipaddr}/ubus"
     lan.sendline(curl_cmd)
     lan.expect("\r\n")
     lan.expect(prompt)
@@ -93,11 +93,9 @@ class UBusTestNetworkRestart(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         for i in range(1000):
-            print(
-                "\nRunning iteration of ubus json-rpc network restart number %s\n" % i
-            )
+            print(f"\nRunning iteration of ubus json-rpc network restart number {i}\n")
             session_id = ubus_login_session(lan)
-            print("\nLogged in with sessionid = %s\n" % session_id)
+            print(f"\nLogged in with sessionid = {session_id}\n")
             ubus_network_restart(session_id, lan)
             # wait some amount of time, we can get a new session id before restart
             # really starts
@@ -112,9 +110,9 @@ class UBusTestSystemReboot(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         for i in range(1000):
-            print("\nRunning iteration of ubus json-rpc system reboot number %s\n" % i)
+            print(f"\nRunning iteration of ubus json-rpc system reboot number {i}\n")
             session_id = ubus_login_session(lan)
-            print("\nLogged in with sessionid = %s\n" % session_id)
+            print(f"\nLogged in with sessionid = {session_id}\n")
 
             ubus_system_reboot(session_id, lan)
             board.wait_for_linux()

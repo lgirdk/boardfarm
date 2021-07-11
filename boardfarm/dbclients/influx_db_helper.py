@@ -10,9 +10,9 @@ from influxdb import InfluxDBClient
 
 def datetimetostr(dt):
     if dt.utcoffset() is None:
-        return "%sZ" % dt.isoformat()
+        return f"{dt.isoformat()}Z"
     if dt.utcoffset() == datetime.timedelta(0):
-        return "%sZ" % dt.replace(tzinfo=None).isoformat()
+        return f"{dt.replace(tzinfo=None).isoformat()}Z"
     return dt.isoformat()
 
 
@@ -56,10 +56,10 @@ class Influx_DB_Logger(InfluxDBClient, dict):
     def validate_db(self, db_name):
         for i in self.get_list_database():
             if i["name"] == db_name:
-                print(("Info: %s db validated..." % str(db_name)))
+                print(f"Info: {str(db_name)} db validated...")
                 return True
 
-        print(("Error: %s not found. Creating DB..." % str(db_name)))
+        print(f"Error: {str(db_name)} not found. Creating DB...")
         self.create_database(db_name)
 
     def populate_result_dictionary(self, data_field, cmd, iteration, date):
@@ -152,11 +152,11 @@ class Influx_DB_Logger(InfluxDBClient, dict):
                 )
                 iperf_data.append(data_unit)
 
-        print(("Update to DB : %r" % self.write_points(iperf_data)))
+        print(f"Update to DB : {self.write_points(iperf_data)!r}")
 
     def __setitem__(self, key, value):
         func_call = {"influx": self.log_data, "board": self.process_table}
         if key not in func_call:
-            print(("Key Error: %s not found" % key))
+            print(f"Key Error: {key} not found")
         else:
             func_call[key](value)

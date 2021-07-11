@@ -22,7 +22,7 @@ class OpkgList(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
         board.sendline("opkg list-installed")
         board.expect(prompt)
-        self.result_message = "%s OpenWrt packages are installed." % num_pkgs
+        self.result_message = f"{num_pkgs} OpenWrt packages are installed."
         self.logged["num_installed"] = num_pkgs
 
 

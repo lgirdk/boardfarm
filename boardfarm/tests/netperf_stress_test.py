@@ -40,13 +40,9 @@ class NetperfStressTest(netperf_test.NetperfTest):
         run_time = 30
         pkt_size = 256
 
-        board.sendline("mpstat -P ALL %s 1" % run_time)
-        print("\nStarting %s netperf tests in parallel." % num_conn)
-        opts = "192.168.0.1 -c -C -l %s -- -m %s -M %s -D" % (
-            run_time,
-            pkt_size,
-            pkt_size,
-        )
+        board.sendline(f"mpstat -P ALL {run_time} 1")
+        print(f"\nStarting {num_conn} netperf tests in parallel.")
+        opts = f"192.168.0.1 -c -C -l {run_time} -- -m {pkt_size} -M {pkt_size} -D"
         for _ in range(0, num_conn):
             self.run_netperf_cmd_nowait(lan, opts)
         # Let netperf tests run
@@ -55,7 +51,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         board.expect("Average:\s+all.*\s+([0-9]+.[0-9]+)\r\n")
         idle_cpu = board.match.group(1)
         avg_cpu = 100 - float(idle_cpu)
-        print("Average cpu usage was %s" % avg_cpu)
+        print(f"Average cpu usage was {avg_cpu}")
 
         # try to flush out backlog of buffer from above, we try b/c not all might start
         # correctly
@@ -83,11 +79,8 @@ class NetperfStressTest(netperf_test.NetperfTest):
         board.expect("([0-9]+)\r\n")
         n = board.match.group(1)
 
-        print(
-            "Stopped with %s connections, %s netperf's still running"
-            % (conns_parsed, n)
-        )
-        print("Mbits passed was %s" % bandwidth)
+        print(f"Stopped with {conns_parsed} connections, {n} netperf's still running")
+        print(f"Mbits passed was {bandwidth}")
 
         # Record number of bytes and packets sent through interfaces
         board.sendline("ifconfig | grep 'encap\|packets\|bytes'")

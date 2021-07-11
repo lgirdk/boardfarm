@@ -93,7 +93,7 @@ class NetgearM4100(linux.LinuxDevice):
         self.expect(prompt)
         # Enter interface config mode
         port_name = "0/%01d" % port
-        self.sendline("interface %s" % port_name)
+        self.sendline(f"interface {port_name}")
         self.expect(prompt)
         # Remove previous VLAN
         self.sendline("no vlan pvid")
@@ -101,9 +101,9 @@ class NetgearM4100(linux.LinuxDevice):
         self.sendline("vlan participation exclude 3-1024")
         self.expect(prompt)
         # Include new VLAN
-        self.sendline("vlan pvid %s" % vlan)
+        self.sendline(f"vlan pvid {vlan}")
         self.expect(prompt)
-        self.sendline("vlan participation include %s" % vlan)
+        self.sendline(f"vlan participation include {vlan}")
         self.expect(prompt)
         # Leave interface config mode
         self.sendline("exit")
@@ -157,9 +157,9 @@ class NetgearM4100(linux.LinuxDevice):
             # configure interfaces
             self.sendline("interface 0/%01d-0/%01d" % (low, high))
             self.expect(prompt)
-            self.sendline("vlan pvid %s" % pvid)
+            self.sendline(f"vlan pvid {pvid}")
             self.expect(prompt)
-            self.sendline("vlan participation include %s" % pvid)
+            self.sendline(f"vlan participation include {pvid}")
             self.expect(prompt)
             # Leave interface configuration
             self.sendline("exit")
@@ -183,7 +183,7 @@ class NetgearM4100(linux.LinuxDevice):
         # Check each port
         for p in range(1, 48):
             port_name = "0/%01d" % p
-            self.sendline("show mac-addr-table interface %s" % port_name)
+            self.sendline(f"show mac-addr-table interface {port_name}")
             tmp = self.expect(["--More--", prompt])
             if tmp == 0:
                 self.sendline()

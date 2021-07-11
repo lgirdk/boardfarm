@@ -31,16 +31,16 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         wan.expect(prompt)
         # Wan device: Create small file in web dir
         fname = "small.txt"
-        cmd = "\nhead -c 10000 /dev/urandom > /var/www/%s" % fname
+        cmd = f"\nhead -c 10000 /dev/urandom > /var/www/{fname}"
         wan.sendline(cmd)
         wan.expect(prompt)
         # Lan Device: download small file a lot
         # TODO: this is actually a 404 for lighthttpd config issues?
-        url = "http://%s/%s" % (wan.gw, fname)
+        url = f"http://{wan.gw}/{fname}"
         # Start CPU monitor
         board.collect_stats(stats=["mpstat"])
         # Lan Device: download small file a lot
-        lan.sendline("\nab -dn %s -c %s %s" % (self.num_conn, self.concurrency, url))
+        lan.sendline(f"\nab -dn {self.num_conn} -c {self.concurrency} {url}")
         lan.expect("Benchmarking")
         timeout = 0.05 * self.num_conn
         if 0 != lan.expect(

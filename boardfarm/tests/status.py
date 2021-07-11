@@ -74,7 +74,7 @@ class UciShow(rootfs_boot.RootFSBootTest):
         board.sendline("uci show")
         board.expect(prompt, searchwindowsize=50)
         self.result_message = (
-            "Dumped all current uci settings from %s files in /etc/config/." % num_files
+            f"Dumped all current uci settings from {num_files} files in /etc/config/."
         )
 
 
@@ -103,10 +103,10 @@ class IfconfigCheck(rootfs_boot.RootFSBootTest):
         results = re.findall(
             r"([A-Za-z0-9-\.]+)\s+Link.*\n.*addr:([^ ]+)", board.before
         )
-        tmp = ", ".join(["%s %s" % (x, y) for x, y in results])
+        tmp = ", ".join([f"{x} {y}" for x, y in results])
         board.sendline("route -n")
         board.expect(prompt)
-        self.result_message = "ifconfig shows ip addresses: %s" % tmp
+        self.result_message = f"ifconfig shows ip addresses: {tmp}"
 
 
 class MemoryUse(rootfs_boot.RootFSBootTest):

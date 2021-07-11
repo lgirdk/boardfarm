@@ -208,9 +208,7 @@ class socks5_proxy_helper(object):
             if len(p) > 1:
                 # this should never happen...
                 logger.error(
-                    "WARNING: more than 1 proxy tunnel found for {}: {}".format(
-                        device.name, p
-                    )
+                    f"WARNING: more than 1 proxy tunnel found for {device.name}: {p}"
                 )
             return p[0]
         else:
@@ -243,14 +241,12 @@ class socks5_proxy_helper(object):
         for _ in range(retries):
             try:
                 self.socks5_port = randrange(start_port, end_port)
-                logger.debug(
-                    "Creating Socks5 tunnel on port {}".format(self.socks5_port)
-                )
+                logger.debug(f"Creating Socks5 tunnel on port {self.socks5_port}")
 
                 # DO NOT use -N [-v -v] as it seems to kill the tunnel,
                 # if you want to use -N you need to change the prompt expect pattern
                 # the pexpect logfile should be None
-                exargs = " -D {}".format(self.socks5_port)
+                exargs = f" -D {self.socks5_port}"
                 self.socks5_pexpect = spawn_ssh_pexpect(
                     ip=device.ipaddr,
                     user=device.username,
@@ -264,9 +260,7 @@ class socks5_proxy_helper(object):
                 break
             except Exception as e:
                 logger.error(e)
-                logger.debug(
-                    "Sock5 failed on port {} - retyring".format(self.socks5_port)
-                )
+                logger.debug(f"Sock5 failed on port {self.socks5_port} - retyring")
                 self.socks5_port = None
         if self.socks5_port:
             # if we have a hop the proxy will be hop:port
@@ -315,7 +309,7 @@ def phantom_webproxy_driver(ipport):
         "--proxy=" + ipport,
         "--proxy-type=http",
     ]
-    logger.info("Attempting to setup Phantom.js via proxy %s" % ipport)
+    logger.info(f"Attempting to setup Phantom.js via proxy {ipport}")
     driver = webdriver.PhantomJS(service_args=service_args)
     driver.set_window_size(1024, 768)
     driver.set_page_load_timeout(30)
@@ -582,20 +576,19 @@ def start_ip6bound_httpservice(device, ip="::", port="9001", options=""):
     """
     http_service_kill(device, "SimpleHTTPServer")
     device.sendline(
-        """cat > /root/SimpleHTTPServer6.py<<EOF
+        f"""cat > /root/SimpleHTTPServer6.py<<EOF
 import socket
 import BaseHTTPServer as bhs
 import SimpleHTTPServer as shs
 
 class HTTPServerV6(bhs.HTTPServer):
     address_family = socket.AF_INET6
-HTTPServerV6((\"%s\", %s),shs.SimpleHTTPRequestHandler).serve_forever()
+HTTPServerV6(("{ip}", {port}),shs.SimpleHTTPRequestHandler).serve_forever()
 EOF"""
-        % (ip, port)
     )
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPServer6 %s" % options)
+    device.sendline(f"python -m /root/SimpleHTTPServer6 {options}")
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         logger.debug(
             colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
@@ -640,7 +633,7 @@ def start_ipbound_httpsservice(
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
+    device.sendline(f"python -c 'import os; print os.path.exists(\"{cert}\")'")
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         logger.error(
@@ -670,7 +663,7 @@ EOF"""
     )
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
+    device.sendline(f"python -m /root/SimpleHTTPsServer {options}")
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         logger.debug(
             colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
@@ -715,7 +708,7 @@ def start_ip6bound_httpsservice(
             break
         device.sendline()
     device.expect(device.prompt)
-    device.sendline("python -c 'import os; print os.path.exists(\"%s\")'" % cert)
+    device.sendline(f"python -c 'import os; print os.path.exists(\"{cert}\")'")
     if 1 == device.expect(["True", "False"]):
         # no point in carrying on
         logger.error(
@@ -741,7 +734,7 @@ EOF"""
     )
 
     device.expect(device.prompt)
-    device.sendline("python -m /root/SimpleHTTPsServer %s" % options)
+    device.sendline(f"python -m /root/SimpleHTTPsServer {options}")
     if 0 == device.expect(["Traceback", pexpect.TIMEOUT], timeout=10):
         logger.error(
             colored("Failed to start service on [" + ip + "]:" + port, attrs=["bold"])
@@ -1037,7 +1030,7 @@ def snmp_mib_set(
             + " "
             + set_type
             + " "
-            + "'%s'" % set_value
+            + f"'{set_value}'"
         )
         device.expect_exact(
             "snmpset -v 2c "
@@ -1057,14 +1050,14 @@ def snmp_mib_set(
             + " "
             + set_type
             + " "
-            + "'%s'" % set_value
+            + f"'{set_value}'"
         )
         idx = device.expect(
             ["Timeout: No Response from"] + ['STRING: "(.*)"\r\n'] + device.prompt,
             timeout=10,
         )
 
-    assert idx == 1, "Setting the mib %s" % mib_name
+    assert idx == 1, f"Setting the mib {mib_name}"
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
@@ -1196,7 +1189,7 @@ def snmp_mib_get(
         + device.prompt,
         timeout=time_out,
     )
-    assert idx == 1, "Getting the mib %s" % mib_name
+    assert idx == 1, f"Getting the mib {mib_name}"
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     snmp_out = snmp_out.strip('"').strip()
@@ -1470,7 +1463,7 @@ def get_file_magic(fname, num_bytes=4):
     :rtype: String
     """
     if fname.startswith("http://") or fname.startswith("https://"):
-        rng = "bytes=0-%s" % (num_bytes - 1)
+        rng = f"bytes=0-{num_bytes - 1}"
         req = Request(fname, headers={"Range": rng})
         data = urlopen(req).read()
     else:
@@ -1504,17 +1497,17 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
             )
             p.logfile_read = sys.stdout
 
-            i = p.expect(["yes/no", "password:", "%s.*" % target])
+            i = p.expect(["yes/no", "password:", f"{target}.*"])
             if i == 0:
                 p.sendline("yes")
-                i = p.expect(["not used", "password:", "%s.*" % target], timeout=45)
+                i = p.expect(["not used", "password:", f"{target}.*"], timeout=45)
 
             if i == 1:
-                p.sendline("%s" % password)
-                p.expect("%s.*" % target, timeout=120)
+                p.sendline(f"{password}")
+                p.expect(f"{target}.*", timeout=120)
 
             fname = p.match.group(0).strip()
-            logger.info(colored("\nfile: %s" % fname, attrs=["bold"]))
+            logger.info(colored(f"\nfile: {fname}", attrs=["bold"]))
         except pexpect.EOF:
             logger.error(
                 colored(
@@ -1522,7 +1515,7 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
                     attrs=["bold"],
                 )
             )
-            logger.error(colored("EOF exception: command: %s" % cmd, attrs=["bold"]))
+            logger.error(colored(f"EOF exception: command: {cmd}", attrs=["bold"]))
         except Exception as e:
             logger.error(colored(e, attrs=["bold"]))
             logger.error(
@@ -1618,7 +1611,7 @@ def scp_from(fname, server, username, password, port, dest):
     :rtype: String
     :raises Exception: Exception thrown on copy file failed
     """
-    cmd = "scp -P %s -r %s@%s:%s %s; echo DONE" % (port, username, server, fname, dest)
+    cmd = f"scp -P {port} -r {username}@{server}:{fname} {dest}; echo DONE"
     copy_file_to_server(cmd, password, target="DONE")
 
 
@@ -1642,7 +1635,7 @@ def check_url(url):
             :type request: String
             """
             encodeuser = base64.b64encode(login_str.encode("utf-8")).decode("utf-8")
-            authheader = "Basic %s" % encodeuser
+            authheader = f"Basic {encodeuser}"
             request.add_header("Authorization", authheader)
 
         context = ssl._create_unverified_context()
@@ -1652,7 +1645,7 @@ def check_url(url):
         try:
             n = netrc.netrc()
             login, unused, password = n.authenticators(urlparse(url).hostname)
-            add_basic_auth("%s:%s" % (login, password), req)
+            add_basic_auth(f"{login}:{password}", req)
         except (TypeError, ImportError, IOError, netrc.NetrcParseError):
             pass
 
@@ -1661,7 +1654,7 @@ def check_url(url):
         return True
     except Exception as e:
         logger.error(e)
-        logger.eror("Error trying to access %s" % url)
+        logger.eror(f"Error trying to access {url}")
         return False
 
 
@@ -1715,7 +1708,7 @@ def ftp_file_create_delete(
         device.expect(device.prompt, timeout=10)
     if remove_file:
         filename = remove_file + extension
-        device.sendline("rm %s" % filename)
+        device.sendline(f"rm {filename}")
         device.expect(device.prompt, timeout=10)
 
 
@@ -1733,7 +1726,7 @@ def ftp_device_login(device, ip_mode, device_ip):
     """
     match = re.search(r"(\d)", str(ip_mode))
     value = match.group()
-    device.sendline("ftp -%s %s" % (value, device_ip))
+    device.sendline(f"ftp -{value} {device_ip}")
     check = True
     try:
         device.expect("Name", timeout=10)
@@ -1758,9 +1751,9 @@ def ftp_upload_download(device, ftp_load, timeout=200):
     :type ftp_load: String
     """
     if "download" in str(ftp_load):
-        device.sendline("get %s.txt" % ftp_load)
+        device.sendline(f"get {ftp_load}.txt")
     elif "upload" in str(ftp_load):
-        device.sendline("put %s.txt" % ftp_load)
+        device.sendline(f"put {ftp_load}.txt")
     device.expect("226 Transfer complete.", timeout=timeout)
     device.sendline()
     device.expect("ftp>", timeout=10)
@@ -1806,11 +1799,11 @@ def http_service_kill(device, process):
     for _ in range(3):
         device.sendcontrol("c")
         device.expect_prompt()
-    device.sendline("ps -elf | grep %s" % process)
+    device.sendline(f"ps -elf | grep {process}")
     device.expect_prompt()
     match = re.search(r".*\s+root\s+(\d+)\s+.*python.*SimpleHTTP", device.before)
     if match:
-        device.sendline("kill -9 %s" % match.group(1))
+        device.sendline(f"kill -9 {match.group(1)}")
         device.expect_prompt()
 
 
@@ -1826,7 +1819,7 @@ def check_prompts(device_list):
     for dev in device_list:
         assert "FOO" in dev.check_output(
             'echo "FOO"'
-        ), "Failed to validate prompt for device: {}".format(dev.name)
+        ), f"Failed to validate prompt for device: {dev.name}"
     return True
 
 
@@ -1859,9 +1852,7 @@ def openssl_verify(device, ip_address, port, options=""):
     :rtype: Boolean
     """
     output = False
-    device.sendline(
-        "openssl s_client -connect [{}]:{} {}".format(ip_address, port, options)
-    )
+    device.sendline(f"openssl s_client -connect [{ip_address}]:{port} {options}")
     if device.expect(["CONNECTED", pexpect.TIMEOUT]) == 0:
         output = True
     try:
@@ -2031,18 +2022,14 @@ def curl_page(
     :rtype: bool
     """
     try:
-        dev.sendline("curl {} {} | tee page.curl".format(opts, waddr))
+        dev.sendline(f"curl {opts} {waddr} | tee page.curl")
         dev.expect(expected)
         dev.expect_prompt()
-        logger.debug(
-            "Curl from device '{}' url '{}' successful".format(dev.name, waddr)
-        )
+        logger.debug(f"Curl from device '{dev.name}' url '{waddr}' successful")
     except Exception as e:
         dev.sendcontrol("c")
         dev.expect_prompt()
-        logger.error(
-            "ERROR: failed to curl from device '{}', url '{}'".format(dev.name, waddr)
-        )
+        logger.error(f"ERROR: failed to curl from device '{dev.name}', url '{waddr}'")
         logger.error(e)
         return False
     return True
@@ -2071,12 +2058,12 @@ def IRC_communicate(client1, client2, client1_scriptname, client2_scriptname):
                 if client == client1
                 else (client2_scriptname, "client2")
             )
-            client.sendline("python %s" % s_name)
+            client.sendline(f"python {s_name}")
             index = client.expect(
                 ["JOIN :#channel"] + ["#channel :End of /NAMES list."] + client.prompt,
                 timeout=300,
             )
-            assert index <= 1, "Connect {} to server failed".format(c)
+            assert index <= 1, f"Connect {c} to server failed"
         communicationstatus = client2.expect(
             ["connection success"] + client2.prompt, timeout=100
         )

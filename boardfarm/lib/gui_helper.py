@@ -253,7 +253,7 @@ def get_value_from_disabled_input(web_gui, get_value):
     :return: text value for required element
     :rtype: string
     """
-    js = 'return document.getElementById("{!s}").value;'.format(str(get_value))
+    js = f'return document.getElementById("{str(get_value)!s}").value;'
     text_value = web_gui.execute_script(js)
     return str(text_value)
 

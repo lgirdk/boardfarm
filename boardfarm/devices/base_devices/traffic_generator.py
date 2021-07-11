@@ -68,24 +68,17 @@ class TrafficGenerator(base.BaseDevice):
         raise NotImplementedError
 
     def __str__(self):
-        return """
+        return f"""
         TCP
-            Down speed: {}
-            UP speed:   {}
+            Down speed: {self.tcp_down_speed}
+            UP speed:   {self.tcp_up_speed}
         UDP
-            Down speed: {}
-            UP speed:   {}
+            Down speed: {self.udp_down_speed}
+            UP speed:   {self.udp_up_speed}
         LATENCY:
-            DOWN:       {}
-            UP:         {}
-        """.format(
-            self.tcp_down_speed,
-            self.tcp_up_speed,
-            self.udp_down_speed,
-            self.udp_up_speed,
-            self.down_latency,
-            self.up_latency,
-        )
+            DOWN:       {self.down_latency}
+            UP:         {self.up_latency}
+        """
 
     def load_project(self, project):
         """In case of pre-defined project, following method is used to load configurations
@@ -216,4 +209,4 @@ class TrafficGeneratorPort(object):
         raise NotImplementedError
 
     def __str__(self):
-        return 'Port "{}" ({}@{})'.format(self.port_name, self.interface, self.address)
+        return f'Port "{self.port_name}" ({self.interface}@{self.address})'

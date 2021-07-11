@@ -45,8 +45,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                     else:
                         break
                 print_bold(
-                    "For iperf with %s connections, %s failed...."
-                    % (con_conn, failed_cons)
+                    f"For iperf with {con_conn} connections, {failed_cons} failed...."
                 )
                 lan.expect(".*")
                 wan.expect(".*")
@@ -100,4 +99,4 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
 
         board.parse_stats(dict_to_log=self.logged)
 
-        self.result_message += ", cpu usage = %.2f" % self.logged["mpstat"]
+        self.result_message += f", cpu usage = {self.logged['mpstat']:.2f}"

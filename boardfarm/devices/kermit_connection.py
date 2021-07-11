@@ -43,7 +43,7 @@ class KermitConnection:
             # don't be strict and wait too long for the negotiations
             self.device.sendline("SET TELNET WAIT OFF")
             self.device.expect(self.prompt)
-            self.device.sendline("set host %s" % " ".join(self.conn_cmd.split(" ")[1:]))
+            self.device.sendline(f"set host {' '.join(self.conn_cmd.split(' ')[1:])}")
             self.device.expect(self.prompt)
             self.device.sendline("connect")
             self.device.expect(

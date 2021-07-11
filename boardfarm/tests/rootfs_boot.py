@@ -81,5 +81,5 @@ else:
                     self.boot(self.reflash)
                 self.reboot = True
             except Exception as e:
-                print("Unable to recover, %s" % e)
+                print(f"Unable to recover, {e}")
                 self.assertEqual(1, 0, e)

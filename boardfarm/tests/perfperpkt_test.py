@@ -23,7 +23,7 @@ class PerfPerPktTest(iperf_test.iPerfTest):
 
         ipc = float(insn) / cyc
         self.logged["ipc"] = ipc
-        return ", IPC=%.2f" % ipc
+        return f", IPC={ipc:.2f}"
 
     def perf_events(self):
         return ["cycles", "instructions", "dcache_misses", "icache_misses"]
@@ -56,8 +56,7 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         self.run_iperf_server(wan)
         self.run_iperf(
             client,
-            opts="-t %s -P %s -N -m -M %s"
-            % (self.test_time + 10, self.conns, self.pkt_size),
+            opts=f"-t {self.test_time + 10} -P {self.conns} -N -m -M {self.pkt_size}",
         )
 
         # run perf wrapper command
@@ -65,20 +64,20 @@ class PerfPerPktTest(iperf_test.iPerfTest):
 
         speed = self.parse_iperf(client, connections=self.conns, t=self.test_time)
         self.kill_iperf(wan)
-        lib.common.test_msg("\n speed was %s Mbit/s" % speed)
+        lib.common.test_msg(f"\n speed was {speed} Mbit/s")
 
         # extract cpu and packet info
         board.sendcontrol("c")
         idle, wan_pps, client_pps = board.parse_sar_iface_pkts(wan_iface, client_name)
-        lib.common.test_msg("\n idle cpu: %s" % idle)
-        lib.common.test_msg("client pps = %s" % client_pps)
-        lib.common.test_msg("wan pps = %s" % wan_pps)
+        lib.common.test_msg(f"\n idle cpu: {idle}")
+        lib.common.test_msg(f"client pps = {client_pps}")
+        lib.common.test_msg(f"wan pps = {wan_pps}")
 
         if client_name is not None:
             total_pps = min(wan_pps, client_pps)
         else:
             total_pps = wan_pps
-        lib.common.test_msg("\n using total pps = %s" % total_pps)
+        lib.common.test_msg(f"\n using total pps = {total_pps}")
 
         wan_pkts = wan_pps * self.test_time
 
@@ -87,16 +86,14 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         else:
             client_pkts = "n/a"
 
-        lib.common.test_msg(
-            "\n client pkts = %s wan pkts = %s" % (client_pkts, wan_pkts)
-        )
+        lib.common.test_msg(f"\n client pkts = {client_pkts} wan pkts = {wan_pkts}")
 
         if client_name is not None:
             total_pkts = min(client_pkts, wan_pkts)
         else:
             total_pkts = wan_pkts
 
-        lib.common.test_msg("\n using total packets = %s" % total_pkts)
+        lib.common.test_msg(f"\n using total packets = {total_pkts}")
         self.logged["total_pkts"] = total_pkts
 
         # extract perf info
@@ -106,10 +103,9 @@ class PerfPerPktTest(iperf_test.iPerfTest):
         for p in results:
             p["value_per_pkt"] = p["value"] / total_pkts
             lib.common.test_msg(
-                "\n %s = %s (per pkt = %s)"
-                % (p["name"], p["value"], p["value_per_pkt"])
+                f"\n {p['name']} = {p['value']} (per pkt = {p['value_per_pkt']})"
             )
-            perf_msg += ", %s=%.2f" % (p["sname"], p["value_per_pkt"])
+            perf_msg += f", {p['sname']}={p['value_per_pkt']:.2f}"
 
             # restore legacy names
             if p["name"] == "instructions":

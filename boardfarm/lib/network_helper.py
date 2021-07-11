@@ -39,7 +39,7 @@ def ipv4_to_snmp_format(ipv4_str):
     ipv4_tmp = re.sub(r"[\s\.\-]", "", ipv4_str)
     ipv4_decimal = int(ipv4_tmp, 16)
     ipv4_format = ipaddress.IPv4Address(ipv4_decimal)
-    ipv4_address = ipaddress.ip_address(u"%s" % ipv4_format)
+    ipv4_address = ipaddress.ip_address(f"{ipv4_format}")
 
     return ipv4_address
 
@@ -55,7 +55,7 @@ def ipv6_to_snmp_format(ipv6_str):
     ipv6_tmp = re.sub(r"[\s\.\-]", "", ipv6_str)
     pattern = re.compile(".{4}")
     ipv6_tmp_ip = ":".join(pattern.findall(ipv6_tmp))
-    ipv6_address = ipaddress.ip_address(u"%s" % ipv6_tmp_ip)
+    ipv6_address = ipaddress.ip_address(f"{ipv6_tmp_ip}")
 
     return ipv6_address
 

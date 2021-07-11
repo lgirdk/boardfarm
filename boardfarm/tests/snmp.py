@@ -25,7 +25,7 @@ class SNMPSysDescrWAN(rootfs_boot.RootFSBootTest):
 
         wan_ip = board.get_interface_ipaddr(board.wan_iface)
 
-        wan.sendline("snmpget -v2c -c public %s 1.3.6.1.2.1.1.1.0" % wan_ip)
+        wan.sendline(f"snmpget -v2c -c public {wan_ip} 1.3.6.1.2.1.1.1.0")
         wan.expect("iso.3.6.1.2.1.1.1.0 = STRING: ")
         wan.expect(prompt)
 

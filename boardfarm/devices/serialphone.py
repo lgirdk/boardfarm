@@ -24,7 +24,7 @@ class SerialPhone(object):
         serialphone_profile["on_boot"] = self.phone_config
 
     def __str__(self):
-        return "serialmodem %s" % self.line
+        return f"serialmodem {self.line}"
 
     class PyHandler:
         @classmethod
@@ -55,7 +55,7 @@ class SerialPhone(object):
         rvalue: TRUE/FALSE
         rtype: Boolean
         """
-        self.sendline("find /dev/tty%s" % (self.line))
+        self.sendline(f"find /dev/tty{self.line}")
         self.expect(self.prompt)
         return bool(
             re.search(
@@ -67,12 +67,12 @@ class SerialPhone(object):
     def phone_config(self):
         """To configure system link/soft link."""
         # to check whether the dev/tty exists-to be added
-        self.sendline("ln -s /dev/tty%s  /root/line-%s" % (self.line, self.line))
+        self.sendline(f"ln -s /dev/tty{self.line}  /root/line-{self.line}")
         self.expect(["File exists"] + self.prompt)
 
     def phone_unconfig(self):
         """To remove the system link."""
-        self.sendline("rm  /root/line-%s" % self.line)
+        self.sendline(f"rm  /root/line-{self.line}")
         self.expect(self.prompt)
 
     @PyHandler.exit_python_on_exception
@@ -105,7 +105,7 @@ class SerialPhone(object):
         """To readlines from serial console."""
         self.sendline("serial_line.flush()")
         self.pyexpect(">>>")
-        self.sendline("time.sleep(%s)" % time)
+        self.sendline(f"time.sleep({time})")
         self.pyexpect(">>>")
         self.sendline("l=serial_line.readlines()")
         self.pyexpect(">>>")
@@ -114,7 +114,7 @@ class SerialPhone(object):
     @PyHandler.exit_python_on_exception
     def offhook_onhook(self, hook_value):
         """To generate the offhook/onhook signals."""
-        self.sendline("serial_line.write(b'ATH%s\\r')" % hook_value)
+        self.sendline(f"serial_line.write(b'ATH{hook_value}\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("OK")
@@ -126,7 +126,7 @@ class SerialPhone(object):
         number(str) : number to be called
         receiver_ip(str) : receiver's ip; defaults to none
         """
-        self.sendline("serial_line.write(b'ATDT%s;\\r')" % number)
+        self.sendline(f"serial_line.write(b'ATDT{number};\\r')")
         self.pyexpect(">>>")
         self.mta_readlines()
         self.expect("ATDT")

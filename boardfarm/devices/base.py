@@ -76,7 +76,7 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
     def check_output_perf(self, cmd, events):
         perf_args = self.perf_args(events)
 
-        self.sendline("perf stat -a -e %s time %s" % (perf_args, cmd))
+        self.sendline(f"perf stat -a -e {perf_args} time {cmd}")
 
     def parse_perf(self, events):
         mapping = self.parse_perf_board()
@@ -146,27 +146,27 @@ class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
 
     def flash_uboot(self, uboot):
         raise Exception(
-            "Code not written for flash_uboot for this board type, %s" % self.model
+            f"Code not written for flash_uboot for this board type, {self.model}"
         )
 
     def flash_rootfs(self, ROOTFS):
         raise Exception(
-            "Code not written for flash_rootfs for this board type, %s" % self.model
+            f"Code not written for flash_rootfs for this board type, {self.model}"
         )
 
     def flash_linux(self, KERNEL):
         raise Exception(
-            "Code not written for flash_linux for this board type, %s." % self.model
+            f"Code not written for flash_linux for this board type, {self.model}."
         )
 
     def flash_meta(self, META_BUILD, wan, lan):
         raise Exception(
-            "Code not written for flash_meta for this board type, %s." % self.model
+            f"Code not written for flash_meta for this board type, {self.model}."
         )
 
     def prepare_nfsroot(self, NFSROOT):
         raise Exception(
-            "Code not written for prepare_nfsroot for this board type, %s." % self.model
+            f"Code not written for prepare_nfsroot for this board type, {self.model}."
         )
 
     def kill_console_at_exit(self):

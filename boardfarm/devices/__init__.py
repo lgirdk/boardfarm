@@ -204,7 +204,7 @@ def get_device(model, device_mgr, **kwargs):
                     if dev not in cls_list:
                         profile_list.append(dev)
                     else:
-                        logger.warning("Skipping duplicate device type: %s" % attr)
+                        logger.warning(f"Skipping duplicate device type: {attr}")
                         continue
                     common_keys = set(kwargs) & set(profile_kwargs)
                     if len(common_keys) > 0:
@@ -221,7 +221,7 @@ def get_device(model, device_mgr, **kwargs):
         # to ensure profile always initializes after base class.
         cls_list.extend(profile_list)
         if len(cls_list) == 0:
-            raise BftNotSupportedDevice("Unable to spawn instance of model: %s" % model)
+            raise BftNotSupportedDevice(f"Unable to spawn instance of model: {model}")
         ret = bf_node(cls_list, model, device_mgr, **kwargs)
 
         # Allow a device to initialize without registering to device_mgr
@@ -260,7 +260,7 @@ You are seeing this message as your configuration is now using kermit instead of
         return dynamic_dev
 
     # Default for all other models
-    logger.warning("\nWARNING: Unknown board model '%s'." % model)
+    logger.warning(f"\nWARNING: Unknown board model '{model}'.")
     logger.warning(
         "Please check spelling, your environment setup, or write an appropriate class "
         "to handle that kind of board."
@@ -274,7 +274,7 @@ You are seeing this message as your configuration is now using kermit instead of
         logger.error("No boardfarm plugins are installed, do you need to install some?")
 
     if "BFT_CONFIG" in os.environ:
-        logger.info("\nIs this correct? BFT_CONFIG=%s\n" % os.environ["BFT_CONFIG"])
+        logger.info(f"\nIs this correct? BFT_CONFIG={os.environ['BFT_CONFIG']}\n")
     else:
         logger.error("No BFT_CONFIG is set, do you need one?")
 

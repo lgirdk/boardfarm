@@ -28,16 +28,16 @@ class BitTorrentSingle(BitTorrentBasic):
         lan = self.dev.lan
 
         sz, rate, ip, port = self.startSingleFlow()
-        print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+        print(f"started UDP to {ip}:{port} sz = {sz}, rate = {rate}k")
         time = sz / (rate * 1024)
-        print("time should be ~%s" % time)
+        print(f"time should be ~{time}")
         self.check_and_clean_ips()
         lan.sendline("fg")
         lan.expect(prompt, timeout=time + 10)
 
         # TODO: make this a function that's more robust
         board.get_pp_dev().sendline(
-            "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port)
+            f"cat /proc/net/nf_conntrack | grep dst={ip}.*dport={port}"
         )
         board.get_pp_dev().expect(prompt)
 
@@ -56,15 +56,15 @@ class BitTorrentB2B(BitTorrentBasic):
 
         for _ in range(10000):
             sz, rate, ip, port = self.startSingleFlow(maxtime=maxtime)
-            print("started UDP to %s:%s sz = %s, rate = %sk" % (ip, port, sz, rate))
+            print(f"started UDP to {ip}:{port} sz = {sz}, rate = {rate}k")
             time = sz / (rate * 1024)
-            print("time should be ~%s" % time)
+            print(f"time should be ~{time}")
             self.check_and_clean_ips()
             lan.sendline("fg")
             lan.expect(prompt, timeout=5)
 
             board.get_pp_dev().sendline(
-                "cat /proc/net/nf_conntrack | grep dst=%s.*dport=%s" % (ip, port)
+                f"cat /proc/net/nf_conntrack | grep dst={ip}.*dport={port}"
             )
             board.get_pp_dev().expect(prompt)
 

@@ -135,7 +135,7 @@ class DebianBox(linux.LinuxDevice):
                 self,
                 command="ssh",
                 args=[
-                    "%s@%s" % (self.username, ipaddr),
+                    f"{self.username}@{ipaddr}",
                     "-p",
                     port,
                     "-o",
@@ -167,7 +167,7 @@ class DebianBox(linux.LinuxDevice):
         self.name = name
         self.color = color
         if self.username != "root":
-            self.prompt.append("%s\\@.*:.*$" % self.username)
+            self.prompt.append(f"{self.username}\\@.*:.*$")
         self.port = port
         self.location = location
 
@@ -201,7 +201,7 @@ class DebianBox(linux.LinuxDevice):
             sys.stdout.flush()
             env_prefix = ""
             for k, v in self.dev.env.items():
-                env_prefix += "export %s=%s; " % (k, v)
+                env_prefix += f"export {k}={v}; "
 
             self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
@@ -239,11 +239,11 @@ class DebianBox(linux.LinuxDevice):
                 timeout=30,
             )
         except PexpectErrorTimeout:
-            raise Exception("Unable to connect to %s." % name)
+            raise Exception(f"Unable to connect to {name}.")
         except pexpect.EOF:
             if hasattr(self, "before"):
                 logger.debug(self.before)
-                raise Exception("Unable to connect to %s." % name)
+                raise Exception(f"Unable to connect to {name}.")
         if i == 0:
             self.sendline("yes")
             i = self.expect(["Last login", "assword:"])
@@ -267,27 +267,25 @@ class DebianBox(linux.LinuxDevice):
         :param name: name of the debian device
         :type name: string
         """
-        cmsg = "%s " % ipaddr
+        cmsg = f"{ipaddr} "
         if self.port != 22:
-            cmsg += "%s port " % port
+            cmsg += f"{port} port "
         cmsg += "device console = "
-        cmsg += colored("%s (%s)" % (color, name), color)
+        cmsg += colored(f"{color} ({name})", color)
         logger.debug(colored(cmsg, None, attrs=["bold"]))
 
     def get_default_gateway(self, interface):
-        self.sendline("ip route | grep {!s}".format(interface))
+        self.sendline(f"ip route | grep {interface!s}")
         self.expect(self.prompt)
 
-        match = re.search(
-            "default via (.*) dev {!s}.*\r\n".format(interface), self.before
-        )
+        match = re.search(f"default via (.*) dev {interface!s}.*\r\n", self.before)
         if match:
             return match.group(1)
         else:
             return None
 
     def run_cleanup_cmd(self):
-        sys.stdout.write("Running cleanup_cmd on %s..." % self.name)
+        sys.stdout.write(f"Running cleanup_cmd on {self.name}...")
         sys.stdout.flush()
         cc = bft_pexpect_helper.spawn(
             command="bash", args=["-c", self.cleanup_cmd], env=self.dev.env
@@ -309,7 +307,7 @@ class DebianBox(linux.LinuxDevice):
                     "64 bytes", timeout=1
                 )
             except Exception:
-                logger.error(self.name + " not up yet, after %s seconds." % (i + 15))
+                logger.error(self.name + f" not up yet, after {i + 15} seconds.")
             else:
                 logger.info(
                     "%s is back after %s seconds, waiting for network daemons to spawn."
@@ -344,7 +342,7 @@ class DebianBox(linux.LinuxDevice):
             and not getattr(self, "standalone_provisioner", False)
         ):
             set_iface_again = True
-            self.sendline("ifconfig %s down" % self.iface_dut)
+            self.sendline(f"ifconfig {self.iface_dut} down")
             self.expect(self.prompt)
 
         pkgs = "isc-dhcp-server xinetd tinyproxy curl apache2-utils nmap psmisc vim-common tftpd-hpa pppoe isc-dhcp-server procps iptables lighttpd psmisc dnsmasq xxd dante-server rsyslog snmp"
@@ -375,7 +373,7 @@ class DebianBox(linux.LinuxDevice):
                 [r"(\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})\r\n"] + self.prompt, timeout=5
             ):
                 possible_default_gw = self.match.group(1)
-                self.sendline("ip route add default via %s" % possible_default_gw)
+                self.sendline(f"ip route add default via {possible_default_gw}")
                 self.expect(self.prompt)
                 self.sendline("ping -c1 deb.debian.org")
                 self.expect(self.prompt)
@@ -399,16 +397,16 @@ class DebianBox(linux.LinuxDevice):
             _install_pkgs()
 
         if undo_default_route is not None:
-            self.sendline("ip route del default via %s" % undo_default_route)
+            self.sendline(f"ip route del default via {undo_default_route}")
             self.expect(self.prompt)
 
         if set_iface_again:
-            self.sendline("ifconfig %s %s" % (self.iface_dut, self.gw_ng))
+            self.sendline(f"ifconfig {self.iface_dut} {self.gw_ng}")
             self.expect(self.prompt)
-            self.sendline("ifconfig %s up" % self.iface_dut)
+            self.sendline(f"ifconfig {self.iface_dut} up")
             self.expect(self.prompt)
             if self.static_route is not None:
-                self.sendline("ip route add %s" % self.static_route)
+                self.sendline(f"ip route add {self.static_route}")
                 self.expect(self.prompt)
 
     def turn_on_pppoe(self):
@@ -419,7 +417,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("EOF")
         self.expect(self.prompt)
         self.sendline(
-            "pppoe-server -k -I %s -L 192.168.2.1 -R 192.168.2.10 -N 4" % self.iface_dut
+            f"pppoe-server -k -I {self.iface_dut} -L 192.168.2.1 -R 192.168.2.10 -N 4"
         )
         self.expect(self.prompt)
 
@@ -513,8 +511,8 @@ class DebianBox(linux.LinuxDevice):
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
-            self.send("ip route del %s; " % self.static_route.split(" via ")[0])
-            self.sendline("ip route add %s" % self.static_route)
+            self.send(f"ip route del {self.static_route.split(' via ')[0]}; ")
+            self.sendline(f"ip route add {self.static_route}")
             self.expect(self.prompt)
 
     def setup_dnsmasq(self, config=None):
@@ -524,9 +522,9 @@ class DebianBox(linux.LinuxDevice):
             "server=127.0.0.1"
         )
         self.sendline("listen-address=127.0.0.1")
-        self.sendline("listen-address=%s" % self.gw)
+        self.sendline(f"listen-address={self.gw}")
         if self.gwv6 is not None:
-            self.sendline("listen-address=%s" % self.gwv6)
+            self.sendline(f"listen-address={self.gwv6}")
         self.sendline(
             "addn-hosts=/etc/dnsmasq.hosts"
         )  # all additional hosts will be added to dnsmasq.hosts

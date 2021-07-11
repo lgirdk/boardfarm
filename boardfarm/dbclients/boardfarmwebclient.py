@@ -104,7 +104,7 @@ class BoardfarmWebClient(object):
                 )
 
     def _user_agent(self):
-        bfversion = "Boardfarm %s" % self.bf_version
+        bfversion = f"Boardfarm {self.bf_version}"
         s = platform.system()
         py = "Python %s.%s.%s" % (sys.version_info[:3])
         try:
@@ -112,9 +112,9 @@ class BoardfarmWebClient(object):
             if system == "Linux":
                 s = "%s %s" % distro.linux_distribution()[:2]
             elif system == "Darwin":
-                s = "MacOS %s" % platform.mac_ver()[0]
+                s = f"MacOS {platform.mac_ver()[0]}"
             elif system == "Windows":
-                s = "Windows %s" % platform.win32_ver()[0]
+                s = f"Windows {platform.win32_ver()[0]}"
         except Exception as e:
             if self.debug:
                 print(e)

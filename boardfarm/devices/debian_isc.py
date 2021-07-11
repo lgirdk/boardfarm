@@ -67,7 +67,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
 
         self.prov_iface = ipaddress.IPv6Interface(
             six.text_type(
-                kwargs.pop("prov_ipv6", "2001:dead:beef:1::1/%s" % self.ipv6_prefix)
+                kwargs.pop("prov_ipv6", f"2001:dead:beef:1::1/{self.ipv6_prefix}")
             )
         )
         self.prov_ipv6, self.prov_nw_ipv6 = self.prov_iface.ip, self.prov_iface.network
@@ -75,7 +75,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
         self.cm_gateway_v6_iface = ipaddress.IPv6Interface(
             six.text_type(
                 kwargs.pop(
-                    "cm_gateway_v6", "2001:dead:beef:4::cafe/%s" % self.ipv6_prefix
+                    "cm_gateway_v6", f"2001:dead:beef:4::cafe/{self.ipv6_prefix}"
                 )
             )
         )
@@ -92,7 +92,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
         self.open_gateway_iface = ipaddress.IPv6Interface(
             six.text_type(
                 kwargs.pop(
-                    "open_gateway_v6", "2001:dead:beef:6::cafe/%s" % self.ipv6_prefix
+                    "open_gateway_v6", f"2001:dead:beef:6::cafe/{self.ipv6_prefix}"
                 )
             )
         )
@@ -325,7 +325,7 @@ EOF"""
         cfg_file = "/etc/dhcp/dhcpd6.conf-" + board_config.get_station()
 
         # zero out old config
-        self.sendline("cp /dev/null %s" % cfg_file)
+        self.sendline(f"cp /dev/null {cfg_file}")
         self.expect(self.prompt)
 
         # insert tftp server, TODO: how to clean up?
@@ -336,7 +336,7 @@ EOF"""
         ] = tftp_server
         board_config["extra_provisioning_v6"]["cm"]["options"][
             "docsis.PKTCBL-CCCV4"
-        ] = "1 4 %s 1 4 %s" % (self.prov_ip, self.prov_ip)
+        ] = f"1 4 {self.prov_ip} 1 4 {self.prov_ip}"
 
         # the IPv6 subnet for erouter_net in json, should be large enough
         # len(erouter_net) >= no. of boards + 10
@@ -367,12 +367,10 @@ EOF"""
             for key, value in cfg_sec.items():
                 if key == "options":
                     for k2, v2 in value.items():
-                        self.sendline(
-                            "echo '   option %s %s;' >> %s" % (k2, v2, cfg_file)
-                        )
+                        self.sendline(f"echo '   option {k2} {v2};' >> {cfg_file}")
                         self.expect(self.prompt)
                 else:
-                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                    self.sendline(f"echo '   {key} {value};' >> {cfg_file}")
                     self.expect(self.prompt)
             self.sendline("echo '}' >> %s" % cfg_file)
 
@@ -538,7 +536,7 @@ EOF"""
         cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config.get_station()
 
         # zero out old config
-        self.sendline("cp /dev/null %s" % cfg_file)
+        self.sendline(f"cp /dev/null {cfg_file}")
         self.expect(self.prompt)
 
         # insert tftp server, TODO: how to clean up?
@@ -561,12 +559,10 @@ EOF"""
             for key, value in cfg_sec.items():
                 if key == "options":
                     for k2, v2 in value.items():
-                        self.sendline(
-                            "echo '   option %s %s;' >> %s" % (k2, v2, cfg_file)
-                        )
+                        self.sendline(f"echo '   option {k2} {v2};' >> {cfg_file}")
                         self.expect(self.prompt)
                 else:
-                    self.sendline("echo '   %s %s;' >> %s" % (key, value, cfg_file))
+                    self.sendline(f"echo '   {key} {value};' >> {cfg_file}")
                     self.expect(self.prompt)
             self.sendline("echo '}' >> %s" % cfg_file)
 
@@ -642,7 +638,7 @@ EOF"""
                         + '"',
                         "dhcp-parameter-request-list": "3, 6, 7, 12, 15, 43, 122",
                         "domain-name": '"sipcenter.boardfarm.com"',
-                        "domain-name-servers": "%s" % sip_server,
+                        "domain-name-servers": f"{sip_server}",
                         "docsis-mta.provision-server": "00 09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
                         "docsis-mta.kerberos-realm": "05:42:41:53:49:43:01:31:00",
                         "routers": self.mta_gateway,
@@ -660,12 +656,12 @@ EOF"""
                 "filename": '"' + self.dev.board.cm_cfg.encoded_fname + '"',
                 "options": {
                     "bootfile-name": '"' + self.dev.board.cm_cfg.encoded_fname + '"',
-                    "docsis.tftp_server": "%s" % tftp_server,
+                    "docsis.tftp_server": f"{tftp_server}",
                     "dhcp-parameter-request-list": "2, 3, 4, 6, 7, 12, 43, 122",
                     "docsis-mta.dhcp-server-1": self.prov_ip,
                     "docsis-mta.dhcp-server-2": self.prov_ip,
-                    "domain-name-servers": "%s" % tftp_server,
-                    "time-offset": "%s" % str(self.timezone),
+                    "domain-name-servers": f"{tftp_server}",
+                    "time-offset": f"{str(self.timezone)}",
                 },
             }
         }
@@ -675,7 +671,7 @@ EOF"""
             "hardware ethernet": board_config["erouter_mac"],
             "default-lease-time": self.default_lease_time,
             "max-lease-time": self.max_lease_time,
-            "options": {"domain-name-servers": "%s" % tftp_server},
+            "options": {"domain-name-servers": f"{tftp_server}"},
         }
 
         # This can be later broken down to another method which adds dhcpv6 options to type of device.
@@ -684,16 +680,15 @@ EOF"""
             "host-identifier option dhcp6.client-id": "00:03:00:01:"
             + board_config["cm_mac"],
             "options": {
-                "docsis.configuration-file": '"%s"'
-                % self.dev.board.cm_cfg.encoded_fname,
-                "dhcp6.name-servers": "%s" % tftp_server,
+                "docsis.configuration-file": f'"{self.dev.board.cm_cfg.encoded_fname}"',
+                "dhcp6.name-servers": f"{tftp_server}",
             },
         }
         board_config["extra_provisioning_v6"]["erouter"] = {
             "host-identifier option dhcp6.client-id": "00:03:00:01:"
             + board_config["erouter_mac"],
             "hardware ethernet": board_config["erouter_mac"],
-            "options": {"dhcp6.name-servers": "%s" % tftp_server},
+            "options": {"dhcp6.name-servers": f"{tftp_server}"},
         }
         if self.vendor_opts_acs_url:
             board_config["extra_provisioning"]["erouter"]["options"][
@@ -761,20 +756,20 @@ EOF"""
             device.setup([])
         """ Setup DHCP and time server etc for CM provisioning"""
         device.sendline(
-            'echo INTERFACESv4="%s" > /etc/default/isc-dhcp-server' % device.iface_dut
+            f'echo INTERFACESv4="{device.iface_dut}" > /etc/default/isc-dhcp-server'
         )
         device.expect(device.prompt)
         device.sendline(
-            'echo INTERFACESv6="%s" >> /etc/default/isc-dhcp-server' % device.iface_dut
+            f'echo INTERFACESv6="{device.iface_dut}" >> /etc/default/isc-dhcp-server'
         )
         device.expect(device.prompt)
         # we are bypass this for now (see http://patchwork.ozlabs.org/patch/117949/)
-        device.sendline("sysctl -w net.ipv6.conf.%s.accept_dad=0" % device.iface_dut)
+        device.sendline(f"sysctl -w net.ipv6.conf.{device.iface_dut}.accept_dad=0")
         device.expect(device.prompt)
         if not device.wan_no_eth0:
-            device.sendline("ifconfig %s up" % device.iface_dut)
+            device.sendline(f"ifconfig {device.iface_dut} up")
             device.expect(device.prompt)
-            device.sendline("ifconfig %s %s" % (device.iface_dut, device.gw))
+            device.sendline(f"ifconfig {device.iface_dut} {device.gw}")
             device.expect(device.prompt)
 
             # TODO: we need to route via eth0 at some point
@@ -789,12 +784,12 @@ EOF"""
                 device.expect(device.prompt)
 
         if device.static_route is not None:
-            device.sendline("ip route add %s" % device.static_route)
+            device.sendline(f"ip route add {device.static_route}")
             device.expect(device.prompt)
 
         if device.prov_gateway != device.prov_ip:
             for nw in [device.cm_network, device.mta_network, device.open_network]:
-                device.sendline("ip route add %s via %s" % (nw, device.prov_gateway))
+                device.sendline(f"ip route add {nw} via {device.prov_gateway}")
                 device.expect(device.prompt)
 
         if device.prov_gateway_v6 != device.prov_ipv6:
@@ -808,9 +803,7 @@ EOF"""
         # if fixed IP range is set, routes need to be configured based on individual host IPs.
         if not device.erouter_fixed_ip_start:
             for nw in device.erouter_net:
-                device.sendline(
-                    "ip -6 route add %s via %s" % (nw, device.prov_gateway_v6)
-                )
+                device.sendline(f"ip -6 route add {nw} via {device.prov_gateway_v6}")
                 device.expect(device.prompt)
 
         # only start tftp server if we are a full blown wan+provisioner
@@ -955,7 +948,7 @@ EOF"""
         """Try getting an attribute from the dhcpd.conf.<station> file."""
         val = None
         try:
-            self.sendline("cat  /etc/dhcp/dhcpd.conf.%s" % station)
+            self.sendline(f"cat  /etc/dhcp/dhcpd.conf.{station}")
             idx = self.expect(
                 [r"(%s-%s\s\{([^}]+)(%s\s(%s))\;)" % (dev, station, attr, exp_pattern)]
                 + ["No such file or directory"]
@@ -1049,7 +1042,7 @@ EOF"""
                     return False
                 logger.info("Downloaded: " + conf_file)
             except Exception:
-                logger.error("Failed to download %s from %s" % (conf_file, self.ipaddr))
+                logger.error(f"Failed to download {conf_file} from {self.ipaddr}")
                 return False
 
         return True
@@ -1063,7 +1056,7 @@ EOF"""
         return "aftr.boardfarm.com"
 
     def send(self, s):
-        bad_commands = ["ifconfig %s down" % self.iface_dut]
+        bad_commands = [f"ifconfig {self.iface_dut} down"]
 
         for cmd in bad_commands:
             if cmd in s:

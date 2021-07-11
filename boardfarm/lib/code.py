@@ -20,13 +20,13 @@ def get_all_classes_from_code(directories, debug=False):
     for d in directories:
         if debug:
             print(d)
-        cmd = "grep -E '^class' %s" % d
+        cmd = f"grep -E '^class' {d}"
         try:
             result = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             raw_text.append(result)
         except subprocess.CalledProcessError:
             if debug:
-                print("Warning: No tests found in %s" % d)
+                print(f"Warning: No tests found in {d}")
     raw_text = "".join(six.text_type(raw_text))
     # Create a list of tuples (classname, parent_classname)
     result = re.findall(r"class\s(\w+)\(([\w\.]+)\):", raw_text)
@@ -43,7 +43,7 @@ def get_all_classes_from_code(directories, debug=False):
         grandparent = all_classes[parent][0]
         all_classes[name].append(grandparent)
     if debug:
-        print("Found %s python classes." % len(all_classes))
+        print(f"Found {len(all_classes)} python classes.")
     return all_classes
 
 
@@ -54,7 +54,7 @@ def changed_classes(directories, start, end, debug=False):
     result = {}
     for d in directories:
         try:
-            cmd = "git --git-dir %s diff %s..%s -U0" % (d, start, end)
+            cmd = f"git --git-dir {d} diff {start}..{end} -U0"
             if debug:
                 print(cmd)
             diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
@@ -63,11 +63,11 @@ def changed_classes(directories, start, end, debug=False):
             )
         except subprocess.CalledProcessError:
             if debug:
-                print("Warning: git diff command failed in %s" % d)
+                print(f"Warning: git diff command failed in {d}")
     if debug:
-        print("\nAll directly changed classes from %s to %s:" % (start, end))
+        print(f"\nAll directly changed classes from {start} to {end}:")
         for name in sorted(result):
-            print("  %s : %s" % (name, result[name]))
+            print(f"  {name} : {result[name]}")
     return result
 
 
@@ -78,16 +78,16 @@ def get_features(directories, start, end, debug=False):
     result = []
     for d in directories:
         try:
-            cmd = "git --git-dir %s log %s..%s" % (d, start, end)
+            cmd = f"git --git-dir {d} log {start}..{end}"
             if debug:
                 print(cmd)
             text = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             result += re.findall(r"Features:\s(\w+)", six.text_type(text))
         except subprocess.CalledProcessError:
             if debug:
-                print("Warning: git log command failed in %s" % d)
+                print(f"Warning: git log command failed in {d}")
     if debug:
-        print("\nFeatures requested in git log from %s to %s:" % (start, end))
+        print(f"\nFeatures requested in git log from {start} to {end}:")
         print(" ".join(set(result)))
     return result
 
@@ -152,16 +152,16 @@ def changed_functions(directories, start, end, debug=False):
     result = []
     for d in directories:
         try:
-            cmd = "git --git-dir %s diff %s..%s -U0" % (d, start, end)
+            cmd = f"git --git-dir {d} diff {start}..{end} -U0"
             if debug:
                 print(cmd)
             diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
             result = re.findall(r"def\s(\w+)\(", six.text_type(diff))
         except subprocess.CalledProcessError:
             if debug:
-                print("Warning: git diff command failed in %s" % d)
+                print(f"Warning: git diff command failed in {d}")
     result = sorted(set(result))
     if debug:
-        print("\nAll changed functions from %s to %s:" % (start, end))
-        print("  %s" % ", ".join(result))
+        print(f"\nAll changed functions from {start} to {end}:")
+        print(f"  {', '.join(result)}")
     return result

@@ -146,7 +146,7 @@ class EnvHelper(object):
             if k == "dependent_software":
                 continue
             if k in ["load_image", "image_uri"]:
-                out[k] = "{}{}".format(self.mirror, v)
+                out[k] = f"{self.mirror}{v}"
             else:
                 out[k] = v
         return out
@@ -158,7 +158,7 @@ class EnvHelper(object):
         out = {}
         for k, v in sw.items():
             if k in ["load_image", "image_uri"]:
-                out[k] = "{}{}".format(self.mirror, v)
+                out[k] = f"{self.mirror}{v}"
             else:
                 out[k] = v
         return out

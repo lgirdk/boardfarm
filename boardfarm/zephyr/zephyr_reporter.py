@@ -108,7 +108,7 @@ def get_jira_release_id(rel_name, jira, proj):
         if version.name == rel_name:
             return version.id
 
-    raise Exception("Failed to get version id for release %s" % rel_name)
+    raise Exception(f"Failed to get version id for release {rel_name}")
 
 
 def update_automation_status(issue):
@@ -222,4 +222,4 @@ def update_zephyr(test_cases_list):
                 ret = reporter.set_execution(result, exec_id, log_data)
 
             if ret.status_code != requests.codes.ok:
-                raise Exception("Error = %s, when trying to set execution status" % ret)
+                raise Exception(f"Error = {ret}, when trying to set execution status")

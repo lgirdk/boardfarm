@@ -99,7 +99,7 @@ def configure_option125(device, enable=False):
                 total_len, len_02, code_02
             )
             device.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
-            device.sendline("send option-125 = {};".format(option_125))
+            device.sendline(f"send option-125 = {option_125};")
             device.sendline("")
             device.sendline("EOF")
             device.expect(device.prompt)

@@ -32,7 +32,7 @@ class SNMPv2:
             try:
                 oid = self.snmpmibs_obj.get_mib_oid(mib_name)
             except Exception as e:
-                raise SNMPError("MIB not available, Error: {}".format(e))
+                raise SNMPError(f"MIB not available, Error: {e}")
         return oid
 
     def snmpget(
@@ -56,7 +56,7 @@ class SNMPv2:
         Returns:
             (list) result : value, value type and complete output
         """
-        oid = self._get_mib_oid(mib_name) + ".{}".format(str(index))
+        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
         output = self.run_snmp(
             "snmpget", community, oid, timeout, retries, extra_args=extra_args
         )
@@ -91,15 +91,15 @@ class SNMPv2:
         Returns:
             (list) result : value, value type and complete output
         """
-        oid = self._get_mib_oid(mib_name) + ".{}".format(str(index))
+        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
 
         if re.findall(r"\s", value.strip()) and stype == "s":
-            value = '"{}"'.format(value)
+            value = f'"{value}"'
         if str(value).lower().startswith("0x"):
             value = value.upper()
-            set_value = "%s %s" % (stype, value[2:])
+            set_value = f"{stype} {value[2:]}"
         else:
-            set_value = "%s %s" % (stype, value)
+            set_value = f"{stype} {value}"
 
         output = self.run_snmp(
             "snmpset",
@@ -200,9 +200,9 @@ class SNMPv2:
             try:
                 oid = self._get_mib_oid(mib_name)
                 if index:
-                    oid = oid + ".{}".format(str(index))
+                    oid = oid + f".{str(index)}"
             except Exception as e:
-                raise SNMPError("MIB not available, Error: {}".format(e))
+                raise SNMPError(f"MIB not available, Error: {e}")
         else:
             oid = ""
 

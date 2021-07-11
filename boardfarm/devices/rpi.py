@@ -24,8 +24,8 @@ class RPI(openwrt_router.OpenWrtRouter):
     wan_iface = "erouter0"
     lan_iface = "brlan0"
 
-    lan_network = ipaddress.IPv4Network(u"10.0.0.0/24")
-    lan_gateway = ipaddress.IPv4Address(u"10.0.0.1")
+    lan_network = ipaddress.IPv4Network("10.0.0.0/24")
+    lan_gateway = ipaddress.IPv4Address("10.0.0.1")
 
     uprompt = ["U-Boot>"]
     uboot_eth = "sms0"
@@ -67,9 +67,9 @@ class RPI(openwrt_router.OpenWrtRouter):
             raise Exception("Partition size does not match, refusing to flash")
         self.expect(self.uprompt)
         count = hex(int(size / 512))
-        self.sendline("mmc erase %s %s" % (start, count))
+        self.sendline(f"mmc erase {start} {count}")
         self.expect(self.uprompt)
-        self.sendline("mmc write %s %s %s" % (self.uboot_ddr_addr, start, count))
+        self.sendline(f"mmc write {self.uboot_ddr_addr} {start} {count}")
         self.expect(self.uprompt, timeout=120)
 
         self.reset()
@@ -95,13 +95,13 @@ class RPI(openwrt_router.OpenWrtRouter):
 
         # increase partition size if required
         if int(size) > (sectors * 512):
-            self.sendline("mmc read %s 0 1" % self.uboot_ddr_addr)
+            self.sendline(f"mmc read {self.uboot_ddr_addr} 0 1")
             self.expect(self.uprompt)
             gp2_sz = int(self.uboot_ddr_addr, 16) + int("0x1da", 16)
-            self.sendline("mm 0x%08x" % gp2_sz)
-            self.expect("%08x: %08x ?" % (gp2_sz, sectors))
+            self.sendline(f"mm 0x{gp2_sz:08x}")
+            self.expect(f"{gp2_sz:08x}: {sectors:08x} ?")
             # pad 100M
-            self.sendline("0x%08x" % int((int(size) + 104857600) / 512))
+            self.sendline(f"0x{int((int(size) + 104857600) / 512):08x}")
             self.sendcontrol("c")
             self.sendcontrol("c")
             self.expect(self.uprompt)
@@ -109,7 +109,7 @@ class RPI(openwrt_router.OpenWrtRouter):
             self.expect_exact("echo FOO")
             self.expect_exact("FOO")
             self.expect(self.uprompt)
-            self.sendline("mmc write %s 0 1" % self.uboot_ddr_addr)
+            self.sendline(f"mmc write {self.uboot_ddr_addr} 0 1")
             self.expect(self.uprompt)
             self.sendline("mmc rescan")
             self.expect(self.uprompt)
@@ -117,10 +117,10 @@ class RPI(openwrt_router.OpenWrtRouter):
             self.expect(self.uprompt)
 
         count = hex(int(size / 512))
-        self.sendline("mmc erase %s %s" % (start, count))
+        self.sendline(f"mmc erase {start} {count}")
         self.expect(self.uprompt)
-        self.sendline("mmc write %s %s %s" % (self.uboot_ddr_addr, start, count))
-        self.expect_exact("mmc write %s %s %s" % (self.uboot_ddr_addr, start, count))
+        self.sendline(f"mmc write {self.uboot_ddr_addr} {start} {count}")
+        self.expect_exact(f"mmc write {self.uboot_ddr_addr} {start} {count}")
         self.expect(self.uprompt, timeout=480)
 
     def flash_linux(self, KERNEL):
@@ -136,7 +136,7 @@ class RPI(openwrt_router.OpenWrtRouter):
 
         self.kernel_file = os.path.basename(KERNEL)
         self.sendline(
-            "fatwrite mmc 0 %s %s $filesize" % (self.kernel_file, self.uboot_ddr_addr)
+            f"fatwrite mmc 0 {self.kernel_file} {self.uboot_ddr_addr} $filesize"
         )
         self.expect(self.uprompt)
 
@@ -159,13 +159,13 @@ class RPI(openwrt_router.OpenWrtRouter):
         )
 
         wan_ip = wan.get_interface_ipaddr("eth1")
-        self.sendline("ping -c1 %s" % wan_ip)
+        self.sendline(f"ping -c1 {wan_ip}")
         self.expect_exact("1 packets transmitted, 1 packets received, 0% packet loss")
         self.expect(self.prompt)
 
         self.sendline("cd /tmp")
         self.expect(self.prompt)
-        self.sendline(" tftp -g -r %s 10.0.1.1" % filename)
+        self.sendline(f" tftp -g -r {filename} 10.0.1.1")
         self.expect(self.prompt, timeout=500)
 
         self.sendline("systemctl isolate rescue.target")
@@ -184,7 +184,7 @@ class RPI(openwrt_router.OpenWrtRouter):
         self.expect_exact("sh-3.2# ")
         self.sendline("mount -no remount,ro /")
         self.expect_exact("sh-3.2# ")
-        self.sendline("dd if=$(basename %s) of=/dev/mmcblk0 && sync" % filename)
+        self.sendline(f"dd if=$(basename {filename}) of=/dev/mmcblk0 && sync")
         self.expect(pexpect.TIMEOUT, timeout=120)
         self.reset()
         self.wait_for_boot()
@@ -231,14 +231,14 @@ class RPI(openwrt_router.OpenWrtRouter):
         :param bootargs: Indicates the boot parameters to be specified if any (parameter to be used at later point), defaults to empty string "".
         :type bootargs: string
         """
-        common.print_bold("\n===== Booting linux for %s =====" % self.model)
+        common.print_bold(f"\n===== Booting linux for {self.model} =====")
 
         self.sendline("fdt addr $fdt_addr")
         self.expect(self.uprompt)
         self.sendline("fdt get value bcm_bootargs /chosen bootargs")
         self.expect(self.uprompt)
 
-        self.sendline('setenv bootargs "$bcm_bootargs %s"' % bootargs)
+        self.sendline(f'setenv bootargs "$bcm_bootargs {bootargs}"')
         self.expect(self.uprompt)
 
         self.sendline(

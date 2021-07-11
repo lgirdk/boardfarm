@@ -43,10 +43,10 @@ class OEVersion(rootfs_boot.RootFSBootTest):
         board.expect(prompt)
 
         print("#########################################")
-        print("bsp-type = %s" % bsp_type)
-        print("oe-version = %s" % oe_version)
-        print("bsp-version = %s" % bsp_version)
-        print("oe-version-string = %s" % oe_version_string)
+        print(f"bsp-type = {bsp_type}")
+        print(f"oe-version = {oe_version}")
+        print(f"bsp-version = {bsp_version}")
+        print(f"oe-version-string = {oe_version_string}")
         print("#########################################")
 
         self.result_message = (

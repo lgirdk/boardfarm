@@ -67,7 +67,7 @@ class Analysis:
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.gcf().set_size_inches(12, 8)
-        plt.savefig(os.path.join(output_dir, "%s.png" % fname))
+        plt.savefig(os.path.join(output_dir, f"{fname}.png"))
         plt.clf()
 
         # TODO: save simple CSV file?

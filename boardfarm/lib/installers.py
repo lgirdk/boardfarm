@@ -51,9 +51,7 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
         device.sendline("export DEBIAN_FRONTEND=noninteractive")
         device.expect(device.prompt)
         apt_update(device)
-        device.sendline(
-            "{}apt-get install {} -q -y {}".format(shim_prefix, dpkg_options, name)
-        )
+        device.sendline(f"{shim_prefix}apt-get install {dpkg_options} -q -y {name}")
         device.expect("Reading package")
         try:
             device.expect(device.prompt, timeout=timeout)
@@ -65,22 +63,20 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
 
         if "Could not get lock" in device.before:
             lock = re.findall(r"Could not get lock ([^\s]+)", device.before)
-            pid = device.check_output("fuser -k {}".format(lock))
-            pid = pid.replace("{}:".format(lock), "").strip()
-            device.check_output("kill -9 {}".format(pid))
-            logger.info(
-                "Retrying apt installation, after releasing {} lock!".format(lock)
-            )
+            pid = device.check_output(f"fuser -k {lock}")
+            pid = pid.replace(f"{lock}:", "").strip()
+            device.check_output(f"kill -9 {pid}")
+            logger.info(f"Retrying apt installation, after releasing {lock} lock!")
         elif "apt --fix-broken install" in device.before:
             device.check_output(
-                "{}apt --fix-broken -y install".format(shim_prefix), timeout=timeout
+                f"{shim_prefix}apt --fix-broken -y install", timeout=timeout
             )
             logger.info("Retrying apt installation, after fixing broken packages!")
         else:
             break
 
-    device.sendline("dpkg -l %s" % name)
-    expect_string = "dpkg -l %s" % name
+    device.sendline(f"dpkg -l {name}")
+    expect_string = f"dpkg -l {name}"
     device.expect_exact(expect_string[-60:])
     i = device.expect(["dpkg-query: no packages found"] + device.prompt)
     assert i != 0
@@ -132,19 +128,17 @@ def apt_purge(device, name, timeout=120):
 
         if "Could not get lock" in device.before:
             lock = re.findall(r"Could not get lock ([^\s]+)", device.before)
-            pid = device.check_output("fuser -k {}".format(lock))
-            pid = pid.replace("{}:".format(lock), "").strip()
-            device.check_output("kill -9 {}".format(pid))
-            logger.info(
-                "Retrying apt installation, after releasing {} lock!".format(lock)
-            )
+            pid = device.check_output(f"fuser -k {lock}")
+            pid = pid.replace(f"{lock}:", "").strip()
+            device.check_output(f"kill -9 {pid}")
+            logger.info(f"Retrying apt installation, after releasing {lock} lock!")
         else:
             break
-    device.sendline("dpkg -l %s" % name)
-    expect_string = "dpkg -l %s" % name
+    device.sendline(f"dpkg -l {name}")
+    expect_string = f"dpkg -l {name}"
     device.expect_exact(expect_string[-60:])
     device.expect_prompt()
-    assert "no packages found matching {}".format(name) in device.before
+    assert f"no packages found matching {name}" in device.before
 
 
 def apt_update(device, timeout=120):
@@ -158,7 +152,7 @@ def apt_update(device, timeout=120):
     shim_prefix = (
         device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
     )
-    device.sendline("{}apt-get -q update".format(shim_prefix))
+    device.sendline(f"{shim_prefix}apt-get -q update")
     device.expect("Reading package")
     device.expect(device.prompt, timeout=timeout)
 
@@ -452,7 +446,7 @@ def install_telnet_server(device):
     try:
         _configure_telnet_server(device)
     except Exception as e:
-        raise Exception("Telnet server Installation Failed: {}".format(e))
+        raise Exception(f"Telnet server Installation Failed: {e}")
 
 
 def uninstall_telnet_server(device):
@@ -465,7 +459,7 @@ def uninstall_telnet_server(device):
     try:
         _configure_telnet_server(device, True)
     except Exception as e:
-        raise Exception("Telnet server Uninstall Failed: {}".format(e))
+        raise Exception(f"Telnet server Uninstall Failed: {e}")
 
 
 def _configure_telnet_server(device, remove=False):
@@ -514,7 +508,7 @@ def _configure_telnet_server(device, remove=False):
         pty_num = len(device.check_output("cat /etc/securetty | grep pts/").split("\n"))
         # ensure 10 pts sessions for telnet server.
         for i in range(pty_num, 10):
-            device.check_output('echo "pts/%s" >> /etc/securetty' % i)
+            device.check_output(f'echo "pts/{i}" >> /etc/securetty')
     device.sendline("service xinetd restart")
     device.expect(["Starting internet superserver: xinetd."], timeout=60)
     device.expect(device.prompt)
@@ -697,7 +691,7 @@ def install_vsftpd(device):
     try:
         _configure_vsftpd(device)
     except Exception as e:
-        raise Exception("vsftpd Installation Failed: {}".format(e))
+        raise Exception(f"vsftpd Installation Failed: {e}")
 
 
 def uninstall_vsftpd(device):
@@ -710,7 +704,7 @@ def uninstall_vsftpd(device):
     try:
         _configure_vsftpd(device, True)
     except Exception as e:
-        raise Exception("vsftpd Uninstall Failed: {}".format(e))
+        raise Exception(f"vsftpd Uninstall Failed: {e}")
 
 
 def _configure_vsftpd(device, remove=False):
@@ -838,7 +832,7 @@ def install_IRCserver(device):
     try:
         _configure_IRCserver(device)
     except Exception as e:
-        raise Exception("IRCserver install Failed: {}".format(e))
+        raise Exception(f"IRCserver install Failed: {e}")
 
 
 def uninstall_IRCserver(device):
@@ -854,7 +848,7 @@ def uninstall_IRCserver(device):
     try:
         _configure_IRCserver(device, True)
     except Exception as e:
-        raise Exception("IRCserver Uninstall Failed: {}".format(e))
+        raise Exception(f"IRCserver Uninstall Failed: {e}")
 
 
 def _configure_IRCserver(device, remove=False):
@@ -898,7 +892,7 @@ def install_dovecot(device):
     try:
         _configure_dovecot(device)
     except Exception as e:
-        raise Exception("vsftpd Installation Failed: {}".format(e))
+        raise Exception(f"vsftpd Installation Failed: {e}")
 
 
 def uninstall_dovecot(device):
@@ -912,7 +906,7 @@ def uninstall_dovecot(device):
     try:
         _configure_dovecot(device, True)
     except Exception as e:
-        raise Exception("dovecot Uninstall Failed: {}".format(e))
+        raise Exception(f"dovecot Uninstall Failed: {e}")
 
 
 def _configure_dovecot(device, remove=False):
@@ -986,7 +980,7 @@ def install_ovpn_server(device, _user="lan", _ip="ipv4"):
     try:
         _configure_ovpn_server(device, False, _user, _ip)
     except Exception as e:
-        raise Exception("ovpn server install Failed: {}".format(e))
+        raise Exception(f"ovpn server install Failed: {e}")
 
 
 def uninstall_ovpn_server(device, _user="lan", _ip="ipv4"):
@@ -1005,7 +999,7 @@ def uninstall_ovpn_server(device, _user="lan", _ip="ipv4"):
     try:
         _configure_ovpn_server(device, True, _user, _ip)
     except Exception as e:
-        raise Exception("ovpn server uninstall Failed: {}".format(e))
+        raise Exception(f"ovpn server uninstall Failed: {e}")
 
 
 def _configure_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
@@ -1079,7 +1073,7 @@ def _configure_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
         device.expect(device.prompt)
         shim = getattr(device, "shim", None)
         output = shim if shim else ""
-        device.sendline("%s ./openvpn-install.sh" % output)
+        device.sendline(f"{output} ./openvpn-install.sh")
         device.expect("IP address:.*", timeout=120)
         for _ in range(20):
             device.sendcontrol("h")
@@ -1155,7 +1149,7 @@ def install_ovpn_client(device):
     try:
         _configure_ovpn_client(device)
     except Exception as e:
-        raise Exception("ovpn client install Failed: {}".format(e))
+        raise Exception(f"ovpn client install Failed: {e}")
 
 
 def uninstall_ovpn_client(device):
@@ -1171,7 +1165,7 @@ def uninstall_ovpn_client(device):
     try:
         _configure_ovpn_client(device, True)
     except Exception as e:
-        raise Exception("ovpn client uninstall Failed: {}".format(e))
+        raise Exception(f"ovpn client uninstall Failed: {e}")
 
 
 def _configure_ovpn_client(device, remove=False):
@@ -1211,7 +1205,7 @@ def install_pptpd_server(device):
     try:
         _configure_pptpd_server(device)
     except Exception as e:
-        raise Exception("pptpd server install Failed: {}".format(e))
+        raise Exception(f"pptpd server install Failed: {e}")
 
 
 def uninstall_pptpd_server(device):
@@ -1225,7 +1219,7 @@ def uninstall_pptpd_server(device):
     try:
         _configure_pptpd_server(device)
     except Exception as e:
-        raise Exception("pptpd server uninstall Failed: {}".format(e))
+        raise Exception(f"pptpd server uninstall Failed: {e}")
 
 
 def _configure_pptpd_server(device, remove=False):
@@ -1270,7 +1264,7 @@ def install_pptp_client(device):
     try:
         _configure_pptp_client(device)
     except Exception as e:
-        raise Exception("pptp client install Failed: {}".format(e))
+        raise Exception(f"pptp client install Failed: {e}")
 
 
 def uninstall_pptp_client(device):
@@ -1284,7 +1278,7 @@ def uninstall_pptp_client(device):
     try:
         _configure_pptp_client(device)
     except Exception as e:
-        raise Exception("pptp client install Failed: {}".format(e))
+        raise Exception(f"pptp client install Failed: {e}")
 
 
 def _configure_pptp_client(device, remove=False):
@@ -1435,7 +1429,7 @@ def install_pjsua(device, url):
     result = check_pjsua(device)
     if not result:
         install_wget(device)
-        device.sendline("wget %s" % url)
+        device.sendline(f"wget {url}")
         device.expect(device.prompt, timeout=100)
         apt_install(device, "./pjsip-local.deb")
         result = check_pjsua(device)
@@ -1456,13 +1450,13 @@ def configure_IRCserver(device, user_name):
     device.expect(device.prompt)
 
     device.sendline(
-        """cat > /etc/inspircd/inspircd.conf << EOF
+        f"""cat > /etc/inspircd/inspircd.conf << EOF
 <server name="irc.boardfarm.net"
         description="Boardfarm IRC Server"
         network="Boardfarm">
 
 <admin name="Boardfarm"
-        nick="%s"
+        nick="{user_name}"
         email="admin@irc.boardfarm.net">
 
 <bind address="" port="6667" type="clients">
@@ -1500,7 +1494,7 @@ def configure_IRCserver(device, user_name):
         classes="HostCloak"
         host="helper.omega.org.za">
 
-<oper name="%s"
+<oper name="{user_name}"
         password="12345"
         host="*@*"
         type="NetAdmin">
@@ -1559,7 +1553,6 @@ def configure_IRCserver(device, user_name):
 <badnick nick="OperServ" reason="Reserved For Services">
 <badnick nick="MemoServ" reason="Reserved For Services">
 EOF"""
-        % (user_name, user_name)
     )
     device.expect(device.prompt)
 
@@ -1596,7 +1589,7 @@ def configure_IRCclient(
     :param socket_type: socket connection type. "6" for ipv6 connection and "" for ipv4 connection
     :type socket_type: String
     """
-    device.sendline("touch %s" % irc_client_scriptname)
+    device.sendline(f"touch {irc_client_scriptname}")
     device.expect(device.prompt)
     device.sendline(
         '''cat > %s << EOF

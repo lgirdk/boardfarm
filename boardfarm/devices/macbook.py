@@ -24,10 +24,7 @@ class Macbook(debian.DebianBox):
         self.username = self.kwargs["username"]
         self.password = self.kwargs["password"]
 
-        conn_cmd = 'ssh -o "StrictHostKeyChecking no" %s@%s' % (
-            self.username,
-            self.ipaddr,
-        )
+        conn_cmd = f'ssh -o "StrictHostKeyChecking no" {self.username}@{self.ipaddr}'
 
         self.connection = connection_decider.connection(
             "local_cmd", device=self, conn_cmd=conn_cmd
@@ -55,7 +52,7 @@ class Macbook(debian.DebianBox):
         :param channel: channel number
         :type channel: string
         """
-        command = "airport --ch={}".format(channel)
+        command = f"airport --ch={channel}"
 
         self.sudo_sendline(command)
         self.expect(self.prompt)
@@ -66,7 +63,7 @@ class Macbook(debian.DebianBox):
 
         :rtype: string
         """
-        command = "airport %s sniff %s" % (self.iface_wifi, channel)
+        command = f"airport {self.iface_wifi} sniff {channel}"
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=3)
         self.sendline("\x03")
@@ -78,7 +75,7 @@ class Macbook(debian.DebianBox):
         :return: List of SSID
         :rtype: string
         """
-        command = "airport %s --scan" % self.iface_wifi
+        command = f"airport {self.iface_wifi} --scan"
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=10)
         return self.before
@@ -91,7 +88,7 @@ class Macbook(debian.DebianBox):
         :return: True or False
         :rtype: boolean
         """
-        command = "airport %s --scan | grep %s" % (self.iface_wifi, ssid_name)
+        command = f"airport {self.iface_wifi} --scan | grep {ssid_name}"
         self.sendline(command)
         self.expect(pexpect.TIMEOUT, timeout=10)
         tmp = re.sub(command, "", self.before)
@@ -130,13 +127,11 @@ class Macbook(debian.DebianBox):
         :rtype: string
         """
         if opts == "":
-            self.sendline(
-                'tshark -V -r %s wlan_mgt.ssid == "%s"' % (capture_file, ssid_name)
-            )
+            self.sendline(f'tshark -V -r {capture_file} wlan_mgt.ssid == "{ssid_name}"')
         else:
-            self.sendline('tshark -V -r %s "%s"' % (capture_file, opts))
+            self.sendline(f'tshark -V -r {capture_file} "{opts}"')
         self.expect(pexpect.TIMEOUT, timeout=10)
         output = self.before
-        self.sendline("rm %s" % (capture_file))
+        self.sendline(f"rm {capture_file}")
         self.expect(self.prompt)
         return output

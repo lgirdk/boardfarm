@@ -47,7 +47,7 @@ def connection(conn_type, device, **kwargs):
 
     if not out:
         # Default for all other models
-        print("\nWARNING: Unknown connection type  '%s'." % type)
+        print(f"\nWARNING: Unknown connection type  '{type}'.")
         print(
             "Please check spelling, or write an appropriate class "
             "to handle that kind of board."

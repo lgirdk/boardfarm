@@ -24,10 +24,7 @@ class SyslogServer(debian.DebianBox):
         self.username = self.kwargs["username"]
         self.password = self.kwargs["password"]
 
-        conn_cmd = 'ssh -o "StrictHostKeyChecking no" %s@%s' % (
-            self.username,
-            self.syslog_ip,
-        )
+        conn_cmd = f'ssh -o "StrictHostKeyChecking no" {self.username}@{self.syslog_ip}'
 
         self.connection = connection_decider.connection(
             "local_cmd", device=self, conn_cmd=conn_cmd
@@ -56,7 +53,7 @@ class SyslogServer(debian.DebianBox):
         :param ip: IP address of the DUT
         :type ip: string
         """
-        command = "rm %s/log_%s" % (self.syslog_path, ip)
+        command = f"rm {self.syslog_path}/log_{ip}"
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.prompt)
@@ -72,7 +69,7 @@ class SyslogServer(debian.DebianBox):
         :return: Syslog messages
         :rtype: string
         """
-        command = "tail -n %s %slog_%s" % (n, self.syslog_path, ip)
+        command = f"tail -n {n} {self.syslog_path}log_{ip}"
         req = self.check_output(command)
         return req
 

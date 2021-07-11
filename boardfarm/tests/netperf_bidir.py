@@ -20,9 +20,9 @@ class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
 
         up = down = 0.0
         for _ in range(0, num_conns):
-            self.run_netperf_cmd(lan, "192.168.0.1 -c -C -l 30 -- %s" % opts)
+            self.run_netperf_cmd(lan, f"192.168.0.1 -c -C -l 30 -- {opts}")
             self.run_netperf_cmd(
-                lan, "192.168.0.1 -c -C -l 30 -t TCP_MAERTS -- %s" % opts
+                lan, f"192.168.0.1 -c -C -l 30 -t TCP_MAERTS -- {opts}"
             )
 
         for _ in range(0, num_conns):
@@ -33,9 +33,6 @@ class NetperfBidirTest(netperf_reverse_test.NetperfReverseTest):
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
 
-        msg = "Bidir speed was %s 10^6Mbits/sec with %s average cpu" % (
-            (up + down),
-            avg_cpu,
-        )
+        msg = f"Bidir speed was {up + down} 10^6Mbits/sec with {avg_cpu} average cpu"
         lib.common.test_msg(msg)
         self.result_message = msg

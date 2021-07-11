@@ -59,7 +59,7 @@ class RandomWebBrowse(rootfs_boot.RootFSBootTest):
         )
         for url in urls:
             lan.sendline("mkdir -p /tmp/webbrowse-test")
-            print("\n%s" % url)
+            print(f"\n{url}")
             tmp = cmd % {"url": url, "user": user}
             lan.sendline(tmp)
             try:

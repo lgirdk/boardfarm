@@ -35,26 +35,24 @@ class LatencyAllDevices(rootfs_boot.RootFSBootTest):
                         r = [float(i) for i in re.findall(r"time=([^\s]*) ms", string)]
                         return sum(r) / len(r)
 
-                    d1.sendline("ping -c20 %s" % ip2)
-                    d1.expect_exact("ping -c20 %s" % ip2)
+                    d1.sendline(f"ping -c20 {ip2}")
+                    d1.expect_exact(f"ping -c20 {ip2}")
                     d1.expect(d1.prompt)
 
                     result = parse_ping_times(d1.before)
                     if result is not float("nan"):
                         results.append(
-                            "latency from %s to %s = %s ms"
-                            % (d1.name, d2.name, str(result))
+                            f"latency from {d1.name} to {d2.name} = {str(result)} ms"
                         )
 
-                    d2.sendline("ping -c20 %s" % ip1)
-                    d2.expect_exact("ping -c20 %s" % ip1)
+                    d2.sendline(f"ping -c20 {ip1}")
+                    d2.expect_exact(f"ping -c20 {ip1}")
                     d2.expect(d2.prompt)
 
                     result = parse_ping_times(d2.before)
                     if result is not float("nan"):
                         results.append(
-                            "latency from %s to %s = %s ms"
-                            % (d2.name, d1.name, str(result))
+                            f"latency from {d2.name} to {d1.name} = {str(result)} ms"
                         )
                 except Exception as error:
                     print(error)

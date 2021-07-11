@@ -128,11 +128,9 @@ class CDrouterDevice(CDRouter):
             # code is throwing a bug here.
             # config is compared with only original contents.
             # not the updated one
-            logger.warning(
-                "Warning! : Config contains {} error(s):".format(len(check.errors))
-            )
+            logger.warning(f"Warning! : Config contains {len(check.errors)} error(s):")
             for e in check.errors:
-                logger.error("    {}: {}".format(e.lines, e.error))
+                logger.error(f"    {e.lines}: {e.error}")
                 logger.error("")
 
             logger.info("Config parsing succeeded!!")

@@ -20,9 +20,7 @@ class IPv6_File_Download(rootfs_boot.RootFSBootTest):
 
         # WAN Device: create large file in web directory
         fname = "/var/www/20mb.txt"
-        wan.sendline(
-            '\n[ -e "%s" ] || head -c 20971520 /dev/urandom > %s' % (fname, fname)
-        )
+        wan.sendline(f'\n[ -e "{fname}" ] || head -c 20971520 /dev/urandom > {fname}')
         wan.expect("/var")
         wan.expect(prompt)
         # LAN Device: download the file

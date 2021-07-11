@@ -48,7 +48,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
         text_file.flush()
 
         fmd5 = hashlib.md5(open(fname, "rb").read()).hexdigest()
-        print("File original md5sum: %s" % fmd5)
+        print(f"File original md5sum: {fmd5}")
 
         cmd = (
             'cat %s | ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p %s -x %s@%s "cat - > %s"'
@@ -71,7 +71,7 @@ class selftest_test_copy_file_to_server(rootfs_boot.RootFSBootTest):
             assert 0, "copy_file_to_server failed, Test failed!!!!"
 
         # is the destination file identical to the source file
-        wan.sendline("md5sum %s" % fname)
+        wan.sendline(f"md5sum {fname}")
         wan.expect(fmd5)
         wan.expect(wan.prompt)
 
@@ -223,16 +223,16 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         # get the mac address of the interface
         lan_mac = lan.get_interface_macaddr(lan.iface_dut)
         assert lan_mac is not None, "Failed getting lan mac address"
-        print("lan mac address: %s" % lan_mac)
+        print(f"lan mac address: {lan_mac}")
 
         # check the system uptime
         uptime = lan.get_seconds_uptime()
         assert uptime is not None, "Failed getting system uptime"
-        print("system uptime is: %s" % uptime)
+        print(f"system uptime is: {uptime}")
 
         # ping ip using function ping from linux.py
         ping_check = lan.ping("8.8.8.8")
-        print("ping status is %s" % ping_check)
+        print(f"ping status is {ping_check}")
 
         # disable ipv6
         lan.disable_ipv6(lan.iface_dut)
@@ -268,7 +268,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         text_file.flush()
 
         fmd5 = hashlib.md5(open(text_file.name, "rb").read()).hexdigest()
-        print("File original md5sum: %s" % fmd5)
+        print(f"File original md5sum: {fmd5}")
         print("copying file to lan at /tmp/dst.txt")
         lan.copy_file_to_server(text_file.name, "/tmp/dst.txt")
         print("Copy Done. Verify the integrity of the file")
@@ -282,22 +282,22 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
 
         # Check the available memory of the device
         memory_avail = board.get_memfree()
-        print("Available memory of the device:{}".format(memory_avail))
+        print(f"Available memory of the device:{memory_avail}")
 
         # Getting the vmstat
         vmstat_out = board.get_proc_vmstat()
         assert vmstat_out is not None, "virtual machine status is None"
-        print("Got the vmstat{}".format(vmstat_out))
+        print(f"Got the vmstat{vmstat_out}")
 
         # Get the total number of connections in the network
         nw_count = board.get_nf_conntrack_conn_count()
         assert nw_count is not None, "connections are empty"
-        print("Get the total number of connections in the network{}".format(nw_count))
+        print(f"Get the total number of connections in the network{nw_count}")
 
         # Getting the DNS server upstream
         ip_addr = board.get_dns_server_upstream()
         assert ip_addr is not None, "Getting nameserver ip is None"
-        print("Got the DNS server upstream{}".format(ip_addr))
+        print(f"Got the DNS server upstream{ip_addr}")
         print("Test Passed")
 
 
@@ -368,7 +368,7 @@ class SnmpMibsUnitTest(object):
         self.snmp_obj = SnmpHelper.SnmpMibs.get_mib_parser(
             self.mib_files, self.src_directories
         )
-        print("Using class singleton: %r" % self.snmp_obj)
+        print(f"Using class singleton: {self.snmp_obj!r}")
 
         # the SAME object should be returned, NOT A NEW/DIFFERENT ONE!!!!!
         assert self.snmp_obj is SnmpHelper.SnmpMibs.get_mib_parser(
@@ -395,10 +395,10 @@ class SnmpMibsUnitTest(object):
         Asserts on failure
         """
         if "y" in self.snmp_obj.dbg:
-            print("The SNMP mib_dict contains %s keys." % len(self.snmp_obj.mib_dict))
+            print(f"The SNMP mib_dict contains {len(self.snmp_obj.mib_dict)} keys.")
             print("First 5 mib_dict keys and values alphabetically:")
             for k in sorted(self.snmp_obj.mib_dict)[:5]:
-                print("%s: %s" % (k, self.snmp_obj.mib_dict[k]))
+                print(f"{k}: {self.snmp_obj.mib_dict[k]}")
 
         # used in the second round of testing (i.e. the get oid without the obj)
         self.mibs1 = self.mibs[:]
@@ -411,13 +411,13 @@ class SnmpMibsUnitTest(object):
         for i in self.mibs:
             try:
                 oid = self.snmp_obj.get_mib_oid(i)
-                print("parse.get_mib_oid(%s) - oid=%s" % (i, oid))
+                print(f"parse.get_mib_oid({i}) - oid={oid}")
 
             except Exception as e:
                 print(e)
                 # we should NOT find only the errored mibs, all other mibs MUST be found
                 assert i in self.error_mibs, "Failed to get oid for mib: " + i
-                print("Failed to get oid for mib: %s (expected)" % i)
+                print(f"Failed to get oid for mib: {i} (expected)")
                 if self.error_mibs is not None:
                     self.error_mibs.remove(i)
 
@@ -425,7 +425,7 @@ class SnmpMibsUnitTest(object):
         if self.error_mibs is not None:
             assert (
                 self.error_mibs == []
-            ), "The test missed the following mibs: %s" % str(self.error_mibs)
+            ), f"The test missed the following mibs: {str(self.error_mibs)}"
 
         print(
             "=================================================================================="
@@ -438,13 +438,13 @@ class SnmpMibsUnitTest(object):
         for i in self.mibs1:
             try:
                 oid = get_mib_oid(i)
-                print("get_mib_oid(%s) - oid=%s" % (i, oid))
+                print(f"get_mib_oid({i}) - oid={oid}")
 
             except Exception as e:
                 print(e)
                 # we should NOT find only the errored mibs, all other mibs MUST be found
                 assert i in self.error_mibs1, "Failed to get oid for mib: " + i
-                print("Failed to get oid for mib: %s (expected)" % i)
+                print(f"Failed to get oid for mib: {i} (expected)")
                 if self.error_mibs1 is not None:
                     self.error_mibs1.remove(i)
 
@@ -452,7 +452,7 @@ class SnmpMibsUnitTest(object):
         if self.error_mibs1 is not None:
             assert (
                 self.error_mibs1 == []
-            ), "The test missed the following mibs: %s" % str(self.error_mibs1)
+            ), f"The test missed the following mibs: {str(self.error_mibs1)}"
 
         return True
 
@@ -527,17 +527,17 @@ class selftest_test_SnmpHelper(rootfs_boot.RootFSBootTest):
                     community="public",
                 )
 
-                print("snmpget({})@{}={}".format(mib, wan_iface_ip, result))
+                print(f"snmpget({mib})@{wan_iface_ip}={result}")
                 print("Trying with snmp_v2 as well")
 
                 value = SnmpHelper.snmp_v2(
                     lan, str(wan_iface_ip), mib, community="public"
                 )
 
-                print("Snmpget via snmpv2 on %s: %s" % (mib, value))
+                print(f"Snmpget via snmpv2 on {mib}: {value}")
 
             except Exception as e:
-                print("Failed on snmpget {} ".format(mib))
+                print(f"Failed on snmpget {mib} ")
                 print(e)
                 raise e
 
@@ -650,15 +650,15 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
             addr
             == ConfigHelper()["err_injection_dict"][self.cls_name]["get_dev_ip_address"]
         ), "spoofed value not received"
-        print("received spoofed address: {}".format(str(addr)))
+        print(f"received spoofed address: {str(addr)}")
         print("get_dev_ip_address spoofed PASS")
 
         addr = self.get_dev_ip_address(lan)
         try:
             assert addr == lan.get_interface_ipaddr(lan.iface_dut)
-            print("get_dev_ip_address: {}, UNEXPECTED FAILURE!!!! ".format(str(addr)))
+            print(f"get_dev_ip_address: {str(addr)}, UNEXPECTED FAILURE!!!! ")
         except Exception:
-            print("get_dev_ip_address: {}, EXPECTED FAILURE".format(str(addr)))
+            print(f"get_dev_ip_address: {str(addr)}, EXPECTED FAILURE")
             expected_faulures += 1
         ConfigHelper()["err_injection_dict"][self.cls_name].pop("get_dev_ip_address")
         assert (
@@ -669,7 +669,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         assert addr == lan.get_interface_ipaddr(
             lan.iface_dut
         ), "spoofed value not received"
-        print("received real address: {}".format(addr))
+        print(f"received real address: {addr}")
         print("get_dev_ip_address real PASS")
 
         # just  for the sake of this test we check that all the errors have been injected
@@ -679,7 +679,7 @@ class selftest_err_injection(rootfs_boot.RootFSBootTest):
         ], "Not all errors were injected"
         print("all errors have been injected")
 
-        print("%s: PASS" % (self.cls_name))
+        print(f"{self.cls_name}: PASS")
 
 
 class selftest_tear_down(rootfs_boot.RootFSBootTest):

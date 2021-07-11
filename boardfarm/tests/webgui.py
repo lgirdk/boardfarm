@@ -30,8 +30,8 @@ class WebGUI_Access(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
 
         ip = "192.168.1.1"
-        url = "http://%s/" % ip
-        lan.sendline("\ncurl -v %s" % url)
+        url = f"http://{ip}/"
+        lan.sendline(f"\ncurl -v {url}")
         lan.expect("<html")
         lan.expect("<body")
         lan.expect("</body>")
@@ -64,7 +64,7 @@ class Webserver_Download(rootfs_boot.RootFSBootTest):
         board.sendline("\nhead -c 1000000 /dev/urandom > /www/deleteme.txt")
         board.expect("head ", timeout=5)
         board.expect(prompt)
-        lan.sendline("\ncurl -m 25 http://%s/deleteme.txt > /dev/null" % ip)
+        lan.sendline(f"\ncurl -m 25 http://{ip}/deleteme.txt > /dev/null")
         lan.expect("Total", timeout=5)
         lan.expect("100 ", timeout=10)
         lan.expect(prompt, timeout=10)

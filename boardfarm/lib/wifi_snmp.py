@@ -49,7 +49,7 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Wifi_enable"],
                 index,
             )
-        assert mib_out == "1", "Mib query return value for enable wifi: %s" % mib_out
+        assert mib_out == "1", f"Mib query return value for enable wifi: {mib_out}"
 
     def set_ssid(self, wifi_mode, ssid_name):
         """To set wifi ssid via SNMP.
@@ -79,9 +79,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["SSID_set"],
                 index,
             )
-        assert mib_out == ssid_name, (
-            "Mib query return value for setting the SSID: %s" % mib_out
-        )
+        assert (
+            mib_out == ssid_name
+        ), f"Mib query return value for setting the SSID: {mib_out}"
 
     def set_security(self, wifi_mode, security):
         """To set wifi security via SNMP.
@@ -112,9 +112,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Security_mode"],
                 index,
             )
-        assert mib_out == security_mode, (
-            "Mib query return value for setting the security mode: %s" % mib_out
-        )
+        assert (
+            mib_out == security_mode
+        ), f"Mib query return value for setting the security mode: {mib_out}"
 
     def set_password(self, wifi_mode, password):
         """To set wifi password via SNMP.
@@ -144,9 +144,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Password_set"],
                 index,
             )
-        assert mib_out == password, (
-            "Mib query return value for setting the password: %s" % mib_out
-        )
+        assert (
+            mib_out == password
+        ), f"Mib query return value for setting the password: {mib_out}"
 
     def enable_channel_utilization(self, wifi_mode):
         """To enable channel utilization via SNMP.
@@ -174,9 +174,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Channel_Util"],
                 "0",
             )
-        assert mib_out == "2", (
-            "Mib query return value for setting the channel utilisation: %s" % mib_out
-        )
+        assert (
+            mib_out == "2"
+        ), f"Mib query return value for setting the channel utilisation: {mib_out}"
 
     def set_operating_mode(self, wifi_mode, operating_mode):
         """To set wifi operating mode via SNMP.
@@ -208,9 +208,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Operating_mode"],
                 index,
             )
-        assert mib_out == operating_mode, (
-            "Mib query return value for setting the operating mode: %s" % mib_out
-        )
+        assert (
+            mib_out == operating_mode
+        ), f"Mib query return value for setting the operating mode: {mib_out}"
 
     def set_bandwidth(self, wifi_mode, bandwidth, channel_number=0):
         """To set wifi bandwidth via SNMP.
@@ -244,9 +244,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Bandwidth"],
                 index,
             )
-        assert mib_out == bandwidth, (
-            "Mib query return value for setting the bandwidth: %s" % mib_out
-        )
+        assert (
+            mib_out == bandwidth
+        ), f"Mib query return value for setting the bandwidth: {mib_out}"
 
     def set_channel_number(self, wifi_mode, channel_number):
         """To set wifi channel number via SNMP.
@@ -277,9 +277,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Channel_mode"],
                 index,
             )
-        assert mib_out == channel_number, (
-            "Mib query return value for setting the channel number: %s" % mib_out
-        )
+        assert (
+            mib_out == channel_number
+        ), f"Mib query return value for setting the channel number: {mib_out}"
 
     def set_broadcast(self, wifi_mode, broadcast="enable"):
         """To set wifi broadcast via SNMP.
@@ -314,9 +314,9 @@ class wifi_snmp(wifi_stub):
                 self.mib_value["mib_name"]["Broadcast"],
                 index,
             )
-        assert mib_out == broadcast_value, (
-            "Mib query return value for setting the broadcast for SSID: %s" % mib_out
-        )
+        assert (
+            mib_out == broadcast_value
+        ), f"Mib query return value for setting the broadcast for SSID: {mib_out}"
 
     def apply_changes(self):
         """To apply changes to the wifi settings.

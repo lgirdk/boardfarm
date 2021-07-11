@@ -288,12 +288,8 @@ def parse():
         if boardfarm.plugins:
             print("Installed Plugins:")
             for key in sorted(boardfarm.plugins):
-                print(
-                    "{} {}".format(
-                        key, getattr(boardfarm.plugins[key], "__version__", "")
-                    )
-                )
-            print("Python: %s" % sys.version)
+                print(f"{key} {getattr(boardfarm.plugins[key], '__version__', '')}")
+            print(f"Python: {sys.version}")
         sys.exit(0)
 
     if args.list_tests:
@@ -331,7 +327,7 @@ def parse():
 
     # Check if boardfarm configuration is empty
     if not config.boardfarm_config:
-        print("ERROR! Boardfarm config at %s is empty, so" % args.config_file)
+        print(f"ERROR! Boardfarm config at {args.config_file} is empty, so")
         print("either all stations are in use or disabled.")
         sys.exit(10)
     # Check if given board type(s) have any overlap with available board types from config
@@ -347,19 +343,19 @@ def parse():
                 all_board_types.append(elem)
 
         if not (set(args.board_type) & set(all_board_types)):
-            print("ERROR! You specified board types: %s " % " ".join(args.board_type))
+            print(f"ERROR! You specified board types: {' '.join(args.board_type)} ")
             print("but that is not an existing & available type of board.")
             print("Please choose a board type from:")
-            print("\n".join([" * %s" % x for x in set(all_board_types)]))
+            print("\n".join([f" * {x}" for x in set(all_board_types)]))
             sys.exit(10)
     # Check if given board name(s) are present in available boards
     if args.board_names:
         all_board_names = [key for key in config.boardfarm_config if key != "locations"]
         if not (set(args.board_names) & set(all_board_names)):
-            print("ERROR! You specified board names: %s " % " ".join(args.board_names))
+            print(f"ERROR! You specified board names: {' '.join(args.board_names)} ")
             print("but that is not an existing & available board.")
             print("Please choose a board name from:")
-            print("\n".join([" * %s" % x for x in sorted(all_board_names)]))
+            print("\n".join([f" * {x}" for x in sorted(all_board_names)]))
             sys.exit(10)
 
     config.batch = args.batch
@@ -404,7 +400,7 @@ def parse():
 
     if args.package:
         for pkg in args.package:
-            config.INSTALL_PKGS += " %s" % pkg
+            config.INSTALL_PKGS += f" {pkg}"
 
     config.UBOOT = args.uboot
     config.KERNEL = args.kernel
@@ -434,7 +430,7 @@ def parse():
                 sys.exit(1)
         else:
             if not os.path.isfile(x):
-                print("File not found: %s" % x)
+                print(f"File not found: {x}")
                 sys.exit(1)
 
     if args.sysupgrade:
@@ -465,7 +461,7 @@ def parse():
         for cstr in dir(analysis):
             c = getattr(analysis, cstr)
             if inspect.isclass(c) and issubclass(c, analysis.Analysis):
-                sys.stdout.write("Running analysis class = %s... " % c)
+                sys.stdout.write(f"Running analysis class = {c}... ")
                 console_log = open(args.analysis).read()
                 from boardfarm.analysis.analysis import prepare_log
 
@@ -514,7 +510,7 @@ def parse():
                 config.golden_master_results.update(requests.get(g).json())
             except Exception as error:
                 print(error)
-                print("Failed to fetch golden master results from %s" % g)
+                print(f"Failed to fetch golden master results from {g}")
                 sys.exit(15)
 
     config.WAN_PROTO = args.wan

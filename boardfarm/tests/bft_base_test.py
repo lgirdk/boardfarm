@@ -88,7 +88,7 @@ class BftBaseTest(inherit_class):
         # TearDown step has a hook to call a fixture : teardown
         # this hook ensures that any action executed does not fail
         self.td_step = TearDown(
-            self, "Executing teardown for test: {}".format(self.__class__.__name__)
+            self, f"Executing teardown for test: {self.__class__.__name__}"
         )
 
         # add a hook in class to call the fixture directly
@@ -222,7 +222,7 @@ class BftBaseTest(inherit_class):
 
         for c in self.dev.board.consoles:
             c.test_to_log = self
-            c.test_prefix = "console-%s" % str(self.dev.board.consoles.index(c) + 1)
+            c.test_prefix = f"console-{str(self.dev.board.consoles.index(c) + 1)}"
 
             if not c.isalive():
                 self.result_grade = "SKIP"
@@ -308,14 +308,14 @@ class BftBaseTest(inherit_class):
             self.stop_time = time.time()
             self.logged["test_time"] = float(self.stop_time - self.start_time)
             self.result_grade = "SKIP"
-            print("\n\nSkipping test: %s" % e)
+            print(f"\n\nSkipping test: {e}")
             print("=========== Test skipped! Moving on... =============")
             return
         except boardfarm.exceptions.ContingencyCheckError as e:
             self.stop_time = time.time()
             self.logged["test_time"] = float(self.stop_time - self.start_time)
             self.result_grade = "CC FAIL"
-            print("\n\nContingency check failed: %s" % e)
+            print(f"\n\nContingency check failed: {e}")
             print(
                 "=========== Test skipped as contingency check failed! Moving on... ============="
             )

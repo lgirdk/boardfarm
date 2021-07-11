@@ -51,11 +51,11 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         if self.cdrouter_server is None:
             self.skipTest("No cdrouter server specified")
 
-        lan.sendline("ifconfig %s down" % lan.iface_dut)
+        lan.sendline(f"ifconfig {lan.iface_dut} down")
         lan.expect(prompt)
 
         if not board.has_cmts:
-            wan.sendline("ifconfig %s down" % wan.iface_dut)
+            wan.sendline(f"ifconfig {wan.iface_dut} down")
             wan.expect(prompt)
 
         c = cdrouter
@@ -85,12 +85,12 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
             # Otherwise grab this from the device interface
             if wandutmac is None:
-                board.sendline("ifconfig %s" % board.wan_iface)
+                board.sendline(f"ifconfig {board.wan_iface}")
                 board.expect("([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})")
                 wandutmac = board.match.group()
                 board.expect(prompt)
 
-            print("Using %s for WAN mac address" % wandutmac)
+            print(f"Using {wandutmac} for WAN mac address")
 
         lan.vlan = wan.vlan = 0
         for device in self.config.board["devices"]:
@@ -117,8 +117,8 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
 
         # TODO - WIP
         wan.vlan = "136"
-        print("Using %s for WAN vlan" % wan.vlan)
-        print("Using %s for LAN vlan" % lan.vlan)
+        print(f"Using {wan.vlan} for WAN vlan")
+        print(f"Using {lan.vlan} for LAN vlan")
 
         # TODO: move wan and lan interface to bft config?
         contents = (
@@ -237,7 +237,7 @@ testvar wanDnsServer %s
         print(contents)
         print("#######################")
 
-        config_name = "bft-automated-job-%s" % str(time.time()).replace(".", "")
+        config_name = f"bft-automated-job-{str(time.time()).replace('.', '')}"
         cfg = c.configs.create(Config(name=config_name, contents=contents))
 
         p = c.packages.create(
@@ -256,7 +256,7 @@ testvar wanDnsServer %s
             board.expect(pexpect.TIMEOUT, timeout=1)
             j = c.jobs.get(j.id)
 
-        print("Job Result-ID: {0}".format(j.result_id))
+        print(f"Job Result-ID: {j.result_id}")
 
         self.job_id = j.result_id
         self.results = c.results
@@ -299,7 +299,7 @@ testvar wanDnsServer %s
         self.result_message = r.result.encode("ascii", "ignore")
         # TODO: results URL?
         elapsed_time = time.time() - self.start_time
-        print("Test took %s" % time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+        print(f"Test took {time.strftime('%H:%M:%S', time.gmtime(elapsed_time))}")
 
         summary = c.results.summary_stats(j.result_id)
 
@@ -371,7 +371,7 @@ testvar wanDnsServer %s
                 self.results.stop(self.job_id)
         # TODO: full recovery...
         for d in [wan, lan]:
-            d.sendline("ifconfig %s up" % d.iface_dut)
+            d.sendline(f"ifconfig {d.iface_dut} up")
             d.expect(prompt)
 
         # make sure board is back in a sane state

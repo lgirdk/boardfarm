@@ -13,7 +13,7 @@ from boardfarm.tests import ipv6_setup, rootfs_boot
 # change this if you want to one time tweak iperf opts
 time = 60
 conns = 5
-opts = "-t %s -P %s -u -M 1400" % (time, conns)
+opts = f"-t {time} -P {conns} -u -M 1400"
 
 
 class iPerfUDPTest(rootfs_boot.RootFSBootTest):
@@ -41,16 +41,14 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
             opts = self.server_opts_forward()
 
         self.kill_iperf(srv)
-        srv.sendline("iperf -u -s %s > /dev/null &" % opts)
+        srv.sendline(f"iperf -u -s {opts} > /dev/null &")
         srv.expect(prompt)
 
     def run_iperf(self, client, target=None, opts=""):
         if target is None:
             target = self.forward_ip()
 
-        client.sendline(
-            "iperf %s -c %s %s | grep -v SUM" % (self.client_opts(), target, opts)
-        )
+        client.sendline(f"iperf {self.client_opts()} -c {target} {opts} | grep -v SUM")
         client.expect("Client connecting to")
 
     def parse_iperf(self, client, connections=conns, t=time):
@@ -132,8 +130,8 @@ class iPerfUDPTest(rootfs_boot.RootFSBootTest):
             avg_cpu = "N/A"
 
         self.kill_iperf(server)
-        msg = "%s (%s Mbps, CPU=%s)" % (self.__doc__, rate, avg_cpu)
-        lib.common.test_msg("\n%s" % msg)
+        msg = f"{self.__doc__} ({rate} Mbps, CPU={avg_cpu})"
+        lib.common.test_msg(f"\n{msg}")
 
         self.logged["rate"] = float(rate)
         self.result_message = msg
@@ -169,7 +167,7 @@ class iPerfUDPTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPTest):
         return "5aaa::6"
 
     def server_opts_forward(self):
-        return "-V -B %s" % self.forward_ip()
+        return f"-V -B {self.forward_ip()}"
 
     def client_opts(self):
         return "-V"
@@ -223,8 +221,8 @@ class iPerfUDPReverseTest(iPerfUDPTest):
             avg_cpu = "N/A"
 
         self.kill_iperf(server)
-        msg = "iPerf from WAN to LAN (%s Mbps, CPU=%s)" % (rate, avg_cpu)
-        lib.common.test_msg("\n%s" % msg)
+        msg = f"iPerf from WAN to LAN ({rate} Mbps, CPU={avg_cpu})"
+        lib.common.test_msg(f"\n{msg}")
 
         self.logged["rate"] = float(rate)
         self.result_message = msg
@@ -270,7 +268,7 @@ class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPReverseTest
         board = self.dev.board
 
         board.uci_forward_traffic_rule("udp", "5001", "4aaa::6")
-        return "-V -B %s" % self.reverse_ip()
+        return f"-V -B {self.reverse_ip()}"
 
     def client_opts(self):
         return "-V"
@@ -310,8 +308,8 @@ class iPerfUDPBiDirTest(iPerfUDPTest):
 
         self.kill_iperf(node1)
         self.kill_iperf(node2)
-        msg = "iPerf bidir  WAN to LAN (%s Mbps, CPU=%s)" % (rate, avg_cpu)
-        lib.common.test_msg("\n%s" % msg)
+        msg = f"iPerf bidir  WAN to LAN ({rate} Mbps, CPU={avg_cpu})"
+        lib.common.test_msg(f"\n{msg}")
 
         self.logged["rate"] = float(rate)
         self.result_message = msg
@@ -361,13 +359,13 @@ class iPerfUDPBiDirTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPBiDirTest):
         return "5aaa::6"
 
     def server_opts_forward(self):
-        return "-V -B %s" % self.forward_ip()
+        return f"-V -B {self.forward_ip()}"
 
     def server_opts_reverse(self, node):
         board = self.dev.board
 
         board.uci_forward_traffic_rule("udp", "5001", "4aaa::6")
-        return "-V -B %s" % self.reverse_ip()
+        return f"-V -B {self.reverse_ip()}"
 
     def client_opts(self):
         return "-V"

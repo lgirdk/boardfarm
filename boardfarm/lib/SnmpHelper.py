@@ -145,7 +145,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             # add the boardfarm dir as it is not in the overlays
             snmp_mib_dirs.extend(find_directory_in_tree("mibs", boardfarmdir))
 
-        logger.debug("Mibs directory list: %s" % snmp_mib_dirs)
+        logger.debug(f"Mibs directory list: {snmp_mib_dirs}")
 
         # if the mibs file are given, we do not want to add other mibs, as it may
         # results in unresolved ASN.1 imports
@@ -155,7 +155,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
             snmp_mib_files = find_files_in_tree(
                 snmp_mib_dirs, ignore=["miblist.txt", "__", ".py"]
             )
-        logger.debug("Mibs file list: %s" % snmp_mib_files)
+        logger.debug(f"Mibs file list: {snmp_mib_files}")
 
         # creates the snmp parser object
         cls.snmp_parser = cls(snmp_mib_files, snmp_mib_dirs)
@@ -211,7 +211,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
     def callback_func(self, mibName, jsonDoc, cbCtx):
         """Add and prints the mib dict for mib name passed."""
         if "y" in self.dbg:
-            print("# MIB module %s" % mibName)
+            print(f"# MIB module {mibName}")
 
         for k, v in json.loads(jsonDoc).items():
             if "oid" in v:
@@ -235,7 +235,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
         try:
             oid = self.mib_dict[mib_name]["oid"]
         except KeyError:
-            raise Exception("ERROR: mib '%s' not found in mib_dict." % mib_name)
+            raise Exception(f"ERROR: mib '{mib_name}' not found in mib_dict.")
         return oid
 
 
@@ -289,9 +289,9 @@ def snmp_v2(
         if py_set:
             action = "setCmd"
             if str(value).lower().startswith("0x"):
-                set_value = ', %s(hexValue="%s")' % (stype, value[2:])
+                set_value = f', {stype}(hexValue="{value[2:]}")'
             else:
-                set_value = ', %s("%s")' % (stype, value)
+                set_value = f', {stype}("{value}")'
         pysnmp_cmd = (
             'cmd = %s(SnmpEngine(), CommunityData("%s"), UdpTransportTarget(("%s", 161), timeout=%s, retries=%s), ContextData(), ObjectType(ObjectIdentity("%s.%s")%s))'
             % (action, community, ip, timeout, retries, oid, index, set_value)
@@ -336,7 +336,7 @@ def snmp_v2(
 
     if not stype:
         status, result, stype = _run_snmp()
-        assert status, "SNMP GET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+        assert status, f"SNMP GET Error:\nMIB:{mib_name}\nError:{result}"
 
         for k, v in SnmpMibs.mib_type_map.items():
             if stype in v:
@@ -345,7 +345,7 @@ def snmp_v2(
 
     if value is not None:  # some operations require zero as a value
         status, result, stype = _run_snmp(True)
-        assert status, "SNMP SET Error:\nMIB:%s\nError:%s" % (mib_name, result)
+        assert status, f"SNMP SET Error:\nMIB:{mib_name}\nError:{result}"
 
     return result
 
@@ -421,7 +421,7 @@ if __name__ == "__main__":
 
             for d in self.src_directories:
                 if not os.path.exists(str(d)):
-                    msg = "No mibs directory {} found test_SnmpHelper.".format(str(d))
+                    msg = f"No mibs directory {str(d)} found test_SnmpHelper."
                     raise Exception(msg)
 
             if files:
@@ -431,10 +431,10 @@ if __name__ == "__main__":
                 self.snmp_obj = SnmpMibs.get_mib_parser(
                     self.mib_files, self.src_directories
                 )
-                logger.debug("Using class singleton: %r" % self.snmp_obj)
+                logger.debug(f"Using class singleton: {self.snmp_obj!r}")
             else:
                 self.snmp_obj = SnmpMibs(self.mib_files, self.src_directories)
-                logger.debug("Using object instance: %r" % self.snmp_obj)
+                logger.debug(f"Using object instance: {self.snmp_obj!r}")
 
             if mibs:
                 self.mibs = mibs
@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
             for i in self.mibs:
                 oid = self.snmp_obj.get_mib_oid(i)
-                logger.debug("mib: %s - oid=%s" % (i, oid))
+                logger.debug(f"mib: {i} - oid={oid}")
 
             return True
 
@@ -468,7 +468,7 @@ if __name__ == "__main__":
     location = None
 
     if "-h" in sys.argv or "--help" in sys.argv or len(sys.argv) < 2:
-        print("Usage:\n%s <path_to_mibs>  [<path_to_mibs> ...]" % sys.argv[0])
+        print(f"Usage:\n{sys.argv[0]} <path_to_mibs>  [<path_to_mibs> ...]")
         print(
             "\nE.g.: python %s  ../boardfarm-docsis/mibs /usr/share/snmp/mibs "
             % sys.argv[0]
@@ -549,7 +549,7 @@ def snmp_asyncore_walk(
                 device.expect_prompt()
             except pexpect.TIMEOUT:
                 pass
-    device.sendline("rm %s" % asyncore_script)
+    device.sendline(f"rm {asyncore_script}")
     device.expect(device.prompt)
     device.sendline("ls -l snmp_output.txt --block-size=kB")
     device.expect([r".*\s+(\d+)kB"])
@@ -567,7 +567,7 @@ def snmp_asyncore_walk(
         else:
             output = False
     else:
-        output = device.check_output("{} snmp_output.txt".format(read_cmd), timeout=60)
+        output = device.check_output(f"{read_cmd} snmp_output.txt", timeout=60)
     device.sendline("rm snmp_output.txt")
     device.expect_prompt()
     return output

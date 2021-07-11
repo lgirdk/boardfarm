@@ -45,7 +45,7 @@ if __name__ == "__main__":
         if len(tmp) == 1:
             test_code_loc.append(os.path.join(tmp[0], "*.py"))
         elif len(tmp) > 1:
-            print("Error in %s" % d)
+            print(f"Error in {d}")
             print(
                 "  Multiple 'tests' subdirectories found. There should only be "
                 "one 'tests' directory per project."
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     filter_name = "_TST_"
     if args.debug:
-        print("\nWill filter to only test names containing '%s'." % filter_name)
+        print(f"\nWill filter to only test names containing '{filter_name}'.")
 
     # Print all valid tests with a '-e ' in front of them for bft
     final_result = []

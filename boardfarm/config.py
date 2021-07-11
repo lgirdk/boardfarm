@@ -126,7 +126,7 @@ if "BFT_OPTIONS" in os.environ:
         elif k == "disp_size":
             default_display_backend_size = v
         else:
-            logger.warning("Warning: Ignoring option: %s (misspelled?)" % option)
+            logger.warning(f"Warning: Ignoring option: {option} (misspelled?)")
 
 
 def get_display_backend_size():
