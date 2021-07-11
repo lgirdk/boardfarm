@@ -4,7 +4,7 @@ from boardfarm.lib.bft_logging import LoggerMeta
 
 
 def test_check_signature():
-    class A(object, metaclass=LoggerMeta):
+    class A(metaclass=LoggerMeta):
         sign_check = True
 
         def set(self, x):

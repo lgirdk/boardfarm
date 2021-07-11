@@ -13,7 +13,6 @@ import re
 
 import debtcollector
 import pexpect
-import six
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
 from pysmi.parser import SmiStarParser
@@ -96,7 +95,7 @@ class SnmpMibsMeta(type):
         return SnmpMibs.get_mib_parser()
 
 
-class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
+class SnmpMibs(metaclass=SnmpMibsMeta):
     """
     Look up specific ASN.1 MIBs at configured Web and FTP sites,compile them into JSON documents and print them out to stdout.
 
@@ -220,7 +219,7 @@ class SnmpMibs(six.with_metaclass(SnmpMibsMeta, object)):
                     continue
                 # add it to my dict
                 if "yyy" in self.dbg:
-                    print("adding %s:{%s}" % (k, v))
+                    print(f"adding {k}:{{{v}}}")
                 self.mib_dict[k] = v
         if "yyy" in self.dbg:
             print(json.dumps(self.mib_dict, indent=4))
@@ -374,7 +373,7 @@ if __name__ == "__main__":
 
     import sys
 
-    class SnmpMibsUnitTest(object):
+    class SnmpMibsUnitTest:
         """
         Unit test for the SnmpMibs class to be run as a standalone module.
 

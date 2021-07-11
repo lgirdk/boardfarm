@@ -22,7 +22,7 @@ class WebTest(rootfs_boot.RootFSBootTest):
 
         ip = "192.168.1.1"
 
-        super(WebTest, self).setUp()
+        super().setUp()
         if not lan:
             msg = "No LAN Device defined, skipping web test."
             lib.common.test_msg(msg)

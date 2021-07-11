@@ -98,7 +98,7 @@ class bft_pexpect_helper(pexpect.spawn):
                 name = getattr(self, "name", None)
                 if name and name[0] != "<":
                     value = name
-        super(bft_pexpect_helper, self).__setattr__(key, value)
+        super().__setattr__(key, value)
 
     class spawn(pexpect.spawn):
         """spwan pexpect session with password if sudo."""
@@ -160,7 +160,7 @@ class bft_pexpect_helper(pexpect.spawn):
             kwargs.pop(arg, None)
         if IS_PYTHON_3:
             kwargs["encoding"] = "latin1"
-        super(bft_pexpect_helper, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_logfile_read(self):
         """Get log file read."""
@@ -211,9 +211,7 @@ class bft_pexpect_helper(pexpect.spawn):
 
         o = self._logfile_read
         self.logfile_read = None
-        ret = super(bft_pexpect_helper, self).interact(
-            escape_character, input_filter, output_filter
-        )
+        ret = super().interact(escape_character, input_filter, output_filter)
         self.logfile_read = o
 
         return ret
@@ -226,7 +224,7 @@ class bft_pexpect_helper(pexpect.spawn):
             idx = frame_index_out_of_file()
             print_bold(f"{caller_file_line(idx)} = sending: {repr(s)}")
 
-        return super(bft_pexpect_helper, self).sendline(s)
+        return super().sendline(s)
 
     def send(self, s):
         """Send input command char by char to the active pexpect session."""
@@ -237,11 +235,11 @@ class bft_pexpect_helper(pexpect.spawn):
         if self.delaybetweenchar is not None:
             ret = 0
             for char in s:
-                ret += super(bft_pexpect_helper, self).send(char)
+                ret += super().send(char)
                 time.sleep(self.delaybetweenchar)
             return ret
 
-        return super(bft_pexpect_helper, self).send(s)
+        return super().send(s)
 
     @throw_pexpect_error
     def expect_helper(self, pattern, wrapper, *args, **kwargs):
@@ -267,13 +265,13 @@ class bft_pexpect_helper(pexpect.spawn):
 
     def expect(self, pattern, *args, **kwargs):
         """Call expect helper function wrapping bft_pexpect_helper."""
-        wrapper = super(bft_pexpect_helper, self).expect
+        wrapper = super().expect
 
         return self.expect_helper(pattern, wrapper, *args, **kwargs)
 
     def expect_exact(self, pattern, *args, **kwargs):
         """Call expect helper function wrapping bft_pexpect_helper."""
-        wrapper = super(bft_pexpect_helper, self).expect_exact
+        wrapper = super().expect_exact
 
         return self.expect_helper(pattern, wrapper, *args, **kwargs)
 
@@ -285,7 +283,7 @@ class bft_pexpect_helper(pexpect.spawn):
                 % (caller_file_line(frame_index_out_of_file()), repr(char))
             )
 
-        return super(bft_pexpect_helper, self).sendcontrol(char)
+        return super().sendcontrol(char)
 
 
 def spawn_ssh_pexpect(

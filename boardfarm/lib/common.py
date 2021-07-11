@@ -100,7 +100,7 @@ def clear_buffer(console):
 
 
 # This could be extended to a generic proxy helper class
-class socks5_proxy_helper(object):
+class socks5_proxy_helper:
     """Helper class to create a socks5 proxy tunnel.
 
     This class opens an ssh local "dynamic" application-level port forwarding to a given device, for the SOCKS5 protocol (the SOCKS5 protocol is defined in RFC 1928). The ssh session uses the -D <port> option. The <port> value is selected at random from the IANA ephemeral port range. If the ssh connection fails (e.g. the port is already taken) the code will retry on another port. This class assumes that the device obj to connect to contains an IP, ssh port, username and password. This class depends on the boardfarm.lib.bft_pexpect_helper.spawn_ssh_pexpect function. A typical use case for this class is creating a proxy to be used with the selenium webdriver. Ideally there should be 1 tunnnel per device (a getter method is provided).
@@ -1646,7 +1646,7 @@ def check_url(url):
             n = netrc.netrc()
             login, unused, password = n.authenticators(urlparse(url).hostname)
             add_basic_auth(f"{login}:{password}", req)
-        except (TypeError, ImportError, IOError, netrc.NetrcParseError):
+        except (TypeError, ImportError, OSError, netrc.NetrcParseError):
             pass
 
         # If url returns 404 or similar, raise exception

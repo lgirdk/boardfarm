@@ -4,7 +4,6 @@ import re
 
 import netaddr
 import pexpect
-import six
 
 from boardfarm.exceptions import BftIfaceNoIpV4Addr, BftIfaceNoIpV6Addr
 from boardfarm.lib.regexlib import (
@@ -15,7 +14,7 @@ from boardfarm.lib.regexlib import (
 )
 
 
-class bft_iface(object):
+class bft_iface:
     """Holds functions related to ipv4, ipv6 and mac addresses."""
 
     _ipv4 = None
@@ -65,7 +64,7 @@ class bft_iface(object):
                 netmask = re.search(NetmaskIPv4_AddressRegex, output).group(1)
                 ipaddr4 = "/".join([ipaddr4, netmask])
             try:
-                self._ipv4 = ipaddress.IPv4Interface(six.text_type(ipaddr4))
+                self._ipv4 = ipaddress.IPv4Interface(str(ipaddr4))
             except ipaddress.AddressValueError:
                 pass
 
@@ -85,9 +84,9 @@ class bft_iface(object):
         for ip in ip_list:
             try:
                 if ip.startswith("fe80"):
-                    self._ipv6_link_local = ipaddress.IPv6Interface(six.text_type(ip))
+                    self._ipv6_link_local = ipaddress.IPv6Interface(str(ip))
                 else:
-                    self._ipv6 = ipaddress.IPv6Interface(six.text_type(ip))
+                    self._ipv6 = ipaddress.IPv6Interface(str(ip))
             except ipaddress.AddressValueError:
                 pass
 

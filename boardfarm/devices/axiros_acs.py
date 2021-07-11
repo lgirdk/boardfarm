@@ -39,7 +39,7 @@ warnings.simplefilter("always", UserWarning)
 logger = logging.getLogger("zeep.transports")
 
 
-class Intercept(object):
+class Intercept:
     """Any calls on Axiros RPC functions "GPV","SPV", "GPA","GPN", "SPA","AddObject","DelObject","FactoryReset","Reboot","ScheduleInform","GetRPCMethods","Download" will capture tcpdump if the ssh session is connected.
     And also adds a wait time of 10 seconds when 507 HTTPError is thrown.
     """

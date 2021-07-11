@@ -18,4 +18,4 @@ def get_dockerfile(image_name):
     """Return bytes stream dockerfile contents for docker manager."""
     cwd = Path(__file__).parent
     file = cwd.joinpath(image_mappings[image_name])
-    return BytesIO(open(file, "r").read().encode("utf-8"))
+    return BytesIO(open(file).read().encode("utf-8"))

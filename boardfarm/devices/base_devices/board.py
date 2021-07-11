@@ -1,4 +1,4 @@
-class BaseBoard(object):
+class BaseBoard:
     """Base class for the clean architecture model"""
 
     hw = None
@@ -63,7 +63,7 @@ class BaseBoard(object):
         raise NotImplementedError
 
 
-class BaseBoardHw(object):
+class BaseBoardHw:
     """This class is a collection of APIs related to an embedded device HW
     configuration.
     It contains references to linux (i.e. SW) as currently all devices CPE devices are linux based.
@@ -80,7 +80,7 @@ class BaseBoardHw(object):
         raise NotImplementedError
 
 
-class BaseBoardSw(object):
+class BaseBoardSw:
     """Placeholder for the SW side of the device, this could be removed in future and it is currently empty"""
 
     pass

@@ -9,7 +9,7 @@ from boardfarm.lib.installers import apt_install
 logger = logging.getLogger("bft")
 
 
-class SipCenter(object):
+class SipCenter:
     """Asterisk  server."""
 
     model = "asterisk"

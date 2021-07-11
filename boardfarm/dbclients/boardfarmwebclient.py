@@ -27,7 +27,7 @@ class ServerError(Exception):
     pass
 
 
-class BoardfarmWebClient(object):
+class BoardfarmWebClient:
     """Handle interacting with a boardfarm server.
 
     For checking out stations, etc.

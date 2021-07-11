@@ -193,7 +193,7 @@ class TrafficGenerator(base.BaseDevice):
         raise NotImplementedError
 
 
-class TrafficGeneratorPort(object):
+class TrafficGeneratorPort:
     """Pseudo base class for configuring a port on traffic genrator"""
 
     def __init__(self, *args, **kwargs):

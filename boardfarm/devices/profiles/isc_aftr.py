@@ -6,7 +6,6 @@ import sys
 from collections import Counter, OrderedDict
 
 import pexpect
-import six
 
 from boardfarm.devices.profiles import base_profile
 from boardfarm.lib.installers import apt_install, install_wget
@@ -34,9 +33,7 @@ class AFTR(base_profile.BaseProfile):
         self.is_installed = False
 
         # IPv6 ep must be from a different subnet than WAN container.
-        self.ipv6_ep = ipaddress.IPv6Interface(
-            six.text_type(kwargs.get("ipv6_ep", "2001::1/48"))
-        )
+        self.ipv6_ep = ipaddress.IPv6Interface(str(kwargs.get("ipv6_ep", "2001::1/48")))
         # Open gateway subnets need to be in this ACL.
         self.ipv6_acl = [
             str(self.ipv6_ep.network),
@@ -45,7 +42,7 @@ class AFTR(base_profile.BaseProfile):
 
         # this address will double NAT to WAN container's public IP
         self.ipv4_nat = ipaddress.IPv4Interface(
-            six.text_type(kwargs.get("ipv4_nat", "198.18.200.111/16"))
+            str(kwargs.get("ipv4_nat", "198.18.200.111/16"))
         )
         self.ipv4_nat_ip = str(self.ipv4_nat.ip)
 
@@ -251,8 +248,8 @@ class AFTR(base_profile.BaseProfile):
         )
 
         # there could be a better way to generate this shell script.
-        script += "%s\n%s" % (
-            "\n".join(["%s\n{\n%s\n}" % (k, v) for k, v in run_conf.items()]),
+        script += "{}\n{}".format(
+            "\n".join([f"{k}\n{{\n{v}\n}}" for k, v in run_conf.items()]),
             extra_bits,
         )
         return script

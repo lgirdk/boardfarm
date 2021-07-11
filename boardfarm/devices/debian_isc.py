@@ -6,7 +6,6 @@ import re
 import traceback
 
 import pexpect
-import six
 from termcolor import colored
 
 from boardfarm.exceptions import CodeError
@@ -38,42 +37,38 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
         self.cm_network = ipaddress.IPv4Network(
-            six.text_type(kwargs.pop("cm_network", "192.168.200.0/24"))
+            str(kwargs.pop("cm_network", "192.168.200.0/24"))
         )
         self.cm_gateway = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("cm_gateway", "192.168.200.1"))
+            str(kwargs.pop("cm_gateway", "192.168.200.1"))
         )
         self.mta_network = ipaddress.IPv4Network(
-            six.text_type(kwargs.pop("mta_network", "192.168.201.0/24"))
+            str(kwargs.pop("mta_network", "192.168.201.0/24"))
         )
         self.mta_gateway = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("mta_gateway", "192.168.201.1"))
+            str(kwargs.pop("mta_gateway", "192.168.201.1"))
         )
         self.open_network = ipaddress.IPv4Network(
-            six.text_type(kwargs.pop("open_network", "192.168.202.0/24"))
+            str(kwargs.pop("open_network", "192.168.202.0/24"))
         )
         self.open_gateway = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("open_gateway", "192.168.202.1"))
+            str(kwargs.pop("open_gateway", "192.168.202.1"))
         )
         self.prov_network = ipaddress.IPv4Network(
-            six.text_type(kwargs.pop("prov_network", "192.168.3.0/24"))
+            str(kwargs.pop("prov_network", "192.168.3.0/24"))
         )
         self.prov_gateway = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("prov_gateway", "192.168.3.222"))
+            str(kwargs.pop("prov_gateway", "192.168.3.222"))
         )
-        self.prov_ip = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("prov_ip", "192.168.3.1"))
-        )
+        self.prov_ip = ipaddress.IPv4Address(str(kwargs.pop("prov_ip", "192.168.3.1")))
 
         self.prov_iface = ipaddress.IPv6Interface(
-            six.text_type(
-                kwargs.pop("prov_ipv6", f"2001:dead:beef:1::1/{self.ipv6_prefix}")
-            )
+            str(kwargs.pop("prov_ipv6", f"2001:dead:beef:1::1/{self.ipv6_prefix}"))
         )
         self.prov_ipv6, self.prov_nw_ipv6 = self.prov_iface.ip, self.prov_iface.network
 
         self.cm_gateway_v6_iface = ipaddress.IPv6Interface(
-            six.text_type(
+            str(
                 kwargs.pop(
                     "cm_gateway_v6", f"2001:dead:beef:4::cafe/{self.ipv6_prefix}"
                 )
@@ -84,13 +79,13 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             self.cm_gateway_v6_iface.network,
         )
         self.cm_network_v6_start = ipaddress.IPv6Address(
-            six.text_type(kwargs.pop("cm_network_v6_start", "2001:dead:beef:4::10"))
+            str(kwargs.pop("cm_network_v6_start", "2001:dead:beef:4::10"))
         )
         self.cm_network_v6_end = ipaddress.IPv6Address(
-            six.text_type(kwargs.pop("cm_network_v6_end", "2001:dead:beef:4::100"))
+            str(kwargs.pop("cm_network_v6_end", "2001:dead:beef:4::100"))
         )
         self.open_gateway_iface = ipaddress.IPv6Interface(
-            six.text_type(
+            str(
                 kwargs.pop(
                     "open_gateway_v6", f"2001:dead:beef:6::cafe/{self.ipv6_prefix}"
                 )
@@ -101,19 +96,19 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             self.open_gateway_iface.network,
         )
         self.open_network_v6_start = ipaddress.IPv6Address(
-            six.text_type(kwargs.pop("open_network_v6_start", "2001:dead:beef:6::10"))
+            str(kwargs.pop("open_network_v6_start", "2001:dead:beef:6::10"))
         )
         self.open_network_v6_end = ipaddress.IPv6Address(
-            six.text_type(kwargs.pop("open_network_v6_end", "2001:dead:beef:6::100"))
+            str(kwargs.pop("open_network_v6_end", "2001:dead:beef:6::100"))
         )
         self.prov_gateway_v6 = ipaddress.IPv6Address(
-            six.text_type(kwargs.pop("prov_gateway_v6", "2001:dead:beef:1::cafe"))
+            str(kwargs.pop("prov_gateway_v6", "2001:dead:beef:1::cafe"))
         )
 
         # we're storing a list of all /56 subnets possible from erouter_net_iface.
         # As per docsis, /56 must be the default pd length
         self.erouter_net_iface = ipaddress.IPv6Interface(
-            six.text_type(kwargs.pop("erouter_net", "2001:dead:beef:e000::/51"))
+            str(kwargs.pop("erouter_net", "2001:dead:beef:e000::/51"))
         )
         self.erouter_net = list(
             self.erouter_net_iface.network.subnets(
@@ -157,11 +152,9 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
         if time_server6:
             self.time_server6 = ipaddress.IPv6Address(time_server6)
 
-        self.timezone = self.get_timzone_offset(
-            six.text_type(kwargs.pop("timezone", "UTC"))
-        )
+        self.timezone = self.get_timzone_offset(str(kwargs.pop("timezone", "UTC")))
         self.syslog_server = ipaddress.IPv4Address(
-            six.text_type(kwargs.pop("syslog_server", str(self.prov_ip)))
+            str(kwargs.pop("syslog_server", str(self.prov_ip)))
         )
         if "options" in kwargs:
             options = [x.strip() for x in kwargs["options"].split(",")]
@@ -176,7 +169,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
         self.gw = self.prov_ip
         self.gwv6 = self.prov_ipv6
         self.nw = self.prov_network
-        super(DebianISCProvisioner, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_dhcp6_config(self, board_config):
         """Set up DHCP 6 Config."""
@@ -910,7 +903,7 @@ EOF"""
 
         try:
             chk_ip = self.get_interface_ip6addr(self.iface_dut)
-            if ipaddress.IPv6Address(six.text_type(chk_ip)) not in self.prov_nw_ipv6:
+            if ipaddress.IPv6Address(str(chk_ip)) not in self.prov_nw_ipv6:
                 do_ipv6 = False
             if self.tftp_device.tftp_server_ipv6_int() is None:
                 do_ipv6 = False
@@ -950,7 +943,7 @@ EOF"""
         try:
             self.sendline(f"cat  /etc/dhcp/dhcpd.conf.{station}")
             idx = self.expect(
-                [r"(%s-%s\s\{([^}]+)(%s\s(%s))\;)" % (dev, station, attr, exp_pattern)]
+                [fr"({dev}-{station}\s\{{([^}}]+)({attr}\s({exp_pattern}))\;)"]
                 + ["No such file or directory"]
                 + [pexpect.TIMEOUT],
                 timeout=10,
@@ -1063,13 +1056,13 @@ EOF"""
                 traceback.print_exc()
                 raise Exception("ERROR: can not turn off shared interface!")
 
-        super(DebianISCProvisioner, self).send(s)
+        super().send(s)
 
     def check_status(self):
         """Check status."""
         self.sendline("cat /var/log/syslog | grep dhcpd | tail -n 100")
         self.expect(self.prompt)
-        super(DebianISCProvisioner, self).check_status()
+        super().check_status()
 
     def get_dhcp_logs(self, mac_addr, board_reset_time, v4=True):
         """print dhcp logs for provided mac_address starting from board_reset_time"""
@@ -1087,7 +1080,7 @@ EOF"""
             + board_reset_time[11:]
         )
         self.sendline(
-            """grep {0} /var/log/dhcp/dhcpd{1}.log | awk '$0 >= "{2}"'""".format(
+            """grep {} /var/log/dhcp/dhcpd{}.log | awk '$0 >= "{}"'""".format(
                 mac_addr.lower(), "" if v4 else "6", board_reset_time
             )
         )

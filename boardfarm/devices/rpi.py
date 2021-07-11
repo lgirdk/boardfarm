@@ -197,7 +197,7 @@ class RPI(openwrt_router.OpenWrtRouter):
 
         This method enables Device.DeviceInfo.X_RDKCENTRAL-COM_CaptivePortalEnable before rebooting.
         """
-        super(RPI, self).wait_for_linux()
+        super().wait_for_linux()
 
         self.sendline("cat /etc/issue")
         if 0 == self.expect(["OpenEmbedded"] + self.prompt):
@@ -221,7 +221,7 @@ class RPI(openwrt_router.OpenWrtRouter):
             )
             self.expect(self.prompt)
             self.sendline("reboot")
-            super(RPI, self).wait_for_linux()
+            super().wait_for_linux()
 
     def boot_linux(self, rootfs=None, bootargs=""):
         """Boots the RPi's OS.

@@ -12,7 +12,7 @@ import os
 import socket
 
 
-class RemoteLogger(object):
+class RemoteLogger:
     """Write data to remote logging server."""
 
     def __init__(self, server, subtype="demo"):

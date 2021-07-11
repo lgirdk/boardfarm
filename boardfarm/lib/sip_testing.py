@@ -29,7 +29,7 @@ def duration_between_packets(
     output = tshark_read(device, capture_file, filter_str=filter_opt, rm_file=rm_file)
     split_out = output.splitlines()
     for msg in msg_list:
-        regex = f"((\d+\.\d+).*{msg.src_ip}.*{msg.dest_ip}.*{msg.message})"
+        regex = fr"((\d+\.\d+).*{msg.src_ip}.*{msg.dest_ip}.*{msg.message})"
         for line in split_out:
             match = re.search(regex, line)
             if match:

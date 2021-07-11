@@ -33,9 +33,9 @@ class SoCat(rootfs_boot.RootFSBootTest):
         while True:
             random_ip = fake_generator.ipv4()
             random_port = randint(1024, 65535)
-            if not ipaddress.ip_address(six.text_type(random_ip)).is_private:
+            if not ipaddress.ip_address(str(random_ip)).is_private:
                 if (
-                    ipaddress.ip_address(six.text_type(random_ip)),
+                    ipaddress.ip_address(str(random_ip)),
                     random_port,
                 ) not in self.all_ips:
                     break
@@ -194,7 +194,9 @@ class SoCat(rootfs_boot.RootFSBootTest):
         # this needs to be here because we need to make sure mpstat is cleaned up
         board.parse_stats(dict_to_log=self.logged)
         print(f"mpstat cpu usage = {self.logged['mpstat']}")
-        self.result_message = "BitTorrent test with %s connections, cpu usage = %s" % (
-            self.conns,
-            self.logged["mpstat"],
+        self.result_message = (
+            "BitTorrent test with {} connections, cpu usage = {}".format(
+                self.conns,
+                self.logged["mpstat"],
+            )
         )

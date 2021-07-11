@@ -125,7 +125,7 @@ class SNMPv2:
     ):
         if extra_args:
             extra_args = " " + extra_args.strip()
-        return "%s -v 2c -On%s -c %s -t %s -r %s %s %s %s" % (
+        return "{} -v 2c -On{} -c {} -t {} -r {} {} {} {}".format(
             action,
             extra_args,
             community,

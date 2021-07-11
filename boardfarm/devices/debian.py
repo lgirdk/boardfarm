@@ -81,10 +81,10 @@ class DebianBox(linux.LinuxDevice):
         post_cmd = kwargs.pop("post_cmd", None)
         cleanup_cmd = kwargs.pop("cleanup_cmd", None)
         lan_network = ipaddress.IPv4Interface(
-            six.text_type(kwargs.pop("lan_network", "192.168.1.0/24"))
+            str(kwargs.pop("lan_network", "192.168.1.0/24"))
         ).network
         lan_gateway = ipaddress.IPv4Interface(
-            six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))
+            str(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
 
         self.http_proxy = kwargs.pop("http_proxy", ipaddr + ":8080")
@@ -170,7 +170,7 @@ class DebianBox(linux.LinuxDevice):
                 self.gw = lan_gateway + lan_network.num_addresses
 
         self.gw_ng = ipaddress.IPv4Interface(
-            six.text_type(str(self.gw) + "/" + str(lan_network.prefixlen))
+            str(str(self.gw) + "/" + str(lan_network.prefixlen))
         )
         self.nw = self.gw_ng.network
         self.gw_prefixlen = self.nw.prefixlen
@@ -180,7 +180,7 @@ class DebianBox(linux.LinuxDevice):
             options = [x.strip() for x in kwargs["options"].split(",")]
             for opt in options:
                 if opt.startswith("wan-static-ip:"):
-                    value = six.text_type(opt.replace("wan-static-ip:", ""))
+                    value = str(opt.replace("wan-static-ip:", ""))
                     if "/" not in value:
                         value = value + ("/24")
                     self.gw_ng = ipaddress.IPv4Interface(value)
@@ -189,7 +189,7 @@ class DebianBox(linux.LinuxDevice):
                     self.gw = self.gw_ng.ip
                     self.static_ip = True
                 if opt.startswith("wan-static-ipv6:"):
-                    ipv6_address = six.text_type(opt.replace("wan-static-ipv6:", ""))
+                    ipv6_address = str(opt.replace("wan-static-ipv6:", ""))
                     if "/" not in opt:
                         ipv6_address += f"/{six.text_type(str(self.ipv6_prefix))}"
                     self.ipv6_interface = ipaddress.IPv6Interface(ipv6_address)
@@ -213,7 +213,7 @@ class DebianBox(linux.LinuxDevice):
                 if opt == "wan-dhcp-client-v6":
                     self.wan_dhcpv6 = True
                 if opt.startswith("mgmt-dns:"):
-                    value = six.text_type(opt.replace("mgmt-dns:", ""))
+                    value = str(opt.replace("mgmt-dns:", ""))
                     self.mgmt_dns = ipaddress.IPv4Interface(value).ip
                 else:
                     self.mgmt_dns = "8.8.8.8"
@@ -608,9 +608,7 @@ class DebianBox(linux.LinuxDevice):
         self.sendline("default-lease-time 600;")
         self.sendline("max-lease-time 7200;")
         # use the same netmask as the lan device
-        self.sendline(
-            "subnet %s netmask %s {" % (self.nw.network_address, self.nw.netmask)
-        )
+        self.sendline(f"subnet {self.nw.network_address} netmask {self.nw.netmask} {{")
         self.sendline(
             "          range %s %s;"
             % (self.nw.network_address + 10, self.nw.network_address + 100)
@@ -978,13 +976,13 @@ class DebianBox(linux.LinuxDevice):
             self.sendline("ip route list 0/0 | awk '{print $3}'")
             self.expect_exact("ip route list 0/0 | awk '{print $3}'")
             self.expect(self.prompt)
-            self.lan_gateway = ipaddress.IPv4Address(six.text_type(self.before.strip()))
+            self.lan_gateway = ipaddress.IPv4Address(str(self.before.strip()))
 
             ip_addr = self.get_interface_ipaddr(self.iface_dut)
             self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
-            self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
+            self.lan_network = ipaddress.IPv4Network(str(self.before.strip()))
         self.sendline("ip -6 route")
         self.expect(self.prompt)
 

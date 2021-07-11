@@ -157,7 +157,7 @@ class iPerfUDPTestWLAN(iPerfUDPTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfUDPTestWLAN, self).runTest(client=self.dev.wlan, server=self.dev.wan)
+        super().runTest(client=self.dev.wlan, server=self.dev.wan)
 
 
 class iPerfUDPTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPTest):
@@ -186,14 +186,10 @@ class iPerfUDPNonRoutedTest(iPerfUDPTest):
         return board.get_interface_ipaddr(board.lan_iface)
 
     def runTest(self):
-        super(iPerfUDPNonRoutedTest, self).runTest(
-            client=self.dev.lan, server=self.dev.board
-        )
+        super().runTest(client=self.dev.lan, server=self.dev.board)
 
     def recover(self):
-        super(iPerfUDPNonRoutedTest, self).recover(
-            client=self.dev.lan, server=self.dev.board
-        )
+        super().recover(client=self.dev.lan, server=self.dev.board)
 
 
 class iPerfUDPReverseTest(iPerfUDPTest):
@@ -248,14 +244,10 @@ class iPerfUDPReverseTestWLAN(iPerfUDPReverseTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfUDPReverseTestWLAN, self).runTest(
-            client=self.dev.wan, server=self.dev.wlan
-        )
+        super().runTest(client=self.dev.wan, server=self.dev.wlan)
 
     def recover(self):
-        super(iPerfUDPReverseTestWLAN, self).recover(
-            client=self.dev.wan, server=self.dev.wlan
-        )
+        super().recover(client=self.dev.wan, server=self.dev.wlan)
 
 
 class iPerfUDPReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPReverseTest):
@@ -339,14 +331,10 @@ class iPerfUDPBiDirTestWLAN(iPerfUDPBiDirTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfUDPBiDirTestWLAN, self).runTest(
-            node1=self.dev.wlan, node2=self.dev.wan
-        )
+        super().runTest(node1=self.dev.wlan, node2=self.dev.wan)
 
     def recover(self):
-        super(iPerfUDPBiDirTestWLAN, self).recovery(
-            node1=self.dev.wlan, node2=self.dev.wan
-        )
+        super().recovery(node1=self.dev.wlan, node2=self.dev.wan)
 
 
 class iPerfUDPBiDirTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfUDPBiDirTest):

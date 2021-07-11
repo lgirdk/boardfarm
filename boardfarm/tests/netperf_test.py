@@ -31,14 +31,14 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
     def lan_setup(self):
         lan = self.dev.lan
 
-        super(NetperfTest, self).lan_setup()
+        super().lan_setup()
         install_netperf(lan)
 
     @lib.common.run_once
     def wan_setup(self):
         wan = self.dev.wan
 
-        super(NetperfTest, self).wan_setup()
+        super().wan_setup()
         install_netperf(wan)
         lib.common.test_msg("Starting netserver on wan...")
         wan.sendline("kill -9 `pidof netserver`")
@@ -68,7 +68,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
 
     def run_netperf_parse(self, device, timeout=60):
         device.expect(
-            "[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+.[0-9]+\s+([0-9]+.[0-9]+)",
+            r"[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+.[0-9]+\s+([0-9]+.[0-9]+)",
             timeout=timeout,
         )
         ret = device.match.group(1)
@@ -88,7 +88,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
         lan = self.dev.lan
         wan = self.dev.wan
 
-        super(NetperfTest, self).runTest()
+        super().runTest()
 
         board.arm.sendline("mpstat -P ALL 30 1")
         board.arm.expect("Linux")
@@ -97,7 +97,7 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
 
         board.sendcontrol("c")
         board.expect(
-            "Average.*idle\r\nAverage:\s+all(\s+[0-9]+.[0-9]+){9}\r\n", timeout=60
+            "Average.*idle\r\nAverage:\\s+all(\\s+[0-9]+.[0-9]+){9}\r\n", timeout=60
         )
         idle_cpu = float(board.match.group(1))
         avg_cpu = 100 - float(idle_cpu)
@@ -116,14 +116,14 @@ class NetperfTest(rootfs_boot.RootFSBootTest):
 def run_netperf_tcp(device, run_time, pkt_size, wangw, direction="up"):
 
     if direction == "up":
-        cmd = "netperf -H %s -c -C -l %s -- -m %s -M %s -D" % (
+        cmd = "netperf -H {} -c -C -l {} -- -m {} -M {} -D".format(
             wangw,
             run_time,
             pkt_size,
             pkt_size,
         )
     else:
-        cmd = "netperf -H %s -c -C -l %s -t TCP_MAERTS -- -m %s -M %s -D" % (
+        cmd = "netperf -H {} -c -C -l {} -t TCP_MAERTS -- -m {} -M {} -D".format(
             wangw,
             run_time,
             pkt_size,

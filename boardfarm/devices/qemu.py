@@ -186,7 +186,7 @@ class Qemu(openwrt_router.OpenWrtRouter):
     def close(self, *args, **kwargs):
         """Exist from the console and closes the session."""
         self.kill_console_at_exit()
-        return super(Qemu, self).close(*args, **kwargs)
+        return super().close(*args, **kwargs)
 
     def kill_console_at_exit(self):
         """Close the console over exit.Exists pexpect."""

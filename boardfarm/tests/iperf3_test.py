@@ -103,7 +103,7 @@ class iPerf3_v6Test(iPerf3Test):
     def runTest(self):
         wan = self.dev.wan
         self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
-        super(iPerf3_v6Test, self).runTest()
+        super().runTest()
 
 
 class iPerf3R_v6Test(iPerf3Test):
@@ -114,7 +114,7 @@ class iPerf3R_v6Test(iPerf3Test):
     def runTest(self):
         wan = self.dev.wan
         self.target_ip = wan.get_interface_ip6addr(wan.iface_dut)
-        super(iPerf3R_v6Test, self).runTest()
+        super().runTest()
 
 
 class iPerf3Test2nd(iPerf3Test):

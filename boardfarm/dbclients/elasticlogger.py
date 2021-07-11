@@ -39,7 +39,7 @@ def pprint(x):
     print(json.dumps(x, sort_keys=True, indent=2))
 
 
-class ElasticsearchLogger(object):
+class ElasticsearchLogger:
     """Write data directly to an elasticsearch cluster."""
 
     def __init__(self, server, index="boardfarm", doc_type="bft_run"):

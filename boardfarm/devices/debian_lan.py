@@ -12,7 +12,6 @@ import re
 import time
 
 import pexpect
-import six
 from debtcollector import moves
 from termcolor import colored
 
@@ -50,10 +49,10 @@ class DebianLAN(debian.DebianBox):
             self.dev_array = "lan_clients"
 
         self.lan_network = ipaddress.IPv4Interface(
-            six.text_type(kwargs.pop("lan_network", "192.168.1.0/24"))
+            str(kwargs.pop("lan_network", "192.168.1.0/24"))
         ).network
         self.lan_gateway = ipaddress.IPv4Interface(
-            six.text_type(kwargs.pop("lan_gateway", "192.168.1.1/24"))
+            str(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
         self.dns = DNS(self, {}, {})
         self.nw_util_ping = Ping(self)
@@ -64,7 +63,7 @@ class DebianLAN(debian.DebianBox):
         self.expect_exact("ip route list 0/0 | awk '{print $3}'")
         self.expect(self.prompt)
         try:
-            return ipaddress.IPv4Address(six.text_type(self.before.strip()))
+            return ipaddress.IPv4Address(str(self.before.strip()))
         except ipaddress.AddressValueError:
             logger.warning(
                 "Unable to resolve lan client gateway IP. "
@@ -234,13 +233,13 @@ class DebianLAN(debian.DebianBox):
             self.sendline("ip route list 0/0 | awk '{print $3}'")
             self.expect_exact("ip route list 0/0 | awk '{print $3}'")
             self.expect(self.prompt)
-            self.lan_gateway = ipaddress.IPv4Address(six.text_type(self.before.strip()))
+            self.lan_gateway = ipaddress.IPv4Address(str(self.before.strip()))
 
             ip_addr = self.get_interface_ipaddr(self.iface_dut)
             self.sendline("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect_exact("ip route | grep %s | awk '{print $1}'" % ip_addr)
             self.expect(self.prompt)
-            self.lan_network = ipaddress.IPv4Network(six.text_type(self.before.strip()))
+            self.lan_network = ipaddress.IPv4Network(str(self.before.strip()))
 
         if wan_gw is not None and hasattr(self, "lan_fixed_route_to_wan"):
             self.sendline(f"ip route add {wan_gw} via {self.lan_gateway}")

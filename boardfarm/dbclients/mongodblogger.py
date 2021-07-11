@@ -40,7 +40,7 @@ def pprint(x):
     print(json.dumps(x, sort_keys=True, indent=2, cls=ComplexEncoder))
 
 
-class MongodbLogger(object):
+class MongodbLogger:
     """Write data directly to mongodb."""
 
     def __init__(
@@ -53,7 +53,7 @@ class MongodbLogger(object):
         self.db_name = db_name
         self.collection_name = collection_name
         # Connect to host
-        connect_str = "mongodb://%s:%s@%s/%s?retryWrites=true&w=majority" % (
+        connect_str = "mongodb://{}:{}@{}/{}?retryWrites=true&w=majority".format(
             self.username,
             self.password,
             self.host,
@@ -97,7 +97,7 @@ class MongodbLogger(object):
             print("Storing into mongodb:")
             pprint(data)
         post_id = self.collection.insert_one(data).inserted_id
-        doc_url = "%s; db: %s; collection: %s; _id: %s" % (
+        doc_url = "{}; db: {}; collection: {}; _id: {}".format(
             self.host,
             self.db_name,
             self.collection_name,

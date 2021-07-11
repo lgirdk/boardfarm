@@ -2,7 +2,7 @@
 import re
 
 
-class iptable_parser(object):
+class iptable_parser:
     """
     Parse the iptables from table format to dict. output dict has keys of
     table chain and values of respective rules.

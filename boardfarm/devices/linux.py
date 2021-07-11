@@ -7,7 +7,6 @@ import re
 from typing import Union
 
 import pexpect
-import six
 
 from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout
 from boardfarm.lib.regexlib import (
@@ -56,7 +55,7 @@ class LinuxInterface:
         ]
         self.expect(regex)
         ipaddr = self.match.group(1)
-        ipv4address = str(ipaddress.IPv4Address(six.text_type(ipaddr)))
+        ipv4address = str(ipaddress.IPv4Address(str(ipaddr)))
         self.expect(self.prompt)
         logger.debug(f"ifconfig {interface} IPV4 {ipv4address}")
         return ipv4address
@@ -94,7 +93,7 @@ class LinuxInterface:
         for i in ips:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
-                ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
+                ipv6_iface = ipaddress.IPv6Interface(str(i))
                 if ipv6_iface and ipv6_iface.is_global:
                     logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
                     return str(ipv6_iface.ip)
@@ -124,7 +123,7 @@ class LinuxInterface:
         for i in ips:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
-                ipv6_iface = ipaddress.IPv6Interface(six.text_type(i))
+                ipv6_iface = ipaddress.IPv6Interface(str(i))
                 if ipv6_iface and ipv6_iface.is_link_local:
                     logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
                     return str(ipv6_iface.ip)

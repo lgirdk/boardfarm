@@ -3,8 +3,6 @@ import glob
 import re
 import subprocess
 
-import six
-
 
 def get_all_classes_from_code(directories, debug=False):
     """Get all classes from code using grep.
@@ -27,14 +25,14 @@ def get_all_classes_from_code(directories, debug=False):
         except subprocess.CalledProcessError:
             if debug:
                 print(f"Warning: No tests found in {d}")
-    raw_text = "".join(six.text_type(raw_text))
+    raw_text = "".join(str(raw_text))
     # Create a list of tuples (classname, parent_classname)
     result = re.findall(r"class\s(\w+)\(([\w\.]+)\):", raw_text)
     # Convert that list into a Python dict such that
     #    {"classname1": [parent_classname1,],
     #     "classname2": [parent_classname2,], ... etc}
     # Because we will add parents to that list.
-    all_classes = dict([(x[0], [x[1]]) for x in result])
+    all_classes = {x[0]: [x[1]] for x in result}
     # Add grandparent class
     for name in all_classes:
         parent = all_classes[name][0]
@@ -58,9 +56,7 @@ def changed_classes(directories, start, end, debug=False):
             if debug:
                 print(cmd)
             diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            result.update(
-                dict(re.findall(r"class\s(\w+)\(([\w\.]+)\):", six.text_type(diff)))
-            )
+            result.update(dict(re.findall(r"class\s(\w+)\(([\w\.]+)\):", str(diff))))
         except subprocess.CalledProcessError:
             if debug:
                 print(f"Warning: git diff command failed in {d}")
@@ -82,7 +78,7 @@ def get_features(directories, start, end, debug=False):
             if debug:
                 print(cmd)
             text = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            result += re.findall(r"Features:\s(\w+)", six.text_type(text))
+            result += re.findall(r"Features:\s(\w+)", str(text))
         except subprocess.CalledProcessError:
             if debug:
                 print(f"Warning: git log command failed in {d}")
@@ -121,7 +117,7 @@ def get_classes_lib_functions(directories, debug=False):
     library_function_names = set()
     # Loop over every test file
     for test_file in test_filenames:
-        with open(test_file, "r") as f:
+        with open(test_file) as f:
             lines = f.readlines()
         current_class_name = None
         # Loop over every line in this file
@@ -139,7 +135,7 @@ def get_classes_lib_functions(directories, debug=False):
                 result[current_class_name] = set()
             for name in library_function_names:
                 if name in line:
-                    result[current_class_name] |= set([name])
+                    result[current_class_name] |= {name}
     for key in result:
         result[key] = sorted(result[key])
     return result
@@ -156,7 +152,7 @@ def changed_functions(directories, start, end, debug=False):
             if debug:
                 print(cmd)
             diff = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            result = re.findall(r"def\s(\w+)\(", six.text_type(diff))
+            result = re.findall(r"def\s(\w+)\(", str(diff))
         except subprocess.CalledProcessError:
             if debug:
                 print(f"Warning: git diff command failed in {d}")

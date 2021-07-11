@@ -313,7 +313,7 @@ class web_gui:
             f"wait_for_element(): check_element_visibility({str(by)}, {ele_index})"
         )
         ele = self.check_element_visibility(by, ele_index)
-        assert ele is not None, "check_element_visibility(%s, %s)=False" % (
+        assert ele is not None, "check_element_visibility({}, {})=False".format(
             str(by),
             ele_index,
         )

@@ -117,7 +117,7 @@ class JMeter(rootfs_boot.RootFSBootTest):
 
         board.parse_stats(dict_to_log=self.logged)
         board.touch()
-        self.result_message = "JMeter: DONE, name = %s cpu usage = %s" % (
+        self.result_message = "JMeter: DONE, name = {} cpu usage = {}".format(
             self.shortname,
             self.logged["mpstat"],
         )

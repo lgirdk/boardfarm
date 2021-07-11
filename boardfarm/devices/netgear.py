@@ -200,7 +200,7 @@ class NetgearM4100(linux.LinuxDevice):
         logger.info("---- -----------------")
         for vlan in sorted(vlan_macs):
             devices = [x for x in vlan_macs[vlan]]
-            logger.info("%4s %s" % (vlan, " <-> ".join(devices)))
+            logger.info(f"{vlan:>4} {' <-> '.join(devices)}")
 
 
 if __name__ == "__main__":

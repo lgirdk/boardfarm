@@ -17,7 +17,7 @@ class NetperfUdpTest(netperf_test.NetperfTest):
         wan = self.dev.wan
         lan = self.dev.lan
 
-        super(NetperfUdpTest, self).runTest()
+        super().runTest()
 
         self.run_netperf(
             lan, "192.168.0.1 -c -C -l 30 -t UDP_STREAM -- -m 1460 -M 1460"

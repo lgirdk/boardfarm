@@ -17,7 +17,6 @@ import time
 from collections import defaultdict
 
 import pexpect
-import six
 from nested_lookup import nested_lookup
 from termcolor import colored
 
@@ -83,11 +82,11 @@ class DebianBox(linux.LinuxDevice):
                 elif opt == "wan-dhcp-client":
                     self.wan_dhcp = True
                 elif opt.startswith("wan-static-ipv6:"):
-                    ipv6_address = six.text_type(  # noqa : F821
+                    ipv6_address = str(  # noqa : F821
                         opt.replace("wan-static-ipv6:", "")
                     )
                     if "/" not in opt:
-                        ipv6_address += "/%s" % six.text_type(  # noqa : F821
+                        ipv6_address += "/%s" % str(  # noqa : F821
                             str(self.ipv6_prefix)
                         )
                     self.ipv6_interface = ipaddress.IPv6Interface(  # noqa : F821
@@ -96,9 +95,7 @@ class DebianBox(linux.LinuxDevice):
                     self.ipv6_prefix = self.ipv6_interface._prefixlen
                     self.gwv6 = self.ipv6_interface.ip
                 elif opt.startswith("wan-static-ip:"):
-                    value = six.text_type(  # noqa : F401
-                        opt.replace("wan-static-ip:", "")
-                    )
+                    value = str(opt.replace("wan-static-ip:", ""))  # noqa : F401
                     if "/" not in value:
                         value = value + ("/24")
                     self.gw_ng = ipaddress.IPv4Interface(value)  # noqa : F821

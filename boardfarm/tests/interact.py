@@ -9,7 +9,6 @@
 import logging
 import sys
 
-from six.moves import input
 from termcolor import colored
 
 from boardfarm import lib, tests

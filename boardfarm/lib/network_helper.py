@@ -10,7 +10,6 @@ import ipaddress
 import re
 
 import netaddr
-import six
 
 
 def mac_to_snmp_format(mac_addr):
@@ -73,7 +72,7 @@ def valid_ipv4(ip_str):
     :param ip_str: ipv4 address to check
     :type ip_str: string
     """
-    ipaddress.IPv4Address(six.text_type(ip_str))
+    ipaddress.IPv4Address(str(ip_str))
 
 
 def valid_ipv6(ip_str):
@@ -89,7 +88,7 @@ def valid_ipv6(ip_str):
     :param ip_str: ipv6 address to change format
     :type ip_str: string
     """
-    ipaddress.IPv6Address(six.text_type(ip_str))
+    ipaddress.IPv6Address(str(ip_str))
 
 
 def block_board_to_device_traffic(device, unblock=False):

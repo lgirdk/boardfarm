@@ -56,7 +56,7 @@ class ConfigHelper(dict):
         return dict.__getitem__(self, "station")
 
 
-class SchemaValidator(object):
+class SchemaValidator:
     """Validates the json files against the schema provided."""
 
     def __init__(self, schemapath, schemaname):

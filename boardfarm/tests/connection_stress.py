@@ -64,7 +64,7 @@ class Connection_Stress(rootfs_boot.RootFSBootTest):
         time.sleep(5)  # Give router a few seconds to recover
         board.parse_stats(dict_to_log=self.logged)
         avg_cpu = self.logged["mpstat"]
-        msg = "ApacheBench measured %s connections/second, CPU use = %s%%." % (
+        msg = "ApacheBench measured {} connections/second, CPU use = {}%.".format(
             self.reqs_per_sec,
             avg_cpu,
         )

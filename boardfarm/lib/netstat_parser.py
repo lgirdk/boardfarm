@@ -7,7 +7,7 @@ from io import BytesIO
 from pandas import DataFrame
 
 
-class NetstatParser(object):
+class NetstatParser:
     """by default, linux netstat will list also the UNIX(IPC socket) family, which is too lengthy to show
     Hence only the activer internet connection ports are returned
     """

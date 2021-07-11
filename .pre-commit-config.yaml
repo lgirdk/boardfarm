@@ -66,6 +66,15 @@ repos:
             language: python
             types: [python]
             stages: [commit]
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v2.15.0
+      hooks:
+          - id: pyupgrade
+            args: [--py36-plus]
+    - repo: https://github.com/ikamensh/flynt/
+      rev: '0.63'
+      hooks:
+          - id: flynt
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.1.0
       hooks:

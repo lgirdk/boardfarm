@@ -18,5 +18,5 @@ class QemuOpenWrt(qemu.Qemu):
     wan_iface = "eth1"
     lan_iface = "br-lan"
 
-    lan_network = ipaddress.IPv4Network(u"192.168.1.0/24")
-    lan_gateway = ipaddress.IPv4Address(u"192.168.1.1")
+    lan_network = ipaddress.IPv4Network("192.168.1.0/24")
+    lan_gateway = ipaddress.IPv4Address("192.168.1.1")

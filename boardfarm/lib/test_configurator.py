@@ -78,7 +78,7 @@ def read_station_config(location):
             debug=os.environ.get("BFT_DEBUG", False),
         ).bf_config_str
     else:
-        data = open(location, "r").read()
+        data = open(location).read()
 
     return json.loads(data)
 
@@ -173,12 +173,12 @@ def filter_station_config(
                                 continue
                             seen_names.append(d["name"])
 
-                            if type(d["feature"]) in (str, six.text_type):
+                            if type(d["feature"]) in (str, str):
                                 d["feature"] = [d["feature"]]
                             features.extend(
                                 x for x in d["feature"] if x not in features
                             )
-                if type(features) in (str, six.text_type):
+                if type(features) in (str, str):
                     features = [features]
                 if set(board_features) != set(board_features) & set(features):
                     continue

@@ -133,7 +133,7 @@ class MemoryUse(rootfs_boot.RootFSBootTest):
         mem_free = int(board.match.group(1))
         board.expect(prompt)
         mem_used = mem_total - mem_free
-        self.result_message = "Used memory: %s MB. Free memory: %s MB." % (
+        self.result_message = "Used memory: {} MB. Free memory: {} MB.".format(
             mem_used / 1000,
             mem_free / 1000,
         )

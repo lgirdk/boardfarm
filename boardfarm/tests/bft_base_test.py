@@ -76,7 +76,7 @@ class BftBaseTest(inherit_class):
             if issubclass(type(args[2]), boardfarm.lib.env_helper.EnvHelper):
                 self.env_helper = args[2]
 
-        super(BftBaseTest, self).__init__()
+        super().__init__()
         # Useful defaults
         self.reset_after_fail = True
         self.dont_retry = False
@@ -107,7 +107,7 @@ class BftBaseTest(inherit_class):
 
     def startMarker(self):
         """Prints a banner at the beginning of a test, including the current time"""
-        msg = "==================== Begin %s    Time: %s ====================" % (
+        msg = "==================== Begin {}    Time: {} ====================".format(
             self.__class__.__name__,
             now_short(self._format),
         )
@@ -129,7 +129,7 @@ class BftBaseTest(inherit_class):
                 + str(self.config.retry)
                 + ")"
             )
-        msg = "==================== End %s   %s   Time: %s ==================" % (
+        msg = "==================== End {}   {}   Time: {} ==================".format(
             self.__class__.__name__,
             result,
             now_short(self._format),

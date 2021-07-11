@@ -4,7 +4,7 @@ import re
 from .regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
 
-class DnsParser(object):
+class DnsParser:
     """
     nslookup is a network admin CLI available in many OS for querying the
     Domain Name System to obtain domain name or IP address mapping,

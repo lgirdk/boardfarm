@@ -6,7 +6,7 @@ from debtcollector import deprecate
 from boardfarm.exceptions import CodeError
 
 
-class SerialPhone(object):
+class SerialPhone:
     """Fax modem."""
 
     model = "serialmodem"
@@ -59,7 +59,7 @@ class SerialPhone(object):
         self.expect(self.prompt)
         return bool(
             re.search(
-                (r" find /dev/tty%s\r\n/dev/tty%s\r\n" % (self.line, self.line)),
+                (fr" find /dev/tty{self.line}\r\n/dev/tty{self.line}\r\n"),
                 self.before,
             )
         )

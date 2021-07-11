@@ -98,7 +98,7 @@ class CDrouterDevice(CDRouter):
             self.bf_args.path = path
 
         try:
-            with open(file_name, "r") as fp:
+            with open(file_name) as fp:
                 df = pandas.read_csv(fp)
             if len(df) == 0:
                 raise CDrouterDevice.CSVProjectNotFound(
@@ -262,7 +262,7 @@ class CDrouterDevice(CDRouter):
         config_name = config_file.replace(".json", "")
         if path:
             config_file = f"{path}/{config_file}"
-        with open(config_file, "r") as fp:
+        with open(config_file) as fp:
             data = json.load(fp)
             contents = "\n".join([f"testvar {k}\t\t{v}" for k, v in data.items()])
         # create config based on filename

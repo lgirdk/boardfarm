@@ -31,7 +31,7 @@ def SnmpwalkAsync(
     :rtype: string
     """
     # SNMP table header
-    headVars = [v2c.ObjectIdentifier((oid))]
+    headVars = [v2c.ObjectIdentifier(oid)]
 
     # Build PDU
     reqPDU = v2c.GetBulkRequestPDU()

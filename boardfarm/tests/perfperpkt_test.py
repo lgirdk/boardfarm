@@ -121,7 +121,7 @@ class PerfPerPktTest(iperf_test.iPerfTest):
 
         extra_msg = self.extra(results)
 
-        self.result_message = "TP=%.2f Mbits/s IDLE=%.2f, PPS=%.2f%s%s" % (
+        self.result_message = "TP={:.2f} Mbits/s IDLE={:.2f}, PPS={:.2f}{}{}".format(
             speed,
             idle,
             total_pps,
@@ -170,4 +170,4 @@ class PerfPerPktTestWifi(PerfPerPktTest):
         # it to None and add logic in the parse section to take the other iface
         # packet count if this is none
         wlan = self.dev.wlan
-        super(PerfPerPktTestWifi, self).runTest(client=wlan, client_name=None)
+        super().runTest(client=wlan, client_name=None)

@@ -151,9 +151,7 @@ class DebianWAN(debian.DebianBox):
         self.sendline("default-lease-time 600;")
         self.sendline("max-lease-time 7200;")
         # use the same netmask as the lan device
-        self.sendline(
-            "subnet %s netmask %s {" % (self.nw.network_address, self.nw.netmask)
-        )
+        self.sendline(f"subnet {self.nw.network_address} netmask {self.nw.netmask} {{")
         self.sendline(
             "          range %s %s;"
             % (self.nw.network_address + 10, self.nw.network_address + 100)

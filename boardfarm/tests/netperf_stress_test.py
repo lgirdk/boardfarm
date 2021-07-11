@@ -31,7 +31,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         lan = self.dev.lan
 
         # Record number of bytes and packets sent through interfaces
-        board.sendline("\nifconfig | grep 'encap\|packets\|bytes'")
+        board.sendline("\nifconfig | grep 'encap\\|packets\\|bytes'")
         board.expect("br-lan")
         board.expect(prompt)
 
@@ -48,7 +48,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         # Let netperf tests run
         time.sleep(run_time * 1.5)
 
-        board.expect("Average:\s+all.*\s+([0-9]+.[0-9]+)\r\n")
+        board.expect("Average:\\s+all.*\\s+([0-9]+.[0-9]+)\r\n")
         idle_cpu = board.match.group(1)
         avg_cpu = 100 - float(idle_cpu)
         print(f"Average cpu usage was {avg_cpu}")
@@ -83,7 +83,7 @@ class NetperfStressTest(netperf_test.NetperfTest):
         print(f"Mbits passed was {bandwidth}")
 
         # Record number of bytes and packets sent through interfaces
-        board.sendline("ifconfig | grep 'encap\|packets\|bytes'")
+        board.sendline(r"ifconfig | grep 'encap\|packets\|bytes'")
         board.expect("br-lan")
         board.expect(prompt)
 

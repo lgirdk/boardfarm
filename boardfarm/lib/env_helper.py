@@ -5,7 +5,7 @@ from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
 logger = logging.getLogger("bft")
 
 
-class EnvHelper(object):
+class EnvHelper:
     """
     Example env json.
 

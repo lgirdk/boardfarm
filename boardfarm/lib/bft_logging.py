@@ -99,7 +99,7 @@ class LoggerMeta(type):
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = cls.deco(attr_value)
 
-        return super(LoggerMeta, cls).__new__(cls, name, bases, attrs)
+        return super().__new__(cls, name, bases, attrs)
 
     @classmethod
     def deco(cls, func):
@@ -142,7 +142,7 @@ class LoggerMeta(type):
                 and func.__name__ in err_injection_dict[clsname]
             ):
                 ret = err_injection_dict[clsname][func.__name__]
-                args[0].log_calls += "[%.6f]injecting %s = %s\r\n" % (
+                args[0].log_calls += "[{:.6f}]injecting {} = {}\r\n".format(
                     time.process_time(),
                     to_log,
                     repr(ret),
@@ -151,7 +151,7 @@ class LoggerMeta(type):
             else:
                 ret = func(*args, **kwargs)
 
-            args[0].log_calls += "[%.6f]returned %s = %s\r\n" % (
+            args[0].log_calls += "[{:.6f}]returned {} = {}\r\n".format(
                 time.process_time(),
                 to_log,
                 repr(ret),
@@ -241,7 +241,7 @@ def log_message(s, msg, header=False):
         s.log_to_file += now_short() + msg + "\r\n"
 
 
-class o_helper(object):
+class o_helper:
     """Class to handle output logging."""
 
     def __init__(self, parent, out, color):

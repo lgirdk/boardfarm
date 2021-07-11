@@ -67,7 +67,7 @@ def tcpdump_capture(
         device.sudo_sendline(base + filter_str + run_background)
     device.expect_exact(f"tcpdump: listening on {interface}")
     if return_pid:
-        return re.search("(\[\d{1,10}\]\s(\d{1,6}))", device.before).group(2)
+        return re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", device.before).group(2)
     return device.before
 
 
@@ -209,7 +209,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
     if not msg_list:
         try:
             device.sendline("grep RTP rtp.txt|wc -l")
-            device.expect("[1-9]\d*\r\n", timeout=5)
+            device.expect("[1-9]\\d*\r\n", timeout=5)
             result_list.append(True)
         except PexpectErrorTimeout:
             logger.error("No RTP Packets found")
@@ -225,7 +225,7 @@ def rtp_read_verify(device, capture_file, msg_list=None, rm_pcap=True):
                     + msg.dest_ip
                     + '.*RTP.*" rtp.txt | wc -l'
                 )
-                device.expect("[1-9]\d*\r\n", timeout=10)
+                device.expect("[1-9]\\d*\r\n", timeout=10)
                 device.expect_prompt()
                 result_list.append(True)
             except PexpectErrorTimeout:
@@ -257,17 +257,17 @@ def basic_call_verify(output_sip, ip_src):
         + ip_src
         + ".*INVITE.*?"
         + ip_src
-        + "\s+SIP.*100\s+Trying.*?"
+        + r"\s+SIP.*100\s+Trying.*?"
         + ip_src
-        + "\s+SIP.*180\s+Ringing.*?"
+        + r"\s+SIP.*180\s+Ringing.*?"
         + ip_src
-        + "\s+SIP\/SDP.*200\s+OK.*?"
+        + r"\s+SIP\/SDP.*200\s+OK.*?"
         + ip_src
         + ".*ACK.*?"
         + ip_src
         + ".*BYE.*?"
         + ip_src
-        + "\s+SIP.*200\s+OK\s+\|",
+        + r"\s+SIP.*200\s+OK\s+\|",
         output_sip,
         re.DOTALL,
     )
@@ -293,7 +293,7 @@ def get_mta_details(capture_file, device, mta_user=[]):
             regx_str = (
                 r"SIP/2.0\s+200\s+OK(.*)From:\s+"
                 + mta
-                + "(.*)Call-ID:\s+(\S+)CSeq.*expires=(\d+)"
+                + r"(.*)Call-ID:\s+(\S+)CSeq.*expires=(\d+)"
             )
             match = re.search(regx_str, line)
             if match:
@@ -417,8 +417,7 @@ def nmap_cli(device, ip_address, port, protocol=None, retry=0, timing="", option
         protocol = "both"
     ipv6 = (
         "-6"
-        if "IPv6Address"
-        == type(ipaddress.ip_address(six.text_type(ip_address))).__name__
+        if "IPv6Address" == type(ipaddress.ip_address(str(ip_address))).__name__
         else ""
     )
     protocol_commandmap = {"tcp": "-sT", "udp": "-sU", "both": "-sT -sU"}
@@ -627,7 +626,7 @@ def verify_sip_status(device, capture_file, msg_list, rm_pcap=True, user_num=Non
         code_list = []
         text_list = []
         for x in split:
-            if re.search("\d+", x):
+            if re.search(r"\d+", x):
                 code_list.append(x)
             else:
                 text_list.append(x)
@@ -685,7 +684,7 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
                 device.sendline(
                     f"tshark -r {capture_file} rtp.setup-frame == {setup_frame} | wc -l"
                 )
-                idx = device.expect(["[1-9]\d*\r\n", "0\r\n"], timeout=10)
+                idx = device.expect(["[1-9]\\d*\r\n", "0\r\n"], timeout=10)
                 device.expect(device.prompt)
                 count = count + 1
                 set_num == setup_frame

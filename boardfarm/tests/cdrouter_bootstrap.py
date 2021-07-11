@@ -162,7 +162,7 @@ testvar lanVlanId """
 
         def add_cdrouter_config(config):
             p = os.path.realpath(config)
-            cdr_conf = open(os.path.join(p, config), "r").readlines()
+            cdr_conf = open(os.path.join(p, config)).readlines()
 
             return "\n" + "".join(cdr_conf)
 
@@ -179,7 +179,7 @@ testvar lanVlanId """
 
                     lan.start_lan_client()
                     lan_ip6 = lan.get_interface_ip6addr(lan.iface_dut)
-                    ip6 = ipaddress.IPv6Network(six.text_type(lan_ip6))
+                    ip6 = ipaddress.IPv6Network(str(lan_ip6))
                     fixed_prefix6 = str(ip6.supernet(new_prefix=64).network_address)
                     break
                 except Exception as e:
@@ -192,14 +192,14 @@ testvar lanVlanId """
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
             contents = contents + """
-testvar ipv6LanIp %s%%eui64%%
+testvar ipv6LanIp {}%eui64%
 testvar ipv6LanPrefixLen 64
 testvar healthCheckEnable yes
 testvar supportsIPv6 yes
 testvar ipv6WanMode static
-testvar ipv6WanIspIp %s
-testvar ipv6WanIspGateway %s
-testvar ipv6WanIspAssignIp %s
+testvar ipv6WanIspIp {}
+testvar ipv6WanIspGateway {}
+testvar ipv6WanIspAssignIp {}
 testvar ipv6WanIspPrefixLen 64
 testvar ipv6LanMode autoconf
 testvar ipv6RemoteHost            3001:51a:cafe::1
@@ -207,19 +207,19 @@ testvar ipv6FreeNetworkStart      3001:cafe:1::
 testvar ipv6FreeNetworkEnd        3001:cafe:ffff::
 testvar ipv6FreeNetworkPrefixLen  64
 testvar wanMode static
-testvar wanIspIp %s
-testvar wanIspGateway %s
+testvar wanIspIp {}
+testvar wanIspGateway {}
 testvar wanIspMask 255.255.255.128
-testvar wanIspAssignIp %s
-testvar wanNatIp %s
+testvar wanIspAssignIp {}
+testvar wanNatIp {}
 testvar remoteHostIp 3.3.3.3
 testvar FreeNetworkStart 200.0.0.0
 testvar FreeNetworkMask  255.255.255.0
 testvar FreeNetworkStop  201.0.0.0
-testvar IPv4HopCount %s
-testvar lanDnsServer %s
-testvar wanDnsServer %s
-""" % (
+testvar IPv4HopCount {}
+testvar lanDnsServer {}
+testvar wanDnsServer {}
+""".format(
                 fixed_prefix6,
                 cdrouter.bf_args.wanispip_v6,
                 cdrouter.bf_args.wanispgateway_v6,
@@ -303,9 +303,9 @@ testvar wanDnsServer %s
 
         summary = c.results.summary_stats(j.result_id)
 
-        self.result_message = six.text_type(
+        self.result_message = str(
             self.result_message
-        ) + " (Failed= %s, Passed = %s, Skipped = %s)" % (
+        ) + " (Failed= {}, Passed = {}, Skipped = {})".format(
             summary.result_breakdown.failed,
             summary.result_breakdown.passed,
             summary.result_breakdown.skipped,
@@ -396,10 +396,8 @@ testvar wanDnsServer %s
         new_tests = []
         for mod in c.testsuites.list_modules():
             name = "CDrouter" + mod.name.replace(".", "").replace("-", "_")
-            list_of_tests = [six.text_type(x) for x in mod.tests]
-            new_tests.append(
-                type(six.text_type(name), (CDrouterStub,), {"tests": list_of_tests})
-            )
+            list_of_tests = [str(x) for x in mod.tests]
+            new_tests.append(type(str(name), (CDrouterStub,), {"tests": list_of_tests}))
 
         return new_tests
 

@@ -20,7 +20,7 @@ STATUS_CODE_DICT = {
 }
 
 
-class Zapi(object):
+class Zapi:
     """Zephyr API interface."""
 
     def __init__(

@@ -16,7 +16,7 @@ class Sysupgrade(rootfs_boot.RootFSBootTest):
     def runTest(self):
         board = self.dev.board
 
-        super(Sysupgrade, self).runTest()
+        super().runTest()
 
         if not hasattr(self.config, "SYSUPGRADE_NEW"):
             self.skipTest("no sysupgrade specified")

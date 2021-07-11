@@ -19,7 +19,7 @@ class SshWanDetect(rootfs_boot.RootFSBootTest):
         board = self.dev.board
         wan = self.dev.wan
 
-        super(SshWanDetect, self).runTest()
+        super().runTest()
 
         board.uci_allow_wan_ssh()
 

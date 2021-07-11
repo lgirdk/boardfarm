@@ -3,7 +3,7 @@ import pytest
 from boardfarm.orchestration import TestStep as TS
 
 
-class Test(object):
+class Test:
     """Sample Test class."""
 
     steps = []

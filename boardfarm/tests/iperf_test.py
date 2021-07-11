@@ -158,7 +158,7 @@ class iPerfTestWLAN(iPerfTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfTestWLAN, self).runTest(client=self.dev.wlan, server=self.dev.wan)
+        super().runTest(client=self.dev.wlan, server=self.dev.wan)
 
 
 class iPerfTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfTest):
@@ -187,14 +187,10 @@ class iPerfNonRoutedTest(iPerfTest):
         return board.get_interface_ipaddr(board.lan_iface)
 
     def runTest(self):
-        super(iPerfNonRoutedTest, self).runTest(
-            client=self.dev.lan, server=self.dev.board
-        )
+        super().runTest(client=self.dev.lan, server=self.dev.board)
 
     def recover(self):
-        super(iPerfNonRoutedTest, self).recover(
-            client=self.dev.lan, server=self.dev.board
-        )
+        super().recover(client=self.dev.lan, server=self.dev.board)
 
 
 class iPerfReverseTest(iPerfTest):
@@ -249,14 +245,10 @@ class iPerfReverseTestWLAN(iPerfReverseTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfReverseTestWLAN, self).runTest(
-            client=self.dev.wan, server=self.dev.wlan
-        )
+        super().runTest(client=self.dev.wan, server=self.dev.wlan)
 
     def recover(self):
-        super(iPerfReverseTestWLAN, self).recover(
-            client=self.dev.wan, server=self.dev.wlan
-        )
+        super().recover(client=self.dev.wan, server=self.dev.wlan)
 
 
 class iPerfReverseTestIPV6(ipv6_setup.Set_IPv6_Addresses, iPerfReverseTest):
@@ -375,10 +367,10 @@ class iPerfBiDirTestWLAN(iPerfBiDirTest):
             self.skipTest("skipping test no wlan")
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfBiDirTestWLAN, self).runTest(node1=self.dev.wlan, node2=self.dev.wan)
+        super().runTest(node1=self.dev.wlan, node2=self.dev.wan)
 
     def recover(self):
-        super(iPerfBiDirTestWLAN, self).recover(node1=self.dev.wlan, node2=self.dev.wan)
+        super().recover(node1=self.dev.wlan, node2=self.dev.wan)
 
 
 class iPerfBiDirTestLANtoWLAN(iPerfBiDirTest):
@@ -402,9 +394,7 @@ class iPerfBiDirTestLANtoWLAN(iPerfBiDirTest):
 
         wlan.sendline("iwconfig")
         wlan.expect(prompt)
-        super(iPerfBiDirTestLANtoWLAN, self).runTest(
-            node1=self.dev.wlan, node2=self.dev.lan, firewall=False
-        )
+        super().runTest(node1=self.dev.wlan, node2=self.dev.lan, firewall=False)
 
     def recover(self):
         super(iPerfBiDirTestWLAN, self).recover(node1=self.dev.wlan, node2=self.dev.lan)

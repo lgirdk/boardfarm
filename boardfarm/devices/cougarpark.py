@@ -45,7 +45,7 @@ class CougarPark(openwrt_router.OpenWrtRouter):
 
     def __init__(self, *args, **kwargs):
         """Instance initialisation."""
-        super(CougarPark, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         del kwargs["conn_cmd"]
         self.arm = bft_pexpect_helper.spawn.__new__(linux.LinuxDevice)

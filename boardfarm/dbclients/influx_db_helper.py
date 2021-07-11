@@ -41,7 +41,7 @@ class Influx_DB_Logger(InfluxDBClient, dict):
         self.test_run = kwargs.get("test_run", kwargs["test_run"])
         self.db_data = []
 
-        super(Influx_DB_Logger, self).__init__(
+        super().__init__(
             port=self.port,
             host=self.host,
             username=self.username,
@@ -90,10 +90,8 @@ class Influx_DB_Logger(InfluxDBClient, dict):
             body = self.populate_result_dictionary(res_dict, cmd, iteration, date)
             self.db_data.append(body)
             print(
-                (
-                    "process_table: body: %s DB updating: %r"
-                    % (json.dumps(body, indent=4), self.write_points([body]))
-                )
+                "process_table: body: %s DB updating: %r"
+                % (json.dumps(body, indent=4), self.write_points([body]))
             )
         self.db_data = []
 

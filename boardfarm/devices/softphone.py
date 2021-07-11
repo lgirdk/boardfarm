@@ -3,7 +3,7 @@ from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_pjsua
 
 
-class SoftPhone(object):
+class SoftPhone:
     """Perform Functions related to softphone software."""
 
     model = "pjsip"

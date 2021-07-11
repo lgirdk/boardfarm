@@ -169,11 +169,13 @@ class DockerFactory(linux.LinuxDevice):
                 ip_range = configuration.get("ip-range")
                 gateway = configuration.get("gateway")
                 extra_opts = configuration.get("extra_opts", "")
-                self.network_options = "--subnet %s --ip-range %s --gateway %s %s" % (
-                    subnet,
-                    ip_range,
-                    gateway,
-                    extra_opts,
+                self.network_options = (
+                    "--subnet {} --ip-range {} --gateway {} {}".format(
+                        subnet,
+                        ip_range,
+                        gateway,
+                        extra_opts,
+                    )
                 )
 
         if "BFT_DEBUG" in os.environ:
@@ -391,7 +393,7 @@ class DockerFactory(linux.LinuxDevice):
         """Close docker."""
         self.clean_docker()
         self.clean_docker_network()
-        out = super(DockerFactory, self).close(*args, **kwargs)
+        out = super().close(*args, **kwargs)
         atexit.unregister(self.run_cleanup_cmd)
         return out
 

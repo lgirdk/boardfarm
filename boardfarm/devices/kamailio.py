@@ -230,7 +230,7 @@ EOF"""
             update_cfg_dict = {}
         self.txt = []
         dir = pathlib.Path(__file__).parent
-        with open(dir.joinpath("../resources/configs/kamailio.cfg"), "r") as cf:
+        with open(dir.joinpath("../resources/configs/kamailio.cfg")) as cf:
             config = cf.read()
         kamailio_conf_dict = {
             "startup": None,

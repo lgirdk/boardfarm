@@ -301,7 +301,7 @@ class selftest_testing_linuxdevice_functions(rootfs_boot.RootFSBootTest):
         print("Test Passed")
 
 
-class SnmpMibsUnitTest(object):
+class SnmpMibsUnitTest:
     """
     Unit test for the SnmpMibs class.
 

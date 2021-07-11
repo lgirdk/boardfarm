@@ -17,7 +17,7 @@ except Exception as error:
     from urllib2 import urlopen
 
 
-class TestsuiteConfigReader(object):
+class TestsuiteConfigReader:
     """Read config file (in our case testsuite.cfg) like.
 
       [testsuiteA]
@@ -72,7 +72,7 @@ class TestsuiteConfigReader(object):
             if fname.startswith("http"):
                 s_config = urlopen(fname).read()
             else:
-                with open(fname, "r") as f:
+                with open(fname) as f:
                     s_config = f.read()
         except Exception as e:
             logger.error(e)
@@ -116,7 +116,7 @@ class TestsuiteConfigReader(object):
         for name in sorted(self.section):
             result.append(f"* {name}")
             for i, x in enumerate(self.section[name]):
-                result.append(" %2s %s" % (i + 1, x))
+                result.append(f" {i + 1:>2} {x}")
         return "\n".join(result)
 
 

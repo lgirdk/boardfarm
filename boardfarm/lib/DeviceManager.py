@@ -16,7 +16,7 @@ logger = logging.getLogger("DeviceManager")
 logger.setLevel(logging.INFO)  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 
-class DeviceNone(object):
+class DeviceNone:
     """Check device."""
 
     def __getattr__(self, key):
@@ -118,7 +118,7 @@ class device_feature(Enum):
     Wifi5G = 3
 
 
-class device_descriptor(object):
+class device_descriptor:
     """All identifiers about a device."""
 
     location = device_location.Unknown

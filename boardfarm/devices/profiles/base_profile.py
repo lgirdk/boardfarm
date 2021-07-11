@@ -1,4 +1,4 @@
-class BaseProfile(object):
+class BaseProfile:
     profile = {}
 
     @classmethod

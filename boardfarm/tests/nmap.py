@@ -35,7 +35,7 @@ class Nmap_LAN(rootfs_boot.RootFSBootTest):
             board.touch()
         lan.expect(prompt, timeout=60)
         open_ports = re.findall(r"(\d+)/tcp\s+open", lan.before)
-        msg = "Found %s open TCP ports on LAN interface: %s." % (
+        msg = "Found {} open TCP ports on LAN interface: {}.".format(
             len(open_ports),
             ", ".join(open_ports),
         )

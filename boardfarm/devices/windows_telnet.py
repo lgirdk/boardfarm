@@ -3,8 +3,6 @@ import ipaddress
 import re
 import sys
 
-import six
-
 from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, WindowsMacFormat
 
 from . import base, connection_decider
@@ -176,7 +174,7 @@ class WindowsTelnet(base.BaseDevice):
         self.sendline(f"netsh interface ipv6 show addresses {interface}")
         self.expect(self.prompt)
         for match in re.findall(AllValidIpv6AddressesRegex, self.before):
-            ipv6addr = ipaddress.IPv6Address(six.text_type(match))
+            ipv6addr = ipaddress.IPv6Address(str(match))
             if not ipv6addr.is_link_local:
                 return ipv6addr
 
