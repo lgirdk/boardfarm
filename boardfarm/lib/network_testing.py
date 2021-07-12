@@ -673,13 +673,12 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
     invite = [
         re.search(r"\d+", trace).group(0)
         for trace in split_sip_pcap
-        if re.search(f".*{src_ip}.*{dst_ip}.*SIP", trace)
+        if re.search(fr".*{src_ip}.*{dst_ip}.*SIP.*sip:\d+@", trace)
     ]
     invite_num_reverse = invite[::-1]
     if invite:
         try:
             count = 0
-            set_num = ""
             for setup_frame in invite_num_reverse:
                 device.sendline(
                     f"tshark -r {capture_file} rtp.setup-frame == {setup_frame} | wc -l"
@@ -687,26 +686,10 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
                 idx = device.expect(["[1-9]\\d*\r\n", "0\r\n"], timeout=10)
                 device.expect(device.prompt)
                 count = count + 1
-                set_num == setup_frame
                 if idx == 0:
                     break
-                elif idx == 1 & count == 2:
+                elif idx == 1 and count == len(invite):
                     raise RTPNotFound
-            if negate:
-                rtp_pcap = tshark_read(
-                    device,
-                    capture_file,
-                    filter_str=f"rtp.setup-frame == {set_num}",
-                    rm_file=False,
-                )
-                split_rtp_pcap = rtp_pcap.splitlines()
-                rtp = []
-                for rtp_trace in split_rtp_pcap:
-                    if re.match(r"\d+", rtp_trace.strip()):
-                        rtp.append(True) if re.search(
-                            f".*{src_ip}.*{dst_ip}", rtp_trace
-                        ) else rtp.append(False)
-                return all(rtp)
             return True
         except (PexpectErrorTimeout, RTPNotFound):
             device.expect(device.prompt)
