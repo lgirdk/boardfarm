@@ -751,7 +751,7 @@ EOFEOFEOFEOF"""
 
     def get_default_gw(self):
         self.sendline("ip route show | grep default")
-        self.expect("default via (%s)" % ValidIpv4AddressRegex)
+        self.expect(f"default via ({ValidIpv4AddressRegex})")
         gw_ip = self.match.group(1)
         self.expect_prompt()
         return gw_ip
