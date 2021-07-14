@@ -62,6 +62,10 @@ class BaseBoard:
         """
         raise NotImplementedError
 
+    def get_default_gw(self):
+        """This method will get the default gateway address from board"""
+        raise NotImplementedError
+
 
 class BaseBoardHw:
     """This class is a collection of APIs related to an embedded device HW
