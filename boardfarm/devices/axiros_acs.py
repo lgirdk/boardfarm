@@ -1015,13 +1015,14 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
 
-    def GPN(self, param, next_level):
+    def GPN(self, param, next_level, timeout=default_timeout):
         """This method is used to  discover the Parameters accessible on a particular CPE
 
         :param param: parameter to be discovered
         :type param: string
         :next_level: displays the next level children of the object if marked true
         :type next_level: boolean
+        :type timeout: to set the Lifetime Expiry time
         :return: value as a dictionary
         """
 
@@ -1030,7 +1031,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             self.cpeid = self.dev.board._cpeid
 
         p, cmd, cpe_id = self._build_input_structs(
-            self.cpeid, param, action="GPN", next_level=next_level
+            self.cpeid, param, action="GPN", next_level=next_level, wait_time=timeout
         )
 
         with self.client.settings(raw_response=True):
