@@ -582,7 +582,7 @@ class CyberPowerPdu(PDUTemplate):
 
     def __off(self):
         """Send OFF command."""
-        oid = self.oid_Outlet + "." + str(self.conn_port)
+        oid = self.outlet + "." + str(self.conn_port)
         self.session.set(oid, 2, "i")
 
     def reset(self):
