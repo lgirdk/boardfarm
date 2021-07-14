@@ -2231,8 +2231,6 @@ def get_pytest_name():
     Returns:
         [string]: test name
     """
-    return (
-        (os.environ.get("PYTEST_CURRENT_TEST").split(" (setup)")[0])
-        .split("::")[1]
-        .replace(" ", "_")
-    )
+    return re.search(
+        "(test_.*).py", os.environ.get("PYTEST_CURRENT_TEST").split("::::")[0]
+    ).group(1)
