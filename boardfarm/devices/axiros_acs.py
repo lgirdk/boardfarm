@@ -167,7 +167,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     name = "acs_server"
     # should the following be dynamic?
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
-    CPE_wait_time = 60 * 1  # too long?
+    CPE_wait_time = 60 * 2  # too long?
     Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
