@@ -25,12 +25,14 @@ class DnsParser:
         val = response.replace("\t\t", " ").replace("\t", " ")
         for i in val.split("\r\n\r\n"):
             if "Server" in i:
-                self.dns_dict_obj["dns_server"] = re.search(
-                    ValidIpv4AddressRegex, i
-                ).group(0)
+                for expr in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]:
+                    if re.search(expr, i):
+                        match = re.search(expr, i).group(0)
+                        break
+                self.dns_dict_obj["dns_server"] = match
             elif "Name" in i:
                 self.dns_dict_obj["domain_name"] = re.search(
-                    r"(?:[\da-z\.-]+)\.(\w+)", i
+                    r"(?:[\da-z\._]+)\.(\w+)", i
                 ).group(0)
                 ips = []
                 for value in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]:
