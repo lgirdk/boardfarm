@@ -39,7 +39,10 @@ warnings.simplefilter("always", UserWarning)
 logger = logging.getLogger("zeep.transports")
 
 
-class Intercept(object):
+default_timeout = 60 * 2
+
+
+class Intercept:
     """Any calls on Axiros RPC functions "GPV","SPV", "GPA","GPN", "SPA","AddObject","DelObject","FactoryReset","Reboot","ScheduleInform","GetRPCMethods","Download" will capture tcpdump if the ssh session is connected.
     And also adds a wait time of 10 seconds when 507 HTTPError is thrown.
     """
@@ -167,7 +170,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     name = "acs_server"
     # should the following be dynamic?
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
-    CPE_wait_time = 60 * 2  # too long?
+    CPE_wait_time = default_timeout
     Count_retry_on_error = 3  # to be audited
 
     def __init__(self, *args, **kwargs):
@@ -969,7 +972,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 continue
         return None
 
-    def GPV(self, param, timeout=60):
+    def GPV(self, param, timeout=default_timeout):
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
         :param param: path to the key that assigned value will be retrieved
