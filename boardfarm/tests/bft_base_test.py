@@ -22,7 +22,7 @@ import boardfarm.lib.DeviceManager
 import boardfarm.lib.env_helper
 import boardfarm.lib.test_configurator
 from boardfarm import lib
-from boardfarm.lib.bft_logging import LoggerMeta, now_short
+from boardfarm.lib.bft_logging import now_short
 from boardfarm.library import check_devices
 from boardfarm.orchestration import TearDown
 
@@ -50,7 +50,7 @@ if "pytest" in sys.modules:
     inherit_class = _UnitTestCls
     _using_pytest = True
 else:
-    inherit_class = six.with_metaclass(LoggerMeta, object)
+    inherit_class = six.with_metaclass(object)
 
 
 class BftBaseTest(inherit_class):

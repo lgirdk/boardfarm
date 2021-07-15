@@ -8,13 +8,12 @@
 import logging
 import signal
 
-from boardfarm.lib.bft_logging import LoggerMeta
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 
 logger = logging.getLogger("bft")
 
 
-class BaseDevice(bft_pexpect_helper, metaclass=LoggerMeta):
+class BaseDevice(bft_pexpect_helper):
     log = ""
     log_calls = ""
 

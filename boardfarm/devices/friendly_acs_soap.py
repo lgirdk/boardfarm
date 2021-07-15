@@ -5,12 +5,10 @@ import xmltodict
 from zeep import Client
 from zeep.wsse.username import UsernameToken
 
-from boardfarm.lib.bft_logging import LoggerMeta
-
 logger = logging.getLogger("bft")
 
 
-class FriendlyACS(metaclass=LoggerMeta):
+class FriendlyACS:
     log = ""
     log_calls = ""
 

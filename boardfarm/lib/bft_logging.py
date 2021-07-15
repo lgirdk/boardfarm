@@ -6,19 +6,12 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
-import inspect
 import logging
 import os
 import re
-import sys
 import time
-import types
-from functools import wraps
 
-import debtcollector
 from termcolor import colored
-
-from boardfarm.lib.ConfigHelper import ConfigHelper
 
 logger = logging.getLogger("bft")
 
@@ -31,8 +24,7 @@ def now_short(_format="%Y%m%d-%H%M%S"):
     :return: timestamp in YYYYMMDD-hhmmss
     :rtype: string
     """
-    timeString = time.strftime(_format, time.localtime()) + "\t"
-    return timeString
+    return time.strftime(_format, time.localtime()) + "\t"
 
 
 def logfile_assert_message(s, condition, message):
@@ -71,151 +63,6 @@ def write_test_log(t, output_dir):
             log.write(f"\n\t{type(t).__name__} test result: {t.result_grade}")
             log.write(f"\n\tTotal test time: {testtime} seconds")
             log.write("\n\t=======================================================")
-
-
-class LoggerMeta(type):
-    """To wrap functions with logging messages."""
-
-    def __new__(cls, name, bases, attrs):
-        """Magic method to create instance object reference.
-
-        Using this method you can customize the instance creation.
-
-        :param cls: Class to be instantiated(LoggerMeta)
-        :type cls: Class
-        :param name: name of the new Class instantiated
-        :type name: Class
-        :param bases: Tuple of base parent classes
-        :type bases: Class
-        :param attrs: Class attributes
-        :type attrs: Arguments(args)
-        :return: Return the instance object created
-        :rtype: Object
-        """
-        if "model" in attrs:
-            cls.check_signature(name, bases, attrs)
-
-        for attr_name, attr_value in attrs.items():
-            if isinstance(attr_value, types.FunctionType):
-                attrs[attr_name] = cls.deco(attr_value)
-
-        return super().__new__(cls, name, bases, attrs)
-
-    @classmethod
-    def deco(cls, func):
-        """Write functions calls to log file with time.
-
-        :param cls: Instance of the class LoggerMeta
-        :type cls: Class
-        :param func: function called this method
-        :type func: Object
-        :return: Return of the called function
-        :rtype: string
-        """
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            """Parse the calling function arguments and send to logs with date time.
-
-            :param args: any number of extra arguments
-            :type args: Arguments(args)
-            :param kwargs: arguments, where you provide a name to the variable as you pass it into the function
-            :type kwargs: Arguments(args)
-            :return: String with parent class, calling/returning of function
-            :rtype: string
-            """
-            if "pytest" in sys.modules:
-                # if in pytest bypass all this
-                return func(*args, **kwargs)
-
-            func_args_str = f"{repr(args)} {repr(kwargs)}"
-            to_log = f"{func.__module__}.{func.__name__} ( {func_args_str} )"
-
-            args[0].log_calls += f"[{time.process_time():.6f}]calling {to_log}\r\n"
-
-            clsname = args[0].__class__.__name__
-
-            err_injection_dict = ConfigHelper().get("err_injection_dict", None)
-            if (
-                err_injection_dict
-                and clsname in err_injection_dict
-                and func.__name__ in err_injection_dict[clsname]
-            ):
-                ret = err_injection_dict[clsname][func.__name__]
-                args[0].log_calls += "[{:.6f}]injecting {} = {}\r\n".format(
-                    time.process_time(),
-                    to_log,
-                    repr(ret),
-                )
-
-            else:
-                ret = func(*args, **kwargs)
-
-            args[0].log_calls += "[{:.6f}]returned {} = {}\r\n".format(
-                time.process_time(),
-                to_log,
-                repr(ret),
-            )
-
-            return ret
-
-        return wrapper
-
-    @classmethod
-    def check_signature(cls, name, bases, attr):
-        """function to check signatures with reference to parent class.
-
-        :param cls: Instance of the class LoggerMeta
-        :type cls: Class
-        :param name: name of the new Class instantiated
-        :type name: Class
-        :param bases: Tuple of base parent classes
-        :type bases: Class
-        :param attrs: Class attributes
-        :type attrs: Arguments(args)
-
-        :return: Return None
-        """
-        check_bases = []
-        for base in bases:
-            all_bases = base.__mro__
-            for i in all_bases:
-                if (
-                    i is not object
-                    and "sign_check" in i.__dict__
-                    and i not in check_bases
-                ):
-                    check_bases.append(i)
-
-        for methodName in attr:
-            f = attr[methodName]
-            if not isinstance(f, types.FunctionType):
-                continue
-
-            for baseClass in check_bases:
-                try:
-                    fBase = getattr(baseClass, methodName)
-                    if isinstance(fBase, types.FunctionType):
-                        if not inspect.signature(f) == inspect.signature(fBase):
-                            debtcollector.deprecate(
-                                "{}.{} Method signature are not identical with base class {}".format(
-                                    name, methodName, baseClass
-                                ),
-                                category=UserWarning,
-                            )
-                            break
-                    else:
-                        debtcollector.deprecate(
-                            "{}.{} Method is not FunctionType in base class {}".format(
-                                name, methodName, baseClass
-                            ),
-                            category=UserWarning,
-                        )
-                        break
-                except AttributeError:
-                    # This method was not defined in this base class,
-                    # So just go to the next base class.
-                    continue
 
 
 def log_message(s, msg, header=False):
