@@ -1473,7 +1473,7 @@ def get_file_magic(fname, num_bytes=4):
     return binascii.hexlify(data)
 
 
-def copy_file_to_server(cmd, password, target="/tftpboot/"):
+def copy_file_to_server(cmd, password, target="/tftpboot/", timeout=120):
     """Require a command like ssh/scp to transfer a file, and a password.
 
     Run the command and enter the password if asked for one.
@@ -1504,7 +1504,7 @@ def copy_file_to_server(cmd, password, target="/tftpboot/"):
 
             if i == 1:
                 p.sendline(f"{password}")
-                p.expect(f"{target}.*", timeout=120)
+                p.expect(f"{target}.*", timeout=timeout)
 
             fname = p.match.group(0).strip()
             logger.info(colored(f"\nfile: {fname}", attrs=["bold"]))
