@@ -990,12 +990,13 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             response = self.client.service.GetParameterValues(p, cmd, cpe_id)
         return AxirosACS._parse_soap_response(response)
 
-    def SPV(self, param_value):
+    def SPV(self, param_value, timeout=default_timeout):
         """Modify the value of one or more CPE Parameters.
 
         It can take a single k,v pair or a list of k,v pairs.
         :param param_value: dictionary that contains the path to the key and
         the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
+        :param timeout: to set the Lifetime Expiry time
         :return: status of the SPV as int (0/1)
         :raises: TR069ResponseError if the status is not (0/1)
         """
@@ -1004,7 +1005,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             self.cpeid = self.dev.board._cpeid
 
         p, cmd, cpe_id = self._build_input_structs(
-            self.cpeid, param_value, action="SPV"
+            self.cpeid, param_value, action="SPV", wait_time=timeout
         )
 
         with self.client.settings(raw_response=True):
