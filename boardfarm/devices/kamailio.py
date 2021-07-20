@@ -172,11 +172,11 @@ EOF"""
         self.expect(self.prompt)
         return self.before
 
-    def sipserver_set_expire_timer(self, from_timer=3600, to_timer=60):
+    def sipserver_set_expire_timer(self, from_timer=180, to_timer=60):
         """Modify the call expires timer in kamailio.cfg
 
         :param from_timer: Expire timer value change from
-        :type from_timer: int 'default to 3600'
+        :type from_timer: int 'default to 180'
         :param to_timer: Expire timer value change to
         :type to_timer: int 'default to 60'
         """
