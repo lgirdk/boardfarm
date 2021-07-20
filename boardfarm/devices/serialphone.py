@@ -1,6 +1,7 @@
 import re
 from functools import wraps
 
+import pexpect
 from debtcollector import deprecate
 
 from boardfarm.exceptions import CodeError
@@ -22,6 +23,7 @@ class SerialPhone:
         self.profile[self.name] = self.profile.get(self.name, {})
         serialphone_profile = self.profile[self.name] = {}
         serialphone_profile["on_boot"] = self.phone_config
+        self._phone_started = False
 
     def __str__(self):
         return f"serialmodem {self.line}"
@@ -78,27 +80,35 @@ class SerialPhone:
     @PyHandler.exit_python_on_exception
     def phone_start(self, baud="115200", timeout="1"):
         """To start the softphone session."""
-        self.sendline("python")
-        self.pyexpect(">>>")
-        self.sendline("import serial,time")
-        self.pyexpect(">>>")
-        self.sendline(
-            "serial_line = serial.Serial('/root/line-%s', %s ,timeout= %s)"
-            % (self.line, baud, timeout)
-        )
-        self.pyexpect(">>>")
-        self.sendline("serial_line.write(b'ATZ\\r')")
-        self.pyexpect(">>>")
-        self.mta_readlines()
-        self.expect("OK")
-        self.sendline("serial_line.write(b'AT\\r')")
-        self.pyexpect(">>>")
-        self.mta_readlines()
-        self.expect("OK")
-        self.sendline("serial_line.write(b'AT+FCLASS=1\\r')")
-        self.pyexpect(">>>")
-        self.mta_readlines()
-        self.expect("OK")
+        if self._phone_started:
+            return
+        else:
+            try:
+                self.sendline("python")
+                self.pyexpect(">>>")
+                self.sendline("import serial,time")
+                self.pyexpect(">>>")
+                self.sendline(
+                    "serial_line = serial.Serial('/root/line-%s', %s ,timeout= %s)"
+                    % (self.line, baud, timeout)
+                )
+                self.pyexpect(">>>")
+                self.sendline("serial_line.write(b'ATZ\\r')")
+                self.pyexpect(">>>")
+                self.mta_readlines()
+                self.expect("OK")
+                self.sendline("serial_line.write(b'AT\\r')")
+                self.pyexpect(">>>")
+                self.mta_readlines()
+                self.expect("OK")
+                self.sendline("serial_line.write(b'AT+FCLASS=1\\r')")
+                self.pyexpect(">>>")
+                self.mta_readlines()
+                self.expect("OK")
+                self._phone_started = True
+            except pexpect.TIMEOUT as e:
+                self._phone_started = False
+                raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
     @PyHandler.exit_python_on_exception
     def mta_readlines(self, time="3"):
@@ -161,6 +171,7 @@ class SerialPhone:
         self.pyexpect(">>>")
         self.sendline("exit()")
         self.expect(self.prompt)
+        self._phone_started = False
 
     @PyHandler.exit_python_on_exception
     def validate_state(self, state):

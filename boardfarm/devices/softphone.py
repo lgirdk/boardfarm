@@ -108,15 +108,18 @@ class SoftPhone(SIPPhoneTemplate):
         """
         if not self._proxy_ip:
             raise CodeError("Please configure softphone first!!")
-        try:
-            self.sendline("pjsua --config-file=" + self.config_name)
-            self.expect(r"registration success, status=200 \(OK\)")
-            self.sendline("\n")
-            self.expect(self.pjsip_prompt)
-            self._phone_started = True
-        except TIMEOUT as e:
-            self._phone_started = False
-            raise CodeError(f"Failed to start Phone!!\nReason{e}")
+        if self._phone_started:
+            return
+        else:
+            try:
+                self.sendline("pjsua --config-file=" + self.config_name)
+                self.expect(r"registration success, status=200 \(OK\)")
+                self.sendline("\n")
+                self.expect(self.pjsip_prompt)
+                self._phone_started = True
+            except TIMEOUT as e:
+                self._phone_started = False
+                raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
     @Checks.is_phone_started
     def dial(self, number: str, receiver_ip: str = None) -> None:
