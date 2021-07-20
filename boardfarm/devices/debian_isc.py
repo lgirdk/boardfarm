@@ -26,7 +26,8 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
     wan_cmts_provisioner = False
     standalone_provisioner = True
     wan_dhcp_server = False
-    vendor_opts_acs_url = False
+    vendor_opts_acsv4_url = False
+    vendor_opts_acsv6_url = False
 
     # default CM specific settings
     default_lease_time = 604800
@@ -683,10 +684,11 @@ EOF"""
             "hardware ethernet": board_config["erouter_mac"],
             "options": {"dhcp6.name-servers": f"{tftp_server}"},
         }
-        if self.vendor_opts_acs_url:
+        if self.vendor_opts_acsv4_url:
             board_config["extra_provisioning"]["erouter"]["options"][
                 "docsis.acsserver"
             ] = "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72:6d:2e:63:6f:6d"
+        if self.vendor_opts_acsv6_url:
             board_config["extra_provisioning_v6"]["erouter"]["options"][
                 "docsis.acsserver"
             ] = (
