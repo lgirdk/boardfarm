@@ -50,7 +50,7 @@ if "pytest" in sys.modules:
     inherit_class = _UnitTestCls
     _using_pytest = True
 else:
-    inherit_class = six.with_metaclass(object)
+    inherit_class = object
 
 
 class BftBaseTest(inherit_class):
