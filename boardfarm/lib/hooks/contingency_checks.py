@@ -191,15 +191,11 @@ class ACS:
 
         logger.info("Executing ACS service check for BF")
 
-        board = dev_mgr.by_type(device_type.DUT)
         acs_server = dev_mgr.by_type(device_type.acs_server)
-
         packet_analysis = "packet_analysis" in env_req["environment_def"]["tr-069"]
 
         def check_acs_connection():
-            return bool(
-                acs_server.get(board.get_cpeid(), "Device.DeviceInfo.SoftwareVersion")
-            )
+            return bool(acs_server.GPV("Device.DeviceInfo.SoftwareVersion"))
 
         acs_connection = check_acs_connection()
         if not acs_connection:
