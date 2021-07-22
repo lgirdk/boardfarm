@@ -123,16 +123,15 @@ class o_helper:
                 self.out.write(colored(string, self.color))
             else:
                 self.out.write(string)
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         # check for the split case
         if (
             len(self.parent.log) > 1
             and self.parent.log[-1] == "\r"
             and string[0] == "\n"
         ):
-            tmp = f"\n[{time.process_time():.6f}]"
-            tmp += string[1:]
-            string = tmp
-        to_log = re.sub("\r\n", f"\r\n[{time.process_time():.6f}]", string)
+            string = f"\n{current_time} {string[1:]}"
+        to_log = re.sub("\r\n", f"\r\n{current_time} ", string)
         self.parent.log += to_log
         if hasattr(self.parent, "test_to_log"):
             self.parent.test_to_log.log += re.sub(
