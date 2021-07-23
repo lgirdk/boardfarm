@@ -1,12 +1,13 @@
 """Class functions to help boardfarm with pexpect logging."""
 import getpass
 import inspect
+import logging
 import os
 import sys
 import time
 
 import pexpect
-import termcolor
+from termcolor import colored
 
 from boardfarm.lib.bft_logging import o_helper
 from boardfarm.tests_wrappers import throw_pexpect_error
@@ -14,12 +15,13 @@ from boardfarm.tests_wrappers import throw_pexpect_error
 IS_PYTHON_3 = sys.version_info > (3, 0)
 
 BFT_DEBUG = "BFT_DEBUG" in os.environ
+logger = logging.getLogger("bft")
 
 
 def print_bold(msg):
     """Print bold."""
     m = time.strftime("%Y-%m-%d %H:%M:%S: ") + msg
-    termcolor.cprint(m, None, attrs=["bold"])
+    logger.debug(colored(m, None, attrs=["bold"]))
 
 
 def frame_index_out_of_file(this_file=__file__):
@@ -349,8 +351,6 @@ def spawn_ssh_pexpect(
         p.prompt = prompt
 
     p.expect(p.prompt)
-
-    from termcolor import colored
 
     class o_helper_foo:
         def __init__(self, color):
