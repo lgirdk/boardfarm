@@ -194,6 +194,10 @@ class ACS:
         acs_server = dev_mgr.by_type(device_type.acs_server)
         packet_analysis = "packet_analysis" in env_req["environment_def"]["tr-069"]
 
+        board = dev_mgr.by_type(device_type.DUT)
+        if not board._cpeid:
+            board.get_cpeid()
+
         def check_acs_connection():
             return bool(acs_server.GPV("Device.DeviceInfo.SoftwareVersion"))
 
