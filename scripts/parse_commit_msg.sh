@@ -18,10 +18,13 @@ rm -f .env
 touch .env
 
 if repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep ^Environment:; then
-    echo export BFT_ARGS=$(realpath $(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep ^Environment: | awk '{print $2}')) >> .env
-    . ./.env
-    if [ ! -f "$BFT_ARGS" ]; then
+    COMMIT_ENV=$(realpath $(repo forall -r ^$GERRIT_PROJECT$ -c 'git show --format=%b -s HEAD' | grep ^Environment: | awk '{print $2}'))
+    if [ ! -f "$COMMIT_ENV" ]; then
         exit 1
+    fi
+    CONFIG_BOARD_MODEL=$(jq .environment_def.board.model $COMMIT_ENV | tr -d '"')
+    if [ $board = $CONFIG_BOARD_MODEL ]; then
+        echo export BFT_ARGS=$COMMIT_ENV >> .env
     fi
 fi
 
