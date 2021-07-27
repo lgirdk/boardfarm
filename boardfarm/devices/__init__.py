@@ -7,27 +7,28 @@ import logging
 import os
 import pkgutil
 import re
-import sys
 import traceback
+from collections import UserList
+from typing import Dict
 
 import pexpect
 import termcolor
-from six.moves import UserList
 
 import boardfarm
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm.lib.DeviceManager import all_device_managers
+from boardfarm.lib.DeviceManager import device_manager, get_device_manager
 from boardfarm.tests_wrappers import check_plugin_for_probe_devices
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
 
 logger = logging.getLogger("bft")
+manager: device_manager = get_device_manager()
 
 
 class DeviceMappings:
-    dev_mappings = {}
-    dev_sw_mappings = {}
+    dev_mappings: Dict = {}
+    dev_sw_mappings: Dict = {}
 
 
 @check_plugin_for_probe_devices(DeviceMappings)
@@ -93,10 +94,6 @@ def check_for_cmd_on_host(cmd, msg=None):
         logger.debug("To install refer to your system SW app installation instructions")
 
 
-__loader__ = None
-_mod = sys.modules[__name__]
-
-
 class _prompt(UserList, list):
     """Check all currently instantiated devices and returns a read-only list.
 
@@ -108,11 +105,10 @@ class _prompt(UserList, list):
     def get_prompts(self):
         ret = []
 
-        for dm in all_device_managers:
-            for d in dm:
-                for p in getattr(d, "prompt", []):
-                    if p not in ret:
-                        ret.append(p)
+        for d in manager:
+            for p in getattr(d, "prompt", []):
+                if p not in ret:
+                    ret.append(p)
 
         return ret
 

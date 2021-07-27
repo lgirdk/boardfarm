@@ -30,7 +30,6 @@ import boardfarm.logging_config  # noqa  F401
 from boardfarm import devices, library, tests
 from boardfarm.dbclients import boardfarmwebclient, logstash, mongodblogger
 from boardfarm.exceptions import BftNotSupportedDevice
-from boardfarm.lib import DeviceManager
 from boardfarm.lib.bft_logging import create_file_logs, write_test_log
 from boardfarm.lib.common import check_url, send_to_elasticsearch
 from boardfarm.lib.env_helper import EnvHelper
@@ -309,7 +308,7 @@ def connect_to_devices(config):
     atexit.register(bfcleanup)
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
-        device_mgr = DeviceManager.device_manager()
+        device_mgr = devices.manager
 
         try:
             # Use helper class to control access to configuration from tests

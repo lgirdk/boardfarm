@@ -2,9 +2,11 @@
 # Setup logging
 """Class functions to Manage device."""
 import logging
+import re
 import sys
 import uuid
 from collections import UserList
+from typing import List
 
 from aenum import Enum, extend_enum
 
@@ -141,26 +143,38 @@ class device_descriptor:
         return ret
 
 
-all_device_managers = []
-
-
-# very hacky, needs to be cleaned.
-# will be done when DM becomes a singleton
 def get_device_by_name(name):
-    for dm in all_device_managers:
-        for _dev in dm:
-            if _dev.name == name:
-                return _dev
+    mgr = get_device_manager()
+
+    # check if device from an array is requested
+    o = re.search(r"(.*)\[(.*)\]", name)
+    if o:
+        device_idx = int(o.group(2))
+        array_type = o.group(1)
+        return mgr.get_device_array(array_type)[device_idx]
+
+    type_enum = getattr(device_type, name)
+    if not type_enum:
+        raise Exception(f"Invalid input ! device name : {name}")
+    return mgr.get_device_by_type(type_enum)
+
+
+def get_device_manager():
+    if not device_manager._instance:
+        device_manager._instance = device_manager()
+    return device_manager._instance
 
 
 class device_manager(UserList):
     """Manages all your devices, for getting and creating (if needed)."""
 
+    _instance = None
+
     def __init__(self):
         """Instance initialisation."""
         super().__init__()
         # List of current devices, which we prefer to reuse instead of creating new ones
-        self.devices = []
+        self.devices: List[device_descriptor] = []
         # Devices that can create other devices, we store them for later
         # so we can use them to create devices that might not already exist
         self.factories = []
@@ -174,9 +188,7 @@ class device_manager(UserList):
             "uniq_id": self.uniqid,
         }
 
-        all_device_managers.append(self)
-
-    @property
+    @property  # type: ignore
     def data(self):
         """Get the list of obj for devices."""
         return [x.obj for x in self.devices]
@@ -188,21 +200,20 @@ class device_manager(UserList):
 
     def set_device_array(self, array_name, dev, override):
         """Set Device Array details."""
-        if getattr(device_array_type, array_name, None):
-            dev_array = getattr(
-                self, array_name, device_array_type._arrays.value[array_name]
-            )
-            for i in dev_array:
-                if i.ipaddr == dev.ipaddr:
-                    if i.port == dev.port:
-                        if not override:
-                            raise Exception(
-                                f"Device manager has {i.name}@{i.ipaddr}:{i.port} already: {dev.name}@{dev.ipaddr}:{dev.port}"
-                            )
-            dev_array.append(dev)
-            setattr(self, array_name, dev_array)
-        else:
+        if not getattr(device_array_type, array_name, None):
             raise Exception(f"Invalid device array type {array_name}")
+
+        dev_array = getattr(
+            self, array_name, device_array_type._arrays.value[array_name]
+        )
+        for i in dev_array:
+            if i.ipaddr == dev.ipaddr and i.port == dev.port and not override:
+                raise Exception(
+                    f"Device manager has {i.name}@{i.ipaddr}:{i.port} already:"
+                    f" {dev.name}@{dev.ipaddr}:{dev.port}"
+                )
+        dev_array.append(dev)
+        setattr(self, array_name, dev_array)
 
     def close_all(self):
         """Close connections to all devices."""
@@ -229,6 +240,12 @@ class device_manager(UserList):
     def get_device_by_type(self, t, num=1):
         """Get device that already exists by type."""
         return self.get_device(t, None, None, num)
+
+    def get_device_array(self, array_type):
+        if not getattr(device_array_type, array_type, None):
+            raise Exception(f"Invalid device array type {array_type}")
+
+        return getattr(self, array_type, [])
 
     def get_devices_by_types(self, types):
         """Get multiple devices by types."""
@@ -310,8 +327,7 @@ class device_manager(UserList):
                     "Device Manager already has '%s' attribute, you cannot add another."
                     % attribute_name
                 )
-            else:
-                setattr(self, attribute_name, new_dev.obj)
-                # Alias board to DUT
-                if attribute_name == "DUT":
-                    self.board = new_dev.obj
+            setattr(self, attribute_name, new_dev.obj)
+            # Alias board to DUT
+            if attribute_name == "DUT":
+                self.board = new_dev.obj
