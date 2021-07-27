@@ -691,8 +691,10 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
                 elif idx == 1 and count == len(invite):
                     raise RTPNotFound
             return True
-        except (PexpectErrorTimeout, RTPNotFound):
+        except (PexpectErrorTimeout):
             device.expect(device.prompt)
+            return False
+        except (RTPNotFound):
             return True if negate else False
         finally:
             if rm_file:
