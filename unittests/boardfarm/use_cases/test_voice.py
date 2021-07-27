@@ -65,18 +65,17 @@ class DummySIPEndpoint2(SIPPhoneTemplate):
 @pytest.fixture
 def voice_resources():
     A, B = DummySIPEndpoint("A", 1000), DummySIPEndpoint("B", 2000)
-    A.phone_config(), B.phone_config()
-    A.phone_start(), B.phone_start()
+
+    A = voice.VoiceClient("A", "", 1000, A)
+    B = voice.VoiceClient("B", "", 1000, B)
 
     yield A, B
-
-    A.phone_kill(), B.phone_kill()
 
 
 def test_answer_call_negative(mocker, voice_resources):
     """A dials B, B not ringing, B answers call fails"""
     _, B = voice_resources
-    mocker.patch.object(B, "is_ringing", return_value=False, autospec=True)
+    mocker.patch.object(B._obj(), "is_ringing", return_value=False, autospec=True)
     with pytest.raises(CodeError) as e:
         voice.answer_a_call(who_answers=B)
 

@@ -4,7 +4,7 @@ import ipaddress
 import logging
 import os
 import re
-from typing import Union
+from typing import Optional, Union
 
 import pexpect
 
@@ -27,6 +27,9 @@ class LinuxInterface:
 
     tftp_dir = "/tftpboot"
     sign_check = True
+    iface_dut: Optional[str] = None
+    name: str = ""
+    gw: str = ""
 
     def check_status(self):
         """Check the state of the device."""

@@ -4,10 +4,10 @@ import pexpect
 from boardfarm_docsis.exceptions import VoiceSetupConfigureFailure
 from nested_lookup import nested_lookup
 
-from boardfarm.devices.base_devices.sip_template import SIPTemplate
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.network_testing import kill_process
+from boardfarm.use_cases.voice import VoiceServer
 
 
 def add_dns_auth_record(dns, sipserver_name):
@@ -163,9 +163,7 @@ EOF"""
     dev.expect(dev.prompt)
 
 
-def parse_sip_trace(
-    device: SIPTemplate, fname: str, fields: str = ""
-) -> List[List[str]]:
+def parse_sip_trace(dev: VoiceServer, fname: str, fields: str = "") -> List[Tuple[str]]:
     """Read and filter SIP packets from the captured file.
 
     The Session Initiation Protocol is a signaling protocol used for initiating,
@@ -181,6 +179,7 @@ def parse_sip_trace(
     :return: list of SIP packets as [src ip, dst ip, sip contact, sip msg]
     :rtype: List[List[str]]
     """
+    device = dev._obj()
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
         "-T fields -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
@@ -196,7 +195,7 @@ def parse_sip_trace(
     output = []
     for line in out:
         src, dst, sfrom, contact, req, status = line.split("\t")
-        output.append([src, dst, contact or sfrom, req or status])
+        output.append((src, dst, contact or sfrom, req or status))
     return output
 
 
