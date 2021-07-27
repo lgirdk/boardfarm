@@ -160,7 +160,7 @@ EOF"""
         """
         self.sendline(f"kamctl ul show {user}")
         self.expect(self.prompt)
-        if f"sip:{user}@{ip_address}:5060" in self.before:
+        if f"sip:{user}@{ip_address}" in self.before:
             return "Registered"
         elif "404 AOR not found" in self.before:
             return "Unregistered"
