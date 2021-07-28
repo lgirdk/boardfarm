@@ -12,6 +12,7 @@ from aenum import Enum, extend_enum
 
 from boardfarm.exceptions import DeviceDoesNotExistError
 from boardfarm.lib.wifi_lib.manager import WiFiMgr
+from boardfarm.lib.wrappers import singleton
 
 logging.basicConfig(stream=sys.stdout, format="%(message)s")
 logger = logging.getLogger("DeviceManager")
@@ -144,7 +145,7 @@ class device_descriptor:
 
 
 def get_device_by_name(name):
-    mgr = get_device_manager()
+    mgr = device_manager()
 
     # check if device from an array is requested
     o = re.search(r"(.*)\[(.*)\]", name)
@@ -159,19 +160,13 @@ def get_device_by_name(name):
     return mgr.get_device_by_type(type_enum)
 
 
-def get_device_manager():
-    if not device_manager._instance:
-        device_manager._instance = device_manager()
-    return device_manager._instance
-
-
+@singleton
 class device_manager(UserList):
     """Manages all your devices, for getting and creating (if needed)."""
 
-    _instance = None
-
     def __init__(self):
         """Instance initialisation."""
+        self.name = "device_manager"
         super().__init__()
         # List of current devices, which we prefer to reuse instead of creating new ones
         self.devices: List[device_descriptor] = []

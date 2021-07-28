@@ -16,14 +16,14 @@ import termcolor
 
 import boardfarm
 from boardfarm.exceptions import BftNotSupportedDevice, ConnectionRefused
-from boardfarm.lib.DeviceManager import device_manager, get_device_manager
+from boardfarm.lib.DeviceManager import device_manager
 from boardfarm.tests_wrappers import check_plugin_for_probe_devices
 
 # TODO: this probably should not the generic device
 from . import openwrt_router
 
 logger = logging.getLogger("bft")
-manager: device_manager = get_device_manager()
+manager: device_manager = device_manager()
 
 
 class DeviceMappings:

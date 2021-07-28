@@ -23,7 +23,6 @@ from termcolor import colored
 from boardfarm.devices import linux  # noqa : F401
 from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.DeviceManager import device_manager
 from boardfarm.lib.installers import apt_install
 
 logger = logging.getLogger("bft")
@@ -46,7 +45,7 @@ class DebianBox(linux.LinuxDevice):
         self.args = args
         self.kwargs = {}
         for k, v in kwargs.items():
-            if not isinstance(kwargs[k], device_manager):
+            if getattr(kwargs[k], "name", "") != "device_manager":
                 self.kwargs[k] = copy.deepcopy(v)
         self.username = kwargs.pop("username", "root")
         self.password = kwargs.pop("password", "bigfoot1")
@@ -97,13 +96,12 @@ class DebianBox(linux.LinuxDevice):
                 elif opt.startswith("wan-static-ip:"):
                     value = str(opt.replace("wan-static-ip:", ""))  # noqa : F401
                     if "/" not in value:
-                        value = value + ("/24")
+                        value += "/24"
                     self.gw_ng = ipaddress.IPv4Interface(value)  # noqa : F821
                     self.nw = self.gw_ng.network
                     self.gw_prefixlen = self.nw._prefixlen
                     self.gw = self.gw_ng.ip
                     self.static_ip = True
-                # TODO: remove wan-static-route at some point above
                 elif opt.startswith("static-route:"):
                     self.static_route = opt.replace("static-route:", "").replace(
                         "-", " via "
@@ -196,10 +194,7 @@ class DebianBox(linux.LinuxDevice):
         if post_cmd is not None:
             sys.stdout.write("\tRunning post_cmd.... ")
             sys.stdout.flush()
-            env_prefix = ""
-            for k, v in self.dev.env.items():
-                env_prefix += f"export {k}={v}; "
-
+            env_prefix = "".join(f"export {k}={v}; " for k, v in self.dev.env.items())
             self.sendline(env_prefix + post_cmd)
             self.expect(self.prompt)
             logger.info("\tpost_cmd done")
