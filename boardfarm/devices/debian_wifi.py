@@ -1,11 +1,13 @@
 """Extension of Debian class with wifi functions."""
 import ipaddress
 import re
+from typing import List
 
 import pexpect
 import pycountry
 from debtcollector import moves
 
+from boardfarm.exceptions import CodeError
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_iw
 from boardfarm.lib.linux_nw_utility import DHCP
@@ -156,17 +158,28 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def wifi_scan(self):
         self.list_wifi_ssids()
 
-    def list_wifi_ssids(self):
-        """Scan the SSID associated with the wifi interface.
+    def list_wifi_ssids(self) -> List[str]:
+        """To scan for available WiFi SSIDs
 
-        :return: List of SSID
-        :rtype: string
+        :raises CodeError: WLAN card was blocked due to some process.
+        :return: List of Wi-FI SSIDs
+        :rtype: List[str]
         """
         cmd = f"iw dev {self.iface_wifi} scan | grep SSID: | sed 's/[[:space:]]*SSID: //g'"
-        self.sudo_sendline(cmd)
-        self.expect_exact(cmd)
-        self.expect(self.prompt)
-        return self.before.strip().splitlines()
+        for _ in range(3):
+            self.sudo_sendline(cmd)
+            self.expect_exact(cmd)
+            self.expect(self.prompt)
+            out = self.before
+            if "Device or resource busy" not in out:
+                # out can be completely empty
+                # we only run the loop again if wlan card was busy
+                return out.strip().splitlines()
+            if not self.is_wlan_connected():
+                # run rfkill only if device is not connected to any WiFi SSID.
+                self.sudo_sendline("rfkill unblock all")
+                self.expect(self.prompt)
+        raise CodeError("Device failed to scan for SSID due to resource busy!")
 
     def wifi_check_ssid(self, ssid_name):
         """Check the SSID provided is present in the scan list.
@@ -262,10 +275,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.sendline(f"iw {self.iface_wifi} link")
         self.expect(self.prompt)
         match = re.search("Connected", self.before)
-        if match:
-            return True
-        else:
-            return False
+        return bool(match)
 
     def check_wlan_client_ipv4(self):
         """Verify if container has an ipv4
