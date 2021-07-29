@@ -34,7 +34,8 @@ RUN apt-get update && \
     iw \
     wpasupplicant \
     ntpdate \
-    build-essential
+    build-essential \
+    rfkill
 
 # NOTE: apparmor will interfere with dhclient, disable on HOST by running:
 # sudo service apparmor stop
