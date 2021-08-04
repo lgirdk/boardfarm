@@ -437,7 +437,7 @@ EOFEOFEOFEOF"""
             if will_prompt_for_password:
                 self.sendline(self.password)
                 self.expect(self.prompt)
-        super(LinuxDevice, self).sendline(cmd)
+        super().sendline(cmd)
 
     def set_cli_size(self, columns):
         """Set the terminal columns value."""
