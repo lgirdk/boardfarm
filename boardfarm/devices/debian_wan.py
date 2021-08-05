@@ -37,6 +37,12 @@ class DebianWAN(debian.DebianBox):
 
     def setup(self, config):
         self.setup_dnsmasq(config)
+        self.modify_dns_hosts(
+            {
+                "www.google.com": [str(self.gw)],
+                "ipv6.google.com": [str(self.gwv6)],
+            }
+        )
         self.sendline("killall iperf ab hping3")
         self.expect(self.prompt)
 
