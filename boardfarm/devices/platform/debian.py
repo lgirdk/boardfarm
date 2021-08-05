@@ -560,21 +560,21 @@ class DebianBox(linux.LinuxDevice):
         if addn_host:
             _update_host_dict(addn_host)
             restart = True
-        else:
-            if hasattr(self, "profile"):
-                host_dicts = nested_lookup("hosts", self.profile.get(self.name, {}))
-                for i in host_dicts:
-                    _update_host_dict(i)
-            if config is not None and hasattr(config, "board"):
-                for dev in config.devices:
-                    d = getattr(config, dev, None)
-                    if hasattr(d, "dns"):
-                        v4_hosts = d.dns.hosts_v4
-                        v6_hosts = d.dns.hosts_v6
-                        for host_val in v4_hosts, v6_hosts:
-                            for host, ips in host_val.items():
-                                for ip in set(ips):
-                                    self.hosts[host].append(ip)
+
+        if hasattr(self, "profile"):
+            host_dicts = nested_lookup("hosts", self.profile.get(self.name, {}))
+            for i in host_dicts:
+                _update_host_dict(i)
+        if config is not None and hasattr(config, "board"):
+            for dev in config.devices:
+                d = getattr(config, dev, None)
+                if hasattr(d, "dns"):
+                    v4_hosts = d.dns.hosts_v4
+                    v6_hosts = d.dns.hosts_v6
+                    for host_val in v4_hosts, v6_hosts:
+                        for host, ips in host_val.items():
+                            for ip in set(ips):
+                                self.hosts[host].append(ip)
 
         if self.hosts:
             self.sendline("cat > /etc/dnsmasq.hosts << EOF")
