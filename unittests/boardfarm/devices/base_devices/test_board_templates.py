@@ -29,7 +29,7 @@ def test_cannot_instantiate_derived_board_missing_model():
             def reset(self, method: str = None):
                 pass
 
-            def factory_reset(self, method: str = None):
+            def factory_reset(self, method: str = None) -> bool:
                 pass
 
             def close(self):
@@ -59,7 +59,7 @@ def test_cannot_instantiate_derived_board_missing_hw():
             def reset(self, method: str = None):
                 pass
 
-            def factory_reset(self, method: str = None):
+            def factory_reset(self, method: str = None) -> bool:
                 pass
 
             def close(self):
@@ -89,7 +89,7 @@ def test_cannot_instantiate_derived_board_missing_close():
             def reset(self, method: str = None):
                 pass
 
-            def factory_reset(self, method: str = None):
+            def factory_reset(self, method: str = None) -> bool:
                 pass
 
         board = MyBoard()  # noqa: F841
@@ -146,7 +146,7 @@ def test_instantiate_derived_board():
         def reset(self, method: str = None):
             pass
 
-        def factory_reset(self, method: str = None):
+        def factory_reset(self, method: str = None) -> bool:
             pass
 
         def close(self):
