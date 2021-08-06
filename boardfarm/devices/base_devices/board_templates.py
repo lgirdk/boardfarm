@@ -152,11 +152,11 @@ class BoardTemplate(metaclass=__MetaSignatureChecker):
         via other device (ACS), etc"""
 
     @abstractmethod
-    def factory_reset(self, method: str = None):
+    def factory_reset(self, method: str = None) -> bool:
         """Resets the board to default settings according to the 'method'.
         Method can be defined by the implemetation as needed.
         Examples: reset via PDU, via OS console, via snmp, via other device
-        (ACS), etc"""
+        (ACS), etc. Returns True/False based on success"""
 
     def reload_sw_object(self, sw):
         sw_class = get_device_mapping_class(sw)
