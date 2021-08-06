@@ -214,7 +214,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
             message="dial() is deprecated. use call() method to make calls",
             category=UserWarning,
         )
-        self.py.run(f"serial_line.write(b'ATD{number}\\r')")
+        self.py.run(f"serial_line.write(b'ATD{number};\\r')")
         self.mta_readlines(search="ATD")
 
     @Checks.is_phone_started
@@ -225,7 +225,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         :type callee: SIPPhoneTemplate
         """
         number = callee.number
-        self.py.run(f"serial_line.write(b'ATD{number}\\r')")
+        self.py.run(f"serial_line.write(b'ATD{number};\\r')")
         self.mta_readlines(search="ATD")
 
     # maintaining backward compatibility for legacy tests.
