@@ -11,9 +11,10 @@ import ipaddress
 import logging
 import re
 from collections import namedtuple
+from contextlib import suppress
 
 import netaddr
-import six
+from pexpect.exceptions import TIMEOUT
 
 from boardfarm.exceptions import (
     ConnectionRefused,
@@ -72,7 +73,7 @@ def tcpdump_capture(
 
 
 def kill_process(device, process="tcpdump", pid=None, sync=True, port=None):
-    """Kill any active process
+    """Kill any active process.
 
     :param device: lan or wan
     :type device: Object
@@ -95,8 +96,12 @@ def kill_process(device, process="tcpdump", pid=None, sync=True, port=None):
         device.sudo_sendline(f"killall {process}")
     device.expect(device.prompt)
     if sync:
-        device.sudo_sendline("sync")
-        retry_on_exception(device.expect, (device.prompt,), retries=5, tout=60)
+        with suppress(TIMEOUT):
+            for _ in range(3):
+                device.sudo_sendline("sync")
+                device.expect(device.prompt)
+                if "Done" in device.before:
+                    break
     return device.before
 
 
