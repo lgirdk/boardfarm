@@ -11,6 +11,8 @@ repos:
             stages: [commit]
           - id: mixed-line-ending
             stages: [commit]
+          - id: check-toml
+            stages: [commit]
           - id: trailing-whitespace
             exclude: cm-cfg
             stages: [commit]
