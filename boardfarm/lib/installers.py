@@ -153,7 +153,7 @@ def apt_update(device, timeout=120):
         device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
     )
     device.sendline(f"{shim_prefix}apt-get -q update")
-    device.expect("Reading package")
+    device.expect("Reading package", timeout=timeout)
     device.expect(device.prompt, timeout=timeout)
 
 
