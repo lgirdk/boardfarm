@@ -9,7 +9,7 @@ import pkgutil
 import re
 import traceback
 from collections import UserList
-from typing import Dict
+from typing import Dict, Optional
 
 import pexpect
 import termcolor
@@ -23,7 +23,10 @@ from boardfarm.tests_wrappers import check_plugin_for_probe_devices
 from . import openwrt_router
 
 logger = logging.getLogger("bft")
-manager: device_manager = device_manager()
+
+# Will be populate on runtime
+# bft::connect_to_devices for each board will set a device manager instance
+manager: Optional[device_manager] = None
 
 
 class DeviceMappings:
