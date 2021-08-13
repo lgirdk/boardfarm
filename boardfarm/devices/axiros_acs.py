@@ -30,6 +30,7 @@ from boardfarm.exceptions import (
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
 from boardfarm.lib.common import get_class_name_in_stack, scp_from
 from boardfarm.lib.dns import DNS
+from boardfarm.lib.linux_nw_utility import NwFirewall
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 
 from . import base_acs
@@ -198,6 +199,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.tcpdump_filter = ""
         self.aux_iface_dut = self.kwargs.pop("aux0", None)
         AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
+        self.firewall = NwFirewall(self)
 
         if self.options:
             options = [x.strip() for x in self.options.split(",")]
