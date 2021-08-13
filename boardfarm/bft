@@ -32,6 +32,7 @@ from boardfarm.dbclients import boardfarmwebclient, logstash, mongodblogger
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.lib.bft_logging import create_file_logs, write_test_log
 from boardfarm.lib.common import check_url, send_to_elasticsearch
+from boardfarm.lib.DeviceManager import clean_device_manager, device_manager
 from boardfarm.lib.env_helper import EnvHelper
 from boardfarm.zephyr import zephyr_reporter
 
@@ -125,7 +126,7 @@ def threaded_device_helper(device, device_mgr, ret):
 def setup_dynamic_devices(config, device_mgr, env_helper):
     """Set up dynamic devices from devices node in JSON config file."""
     config.devices = []
-    dynamic_devices = []
+    dynamic_devices = []  # pylint: disable=maybe-no-member
     ret = queue.Queue()
 
     for device in config.board["devices"]:
@@ -308,7 +309,8 @@ def connect_to_devices(config):
     atexit.register(bfcleanup)
     for name in config.BOARD_NAMES:
         # DeviceManager makes it easy to find devices by name, type, features...
-        device_mgr = devices.manager
+        clean_device_manager()
+        device_mgr = devices.manager = device_manager()
 
         try:
             # Use helper class to control access to configuration from tests

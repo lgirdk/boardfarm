@@ -6,7 +6,7 @@ import re
 import sys
 import uuid
 from collections import UserList
-from typing import List
+from typing import Dict, List
 
 from aenum import Enum, extend_enum
 
@@ -326,3 +326,14 @@ class device_manager(UserList):
             # Alias board to DUT
             if attribute_name == "DUT":
                 self.board = new_dev.obj
+
+
+def clean_device_manager():
+    """This will remove the instance reference maintained by singleton wrapper"""
+    # this will be dynamically populated by singleton.
+    # Need to ignore the pylint error.
+    instances: Dict = device_manager.__closure__[  # pylint: disable=maybe-no-member
+        1
+    ].cell_contents
+    while instances:
+        instances.popitem()
