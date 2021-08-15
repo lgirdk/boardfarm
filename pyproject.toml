@@ -73,6 +73,7 @@ dev = [
     "mypy",
     "pre-commit",
     "pylint",
+    "types-termcolor",
 ]
 doc = ["sphinx"]
 test = [
