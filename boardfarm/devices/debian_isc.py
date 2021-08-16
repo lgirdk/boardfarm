@@ -436,7 +436,7 @@ option docsis.acsserver code 6 = { integer 8, string };
 option space vivso code width 4 length width 1;
 option vivso.iana code 0 = string;
 option vivso.docsis code 4491 = encapsulate docsis;
-option option-125 code 125 = encapsulate vivso;
+option op125 code 125 = encapsulate vivso;
 
 subnet ###PROV_IP### netmask ###PROV_NETMASK### {
   interface ###IFACE###;
@@ -685,6 +685,11 @@ EOF"""
             "options": {"dhcp6.name-servers": f"{tftp_server}"},
         }
         if self.vendor_opts_acsv4_url:
+            # workaround to a known issue in ISC DHCP server
+            # https://lists.isc.org/pipermail/dhcp-users/2012-July/015793.html
+            board_config["extra_provisioning"]["erouter"]["options"][
+                "vivso.iana"
+            ] = "01:01:01"
             board_config["extra_provisioning"]["erouter"]["options"][
                 "docsis.acsserver"
             ] = "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72:6d:2e:63:6f:6d"
