@@ -1,6 +1,18 @@
+import sys
+
 import pytest
 
 from boardfarm.devices.base_devices.pdu_templates import PDUTemplate
+
+
+@pytest.fixture
+def inst_fail_msg():
+    """Pre-Python 3.9 error message is in plural form"""
+    if sys.version_info < (3, 9):
+        msg = "Can't instantiate abstract class MyPDU with abstract methods"
+    else:
+        msg = "Can't instantiate abstract class MyPDU with abstract method"
+    yield msg
 
 
 def test_cannot_instantiate_abc_pdu():
@@ -11,7 +23,8 @@ def test_cannot_instantiate_abc_pdu():
     )
 
 
-def test_cannot_instantiate_derived_pdu_missing_connect():
+def test_cannot_instantiate_derived_pdu_missing_connect(inst_fail_msg):
+    exp_err_msg = f"{inst_fail_msg} _connect"
     with pytest.raises(TypeError) as err:
         # missing "_connect" property definition
         class MyPDU(PDUTemplate):
@@ -25,10 +38,7 @@ def test_cannot_instantiate_derived_pdu_missing_connect():
                 pass
 
         pdu = MyPDU("127.0.0.1")
-    assert (
-        "Can't instantiate abstract class MyPDU with abstract methods _connect"
-        in str(err.value)
-    )
+    assert exp_err_msg in str(err.value)
 
 
 def test_cannot_instantiate_derived_pdu_wrong_signature_reset():

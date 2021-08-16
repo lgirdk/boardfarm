@@ -1,6 +1,18 @@
+import sys
+
 import pytest
 
 from boardfarm.devices.base_devices.board_templates import BoardTemplate
+
+
+@pytest.fixture
+def inst_fail_msg():
+    """Pre-Python 3.9 error message is in plural form"""
+    if sys.version_info < (3, 9):
+        msg = "Can't instantiate abstract class MyBoard with abstract methods"
+    else:
+        msg = "Can't instantiate abstract class MyBoard with abstract method"
+    yield msg
 
 
 def test_cannot_instantiate_abc_board():
@@ -12,7 +24,8 @@ def test_cannot_instantiate_abc_board():
     )
 
 
-def test_cannot_instantiate_derived_board_missing_model():
+def test_cannot_instantiate_derived_board_missing_model(inst_fail_msg):
+    exp_err_msg = f"{inst_fail_msg} model"
     with pytest.raises(TypeError) as err:
         # missing "model" property definition
         class MyBoard(BoardTemplate):
@@ -36,13 +49,11 @@ def test_cannot_instantiate_derived_board_missing_model():
                 return super().close()
 
         board = MyBoard()  # noqa: F841
-    assert (
-        "Can't instantiate abstract class MyBoard with abstract methods model"
-        in str(err.value)
-    )
+    assert exp_err_msg in str(err.value)
 
 
-def test_cannot_instantiate_derived_board_missing_hw():
+def test_cannot_instantiate_derived_board_missing_hw(inst_fail_msg):
+    exp_err_msg = f"{inst_fail_msg} hw"
     with pytest.raises(TypeError) as err:
         # missing "hw" property definition
         class MyBoard(BoardTemplate):
@@ -66,12 +77,11 @@ def test_cannot_instantiate_derived_board_missing_hw():
                 return super().close()
 
         board = MyBoard()  # noqa: F841
-    assert "Can't instantiate abstract class MyBoard with abstract methods hw" in str(
-        err.value
-    )
+    assert exp_err_msg in str(err.value)
 
 
-def test_cannot_instantiate_derived_board_missing_close():
+def test_cannot_instantiate_derived_board_missing_close(inst_fail_msg):
+    exp_err_msg = f"{inst_fail_msg} close"
     with pytest.raises(TypeError) as err:
         # missing "close" method definition
         class MyBoard(BoardTemplate):
@@ -93,10 +103,7 @@ def test_cannot_instantiate_derived_board_missing_close():
                 pass
 
         board = MyBoard()  # noqa: F841
-    assert (
-        "Can't instantiate abstract class MyBoard with abstract methods close"
-        in str(err.value)
-    )
+    assert exp_err_msg in str(err.value)
 
 
 def test_cannot_instantiate_derived_board_wrong_signature():
