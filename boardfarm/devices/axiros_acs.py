@@ -196,6 +196,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.aux_ip = self.kwargs.pop("aux_ip", None)
         self.aux_url = self.kwargs.pop("aux_url", None)
         self.tcpdump_filter = ""
+        self.aux_iface_dut = self.kwargs.pop("aux0", None)
         AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
 
         if self.options:
