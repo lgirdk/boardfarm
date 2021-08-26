@@ -67,9 +67,9 @@
         dev = [
             "black",
             "flake8",
+            "flake8-bugbear",
             "flake8-rst",
             "flake8-rst-docstrings",
-            "flake8-bugbear",
             "mypy",
             "pre-commit",
             "pylint",
