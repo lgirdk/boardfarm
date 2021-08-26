@@ -188,6 +188,7 @@ class LinuxInterface:
         if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=30):
             self.sendcontrol("c")
             self.expect(self.prompt)
+        return self.before
 
     def release_ipv6(self, interface, stateless=False):
         """Release ipv6 for the interface."""
@@ -202,6 +203,7 @@ class LinuxInterface:
         if 0 == self.expect([pexpect.TIMEOUT] + self.prompt, timeout=15):
             self.sendcontrol("c")
             self.expect(self.prompt)
+        return self.before
 
     def check_access_url(self, url, source_ip=None):
         """Check source_ip can access url.
