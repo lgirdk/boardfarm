@@ -18,6 +18,7 @@ from pexpect.exceptions import TIMEOUT
 
 from boardfarm.exceptions import ConnectionRefused, PexpectErrorTimeout, RTPNotFound
 from boardfarm.lib.common import retry_on_exception
+from boardfarm.lib.DeviceManager import device_type
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])
 rtp_msg = namedtuple("RTPMessage", ["src_ip", "dest_ip"])

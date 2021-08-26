@@ -7,14 +7,16 @@ from boardfarm.exceptions import TR069FaultCode
 
 class Response:
     def __init__(self, content, text):
-        self.content = content
-        self.text = text
+        self._content = content
+        self._text = text
 
+    @property
     def content(self):
-        return self.content
+        return self._content
 
+    @property
     def text(self):
-        return self.text
+        return self._text
 
 
 text_1 = '<?xml version="1.0" encoding="UTF-8"?>\n<SOAP-ENV:Envelope\n  \n  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"\n  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"\n  xmlns:xsd3="http://www.w3.org/2001/XMLSchema"\n  xmlns:xsi3="http://www.w3.org/2001/XMLSchema-instance"\n>\n<SOAP-ENV:Body >\n<ns1:GetParameterValuesResponse xmlns:ns1="urn:AxessInterface">\n<Result>\n<code xsi3:type="xsd3:int">200</code>\n<details SOAP-ENC:arrayType="ns1:KeyValueStruct[1]" xsi3:type="SOAP-ENC:Array">\n<item>\n<key xsi3:type="xsd3:string">Device.ManagementServer.InstanceMode</key>\n<value xsi3:type="xsd3:string">InstanceNumber</value>\n</item>\n</details>\n<message xsi3:type="xsd3:string">OK</message>\n<ticketid xsi3:type="xsd3:int">85614</ticketid>\n</Result>\n</ns1:GetParameterValuesResponse>\n</SOAP-ENV:Body>\n</SOAP-ENV:Envelope>\n'

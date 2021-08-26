@@ -108,7 +108,9 @@ class _prompt(UserList, list):
     def get_prompts(self):
         ret = []
 
-        for d in manager:
+        # bft::connect_to_devices for each board will set a manager instance and by default set to None
+        # Hence pylint error E1133 will be seen which is ignore by disable
+        for d in manager:  # pylint: disable=E1133
             for p in getattr(d, "prompt", []):
                 if p not in ret:
                     ret.append(p)

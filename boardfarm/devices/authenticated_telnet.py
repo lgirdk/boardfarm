@@ -54,8 +54,6 @@ class AuthenticatedTelnetConnection:
             self.device.sendline(self.password)
             self.device.setecho(True)
             self.device.expect(["OpenGear Serial Server"])
-        except Exception:
-            raise
         except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
 

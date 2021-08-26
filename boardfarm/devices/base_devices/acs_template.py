@@ -13,7 +13,7 @@ class AcsTemplate(metaclass=__MetaSignatureChecker):
 
     @property
     @abstractmethod
-    def model(cls):
+    def model(self):
         """This attribute is used by boardfarm to match parameters entry from config
         and initialise correct object.
         This property shall be any string value that matches the "type"

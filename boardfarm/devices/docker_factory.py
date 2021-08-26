@@ -393,11 +393,9 @@ class DockerFactory(linux.LinuxDevice):
         """Close docker."""
         self.clean_docker()
         self.clean_docker_network()
-        out = super().close(*args, **kwargs)
+        super().close(*args, **kwargs)
         atexit.unregister(self.run_cleanup_cmd)
-        return out
 
-    def run_cleanup_cmd(self):
         """Run cleanup command."""
         self.clean_docker()
         self.clean_docker_network()

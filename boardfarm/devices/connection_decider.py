@@ -55,8 +55,12 @@ def connection(conn_type, device, **kwargs):
         out = ser2net_connection.Ser2NetConnection(**kwargs)
 
     if hasattr(out, "close"):
+        # We're assigning a bounded method of an instance to another instance from a different class.
+        # The unbounded method cannot be accessed directly, hence pylint throws an error.
         unbound_method = out.close.__func__
-        bounded_method = unbound_method.__get__(out.device, out.device.__class__)
+        bounded_method = unbound_method.__get__(  # pylint: disable=E1111, E1120
+            out.device, out.device.__class__
+        )
         out.device.close = bounded_method
 
     return out

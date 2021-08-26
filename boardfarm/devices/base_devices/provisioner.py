@@ -89,7 +89,7 @@ class Provisioner(debian.DebianBox):
         """To apply configuration changes made to TFTP server."""
         raise NotImplementedError
 
-    def copy_file_to_server(file_path):
+    def copy_file_to_server(self, file_path):
         """Copy a config file to remote/local server.
 
         2 approaches:

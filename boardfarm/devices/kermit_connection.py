@@ -66,4 +66,4 @@ class KermitConnection:
         self.sendline("q")
         self.expect(r"OK to exit\?")
         self.sendline("y")
-        super(type(self), self).close()
+        super().close()

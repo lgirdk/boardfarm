@@ -283,7 +283,7 @@ class web_gui:
         query = None
         try:
             query = WebDriverWait(self.driver, timeout).until(
-                EC.element_selection_state_to_be(element)
+                EC.element_selection_state_to_be(element, **kwargs)
             )
         except Exception:
             logger.error(

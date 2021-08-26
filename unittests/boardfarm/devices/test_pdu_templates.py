@@ -16,8 +16,9 @@ def inst_fail_msg():
 
 
 def test_cannot_instantiate_abc_pdu():
+    # The argument for PDUTemplate() has not been passed as part of unitttest check, hence diabling pylint error
     with pytest.raises(TypeError) as err:
-        pdu = PDUTemplate()
+        pdu = PDUTemplate()  # pylint: disable=E1120
     assert "PDUTemplate with abstract methods _connect, reset, turn_off" in str(
         err.value
     )
@@ -80,7 +81,8 @@ def test_cannot_instantiate_derived_pdu_without_init_no_args():
             def turn_off(self):
                 pass
 
-        pdu = MyPDU()
+        # The argument for MyPDU() has not been passed as part of unitttest check, hence diabling pylint error
+        pdu = MyPDU()  # pylint: disable=E1120
     assert "__init__() missing 1 required positional argument: 'ip_address'" in str(
         err.value
     )

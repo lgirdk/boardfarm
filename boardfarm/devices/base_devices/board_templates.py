@@ -110,12 +110,12 @@ class BoardTemplate(metaclass=__MetaSignatureChecker):
 
     @property
     @abstractmethod
-    def cm_mac(cls):
+    def cm_mac(self):
         """The DUT mac address"""
 
     @property
     @abstractmethod
-    def model(cls):
+    def model(self):
         """This attribute is used by boardfarm to select the class to be used
         to create the object that allows the test fixutes to access the DUT.
         This property shall return a value that matches the "board_type"

@@ -586,7 +586,8 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :rtype: string
         """
         try:
-            return self.GPV(param)[0]["value"]
+            # GPV return output is subscriptable yet pylint throws false positive error hence added pylint disable
+            return self.GPV(param)[0]["value"]  # pylint: disable=E1136
         except Exception as e:
             logger.error(e)
             return None
@@ -607,8 +608,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :rtype: dict
         """
         try:
-            out = self.GPV(param)
-            return {item["key"]: item["value"] for item in out}
+            # GPV has return value yet pylint give a false postive in this scenario, hence added pylint disable
+            out = self.GPV(param)  # pylint: disable=E1111
+            return {item["key"]: item["value"] for item in out}  # pylint: disable=E1133
         except Exception as e:
             logger.error(e)
             return {}

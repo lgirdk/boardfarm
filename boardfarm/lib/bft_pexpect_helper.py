@@ -213,10 +213,8 @@ class bft_pexpect_helper(pexpect.spawn):
 
         o = self._logfile_read
         self.logfile_read = None
-        ret = super().interact(escape_character, input_filter, output_filter)
+        super().interact(escape_character, input_filter, output_filter)
         self.logfile_read = o
-
-        return ret
 
     # this is here for the debug parser to egress this file only
     # when printing calling stacks

@@ -77,4 +77,4 @@ class Ser2NetConnection:
         except Exception:
             self.sendline("~.")
         finally:
-            super(type(self), self).close()
+            super().close()

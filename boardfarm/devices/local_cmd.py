@@ -55,4 +55,4 @@ class LocalCmd:
         except Exception:
             pass
         finally:
-            super(type(self), self).close()
+            super().close()

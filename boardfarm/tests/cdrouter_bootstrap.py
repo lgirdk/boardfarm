@@ -39,7 +39,9 @@ class CDrouterStub(rootfs_boot.RootFSBootTest):
         wan = self.dev.wan
         lan = self.dev.lan
 
-        from boardfarm.devices import cdrouter
+        from boardfarm.lib.DeviceManager import get_device_by_name
+
+        cdrouter = get_device_by_name("cdrouter")
 
         self.cdrouter_server = cdrouter.bf_args.cdrouter_server
         self.cdrouter_wan_iface = cdrouter.bf_args.wan_iface
@@ -386,7 +388,9 @@ testvar wanDnsServer {}
     def parse(config):
         """CDRouter."""
         try:
-            from boardfarm.devices import cdrouter
+            from boardfarm.lib.DeviceManager import get_device_by_name
+
+            cdrouter = get_device_by_name("cdrouter")
 
             url = "http://" + cdrouter.bf_args.ipaddr
         except Exception:

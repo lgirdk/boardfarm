@@ -62,4 +62,4 @@ class SshConnection:
         :type self: object
         """
         self.sendline("exit")
-        super(type(self), self).close()
+        super().close()
