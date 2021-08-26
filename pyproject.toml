@@ -112,3 +112,6 @@
         "boardfarm/__init__.py:version",
         "pyproject.toml:version",
     ]
+
+[tool.isort]
+    profile = "black"
