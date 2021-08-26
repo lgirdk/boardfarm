@@ -25,12 +25,7 @@ logger = logging.getLogger("bft")
 
 try:
     # Python 3
-    from urllib.request import (
-        ProxyHandler,
-        build_opener,
-        install_opener,
-        urlopen,
-    )
+    from urllib.request import ProxyHandler, build_opener, install_opener, urlopen
 except Exception:
     # Python 2
     from urllib2 import ProxyHandler, build_opener, install_opener, urlopen

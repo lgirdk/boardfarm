@@ -8,10 +8,7 @@ from dataclasses import dataclass
 from time import sleep
 from typing import Generator
 
-from boardfarm.devices.base_devices.sip_template import (
-    SIPPhoneTemplate,
-    SIPTemplate,
-)
+from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture

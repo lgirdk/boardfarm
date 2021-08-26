@@ -27,10 +27,7 @@ from termcolor import colored
 
 from boardfarm.dbclients import elasticlogger
 from boardfarm.dbclients.influx_wrapper import GenericWrapper
-from boardfarm.lib.bft_pexpect_helper import (
-    bft_pexpect_helper,
-    spawn_ssh_pexpect,
-)
+from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper, spawn_ssh_pexpect
 from boardfarm.lib.dhcpoption import configure_option125
 from boardfarm.lib.installers import (
     install_ovpn_client,

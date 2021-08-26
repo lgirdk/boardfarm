@@ -20,11 +20,7 @@ from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import apt_install, install_tshark
 from boardfarm.lib.linux_nw_utility import Ping
-from boardfarm.lib.network_testing import (
-    kill_process,
-    tcpdump_capture,
-    tshark_read,
-)
+from boardfarm.lib.network_testing import kill_process, tcpdump_capture, tshark_read
 
 logger = logging.getLogger("bft")
 

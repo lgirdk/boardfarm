@@ -3,10 +3,7 @@ import re
 from collections import defaultdict
 
 from boardfarm.lib.linux_nw_utility import NwDnsLookup
-from boardfarm.lib.regexlib import (
-    AllValidIpv6AddressesRegex,
-    ValidIpv4AddressRegex,
-)
+from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
 
 class DNS:

@@ -7,11 +7,7 @@ import pexpect
 from debtcollector import removals
 
 from boardfarm import plugins
-from boardfarm.exceptions import (
-    BftDeprecate,
-    ContOnFailError,
-    PexpectErrorTimeout,
-)
+from boardfarm.exceptions import BftDeprecate, ContOnFailError, PexpectErrorTimeout
 from boardfarm.lib.bft_logging import log_message
 
 warnings.simplefilter("always", UserWarning)

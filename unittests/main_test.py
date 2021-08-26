@@ -78,10 +78,7 @@ class TestSimpleBoardfarm(unittest.TestCase):
         self.assertEqual(result, False)
 
     def test_kibana_datagen(self):
-        from boardfarm.library import (
-            generate_test_info_for_kibana,
-            get_test_name,
-        )
+        from boardfarm.library import generate_test_info_for_kibana, get_test_name
 
         class Dummy:
             logged = {}

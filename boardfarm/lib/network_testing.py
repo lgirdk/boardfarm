@@ -16,11 +16,7 @@ from contextlib import suppress
 import netaddr
 from pexpect.exceptions import TIMEOUT
 
-from boardfarm.exceptions import (
-    ConnectionRefused,
-    PexpectErrorTimeout,
-    RTPNotFound,
-)
+from boardfarm.exceptions import ConnectionRefused, PexpectErrorTimeout, RTPNotFound
 from boardfarm.lib.common import retry_on_exception
 
 sip_msg = namedtuple("SIPData", ["src_ip", "dest_ip", "message"])

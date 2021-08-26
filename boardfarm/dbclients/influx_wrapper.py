@@ -7,10 +7,7 @@ import pexpect
 from termcolor import colored
 
 from boardfarm.dbclients.influx_db_helper import Influx_DB_Logger
-from boardfarm.lib.regexlib import (
-    AllValidIpv6AddressesRegex,
-    ValidIpv4AddressRegex,
-)
+from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
 
 class GenericWrapper:
