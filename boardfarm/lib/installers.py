@@ -1618,14 +1618,14 @@ client.send('join #channel\\r\\n')
 
 while True:
     data = client.recv(8192)
-    logger.debug('Received Messages: '+data)
+    print('Received Messages: '+data)
     if 2 == %s:
         validate_msg = "client1"
     else:
         validate_msg = "client2"
     if validate_msg in data:
         client.send(str.encode("PRIVMSG #channel : Yes, the clients are able to communicate\\n"))
-        logger.debug("connection success")
+        print("connection success")
         client.send('quit #channel\\r\\n')
     else:
         client.send(str.encode("PRIVMSG #channel : Hi, I am client%s\\n"))
