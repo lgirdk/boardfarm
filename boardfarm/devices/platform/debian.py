@@ -346,6 +346,14 @@ class DebianBox(linux.LinuxDevice):
             # if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
 
             self.pkgs_installed = True
+            if all(x in pkgs for x in ["lighttpd", "tftpd"]):
+                # Force lighttpd to point to /tftpboot even if does not
+                # exist yet. When tftpd is restarted the symlink will
+                # still be pointing at /tftpboot.
+                self.sendline(
+                    "rm -rf /var/www/html; mkdir -p /tftpboot; ln -s /tftpboot /var/www/html"
+                )
+                self.expect_prompt()
 
         # TODO: use netns for all this?
         undo_default_route = None
