@@ -1,11 +1,15 @@
 from abc import abstractmethod
 from pathlib import Path
+from typing import Optional
 
 import boardfarm.devices.connection_decider as conn_dec
 from boardfarm.devices import get_device_mapping_class
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper as PexpectHelper
+from boardfarm.lib.env_helper import EnvHelper
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
+
+from .fxo_template import FXOTemplate
 
 
 class ConsoleTemplate(PexpectHelper, metaclass=__MetaSignatureChecker):
@@ -81,6 +85,8 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
 
 
 class BoardSWTemplate(metaclass=__MetaSignatureChecker):
+    voice: Optional[FXOTemplate] = None
+
     @abstractmethod
     def __init__(self, hw: BoardHWTemplate, **kwargs):
         """Base initialisation of the board SW."""
@@ -107,6 +113,7 @@ class BoardTemplate(metaclass=__MetaSignatureChecker):
         """Base initialisation of the board device. Used to store the necessary
         values that are then used to drive the HW via the AbstractBoardHW
         derived class."""
+        self.env_helper: EnvHelper
 
     @property
     @abstractmethod
