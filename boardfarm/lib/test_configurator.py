@@ -46,6 +46,8 @@ class BoardfarmTestConfig:
         self.elasticsearch_server = os.environ.get("BFT_ELASTICSERVER", None)
         self.test_args = None
         self.err_injection_dict = {}
+        self.bf_board_name = None
+        self.bf_board_type = None
 
 
 def get_station_config(location=None, ignore_redir=False):

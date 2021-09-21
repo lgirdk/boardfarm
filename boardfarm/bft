@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import queue
-import random
 import re
 import sys
 import time
@@ -28,7 +27,8 @@ from termcolor import colored
 import boardfarm.exceptions
 import boardfarm.logging_config  # noqa  F401
 from boardfarm import devices, library, tests
-from boardfarm.dbclients import boardfarmwebclient, logstash, mongodblogger
+from boardfarm.dbclients import logstash, mongodblogger
+from boardfarm.dbclients.lockableresources import LockableResources
 from boardfarm.exceptions import BftNotSupportedDevice
 from boardfarm.lib.bft_logging import create_file_logs, write_test_log
 from boardfarm.lib.common import check_url, send_to_elasticsearch
@@ -204,8 +204,8 @@ def connect_to_board(config, rootfs, kernel, device_mgr):
 
 def connect_and_run(config):
     """Connect to device and run the configurations."""
-    config, device_mgr, env_helper, bfweb = connect_to_devices(config)
-    return run_tests(config, device_mgr, env_helper, bfweb)
+    config, device_mgr, env_helper, _ = connect_to_devices(config)
+    return run_tests(config, device_mgr, env_helper)
 
 
 def connect_to_devices(config):
@@ -234,38 +234,29 @@ def connect_to_devices(config):
 
     # Create output directory
     try:
-        os.mkdir(config.output_dir)
+        if not os.path.exists(config.output_dir):
+            os.mkdir(config.output_dir)
     except Exception as error:
         logger.error(error)
 
-    # Setup boardfarm client even if config is a local file (in which
-    # case this will do nothing)
-    bfweb = boardfarmwebclient.BoardfarmWebClient(
-        config.boardfarm_config_location,
-        bf_version=boardfarm.__version__,
-        debug=os.environ.get("BFT_DEBUG", False),
-    )
+    jenkins_url = os.environ.get("JENKINS_URL", None)
+    jenkins_token = os.environ.get("JENKINS_TOKEN", None)
+    if jenkins_url is None or jenkins_token is None:
+        raise OSError(
+            "Missing Jenkins environment configuration."
+            "Set JENKINS_URL and JENKINS_TOKEN environment variables."
+        )
+    ldap_credentials = os.environ.get("LDAP_CREDENTIALS", None)
+    if ldap_credentials is None:
+        raise OSError("Missing LDAP_CREDENTIALS environment config")
+    ldap_username, _ = ldap_credentials.split(";")
 
-    # Connect to any board in list
+    lockable_resouces = LockableResources(jenkins_url, ldap_username, jenkins_token)
+
     connected_to_board = False
-    random.shuffle(config.BOARD_NAMES)
-
-    def sortFunc(x):
-        # TODO: add configurable priorities for each type of feature
-        # e.g. wifi is probably one we never want to use unless requested
-        if "feature" in config.boardfarm_config[x]:
-            if type(config.boardfarm_config[x]["feature"]) is list:
-                return len(config.boardfarm_config[x]["feature"])
-            else:
-                return 1
-        else:
-            return -1
-
-    # move boards with a feature to end of the list
-    config.BOARD_NAMES = sorted(config.BOARD_NAMES, key=sortFunc)
 
     def update_value(regex, v):
-        action, match, replace, ignore = regex.split("/")
+        action, match, replace, _ = regex.split("/")
         assert action == "s"
         ret = re.sub(match, replace, v)
 
@@ -307,10 +298,23 @@ def connect_to_devices(config):
     board = None
     deny_list = []
     atexit.register(bfcleanup)
-    for name in config.BOARD_NAMES:
-        # DeviceManager makes it easy to find devices by name, type, features...
+    while True:
+        # DeviceManager makes it easy to find devices by name, type, features.
         clean_device_manager()
         device_mgr = devices.manager = device_manager()
+        jenkins_job = os.environ.get("JOB_NAME", None)
+        build_number = os.environ.get("BUILD_NUMBER", None)
+        name, resource_name = lockable_resouces.acquire(
+            config.bf_board_name, jenkins_job, build_number, config.bf_board_type
+        )
+
+        logger.info(
+            colored(
+                f"Checked out board named = {name}, type = {config.bf_board_type}",
+                color="green",
+                attrs=["bold"],
+            )
+        )
 
         try:
             # Use helper class to control access to configuration from tests
@@ -329,20 +333,10 @@ def connect_to_devices(config):
             break
 
         try:
-            # Store name of station in config for convenience
+            # Store name of station and resource name in config for convenience
             config.board["station"] = name
+            config.board["resource_name"] = resource_name
 
-            # Notify boardfarm server of station & devices we are using
-            bfweb.checkout(config.board)
-            logger.info(
-                colored(
-                    f"Checked out board named = {name}, type = {config.board['board_type']} ...",
-                    color="green",
-                    attrs=["bold"],
-                )
-            )
-
-            time.sleep(5)  # let it appear as taken on the dash
             connected_to_board = True
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
             reason = None
@@ -444,7 +438,6 @@ def connect_to_devices(config):
         except boardfarm.exceptions.ConnectionRefused:
             connected_to_board = False
             reason = "ConnectionRefused"
-            continue
         except KeyboardInterrupt:
             logger.warning("Keyboard interrupt")
             connected_to_board = False
@@ -458,8 +451,8 @@ def connect_to_devices(config):
             traceback.print_exc(file=sys.stdout)
             connected_to_board = False
             reason = str(e)
-            bfweb.post_note(name, "last connected: " + reason)
-            continue
+            message = f"last connected: {reason}"
+            lockable_resouces.update_message(resource_name, message)
         finally:
             if not connected_to_board:
                 logger.warning(
@@ -477,18 +470,12 @@ def connect_to_devices(config):
                     for dev in deny_list:
                         if dev:
                             dev.close()
-                bfweb.checkin()
-                logger.info(
-                    colored(
-                        f"Checking in board named = {name}", color="red", attrs=["bold"]
-                    )
-                )
-                time.sleep(5)
-            else:
-                atexit.register(bfweb.checkin)
         break
+
     if not connected_to_board:
-        logger.warning("Failed to connect to any board")
+        logger.warning(
+            colored("Failed to connect to a board", attrs=["bold"], color="red")
+        )
         sys.exit(2)
 
     try:
@@ -503,10 +490,10 @@ def connect_to_devices(config):
 
     logger.info("\n==========")
     library.printd(config.board)
-    return config, device_mgr, env_helper, bfweb
+    return config, device_mgr, env_helper, lockable_resouces
 
 
-def run_tests(config, device_mgr, env_helper, bfweb):
+def run_tests(config, device_mgr, env_helper):
     """On the given devices, setup the environment and run tests."""
     os.environ["TEST_START_TIME"] = datetime.now().strftime("%s")
     tests_to_run = []
@@ -572,12 +559,7 @@ def run_tests(config, device_mgr, env_helper, bfweb):
         tests_pass = tests_fail = tests_skip = 0
         stop_testing = False
         curr_test = None
-        for j, test in enumerate(tests_to_run):
-            bfweb.post_temp_message(
-                "Running test {} of {} ({})".format(
-                    j + 1, len(tests_to_run), test.__class__.__name__
-                )
-            )
+        for _, test in enumerate(tests_to_run):
             curr_test = test
             try:
                 test.run()
