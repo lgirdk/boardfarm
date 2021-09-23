@@ -199,14 +199,28 @@ class EnvHelper:
                 # Handle case where env_test is a list and the env_helper is a value:
                 # e.g. the env helper is configured in mode A
                 # the test can run in A, B or C configuration modes
-                if not type(env_helper) is list and env_helper in env_test:
-                    return True
+                if not type(env_helper) is list:
+                    return env_helper in env_test
                 # Handle case where list is [None] and we just need *some value* in the env_helper
                 if env_test[0] is None and len(env_helper) > 0:
                     return True
-                for i in range(len(env_test)):
-                    # assumes no dicts or other structures in the list
-                    if env_test[i] not in env_helper:
+
+                if type(env_helper) is list:
+                    # Validate list of dictionary or list of string
+                    env_helper_list = env_helper.copy()
+                    count = 0
+                    for test in env_test:
+                        if not type(test) is dict:
+                            if test not in env_helper_list:
+                                return False
+                            count += 1
+                        else:
+                            for env in env_helper_list:
+                                if test.items() <= env.items():
+                                    env_helper_list.remove(env)
+                                    count += 1
+                                    break
+                    if len(env_test) != count:
                         return False
             else:
                 if env_test is None and env_helper is not None:
