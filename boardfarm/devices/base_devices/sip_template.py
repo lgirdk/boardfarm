@@ -30,7 +30,7 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
             self.username = kwargs.get("username", "DEFAULT_USERNAME")
             self.password = kwargs.get("password", "DEFAULT_PASSWORD")
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)  # type: ignore
 
     @abstractmethod
     def sipserver_install(self) -> None:
@@ -142,13 +142,59 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
         In case of dialing a SIP enabled phone, SIP proxy IP is used
         to auto-generate a SIP URL for dialing.
 
+        Call shall proceed on the line indicated by active_line property.
+
         :param callee: Device which will act as the callee.
         :type callee: SIPPhoneTemplate
         """
 
     @abstractmethod
+    def enable_call_waiting(self) -> None:
+        """Enables call waiting by dialing a number and then puts phone onhook"""
+
+    @abstractmethod
+    def enable_call_forwarding_busy(self, forward_to: "SIPPhoneTemplate") -> None:
+        """Enables call forwarding to a number when the call is busy
+        Dials a code and a number to which a call is supposed to forward and then puts phone onhook
+
+        :param forward_to: Device to which call needs to be forwarded to.
+        :type forward_to: SIPPhoneTemplate"""
+
+    @abstractmethod
+    def disable_call_waiting_overall(self) -> None:
+        """ """
+
+    @abstractmethod
+    def disable_call_waiting_per_call(self) -> None:
+        """ """
+
+    @abstractmethod
+    def is_idle(self) -> bool:
+        """Check if Phone is in idle state on a line represented by active_line.
+
+        :return: True if the phone is idle
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_dialing(self) -> bool:
+        """Check if Phone is dialing to another phone on a line represented by active_line.
+
+        :return: True if the phone is dialing in progress
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_incall_dialing(self) -> bool:
+        """Check if Phone is in call and dialing to another phone on a line represented by active_line.
+
+        :return: True if the phone is in call and dialing in progress on another line
+        :rtype: bool
+        """
+
+    @abstractmethod
     def is_ringing(self) -> bool:
-        """Check if Phone is ringing.
+        """Check if Phone is ringing on a line represented by active_line.
 
         :return: True if the phone is ringing
         :rtype: bool
@@ -156,15 +202,87 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
 
     @abstractmethod
     def is_connected(self) -> bool:
-        """Check if Phone is ringing.
+        """Check if call is connected on the active_line.
 
-        :return: True if the phone is ringing
+        :return: True if the phone is connected
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_incall_connected(self) -> bool:
+        """Check if call is in call connected on the active_line.
+
+        :return: True if the phone is in call connected
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_onhold(self) -> bool:
+        """Check if Phone is on hold on a line represented by active_line.
+
+        :return: True if the phone is on hold
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_playing_dialtone(self) -> bool:
+        """Check if Phone is playing dialtone on a line represented by active_line.
+
+        :return: True if the phone is playing dialtone
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_incall_playing_dialtone(self) -> bool:
+        """Check if Phone is playing dialtone on one line and on call to another line
+
+        :return: True if the phone is incall playing dialtone
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_call_ended(self) -> bool:
+        """Check if Phone has end up the call on a line represented by active_line.
+
+        :return: True if the phone end up the call
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_code_ended(self) -> bool:
+        """Check if Phone has end up the code on a line represented by active_line.
+
+        :return: True if the phone has end up the code
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_call_waiting(self) -> bool:
+        """Check if Phone is on call waiting on a line represented by active_line.
+
+        :return: True if the phone is on call waiting
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def is_in_conference(self) -> bool:
+        """Check if Phone is in conference on a line represented by active_line.
+
+        :return: True if the phone is in conference
+        :rtype: bool
+        """
+
+    @abstractmethod
+    def has_off_hook_warning(self) -> bool:
+        """Check if Phone has off hook warning on a line represented by active_line.
+
+        :return: True if the phone has off hook warning
         :rtype: bool
         """
 
     @abstractmethod
     def detect_dialtone(self) -> bool:
-        """Check if dialtone is detected off_hook
+        """Check if dialtone is detected off_hook on the active_line
 
         :return:
         :rtype: bool
@@ -173,6 +291,9 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
     @abstractmethod
     def is_line_busy(self) -> bool:
         """Check if the call is denied due to callee being busy.
+
+        Validation will be performed on the line indicated by
+        active_line property.
 
         :return: True if line is busy, else False
         :rtype: bool
@@ -195,8 +316,58 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
 
     @abstractmethod
     def is_call_not_answered(self) -> bool:
-        """Verify if caller's call was not answered
+        """Verify if caller's call was not answered on active_line
 
         :return: True if not answered, else False
         :rtype: bool
         """
+
+    @abstractmethod
+    def answer_waiting_call(self) -> None:
+        """Answer the waiting call and hang up on the current call.
+
+        This will toggle the line on the device.
+        """
+
+    @abstractmethod
+    def toggle_call(self) -> None:
+        """Toggle between the calls.
+
+        Need to first validate, there is an incoming call on other line.
+        If not throw an exception.
+        """
+
+    @abstractmethod
+    def merge_two_calls(self) -> None:
+        """Merge the two calls for conference calling.
+
+        Ensure call waiting must be enabled.
+        There must be a call on other line to add to conference.
+        """
+
+    @abstractmethod
+    def reject_waiting_call(self) -> None:
+        """Reject a call on waiting on second line.
+
+        This will send the call to voice mail or a busy tone.
+        There must be a call on the second line to reject.
+        """
+
+    @abstractmethod
+    def place_call_onhold(self) -> None:
+        """Place an ongoing call on-hold.
+
+        There must be an active call to be placed on hold.
+        """
+
+    @abstractmethod
+    def press_R_button(self) -> None:  # pylint: disable=invalid-name
+        """Press the R button.
+
+        Used when we put a call on hold, or during dialing.
+        """
+
+    @abstractmethod
+    def hook_flash(self) -> None:
+        """Perform hook flash."""
+        raise NotImplementedError("Not supported!")

@@ -45,6 +45,54 @@ class DummySIPEndpoint(SIPPhoneTemplate):
         print(f"Call connected to {self.name}")
         return True
 
+    def is_onhold(self) -> bool:
+        return False
+
+    def is_playing_dialtone(self) -> bool:
+        return False
+
+    def is_call_ended(self) -> bool:
+        return False
+
+    def is_code_ended(self) -> bool:
+        return False
+
+    def is_call_waiting(self) -> bool:
+        return False
+
+    def is_in_conference(self) -> bool:
+        return False
+
+    def has_off_hook_warning(self) -> bool:
+        return False
+
+    def disable_call_waiting_overall(self):
+        pass
+
+    def disable_call_waiting_per_call(self):
+        pass
+
+    def enable_call_forwarding_busy(self):
+        pass
+
+    def enable_call_waiting(self):
+        pass
+
+    def is_dialing(self) -> bool:
+        return True
+
+    def is_idle(self) -> bool:
+        return True
+
+    def is_incall_connected(self) -> bool:
+        return True
+
+    def is_incall_dialing(self) -> bool:
+        return True
+
+    def is_incall_playing_dialtone(self) -> bool:
+        return True
+
     def detect_dialtone(self) -> bool:
         return True
 
@@ -56,6 +104,27 @@ class DummySIPEndpoint(SIPPhoneTemplate):
 
     def is_call_not_answered(self) -> bool:
         return False
+
+    def answer_waiting_call(self) -> None:
+        pass
+
+    def toggle_call(self) -> None:
+        pass
+
+    def merge_two_calls(self) -> None:
+        pass
+
+    def reject_waiting_call(self) -> None:
+        pass
+
+    def place_call_onhold(self) -> None:
+        pass
+
+    def press_R_button(self) -> None:
+        pass
+
+    def hook_flash(self) -> None:
+        pass
 
 
 class DummySIPEndpoint2(SIPPhoneTemplate):
