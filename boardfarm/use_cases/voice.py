@@ -1,4 +1,5 @@
-"""Voice use cases library.
+"""
+Voice use cases library.
 
 This module deals with only SIP end points.
 All APIs are independent of board under test.
@@ -11,7 +12,13 @@ from typing import Generator
 from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.DeviceManager import get_device_by_name
-from boardfarm.lib.network_testing import kill_process, tcpdump_capture
+from boardfarm.lib.network_testing import (
+    check_mta_media_attribute,
+    kill_process,
+    rtp_flow_check,
+    rtp_read_verify,
+    tcpdump_capture,
+)
 
 
 @dataclass
@@ -21,7 +28,7 @@ class VoiceClient:
     number: str
     __obj: SIPPhoneTemplate
 
-    def _obj(self):
+    def _obj(self) -> SIPPhoneTemplate:
         return self.__obj
 
 
@@ -64,15 +71,13 @@ def tcpdump(
         kill_process(device, process="tcpdump", pid=pid)
 
 
-def make_a_call(caller: VoiceClient, callee: VoiceClient) -> bool:
+def make_a_call(caller: VoiceClient, callee: VoiceClient) -> None:
     """To make a call by caller to callee
 
     :param caller: SIP agent who intiates the call
     :type caller: VoiceClient
     :param callee: SIP agent who receives the call
     :type callee: VoiceClient
-    :return: True if call succeeds
-    :rtype: bool
     :raises CodeError: In case the call fails.
     """
     try:
@@ -83,7 +88,6 @@ def make_a_call(caller: VoiceClient, callee: VoiceClient) -> bool:
         raise CodeError(
             f"Failed to initiate a call between: {caller.name} --> {callee.name}"
         )
-    return True
 
 
 def answer_a_call(who_answers: VoiceClient) -> bool:
@@ -182,7 +186,7 @@ def initialize_phone(target_phone: str) -> VoiceClient:
     :param target_phone: Target phone to be initialized.
     :type target_phone: str
     """
-    dev: SIPPhoneTemplate = get_device_by_name(target_phone)
+    dev: SIPPhoneTemplate = get_device_by_name(target_phone)  # devices.fxs1
     sip_proxy: SIPTemplate = get_device_by_name("sipcenter")
 
     dev.phone_config(str(sip_proxy.gw))
@@ -201,3 +205,311 @@ def shutdown_phone(target_phone: VoiceClient) -> None:
     dev = target_phone._obj()
     dev.on_hook()
     dev.phone_kill()
+
+
+def answer_waiting_call(who_answers: VoiceClient) -> None:
+    """Answer the waiting call and hang up on the current call.
+
+    :param who_answers: SIP agent who is suppose to answer the call.
+    :type who_answers: VoiceClient
+    """
+    who_answers._obj().answer_waiting_call()
+
+
+def toggle_call(who_toggles: VoiceClient) -> None:
+    """Toggle between the calls.
+
+    Need to first validate, there is an incoming call on other line.
+    If not throw an exception.
+
+    :param who_toggles: SIP agent who is suppose to toggle the call
+    :type who_toggles: VoiceClient
+    :raises CodeError: In case there is no call to toggle to.
+    """
+    who_toggles._obj().toggle_call()
+
+
+def merge_two_calls(who_is_conferencing: VoiceClient) -> None:
+    """Merge the two calls for conference calling.
+
+    Ensure call waiting must be enabled.
+    There must be a call on other line to add to conference.
+
+    :param who_is_conferencing: SIP agent that adds all calls in a conference.
+    :type who_is_conferencing: VoiceClient
+    :raises CodeError: In case there is no call to add for conferencing.
+    """
+    client: SIPPhoneTemplate = who_is_conferencing._obj()
+    client.merge_two_calls()
+
+
+def reject_waiting_call(who_rejects: VoiceClient) -> None:
+    """Reject a call on waiting on second line.
+
+    This will send the call to voice mail or a busy tone.
+    There must be a call on the second line to reject.
+
+    :param who_rejects: SIP agent who is suppose to reject the call.
+    :type who_rejects: VoiceClient
+    :raises CodeError: In case there is no call waiting to reject.
+    """
+
+
+def place_call_onhold(who_places: VoiceClient) -> None:
+    """Place an ongoing call on-hold.
+
+    There must be an active call to be placed on hold.
+
+    :param who_places: SIP agent that is suppose to place the call on-hold.
+    :type who_places: VoiceClient
+    :raises CodeError: If there is no on-going call
+    """
+    client: SIPPhoneTemplate = who_places._obj()
+    if not client.is_connected() and not client.is_incall_connected():
+        raise CodeError("No active call in place!!")
+    client.place_call_onhold()
+
+
+def press_R_button(who_presses: VoiceClient) -> None:
+    """Press the R button.
+
+    Used when we put a call on hold, or during dialing.
+
+    :param who_presses: Agent that presses the R button.
+    :type who_presses: VoiceClient
+    """
+    client: SIPPhoneTemplate = who_presses._obj()
+    client.press_R_button()
+
+
+def is_call_dialing(who_is_dialing: VoiceClient) -> bool:
+    """Verify if a phone is dialing and a call in progress
+
+    :param who_is_dialing: SIP agent used to verify dialing
+    :type who_is_dialing: VoiceClient
+    :return: True if in progress dialing is detected
+    :rtype: bool
+    """
+    return who_is_dialing._obj().is_dialing()
+
+
+def is_incall_dialing(who_is_incall_dialing: VoiceClient) -> bool:
+    """Verify if a phone is incall and call is dialing/in progress
+
+    :param who_is_incall_dialing: SIP agent used to verify incall dialing
+    :type who_is_incall_dialing: VoiceClient
+    :return: True if in progress dialing is detected
+    :rtype: bool
+    """
+    return who_is_incall_dialing._obj().is_incall_dialing()
+
+
+def is_call_idle(who_is_idle: VoiceClient) -> bool:
+    """Verify if a phone is in idle state
+
+    :param who_is_idle: SIP agent used to verify idle
+    :type who_is_idle: VoiceClient
+    :return: True if idle is detected
+    :rtype: bool
+    """
+    return who_is_idle._obj().is_idle()
+
+
+def is_call_ringing(who_is_ringing: VoiceClient) -> bool:
+    """Verify if a ringtone is detected on a phone device
+
+    :param who_is_ringing: SIP agent used to verify ringtone
+    :type who_is_ringing: VoiceClient
+    :return: True if ringtone is detected
+    :rtype: bool
+    """
+    return who_is_ringing._obj().is_ringing()
+
+
+def is_call_connected(who_is_connected: VoiceClient) -> bool:
+    """Verify if a call is connected
+
+    :param who_is_connected: SIP client on which connection needs to be checked
+    :type who_is_connected: VoiceClient
+    :return: True if call is connected.
+    :rtype: bool
+    """
+    return who_is_connected._obj().is_connected()
+
+
+def is_incall_connected(who_is_incall_connected: VoiceClient) -> bool:
+    """Verify if a call is incall connected
+
+    :param who_is_incall_connected: SIP client on which connection needs to be checked
+    :type who_is_incall_connected: VoiceClient
+    :return: True if phone is incall connected.
+    :rtype: bool
+    """
+    return who_is_incall_connected._obj().is_incall_connected()
+
+
+def is_call_on_hold(who_is_onhold: VoiceClient) -> bool:
+    """Verify if a call is on hold
+
+    :param who_is_onhold: SIP client on which hold state needs to be checked
+    :type who_is_onhold: VoiceClient
+    :return: True if call is on hold.
+    :rtype: bool
+    """
+    return who_is_onhold._obj().is_onhold()
+
+
+def is_call_in_conference(who_in_conference: VoiceClient) -> bool:
+    """Verify if a call is in conference
+
+    :param who_in_conference: SIP client on which conference state needs to be checked
+    :type who_in_conference: VoiceClient
+    :return: True if call is in conference state
+    :rtype: bool
+    """
+    return who_in_conference._obj().is_in_conference()
+
+
+def is_playing_dialtone(who_is_playing_dialtone: VoiceClient) -> bool:
+    return who_is_playing_dialtone._obj().is_playing_dialtone()
+
+
+def is_call_ended(whose_call_ended: VoiceClient) -> bool:
+    return whose_call_ended._obj().is_call_ended()
+
+
+def is_code_ended(whose_code_ended: VoiceClient) -> bool:
+    return whose_code_ended._obj().is_code_ended()
+
+
+def is_call_waiting(who_is_waiting: VoiceClient) -> bool:
+    return who_is_waiting._obj().is_call_waiting()
+
+
+def is_incall_playing_dialtone(who_is_playing_incall_dialtone: VoiceClient) -> bool:
+    return who_is_playing_incall_dialtone._obj().is_incall_playing_dialtone()
+
+
+def has_off_hook_warning(who_has_offhook_warning: VoiceClient) -> bool:
+    return who_has_offhook_warning._obj().has_off_hook_warning()
+
+
+def enable_call_waiting(agent: VoiceClient) -> None:
+    """Enabled the call waiting.
+
+    This will enable call waiting by dialing the desired number
+    :param agent: Agent that enables call waiting
+    :type agent: VoiceClient
+    """
+    agent._obj().enable_call_waiting()
+
+
+def enable_call_forwarding_busy(
+    who_forwards: VoiceClient, forward_to: VoiceClient
+) -> None:
+    """ """
+    who_forwards._obj().enable_call_forwarding_busy(forward_to=forward_to)
+
+
+def disable_call_waiting_overall(agent: VoiceClient) -> None:
+    """ """
+    agent._obj().disable_call_waiting_overall()
+
+
+def disable_call_waiting_per_call(agent: VoiceClient) -> None:
+    """ """
+    agent._obj().disable_call_waiting_per_call()
+
+
+def has_rtp_packet_flow(
+    sip_server: VoiceServer,
+    capture_file: str,
+    source: VoiceClient,
+    destination: VoiceClient,
+    rm_file: bool = False,
+    negate: bool = False,
+) -> bool:
+    """Function to check the RTP packets flow based on SIP/SDP Invite for given src and dst IP's
+    and return bool based on validation
+    :param sip_server: sipcenter where traces are collected
+    :type sip_server: VoiceServer
+    :param capture_file: pcap filename
+    :type capture_file: str
+    :param source: source of sip invite/rtp
+    :type source: VoiceClient
+    :param destination: dst_ip of sip invite/rtp
+    :type destination: VoiceClient
+    :param rm_file: Flag if same pcap is required for further verification
+    :type rm_file: bool
+    :param negate: To validate negative cases like no RTP flow
+    :type negate: bool
+    :return: Return bool based on validation
+    :rtype: bool
+    """
+    for src, dst, rm in zip(
+        [source.ip, sip_server.ip],
+        [sip_server.ip, destination.ip],
+        [False, rm_file],
+    ):
+        flow_check = rtp_flow_check(
+            sip_server._obj(), capture_file, src, dst, rm_file=rm, negate=negate
+        )
+        if (not flow_check and not negate) or (flow_check and negate):
+            return False
+    return True
+
+
+def has_rtp_packets(
+    sip_server: VoiceServer, capture_file: str, msg_list: list, rm_pcap: bool = False
+) -> bool:
+    """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
+    Real-time Transport Protocol is for delivering audio and video over IP networks.
+    :param sip_server: sipcenter where traces are collected
+    :type sip_server: VoiceServer
+    :param capture_file: Filename in which the packets were captured
+    :type capture_file: String
+    :param msg_list: list of 'rtp_msg' named_tuples having the source and
+                    destination IPs of the endpoints
+    :type msg_list: list
+    :return: True if RTP messages found else False
+    :rtype: Boolean
+    """
+    return rtp_read_verify(
+        sip_server._obj(), capture_file, msg_list=msg_list, rm_pcap=rm_pcap
+    )
+
+
+def has_mta_media_attribute(
+    sip_server: VoiceServer,
+    capture_file: str,
+    agent: VoiceClient,
+    media_attr: str = "sendonly",
+    port: int = 5060,
+    timeout: int = 30,
+    **kwargs,
+) -> bool:
+    """This function used to parse and verify the invite message media attribute
+    :param sip_server: sipcenter where traces are collected
+    :type sip_server: VoiceServer
+    :param capture_file: pcap filename
+    :type capture_file: str
+    :param agent: SIP phone to verify mta media attribute
+    :type agent: VoiceClient
+    :param media_attr: Hold what type of media attribute needs to be captured; default is sendonly
+    :type media_attr: String
+    :param port: port hold what port the packet needs to be filtered; default is 5060
+    :type port: Integer
+    :param timeout: timeout value sent to tcpdump read; default is 30 seconds
+    :type timeout: int
+    :param return: Returns dictionary as result
+    :type return: Dictionary
+    """
+    return check_mta_media_attribute(
+        sip_server._obj(),
+        capture_file,
+        agent.number,
+        media_attr=media_attr,
+        port=port,
+        timeout=timeout,
+        **kwargs,
+    )["status"]
