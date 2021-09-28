@@ -1,6 +1,7 @@
 """Class functions related to softphone software."""
 import functools
 from contextlib import suppress
+from itertools import cycle
 
 import pexpect
 from debtcollector import deprecate
@@ -14,6 +15,8 @@ from .base_devices.sip_template import SIPPhoneTemplate
 
 
 class Checks:
+    """Wrappers for various softphone checks."""
+
     @classmethod
     def is_phone_started(cls, func):
         @functools.wraps(func)
@@ -29,7 +32,9 @@ class SoftPhone(SIPPhoneTemplate):
     """Perform Functions related to softphone software."""
 
     model = "pjsip"
-    profile = {}
+    profile: dict = {}
+    check_on_board = False
+    supported_lines = cycle([1])
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
@@ -40,6 +45,7 @@ class SoftPhone(SIPPhoneTemplate):
         self._proxy_ip = None
         self._phone_started = False
         self._phone_configured = False
+        self._active_line = next(self.supported_lines)
 
         self.own_number = self.kwargs.get("number", "3000")
         self.num_port = self.kwargs.get("num_port", "5060")
@@ -55,16 +61,20 @@ class SoftPhone(SIPPhoneTemplate):
             self.legacy_add = True
             self.dev_array = "softphones"
 
+    @property
+    def active_line(self) -> int:
+        return self._active_line
+
     def __str__(self):
         """Magic method to return a printable string."""
         return "softphone"
 
-    def install_softphone(self):
+    def install_softphone(self) -> None:
         """Install softphone from local url or from internet."""
         self.prefer_ipv4()
         install_pjsua(self, getattr(self, "pjsip_local_url", None))
 
-    def phone_config(self, sipserver_ip):
+    def phone_config(self, sipserver_ip: str) -> None:
         """Configure the soft phone.
 
         Arguments:
@@ -100,8 +110,9 @@ class SoftPhone(SIPPhoneTemplate):
         self.sendline(conf)
         self.expect(self.prompt)
         self._proxy_ip = sipserver_ip
+        self._phone_configured = True
 
-    def phone_start(self):
+    def phone_start(self) -> None:
         """Start the soft phone.
 
         Note: Start softphone only when asterisk server is running to avoid failure
@@ -110,16 +121,15 @@ class SoftPhone(SIPPhoneTemplate):
             raise CodeError("Please configure softphone first!!")
         if self._phone_started:
             return
-        else:
-            try:
-                self.sendline("pjsua --config-file=" + self.config_name)
-                self.expect(r"registration success, status=200 \(OK\)")
-                self.sendline("\n")
-                self.expect(self.pjsip_prompt)
-                self._phone_started = True
-            except TIMEOUT as e:
-                self._phone_started = False
-                raise CodeError(f"Failed to start Phone!!\nReason{e}")
+        try:
+            self.sendline("pjsua --config-file=" + self.config_name)
+            self.expect(r"registration success, status=200 \(OK\)")
+            self.sendline("\n")
+            self.expect(self.pjsip_prompt)
+            self._phone_started = True
+        except TIMEOUT as e:
+            self._phone_started = False
+            raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
     @Checks.is_phone_started
     def dial(self, number: str, receiver_ip: str = None) -> None:
@@ -139,7 +149,7 @@ class SoftPhone(SIPPhoneTemplate):
         self.expect(self.pjsip_prompt)
 
     @Checks.is_phone_started
-    def call(self, callee: SIPPhoneTemplate):
+    def call(self, callee: SIPPhoneTemplate) -> None:
         """To dial a call to callee.
 
         :param callee: Device which will act as the caller.
@@ -176,7 +186,7 @@ class SoftPhone(SIPPhoneTemplate):
         return True
 
     @Checks.is_phone_started
-    def hangup(self):
+    def hangup(self) -> None:
         """To hangup the ongoing call."""
         self.sendline("\n")
         self.expect(self.pjsip_prompt)
@@ -186,7 +196,7 @@ class SoftPhone(SIPPhoneTemplate):
         self.expect(self.pjsip_prompt)
 
     @Checks.is_phone_started
-    def reinvite(self):
+    def reinvite(self) -> None:
         """To re-trigger the Invite message"""
         self.sendline("\n")
         self.expect(self.pjsip_prompt)
@@ -197,7 +207,7 @@ class SoftPhone(SIPPhoneTemplate):
         self.expect(self.pjsip_prompt)
 
     @Checks.is_phone_started
-    def hold(self):
+    def hold(self) -> None:
         """To hold the current call"""
         self.sendline("\n")
         self.expect(self.pjsip_prompt)
@@ -207,14 +217,14 @@ class SoftPhone(SIPPhoneTemplate):
         self.expect(self.pjsip_prompt)
 
     @Checks.is_phone_started
-    def phone_kill(self):
+    def phone_kill(self) -> None:
         """To kill the pjsip session."""
         # De-Registration is required before quit a phone and q will handle it
         self.sendline("q")
         self.expect(self.prompt)
         self._phone_started = False
 
-    def validate_state(self, msg):
+    def validate_state(self, msg: str) -> bool:
         """Verify the message to validate the status of the call
 
         :param msg: The message to expect on the softphone container
@@ -237,12 +247,24 @@ class SoftPhone(SIPPhoneTemplate):
         return out
 
     @Checks.is_phone_started
-    def on_hook(self):
+    def on_hook(self) -> None:
         self.hangup()
 
     @Checks.is_phone_started
-    def off_hook(self):
+    def off_hook(self) -> None:
         self.answer()
+
+    @Checks.is_phone_started
+    def is_idle(self) -> bool:
+        raise NotImplementedError @ Checks.is_phone_started
+
+    @Checks.is_phone_started
+    def is_dialing(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_incall_dialing(self) -> bool:
+        raise NotImplementedError
 
     @Checks.is_phone_started
     def is_ringing(self) -> bool:
@@ -253,7 +275,43 @@ class SoftPhone(SIPPhoneTemplate):
         return self.validate_state("CONFIRMED")
 
     @Checks.is_phone_started
-    def detect_dialtone(self):
+    def is_incall_connected(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_onhold(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_playing_dialtone(self, alllines: bool = False) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_incall_playing_dialtone(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_call_ended(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_code_ended(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_call_waiting(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def is_in_conference(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def has_off_hook_warning(self) -> bool:
+        raise NotImplementedError
+
+    @Checks.is_phone_started
+    def detect_dialtone(self) -> bool:
         # TODO: need to be implemented!!
         return True
 
@@ -307,3 +365,60 @@ class SoftPhone(SIPPhoneTemplate):
         out = "DISCONNECTED [reason=408 (Request Timeout)]" in self.before
         self.expect(self.pjsip_prompt)
         return out
+
+    def answer_waiting_call(self) -> None:
+        """Answer the waiting call and hang up on the current call."""
+        raise NotImplementedError
+
+    def toggle_call(self) -> None:
+        """Toggle between the calls.
+
+        Need to first validate, there is an incoming call on other line.
+        """
+        raise NotImplementedError
+
+    def merge_two_calls(self) -> None:
+        """Merge the two calls for conference calling.
+
+        Ensure call waiting must be enabled.
+        There must be a call on other line to add to conference.
+        """
+        raise NotImplementedError
+
+    def reject_waiting_call(self) -> None:
+        """Reject a call on waiting on second line.
+
+        This will send the call to voice mail or a busy tone.
+        There must be a call on the second line to reject.
+        """
+        raise NotImplementedError
+
+    def place_call_onhold(self) -> None:
+        """Place an ongoing call on-hold.
+
+        There must be an active call to be placed on hold.
+        """
+        self.hold()
+
+    def press_R_button(self) -> None:
+        """Press the R button.
+
+        Used when we put a call on hold, or during dialing.
+        """
+        raise NotImplementedError
+
+    def hook_flash(self) -> None:
+        """To perfrom hook flash"""
+        raise NotImplementedError("Unsupported!")
+
+    def enable_call_waiting(self) -> None:
+        raise NotImplementedError("Unsupported!")
+
+    def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
+        raise NotImplementedError("Unsupported!")
+
+    def disable_call_waiting_overall(self) -> None:
+        raise NotImplementedError("Unsupported!")
+
+    def disable_call_waiting_per_call(self) -> None:
+        raise NotImplementedError("Unsupported!")

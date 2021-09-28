@@ -7,7 +7,9 @@ from debtcollector import deprecate
 from pexpect import TIMEOUT
 
 from boardfarm.exceptions import CodeError
+from boardfarm.lib.DeviceManager import get_device_by_name
 
+from .base_devices import fxo_template
 from .base_devices.sip_template import SIPPhoneTemplate
 from .platform.debian import DebianBox
 
@@ -60,17 +62,19 @@ class Checks:
         return wrapper
 
 
-class DebianFXS(SIPPhoneTemplate, DebianBox):
+class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
     """Fax modem."""
 
     model = "debian_fxs"
+    fxo: fxo_template.FXOTemplate
+    call_line1 = None
+    call_line2 = None
 
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
         self.args = args
         self.kwargs = kwargs
         self._phone_started = False
-        self._connected = False
 
         # legacy approach specify TCID, Serial Line via INV JSON
         self.own_number = self.kwargs.get("number")
@@ -135,7 +139,13 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
 
     def phone_start(self) -> None:
         """To start the softphone session."""
+        if not self.number:
+            raise CodeError("Please call register FXS method first!!")
+
         self._phone_started = True
+
+        board = get_device_by_name("board")
+        self.fxo = board.sw.voice
         try:
             self.py.run("import serial")
             self.py.run(
@@ -157,7 +167,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
 
     # maintaining backward compatibility for legacy tests.
     @Checks.is_phone_started
-    def mta_readlines(self, time=4, search=""):
+    def mta_readlines(self, time: int = 4, search: str = "") -> None:
         """To readlines from serial console."""
         self.py.run("serial_line.flush()")
         sleep(time)
@@ -167,7 +177,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
     # this is bad, maintaining just to support legacy.
     # breaking this down below
     @Checks.is_phone_started
-    def offhook_onhook(self, hook_value):
+    def offhook_onhook(self, hook_value: int) -> None:
         """To generate the offhook/onhook signals."""
         self.py.run(f"serial_line.write(b'ATH{hook_value}\\r')")
         self.mta_readlines(search="OK")
@@ -181,7 +191,6 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         """
         self.py.run("serial_line.write(b'ATH0\\r')")
         self.mta_readlines(time=5, search="OK")
-        self._connected = False
 
     @Checks.is_phone_started
     def off_hook(self) -> None:
@@ -200,11 +209,12 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         Answer. Picks up the phone line and answer the call manually.
         Need to send ATA command over FXS modem
         """
-        self.py.run("serial_line.write(b'ATA\\r')")
-        self.mta_readlines(search="CONNECT")
-        self._connected = True
-        self.mta_readlines(search="OK")
+        self.off_hook()
         return True
+
+    def _dial(self, number) -> None:
+        self.py.run(f"serial_line.write(b'ATD{number};\\r')")
+        self.mta_readlines(search="OK")
 
     @Checks.is_phone_started
     def dial(self, number: str, receiver_ip: str = None) -> None:
@@ -214,8 +224,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
             message="dial() is deprecated. use call() method to make calls",
             category=UserWarning,
         )
-        self.py.run(f"serial_line.write(b'ATD{number};\\r')")
-        self.mta_readlines(search="ATD")
+        self._dial(number)
 
     @Checks.is_phone_started
     def call(self, callee: "SIPPhoneTemplate") -> None:
@@ -225,12 +234,11 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         :type callee: SIPPhoneTemplate
         """
         number = callee.number
-        self.py.run(f"serial_line.write(b'ATD{number};\\r')")
-        self.mta_readlines(search="ATD")
+        self._dial(number)
 
     # maintaining backward compatibility for legacy tests.
     @Checks.is_phone_started
-    def hangup(self):
+    def hangup(self) -> None:
         """To hangup the ongoing call."""
         deprecate(
             "Warning!",
@@ -246,7 +254,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         self._phone_started = False
 
     @Checks.is_phone_started
-    def validate_state(self, state):
+    def validate_state(self, state: str) -> bool:
         """Read the mta_line message to validate the call state
 
         :param state: The call state expected in the MTA line
@@ -263,12 +271,70 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         return out
 
     @Checks.is_phone_started
+    def is_idle(self) -> bool:
+        return self.fxo.check_call_state(
+            self.fxs_port, self.fxo.states.idle, operator="and"
+        )
+
+    @Checks.is_phone_started
+    def is_dialing(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.dialing)
+
+    @Checks.is_phone_started
+    def is_incall_dialing(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.incall_dialing)
+
+    @Checks.is_phone_started
     def is_ringing(self) -> bool:
-        return self.validate_state("RING")
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.ringing)
 
     @Checks.is_phone_started
     def is_connected(self) -> bool:
-        return self._connected
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.connected)
+
+    @Checks.is_phone_started
+    def is_incall_connected(self) -> bool:
+        return self.fxo.check_call_state(
+            self.fxs_port, self.fxo.states.incall_connected
+        )
+
+    @Checks.is_phone_started
+    def is_onhold(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.on_hold)
+
+    @Checks.is_phone_started
+    def is_playing_dialtone(self) -> bool:
+        return self.fxo.check_call_state(
+            self.fxs_port, self.fxo.states.playing_dialtone
+        )
+
+    @Checks.is_phone_started
+    def is_call_ended(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.call_ended)
+
+    @Checks.is_phone_started
+    def is_code_ended(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.code_ended)
+
+    @Checks.is_phone_started
+    def is_call_waiting(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.call_waiting)
+
+    @Checks.is_phone_started
+    def is_in_conference(self) -> bool:
+        return self.fxo.check_call_state(
+            self.fxs_port, self.fxo.states.conference, operator="and"
+        )
+
+    @Checks.is_phone_started
+    def has_off_hook_warning(self) -> bool:
+        return self.fxo.check_call_state(self.fxs_port, self.fxo.states.call_waiting)
+
+    @Checks.is_phone_started
+    def is_incall_playing_dialtone(self) -> bool:
+        return self.fxo.check_call_state(
+            self.fxs_port, self.fxo.states.incall_playing_dialtone
+        )
 
     @Checks.is_phone_started
     def detect_dialtone(self) -> bool:
@@ -287,6 +353,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         .. note::
             - Maintaining it due to abstract base template.
         """
+        raise NotImplementedError
 
     @Checks.is_phone_started
     def is_line_busy(self) -> bool:
@@ -305,3 +372,83 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):
         :rtype: bool
         """
         return self.validate_state("NO CARRIER")
+
+    @Checks.is_phone_started
+    def answer_waiting_call(self) -> None:
+        """Answer the waiting call and hang up on the current call.
+
+        AT Dial (!1) on FXS modem.
+        """
+        self._dial("!1")
+
+    @Checks.is_phone_started
+    def toggle_call(self) -> None:
+        """Toggle between the calls.
+
+        Need to first validate, there is an incoming call on other line.
+        AT Dial (!2) on FXS modem.
+        """
+        self._dial("!2")
+
+    @Checks.is_phone_started
+    def merge_two_calls(self) -> None:
+        """Merge the two calls for conference calling.
+
+        Ensure call waiting must be enabled.
+        There must be a call on other line to add to conference.
+        AT Dial (!3) on FXS modem.
+        """
+        self._dial("!3")
+
+    @Checks.is_phone_started
+    def reject_waiting_call(self) -> None:
+        """Reject a call on waiting on second line.
+
+        This will send the call to voice mail or a busy tone.
+        There must be a call on the second line to reject.
+        AT Dial (!4) on FXS modem.
+        """
+        self._dial("!4")
+
+    @Checks.is_phone_started
+    def place_call_onhold(self) -> None:
+        """Place an ongoing call on-hold.
+
+        There must be an active call to be placed on hold.
+        """
+        self._dial("!")
+
+    @Checks.is_phone_started
+    def press_R_button(self) -> None:
+        """Press the R button.
+
+        Used when we put a call on hold, or during dialing.
+        """
+        self._dial("!")
+
+    def hook_flash(self) -> None:
+        """To perfrom hook flash"""
+        raise NotImplementedError("Unsupported!")
+
+    def enable_call_waiting(self) -> None:
+        """Enabled the call waiting.
+
+        This will enable call waiting by dialing the desired number
+        """
+        self._dial("*43#")
+        self.on_hook()
+
+    def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
+        """ """
+        self._dial(f"*67*{forward_to._obj().number}#")
+        self.on_hook()
+
+    def disable_call_waiting_overall(self) -> None:
+        """ """
+        self._dial("#43#")
+        self.on_hook()
+
+    def disable_call_waiting_per_call(self) -> None:
+        """ """
+        self._dial("#43*")
+        self.on_hook()
