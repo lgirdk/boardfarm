@@ -7,19 +7,18 @@ import pexpect
 import pycountry
 from debtcollector import moves
 
+from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_iw
 from boardfarm.lib.linux_nw_utility import DHCP
-from boardfarm.lib.wifi import wifi_client_stub
 
 from . import debian_lan
 from .platform.debian import DebianBox
 
 
-class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
+class DebianWifi(debian_lan.DebianLAN, WIFITemplate):
     """Extension of Debian class with wifi functions.
-
     wifi_client_stub is inherited from lib/wifi.py.
     """
 
@@ -27,22 +26,18 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def __init__(self, *args, **kwargs):
         """Initialise wifi interface."""
-
         # WLAN parameters
         self.band = kwargs.get("band", None)
         self.band = (
             str(self.band) if self.band else None
         )  # Cast 'band' to str if it is present in inv.json
         self.authentication = "NONE"
-
         self.parse_device_options(*args, **kwargs)
         self.iface_dut = self.iface_wifi = self.kwargs.get("dut_interface", "wlan1")
-
         # introducing same hack as lan_clients till json schema does not get updated
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "wlan_clients"
-
         # This is being maintained for backward compatibility.
         # Ideally LAN network should be decided after connecting to SSID
         self.lan_network = ipaddress.IPv4Interface(
@@ -51,7 +46,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.lan_gateway = ipaddress.IPv4Interface(
             kwargs.pop("lan_gateway", "192.168.1.1/24")
         ).ip
-
         self.dns = DNS(self, {}, {})
         self.dhcp = DHCP.get_dhcp_object("client", self)
 
@@ -59,18 +53,16 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def disable_and_enable_wifi(self):
         self.reset_wifi_iface()
 
-    def reset_wifi_iface(self):
+    def reset_wifi_iface(self) -> None:
         """Disable and enable wifi interface.
-
         i.e., set the interface link to "down" and then to "up"
         This calls the disable wifi and enable wifi methods
         """
         self.disable_wifi()
         self.enable_wifi()
 
-    def disable_wifi(self):
+    def disable_wifi(self) -> None:
         """Disabling the wifi interface.
-
         setting the interface link to "down"
         """
         self.sudo_sendline(f"rm /etc/wpa_supplicant/{self.iface_wifi}")
@@ -79,9 +71,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.expect(self.prompt)
         self.set_link_state(self.iface_wifi, "down")
 
-    def enable_wifi(self):
+    def enable_wifi(self) -> None:
         """Enable the wifi interface.
-
         setting the interface link to "up"
         """
         self.set_link_state(self.iface_wifi, "up")
@@ -90,7 +81,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def release_wifi(self):
         self.dhcp_release_wlan_iface()
 
-    def dhcp_release_wlan_iface(self):
+    def dhcp_release_wlan_iface(self) -> None:
         """DHCP release of the wifi interface."""
         self.release_dhcp(self.iface_wifi)
 
@@ -98,7 +89,7 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def renew_wifi(self):
         return self.dhcp_renew_wlan_iface()
 
-    def dhcp_renew_wlan_iface(self):
+    def dhcp_renew_wlan_iface(self) -> None:
         """DHCP renew of the wifi interface."""
         # Remove static ip if any
         self.sendline(f"ifconfig {self.iface_wifi} 0.0.0.0")
@@ -109,7 +100,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         # Kill dhcp client
         self.sudo_sendline("kill -9 $(pgrep dhclient)")
         self.expect(self.prompt)
-
         try:
             self.renew_dhcp(self.iface_wifi)
             return True
@@ -124,10 +114,9 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def change_channel(self, channel):
         self.set_wlan_scan_channel(channel)
 
-    def set_wlan_scan_channel(self, channel):
+    def set_wlan_scan_channel(self, channel: str) -> None:
         """Change wifi client scan channel."""
         install_iw(self)
-
         self.sudo_sendline(f"iwconfig {self.iface_wifi} channel {channel}")
         self.expect(self.prompt)
 
@@ -135,16 +124,14 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
     def wifi_support_channel(self, wifi_frequency):
         return self.list_wifi_supported_channels(self, wifi_frequency)
 
-    def iwlist_supported_channels(self, wifi_band):
+    def iwlist_supported_channels(self, wifi_band: str) -> None:
         """list of wifi client support channel.
-
         :param wifi_mode: wifi frequency ['2' or '5']
         :type wifi_mode: string
         :return: list of channel in wifi mode
         :rtype: list
         """
         install_iw(self)
-
         self.sudo_sendline(f"iwlist {self.iface_wifi} channel")
         self.expect(self.prompt)
         channel_list = []
@@ -160,7 +147,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def list_wifi_ssids(self) -> List[str]:
         """To scan for available WiFi SSIDs
-
         :raises CodeError: WLAN card was blocked due to some process.
         :return: List of Wi-FI SSIDs
         :rtype: List[str]
@@ -181,9 +167,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
                 self.expect(self.prompt)
         raise CodeError("Device failed to scan for SSID due to resource busy!")
 
-    def wifi_check_ssid(self, ssid_name):
+    def wifi_check_ssid(self, ssid_name: str) -> bool:
         """Check the SSID provided is present in the scan list.
-
         :param ssid_name: SSID name to be verified
         :type ssid_name: string
         :return: True or False
@@ -202,7 +187,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         bssid=None,
     ):
         """Initialise wpa supplicant file.
-
         :param ssid_name: SSID name
         :type ssid_name: string
         :param password: wifi password, defaults to None
@@ -224,7 +208,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         config = dict()
         config["ssid"] = ssid_name
         config["key_mgmt"] = security_mode
-
         if security_mode in ["WPA-PSK", "WPA2-PSK"]:
             config["psk"] = password
         elif security_mode == "WPA-EAP":
@@ -232,10 +215,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             config["identity"] = hotspot_id
             config["password"] = hotspot_pwd
         config["scan_ssid"] = int(not broadcast)
-
         if bssid:
             config["bssid"] = bssid
-
         config_str = ""
         for k, v in config.items():
             if k in ["ssid", "psk", "identity", "password"]:
@@ -266,9 +247,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         """Backward compatibility"""
         return self.is_wlan_connected()
 
-    def is_wlan_connected(self):
+    def is_wlan_connected(self) -> bool:
         """Verify wifi is in the connected state.
-
         :return: True or False
         :rtype: boolean
         """
@@ -277,9 +257,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         match = re.search("Connected", self.before)
         return bool(match)
 
-    def check_wlan_client_ipv4(self):
+    def check_wlan_client_ipv4(self) -> bool:
         """Verify if container has an ipv4
-
         :return: True or False
         :rtype: boolean
         """
@@ -294,7 +273,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def wifi_connect_check(self, ssid_name, password=None):
         """Connect to a SSID and verify WIFI connectivity.
-
         :param ssid_name: SSID name
         :type ssid_name: string
         :param password: wifi password, defaults to None
@@ -322,9 +300,8 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         self.sudo_sendline(f"iw dev {self.iface_wifi} disconnect")
         self.expect(self.prompt)
 
-    def wifi_disconnect(self):
+    def wifi_disconnect(self) -> None:
         """Disconnect wifi connectivity.
-
         by disconnecting wpa supplicant initialisation as well as
         iwconfig disconnection
         """
@@ -333,7 +310,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
 
     def wifi_change_region(self, country):
         """Change the region of the wifi.
-
         :param country: region to be set
         :type country: string
         :return: country name if matched else None
@@ -351,10 +327,13 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
             return None
 
     def wifi_client_connect(
-        self, ssid_name, password=None, security_mode=None, bssid=None
-    ):
+        self,
+        ssid_name: str,
+        password: str = None,
+        security_mode: str = None,
+        bssid: str = None,
+    ) -> None:
         """Scan for SSID and verify wifi connectivity.
-
         :param ssid_name: SSID name
         :type ssid_name: string
         :param password: wifi password, defaults to None
@@ -372,7 +351,6 @@ class DebianWifi(debian_lan.DebianLAN, wifi_client_stub):
         assert (
             output is True
         ), f"{ssid_name} network is not found. Aborting connection process"
-
         self.wifi_connect(ssid_name, password, bssid=bssid, security_mode=security_mode)
         self.expect(pexpect.TIMEOUT)
         verify_connect = self.wifi_connectivity_verify()

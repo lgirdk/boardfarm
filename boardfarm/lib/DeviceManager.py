@@ -11,7 +11,7 @@ from typing import Dict, List
 from aenum import Enum, extend_enum
 
 from boardfarm.exceptions import DeviceDoesNotExistError
-from boardfarm.lib.wifi_lib.manager import WiFiMgr
+from boardfarm.lib.wifi_lib import wifi_mgr
 from boardfarm.lib.wrappers import singleton
 
 logging.basicConfig(stream=sys.stdout, format="%(message)s")
@@ -88,7 +88,7 @@ class device_array_type(Enum):
     _arrays = {
         "wan_clients": [],
         "lan_clients": [],
-        "wlan_clients": WiFiMgr(),
+        "wlan_clients": wifi_mgr,
         "FXS": [],
         "softphones": [],
     }

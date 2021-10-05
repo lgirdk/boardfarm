@@ -1,5 +1,4 @@
 """boardfarm.exceptions : custom exceptions for all plugins and modules used by framework."""
-
 import pexpect
 
 
@@ -9,7 +8,6 @@ class BftBaseException(AssertionError):
 
 class TestError(BftBaseException):
     """Raise this if a TestStep verification fails.
-
     Each test step in boardfarm orchestration verifies the output of its
     execution and throws a TestError exception on False"
     """
@@ -49,7 +47,6 @@ class SkipTest(BftBaseException):
 
 class BootFail(BftBaseException):
     """Raise this if the board fails to boot.
-
     This exception is special because if it
     occurs then most likely no other test
     can successfully run.
@@ -60,7 +57,6 @@ class BootFail(BftBaseException):
 
 class CodeError(BftBaseException):
     """Raise this if an code assert fails.
-
     This exception is only meant for custom assert
     clause used inside libraries.
     Not to be used with TestStep verification.
@@ -119,7 +115,6 @@ class ConnectionRefused(BftBaseException):
 
 class ContingencyCheckError(BftBaseException):
     """Raise this exception when a contingency check fails after env check.
-
     The contingency checks occurs at beginning of each test.
     """
 
@@ -128,7 +123,6 @@ class ContingencyCheckError(BftBaseException):
 
 class TR069ResponseError(BftBaseException):
     """Raise this exception when ACS/CPE receive.
-
     response has an unexpected error (like missing fields, malformed, etc).
     """
 
@@ -149,7 +143,6 @@ class ACSFaultCode(BftBaseException):
 
 class ContOnFailError(BftBaseException):
     """Use this exception when a step fails to execute for continue_on_fail.
-
     This exceptions is used along with a fixture to mark tests as FAIL
     """
 
@@ -194,7 +187,6 @@ class BftCleanupException(BftBaseException):
 
 class BftCommandNotFound(BftBaseException):
     """Raise this exception to notify that a command is not found.
-
     let the recipient take the appropriate action
     """
 
@@ -203,7 +195,6 @@ class BftCommandNotFound(BftBaseException):
 
 class BftSysExit(BftBaseException):
     """Raise this exception to notify that the system should bail out.
-
     Used instead of sys.exit(n)
     let the recipient take the appropriate action
     """
@@ -223,7 +214,6 @@ class SNMPError(BftBaseException):
 
 class RTPNotFound(BftBaseException):
     """Raise this if RTP packets are not found.
-
     RTP is checked for the source and destination IP.
     If the real time mediapackets are not found throw this error.
     """
@@ -233,8 +223,13 @@ class RTPNotFound(BftBaseException):
 
 class VersionMismatch(BftBaseException):
     """Raise exception when version comparison fails
-
     Example: CWMP version >= 1.4
     """
+
+    pass
+
+
+class UseCaseFailure(BftBaseException):
+    """To raise failures specific to use cases"""
 
     pass
