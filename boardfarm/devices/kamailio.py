@@ -113,14 +113,15 @@ EOF"""
             return "Not installed"
         return "Not Running"
 
-    def sipserver_user_add(self, user, password):
+    def sipserver_user_add(self, user, password=None):
         """Add user and password to the sipserver.
 
         param user: the user entry to be added
         type user: list/string
         param password: the password of the user
-        type password: string
+        type password: string, Defaults to None
         """
+        password = self.password if not password else password
         if isinstance(user, str):
             user = [user]
         for i in user:

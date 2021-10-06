@@ -436,6 +436,8 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         This will enable call waiting by dialing the desired number
         """
         self._dial("*43#")
+        if not self.is_code_ended():
+            raise CodeError("Cannot enable call waiting")
         self.on_hook()
 
     def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
