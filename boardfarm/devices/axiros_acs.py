@@ -4,6 +4,7 @@ import ipaddress
 import logging
 import os
 import re
+import sys
 import time
 import warnings
 import xml.dom.minidom
@@ -248,6 +249,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 self.ipaddr, self.cli_port, self.color, self.name
             )
             self.session_connected = True
+            self.sendline("stty columns 300; export TERM=xterm")
+            self.expect_prompt()
+            self.logfile_read = sys.stdout
 
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
@@ -1230,7 +1234,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
 
 if __name__ == "__main__":
-    import sys
     from pprint import pprint
 
     """Good values to test:
