@@ -76,14 +76,8 @@ class LinuxInterface:
         logger.debug(f"ifconfig {interface} IPV4 Mask {ipaddr}")
         return ipaddr
 
-    def get_interface_ip6addr(self, interface):
-        """Get ipv6 address of interface."""
-        # to minimise the chance of getting stray ipv6 addresses from the pexpect
-        # ".before" buffer tagging with bft_inet6 the lines of OUR command output that
-        # have an ipv6 address (so we can pick them later)
-        # REASON: on some linux based embedded devices the console can be VERY verbose
-        # and spurious debug messages can have ipv6 addresses in it
-
+    def _get_interface_ip6addr_generic(self, interface, address_type):
+        """Generic method to get ipv6 address of interface."""
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
         self.expect(pexpect.TIMEOUT, timeout=0.5)
         self.before = ""
@@ -97,14 +91,28 @@ class LinuxInterface:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
                 ipv6_iface = ipaddress.IPv6Interface(str(i))
-                if ipv6_iface and ipv6_iface.is_global:
+                if ipv6_iface and (
+                    (address_type == "private" and ipv6_iface.is_private)
+                    or (address_type == "link-local" and ipv6_iface.is_link_local)
+                    or (address_type == "global" and ipv6_iface.is_global)
+                ):
                     logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
                     return str(ipv6_iface.ip)
             except Exception:
                 continue
 
         logger.debug(f"Failed ifconfig {interface} IPV6 {ips}")
-        raise BftIfaceNoIpV6Addr("Did not find non link-local ipv6 address")
+        raise BftIfaceNoIpV6Addr(f"Did not find {address_type} ipv6 address")
+
+    def get_interface_ip6addr(self, interface):
+        """Get ipv6 address of interface."""
+        # to minimise the chance of getting stray ipv6 addresses from the pexpect
+        # ".before" buffer tagging with bft_inet6 the lines of OUR command output that
+        # have an ipv6 address (so we can pick them later)
+        # REASON: on some linux based embedded devices the console can be VERY verbose
+        # and spurious debug messages can have ipv6 addresses in it
+
+        return self._get_interface_ip6addr_generic(interface, "global")
 
     def get_interface_link_local_ip6addr(self, interface):
         """function helps in getting ipv6 link local address of the interface
@@ -114,26 +122,16 @@ class LinuxInterface:
         : return type: string
         """
 
-        regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
-        self.expect(pexpect.TIMEOUT, timeout=0.5)
-        self.before = ""
+        return self._get_interface_ip6addr_generic(interface, "link-local")
 
-        self.sendline(f"ifconfig {interface} | sed 's/inet6 /bft_inet6 /'")
-        self.expect(self.prompt)
-        logger.debug(self.before)
+    def get_interface_private_ip6addr(self, interface):
+        """function helps in getting private ipv6 address of the interface
+        :param interface: interface name to get the iprivate ipv6 address
+        :return private_ipv6: Private IPv6 address of the interface
+        : return type: string
+        """
 
-        ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
-        for i in ips:
-            try:
-                # we use IPv6Interface for convenience (any exception will be ignored)
-                ipv6_iface = ipaddress.IPv6Interface(str(i))
-                if ipv6_iface and ipv6_iface.is_link_local:
-                    logger.debug(f"ifconfig {interface} IPV6 {str(ipv6_iface.ip)}")
-                    return str(ipv6_iface.ip)
-            except Exception:
-                continue
-        logger.debug(f"Failed ifconfig {interface} IPV6 {ips}")
-        raise Exception("Did not find link-local ipv6 address")
+        return self._get_interface_ip6addr_generic(interface, "private")
 
     def get_interface_macaddr(self, interface):
         """Get the interface macaddress."""
