@@ -1082,7 +1082,8 @@ def _configure_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
         device.sendline(dev_ip)
         device.expect("Do you want to enable IPv6 support.*:.*")
         if _ip == "ipv4":
-            device.sendline()
+            device.sendcontrol("h")
+            device.sendline("n")
         elif _ip == "ipv6":
             device.sendcontrol("h")
             device.sendline("y")
@@ -1107,16 +1108,17 @@ def _configure_ovpn_server(device, remove=False, _user="lan", _ip="ipv4"):
         device.expect(device.prompt)
         if _ip == "ipv4":
             # only add it in ipv4
-            device.sendline(
-                'echo "local ' + dev_ip + '" > /etc/openvpn/server.conf.tmp'
-            )
+            device.sendline(f"sed -i 'local {dev_ip}' /etc/openvpn/server.conf")
             device.expect(device.prompt)
-            device.sendline(
-                "cat /etc/openvpn/server.conf >> /etc/openvpn/server.conf.tmp"
-            )
-            device.expect(device.prompt)
-            device.sendline("mv /etc/openvpn/server.conf.tmp /etc/openvpn/server.conf")
-            device.expect(device.prompt)
+
+        device.sendline("sed -i 's/dev tun/dev ovpn-tun/' /etc/openvpn/server.conf")
+        device.expect(device.prompt)
+        device.sendline(
+            "grep -qxF 'dev-type tun' /etc/openvpn/server.conf || echo 'dev-type tun' >> /etc/openvpn/server.conf"
+        )
+        device.expect(device.prompt)
+        device.sendline("cat /etc/openvpn/server.conf")
+        device.expect(device.prompt)
 
     device.sendline("/etc/init.d/openvpn status")
     index = device.expect(
