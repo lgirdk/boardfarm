@@ -1930,42 +1930,49 @@ def add_ovpn_user(device, user):
     return user + ".ovpn"
 
 
-def configure_ovpn(self, server, client, client_name, ip_version):
+def configure_ovpn(server, client, client_name: str, ip_version: str) -> bool:
     """Configure the openvpn on 2 devices, a server and 1 client.
 
-    :Param server : device Eg: wan
-    :type server : Object
-    :param client : device Eg: lan
-    :type client : Object
-    :param client_name : device name
-    :type client_name : str
-    :param ip_version : "ipv4" or "ipv6"
-    :type ip_version : str
-    Returns: N/A
-    """
-    install_ovpn_server(server, _user=client_name, _ip=ip_version)
-    server.sendline("ls ./" + client_name + ".ovpn")
-    flag = False
-    for _ in range(2):
-        flag = (
-            server.expect(["No such file or directory", pexpect.TIMEOUT], timeout=5)
-            == 0
-        )
-        server.expect(server.prompt, timeout=60)
-        if flag:
-            add_ovpn_user(server, client_name)
-        else:
-            break
-    assert flag is False, (
-        "Failed to create '"
-        + client_name
-        + ".ovpn' configuration file on server, bailing out"
-    )
-    install_ovpn_client(client)
-    copy_ovpn_config(server, client)
 
-    # makes sure there is a <user>.ovpn file
-    client.sendline("ls ./" + client_name + ".ovpn")
+    :param server : device Eg: wan
+    :type server : DebianBox
+    :param client : device Eg: lan
+    :type client : DebianBox
+    :param client_name : device name
+    :param ip_version : "ipv4" or "ipv6"
+
+    :return: True if ovpn configured succesfully, False otherwise
+    """
+    try:
+        install_ovpn_server(server, _user=client_name, _ip=ip_version)
+        server.sendline("ls ./" + client_name + ".ovpn")
+        flag = False
+        for _ in range(2):
+            flag = (
+                server.expect(["No such file or directory", pexpect.TIMEOUT], timeout=5)
+                == 0
+            )
+            server.expect(server.prompt, timeout=60)
+            if flag:
+                add_ovpn_user(server, client_name)
+            else:
+                break
+        assert not flag, (
+            "Failed to create '"
+            + client_name
+            + ".ovpn' configuration file on server, bailing out"
+        )
+        install_ovpn_client(client)
+        copy_ovpn_config(server, client)
+
+        # makes sure there is a <user>.ovpn file
+        assert "No such file or directory" not in client.check_output(
+            "ls ./" + client_name + ".ovpn"
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to configure ovpn: {repr(e)}")
+        return False
 
 
 def configure_pptpd(server, client):
