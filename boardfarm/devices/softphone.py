@@ -256,7 +256,7 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_idle(self) -> bool:
-        raise NotImplementedError @ Checks.is_phone_started
+        return self.validate_state("You have 0 active call")
 
     @Checks.is_phone_started
     def is_dialing(self) -> bool:
@@ -276,7 +276,7 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_incall_connected(self) -> bool:
-        raise NotImplementedError
+        return self.is_connected()
 
     @Checks.is_phone_started
     def is_onhold(self) -> bool:
@@ -292,7 +292,12 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_call_ended(self) -> bool:
-        raise NotImplementedError
+        self.sendline("\n")
+        # Call should be disconnected as the call hangup by other user
+        self.expect("You have 0 active call")
+        out = "DISCONNECTED [reason=200 (Normal call clearing)]" in self.before
+        self.expect(self.pjsip_prompt)
+        return out
 
     @Checks.is_phone_started
     def is_code_ended(self) -> bool:
@@ -405,11 +410,11 @@ class SoftPhone(SIPPhoneTemplate):
 
         Used when we put a call on hold, or during dialing.
         """
-        raise NotImplementedError
+        self.hold()
 
     def hook_flash(self) -> None:
         """To perfrom hook flash"""
-        raise NotImplementedError("Unsupported!")
+        self.press_R_button()
 
     def enable_call_waiting(self) -> None:
         raise NotImplementedError("Unsupported!")

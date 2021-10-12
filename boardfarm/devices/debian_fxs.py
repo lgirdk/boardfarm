@@ -428,7 +428,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
 
     def hook_flash(self) -> None:
         """To perfrom hook flash"""
-        raise NotImplementedError("Unsupported!")
+        self.press_R_button()
 
     def enable_call_waiting(self) -> None:
         """Enabled the call waiting.
