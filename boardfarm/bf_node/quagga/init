@@ -24,6 +24,7 @@ for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd; do
  fi
 done
 
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 dhcrelay -4 -iu wan_cmts -id cm 172.25.1.20
 dhcrelay -6 -l cm -u 2001:dead:beef:2::20%wan_cmts
 
