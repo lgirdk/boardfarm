@@ -41,8 +41,9 @@ class SerialPhone:
                     )
                     d = args[0]
                     d.sendcontrol("c")
-                    d.sendcontrol("d")
-                    d.expect_prompt()
+                    if 0 == d.expect(">>>" + d.prompt):
+                        d.sendcontrol("d")
+                        d.expect_prompt()
 
             return wrapper
 
