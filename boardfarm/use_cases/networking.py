@@ -2,7 +2,7 @@
 """
 import re
 from contextlib import contextmanager
-from typing import Union
+from typing import Generator, Union
 
 import pexpect
 from bs4 import BeautifulSoup
@@ -95,3 +95,101 @@ def http_get(which_client: Union[WifiClient, VoiceClient], url: str) -> str:
     which_client._obj().sendline(f"curl -v {url}")
     which_client._obj().expect(which_client._obj().prompt)
     return HTTPResult(which_client._obj().before)
+
+
+@contextmanager
+def tcpdump_on_board(
+    fname: str, interface: str, filters: str = ""
+) -> Generator[str, None, None]:
+    """Contextmanager to start the tcpdump on the board console and kills the
+    process outside its scope
+
+    Args:
+        fname (str): the filename or the complete path of the resourcel
+        interface (str): interface name on which the tcp traffic will listen to
+        filters (str, optional): Additional filters for the tcpdump command. Defaults to "".
+
+    Yields:
+        Generator[str, None, None]: Yields the process id of the tcp capture started
+    """
+    pid: str = ""
+    board = get_device_by_name("board")
+    try:
+        pid = board.nw_utility.start_tcpdump(fname, interface, filters=filters)
+        yield pid
+    finally:
+        board.nw_utility.stop_tcpdump(pid)
+
+
+def remove_resource_from_board(fname: str):
+    """Removes the file from the board console
+
+    Args:
+        fname (str): the filename or the complete path of the resource
+    """
+    board = get_device_by_name("board")
+    board.linux_console_utility.remove_resource(fname)
+
+
+def read_tcpdump_from_board(
+    fname: str, protocol: str = "", opts: str = "", rm_pcap=True
+) -> str:
+    """Read the tcpdump packets and deletes the capture file after read
+
+    Args:
+        fname (str): filename or the complete path of the pcap file
+        protocol (str, optional): protocol to filter. Defaults to ""
+        opts (str, optional): [description]. Defaults to "".
+        rm_pcap (bool, optional): [description]. Defaults to True.
+
+    Returns:
+        str: Output of tcpdump read command
+    """
+    board = get_device_by_name("board")
+    return board.nw_utility.read_tcpdump(
+        fname, protocol=protocol, opts=opts, rm_pcap=rm_pcap
+    )
+
+
+def perform_scp_action_on_board(
+    path_on_board: str, path_on_host: str, which_host: str, action: str
+) -> None:
+    """Allows you to securely copy files and directories between the board and the remote host
+
+    Args:
+        path_on_board (str): Path on the board
+        path_on_host (str): Path on the remote host
+        which_host (str): name of the remote host i.e lan, lan2, wan
+        action (str): scp action to perform i.e upload, download
+    """
+    (src, dst) = (
+        (path_on_board, path_on_host)
+        if action == "upload"
+        else (path_on_host, path_on_board)
+    )
+    board = get_device_by_name("board")
+    host = get_device_by_name(which_host)
+    board.nw_utility.scp(
+        host.ipaddr,
+        host.port,
+        host.username,
+        host.password,
+        src,
+        dst,
+        action=action,
+    )
+
+
+def get_traceroute_from_board(host_ip, version="", options="") -> str:
+    """Runs the Traceroute command on board console to a host ip and returns the route packets take to a network host
+
+    Args:
+        host_ip (str): ip address of the host
+        version (str): Version of the traceroute command. Defaults to "".
+        options (str): Additional options in the command. Defaults to "".
+
+    Returns:
+        dict: Return the entire route to the host ip from linux device
+    """
+    board = get_device_by_name("board")
+    return board.nw_utility.traceroute_host(host_ip)
