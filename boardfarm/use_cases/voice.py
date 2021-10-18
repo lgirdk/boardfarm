@@ -431,6 +431,7 @@ def has_rtp_packet_flow(
 ) -> bool:
     """Function to check the RTP packets flow based on SIP/SDP Invite for given src and dst IP's
     and return bool based on validation
+
     :param sip_server: sipcenter where traces are collected
     :type sip_server: VoiceServer
     :param capture_file: pcap filename
@@ -464,12 +465,12 @@ def has_rtp_packets(
 ) -> bool:
     """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
     Real-time Transport Protocol is for delivering audio and video over IP networks.
+
     :param sip_server: sipcenter where traces are collected
     :type sip_server: VoiceServer
     :param capture_file: Filename in which the packets were captured
     :type capture_file: String
-    :param msg_list: list of 'rtp_msg' named_tuples having the source and
-                    destination IPs of the endpoints
+    :param msg_list: list of 'rtp_msg' named_tuples having the source and destination IPs of the endpoints
     :type msg_list: list
     :return: True if RTP messages found else False
     :rtype: Boolean
@@ -489,6 +490,7 @@ def has_mta_media_attribute(
     **kwargs,
 ) -> bool:
     """This function used to parse and verify the invite message media attribute
+
     :param sip_server: sipcenter where traces are collected
     :type sip_server: VoiceServer
     :param capture_file: pcap filename

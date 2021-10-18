@@ -23,25 +23,26 @@ class WifiClient:
 
 def get_wifi_client(band: float, network_type: str) -> WifiClient:
     """Get the wifi client.
+
     :param band: band of the client
     :type band: float
     :param network_type: network type of the client Eg: private,guest,community
     :type network_type: string
-    :return: Wificlient
-    :rtype: object
+    :return: Wifi client
+    :rtype: WifiClient
     """
     dev = wifi_mgr.filter(network_type, band=str(band))[0]
     return WifiClient(band, dev, network_type=network_type)
 
 
 def _get_ssid(network: str, band: float, mode: str = "console") -> str:
-
     """Get the wifi ssid.
+
     :param network_type: network type of the client Eg: private,guest,community
     :type network_type: string
     :param band: band of the client
     :type band: float
-    :param mode: mode to get the ssid Eg. snmp,acs,dmcli
+    :param mode: mode to get the ssid Eg. snmp,acs,dmcli,console(default)
     :type mode: str
     :return: ssid
     :rtype: string
@@ -55,13 +56,13 @@ def _get_ssid(network: str, band: float, mode: str = "console") -> str:
 
 
 def _get_bssid(network: str, band: float, mode: str = "console") -> str:
-
     """Get the wifi bssid.
+
     :param network_type: network type of the client Eg: private,guest,community
     :type network_type: string
     :param band: band of the client
     :type band: float
-    :param mode: mode to get the bssid Eg. console,snmp,acs,dmcli
+    :param mode: mode to get the bssid Eg. console(default),snmp,acs,dmcli
     :type mode: str
     :return: bssid
     :rtype: string
@@ -75,7 +76,8 @@ def _get_bssid(network: str, band: float, mode: str = "console") -> str:
 
 
 def _get_passphrase(network: str) -> str:
-    """Get the wifi ssid.
+    """Get the wifi passphrase.
+
     :param network_type: network type of the client Eg: private,guest,community
     :type network_type: string
     :return: passphrase
@@ -86,10 +88,11 @@ def _get_passphrase(network: str) -> str:
 
 
 def is_client_connected(who_is_connected: WifiClient) -> bool:
-    """To check if the client is connected.
+    """Check if the client is connected.
+
     :param who_is_connected: client to connect
-    :type who_is_connected: string
-    :return: true/False
+    :type who_is_connected: WifiClient
+    :return: True if client is connected on L2 and L3, False otherwise
     :rtype: bool
     """
     return who_is_connected._obj().is_wlan_connected()
@@ -101,14 +104,15 @@ def connect_wifi_client(
     password: str = None,
     bssid: str = None,
 ) -> None:
-    """connect to the Wifi client.
+    """Connect client to Wifi.
+
     :param who_to_connect: client to connect
-    :type who_to_connect: string
-    :param ssid: ssid of the client to connect
+    :type who_to_connect: WifiClient
+    :param ssid: ssid of the network to connect
     :type ssid: string
-    :param password: password of the client to connect
+    :param password: password of the network to connect
     :type password: string
-    :param bssid: bssid of the client to connect
+    :param bssid: bssid of the network to connect
     :type bssid: string
     """
     if not ssid:
@@ -126,8 +130,9 @@ def connect_wifi_client(
 
 
 def disconnect_wifi_client(who_to_disconnect: WifiClient) -> None:
-    """disconnect to the Wifi client.
+    """Disconnect client from Wifi.
+
     :param who_to_disconnect: client to disconnect
-    :type who_to_disconnect: string
+    :type who_to_disconnect: WifiClient
     """
     who_to_disconnect._obj().wifi_disconnect()
