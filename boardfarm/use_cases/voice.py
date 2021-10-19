@@ -12,13 +12,7 @@ from typing import Generator
 from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.DeviceManager import get_device_by_name
-from boardfarm.lib.network_testing import (
-    check_mta_media_attribute,
-    kill_process,
-    rtp_flow_check,
-    rtp_read_verify,
-    tcpdump_capture,
-)
+from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 
 
 @dataclass
@@ -257,7 +251,6 @@ def reject_waiting_call(who_rejects: VoiceClient) -> None:
 
 def place_call_onhold(who_places: VoiceClient) -> None:
     """Place an ongoing call on-hold.
-
     There must be an active call to be placed on hold.
 
     :param who_places: SIP agent that is suppose to place the call on-hold.
@@ -371,147 +364,165 @@ def is_call_in_conference(who_in_conference: VoiceClient) -> bool:
 
 
 def is_playing_dialtone(who_is_playing_dialtone: VoiceClient) -> bool:
+    """Verify if the phone is playing a dialtone
+
+    :param who_is_playing_dialtone: SIP Client
+    :type who_is_playing_dialtone: VoiceClient
+    :return: True if dialtone is playing else False
+    :rtype: bool
+    """
     return who_is_playing_dialtone._obj().is_playing_dialtone()
 
 
 def is_call_ended(whose_call_ended: VoiceClient) -> bool:
+    """Verify if the call has been disconnected and ended
+
+    :param whose_call_ended: SIP Client
+    :type whose_call_ended: VoiceClient
+    :return: True if call is disconnected
+    :rtype: bool
+    """
     return whose_call_ended._obj().is_call_ended()
 
 
 def is_code_ended(whose_code_ended: VoiceClient) -> bool:
+    """Verify if the dialed code or number has expired
+
+    :param whose_code_ended: SIP Client
+    :type whose_code_ended: VoiceClient
+    :return: True if code ended
+    :rtype: bool
+    """
     return whose_code_ended._obj().is_code_ended()
 
 
 def is_call_waiting(who_is_waiting: VoiceClient) -> bool:
+    """Verify if the phone notifies for the call on other line to be waiting
+
+    :param who_is_waiting: SIP Client
+    :type who_is_waiting: VoiceClient
+    :return: True if call is in waiting
+    :rtype: bool
+    """
     return who_is_waiting._obj().is_call_waiting()
 
 
 def is_incall_playing_dialtone(who_is_playing_incall_dialtone: VoiceClient) -> bool:
+    """Verify if the phone is connected on one line and playing dialtone on another line
+
+    :param who_is_playing_incall_dialtone: SIP Client
+    :type who_is_playing_incall_dialtone: VoiceClient
+    :return: True if call is incall playing dialtone state
+    :rtype: bool
+    """
     return who_is_playing_incall_dialtone._obj().is_incall_playing_dialtone()
 
 
-def has_off_hook_warning(who_has_offhook_warning: VoiceClient) -> bool:
+def is_off_hook_warning(who_has_offhook_warning: VoiceClient) -> bool:
+    """Verify if the the phone has been left off-hook without use for an extended period
+
+    :param who_has_offhook_warning: SIP Client
+    :type who_has_offhook_warning: VoiceClient
+    :return: True if phone generates off hook warning state
+    :rtype: bool
+    """
     return who_has_offhook_warning._obj().has_off_hook_warning()
 
 
-def enable_call_waiting(agent: VoiceClient) -> None:
-    """Enabled the call waiting.
+def enable_call_waiting(who_enables: VoiceClient) -> None:
+    """Enables the call waiting by dialing the desired number
 
-    This will enable call waiting by dialing the desired number
-    :param agent: Agent that enables call waiting
-    :type agent: VoiceClient
+    :param who_enables: Agent that enables call waiting
+    :type who_enables: VoiceClient
     """
-    agent._obj().enable_call_waiting()
+    who_enables._obj().enable_call_waiting()
 
 
 def enable_call_forwarding_busy(
     who_forwards: VoiceClient, forward_to: VoiceClient
 ) -> None:
-    """ """
+    """Enables call forwarding on a phone when busy which can then be used to forward a call to other no.
+
+    :param who_forwards: Agent that enables call forwarding busy
+    :type who_forwards: VoiceClient
+    :param forward_to: SIP Client to which agent forwards the call to
+    :type forward_to: VoiceClient
+    """
     who_forwards._obj().enable_call_forwarding_busy(forward_to=forward_to)
 
 
 def disable_call_waiting_overall(agent: VoiceClient) -> None:
-    """ """
+    """Disables the call waiting overall on a phone by dialing a desired number
+
+    :param agent: Agent that disables call waiting
+    :type agent: VoiceClient
+    """
     agent._obj().disable_call_waiting_overall()
 
 
 def disable_call_waiting_per_call(agent: VoiceClient) -> None:
-    """ """
+    """Disables the call waiting per call on a phone by dialing a desired number
+
+    :param agent: Agent that disables call waiting
+    :type agent: VoiceClient
+    """
     agent._obj().disable_call_waiting_per_call()
 
 
-def has_rtp_packet_flow(
-    sip_server: VoiceServer,
-    capture_file: str,
-    source: VoiceClient,
-    destination: VoiceClient,
-    rm_file: bool = False,
-    negate: bool = False,
-) -> bool:
-    """Function to check the RTP packets flow based on SIP/SDP Invite for given src and dst IP's
-    and return bool based on validation
+def remove_user_profile(
+    where_to_remove: VoiceServer, whom_to_remove: VoiceClient
+) -> None:
+    """Deregister user profile from the sip server
 
-    :param sip_server: sipcenter where traces are collected
-    :type sip_server: VoiceServer
-    :param capture_file: pcap filename
-    :type capture_file: str
-    :param source: source of sip invite/rtp
-    :type source: VoiceClient
-    :param destination: dst_ip of sip invite/rtp
-    :type destination: VoiceClient
-    :param rm_file: Flag if same pcap is required for further verification
-    :type rm_file: bool
-    :param negate: To validate negative cases like no RTP flow
-    :type negate: bool
-    :return: Return bool based on validation
+    :param where_to_remove: SIP Server
+    :type where_to_remove: VoiceServer
+    :param whom_to_remove: Phone device to be removed
+    :type whom_to_remove: VoiceClient
+    :raises CodeError: if the device does not already exist on the sip server
+    """
+    if whom_to_remove.number not in where_to_remove._obj().sipserver_get_online_users():
+        raise CodeError(f"User {whom_to_remove.name} is not registered")
+    where_to_remove._obj().sipserver_user_remove(whom_to_remove.number)
+    where_to_remove._obj().sipserver_restart()
+
+
+def add_user_profile(where_to_add: VoiceServer, whom_to_add: VoiceClient) -> None:
+    """Registers user profile on the sip server
+
+    :param where_to_add: SIP Server
+    :type where_to_add: VoiceServer
+    :param whom_to_add: Phone device to be registered
+    :type whom_to_add: VoiceClient
+    :raises CodeError: if the device already exist on the sip server
+    """
+    if whom_to_add.number in where_to_add._obj().sipserver_get_online_users():
+        raise CodeError(f"User {whom_to_add.name} is already registered")
+    where_to_add._obj().sipserver_user_add(whom_to_add.number)
+    where_to_add._obj().sipserver_restart()
+
+
+def is_user_profile_present(sip_proxy: VoiceServer, whose_profile: VoiceClient) -> bool:
+    """Checks whether the user profile is registered on the sip server or not
+
+    :param sip_proxy: SIP Server
+    :type sip_proxy: VoiceServer
+    :param whose_profile: Phone device to be checked
+    :type whose_profile: VoiceClient
+    :return: True if phone device is registered on the sip server
     :rtype: bool
     """
-    for src, dst, rm in zip(
-        [source.ip, sip_server.ip],
-        [sip_server.ip, destination.ip],
-        [False, rm_file],
-    ):
-        flow_check = rtp_flow_check(
-            sip_server._obj(), capture_file, src, dst, rm_file=rm, negate=negate
-        )
-        if (not flow_check and not negate) or (flow_check and negate):
-            return False
-    return True
+    return whose_profile.number in sip_proxy._obj().sipserver_get_online_users()
 
 
-def has_rtp_packets(
-    sip_server: VoiceServer, capture_file: str, msg_list: list, rm_pcap: bool = False
-) -> bool:
-    """To filter RTP packets from the captured file and verify. Delete the capture file after verify.
-    Real-time Transport Protocol is for delivering audio and video over IP networks.
+def set_sip_expiry_time(sip_proxy: VoiceServer, to_what_time: int = 60) -> None:
+    """Modify the call expires timer in the config file of the sip_proxy eg: kamailio.cfg for Kamailio sipserver
 
-    :param sip_server: sipcenter where traces are collected
-    :type sip_server: VoiceServer
-    :param capture_file: Filename in which the packets were captured
-    :type capture_file: String
-    :param msg_list: list of 'rtp_msg' named_tuples having the source and destination IPs of the endpoints
-    :type msg_list: list
-    :return: True if RTP messages found else False
-    :rtype: Boolean
+    :param sip_proxy: SIP Server
+    :type sip_proxy: VoiceServer
+    :param to_what_time: New expiry time to be set. Defaults to 60., defaults to 60
+    :type to_what_time: int, optional
+    :raises CodeError: if the sipserver is not installed
     """
-    return rtp_read_verify(
-        sip_server._obj(), capture_file, msg_list=msg_list, rm_pcap=rm_pcap
-    )
-
-
-def has_mta_media_attribute(
-    sip_server: VoiceServer,
-    capture_file: str,
-    agent: VoiceClient,
-    media_attr: str = "sendonly",
-    port: int = 5060,
-    timeout: int = 30,
-    **kwargs,
-) -> bool:
-    """This function used to parse and verify the invite message media attribute
-
-    :param sip_server: sipcenter where traces are collected
-    :type sip_server: VoiceServer
-    :param capture_file: pcap filename
-    :type capture_file: str
-    :param agent: SIP phone to verify mta media attribute
-    :type agent: VoiceClient
-    :param media_attr: Hold what type of media attribute needs to be captured; default is sendonly
-    :type media_attr: String
-    :param port: port hold what port the packet needs to be filtered; default is 5060
-    :type port: Integer
-    :param timeout: timeout value sent to tcpdump read; default is 30 seconds
-    :type timeout: int
-    :param return: Returns dictionary as result
-    :type return: Dictionary
-    """
-    return check_mta_media_attribute(
-        sip_server._obj(),
-        capture_file,
-        agent.number,
-        media_attr=media_attr,
-        port=port,
-        timeout=timeout,
-        **kwargs,
-    )["status"]
+    if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
+        raise CodeError("Install the sipserver first")
+    sip_proxy._obj().sipserver_set_expire_timer(to_timer=to_what_time)

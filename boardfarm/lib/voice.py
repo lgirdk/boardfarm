@@ -163,74 +163,212 @@ EOF"""
     dev.expect(dev.prompt)
 
 
-def parse_sip_trace(dev: VoiceServer, fname: str, fields: str = "") -> List[Tuple[str]]:
+def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
     """Read and filter SIP packets from the captured file.
 
     The Session Initiation Protocol is a signaling protocol used for initiating,
     maintaining, and terminating real-time sessions that include voice,
     video and messaging applications.
 
-    :param device: SIP server
-    :type device: SIPTemplate
+    :param dev: SIP server
+    :type dev: SIPTemplate
     :param fname: PCAP file to be read
     :type fname: str
-    :param fields: Additional field which need to be , defaults to ""
-    :type fields: str, optional
-    :return: list of SIP packets as [src ip, dst ip, sip contact, sip msg]
-    :rtype: List[List[str]]
+    :return: list of SIP packets as [(frame, src ip, dst ip, sip contact, sip msg:media_attribute:connection:info)]
+    :rtype: List[Tuple[str]]
     """
     device = dev._obj()
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
-        "-T fields -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
-        "-e sip.Request-Line -e sip.Status-Line " + fields
+        "-T fields -e frame.number -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
+        "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info"
     )
 
     device.sudo_sendline(cmd + fields)
     device.expect(device.prompt)
-    out = device.before.splitlines()[1::]
-    if "This could be dangerous." in out[0]:
-        out = out[1::]
+    out = device.before.splitlines()
+    for _i, o in enumerate(out):
+        if "This could be dangerous." in o:
+            break
+    out = out[_i + 1 :]
 
     output = []
     for line in out:
-        src, dst, sfrom, contact, req, status = line.split("\t")
-        output.append((src, dst, contact or sfrom, req or status))
+        (
+            frame,
+            src,
+            dst,
+            sfrom,
+            contact,
+            req,
+            status,
+            media_attr,
+            connection_info,
+        ) = line.split("\t")
+        output.append(
+            (
+                frame,
+                src,
+                dst,
+                contact or sfrom,
+                f"{req or status}:{media_attr}:{connection_info}",
+            )
+        )
     return output
 
 
-def is_sip_sequence_matching(
-    sequence: List[Tuple[str]], captured_sequence: List[List[str]]
-) -> bool:
-    """Check if the expected ```sequence``` is a match with the ```captured_sequence```.
+def parse_sip_trace(
+    dev: VoiceServer, fname: str, expected_sequence: List[Tuple[str]]
+) -> List[Tuple[str]]:
+    """Reads the pcap file and creates the matched sequence with the expected sequence of sip packets.
+    This creates a matched sequence of the same size as expected sequence with the rtp traces appended as it is
+    from expected sequence
 
-    :param sequence: Expected sequence.
-    :type sequence: List[Tuple[str]]
-    :param captured_sequence: Captured sequence
-    :type captured_sequence: List[List[str]]
-    :return: True if sequences match, else False
+    :param dev: SIP Server
+    :type dev: VoiceServer
+    :param fname: name of the PCAP file
+    :type fname: str
+    :param expected_sequence: expected list of sequence to match for the captured sequence
+    :type expected_sequence: List[Tuple[str]]
+    :return: matched expected sequence with the captured sequence
+    :rtype: List[Tuple[str]]
+    """
+    captured_sequence = _read_sip_trace(dev, fname)
+    last_check = 0
+    final_result = []
+    for src, dst, sip_contact, msg in expected_sequence:
+        if "RTP_CHECK" not in msg:
+            flag = False
+            for i in range(last_check, len(captured_sequence)):
+                result = []
+                frame_o, src_o, dst_o, sip_contact_o, msg_o = captured_sequence[i]
+                result.append(str(src) == src_o)
+                result.append(str(dst) == dst_o)
+                result.append(sip_contact == sip_contact_o)
+                result.append(all(i in msg_o for i in msg.split(":")))
+                if all(result):
+                    last_check = i
+                    print(
+                        f"Verified:\t{src_o}\t--->\t{dst_o}\t from: {sip_contact_o} | {msg_o}"
+                    )
+                    flag = True
+                    final_result.append((frame_o, src_o, dst_o, sip_contact_o, msg_o))
+                    break
+            if not flag:
+                print(f"Failed:\t{src}\t--->\t{dst}\t from: {sip_contact} | {msg}")
+                final_result.append(())
+        else:
+            final_result.append(("_", src, dst, sip_contact, msg))
+    return final_result
+
+
+def _parse_rtp_trace(
+    dev: VoiceServer,
+    fname: str,
+    matched_sequence: List[Tuple[str]],
+    start_index: int,
+    end_index: int,
+) -> List[list]:
+    """Checks the pcap for any existence of the rtp packed within a particular sip range of the matched sequence
+
+    :param dev: SIP Server
+    :type dev: VoiceServer
+    :param fname: name of the PCAP file
+    :type fname: str
+    :param matched_sequence: matched expected sequence with the captured sequence
+    :type matched_sequence: List[Tuple[str]]
+    :param start_index: start index of the sip trace in the expected sequence to check for the rtp after that
+    :type start_index: int
+    :param end_index: end index of the sip trace in the expected sequence to check for the rtp before that
+    :type end_index: int
+    :return: the list of all the frames found corresponding to each tuple of the matched sequence
+    :rtype: List[list]
+    """
+    start_frame = matched_sequence[start_index][0]
+    end_frame = matched_sequence[end_index][0]
+    cmd_end_frame = "" if start_frame == end_frame else f" && frame.number<{end_frame}"
+    device = dev._obj()
+    output = []
+    for index in range(start_index, end_index + 1):
+        src = matched_sequence[index][1]
+        dst = matched_sequence[index][2]
+        cmd = f'tshark -r {fname} -Y \'frame.number>{start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && rtp\' -T fields -e frame.number'
+        device.sudo_sendline(cmd)
+        device.expect(device.prompt)
+        out = device.before.splitlines()
+        for _i, o in enumerate(out):
+            if "This could be dangerous." in o:
+                break
+        out = out[_i + 1 :]
+        print(
+            f"Found RTP traces: \nTotal traces {len(out)} --> {start_frame} to {end_frame} frames --> from ipaddress {src} to {dst}\n"
+        )
+        output.append(out)
+    return output
+
+
+def is_sip_sequence_matching(matched_sequence: List[Tuple[str]]) -> bool:
+    """Checks if all the tuples in the expected sequence matches with the captured sequence
+
+    :param matched_sequence: matched expected sequence with the captured sequence
+    :type matched_sequence: List[Tuple[str]]
+    :return: True if all the tuples in a sip sequence match else False if even one is unmatched
     :rtype: bool
     """
-    last_check = 0
-    for src, dst, sip_contact, msg in sequence:
-        flag = False
-        for i in range(last_check, len(captured_sequence)):
-            result = []
-            src_o, dst_o, sip_contact_o, msg_o = captured_sequence[i]
-            result.append(str(src) == src_o)
-            result.append(str(dst) == dst_o)
-            result.append(sip_contact == sip_contact_o)
-            result.append(msg in msg_o)
-            if all(result):
-                last_check = i
-                print(
-                    f"Verified:\t{src_o}\t--->\t{dst_o}\t from: {sip_contact_o} | {msg_o}"
-                )
-                flag = True
-                break
-        if not flag:
-            print(f"Failed:\t{src}\t--->\t{dst}\t from: {sip_contact} | {msg}")
-            break
-    else:
-        return True
-    return False
+    return all(matched_sequence)
+
+
+def is_rtp_trace_found(
+    dev: VoiceServer,
+    fname: str,
+    matched_sequence: List[Tuple[str]],
+    start_index: int,
+    end_index: int,
+) -> bool:
+    """Checks if all the expected rtp traces are found between the sip traces
+    Note: User should always call is_sip_sequence_matching before calling this method to identify any error
+    in the sequence otherwise the index failures in this usecase could never be identified
+
+    :param dev: SIP server
+    :type dev: VoiceServer
+    :param fname: name of the PCAP file
+    :type fname: str
+    :param matched_sequence: matched expected sequence with the captured sequence
+    :type matched_sequence: List[Tuple[str]]
+    :param start_index: start index of the sip trace in the expected sequence to check for the rtp after that
+    :type start_index: int
+    :param end_index:  end index of the sip trace in the expected sequence to check for the rtp before that
+    :type end_index: int
+    :return: True if rtp frames are found within the range of start_index and end_index
+    :rtype: bool
+    """
+    rtp_traces = _parse_rtp_trace(dev, fname, matched_sequence, start_index, end_index)
+    return all(rtp_traces)
+
+
+def is_rtp_trace_not_found(
+    dev: VoiceServer,
+    fname: str,
+    matched_sequence: List[Tuple[str]],
+    start_index: int,
+    end_index: int,
+) -> bool:
+    """Checks if either of the expected rtp traces are not found between the sip traces
+    Note: User should always call is_sip_sequence_matching before calling this method to identify any error
+    in the sequence otherwise the index failures in this usecase could never be identified
+
+    :param dev: SIP server
+    :type dev: VoiceServer
+    :param fname: name of the PCAP file
+    :type fname: str
+    :param matched_sequence: matched expected sequence with the captured sequence
+    :type matched_sequence: List[Tuple[str]]
+    :param start_index: start index of the sip trace in the expected sequence to check for the rtp after that
+    :type start_index: int
+    :param end_index:  end index of the sip trace in the expected sequence to check for the rtp before that
+    :type end_index: int
+    :return: True if none of the rtp frames are found within the range of start_index and end_index
+    :rtype: bool
+    """
+    rtp_traces = _parse_rtp_trace(dev, fname, matched_sequence, start_index, end_index)
+    return not any(rtp_traces)
