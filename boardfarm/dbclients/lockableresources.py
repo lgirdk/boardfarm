@@ -100,7 +100,7 @@ class LockableResources:
             ].split(",")
             board_name = None
             for board in boards:
-                if board.split("-")[0] in board_type:
+                if board.split("-")[0].strip() in board_type:
                     board_name = board.strip()
             if board_name is None:
                 raise ValueError(
