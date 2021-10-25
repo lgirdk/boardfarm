@@ -48,12 +48,12 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
 
     _kill_stale_apt()
     for _ in range(2):
-        device.sendline("export DEBIAN_FRONTEND=noninteractive")
-        device.expect(device.prompt)
-        apt_update(device)
-        device.sendline(f"{shim_prefix}apt-get install {dpkg_options} -q -y {name}")
-        device.expect("Reading package")
         try:
+            device.sendline("export DEBIAN_FRONTEND=noninteractive")
+            device.expect(device.prompt)
+            apt_update(device)
+            device.sendline(f"{shim_prefix}apt-get install {dpkg_options} -q -y {name}")
+            device.expect("Reading package")
             device.expect(device.prompt, timeout=timeout)
         except pexpect.TIMEOUT:
             device.sendcontrol("c")
