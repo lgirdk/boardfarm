@@ -91,7 +91,7 @@ option_dict = {
     "headless": ["false", "true", "y", "t"],
     "disp": ["xvfb", "xephyr", "xvnc"],
     "disp_port": ["0"],
-    "disp_size": ["1366x768"],
+    "disp_size": ["1920x1080"],
 }
 
 # the syntax is BFT_OPTIONS="proxy=normal webdriver=chrome"
@@ -100,7 +100,7 @@ default_web_driver = "ffox"
 default_headless = True
 default_display_backend = "xvfb"
 default_display_backend_port = "0"  # i.e. use any available ports
-default_display_backend_size = "1366x768"
+default_display_backend_size = "1920x1080"
 
 if "BFT_OPTIONS" in os.environ:
     for option in os.environ["BFT_OPTIONS"].split(" "):
