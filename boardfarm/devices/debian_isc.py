@@ -684,6 +684,15 @@ EOF"""
             "hardware ethernet": board_config["erouter_mac"],
             "options": {"dhcp6.name-servers": f"{tftp_server}"},
         }
+
+        if self.vendor_opts_acsv4_url or self.vendor_opts_acsv6_url:
+            for device in board_config["devices"]:
+                if "acs_server" in device["name"]:
+                    break
+            acs_aux_url_hex = ":".join(
+                [hex(ord(x)).split("0x")[-1] for x in device["aux_url"]]
+            )
+
         if self.vendor_opts_acsv4_url:
             # workaround to a known issue in ISC DHCP server
             # https://lists.isc.org/pipermail/dhcp-users/2012-July/015793.html
@@ -692,14 +701,11 @@ EOF"""
             ] = "01:01:01"
             board_config["extra_provisioning"]["erouter"]["options"][
                 "docsis.acsserver"
-            ] = "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72:6d:2e:63:6f:6d"
+            ] = f"00 {acs_aux_url_hex}"
         if self.vendor_opts_acsv6_url:
             board_config["extra_provisioning_v6"]["erouter"]["options"][
                 "docsis.acsserver"
-            ] = (
-                "00 61:63:73:5f:73:65:72:76:65:72:2e:62:6f:61:72:64:66:61:72"
-                ":6d:2e:63:6f:6d"
-            )
+            ] = f"00 {acs_aux_url_hex}"
 
         self.setup_dhcp_config(board_config)
         self.setup_dhcp6_config(board_config)
