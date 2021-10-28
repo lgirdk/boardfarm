@@ -39,6 +39,7 @@ class Influx_DB_Logger(InfluxDBClient, dict):
         assert self.database is not None, "Failed: database in None"
         self.board = kwargs.get("board", kwargs["board"])
         self.test_run = kwargs.get("test_run", kwargs["test_run"])
+        self.timeout = kwargs.get("timeout", 30)
         self.db_data = []
 
         super().__init__(
@@ -47,6 +48,7 @@ class Influx_DB_Logger(InfluxDBClient, dict):
             username=self.username,
             database=self.database,
             password=self.password,
+            timeout=self.timeout,
         )
         # need to validate if DB is present, if not we need to create.
         self.validate_db(self.database)
