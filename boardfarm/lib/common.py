@@ -19,6 +19,7 @@ import ssl
 import sys
 import time
 from datetime import datetime
+from typing import Union
 
 import debtcollector
 import pexpect
@@ -2181,37 +2182,18 @@ def send_to_influx(device, **kwargs):
     :type device: object
     :param kwargs: server, client, s_name, c_name and response time
     """
-    database_host = os.getenv("influx_db_host")
-    if not database_host:
-        logger.error(
-            colored(
-                "send_to_influx failed: 'influx_db_host' not set (export influx_db_host='ip/host')",
-                color="red",
-                attrs=["bold"],
-            )
-        )
-        return
-    database_name = os.getenv("influx_db_name", os.getenv("BUILD_TAG", "stability"))
-    database_user = os.getenv("influx_db_user", "root")
-    database_pass = os.getenv("influx_db_pass", "root")
-    jenkins_build = os.getenv("Build_number", None)
+
     server = kwargs.get("server", None)
     client = kwargs.get("client", None)
     s_fname = kwargs.get("s_fname", ["iperf3_wan.log"])
     c_fname = kwargs.get("c_fname", ["iperf3_lan.log"])
     response_time = kwargs.get("response_time", None)
     service = kwargs.get("service", "UNKNONW_SERVICE")
-    db_config = {
-        "db_host": database_host,
-        "db_port": 8086,
-        "db_username": database_user,
-        "db_password": database_pass,
-        "database": database_name,
-        "test_run": jenkins_build,
-        "board": device.config.get("station"),
-    }
+
+    db = validate_influx_connection(device)
+    if not db:
+        return
     try:
-        db = GenericWrapper(**db_config)
         if response_time is None:
             server_data = [
                 val
@@ -2231,7 +2213,53 @@ def send_to_influx(device, **kwargs):
             )
     except Exception as e:
         logger.error(e)
-        logger.error("unable to load data to influx db")
+        logger.error("Unable to load data to influx db")
+        raise
+
+
+def validate_influx_connection(device: object) -> Union[object, None]:
+    """Validate influx DB connection
+
+    :param device: board
+    :type device: object
+    Returns: None if "influx_db_host" not set in env or the class object
+    """
+    database_host = os.getenv("influx_db_host")
+    if not database_host:
+        logger.error(
+            colored(
+                "validate_influx_connection failed: 'influx_db_host' not set (export influx_db_host='ip/host')",
+                color="red",
+                attrs=["bold"],
+            )
+        )
+        return
+    database_name = os.getenv("influx_db_name", os.getenv("BUILD_TAG", "stability"))
+    database_user = os.getenv("influx_db_user", "root")
+    database_pass = os.getenv("influx_db_pass", "root")
+    jenkins_build = os.getenv("Build_number", None)
+    database_port = 8086
+    db_config = {
+        "db_host": database_host,
+        "db_port": database_port,
+        "db_username": database_user,
+        "db_password": database_pass,
+        "database": database_name,
+        "test_run": jenkins_build,
+        "board": device.config.get("station"),
+        "timeout": 15,
+    }
+
+    try:
+        return GenericWrapper(**db_config)
+    except Exception:
+        logger.error(
+            colored(
+                f"validate_influx_connection failed: Unable to establish connection to InfluxDB host {database_host}:{database_port}",
+                color="red",
+                attrs=["bold"],
+            )
+        )
         raise
 
 
