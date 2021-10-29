@@ -34,7 +34,6 @@ from boardfarm.lib.bft_logging import create_file_logs, write_test_log
 from boardfarm.lib.common import check_url, send_to_elasticsearch
 from boardfarm.lib.DeviceManager import clean_device_manager, device_manager
 from boardfarm.lib.env_helper import EnvHelper
-from boardfarm.zephyr import zephyr_reporter
 
 logger = logging.getLogger("bft")
 
@@ -720,16 +719,6 @@ def main():
         except Exception as e:
             logger.warning("Failed to load data in AWS bucket")
             logger.warning(e)
-
-    # Update the results in Zephyr
-    try:
-        with open("./results/test_results.json") as fin:
-            result_data = json.load(fin)
-        test_cases_list = [[r["name"], r["grade"]] for r in result_data["test_results"]]
-        zephyr_reporter.update_zephyr(test_cases_list)
-    except Exception as e:
-        logger.warning(e)
-        logger.warning("Unable to Update results in Zephyr")
 
 
 if __name__ == "__main__":
