@@ -80,56 +80,61 @@ class SoftPhone(SIPPhoneTemplate):
         Arguments:
         sipserver_ip(str): ip of sip server
         """
-        if self._phone_configured:
-            return
 
-        conf = (
-            """(
-        echo --local-port="""
-            + self.num_port
-            + """
-        echo --id=sip:"""
-            + self.own_number
-            + """@"""
-            + sipserver_ip
-            + """
-        echo --registrar=sip:"""
-            + sipserver_ip
-            + """
-        echo --realm=*
-        echo --username="""
-            + self.own_number
-            + """
-        echo --password=1234
-        echo --null-audio
-        echo --max-calls=1
-        echo --auto-answer=180
-        )> """
-            + self.config_name
-        )
-        self.sendline(conf)
-        self.expect(self.prompt)
+        conf = f"""--local-port={self.num_port}
+--id=sip:{self.own_number}@{sipserver_ip}
+--registrar=sip:{sipserver_ip}
+--realm=*
+--username={self.own_number}
+--password=1234
+--null-audio
+--max-calls=1
+--auto-answer=180"""
+
+        self.sendline("\n")
+        id = self.expect([self.pjsip_prompt] + self.prompt)
+        if id == 0:
+            # come out of pjsip prompt
+            self.sendcontrol("c")
+            self.expect(self.prompt)
+        try:
+            # check for the existing configuration
+            self.sendline(f"cat {self.config_name}")
+            self.expect(self.prompt)
+            self._phone_configured = conf in self.before.replace("\r", "")
+        except TIMEOUT:
+            self._phone_configured = False
+
+        if not self._phone_configured:
+            conf_cmd = f"cat >{self.config_name}<<EOF\n{conf}\nEOF\n"
+            self.sendline(conf_cmd)
+            self.expect(self.prompt)
+            self._phone_configured = True
         self._proxy_ip = sipserver_ip
-        self._phone_configured = True
 
     def phone_start(self) -> None:
         """Start the soft phone.
 
         Note: Start softphone only when asterisk server is running to avoid failure
         """
-        if not self._proxy_ip:
+        if not self._proxy_ip or not self._phone_configured:
             raise CodeError("Please configure softphone first!!")
-        if self._phone_started:
-            return
         try:
-            self.sendline("pjsua --config-file=" + self.config_name)
-            self.expect(r"registration success, status=200 \(OK\)")
+            # check if the phone is already started
             self.sendline("\n")
-            self.expect(self.pjsip_prompt)
+            self.expect(self.pjsip_prompt, timeout=2)
             self._phone_started = True
-        except TIMEOUT as e:
-            self._phone_started = False
-            raise CodeError(f"Failed to start Phone!!\nReason{e}")
+            return
+        except TIMEOUT:
+            try:
+                self.sendline("pjsua --config-file=" + self.config_name)
+                self.expect(r"registration success, status=200 \(OK\)")
+                self.sendline("\n")
+                self.expect(self.pjsip_prompt)
+                self._phone_started = True
+            except TIMEOUT as e:
+                self._phone_started = False
+                raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
     @Checks.is_phone_started
     def dial(self, number: str, receiver_ip: str = None) -> None:
