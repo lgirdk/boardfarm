@@ -43,6 +43,10 @@ class LinuxInterface:
         self.expect("version", timeout=5)
         self.expect(self.prompt, timeout=5)
 
+    @property
+    def hostname(self):
+        return self.check_output("echo $HOSTNAME")
+
     def get_interface_ipaddr(self, interface):
         """Get ipv4 address of interface."""
         self.sendline(f"\nifconfig {interface}")
