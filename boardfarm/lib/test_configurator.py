@@ -48,6 +48,7 @@ class BoardfarmTestConfig:
         self.err_injection_dict = {}
         self.bf_board_name = None
         self.bf_board_type = None
+        self.bf_skip_reservation_check = False
 
 
 def get_station_config(location=None, ignore_redir=False):
