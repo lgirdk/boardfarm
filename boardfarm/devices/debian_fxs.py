@@ -353,7 +353,6 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         .. note::
             - Maintaining it due to abstract base template.
         """
-        raise NotImplementedError
 
     @Checks.is_phone_started
     def is_line_busy(self) -> bool:
