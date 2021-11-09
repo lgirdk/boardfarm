@@ -238,19 +238,20 @@ def connect_to_devices(config):
     except Exception as error:
         logger.error(error)
 
-    jenkins_url = os.environ.get("JENKINS_URL", None)
-    jenkins_token = os.environ.get("JENKINS_TOKEN", None)
-    if jenkins_url is None or jenkins_token is None:
-        raise OSError(
-            "Missing Jenkins environment configuration."
-            "Set JENKINS_URL and JENKINS_TOKEN environment variables."
-        )
-    ldap_credentials = os.environ.get("LDAP_CREDENTIALS", None)
-    if ldap_credentials is None:
-        raise OSError("Missing LDAP_CREDENTIALS environment config")
-    ldap_username, _ = ldap_credentials.split(";")
-
-    lockable_resouces = LockableResources(jenkins_url, ldap_username, jenkins_token)
+    lockable_resouces = None
+    if not config.bf_skip_reservation_check:
+        jenkins_url = os.environ.get("JENKINS_URL", None)
+        jenkins_token = os.environ.get("JENKINS_TOKEN", None)
+        if jenkins_url is None or jenkins_token is None:
+            raise OSError(
+                "Missing Jenkins environment configuration."
+                "Set JENKINS_URL and JENKINS_TOKEN environment variables."
+            )
+        ldap_credentials = os.environ.get("LDAP_CREDENTIALS", None)
+        if ldap_credentials is None:
+            raise OSError("Missing LDAP_CREDENTIALS environment config")
+        ldap_username, _ = ldap_credentials.split(";")
+        lockable_resouces = LockableResources(jenkins_url, ldap_username, jenkins_token)
 
     connected_to_board = False
 
@@ -296,16 +297,20 @@ def connect_to_devices(config):
 
     board = None
     deny_list = []
+    resource_name = None
     atexit.register(bfcleanup)
     while True:
         # DeviceManager makes it easy to find devices by name, type, features.
         clean_device_manager()
         device_mgr = devices.manager = device_manager()
-        jenkins_job = os.environ.get("JOB_NAME", None)
-        build_number = os.environ.get("BUILD_NUMBER", None)
-        name, resource_name = lockable_resouces.acquire(
-            config.bf_board_name, jenkins_job, build_number, config.bf_board_type
-        )
+        if lockable_resouces is not None:
+            jenkins_job = os.environ.get("JOB_NAME", None)
+            build_number = os.environ.get("BUILD_NUMBER", None)
+            name, resource_name = lockable_resouces.acquire(
+                config.bf_board_name, jenkins_job, build_number, config.bf_board_type
+            )
+        else:
+            name = config.bf_board_name
 
         logger.info(
             colored(
@@ -334,7 +339,8 @@ def connect_to_devices(config):
         try:
             # Store name of station and resource name in config for convenience
             config.board["station"] = name
-            config.board["resource_name"] = resource_name
+            if resource_name is not None:
+                config.board["resource_name"] = resource_name
 
             connected_to_board = True
             # None is legacy for tftp_server from before dynamic devices, leave it for now...
@@ -451,7 +457,8 @@ def connect_to_devices(config):
             connected_to_board = False
             reason = str(e)
             message = f"last connected: {reason}"
-            lockable_resouces.update_message(resource_name, message)
+            if lockable_resouces is not None:
+                lockable_resouces.update_message(resource_name, message)
         finally:
             if not connected_to_board:
                 logger.warning(
