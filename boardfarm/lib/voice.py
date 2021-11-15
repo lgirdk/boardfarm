@@ -1,9 +1,11 @@
+import datetime
 from typing import List, Tuple
 
 import pexpect
 from boardfarm_docsis.exceptions import VoiceSetupConfigureFailure
 from nested_lookup import nested_lookup
 
+from boardfarm.exceptions import CodeError
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.network_testing import kill_process
@@ -174,14 +176,14 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
     :type dev: SIPTemplate
     :param fname: PCAP file to be read
     :type fname: str
-    :return: list of SIP packets as [(frame, src ip, dst ip, sip contact, sip msg:media_attribute:connection:info)]
+    :return: list of SIP packets as [(frame, src ip, dst ip, sip contact, sip msg:media_attribute:connection:info, time)]
     :rtype: List[Tuple[str]]
     """
     device = dev._obj()
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
         "-T fields -e frame.number -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
-        "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info"
+        "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info -e frame.time"
     )
 
     device.sudo_sendline(cmd + fields)
@@ -204,6 +206,7 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
             status,
             media_attr,
             connection_info,
+            frame_time,
         ) = line.split("\t")
         output.append(
             (
@@ -212,6 +215,7 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
                 dst,
                 contact or sfrom,
                 f"{req or status}:{media_attr}:{connection_info}",
+                frame_time,
             )
         )
     return output
@@ -241,7 +245,9 @@ def parse_sip_trace(
             flag = False
             for i in range(last_check, len(captured_sequence)):
                 result = []
-                frame_o, src_o, dst_o, sip_contact_o, msg_o = captured_sequence[i]
+                frame_o, src_o, dst_o, sip_contact_o, msg_o, time_o = captured_sequence[
+                    i
+                ]
                 result.append(str(src) == src_o)
                 result.append(str(dst) == dst_o)
                 result.append(sip_contact == sip_contact_o)
@@ -252,13 +258,15 @@ def parse_sip_trace(
                         f"Verified:\t{src_o}\t--->\t{dst_o}\t from: {sip_contact_o} | {msg_o}"
                     )
                     flag = True
-                    final_result.append((frame_o, src_o, dst_o, sip_contact_o, msg_o))
+                    final_result.append(
+                        (frame_o, src_o, dst_o, sip_contact_o, msg_o, time_o)
+                    )
                     break
             if not flag:
                 print(f"Failed:\t{src}\t--->\t{dst}\t from: {sip_contact} | {msg}")
                 final_result.append(())
         else:
-            final_result.append(("_", src, dst, sip_contact, msg))
+            final_result.append(("_", src, dst, sip_contact, msg, "_"))
     return final_result
 
 
@@ -284,15 +292,46 @@ def _parse_rtp_trace(
     :return: the list of all the frames found corresponding to each tuple of the matched sequence
     :rtype: List[list]
     """
-    start_frame = matched_sequence[start_index][0]
-    end_frame = matched_sequence[end_index][0]
+    time_format = "%b %d, %Y %H:%M:%S.%f"
+    try:
+        start_frame = matched_sequence[start_index][0]
+        end_frame = matched_sequence[end_index][0]
+        time_string = (
+            matched_sequence[start_index][5]
+            .strip()
+            .rsplit(" ", 1)[0]
+            .strip()
+            .strip("0")
+        )
+        frame_time = datetime.datetime.strptime(time_string, time_format)
+    except AttributeError:
+        raise CodeError(
+            "SIP sequence does not match or the start/end indexes are invalid"
+        )
+    # Check for the RTP checks after 1sec delay on captured SIP frame
+    frame_time += datetime.timedelta(seconds=1)
+    cmd_start_frame = (
+        f'frame.number>{start_frame} && frame.time>"{frame_time.strftime(time_format)}"'
+    )
     cmd_end_frame = "" if start_frame == end_frame else f" && frame.number<{end_frame}"
     device = dev._obj()
     output = []
     for index in range(start_index, end_index + 1):
-        src = matched_sequence[index][1]
-        dst = matched_sequence[index][2]
-        cmd = f'tshark -r {fname} -Y \'frame.number>{start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && rtp\' -T fields -e frame.number'
+        try:
+            src = matched_sequence[index][1]
+            dst = matched_sequence[index][2]
+            if (
+                index not in [start_index, end_index]
+                and "RTP_CHECK" not in matched_sequence[index][4]
+            ):
+                raise CodeError(
+                    "Should not provide any other sequence between start and end indexes other than RTP_CHECK"
+                )
+        except AttributeError:
+            raise CodeError(
+                "SIP sequence does not match or the start/end indexes are invalid"
+            )
+        cmd = f'tshark -r {fname} -Y \'{cmd_start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && rtp\' -T fields -e frame.number'
         device.sudo_sendline(cmd)
         device.expect(device.prompt)
         out = device.before.splitlines()
