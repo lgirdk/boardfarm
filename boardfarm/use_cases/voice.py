@@ -84,6 +84,15 @@ def make_a_call(caller: VoiceClient, callee: VoiceClient) -> None:
         )
 
 
+def put_phone_offhook(who_puts_offhook: VoiceClient) -> None:
+    """Puts the phone off hook
+
+    :param who_puts_offhook: SIP agent who puts phone off hook
+    :type who_puts_offhook: VoiceClient
+    """
+    who_puts_offhook._obj().off_hook()
+
+
 def answer_a_call(who_answers: VoiceClient) -> bool:
     """Answer a ringing call by target SIP agent.
 
