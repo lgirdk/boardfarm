@@ -183,6 +183,19 @@ class device_manager(UserList):
             "uniq_id": self.uniqid,
         }
 
+    def register_wifi_clients(self, env_helper):
+        if not getattr(self, "wlan_clients", None):
+            raise DeviceDoesNotExistError("No Wi-Fi devices in setup")
+
+        wifi_clients = env_helper.wifi_clients()
+        if wifi_clients:
+
+            # Register all wifi clients in wifi manager
+            for client in wifi_clients:
+                self.wlan_clients.register(client)
+
+        self.wlan_clients.registered_clients_summary()
+
     @property  # type: ignore
     def data(self):
         """Get the list of obj for devices."""
