@@ -2,10 +2,9 @@ import datetime
 from typing import List, Tuple
 
 import pexpect
-from boardfarm_docsis.exceptions import VoiceSetupConfigureFailure
 from nested_lookup import nested_lookup
 
-from boardfarm.exceptions import CodeError
+from boardfarm.exceptions import CodeError, VoiceSetupConfigureFailure
 from boardfarm.lib.common import retry_on_exception
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.network_testing import kill_process

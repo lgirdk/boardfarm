@@ -233,3 +233,7 @@ class UseCaseFailure(BftBaseException):
     """To raise failures specific to use cases"""
 
     pass
+
+
+class VoiceSetupConfigureFailure(BftBaseException):
+    """Exception that occurs when Voice setup is not configured"""

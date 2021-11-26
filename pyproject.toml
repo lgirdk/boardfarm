@@ -43,6 +43,7 @@
         "ouimeaux",
         "pandas",
         "pexpect",
+        "pluggy>=1.0.0",
         "psutil",
         "pycountry",
         "pycryptodome",

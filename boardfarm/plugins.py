@@ -65,7 +65,7 @@ class BFPluginManager(pluggy.PluginManager):
 
     def __init__(self, project_name="boardfarm", implprefix=None):
         """Initialize a pluggy PluginManager for boardfarm plugins."""
-        super().__init__(project_name, implprefix)
+        super().__init__(project_name)
 
     def _inspect_classes(self, module, **filter_keys):
         return [
