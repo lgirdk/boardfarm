@@ -1,2 +1,2 @@
 [run]
-omit = **/tests/*, unittests/*
+omit = integrationtests/*, unittests/*

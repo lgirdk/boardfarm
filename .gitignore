@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -137,22 +136,12 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# Test results
-results/
-report.html
-report.xml
-style.css
-
 # Text editor temporally files
 *.swp
-
-
-# Alternate config files
-*.json
 
 # Patch foo
 *.rej
 *.orig
 
-# geckodriver log
-geckodriver.log
+# VS Code
+.vscode/

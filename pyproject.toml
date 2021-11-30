@@ -23,47 +23,10 @@
     requires-python = ">=3.6"
 
     dependencies = [
-        "aenum",
-        "apscheduler",
-        "boto3",
-        "cdrouter>=0.5.5",
-        "debtcollector",
-        "distro",
-        "dlipower",
-        "easysnmp",
-        "elasticsearch<8,>=7",
-        "Faker",
-        "influxdb",
-        "jc",
-        "jira",
-        "jsonschema",
-        "matplotlib",
-        "mitmproxy",
-        "nested_lookup",
-        "netaddr",
-        "ouimeaux",
-        "pandas",
-        "pexpect ; platform_system != 'Windows'",
-        "pexpect >=999; platform_system == 'Windows'", # Win does not support spawn()
+        "pexpect",
         "pluggy>=1.0.0",
-        "psutil",
-        "pycountry",
-        "pycryptodome",
-        "pymongo",
-        "pyserial",
-        "pysmi",
-        "pysnmp",
-        "pyvirtualdisplay==2.2",
-        "requests",
-        "retry",
-        "selenium==4.1.0",
-        "simplejson",
-        "tabulate",
-        "termcolor",
-        "unittest2",
-        "xmltodict",
-        "xvfbwrapper",
-        "zeep",
+        "jsonmerge",
+        "netaddr",
     ]
 
     [project.optional-dependencies]
@@ -78,20 +41,22 @@
             "mypy",
             "pre-commit",
             "pylint",
-            "types-termcolor",
+            "types-ipaddress",
         ]
         doc = ["sphinx"]
         test = [
             "pytest",
             "pytest-cov",
-            "pytest-html",
             "pytest-mock",
             "pytest-randomly",
-            "pytest-xdist",
         ]
 
     [project.scripts]
-        bft = "boardfarm.bft:main"
+        boardfarm = "boardfarm.__main__:main"
+
+    [project.entry-points."boardfarm"]
+        core = "boardfarm.plugins.core"
+        devices = "boardfarm.plugins.devices"
 
     [project.urls]
         Source = "https://github.com/lgirdk/boardfarm"
@@ -121,10 +86,14 @@
 
 [tool.isort]
     profile = "black"
+
+[tool.mypy]
+    no_strict_optional = true
+    ignore_missing_imports = true
+
 [tool.tbump]
     # Uncomment this if your project is hosted on GitHub:
     # github_url = "https://github.com/<user or organization>/<project>/"
-
     [tool.tbump.version]
         current = "2022.11.0"
 

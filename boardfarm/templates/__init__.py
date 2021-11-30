@@ -1,0 +1,1 @@
+"""Boardfarm templates package."""
