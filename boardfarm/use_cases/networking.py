@@ -2,7 +2,9 @@
 """
 import re
 from contextlib import contextmanager
-from typing import Generator, Union
+from dataclasses import dataclass
+from ipaddress import IPv4Address, IPv6Address
+from typing import Generator, Optional, Union
 
 import pexpect
 from bs4 import BeautifulSoup
@@ -15,9 +17,18 @@ from .voice import VoiceClient
 from .wifi import WifiClient
 
 
+@dataclass
+class IPAddresses:
+    """This is an IP address data classes to hold ip objects or None."""
+
+    ipv4: Optional[IPv4Address]
+    ipv6: Optional[IPv6Address]
+
+
 class HTTPResult:
     def __init__(self, response: str):
         self.response = response
+
         # Todo: Wget parsing has to be added
 
         def parse_response(response: str = response):
