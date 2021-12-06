@@ -95,7 +95,7 @@ def configure_option125(device, enable=False):
             code_02 = ":".join([f"{j}{k}" for j, k in zip(hex_name, hex_name)])
             len_02 = hex(len(value)).replace("0x", "").zfill(2)
             total_len = hex(18 + len(value)).replace("0x", "").zfill(2)
-            option_125 = "00:00:0D:E9:{}:01:06:42:46:56:45:52:30:02:{}:{}:03:06:42:46:43:4c:41:4e".format(
+            option_125 = "00:00:0D:E9:{}:01:06:44:38:42:36:42:37:02:{}:{}:03:06:42:46:43:4c:41:4e".format(
                 total_len, len_02, code_02
             )
             device.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
