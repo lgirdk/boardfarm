@@ -212,6 +212,11 @@ class SoftPhone(SIPPhoneTemplate):
         self.expect(self.pjsip_prompt)
 
     @Checks.is_phone_started
+    def place_call_offhold(self) -> None:
+        """To place call off hold and thus reinvites the call on hold"""
+        self.reinvite()
+
+    @Checks.is_phone_started
     def hold(self) -> None:
         """To hold the current call"""
         self.sendline("\n")

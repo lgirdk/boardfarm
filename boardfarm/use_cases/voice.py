@@ -272,6 +272,17 @@ def place_call_onhold(who_places: VoiceClient) -> None:
     client.place_call_onhold()
 
 
+def place_call_offhold(who_places: VoiceClient) -> None:
+    """Place an ongoing call on hold to off-hold.
+    There must be an active call to be placed off hold.
+
+    :param who_places: SIP agent that is suppose to place the call off-hold.
+    :type who_places: VoiceClient
+    """
+    client: SIPPhoneTemplate = who_places._obj()
+    client.place_call_offhold()
+
+
 def press_R_button(who_presses: VoiceClient) -> None:
     """Press the R button.
 

@@ -418,6 +418,14 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         self._dial("!")
 
     @Checks.is_phone_started
+    def place_call_offhold(self) -> None:
+        """Place an ongoing call on-hold to off hold.
+
+        There must be an active call to be placed off hold.
+        """
+        self.press_R_button()
+
+    @Checks.is_phone_started
     def press_R_button(self) -> None:
         """Press the R button.
 

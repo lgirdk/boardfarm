@@ -120,6 +120,9 @@ class DummySIPEndpoint(SIPPhoneTemplate):
     def place_call_onhold(self) -> None:
         pass
 
+    def place_call_offhold(self) -> None:
+        pass
+
     def press_R_button(self) -> None:
         pass
 

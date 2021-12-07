@@ -361,6 +361,13 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
         """
 
     @abstractmethod
+    def place_call_offhold(self) -> None:
+        """Place an ongoing call off-hold.
+
+        There must be a call on hold to be placed to off hold.
+        """
+
+    @abstractmethod
     def press_R_button(self) -> None:  # pylint: disable=invalid-name
         """Press the R button.
 
