@@ -191,7 +191,8 @@ class DebianLAN(debian.DebianBox):
         else:
             kill_process(self, "tcpdump")
             self.tshark_process = False
-            tshark_logs = tshark_read(self, capture_file, packet_details=True)
+            tshark_logs = tshark_read(self, capture_file, timeout=120)
+
             raise Exception(
                 f"""Error: Device on LAN couldn't obtain address via DHCP.
             #########################################
