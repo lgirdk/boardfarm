@@ -16,6 +16,7 @@ from debtcollector import moves
 from nested_lookup import nested_lookup
 from requests import HTTPError, Session
 from requests.auth import HTTPBasicAuth
+from termcolor import colored
 from zeep import Client
 from zeep.cache import InMemoryCache
 from zeep.transports import Transport
@@ -28,7 +29,7 @@ from boardfarm.exceptions import (
     TR069ResponseError,
 )
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.common import get_class_name_in_stack, scp_from
+from boardfarm.lib.common import get_class_name_in_stack, get_pytest_name, scp_from
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.linux_nw_utility import NwFirewall
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
@@ -67,7 +68,11 @@ class Intercept:
         attr = object.__getattribute__(self, name)
         if callable(attr):
             d_flag = False
-            if name in Intercept.__dump_on and self.session_connected:
+            if (
+                self.skip_capture is False
+                and name in Intercept.__dump_on
+                and self.session_connected
+            ):
                 # sets the flag to true only if ssh session is connected
                 d_flag = True
 
@@ -84,6 +89,14 @@ class Intercept:
                         logger.warning("Warning!!! Unsupported parameter")
                         return
                     stack = inspect.stack()
+                    test_name = get_class_name_in_stack(
+                        self,
+                        ["test_main", "mvx_tst_setup"],
+                        stack,
+                        not_found="TestNameNotFound",
+                    )
+                    if test_name == "TestNameNotFound":
+                        test_name = get_pytest_name()
                     build_number = os.getenv("BUILD_NUMBER", "")
                     job_name = os.getenv("JOB_NAME", "")
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
@@ -92,15 +105,8 @@ class Intercept:
                         + "_"
                         + build_number
                         + "_"
-                        + (
-                            get_class_name_in_stack(
-                                self,
-                                ["test_main", "mvx_tst_setup"],
-                                stack,
-                                not_found="TestNameNotFound",
-                            )
-                            + pcap
-                        )
+                        + test_name
+                        + pcap
                     )
                 ok = False
                 for retry in range(count):
@@ -173,6 +179,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
     CPE_wait_time = default_timeout
     Count_retry_on_error = 3  # to be audited
+    skip_capture = False
 
     def __init__(self, *args, **kwargs):
         """Initialize the variable that are used in establishing connection to the ACS and\
@@ -252,6 +259,22 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
         self.dns = DNS(self, self.options, self.aux_ip, self.aux_url)
+
+    def enable_capture(self):
+        self.skip_capture = False
+        logger.warning(
+            colored("ACS pcap capture ENABLED", color="green", attrs=["bold"])
+        )
+
+    def disable_capture(self):
+        self.skip_capture = True
+        logger.warning(
+            colored(
+                "ACS pcap capture DISABLED",
+                color="red",
+                attrs=["bold"],
+            )
+        )
 
     def sudo_sendline(self, cmd):
         # overwriting linux behaviour
