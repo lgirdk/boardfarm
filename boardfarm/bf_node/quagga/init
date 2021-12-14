@@ -17,7 +17,7 @@ done
 sysctl -p /etc/sysctl.conf
 
 echo "Starting daemons."
-for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd; do
+for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd pimd; do
  if [ -f /etc/quagga/${svc}.conf ]; then
   echo "Starting ${svc}."
   $svc -d
@@ -25,8 +25,8 @@ for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd; do
 done
 
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-dhcrelay -4 -iu wan_cmts -id cm 172.25.1.20
-dhcrelay -6 -l cm -u 2001:dead:beef:2::20%wan_cmts
+dhcrelay -4 -iu eth1 -id cm 172.25.1.20 || true
+dhcrelay -6 -l cm -u 2001:dead:beef:2::20%eth1 || true
 
 if [[ $# -gt 0 ]]; then
     exec "$@"

@@ -1,45 +1,30 @@
-FROM debian:stable-slim
+FROM python:3.7.12-slim-buster
 
 RUN echo "root:bigfoot1" | chpasswd
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    apache2-utils \
     curl \
     dnsutils \
     iperf \
     iperf3 \
     iproute2 \
     iptables \
-    isc-dhcp-server \
     isc-dhcp-client \
     lighttpd \
     net-tools \
     netcat \
     nmap \
     openssh-server \
-    pppoe \
     psmisc \
     procps \
-    python3-pip \
-    python3 \
     tinyproxy \
     traceroute \
-    tftpd-hpa \
     tcpdump \
-    vim-common \
-    xinetd \
     less \
     wget \
-    iw \
-    wpasupplicant \
-    ntpdate \
     build-essential \
-    rsyslog \
     snmp \
-    dnsmasq \
-    xxd \
-    dante-server \
     iputils-ping
 
 # NOTE: apparmor will interfere with dhclient, disable on HOST by running:
