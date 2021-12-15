@@ -96,7 +96,7 @@ class Intercept:
                         not_found="TestNameNotFound",
                     )
                     if test_name == "TestNameNotFound":
-                        test_name = get_pytest_name()
+                        test_name = "".join(re.split(r"\(.*\)", get_pytest_name()))
                     build_number = os.getenv("BUILD_NUMBER", "")
                     job_name = os.getenv("JOB_NAME", "")
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
