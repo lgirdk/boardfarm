@@ -29,7 +29,7 @@ from boardfarm.exceptions import (
     TR069ResponseError,
 )
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.common import get_class_name_in_stack, get_pytest_name, scp_from
+from boardfarm.lib.common import get_class_name_in_stack, scp_from
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.linux_nw_utility import NwFirewall
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
@@ -95,8 +95,6 @@ class Intercept:
                         stack,
                         not_found="TestNameNotFound",
                     )
-                    if test_name == "TestNameNotFound":
-                        test_name = "".join(re.split(r"\(.*\)", get_pytest_name()))
                     build_number = os.getenv("BUILD_NUMBER", "")
                     job_name = os.getenv("JOB_NAME", "")
                     pcap = "_" + time.strftime("%Y%m%d_%H%M%S") + ".pcap"
