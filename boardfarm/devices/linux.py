@@ -85,12 +85,10 @@ class LinuxInterface:
         regex = [AllValidIpv6AddressesRegex, InterfaceIPv6_AddressRegex]
         self.expect(pexpect.TIMEOUT, timeout=0.5)
         self.before = ""
+        output = self.check_output(f"ifconfig {interface} | sed 's/inet6 /bft_inet6 /'")
+        logger.debug(output)
 
-        self.sendline(f"ifconfig {interface} | sed 's/inet6 /bft_inet6 /'")
-        self.expect(self.prompt)
-        logger.debug(self.before)
-
-        ips = re.compile("|".join(regex), re.M | re.U).findall(self.before)
+        ips = re.compile("|".join(regex), re.M | re.U).findall(output)
         for i in ips:
             try:
                 # we use IPv6Interface for convenience (any exception will be ignored)
