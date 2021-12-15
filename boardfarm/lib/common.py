@@ -2263,13 +2263,14 @@ def validate_influx_connection(device: object) -> Union[object, None]:
         raise
 
 
-def get_pytest_name() -> str:
+def get_pytest_name():
     """To get the pytest name from the test filename during runtime
 
     Returns:
         [string]: test name
     """
-    name = os.environ.get("PYTEST_CURRENT_TEST")
-    # the test name coudl have (setup) or (call) in it
-    name = "".join(re.split(r"\(.*\)", name))
-    return name.split("::")[1].replace(" ", "_")
+    return (
+        (os.environ.get("PYTEST_CURRENT_TEST").split(" (setup)")[0])
+        .split("::")[1]
+        .replace(" ", "_")
+    )
