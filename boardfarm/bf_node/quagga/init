@@ -20,9 +20,16 @@ echo "Starting daemons."
 for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd pimd; do
  if [ -f /etc/quagga/${svc}.conf ]; then
   echo "Starting ${svc}."
-  $svc -d
+  cat >> /etc/monit/conf.d/quagga << EOF
+  check process $svc with pidfile /var/run/quagga/$svc.pid
+    start program = "/usr/sbin/$svc -d"
+    stop program  = "/usr/sbin/service $svc stop"
+EOF
  fi
 done
+
+service monit start
+service mrouted start
 
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 dhcrelay -4 -iu eth1 -id cm 172.25.1.20 || true
