@@ -1,3 +1,18 @@
+## 2021.51.0 (2021-12-22)
+
+### Fix
+
+- **devices:linux.py**: add fix to fetch erouter0/lan ipv6 on linux console when output is delayed/untidy after command execution
+- do not use get_pytest_name yet
+- fix test name fetching in acs intercept
+- **devices:debian_lan.py**: handle timeout error when tshark read is too long for failed lan renewal
+
+### Feat
+
+- **quagga-pim**: add IGMP multicast routing for interface
+- enable/disable acs pcap capture
+- improved name discovery
+
 ## 2021.49.0 (2021-12-09)
 
 ### Feat
