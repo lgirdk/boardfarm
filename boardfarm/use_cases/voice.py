@@ -4,15 +4,20 @@ Voice use cases library.
 This module deals with only SIP end points.
 All APIs are independent of board under test.
 """
+import logging
 from contextlib import contextmanager
 from dataclasses import dataclass
 from time import sleep
 from typing import Generator
 
+from termcolor import colored
+
 from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
+
+logger = logging.getLogger("bft")
 
 
 @dataclass
@@ -206,7 +211,10 @@ def shutdown_phone(target_phone: VoiceClient) -> None:
     :type target_phone: SIPPhoneTemplate
     """
     dev = target_phone._obj()
-    dev.on_hook()
+    try:
+        dev.on_hook()
+    except Exception:
+        logger.warning(colored("Cannot put phone onhook", color="yellow"))
     dev.phone_kill()
 
 
