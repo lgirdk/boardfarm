@@ -6,7 +6,6 @@ All APIs are independent of board under test.
 """
 import logging
 from contextlib import contextmanager
-from dataclasses import dataclass
 from time import sleep
 from typing import Generator
 
@@ -16,29 +15,9 @@ from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTem
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
+from boardfarm.use_cases.descriptors import VoiceClient, VoiceServer
 
 logger = logging.getLogger("bft")
-
-
-@dataclass
-class VoiceClient:
-    name: str
-    ip: str
-    number: str
-    __obj: SIPPhoneTemplate
-
-    def _obj(self) -> SIPPhoneTemplate:
-        return self.__obj
-
-
-@dataclass
-class VoiceServer:
-    name: str
-    ip: str
-    __obj: SIPTemplate
-
-    def _obj(self):
-        return self.__obj
 
 
 def get_sip_proxy() -> VoiceServer:

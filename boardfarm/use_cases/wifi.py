@@ -1,24 +1,9 @@
 """Wifi use cases library.
 All APIs are independent of board under test.
 """
-from dataclasses import dataclass
-from typing import Optional
-
-from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.wifi_lib import wifi_mgr
-
-
-@dataclass
-class WifiClient:
-    band: str
-    __obj: WIFITemplate
-    network_type: str
-    authentication: Optional[str] = "WPA-PSK"
-    protocol: Optional[str] = "802.11n"
-
-    def _obj(self):
-        return self.__obj
+from boardfarm.use_cases.descriptors import WifiClient
 
 
 def get_wifi_client(band: float, network_type: str) -> WifiClient:
