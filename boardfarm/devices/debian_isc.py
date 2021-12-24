@@ -689,9 +689,12 @@ EOF"""
             for device in board_config["devices"]:
                 if "acs_server" in device["name"]:
                     break
-            acs_aux_url_hex = ":".join(
-                [hex(ord(x)).split("0x")[-1] for x in device["aux_url"]]
-            )
+            acs_url = device["aux_url"]
+            if not re.match("(?:http|https)://", acs_url):
+                acs_url = f"http://{acs_url}"
+            if not re.match(r".*:(\d+)", acs_url):
+                acs_url = f"{acs_url}:{device['port']}"
+            acs_aux_url_hex = ":".join([hex(ord(x)).split("0x")[-1] for x in acs_url])
 
         if self.vendor_opts_acsv4_url:
             # workaround to a known issue in ISC DHCP server
