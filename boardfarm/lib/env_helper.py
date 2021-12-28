@@ -71,10 +71,10 @@ class EnvHelper:
             if mirror:
                 return (
                     self.mirror
-                    + self.env["environment_def"]["board"]["software"]["load_image"]
+                    + self.env["environment_def"]["board"]["software"]["image_uri"]
                 )
             else:
-                return self.env["environment_def"]["board"]["software"]["load_image"]
+                return self.env["environment_def"]["board"]["software"]["image_uri"]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
