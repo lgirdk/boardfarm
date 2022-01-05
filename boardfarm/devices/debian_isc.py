@@ -690,10 +690,11 @@ EOF"""
                 if "acs_server" in device["name"]:
                     break
             acs_url = device["aux_url"]
+            port = re.search(r".*:(\d+).*", device["acs_mib"]).group(1)
             if not re.match("(?:http|https)://", acs_url):
                 acs_url = f"http://{acs_url}"
             if not re.match(r".*:(\d+)", acs_url):
-                acs_url = f"{acs_url}:{device['port']}"
+                acs_url = f"{acs_url}:{port}"
             acs_aux_url_hex = ":".join([hex(ord(x)).split("0x")[-1] for x in acs_url])
 
         if self.vendor_opts_acsv4_url:
