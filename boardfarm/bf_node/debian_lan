@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:stable-slim
 
 RUN echo "root:bigfoot1" | chpasswd
 
@@ -25,17 +25,12 @@ RUN apt-get update && \
     tftpd-hpa \
     tcpdump \
     vim-common \
-    xinetd \
     less \
     wget \
     ntpdate \
     build-essential \
     dante-server \
-    iputils-ping \
-    ndisc6 \
-    python-serial \
-    snmp
-
+    iputils-ping
 
 
 # NOTE: apparmor will interfere with dhclient, disable on HOST by running:
