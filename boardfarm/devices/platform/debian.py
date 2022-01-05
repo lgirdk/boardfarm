@@ -142,6 +142,7 @@ class DebianBox(linux.LinuxDevice):
                     "-o",
                     "ServerAliveCountMax=5",
                 ],
+                env={"TERM": "xterm-mono"},
             )
 
             self.ipaddr = ipaddr
