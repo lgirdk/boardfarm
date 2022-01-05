@@ -1,3 +1,21 @@
+## 2022.01.0 (2022-01-05)
+
+### Feat
+
+- get image use image_uri
+- **multicast**: add multicast usecases
+- **quagga**: add mrouted daemon
+
+### BREAKING CHANGE
+
+- If using Docsis devices the latest Docsis change must be picked.
+
+### Fix
+
+- **boardfarm:resources:configs:kamailio.cfg**: update kamailio.cfg to configure timeout of 25sec
+- **boardfarm:devices:debian_isc.py**: fix acs url in vendor specific dhcpoptions to use http as prefix
+- **boardfarm:use_cases:voice.py**: handle exception for hangup in shutdown_phone usecase
+
 ## 2021.51.0 (2021-12-22)
 
 ### Fix
