@@ -61,7 +61,10 @@ class LinuxInterface:
             + ValidIpv4AddressRegex,
         ]
         self.expect(regex)
-        ipaddr = self.match.group(1)
+        try:
+            ipaddr = self.match.group(1)
+        except AttributeError as e:
+            raise PexpectErrorTimeout(e)
         ipv4address = str(ipaddress.IPv4Address(str(ipaddr)))
         self.expect(self.prompt)
         logger.debug(f"ifconfig {interface} IPV4 {ipv4address}")
