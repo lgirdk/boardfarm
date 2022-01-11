@@ -23,6 +23,7 @@ class IPAddresses:
 
     ipv4: Optional[IPv4Address]
     ipv6: Optional[IPv6Address]
+    link_local_ipv6: Optional[IPv6Address]
 
 
 class HTTPResult:
