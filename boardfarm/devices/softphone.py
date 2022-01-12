@@ -89,7 +89,8 @@ class SoftPhone(SIPPhoneTemplate):
 --password=1234
 --null-audio
 --max-calls=1
---auto-answer=180"""
+--auto-answer=180
+--no-tcp"""
 
         self.sendline("\n")
         id = self.expect([self.pjsip_prompt] + self.prompt)
