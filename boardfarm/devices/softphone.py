@@ -257,6 +257,17 @@ class SoftPhone(SIPPhoneTemplate):
             out = True
         return out
 
+    def _send_update_and_validate(self, msg: str) -> bool:
+        with suppress(pexpect.TIMEOUT):
+            self.sendline("\n")
+            self.expect(self.pjsip_prompt)
+            self.sendline("U")
+            self.expect(msg)
+            self.sendline("\n")
+            self.expect(self.pjsip_prompt)
+            return True
+        return False
+
     @Checks.is_phone_started
     def on_hook(self) -> None:
         self.hangup()
@@ -271,11 +282,14 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_dialing(self) -> bool:
-        raise NotImplementedError
+        return self.validate_state(
+            fr"You have 1 active call.*Current call id=[0-9]* to sip:[0-9]*@{self._proxy_ip} \[EARLY\]"
+        )
 
     @Checks.is_phone_started
     def is_incall_dialing(self) -> bool:
-        raise NotImplementedError
+        # This is not supported, added here to provide compatibility with FXS phones
+        return self.is_connected()
 
     @Checks.is_phone_started
     def is_ringing(self) -> bool:
@@ -287,19 +301,22 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_incall_connected(self) -> bool:
+        # This is not supported, added here to provide compatibility with FXS phones
         return self.is_connected()
 
     @Checks.is_phone_started
     def is_onhold(self) -> bool:
-        raise NotImplementedError
+        return self._send_update_and_validate(
+            r"PCMU \(sendonly\).*\[type=audio\], status is Local hold"
+        )
 
     @Checks.is_phone_started
-    def is_playing_dialtone(self, alllines: bool = False) -> bool:
-        raise NotImplementedError
+    def is_playing_dialtone(self) -> bool:
+        return self._send_update_and_validate("No current call")
 
     @Checks.is_phone_started
     def is_incall_playing_dialtone(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     @Checks.is_phone_started
     def is_call_ended(self) -> bool:
@@ -312,24 +329,30 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_code_ended(self) -> bool:
-        raise NotImplementedError
+        with suppress(pexpect.TIMEOUT):
+            self.sendline("\n")
+            self.expect(self.pjsip_prompt)
+            self.expect(r"Closing sound device after idle for [0-9]* second\(s\)")
+            self.sendline("\n")
+            self.expect(self.pjsip_prompt)
+            return True
+        return False
 
     @Checks.is_phone_started
     def is_call_waiting(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     @Checks.is_phone_started
     def is_in_conference(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     @Checks.is_phone_started
     def has_off_hook_warning(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     @Checks.is_phone_started
     def detect_dialtone(self) -> bool:
-        # TODO: need to be implemented!!
-        return True
+        return self.is_playing_dialtone()
 
     @property
     def number(self):
@@ -384,14 +407,14 @@ class SoftPhone(SIPPhoneTemplate):
 
     def answer_waiting_call(self) -> None:
         """Answer the waiting call and hang up on the current call."""
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     def toggle_call(self) -> None:
         """Toggle between the calls.
 
         Need to first validate, there is an incoming call on other line.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     def merge_two_calls(self) -> None:
         """Merge the two calls for conference calling.
@@ -399,7 +422,7 @@ class SoftPhone(SIPPhoneTemplate):
         Ensure call waiting must be enabled.
         There must be a call on other line to add to conference.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     def reject_waiting_call(self) -> None:
         """Reject a call on waiting on second line.
@@ -407,7 +430,7 @@ class SoftPhone(SIPPhoneTemplate):
         This will send the call to voice mail or a busy tone.
         There must be a call on the second line to reject.
         """
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported")
 
     def place_call_onhold(self) -> None:
         """Place an ongoing call on-hold.
