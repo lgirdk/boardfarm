@@ -1,5 +1,5 @@
 from . import (
-    authenticated_telnet,
+    authenticated_serial_connections,
     kermit_connection,
     local_cmd,
     local_serial_connection,
@@ -41,7 +41,12 @@ def connection(conn_type, device, **kwargs):
         out = kermit_connection.KermitConnection(device=device, **kwargs)
 
     if conn_type in ("authenticated_telnet"):
-        out = authenticated_telnet.AuthenticatedTelnetConnection(
+        out = authenticated_serial_connections.AuthenticatedTelnetConnection(
+            device=device, **kwargs
+        )
+
+    if conn_type in ("authenticated_ssh"):
+        out = authenticated_serial_connections.AuthenticatedSshConnection(
             device=device, **kwargs
         )
 
