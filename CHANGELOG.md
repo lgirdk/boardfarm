@@ -1,3 +1,26 @@
+## 2022.03.0 (2022-01-20)
+
+### Feat
+
+- **devices:softphone.py**: implement the unimplemented usecases for softphone
+- add connect to DUT via ssh
+- **device-manager**: register wifi devices
+
+### Fix
+
+- **devices:softphone.py**: fix softphone pjsip config to disable TCP transport
+- **networking.py**: add link_local_ipv6 to IPAddresses dataclass
+- **devices:linux.py**: fix get_interface_ipaddr to handle AttributeError and throw PexpectTimeoutError
+- **devices:debian_isc.py**: fix for port number of acs url in vendor specific dhcp configuration
+- **debian**: updated pkgs that can be installed
+- fixes to run with debian:buster-slim image
+- **debian**: fix pexpect xterm env set
+- **installers**: minor fix on apt_install
+
+### BREAKING CHANGE
+
+- BOARDFARM-1456
+
 ## 2022.01.0 (2022-01-05)
 
 ### Feat
