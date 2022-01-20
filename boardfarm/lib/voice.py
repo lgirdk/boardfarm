@@ -312,23 +312,24 @@ def _parse_rtp_trace(
     cmd_start_frame = (
         f'frame.number>{start_frame} && frame.time>"{frame_time.strftime(time_format)}"'
     )
-    cmd_end_frame = "" if start_frame == end_frame else f" && frame.number<{end_frame}"
+    if start_frame == end_frame:
+        end_index = len(matched_sequence)
+        cmd_end_frame = ""
+    else:
+        cmd_end_frame = f" && frame.number<{end_frame}"
     device = dev._obj()
     output = []
-    for index in range(start_index, end_index + 1):
+    for index in range(start_index + 1, end_index):
         try:
             src = matched_sequence[index][1]
             dst = matched_sequence[index][2]
-            if (
-                index not in [start_index, end_index]
-                and "RTP_CHECK" not in matched_sequence[index][4]
-            ):
+            if "RTP_CHECK" not in matched_sequence[index][4]:
                 raise CodeError(
                     "Should not provide any other sequence between start and end indexes other than RTP_CHECK"
                 )
         except AttributeError:
             raise CodeError(
-                "SIP sequence does not match or the start/end indexes are invalid"
+                f"In between RTP indexes are invalid in the sequence: {matched_sequence[index]}"
             )
         cmd = f'tshark -r {fname} -Y \'{cmd_start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && rtp\' -T fields -e frame.number'
         device.sudo_sendline(cmd)
