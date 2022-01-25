@@ -96,6 +96,8 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline("echo 0 > /proc/sys/net/ipv4/tcp_sack")
         self.expect(self.prompt)
+        self.sendline("echo 0 > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts")
+        self.expect(self.prompt)
         self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
         self.expect(self.prompt)
         apt_install(self, "ndisc6 python-serial")
