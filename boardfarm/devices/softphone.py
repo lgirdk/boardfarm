@@ -137,6 +137,13 @@ class SoftPhone(SIPPhoneTemplate):
                 self._phone_started = False
                 raise CodeError(f"Failed to start Phone!!\nReason{e}")
 
+    def _select_option_make_call(self):
+        """Selects the option to make a call on softphone menu"""
+        self.sendline("\n")
+        self.expect(self.pjsip_prompt)
+        self.sendline("m")
+        self.expect(r"Make call\:")
+
     @Checks.is_phone_started
     def dial(self, number: str, receiver_ip: str = None) -> None:
         """To dial a number via receiver ip."""
@@ -145,10 +152,7 @@ class SoftPhone(SIPPhoneTemplate):
             message="dial() is deprecated. use call() method to make calls",
             category=UserWarning,
         )
-        self.sendline("\n")
-        self.expect(self.pjsip_prompt)
-        self.sendline("m")
-        self.expect(r"Make call\:")
+        self._select_option_make_call()
         self.sendline("sip:" + number + "@" + receiver_ip)
         self.expect("Call [0-9]* state changed to CALLING")
         self.sendline("\n")
@@ -161,11 +165,8 @@ class SoftPhone(SIPPhoneTemplate):
         :param callee: Device which will act as the caller.
         :type callee: SIPPhoneTemplate
         """
+        self._select_option_make_call()
         dial_number = callee.number
-        self.sendline("\n")
-        self.expect(self.pjsip_prompt)
-        self.sendline("m")
-        self.expect(r"Make call\:")
         self.sendline("sip:" + dial_number + "@" + self._proxy_ip)
         self.expect("Call [0-9]* state changed to CALLING")
         self.sendline("\n")
@@ -340,7 +341,7 @@ class SoftPhone(SIPPhoneTemplate):
 
     @Checks.is_phone_started
     def is_call_waiting(self) -> bool:
-        raise NotImplementedError("Unsupported")
+        return self.validate_state(r"Incoming call for account [0-9]*")
 
     @Checks.is_phone_started
     def is_in_conference(self) -> bool:
@@ -450,14 +451,31 @@ class SoftPhone(SIPPhoneTemplate):
         """To perfrom hook flash"""
         self.press_R_button()
 
+    def _dial_feature_code(self, code: str):
+        """Selects the option to make a call and then sends the desired feature code to the sipcenter
+
+        :param code: code to be send as a request for a feature
+        :type code: str
+        :raises CodeError: Raises this error when call is not ended after dialing the code
+        """
+        self._select_option_make_call()
+        self.sendline(f"sip:{code}@{self._proxy_ip}")
+        self.expect("Call [0-9]* state changed to CALLING")
+        if not self.is_code_ended():
+            raise CodeError(f"Call not ended after dialing a feature code: {code}")
+
     def enable_call_waiting(self) -> None:
-        raise NotImplementedError("Unsupported!")
+        self._dial_feature_code("*42#")
 
     def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
-        raise NotImplementedError("Unsupported!")
+        code = f"*67*{forward_to.number}#"
+        self._dial_feature_code(code)
+
+    def disable_call_forwarding_busy(self) -> None:
+        self._dial_feature_code("#67#")
 
     def disable_call_waiting_overall(self) -> None:
-        raise NotImplementedError("Unsupported!")
+        self._dial_feature_code("#43#")
 
     def disable_call_waiting_per_call(self) -> None:
-        raise NotImplementedError("Unsupported!")
+        self._dial_feature_code("#43*")

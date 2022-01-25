@@ -161,6 +161,10 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
         :type forward_to: SIPPhoneTemplate"""
 
     @abstractmethod
+    def disable_call_forwarding_busy(self) -> None:
+        """Disables call forwarding busy by dialing a code and then puts phone onhook"""
+
+    @abstractmethod
     def disable_call_waiting_overall(self) -> None:
         """ """
 

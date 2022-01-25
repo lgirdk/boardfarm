@@ -458,6 +458,15 @@ def enable_call_forwarding_busy(
     who_forwards._obj().enable_call_forwarding_busy(forward_to=forward_to)
 
 
+def disable_call_forwarding_busy(who_disables: VoiceClient) -> None:
+    """Disables call forwarding on a phone when busy
+
+    :param who_disables: Agent that disables call forwarding busy
+    :type who_disables: VoiceClient
+    """
+    who_disables._obj().disable_call_forwarding_busy()
+
+
 def disable_call_waiting_overall(agent: VoiceClient) -> None:
     """Disables the call waiting overall on a phone by dialing a desired number
 

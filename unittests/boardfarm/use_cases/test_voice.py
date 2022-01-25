@@ -72,7 +72,10 @@ class DummySIPEndpoint(SIPPhoneTemplate):
     def disable_call_waiting_per_call(self):
         pass
 
-    def enable_call_forwarding_busy(self):
+    def enable_call_forwarding_busy(self, forward_to: "SIPPhoneTemplate"):
+        print(f"Forwarding to {forward_to.name}:{forward_to.number} ...")
+
+    def disable_call_forwarding_busy(self):
         pass
 
     def enable_call_waiting(self):

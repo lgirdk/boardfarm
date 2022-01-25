@@ -448,16 +448,17 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         self.on_hook()
 
     def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
-        """ """
         self._dial(f"*67*{forward_to._obj().number}#")
         self.on_hook()
 
+    def disable_call_forwarding_busy(self) -> None:
+        self._dial("#67#")
+        self.on_hook()
+
     def disable_call_waiting_overall(self) -> None:
-        """ """
         self._dial("#43#")
         self.on_hook()
 
     def disable_call_waiting_per_call(self) -> None:
-        """ """
         self._dial("#43*")
         self.on_hook()
