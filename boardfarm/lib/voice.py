@@ -265,7 +265,14 @@ def parse_sip_trace(
                 print(f"Failed:\t{src}\t--->\t{dst}\t from: {sip_contact} | {msg}")
                 final_result.append(())
         else:
-            final_result.append(("_", src, dst, sip_contact, msg, "_"))
+            try:
+                # This will fetch the frame number of the sip packet(INVITE or ACK) which was used to setup rtp frames
+                setup_frame = int(final_result[sip_contact][0]) if sip_contact else None
+            except (AttributeError, ValueError) as e:
+                raise CodeError(
+                    f"Incorrect index for setup frame provided for RTP verification, Reason: {e}"
+                )
+            final_result.append((setup_frame, src, dst, sip_contact, msg, "_"))
     return final_result
 
 
@@ -323,6 +330,10 @@ def _parse_rtp_trace(
         try:
             src = matched_sequence[index][1]
             dst = matched_sequence[index][2]
+            setup_frame = matched_sequence[index][0]
+            cmd_setup_frame = (
+                f"rtp.setup-frame=={setup_frame}" if setup_frame else "rtp"
+            )
             if "RTP_CHECK" not in matched_sequence[index][4]:
                 raise CodeError(
                     "Should not provide any other sequence between start and end indexes other than RTP_CHECK"
@@ -331,7 +342,7 @@ def _parse_rtp_trace(
             raise CodeError(
                 f"In between RTP indexes are invalid in the sequence: {matched_sequence[index]}"
             )
-        cmd = f'tshark -r {fname} -Y \'{cmd_start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && rtp\' -T fields -e frame.number'
+        cmd = f'tshark -r {fname} -Y \'{cmd_start_frame}{cmd_end_frame} && ip.src_host=="{src}" && ip.dst_host=="{dst}" && {cmd_setup_frame}\' -T fields -e frame.number'
         device.sudo_sendline(cmd)
         device.expect(device.prompt)
         out = device.before.splitlines()
