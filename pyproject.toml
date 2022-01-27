@@ -54,7 +54,7 @@
         "pyvirtualdisplay",
         "requests",
         "retry",
-        "selenium",
+        "selenium<=3.141.0",
         "simplejson",
         "tabulate",
         "termcolor",
