@@ -25,27 +25,27 @@ def connection(conn_type, device, **kwargs):
     :rtype: object
     """
     out = None
-    if conn_type is None or conn_type in ("local_cmd"):
+    if conn_type is None or conn_type == "local_cmd":
         out = local_cmd.LocalCmd(device=device, **kwargs)
 
-    if conn_type in ("ser2net"):
+    if conn_type == "ser2net":
         out = ser2net_connection.Ser2NetConnection(device=device, **kwargs)
 
-    if conn_type in ("local_serial"):
+    if conn_type == "local_serial":
         out = local_serial_connection.LocalSerialConnection(device=device, **kwargs)
 
-    if conn_type in ("ssh"):
+    if conn_type == "ssh":
         out = ssh_connection.SshConnection(device=device, **kwargs)
 
-    if conn_type in ("kermit_cmd"):
+    if conn_type == "kermit_cmd":
         out = kermit_connection.KermitConnection(device=device, **kwargs)
 
-    if conn_type in ("authenticated_telnet"):
+    if conn_type == "authenticated_telnet":
         out = authenticated_serial_connections.AuthenticatedTelnetConnection(
             device=device, **kwargs
         )
 
-    if conn_type in ("authenticated_ssh"):
+    if conn_type == "authenticated_ssh":
         out = authenticated_serial_connections.AuthenticatedSshConnection(
             device=device, **kwargs
         )
