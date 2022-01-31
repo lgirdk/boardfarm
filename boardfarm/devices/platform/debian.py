@@ -529,6 +529,8 @@ class DebianBox(linux.LinuxDevice):
         self.sendline(
             "addn-hosts=/etc/dnsmasq.hosts"
         )  # all additional hosts will be added to dnsmasq.hosts
+        self.sendline("auth-zone=ipv6wan.boardfarm.com")
+        self.sendline("auth-zone=ipv4wan.boardfarm.com")
         self.check_output("EOF")
         self.add_hosts(config=config)
         self.restart_dns_server()

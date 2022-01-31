@@ -39,8 +39,8 @@ class DebianWAN(debian.DebianBox):
         self.setup_dnsmasq(config)
         self.modify_dns_hosts(
             {
-                "www.google.com": [str(self.gw)],
-                "ipv6.google.com": [str(self.gwv6)],
+                "ipv4wan.boardfarm.com": [str(self.gw)],
+                "ipv6wan.boardfarm.com": [str(self.gwv6)],
             }
         )
         self.sendline("killall iperf ab hping3")
