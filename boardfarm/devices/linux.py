@@ -768,7 +768,7 @@ EOFEOFEOFEOF"""
     def tcpdump_capture(
         self,
         fname: str,
-        interface: str = "all",
+        interface: str = "any",
         additional_args: Optional[str] = None,
     ) -> None:
         """Capture packets from specified interface

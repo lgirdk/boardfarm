@@ -1,20 +1,25 @@
 """All APIs are independent of board under test.
 """
+import logging
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass
-from ipaddress import IPv4Address, IPv6Address
-from typing import Generator, Optional, Union
+from ipaddress import IPv4Address, IPv6Address, ip_address
+from typing import Generator, List, Optional, Union
 
 import pexpect
 from bs4 import BeautifulSoup
+from termcolor import colored
 
 from boardfarm.exceptions import UseCaseFailure
 from boardfarm.lib.common import http_service_kill
 from boardfarm.lib.DeviceManager import get_device_by_name
+from boardfarm.use_cases.descriptors import LanClients, WanClients
 
 from .voice import VoiceClient
 from .wifi import WifiClient
+
+logger = logging.getLogger("bft")
 
 
 @dataclass
@@ -24,6 +29,24 @@ class IPAddresses:
     ipv4: Optional[IPv4Address]
     ipv6: Optional[IPv6Address]
     link_local_ipv6: Optional[IPv6Address]
+
+
+@dataclass
+class ICMPPacketData:
+    """ICMP packet data class to hold all the packet information specific to ICMP packets
+    source and destination could be either ipv4 or ipv6 addresses
+    query_code defines the type of message received or sent and could be among the following:
+        Type 0 = Echo Reply
+        Type 8 = Echo Request
+        Type 9 = Router Advertisement
+        Type 10 = Router Solicitation
+        Type 13 = Timestamp Request
+        Type 14 = Timestamp Reply
+    """
+
+    source: IPAddresses
+    destination: IPAddresses
+    query_code: int
 
 
 class HTTPResult:
@@ -205,3 +228,89 @@ def get_traceroute_from_board(host_ip, version="", options="") -> str:
     """
     board = get_device_by_name("board")
     return board.nw_utility.traceroute_host(host_ip)
+
+
+def parse_icmp_trace(
+    dev: Union[LanClients, WanClients, WifiClient], fname: str
+) -> List[ICMPPacketData]:
+    """Reads and Filters out the ICMP packets from the pcap file with fields
+    Source, Destinationa and Code of Query Type
+
+    :param dev: Object of the device class where tcpdump is captured
+    :type dev: Union[LanClients, WanClients, WifiClient]
+    :param fname: Name of the captured pcap file
+    :type fname: str
+    :return: Sequence of ICMP packets filtered from captured pcap file
+    :rtype: List[ICMPPacketData]
+    """
+    device = dev._obj
+    out = (
+        device.tshark_read_pcap(
+            fname, additional_args="-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type"
+        )
+        .split("This could be dangerous.")[-1]
+        .splitlines()[1:]
+    )
+    output: List[ICMPPacketData] = []
+    for line in out:
+        try:
+            (src, dst, query_code) = line.split("\t")
+        except ValueError:
+            raise UseCaseFailure("ICMP packets not found")
+
+        output.append(
+            ICMPPacketData(
+                IPAddresses(ip_address(src), None, None)
+                if type(ip_address(src)) == IPv4Address
+                else IPAddresses(None, ip_address(src), None),
+                IPAddresses(ip_address(dst), None, None)
+                if type(ip_address(dst)) == IPv4Address
+                else IPAddresses(None, ip_address(dst), None),
+                int(query_code),
+            )
+        )
+    return output
+
+
+def is_icmp_packet_present(
+    captured_sequence: List[ICMPPacketData], expected_sequence: List[ICMPPacketData]
+) -> bool:
+    """Checks whether the expected ICMP sequence matches with the captured sequence or not
+
+    :param captured_sequence: Sequence of ICMP packets filtered from captured pcap file
+    :type captured_sequence: List[ICMPPacketData]
+    :param expected_sequence: Example for IPv4 source and destination and query_code as 8(Echo Request)
+                            [
+                                ICMPPacketData(
+                                    IPAddresses(IPv4Address("172.25.1.109"),None,None),
+                                    IPAddresses(IPv4Address("192.168.178.22"),None,None),
+                                    8
+                                ),
+                            ]
+    :type expected_sequence: List[ICMPPacketData]
+    :return: Return True if ICMP expected sequences matches with the captured sequence else False
+    :rtype: bool
+    """
+    last_check = 0
+    final_result = []
+    for icmp_packet_expected in expected_sequence:
+        for i in range(last_check, len(captured_sequence)):
+            if captured_sequence[i] == icmp_packet_expected:
+                last_check = i
+                logger.info(
+                    colored(
+                        f"Verified ICMP packet:\t{icmp_packet_expected.source}\t-->>\t{icmp_packet_expected.destination}\tType: {icmp_packet_expected.query_code}",
+                        color="green",
+                    )
+                )
+                final_result.append(True)
+                break
+        else:
+            logger.info(
+                colored(
+                    f"Couldn't verify ICMP packet:\t{icmp_packet_expected.source}\t-->>\t{icmp_packet_expected.destination}\tType: {icmp_packet_expected.query_code}",
+                    color="red",
+                )
+            )
+            final_result.append(False)
+    return all(final_result)
