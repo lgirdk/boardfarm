@@ -1,3 +1,20 @@
+## 2022.05.0 (2022-02-02)
+
+### Feat
+
+- **devices:softphone.py,debian_fxs.py**: implement enable_call_waiting and enable_call_forwarding_busy use cases for softphone
+- **getters.py**: add getters for lan and wan clients
+
+### Fix
+
+- **lib:voice.py**: fix _parse_rtp_trace usecase to check for rtp packets associated to a SIP setup-frame
+- **debian_wan**: replace google.com with wan.boardfarm.com for v4 and v6
+- **debian_fxs**: update debian:stable-slim with debian:buster-slim
+- **connection_decider**: use strict match for connection type
+- **pyproject.toml**: pin dependency for selenium version 3.141.0
+- **devices:debian_lan.py**: set icmp_echo_ignore_broadcasts to false on lan devices
+- **boardfarm:lib:voice**: fix _parse_rtp_trace when start and end indexes are same
+
 ## 2022.03.0 (2022-01-20)
 
 ### Feat
