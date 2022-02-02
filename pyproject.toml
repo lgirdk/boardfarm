@@ -25,8 +25,8 @@
     dependencies = [
         "pexpect",
         "pluggy>=1.0.0",
-        "jsonmerge",
         "netaddr",
+        "pysmi",
     ]
 
     [project.optional-dependencies]
@@ -52,7 +52,7 @@
         ]
 
     [project.scripts]
-        boardfarm = "boardfarm.__main__:main"
+        boardfarm = "boardfarm.main:main"
 
     [project.entry-points."boardfarm"]
         core = "boardfarm.plugins.core"
@@ -88,8 +88,13 @@
     profile = "black"
 
 [tool.mypy]
+    pretty = true
     no_strict_optional = true
     ignore_missing_imports = true
+    warn_redundant_casts = true
+    warn_unreachable = true
+    disallow_untyped_defs = true
+    show_error_codes = true
 
 [tool.tbump]
     # Uncomment this if your project is hosted on GitHub:

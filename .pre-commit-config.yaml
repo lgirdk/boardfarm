@@ -88,7 +88,7 @@ repos:
           - id: flynt
             stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.1.0
+      rev: 0.1.1
       hooks:
           - id: yamlfmt
             stages: [commit]
@@ -99,7 +99,7 @@ repos:
             args: [--format, parsable, --strict]
             stages: [commit]
     - repo: https://github.com/psf/black
-      rev: 21.6b0
+      rev: 22.3.0
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'

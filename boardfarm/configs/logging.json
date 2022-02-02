@@ -1,0 +1,40 @@
+{
+    "disable_existing_loggers": true,
+    "formatters": {
+        "pexpect": {
+            "class": "logging.Formatter",
+            "format": "%(asctime)s %(levelname)-8s- %(message)-100s  (%(name)s)"
+        },
+        "root": {
+            "class": "logging.Formatter",
+            "format": "%(asctime)s %(levelname)-8s- %(message)-100s  (%(name)s:%(funcName)s:%(lineno)d)"
+        }
+    },
+    "handlers": {
+        "pexpect": {
+            "class": "logging.StreamHandler",
+            "formatter": "pexpect",
+            "stream": "ext://sys.stderr"
+        },
+        "root": {
+            "class": "logging.StreamHandler",
+            "formatter": "root",
+            "stream": "ext://sys.stderr"
+        }
+    },
+    "loggers": {
+        "pexpect": {
+            "handlers": [
+                "pexpect"
+            ],
+            "propagate": false
+        }
+    },
+    "root": {
+        "handlers": [
+            "root"
+        ],
+        "level": "DEBUG"
+    },
+    "version": 1
+}
