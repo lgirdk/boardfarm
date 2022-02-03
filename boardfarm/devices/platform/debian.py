@@ -170,7 +170,7 @@ class DebianBox(linux.LinuxDevice):
         self.check_connection(self.username, name, self.password)
 
         # attempts to fix the cli colums size
-        self.set_cli_size(200)
+        self.set_cli_size(300)
 
         if ipaddr is None:
             self.sendline("hostname")
