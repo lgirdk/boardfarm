@@ -42,7 +42,8 @@
         "netaddr",
         "ouimeaux",
         "pandas",
-        "pexpect",
+        "pexpect ; platform_system != 'Windows'",
+        "pexpect >=999; platform_system == 'Windows'", # Win does not support spawn()
         "pluggy>=1.0.0",
         "psutil",
         "pycountry",
