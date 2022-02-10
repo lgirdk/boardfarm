@@ -4,6 +4,7 @@ import ipaddress
 import logging
 import os
 import re
+from contextlib import contextmanager, suppress
 from typing import Optional, Union
 
 import pexpect
@@ -762,6 +763,116 @@ EOFEOFEOFEOF"""
         gw_ip = self.match.group(1)
         self.expect_prompt()
         return gw_ip
+
+    @contextmanager
+    def tcpdump_capture(
+        self,
+        fname: str,
+        interface: str = "all",
+        additional_args: Optional[str] = None,
+    ) -> None:
+        """Capture packets from specified interface
+
+        Packet capture using tcpdump utility at a specified interface.
+
+        :param fname: name of the file where packet captures will be stored
+        :type fname: str
+        :param interface: name of the interface, defaults to "all"
+        :type interface: str
+        :param additional_args: arguments to tcpdump command, defaults to None
+        :type additional_args: Optional[str]
+        :yield: process id of tcpdump process
+        :rtype: None
+        """
+        process_id: str = ""
+        command_str = f"tcpdump -U -i {interface} -n -w {fname} "
+        if additional_args:
+            command_str += additional_args
+
+        try:
+
+            self.sudo_sendline(f"{command_str} &")
+            self.expect_exact(f"tcpdump: listening on {interface}")
+            process_id = re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", self.before).group(2)
+            yield process_id
+
+        finally:
+
+            # This should always be executed, might kill other tcpdumps[need to agree]
+            if process_id:
+                self.sudo_sendline(f"kill {process_id}")
+                self.expect(self.prompt)
+                for _ in range(3):
+                    with suppress(pexpect.TIMEOUT):
+                        self.sudo_sendline("sync")
+                        self.expect(self.prompt)
+                        if "Done" in self.before:
+                            break
+
+    def tcpdump_read_pcap(
+        self,
+        fname: str,
+        additional_args: Optional[str] = None,
+        timeout: int = 30,
+        rm_pcap: bool = False,
+    ) -> str:
+        """Read packet captures from an existing file
+
+        :param fname: name of file to read from
+        :type fname: str
+        :param additional_args: filter to apply on packet display, defaults to None
+        :type additional_args: Optional[str]
+        :param timeout: time for tcpdump read command to complete, defaults to 30
+        :type timeout: int
+        :param rm_pcap: if True remove packet capture file after read, defaults to False
+        :type rm_pcap: bool
+        :return: console output from the command execution
+        :rtype: str
+        """
+
+        read_command = f"tcpdump -n -r {fname} "
+        if additional_args:
+            read_command += additional_args
+        self.sudo_sendline(read_command)
+        self.expect(self.prompt, timeout=timeout)
+        output = self.before
+        if rm_pcap:
+            self.sudo_sendline(f"rm {fname}")
+            self.expect(self.prompt)
+        return output
+
+    def tshark_read_pcap(
+        self,
+        fname: str,
+        additional_args: Optional[str] = None,
+        timeout: int = 30,
+        rm_pcap: bool = False,
+    ) -> str:
+        """Read packet captures from an existing file
+
+        :param fname: name of the file in which captures are saved
+        :type fname: str
+        :param additional_args: additional arguments for tshark command to display filtered output, defaults to None
+        :type additional_args: Optional[str]
+        :param timeout: time out for tshark command to be executed, defaults to 30
+        :type timeout: int
+        :param rm_pcap: If True remove the packet capture file after reading it, defaults to False
+        :type rm_pcap: bool
+        :return: return tshark read command console output
+        :rtype: str
+        """
+
+        read_command = f"tshark -r {fname} "
+        if additional_args:
+            read_command += additional_args
+
+        self.sendline(read_command)
+        self.expect(self.prompt, timeout=timeout)
+        output = self.before
+        if rm_pcap:
+            self.sudo_sendline(f"rm {fname}")
+            self.expect(self.prompt)
+        return output
 
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
