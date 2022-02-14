@@ -51,7 +51,7 @@
         "pyserial",
         "pysmi",
         "pysnmp",
-        "pyvirtualdisplay",
+        "pyvirtualdisplay==2.2",
         "requests",
         "retry",
         "selenium",
