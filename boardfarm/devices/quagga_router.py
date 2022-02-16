@@ -1,8 +1,6 @@
 """Quagga router device class."""
 import atexit
-import ipaddress
 import logging
-from typing import List
 
 from boardfarm.devices import connection_decider, linux
 from boardfarm.exceptions import ConnectionRefused
@@ -11,7 +9,7 @@ logger = logging.getLogger("bft")
 
 
 class QuaggaRouter(linux.LinuxDevice):
-    """Linux based Quagga router for mini cmts.
+    """Linux based Quagga router.
 
     Class should not be instantiated directly in test cases.
     This class only be used for readonly operations or tcpdump
@@ -30,7 +28,7 @@ class QuaggaRouter(linux.LinuxDevice):
         self.username = username
         self.password = password
         self.connect()
-        atexit.register(self.logout())
+        atexit.register(self.logout)
 
     def __repr__(self):
         """Return string format object name.
@@ -41,7 +39,7 @@ class QuaggaRouter(linux.LinuxDevice):
         return f"QuaggaRouter(ipaddr={self.quagga_router_ip},port={self.quagga_router_port}, usrname={self.username}, password={self.password})"
 
     def connect(self):
-        """This is for mini cmts router connection
+        """Create Quagga router connection
 
         :raises Exception: ConnectionRefused
         """
@@ -60,22 +58,19 @@ class QuaggaRouter(linux.LinuxDevice):
             raise ConnectionRefused(f"Failed to connect to SSH due to {self.before}")
 
     def logout(self):
-        """Logout of the mini CMTS router"""
-        self.router_connection.close()
+        """Logout of the Quagga router"""
+        if self.isalive():
+            self.sendcontrol("c")
+            self.kill_console_at_exit()
 
-    def ip_route(self) -> List[str]:
+    def ip_route(self) -> str:
         """Execute ip router command and parse the output.
 
         :return: ip route command output
-        :rtype: List[str]
+        :rtype: str
         """
         command = "ip route list"
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.prompt)
-        routes_in_table = [
-            ipaddress.ip_address(route_)
-            for route_ in self.before.split("\r\n")[:-1]
-            if route_
-        ]
-        return routes_in_table
+        return self.before
