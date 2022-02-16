@@ -1,3 +1,22 @@
+## 2022.07.0 (2022-02-16)
+
+### Refactor
+
+- **pyproject.toml**: freeze selenium dependency to 4.1.0
+
+### Feat
+
+- **quagga_router.py**: add quagga router device class
+- **linux.py**: add support for tcpdump capture,read[tcpdump,tshark]
+- **traffic_generator.py**: formalise traffic generator template
+- **debian_lan**: add iw and wpasupplicant packages in image
+
+### Fix
+
+- **pyproject.toml**: freeze pyvirtualdisplay package version to 2.2
+- **pyproject.toml**: pin elasticsearch to stay compliant with api
+- increase cli size
+
 ## 2022.05.0 (2022-02-02)
 
 ### Feat
