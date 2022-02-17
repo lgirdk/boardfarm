@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional, Union
 import jc.parsers.ping
 import pexpect
 
-from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout
+from boardfarm.exceptions import BftIfaceNoIpV6Addr, CodeError, PexpectErrorTimeout
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,
     InterfaceIPv6_AddressRegex,
@@ -852,6 +852,14 @@ EOFEOFEOFEOF"""
         self.sudo_sendline(read_command)
         self.expect(self.prompt, timeout=timeout)
         output = self.before
+        if "No such file or directory" in output:
+            raise FileNotFoundError(
+                f"pcap file not found {fname} on device={self.name}"
+            )
+        if "syntax error in filter expression" in output:
+            raise CodeError(
+                f"Invalid filters for tcpdump read , review additional_args={additional_args}"
+            )
         if rm_pcap:
             self.sudo_sendline(f"rm {fname}")
             self.expect(self.prompt)
@@ -885,6 +893,14 @@ EOFEOFEOFEOF"""
         self.sendline(read_command)
         self.expect(self.prompt, timeout=timeout)
         output = self.before
+        if f'The file "{fname}" doesn\'t exist' in output:
+            raise FileNotFoundError(
+                f"pcap file not found {fname} on device {self.name}"
+            )
+        if "was unexpected in this context" in output:
+            raise CodeError(
+                f"Invalid filters for tshark read , review additional_args={additional_args}"
+            )
         if rm_pcap:
             self.sudo_sendline(f"rm {fname}")
             self.expect(self.prompt)
