@@ -5,8 +5,9 @@ import logging
 import os
 import re
 from contextlib import contextmanager, suppress
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
+import jc.parsers.ping
 import pexpect
 
 from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout
@@ -289,35 +290,50 @@ class LinuxInterface:
         self.expect(self.prompt)
 
     def ping(
-        self, ping_ip, ping_count=4, ping_interface=None, options="", timetorun=None
-    ):
-        """Check ping from any device."""
-        timeout = 50
+        self,
+        ping_ip: str,
+        ping_count: int = 4,
+        ping_interface: Optional[str] = None,
+        options: str = "",
+        timeout: int = 50,
+        json_output: bool = False,
+    ) -> Union[bool, Dict[str, Any]]:
+        """Ping remote host. Return True if ping has 0% loss
+        or parsed output in JSON if json_output=True flag is provided.
+
+        :param ping_ip: ping ip
+        :type ping_ip: str
+        :param ping_count: number of ping, defaults to 4
+        :type ping_count: int, optional
+        :param ping_interface: ping via interface, defaults to None
+        :type ping_interface: str, optional
+        :param options: extra ping options, defaults to ""
+        :type options: str, optional
+        :param timeout: timeout, defaults to 50
+        :type timeout: int, Optional
+        :param json_output: return ping output in dictionary format, defaults to False
+        :type json_output: bool, optional
+        :return: ping output
+        :rtype: bool or dict of ping output
+        """
         basic_cmd = f"ping -c {ping_count} {ping_ip}"
 
-        if timetorun:
-            basic_cmd = f"timeout {timetorun} ping {ping_ip} {options}"
-            timeout = int(timetorun) + 10
-        elif ping_interface:
-            basic_cmd += f" -I {ping_interface} {options}"
-        else:
-            basic_cmd += f" {options}"
+        if ping_interface:
+            basic_cmd += f" -I {ping_interface}"
+
+        basic_cmd += f" {options}"
         self.sendline(basic_cmd)
         self.expect(self.prompt, timeout=timeout)
 
-        if timetorun:
-            # Validation can be added - future note
-            return True
-        else:
-            match = re.search(
-                "%s packets transmitted, %s [packets ]*received, 0%% packet loss"
-                % (ping_count, ping_count),
-                self.before,
-            )
-            if match:
-                return True
-            else:
-                return False
+        if json_output:
+            return jc.parsers.ping.parse(self.before)
+
+        match = re.search(
+            "%s packets transmitted, %s [packets ]*received, 0%% packet loss"
+            % (ping_count, ping_count),
+            self.before,
+        )
+        return bool(match)
 
     def traceroute(self, host_ip, version="", options="", timeout=60):
         """Traceroute returns the route that packets take to a network host."""
