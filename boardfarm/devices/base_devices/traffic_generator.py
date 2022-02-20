@@ -1,4 +1,17 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Dict
+
+
+@dataclass
+class TrafficGeneratorResults:
+    """Delivers the results in a device-agnostic way."""
+
+    min_bandwidth: float
+    max_bandwidth: float
+    avg_bandwidth: float
+    # The following can be filled in by fetch_results()
+    _raw_results: Dict[str, Any]
 
 
 class TrafficGeneratorTemplate(ABC):
@@ -50,7 +63,7 @@ class TrafficGeneratorTemplate(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def fetch_results(self):
+    def fetch_results(self) -> TrafficGeneratorResults:
         """Fetch the results and return them in a device-agnostic way.
 
         It is responsibility of the test and not of the device to claim pass/failure
