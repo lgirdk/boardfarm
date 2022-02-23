@@ -519,9 +519,12 @@ class DebianBox(linux.LinuxDevice):
     def setup_dnsmasq(self, config=None):
         self.sendline("cat > /etc/dnsmasq.conf << EOF")
         self.sendline("local-ttl=60")
-        self.sendline("server=8.8.4.4") if not self.auth_dns else self.sendline(
-            "server=127.0.0.1"
-        )
+        upstream_dns = "8.8.4.4"
+        if self.mgmt_dns:
+            upstream_dns = self.mgmt_dns
+        if self.auth_dns:
+            upstream_dns = "127.0.0.1"
+        self.sendline(f"server={upstream_dns}")
         self.sendline("listen-address=127.0.0.1")
         self.sendline(f"listen-address={self.gw}")
         if self.gwv6 is not None:
