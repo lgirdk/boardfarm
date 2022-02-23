@@ -20,7 +20,7 @@
     dynamic = ['version', 'description']
     name = "boardfarm"
     readme = "README.md"
-    requires-python = ">=3.6"
+    requires-python = ">=3.9"
 
     dependencies = [
         "aenum",
