@@ -61,7 +61,6 @@ def make_a_call(caller: VoiceClient, callee: VoiceClient) -> None:
     try:
         assert caller is not callee, "Caller and Caller cannot be same!"
         caller._obj().call(callee._obj())
-        sleep(5)
     except Exception:
         raise CodeError(
             f"Failed to initiate a call between: {caller.name} --> {callee.name}"
