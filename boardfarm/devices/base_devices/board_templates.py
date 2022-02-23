@@ -103,6 +103,22 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         this may not be possible as it is dependend on the SW loaded on the DUT."""
         raise NotImplementedError
 
+    @abstractmethod
+    def get_load_avg(self) -> float:
+        """Return the average load of the board.
+
+        Depending on the Vendor/Model this method shall return a value which
+        is representative of the current load of the board.
+        For instance, on Linux based devices this could be the 1st value of
+        the output of:
+        cat /proc/loadavg
+        other SW/OS implementations shall use their own method.
+
+        :return: the current load for the board
+        :rtype: float
+        """
+        raise NotImplementedError
+
 
 class BoardTemplate(metaclass=__MetaSignatureChecker):
     """This class shows a basic set of interfaces to be implemented for testing
