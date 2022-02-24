@@ -906,6 +906,32 @@ EOFEOFEOFEOF"""
             self.expect(self.prompt)
         return output
 
+    def download_build(
+        self, build: str, source: str, destination: str = "/tftpboot"
+    ) -> bool:
+        """Download the build from the source to the destination if the build is not already there
+
+        :param build: name of the image file
+        :type build: str
+        :param source: source address of the build to download
+        :type source: str
+        :param destination: destination path to which the build should download to, defaults to "/tftpboot"
+        :type destination: str, optional
+        :raises CodeError: raises the exception if there goes something wrong during file download
+        :return: True if the build is present on the destination
+        :rtype: bool
+        """
+        try:
+            self.sendline(f"wget -nc {source} -O {destination}/{build}")
+            self.expect_prompt()
+        except PexpectErrorTimeout as e:
+            raise CodeError(
+                f"Failed to download the build on {destination} Error: {e}"
+            ) from e
+
+        logger.info(f"{build} downloaded as {build}")
+        return "saved" in self.before or "already there; not retrieving" in self.before
+
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
     """This aggregates the basedevice and its implementation"""

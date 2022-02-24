@@ -154,10 +154,10 @@ class SNMPv2:
         if not match:
             raise SNMPError(output)
         if value:
-            assert value in match.group(
+            assert value.strip("'0x")[-1] in match.group(
                 2
             ), "Set value did not match with output value: Expected: {} Actual: {}".format(
-                value, match.group(1)
+                value.strip("'0x")[-1], match.group(2)
             )
 
         """Returns the list containing the get value, type of the value and output recieved from snmp command"""

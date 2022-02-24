@@ -4,6 +4,7 @@ from typing import Optional
 
 import boardfarm.devices.connection_decider as conn_dec
 from boardfarm.devices import get_device_mapping_class
+from boardfarm.devices.base_devices.mib_template import MIBTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper as PexpectHelper
 from boardfarm.lib.env_helper import EnvHelper
@@ -86,6 +87,7 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
 
 class BoardSWTemplate(metaclass=__MetaSignatureChecker):
     voice: Optional[FXOTemplate] = None
+    mib: Optional[MIBTemplate] = None
 
     @abstractmethod
     def __init__(self, hw: BoardHWTemplate, **kwargs):
