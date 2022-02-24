@@ -8,7 +8,7 @@ import traceback
 import pexpect
 from termcolor import colored
 
-from boardfarm.exceptions import CodeError
+from boardfarm.exceptions import CodeError, ConfigKeyError
 from boardfarm.lib.bft_pexpect_helper import spawn_ssh_pexpect
 from boardfarm.lib.common import retry_on_exception, scp_from
 from boardfarm.lib.regexlib import ValidIpv4AddressRegex
@@ -28,7 +28,7 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
     wan_dhcp_server = False
     vendor_opts_acsv4_url = False
     vendor_opts_acsv6_url = False
-
+    valid_route_gateway = True
     # default CM specific settings
     default_lease_time = 604800
     max_lease_time = 604800
@@ -515,12 +515,16 @@ EOF"""
         to_send = to_send.replace("###OPEN_NETMASK###", str(self.open_network.netmask))
         to_send = to_send.replace("###OPEN_START_RANGE###", str(self.open_network[5]))
         to_send = to_send.replace("###OPEN_END_RANGE###", str(self.open_network[120]))
-        to_send = to_send.replace("###OPEN_GATEWAY###", str(self.open_gateway))
         to_send = to_send.replace("###OPEN_BROADCAST###", str(self.open_network[-1]))
         to_send = to_send.replace("###TIMEZONE###", str(self.timezone))
-
         to_send = to_send.replace("###WAN_IP###", str(self.prov_ip))
-
+        if self.valid_route_gateway:
+            to_send = to_send.replace("###OPEN_GATEWAY###", str(self.open_gateway))
+        else:
+            to_send = to_send.replace(
+                "###OPEN_GATEWAY###",
+                str(self.get_invalid_route(self.open_network[120])),
+            )
         self.sendline(to_send)
         self.expect(self.prompt)
 
@@ -582,6 +586,29 @@ EOF"""
             + ".master /etc/dhcp/dhcpd.conf"
         )
         self.expect(self.prompt)
+
+    def get_invalid_route(
+        self, ip_pool_upper_bound: ipaddress.IPv4Network
+    ) -> ipaddress.IPv4Address:
+        """returns invalid gateway ip address from open_gateway pool.
+        :param ip_pool_upper_bound: last ip from valid ip pool for open_gateway
+        :type ip_pool_upper_bound: ipaddress.IPv4Network
+        :raises ConfigKeyError: Exception to handle case where invalid config was
+        not found
+        :return: invalid open_gateway ip
+        :rtype: ipaddress.IPv4Address
+        """
+
+        gw_ip = ip_pool_upper_bound + 1
+        # try to validate atleast 5 addresses which are not in gateway upper_ip
+        for _ in range(5):
+            if not self.ping(gw_ip):
+                return ipaddress.IPv4Address(gw_ip)
+            gw_ip += 2
+        else:
+            raise ConfigKeyError(
+                f"Failed to find invalid gateway ip outsite network {ip_pool_upper_bound}"
+            )
 
     def get_timzone_offset(self, timezone):
         """Get time zone offset."""
