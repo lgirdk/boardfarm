@@ -18,7 +18,10 @@ class QuaggaRouter(linux.LinuxDevice):
     model = "Quagga router"
     name = "quagga_router"
     prompt = [r"[\w-]{2,18}\@.*:.*\#"]
+    router_prompt = "Zebra>"
     iface_dut = "cm"
+    telnet_router_instance = "telnet localhost 2601"
+    telnet_passwd = "Quagga"
 
     def __init__(self, ipaddr: str, port: str, username: str, password: str):
         """Instance initialization."""
@@ -43,7 +46,7 @@ class QuaggaRouter(linux.LinuxDevice):
 
         :raises Exception: ConnectionRefused
         """
-        conn_cmd = f'ssh -o "StrictHostKeyChecking no" {self.username}@{self.quagga_router_ip} -p {self.quagga_router_port}'
+        conn_cmd = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {self.username}@{self.quagga_router_ip} -p {self.quagga_router_port}"
         self.router_connection = connection_decider.connection(
             "local_cmd", device=self, conn_cmd=conn_cmd
         )
@@ -69,8 +72,16 @@ class QuaggaRouter(linux.LinuxDevice):
         :return: ip route command output
         :rtype: str
         """
-        command = "ip route list"
-        self.sendline(command)
-        self.expect_exact(command)
-        self.expect(self.prompt)
-        return self.before
+
+        ip_route_command = "show ip route"
+        self.sendline(self.telnet_router_instance)
+        self.expect("Password:")
+        self.sendline(self.telnet_passwd)
+        self.expect(self.router_prompt)
+        self.sendline(ip_route_command)
+        self.expect(self.router_prompt)
+        ip_routes = self.before
+        self.sendcontrol("]")
+        self.sendline("q")
+        self.expect("Connection closed.")
+        return ip_routes
