@@ -6,7 +6,6 @@ All APIs are independent of board under test.
 """
 import logging
 from contextlib import contextmanager
-from time import sleep
 from typing import Generator
 
 from termcolor import colored
@@ -111,7 +110,6 @@ def disconnect_the_call(who_disconnects: VoiceClient) -> bool:
     """
     try:
         who_disconnects._obj().on_hook()
-        sleep(5)
     except Exception:
         raise CodeError(f"Failed to disconnect the call: {who_disconnects.name}")
     return True
