@@ -273,21 +273,46 @@ class DebianLAN(debian.DebianBox):
             M_bit, O_bit = map(
                 lambda x: "Yes" in x, re.findall(r"Stateful.*\W", output)
             )
-
-        # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
-        if not M_bit and O_bit:
-            self.renew_ipv6(self.iface_dut, stateless=True)
-
-        # Condition for Statefull DHCPv6, DNS and IP details provided using DHCPv6
-        elif M_bit and O_bit:
-            self.renew_ipv6(self.iface_dut)
-
         # if env is dual, code should always return an IPv6 address
-        # need to actually throw an error, for IPv6 not receiving an IP
-        try:
-            ipv6 = self.get_interface_ip6addr(self.iface_dut)
-        except Exception:
-            pass
+        install_tshark(self)
+        build_tag = os.getenv("BUILD_TAG", "")
+        now = time.strftime("%Y%m%d_%H%M%S")
+        capture_file = build_tag + "_" + now + "_lan_dhcpv6_capture.pcap"
+        tcpdump_capture(self, self.iface_dut, capture_file=capture_file, port="546-547")
+        self.tshark_process = True
+        for _ in range(5):
+            try:
+                # Condition for Stateless DHCPv6, this should update DNS details via DHCP and IP via SLAAC
+                if not M_bit and O_bit:
+                    self.renew_ipv6(self.iface_dut, stateless=True)
+                elif M_bit and O_bit:
+                    self.renew_ipv6(self.iface_dut)
+                ipv6 = self.get_interface_ip6addr(self.iface_dut)
+                break
+            except Exception:
+                self.__kill_dhclient()
+                self.sendcontrol("c")
+                self.expect_prompt()
+        else:
+            kill_process(self, "tcpdump")
+            self.tshark_process = False
+            tshark_logs = tshark_read(self, capture_file, timeout=120)
+
+            raise Exception(
+                f"""Error: Device on LAN couldn't obtain IPV6 address via DHCPV6.
+            #########################################
+            #######TShark Logs for DHCPV6 Starts#######
+            #########################################
+            {tshark_logs}
+            #########################################
+            ########TShark Logs for DHCPV6 Ends########
+            #########################################"""
+            )
+
+        if self.tshark_process:
+            kill_process(self, "tcpdump")
+            self.tshark_process = False
+            self.sudo_sendline(f"rm {capture_file}")
 
         return ipv6
 
