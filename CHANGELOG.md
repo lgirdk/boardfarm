@@ -1,3 +1,26 @@
+## 2022.09.0 (2022-03-02)
+
+### Feat
+
+- **debian_isc.py**: add support for invalid dhcp gateway
+- add get_load_avg to sw template
+- **debian**: fetch DNS entry from inventory json and update in dnsmasq.conf
+- **linux.py**: add graceful error handling
+- **linux**: add support for ping using json cli
+- add 2.19 env version
+- **boardfarm:use_cases:networking.py**: write a use case to parse ICMP responses and compare
+
+### Fix
+
+- **voice.py**: reduce sleep time in makecall
+- **quagga_router.py**: update atexit call and docstrings
+
+### BREAKING CHANGE
+
+- Do not merge until all the executors have been updated!
+BOARDFARM-1698
+- BOARDFARM-1500
+
 ## 2022.07.0 (2022-02-16)
 
 ### Refactor
