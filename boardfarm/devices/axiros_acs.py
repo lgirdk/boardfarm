@@ -178,6 +178,17 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     CPE_wait_time = default_timeout
     Count_retry_on_error = 3  # to be audited
     skip_capture = False
+    _cpeid: str = ""
+
+    @property
+    def cpeid(self) -> str:
+        if not self._cpeid:
+            self._cpeid = self.dev.board.get_cpeid()
+        return self._cpeid
+
+    @cpeid.setter
+    def cpeid(self, value: str):
+        self._cpeid = value
 
     def __init__(self, *args, **kwargs):
         """Initialize the variable that are used in establishing connection to the ACS and\
@@ -773,11 +784,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :returns: dictionary with keys Name, AccessList, Notification indicating the GPA
         :rtype: dict
         """
-
-        # TO DO: ideally this should come off the environment helper
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="GPA")
 
         with self.client.settings(raw_response=True):
@@ -835,11 +841,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :returns: SPA response
         :rtype: dict
         """
-
-        # TO DO: ideally this should come off the environment helper
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param, action="SPA", **kwargs
         )
@@ -877,8 +878,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :returns: list of dictionary with key, value, type indicating the AddObject
         :rtype: dictionary
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param, action="AO", **kwargs
         )
@@ -912,8 +911,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :returns: list of dictionary with key, value, type indicating the DelObject
         :rtype: string
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param, action="DO", **kwargs
         )
@@ -1004,10 +1001,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :param param: path to the key that assigned value will be retrieved
         :return: value as a dictionary
         """
-        # TO DO: ideally this should come off the environment helper
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param, action="GPV", wait_time=timeout
         )
@@ -1026,10 +1019,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :return: status of the SPV as int (0/1)
         :raises: TR069ResponseError if the status is not (0/1)
         """
-        # TO DO: ideally this should come off the environment helper
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param_value, action="SPV", wait_time=timeout
         )
@@ -1052,11 +1041,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         :type timeout: to set the Lifetime Expiry time
         :return: value as a dictionary
         """
-
-        # TO DO: ideally this should come off the environment helper
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         p, cmd, cpe_id = self._build_input_structs(
             self.cpeid, param, action="GPN", next_level=next_level, wait_time=timeout
         )
@@ -1074,9 +1058,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         :return: returns factory reset response
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=20)
         CPEIdClassStruct_data = self._get_class_data(cpeid=self.cpeid)
 
@@ -1122,9 +1103,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         :return: returns ScheduleInform response
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         param = [CommandKey, DelaySeconds]
         p, cmd, cpe_id = self._build_input_structs(self.cpeid, param, action="SI")
 
@@ -1161,9 +1139,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         :return: returns GetRPCMethods response of supported functions
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         CmdOptTypeStruct_data = self._get_cmd_data(Sync=True, Lifetime=20)
         CPEIdClassStruct_data = self._get_class_data(cpeid=self.cpeid)
 
@@ -1216,9 +1191,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
 
         :return: returns Download response
         """
-        if self.cpeid is None:
-            self.cpeid = self.dev.board._cpeid
-
         param = [
             commandkey,
             delayseconds,

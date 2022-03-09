@@ -1,221 +1,22 @@
-# Copyright (c) 2015
-#
-# All rights reserved.
-#
-# This file is distributed under the Clear BSD license.
-# The full text can be found in LICENSE in the root directory.
-
+"""Boot module forgeneric devices."""
 import logging
 import time
+import traceback
 import warnings
-from collections import OrderedDict
 
-import debtcollector
+from termcolor import colored
 
-import boardfarm.exceptions
-from boardfarm.lib.common import run_once
-
-warnings.simplefilter("always", UserWarning)
+import boardfarm.lib.voice
+from boardfarm.devices.debian_lan import DebianLAN
+from boardfarm.exceptions import (
+    BootFail,
+    CodeError,
+    DeviceDoesNotExistError,
+    NoTFTPServer,
+)
+from boardfarm.library import check_devices
 
 logger = logging.getLogger("bft")
-
-
-@run_once
-def flash_meta_helper(board, meta, wan, lan):
-    """Flash meta helper."""
-    board.flash_meta(meta, wan, lan, check_version=True)
-
-
-def flash_image(config, env_helper, board, lan, wan, tftp_device, reflash=True):
-    """Flash image on board."""
-    rootfs = None
-
-    # Reflash only if at least one or more of these
-    # variables are set, or else there is nothing to do in u-boot
-    meta_interrupt = False
-    if (config.META_BUILD or env_helper.has_image()) and not board.flash_meta_booted:
-        meta_interrupt = True
-    if reflash and any(
-        [
-            meta_interrupt,
-            config.ROOTFS,
-            config.KERNEL,
-            config.UBOOT,
-            config.COMBINED,
-            config.ATOM,
-            config.ARM,
-        ]
-    ):
-        # Break into U-Boot, set environment variables
-        board.wait_for_boot()
-        board.setup_uboot_network(tftp_device.gw)
-        if config.META_BUILD:
-            for _ in range(3):
-                try:
-                    if config.META_BUILD:
-                        flash_meta_helper(board, config.META_BUILD, wan, lan)
-                    elif not config.ROOTFS and not config.KERNEL:
-                        flash_meta_helper(board, env_helper.get_image(), wan, lan)
-                    break
-                except Exception as e:
-                    logger.error(e)
-                    tftp_device.restart_tftp_server()
-                    board.reset(break_into_uboot=True)
-                    board.setup_uboot_network(tftp_device.gw)
-            else:
-                raise Exception("Error during flashing...")
-        if config.UBOOT:
-            board.flash_uboot(config.UBOOT)
-        if config.COMBINED:
-            board.flash_all(config.COMBINED)
-        if config.ROOTFS:
-            # save filename for cases where we didn't flash it
-            # but will use it later to load from memory
-            rootfs = board.flash_rootfs(config.ROOTFS)
-        if config.NFSROOT:
-            board.prepare_nfsroot(config.NFSROOT)
-        if config.KERNEL:
-            board.flash_linux(config.KERNEL)
-        if config.ARM:
-            board.flash_arm(config.ARM)
-        if config.ATOM:
-            board.flash_atom(config.ATOM)
-        # Boot from U-Boot to Linux
-        board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
-
-
-def boot_image(config, env_helper, board, lan, wan, tftp_device):
-    """Boot image."""
-
-    def _meta_flash(img):
-        """Flash with image."""
-        try:
-            flash_meta_helper(board, img, wan, lan)
-        except Exception as e:
-            logger.error(e)
-            tftp_device.restart_tftp_server()
-            board.reset(break_into_uboot=True)
-            board.setup_uboot_network(tftp_device.gw)
-
-    def _factory_reset(img):
-        """Reset using factory_reset method."""
-        board.factory_reset()
-
-    methods = {
-        "meta_build": _meta_flash,
-        "rootfs": board.flash_rootfs,
-        "kernel": board.flash_linux,
-        "atom": board.flash_atom,
-        "arm": board.flash_arm,
-        "all": board.flash_all,
-        "factory_reset": _factory_reset,
-    }
-
-    def _perform_flash(boot_sequence):
-        """Perform Flash booting."""
-        for i in boot_sequence:
-            for strategy, img in i.items():
-                if strategy in ["factory_reset", "meta_build"]:
-                    board.wait_for_linux()
-                else:
-                    board.wait_for_boot()
-
-                board.setup_uboot_network(tftp_device.gw)
-                result = methods[strategy](img)
-                rootfs = None
-                if strategy == "rootfs":
-                    rootfs = result
-
-                if strategy in ["factory_reset", "meta_build"]:
-                    if not result:
-                        board.reset()
-                else:
-                    board.boot_linux(rootfs=rootfs, bootargs=config.bootargs)
-
-    def _check_override(strategy, img):
-        """Check for Overriding image value."""
-        if getattr(config, strategy.upper(), None):
-            # this is the override
-            debtcollector.deprecate(
-                "Warning!!! cmd line arg has been passed."
-                "Overriding image value for {}".format(strategy),
-                removal_version="> 1.1.1",
-                category=UserWarning,
-            )
-
-            return getattr(config, strategy.upper())
-        return img
-
-    boot_sequence = []
-    stage = OrderedDict()
-    stage[1] = OrderedDict()
-    stage[2] = OrderedDict()
-
-    if config.META_BUILD:
-        strategy = "meta_build"
-        stage[2].update({"meta_build": config.META_BUILD})
-    elif any([config.ARM, config.ATOM, config.COMBINED]):
-        count = 0
-        if config.COMBINED:
-            strategy = "all"
-            count += 1
-            stage[2]["all"] = config.COMBINED
-        if config.ATOM:
-            strategy = "atom"
-            count += 1
-            stage[2]["atom"] = config.ATOM
-        if config.ARM:
-            count += 1
-            strategy = "arm"
-            stage[2]["arm"] = config.ARM
-
-        assert count != 3, "You can't have ARM, ATOM and COMBINED TOGETHER!!!"
-    else:
-        if config.ROOTFS:
-            strategy = "rootfs"
-            stage[2]["rootfs"] = config.ROOTFS
-        if config.KERNEL:
-            strategy = "kernel"
-            stage[2]["kernel"] = config.KERNEL
-
-    if not stage[2]:
-        d = env_helper.get_dependent_software()
-        if d:
-            fr = d.get("factory_reset", False)
-            if fr:
-                stage[1]["factory_reset"] = fr
-            strategy = d.get("flash_strategy")
-            img = _check_override(strategy, d.get("image_uri"))
-            stage[1][strategy] = img
-
-    if not stage[2]:
-        d = env_helper.get_software()
-        if d:
-            if "load_image" in d:
-                strategy = "meta_build"
-                img = _check_override(strategy, d.get("load_image"))
-            else:
-                strategy = d.get("flash_strategy")
-                img = _check_override(strategy, d.get("image_uri"))
-
-            if stage[1]:
-                assert (
-                    strategy != "meta_build"
-                ), "meta_build strategy needs to run alone!!!"
-
-            if stage[1].get(strategy, None) != img:
-                stage[2][strategy] = img
-            fr = d.get("factory_reset", False)
-            if fr:
-                stage[2]["factory_reset"] = fr
-
-    for k, v in stage[1].items():
-        boot_sequence.append({k: v})
-    for k, v in stage[2].items():
-        boot_sequence.append({k: v})
-
-    if boot_sequence:
-        _perform_flash(boot_sequence)
 
 
 def get_tftp(config):
@@ -234,182 +35,294 @@ def get_tftp(config):
     return tftp_device, tftp_servers
 
 
-def start_dhcp_servers(config):
-    """Start DHCP server."""
-    # start dhcp servers
-    for device in config.board["devices"]:
-        if "options" in device and "no-dhcp-server" in device["options"]:
-            continue
-        if "options" in device and "dhcp-server" in device["options"]:
-            getattr(config, device["name"]).setup_dhcp_server()
+def pre_boot_wan_clients(config, env_helper, devices):
 
+    tftp_device, tftp_servers = boardfarm.lib.booting.get_tftp(config)
+    if not tftp_servers:
+        logger.error(colored("No tftp server found", color="red", attrs=["bold"]))
+        # currently we must have at least 1 tftp server configured
+        raise NoTFTPServer
+    if len(tftp_servers) > 1:
+        msg = f"Found more than 1 tftp server: {tftp_servers}, using {tftp_device.name}"
+        logger.error(colored(msg, color="red", attrs=["bold"]))
+        raise CodeError(msg)
 
-def provision(board, prov, wan, tftp_device):
-    """Board Provisioning."""
-    prov.tftp_device = tftp_device
-    board.reprovision(prov)
-
-    if hasattr(prov, "prov_gateway"):
-        gw = prov.prov_gateway if wan.gw in prov.prov_network else prov.prov_ip
-
-        for nw in [prov.cm_network, prov.mta_network, prov.open_network]:
-            wan.sendline(f"ip route add {nw} via {gw}")
-            wan.expect(wan.prompt)
-
-    # TODO: don't do this and sort out two interfaces with ipv6
-    wan.disable_ipv6("eth0")
-
-    if hasattr(prov, "prov_gateway_v6"):
-        wan.sendline(f"ip -6 route add default via {str(prov.prov_gateway_v6)}")
-        wan.expect(wan.prompt)
-
-    wan.sendline("ip route")
-    wan.expect(wan.prompt)
-    wan.sendline("ip -6 route")
-    wan.expect(wan.prompt)
-
-
-def boot(config, env_helper, devices, reflash=True, logged=None, flashing_image=True):
-    """Define Boot method for configuring to device."""
-    logged["boot_step"] = "start"
-    if logged is None:
-        logged = dict()
-
-    board = devices.board
-    wan = devices.wan
-    lan = devices.lan
-    lan2 = getattr(devices, "lan2", None)
-    tftp_device, tftp_servers = get_tftp(config)
-    logged["boot_step"] = "tftp_device_assigned"
-
-    start_dhcp_servers(config)
-    logged["boot_step"] = "dhcp_server_started"
-
-    if not wan and len(tftp_servers) == 0:
-        raise boardfarm.exceptions.NoTFTPServer
-
-    # This still needs some clean up, the fall back is to assuming the
-    # WAN provides the tftpd server, but it's not always the case
-    if wan:
-        wan.configure(config=config)
-        if tftp_device is None:
-            tftp_device = wan
-
-    logged["boot_step"] = "wan_device_configured"
-
+    # should we run configure for all the wan devices? or just wan?
+    for x in devices:
+        # if isinstance(x, DebianWAN): # does not work for mitm
+        if hasattr(x, "name") and "wan" in x.name:
+            logger.info(f"Configuring {x.name}")
+            x.configure(config=config)
+    # if more than 1 tftp server should we start them all?
+    # currently starting the 1 being used
+    logger.info(f"Starting TFTP server on {tftp_device.name}")
     tftp_device.start_tftp_server()
+    devices.board.tftp_device = tftp_device
+
+
+def pre_boot_lan_clients(config, env_helper, devices):
+    for x in devices.lan_clients:
+        if isinstance(x, DebianLAN):
+            logger.info(f"Configuring {x.name}")
+            x.configure()
+
+
+def pre_boot_wlan_clients(config, env_helper, devices):
+    for x in getattr(devices, "wlan_clients", []):
+        logger.info(f"Configuring {x.name}")
+        x.configure()
+
+
+def pre_boot_board(config, env_helper, devices):
+    pass
+
+
+def pre_boot_env(config, env_helper, devices):
+    # this should take care of provisioner/tr069/voice/etc
+    # depending on what the env_helperd has configured
+    if env_helper.mitm_enabled() and not hasattr(devices, "mitm"):
+        raise DeviceDoesNotExistError("No mitm device (requested by environment)")
+
+    if env_helper.voice_enabled():
+        dev_list = [
+            devices.sipcenter,
+            devices.softphone,
+        ] + getattr(devices, "FXS", [devices.lan, devices.lan2])
+        if env_helper.get_external_voip():
+            dev_list.append(devices.softphone2)
+        boardfarm.lib.voice.voice_configure(
+            dev_list,
+            devices.sipcenter,
+            config,
+        )
 
     prov = getattr(config, "provisioner", None)
-    if prov is not None:
-        provision(board, prov, wan, tftp_device)
-        logged["boot_step"] = "board_provisioned"
+    if prov:
+        if env_helper.vendor_encap_opts(ip_proto="ipv4"):
+            devices.provisioner.vendor_opts_acsv4_url = True
+        if env_helper.vendor_encap_opts(ip_proto="ipv6"):
+            devices.provisioner.vendor_opts_acsv6_url = True
+        logger.info("Provisioning board")
+        # provision_board() TBD
     else:
-        logged["boot_step"] = "board_provisioned_skipped"
+        # should this be an error?
+        logger.warning(
+            colored(
+                "No provisioner found! Board provisioned skipped",
+                color="yellow",
+                attrs=["bold"],
+            )
+        )
 
-    if lan:
-        lan.configure()
-    if lan2:
-        lan2.configure()
-    logged["boot_step"] = "lan_device_configured"
 
-    # tftp_device is always None, so we can set it from config
-    board.tftp_server = tftp_device.ipaddr
-    # then these are just hard coded defaults
-    board.tftp_port = 22
-    # but are user/password used for tftp, they are likely legacy and just need to go away
-    board.tftp_username = "root"
-    board.tftp_password = "bigfoot1"
+pre_boot_actions = {
+    "wan_clients_pre_boot": pre_boot_wan_clients,
+    "lan_clients_pre_boot": pre_boot_lan_clients,
+    "wlan_clients_pre_boot": pre_boot_wlan_clients,
+    "board_pre_boot": pre_boot_board,
+    "environment_pre_boot": pre_boot_env,
+}
 
-    board.reset()
-    logged["boot_step"] = "board_reset_ok"
-    if flashing_image:
-        flash_image(config, env_helper, board, lan, wan, tftp_device, reflash)
-    else:
-        boot_image(config, env_helper, board, lan, wan, tftp_device)
-    logged["boot_step"] = "flash_ok"
-    if hasattr(board, "pre_boot_linux"):
-        board.pre_boot_linux(wan=wan, lan=lan)
-    board.linux_booted = True
-    logged["boot_step"] = "boot_ok"
-    board.wait_for_linux()
-    logged["boot_step"] = "linux_ok"
 
-    if flashing_image:
-        if config.META_BUILD and board.flash_meta_booted:
-            flash_meta_helper(board, config.META_BUILD, wan, lan)
-            logged["boot_step"] = "late_flash_meta_ok"
-        elif (
-            env_helper.has_image()
-            and board.flash_meta_booted
-            and not config.ROOTFS
-            and not config.KERNEL
-        ):
-            flash_meta_helper(board, env_helper.get_image(), wan, lan)
-            logged["boot_step"] = "late_flash_meta_ok"
-
-    linux_booted_seconds_up = board.get_seconds_uptime()
-    # Retry setting up wan protocol
-    if config.setup_device_networking:
-        for _ in range(2):
-            time.sleep(10)
-            try:
-                if "pppoe" in config.WAN_PROTO:
-                    wan.turn_on_pppoe()
-                board.config_wan_proto(config.WAN_PROTO)
-                break
-            except Exception:
-                logger.error("\nFailed to check/set the router's WAN protocol.")
-        board.wait_for_network()
-    board.wait_for_mounts()
-    logged["boot_step"] = "network_ok"
-
-    # Give other daemons time to boot and settle
-    if config.setup_device_networking:
-        for _ in range(5):
-            board.get_seconds_uptime()
-            time.sleep(5)
-
+def boot_board(config, env_helper, devices):
     try:
-        board.set_password(password="password")
-    except Exception:
-        logger.warning("WARNING: Unable to set root password on router.")
+        devices.board.reset()
+        if env_helper.get_software():
+            devices.board.flash(env_helper)
+            # store the timestamp, for uptime check later (in case the board
+            # crashes on boot)
+            devices.board.__reset__timestamp = time.time()
+            devices.board.reset()
+            for _ in range(5):
+                devices.board.touch()
+                time.sleep(10)
+    except Exception as e:
+        logger.critical(colored("\n\nFailed to Boot", color="red", attrs=["bold"]))
+        logger.error(e)
+        raise BootFail("Failed to boot the board")
 
-    board.sendline("cat /proc/cmdline")
-    board.expect(board.prompt)
-    board.sendline("uname -a")
-    board.expect(board.prompt)
 
-    # we can't have random messages messages
-    board.set_printk()
+boot_actions = {"board_boot": boot_board}
 
-    if hasattr(config, "INSTALL_PKGS") and config.INSTALL_PKGS != "":
-        for pkg in config.INSTALL_PKGS.split(" "):
-            if len(pkg) > 0:
-                board.install_package(pkg)
 
-    if board.has_cmts:
-        board.check_valid_docsis_ip_networking()
+def post_boot_board(config, env_helper, devices):
 
-    # Try to verify router has stayed up (and, say, not suddenly rebooted)
-    end_seconds_up = board.get_seconds_uptime()
-    logger.info(f"\nThe router has been up {end_seconds_up} seconds.")
-    if config.setup_device_networking:
-        assert end_seconds_up > linux_booted_seconds_up
+    for _ in range(10):
+        time.sleep(30)
+        if devices.board.is_online():
+            break
+    else:
+        raise BootFail("Board not online.")
 
-    logged["boot_step"] = "boot_ok"
-    logged["boot_time"] = end_seconds_up
+    if not devices.board.finalize_boot():
+        BootFail("Failed to finalize board.")
 
-    for i, v in enumerate(board.dev.lan_clients):
+    if hasattr(devices.board, "post_boot_init"):
+        devices.board.post_boot_init()
+    board_uptime = devices.board.hw.consoles[0].get_seconds_uptime()
+    logger.info(f"Time up: {board_uptime}")
+    if hasattr(devices.board, "__reset__timestamp"):
+        time_elapsed = time.time() - devices.board.__reset__timestamp
+        logger.info(f"Time since reboot: {time_elapsed}")
+        if time_elapsed < board_uptime:
+            # TODO: the following should be an exception and not
+            # just a print!!!!
+            logger.warning("Error: possibly the board did not reset!")
+        if (time_elapsed - board_uptime) > 60:
+            logger.warning(
+                colored(
+                    "Board may have rebooted multiple times after flashing process",
+                    color="yellow",
+                    attrs=["bold"],
+                )
+            )
+
+
+def post_boot_wan_clients(config, env_helper, devices):
+    pass
+
+
+def post_boot_lan_clients(config, env_helper, devices):
+    for i, v in enumerate(devices.board.dev.lan_clients):
         if getattr(env_helper, "has_lan_advertise_identity", None):
-            if env_helper.has_lan_advertise_identity(i):
-                v.configure_dhclient((["125", True],))
-            else:
-                v.configure_dhclient((["125", False],))
+            for option in ["125", "17"]:
+                if env_helper.has_lan_advertise_identity(i):
+                    v.configure_dhclient(([option, True],))
+                else:
+                    v.configure_dhclient(([option, False],))
+    if config.setup_device_networking:
+        for x in devices.board.dev.lan_clients:
+            if isinstance(x, DebianLAN):  # should this use devices.lan_clients?
+                logger.info(f"Starting LAN client on {x.name}")
+                for n in range(3):
+                    try:
+                        x.configure_docker_iface()
+                        if env_helper.get_prov_mode() == "ipv6":
+                            x.start_ipv6_lan_client(wan_gw=devices.wan.gw)
+                            if devices.board.cm_cfg.dslite:
+                                x.start_ipv4_lan_client(wan_gw=devices.wan.gw)
+                        elif env_helper.get_prov_mode() == "dual":
+                            x.start_ipv6_lan_client(wan_gw=devices.wan.gw)
+                            x.start_ipv4_lan_client(wan_gw=devices.wan.gw)
+                        else:
+                            x.start_ipv4_lan_client(wan_gw=devices.wan.gw)
+                        x.configure_proxy_pkgs()
+                        break
+                    except Exception as e:
+                        logger.warning(e)
+                        logger.error(
+                            colored(
+                                f"Failed to start lan client on '{x.name}' device, attempt #{n}",
+                                color="red",
+                                attrs=["bold"],
+                            )
+                        )
+                        time.sleep(10)
+                else:
+                    msg = f"Failed to start lan client on {x.name}"
+                    logger.warning(colored(msg, color="yellow", attrs=["bold"]))
+                    # do not fail the boot with raise BootFail(msg)
+                    # reason: the board config may be such that the
+                    # clients are not getting an ip (see LLCs)
 
-    if board.routing and lan and config.setup_device_networking:
-        if wan is not None:
-            lan.start_lan_client(wan_gw=wan.gw)
+
+def post_boot_wlan_clients(config, env_helper, devices):
+    wifi_clients = env_helper.wifi_clients()
+    if wifi_clients:
+        logger.error("No wifi implemented yet")
+        raise CodeError("No wifi implemented yet")
+
+
+def post_boot_env(config, env_helper, devices):
+    tr069provision = env_helper.get_tr069_provisioning()
+    for _ in range(20):
+        try:
+            devices.board.get_cpeid()
+            break
+        except Exception as e:
+            logger.error(e)
+            warnings.warn("Failed to connect to ACS, retrying")
+            time.sleep(10)
+    else:
+        raise BootFail("Failed to connect to ACS")
+    if tr069provision:
+        reset_val = any(
+            x in env_helper.get_software()
+            for x in [
+                "factory_reset",
+                "pre_flash_factory_reset",
+            ]
+        )
+        if reset_val:
+            for i in tr069provision:
+                for acs_api in i:
+                    API_func = getattr(devices.acs_server, acs_api)
+                    for param in i[acs_api]:
+                        API_func(param)
         else:
-            lan.start_lan_client()
+            raise BootFail(
+                "Factory reset has to performed for tr069 provisioning. Env json with factory reset true should be used."
+            )
+    if hasattr(devices.board, "post_boot_env"):
+        devices.board.post_boot_env()
 
-    logged["boot_step"] = "lan_ok"
+
+post_boot_actions = {
+    "board_post_boot": post_boot_board,
+    "wan_clients_post_boot": post_boot_wan_clients,
+    "lan_clients_post_boot": post_boot_lan_clients,
+    "environment_post_boot": post_boot_env,
+    "wlan_clients_connection": post_boot_wlan_clients,
+}
+
+
+def run_actions(actions_dict, actions_name, *args, **kwargs):
+    logger.info(colored(f"{actions_name} ACTIONS", color="green", attrs=["bold"]))
+    for key, func in actions_dict.items():
+        try:
+            logger.info(colored(f"Action {key} start", color="green", attrs=["bold"]))
+            start_time = time.time()
+            func(*args, **kwargs)
+            logger.info(
+                colored(
+                    f"\nAction {key} completed. Took {int(time.time() - start_time)} seconds to complete.",
+                    color="green",
+                    attrs=["bold"],
+                )
+            )
+        except Exception as e:
+            msg = f"\nFailed at: {actions_name}: {key} after {int(time.time() - start_time)} seconds with exception {e}"
+            logger.error(colored(msg, color="red", attrs=["bold"]))
+            raise e
+    logger.info(colored(f"{actions_name} COMPLETED", color="green", attrs=["bold"]))
+
+
+def boot(config, env_helper, devices, logged=None, actions_list=None):
+    start_time = time.time()
+    if not actions_list:
+        actions_list = ["pre", "boot", "post"]
+    try:
+        if "pre" in actions_list:
+            run_actions(pre_boot_actions, "PRE-BOOT", config, env_helper, devices)
+        if "boot" in actions_list:
+            run_actions(boot_actions, "BOOT", config, env_helper, devices)
+        if "post" in actions_list:
+            run_actions(post_boot_actions, "POST-BOOT", config, env_helper, devices)
+        logger.info(
+            colored(
+                f"Boot completed in {int(time.time() - start_time)} seconds.",
+                color="green",
+                attrs=["bold"],
+            )
+        )
+    except Exception:
+        traceback.print_exc()
+        check_devices(devices)
+        logger.info(
+            colored(
+                f"Boot failed after {int(time.time() - start_time)} seconds.",
+                color="red",
+                attrs=["bold"],
+            )
+        )
+        raise

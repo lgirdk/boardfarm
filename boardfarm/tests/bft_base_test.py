@@ -113,7 +113,7 @@ class BftBaseTest(inherit_class):
         )
 
         lib.common.test_msg("\n" + msg)
-        for c in self.dev.board.consoles:
+        for c in self.dev.board.hw.consoles:
             if hasattr(c.logfile_read, "extra_log"):
                 c.logfile_read.extra_log(msg)
 
@@ -136,7 +136,7 @@ class BftBaseTest(inherit_class):
         )
 
         lib.common.test_msg("\n" + msg)
-        for c in self.dev.board.consoles:
+        for c in self.dev.board.hw.consoles:
             if hasattr(c.logfile_read, "extra_log"):
                 c.logfile_read.extra_log(msg)
 
@@ -220,9 +220,9 @@ class BftBaseTest(inherit_class):
             dev.test_to_log = self
             dev.test_prefix = d.encode("utf8")
 
-        for c in self.dev.board.consoles:
+        for c in self.dev.board.hw.consoles:
             c.test_to_log = self
-            c.test_prefix = f"console-{str(self.dev.board.consoles.index(c) + 1)}"
+            c.test_prefix = f"console-{str(self.dev.board.hw.consoles.index(c) + 1)}"
 
             if not c.isalive():
                 self.result_grade = "SKIP"

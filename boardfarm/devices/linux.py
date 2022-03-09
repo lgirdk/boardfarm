@@ -159,6 +159,16 @@ class LinuxInterface:
         self.expect(self.prompt)
         return seconds_up
 
+    def get_load_avg(self) -> float:
+        """Return seconds since last reboot. Stored in /proc/uptime."""
+        self.sendcontrol("c")
+        self.expect(self.prompt)
+        self.sendline("cat /proc/loadavg|awk '{print $1}'")
+        self.expect(r"((((\d+?\.\d+?) ){3})((\d{1,3})\/(((\d+?){1,9})) (\d{1,})))")
+        load = float(self.match.group(1))
+        self.expect(self.prompt)
+        return load
+
     def enable_ipv6(self, interface):
         """Enable ipv6 of the interface."""
         self.sendline("sysctl net.ipv6.conf." + interface + ".accept_ra=2")
@@ -934,7 +944,11 @@ EOFEOFEOFEOF"""
         logger.debug("The route is configured successfully .")
 
     def download_build(
-        self, build: str, source: str, destination: str = "/tftpboot"
+        self,
+        build: str,
+        source: str,
+        destination: str = "/tftpboot",
+        extra: str = "",
     ) -> bool:
         """Download the build from the source to the destination if the build is not already there
 
@@ -944,12 +958,14 @@ EOFEOFEOFEOF"""
         :type source: str
         :param destination: destination path to which the build should download to, defaults to "/tftpboot"
         :type destination: str, optional
+        :param extra: extra optional parameters passed to the internal wget
+        :type extra: str, optional
         :raises CodeError: raises the exception if there goes something wrong during file download
         :return: True if the build is present on the destination
         :rtype: bool
         """
         try:
-            self.sendline(f"wget -nc {source} -O {destination}/{build}")
+            self.sendline(f"wget  {extra} -nc {source} -O {destination}/{build}")
             self.expect_prompt()
         except PexpectErrorTimeout as e:
             raise CodeError(

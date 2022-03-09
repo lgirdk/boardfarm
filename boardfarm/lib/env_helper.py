@@ -94,6 +94,16 @@ class EnvHelper:
         """
         pass
 
+    def has_tr069(self) -> bool:
+        """
+        returns true or false depending if the environment has the tr-069 entry.
+        """
+        try:
+            self.env["environment_def"]["tr-069"]
+            return True
+        except (KeyError, AttributeError):
+            return False
+
     def has_image(self):
         """Return true or false if the env has specified an image to load."""
         try:

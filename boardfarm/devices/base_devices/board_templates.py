@@ -1,6 +1,9 @@
+"""Generic Templates."""
 from abc import abstractmethod
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+
+from boardfarm_lgi_shared.lib.ofw.dmcli import DMCLIAPI
 
 import boardfarm.devices.connection_decider as conn_dec
 from boardfarm.devices import get_device_mapping_class
@@ -74,6 +77,12 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
     @abstractmethod
     def reset(self):
         """Resets/reboot the board via HW (usually via a PDU device)"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def wait_for_hw_boot(self):
+        """Waits for the HW boot messages"""
+        raise NotImplementedError
 
     @abstractmethod
     def flash(self, image: str, method: str = None):
@@ -88,6 +97,51 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
 class BoardSWTemplate(metaclass=__MetaSignatureChecker):
     voice: Optional[FXOTemplate] = None
     mib: Optional[MIBTemplate] = None
+
+    @property
+    def version(self) -> str:
+        raise NotImplementedError
+
+    @version.setter
+    @abstractmethod
+    def version(self, value: str) -> None:
+        raise NotImplementedError
+
+    @property
+    def dmcli(self) -> DMCLIAPI:
+        raise NotImplementedError
+
+    @dmcli.setter
+    @abstractmethod
+    def dmcli(self, value: ConsoleTemplate) -> None:
+        raise NotImplementedError
+
+    @property
+    def wifi(self) -> Any:
+        raise NotImplementedError
+
+    @wifi.setter
+    @abstractmethod
+    def wifi(self, value: Any) -> None:
+        raise NotImplementedError
+
+    @property
+    def voice(self) -> Any:
+        raise NotImplementedError
+
+    @voice.setter
+    @abstractmethod
+    def voice(self, value: Any) -> None:
+        raise NotImplementedError
+
+    @property
+    def nw_utility(self) -> Any:
+        raise NotImplementedError
+
+    @nw_utility.setter
+    @abstractmethod
+    def nw_utility(self, value: Any) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def __init__(self, hw: BoardHWTemplate, **kwargs):
@@ -146,6 +200,10 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         :return: date from dut console
         :rtype: str
         """
+        raise NotImplementedError
+
+    def get_sw_version(self):
+        """Return the SW version as a string."""
         raise NotImplementedError
 
 

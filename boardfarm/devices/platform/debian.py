@@ -40,6 +40,7 @@ class DebianBox(linux.LinuxDevice):
     iface_dut = "eth1"
     gw = None
     init_static_ip = ipaddress.ip_address("192.168.0.10")
+    ipv6_prefix = 64
 
     def parse_device_options(self, *args, **kwargs):
         self.args = args
@@ -427,7 +428,20 @@ class DebianBox(linux.LinuxDevice):
         self.expect("pppd")
         self.expect(self.prompt)
 
-    def start_tftp_server(self):
+    def start_webserver(self):
+        self.sendline("service lighttpd restart")
+        self.expect_prompt()
+
+    # TODO: This may conflict with Ayush changes. To be revisited.
+    def download_from_server(
+        self,
+        url: str,
+        extra: str = "",
+    ):
+        self.sendline(f"wget {url} {extra}")
+        self.expect_prompt(timeout=120)
+
+    def start_tftp_server(self, ip=None):
         # we can call this first, before configure so we need to do this here
         # as well
         self.install_pkgs()
@@ -464,6 +478,9 @@ class DebianBox(linux.LinuxDevice):
         self.expect(self.prompt)
         self.sendline('echo TFTP_DIRECTORY=\\"/srv/tftp\\" >> /etc/default/tftpd-hpa')
         self.expect(self.prompt)
+        if ip:
+            self.sendline(f"ifconfig {self.iface_dut} {ip}")
+            self.expect(self.prompt)
         self.restart_tftp_server()
 
     # mode can be "ipv4" or "ipv6"
@@ -620,6 +637,7 @@ class DebianBox(linux.LinuxDevice):
         Exception("Not implemented")
 
     def get_shim_prefix(self):
+        # pylint: disable=access-member-before-definition
         if getattr(self, "shim", ""):
             return self.shim
 
