@@ -1,0 +1,31 @@
+FROM debian:9.13-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    asterisk=1:13.14.1~dfsg-2+deb9u5 \
+    default-mysql-server=1.0.2 \
+    dnsmasq=2.76-5+deb9u3 \
+    dnsutils=1:9.10.3.dfsg.P4-12.3+deb9u10 \
+    iproute2=4.9.0-1+deb9u1 \
+    iputils-ping=3:20161105-1 \
+    kamailio=4.4.4-2+deb9u3 \
+    kamailio-mysql-modules=4.4.4-2+deb9u3 \
+    net-tools=1.60+git20161116.90da8a0-1 \
+    openssh-server=1:7.4p1-10+deb9u7 \
+    procps=2:3.3.12-3+deb9u1 \
+    psmisc=22.21-2.1+b2 \
+    rtpproxy=1.2.1-2.2 \
+    tcpdump=4.9.3-1~deb9u2 \
+    traceroute=1:2.1.0-2 \
+    tshark=2.6.20-0+deb9u2 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN echo "root:bigfoot1" | chpasswd
+
+RUN mkdir /var/run/sshd \
+    && sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/.*GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config \
+    && sed -i 's/.*PermitTunnel.*/PermitTunnel yes/' /etc/ssh/sshd_config
+EXPOSE 22/tcp
+
+CMD service mysql start; /usr/sbin/sshd -D

@@ -1,0 +1,16 @@
+FROM debian_ssh_server:2022.03
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    iproute2=4.20.0-2+deb10u1 \
+    iptables=1.8.2-4 \
+    iputils-ping=3:20180629-2+deb10u2 \
+    isc-dhcp-server=4.4.1-2+deb10u1 \
+    net-tools=1.60+git20180626.aebd88e-1 \
+    netcat=1.10-41.1 \
+    procps=2:3.3.15-2 \
+    psmisc=23.2-1+deb10u1 \
+    tcpdump=4.9.3-1~deb10u2 \
+    traceroute=1:2.1.0-2 \
+    tshark=2.6.20-0+deb10u2 \
+    && rm -rf /var/lib/apt/lists/*

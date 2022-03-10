@@ -1,0 +1,61 @@
+# AFTR package build stage.
+FROM debian:10.11-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential=12.6 \
+    wget=1.20.1-1.1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root
+ENV AFTR_PACKAGE_URL="https://downloads.isc.org/isc/lwds-lite/1.0/rt28354.tbz"
+RUN wget $AFTR_PACKAGE_URL --no-check-certificate \
+    && tar -xf rt28354.tbz && mv rt28354 aftr
+WORKDIR aftr
+RUN ./configure && make
+
+
+# DEBIAN WAN Image start from here.
+FROM debian_ssh_server:2022.03
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl=7.64.0-4+deb10u2 \
+    dante-server=1.4.2+dfsg-6 \
+    dnsmasq=2.80-1+deb10u1 \
+    dnsutils=1:9.11.5.P4+dfsg-5.1+deb10u6 \
+    iperf=2.0.12+dfsg1-2 \
+    iperf3=3.6-2 \
+    iproute2=4.20.0-2+deb10u1 \
+    iptables=1.8.2-4 \
+    iputils-ping=3:20180629-2+deb10u2 \
+    lighttpd=1.4.53-4+deb10u2 \
+    net-tools=1.60+git20180626.aebd88e-1 \
+    netcat=1.10-41.1 \
+    nmap=7.70+dfsg1-6+deb10u2 \
+    procps=2:3.3.15-2 \
+    psmisc=23.2-1+deb10u1 \
+    python=2.7.16-1 \
+    python-pip=18.1-5 \
+    snmp=5.7.3+dfsg-5+deb10u2 \
+    tcpdump=4.9.3-1~deb10u2 \
+    tftpd-hpa=5.2+20150808-1+b1 \
+    traceroute=1:2.1.0-2 \
+    tshark=2.6.20-0+deb10u2 \
+    wget=1.20.1-1.1 \
+    xinetd=1:2.3.15.3-1 \
+    xxd=2:8.1.0875-5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy AFTR from build stage.
+COPY --from=builder /root/aftr /root/aftr
+
+RUN pip --no-cache-dir install pysnmp
+
+RUN mkdir /tftpboot
+COPY ./resources/configs/tftpd-hpa/tftpd-hpa.conf /etc/default/tftpd-hpa
+EXPOSE 69/udp
+
+RUN rm -rf /var/www/html && ln -s /tftpboot /var/www/html
+EXPOSE 80/tcp
+
+CMD service tftpd-hpa start; service lighttpd start; /usr/sbin/sshd -D

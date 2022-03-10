@@ -1,0 +1,37 @@
+# bind library build stage.
+FROM debian:10.11-slim AS build-stage
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential=12.6 \
+    wget=1.20.1-1.1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root
+# The following lines compile a shim to bind a process to an IP address
+# using LD_PRELOAD. To run the shim use the following syntax:
+# BIND_ADDR="X.X.X.X" LD_PRELOAD=/usr/lib/bind.so [command to run]
+RUN wget http://daniel-lange.com/software/bind.c -O bind.c \
+    && sed -i '/#include <errno.h>/a #include <arpa\/inet.h>' bind.c \
+    && gcc -nostartfiles -fpic -shared bind.c -o bind.so -ldl -D_GNU_SOURCE \
+    && strip bind.so
+
+
+# Debian SSH server start from here.
+FROM debian:10.11-slim
+
+RUN echo "root:bigfoot1" | chpasswd
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-server=1:7.9p1-10+deb10u2 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /var/run/sshd \
+    && sed -i 's/.*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/.*GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config \
+    && sed -i 's/.*PermitTunnel.*/PermitTunnel yes/' /etc/ssh/sshd_config
+EXPOSE 22/tcp
+
+# Copy bind.so shared library from previous stage.
+COPY --from=build-stage /root/bind.so /usr/lib/
+
+CMD ["/usr/sbin/sshd", "-D"]
