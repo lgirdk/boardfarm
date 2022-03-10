@@ -5,12 +5,16 @@ import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
 
+import jc.parsers.dig
 import pexpect
 from bs4 import BeautifulSoup
 from termcolor import colored
 
+from boardfarm.devices.debian_lan import DebianLAN
+from boardfarm.devices.debian_wan import DebianWAN
+from boardfarm.devices.debian_wifi import DebianWifi
 from boardfarm.exceptions import UseCaseFailure
 from boardfarm.lib.common import http_service_kill
 from boardfarm.lib.DeviceManager import get_device_by_name
@@ -314,3 +318,23 @@ def is_icmp_packet_present(
             )
             final_result.append(False)
     return all(final_result)
+
+
+def resolve_dns(
+    host: Union[DebianLAN, DebianWAN, DebianWifi], domain_name: str
+) -> List[Dict[str, Any]]:
+    """perform dig command in the devices to resolve dns
+
+    :param host: host where the dig command has to be run
+    :type host: Union[DebianLAN, DebianWAN,DebianWifi]
+    :param domain_name: domain name which needs lookup
+    :type domain_name: str
+    :return: returns Dig output from jc parser
+    :rtype: List[Dict[str, Any]]
+    """
+    dig_command_output = host.check_output(f"dig {domain_name}")
+    result = jc.parsers.dig.parse(dig_command_output.split(";", 1)[-1])
+    if result:
+        return result
+    else:
+        raise UseCaseFailure(f"Failed to resolve {domain_name}")
