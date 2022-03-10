@@ -809,7 +809,7 @@ EOFEOFEOFEOF"""
 
             self.sudo_sendline(f"{command_str} &")
             self.expect_exact(f"tcpdump: listening on {interface}")
-            process_id = re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", self.before).group(2)
+            process_id = re.search(r"(\[\d{1,10}\]\s(\d+))", self.before).group(2)
             yield process_id
 
         finally:
