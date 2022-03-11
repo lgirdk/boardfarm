@@ -2,10 +2,11 @@
 # Can not be placed in DevceManager.py due to circular dependencies
 from typing import List
 
+from boardfarm.devices.debian_isc import DebianISCProvisioner
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.exceptions import IndexError
-from boardfarm.lib.DeviceManager import device_manager
+from boardfarm.lib.DeviceManager import device_manager, get_device_by_name
 
 
 def get_lan_clients(count) -> List[DebianLAN]:
@@ -28,3 +29,7 @@ def get_wan_clients(count) -> List[DebianWAN]:
         )
 
     return devices.wan_clients[:count]
+
+
+def get_provisioner() -> DebianISCProvisioner:
+    return get_device_by_name("provisioner")
