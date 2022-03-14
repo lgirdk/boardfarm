@@ -130,8 +130,8 @@ class CheckInterface:
 
         prov_mode = env_helper.get_prov_mode() if env_helper.has_prov_mode() else "dual"
         flags = []
-
-        flags.append("ipv4")
+        if env_helper.is_dhcpv4_enabled_on_lan():
+            flags.append("ipv4")
         if prov_mode != "ipv4":
             flags.append("ipv6")
 
