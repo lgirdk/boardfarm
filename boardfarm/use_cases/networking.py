@@ -1,11 +1,12 @@
 """All APIs are independent of board under test.
 """
+import ipaddress
 import logging
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import jc.parsers.dig
 import pexpect
@@ -16,7 +17,7 @@ from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.devices.debian_wifi import DebianWifi
 from boardfarm.exceptions import UseCaseFailure
-from boardfarm.lib.common import http_service_kill
+from boardfarm.lib.common import http_service_kill, ip_pool_to_list
 from boardfarm.lib.DeviceManager import get_device_by_name
 
 from .voice import VoiceClient
@@ -317,6 +318,42 @@ def is_icmp_packet_present(
             )
             final_result.append(False)
     return all(final_result)
+
+
+def is_client_ip_in_pool(
+    pool_bounds: Tuple[ipaddress.IPv4Address, ipaddress.IPv4Address],
+    client: Union[DebianLAN, DebianWifi, DebianWAN],
+) -> bool:
+    """Check for client ip in ip pool.
+
+    :param pool_bounds: lowest and highest ip from dhcp pool
+    :type pool_bounds: Tuple[ipaddress.IPv4Address, ipaddress.IPv4Address]
+    :param device: devices which are to be check
+    :type device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :return: True if lan/wifilan ip is lowest in pool range
+    :rtype: bool
+    """
+    lan_ip_address = ipaddress.IPv4Address(
+        client.get_interface_ipaddr(client.iface_dut)
+    )
+    ip_range = ip_pool_to_list(*pool_bounds)
+    return lan_ip_address in ip_range
+
+
+def set_static_ip_from_rip_config(
+    ip_address: IPv4Address, client: Union[DebianLAN, DebianWifi]
+) -> None:
+    """Set static ip for lan, wifiLan clients based on ripv2 configs
+
+    :param ip_address: ip address to be assigned to client interface
+    :type ip_address: IPv4Address
+    :param client: lan or wifiLan client for which it is required to set static ip
+    :type client: Union[DebianLAN, DebianWifi]
+    """
+    board = get_device_by_name("board")
+    rip_interface_ip, subnet = board.get_rip_iface_configs()
+    client.set_static_ip(client.iface_dut, ip_address, subnet.netmask)
+    client.set_default_gw(rip_interface_ip, client.iface_dut)
 
 
 def resolve_dns(

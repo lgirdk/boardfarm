@@ -422,8 +422,6 @@ class LinuxInterface:
         if dst is None:
             dst = self.tftp_dir + "/" + os.path.basename(src)
         logger.info(f"Copying {src} to {dst}")
-        saved_logfile_read = self.logfile_read
-        self.logfile_read = None
         self.sendline(
             f"""cat << EOFEOFEOFEOF | xxd -r -p | gunzip > {dst}
 {bin_file}
@@ -437,7 +435,6 @@ EOFEOFEOFEOF"""
         )
         if i == 0:
             raise Exception("Failed to copy file")
-        self.logfile_read = saved_logfile_read
 
     def ip_neigh_flush(self):
         """Remove entries in the neighbour table."""
@@ -905,6 +902,36 @@ EOFEOFEOFEOF"""
             self.sudo_sendline(f"rm {fname}")
             self.expect(self.prompt)
         return output
+
+    def set_default_gw(
+        self,
+        gateway_address: Union[str, ipaddress.IPv4Address],
+        interface: str,
+    ) -> None:
+        """Set default gateway for the interface.
+
+        :param gateway_address: default gatway ip address.
+        :type gateway_address: Union[str, ipaddress.IPv4Address]
+        :param interface: interface name to set default gateway on
+        :type interface: string
+        """
+        self.sendline("ip route del default")
+        self.expect(self.prompt)
+        self.sendline("ip route show default")
+        self.expect(self.prompt)
+        if self.before.splitlines()[1:]:
+            raise CodeError(
+                f"Failed to remove existing defualt route {self.before}, unable to proceed with set default gatway command "
+            )
+        self.sendline(f"route add default gw {gateway_address} dev {interface}")
+        self.expect(self.prompt)
+        self.sendline("ip route show default")
+        self.expect(self.prompt)
+        if str(gateway_address) not in self.before.lower():
+            raise CodeError(
+                f"Failed to add default route, ip route output : {self.before},"
+            )
+        logger.debug("The route is configured successfully .")
 
     def download_build(
         self, build: str, source: str, destination: str = "/tftpboot"
