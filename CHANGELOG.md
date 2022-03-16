@@ -1,3 +1,22 @@
+## 2022.11.0 (2022-03-16)
+
+### Feat
+
+- **devices:board_templates.py,mib_template.py,linux.py**: add mib template to support vendor specific mib configurations for software download
+- **networking.py**: add dns_resolve  uc
+- **device_getters.py**: add provisioner getter
+- **voice.py**: remove sleep from disconnect_the_call
+- traffic_gen return TrafficGeneratorResults
+
+### Fix
+
+- **linux.py**: change regular expression to get process id
+- **quagga_router.py**: update ip route method to fetch route from quagga instance
+
+### Refactor
+
+- **debian_lan.py**: validate ipv6 address is obtained and throw exception
+
 ## 2022.09.0 (2022-03-02)
 
 ### Feat

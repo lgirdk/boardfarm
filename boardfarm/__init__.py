@@ -1,5 +1,5 @@
 """Automated testing of network devices"""
-__version__ = "2022.09.0"
+__version__ = "2022.11.0"
 
 import uuid
 
