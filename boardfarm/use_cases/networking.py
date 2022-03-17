@@ -161,16 +161,6 @@ def tcpdump_on_board(
         board.nw_utility.stop_tcpdump(pid)
 
 
-def remove_resource_from_board(fname: str):
-    """Removes the file from the board console
-
-    Args:
-        fname (str): the filename or the complete path of the resource
-    """
-    board = get_device_by_name("board")
-    board.linux_console_utility.remove_resource(fname)
-
-
 def read_tcpdump_from_board(
     fname: str, protocol: str = "", opts: str = "", rm_pcap=True
 ) -> str:

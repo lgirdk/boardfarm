@@ -121,6 +121,33 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def restart_erouter_interface(self) -> bool:
+        """Restart the CM erouter interface
+
+        :return: True if erouter interface is started properly else False
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_dut_resource(self, fname: str) -> None:
+        """Removes the file from the CM console
+
+        :param fname: the filename or the complete path of the resource
+        :type fname: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_dut_date(self) -> str:
+        """Get the dut date and time from CM console
+
+        :return: date from dut console
+        :rtype: str
+        """
+        raise NotImplementedError
+
 
 class BoardTemplate(metaclass=__MetaSignatureChecker):
     """This class shows a basic set of interfaces to be implemented for testing
