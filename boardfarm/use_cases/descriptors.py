@@ -1,27 +1,12 @@
 """Placeholder for all device descriptors."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
-from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.exceptions import IndexError
 from boardfarm.lib.DeviceManager import device_manager
-
-
-@dataclass
-class WifiClient:
-    """Descriptor for WiFi devices."""
-
-    band: str
-    __obj: WIFITemplate
-    network_type: str
-    authentication: Optional[str] = "WPA-PSK"
-    protocol: Optional[str] = "802.11n"
-
-    def _obj(self):
-        return self.__obj
 
 
 @dataclass

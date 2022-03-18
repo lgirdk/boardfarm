@@ -1,12 +1,12 @@
 """Wifi use cases library.
 All APIs are independent of board under test.
 """
+from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.wifi_lib import wifi_mgr
-from boardfarm.use_cases.descriptors import WifiClient
 
 
-def get_wifi_client(band: float, network_type: str) -> WifiClient:
+def get_wifi_client(band: float, network_type: str) -> WIFITemplate:
     """Get the wifi client.
 
     :param band: band of the client
@@ -14,10 +14,12 @@ def get_wifi_client(band: float, network_type: str) -> WifiClient:
     :param network_type: network type of the client Eg: private,guest,community
     :type network_type: string
     :return: Wifi client
-    :rtype: WifiClient
+    :rtype: WIFITemplate
     """
     dev = wifi_mgr.filter(network_type, band=str(band))[0]
-    return WifiClient(band, dev, network_type=network_type)
+    dev.band = band
+    dev.network_type = network_type
+    return dev
 
 
 def _get_ssid(network: str, band: float, mode: str = "console") -> str:
@@ -72,19 +74,19 @@ def _get_passphrase(network: str) -> str:
     return getattr(board_wifi.console, f"{network}_passphrase")()
 
 
-def is_client_connected(who_is_connected: WifiClient) -> bool:
+def is_client_connected(who_is_connected: WIFITemplate) -> bool:
     """Check if the client is connected.
 
     :param who_is_connected: client to connect
-    :type who_is_connected: WifiClient
+    :type who_is_connected: WIFITemplate
     :return: True if client is connected on L2 and L3, False otherwise
     :rtype: bool
     """
-    return who_is_connected._obj().is_wlan_connected()
+    return who_is_connected.is_wlan_connected()
 
 
 def connect_wifi_client(
-    who_to_connect: WifiClient,
+    who_to_connect: WIFITemplate,
     ssid: str = None,
     password: str = None,
     bssid: str = None,
@@ -92,7 +94,7 @@ def connect_wifi_client(
     """Connect client to Wifi.
 
     :param who_to_connect: client to connect
-    :type who_to_connect: WifiClient
+    :type who_to_connect: WIFITemplate
     :param ssid: ssid of the network to connect
     :type ssid: string
     :param password: password of the network to connect
@@ -106,7 +108,7 @@ def connect_wifi_client(
         bssid = _get_bssid(who_to_connect.network_type, who_to_connect.band)
     if not password:
         password = _get_passphrase(who_to_connect.network_type)
-    who_to_connect._obj().wifi_client_connect(
+    who_to_connect.wifi_client_connect(
         ssid_name=ssid,
         password=password,
         security_mode=who_to_connect.authentication,
@@ -114,10 +116,10 @@ def connect_wifi_client(
     )
 
 
-def disconnect_wifi_client(who_to_disconnect: WifiClient) -> None:
+def disconnect_wifi_client(who_to_disconnect: WIFITemplate) -> None:
     """Disconnect client from Wifi.
 
     :param who_to_disconnect: client to disconnect
-    :type who_to_disconnect: WifiClient
+    :type who_to_disconnect: WIFITemplate
     """
-    who_to_disconnect._obj().wifi_disconnect()
+    who_to_disconnect.wifi_disconnect()

@@ -18,10 +18,8 @@ from boardfarm.devices.debian_wifi import DebianWifi
 from boardfarm.exceptions import UseCaseFailure
 from boardfarm.lib.common import http_service_kill
 from boardfarm.lib.DeviceManager import get_device_by_name
-from boardfarm.use_cases.descriptors import LanClients, WanClients
 
 from .voice import VoiceClient
-from .wifi import WifiClient
 
 logger = logging.getLogger("bft")
 
@@ -122,18 +120,20 @@ def is_wan_http_server_running() -> bool:
     return False
 
 
-def http_get(which_client: Union[WifiClient, VoiceClient], url: str) -> str:
+def http_get(which_client: Union[DebianWifi, VoiceClient], url: str) -> str:
     """To check if wan http server is running.
     :param which_client : the client from where http response is got
-    :type which_client: Union[WifiClient, VoiceClient]
+    :type which_client: Union[DebianWifi, VoiceClient]
     :param url : url to get the response
     :type url: string
     :return: Http response
     :rtype: object
     """
-    which_client._obj().sendline(f"curl -v {url}")
-    which_client._obj().expect(which_client._obj().prompt)
-    return HTTPResult(which_client._obj().before)
+    client = which_client._obj() if type(which_client) == VoiceClient else which_client
+
+    client.sendline(f"curl -v {url}")
+    client.expect(client.prompt)
+    return HTTPResult(client.before)
 
 
 @contextmanager
@@ -235,19 +235,18 @@ def get_traceroute_from_board(host_ip, version="", options="") -> str:
 
 
 def parse_icmp_trace(
-    dev: Union[LanClients, WanClients, WifiClient], fname: str
+    device: Union[DebianLAN, DebianWAN, DebianWifi], fname: str
 ) -> List[ICMPPacketData]:
     """Reads and Filters out the ICMP packets from the pcap file with fields
     Source, Destinationa and Code of Query Type
 
-    :param dev: Object of the device class where tcpdump is captured
-    :type dev: Union[LanClients, WanClients, WifiClient]
+    :param device: Object of the device class where tcpdump is captured
+    :type device: Union[DebianLAN, DebianWAN, DebianWifi]
     :param fname: Name of the captured pcap file
     :type fname: str
     :return: Sequence of ICMP packets filtered from captured pcap file
     :rtype: List[ICMPPacketData]
     """
-    device = dev._obj
     out = (
         device.tshark_read_pcap(
             fname, additional_args="-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type"
