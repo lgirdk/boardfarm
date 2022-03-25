@@ -13,6 +13,8 @@ import pexpect
 from bs4 import BeautifulSoup
 from termcolor import colored
 
+from boardfarm.devices.axiros_acs import AxirosACS
+from boardfarm.devices.base_devices.board_templates import BoardSWTemplate
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.devices.debian_wifi import DebianWifi
@@ -421,3 +423,63 @@ def dhcp_renew_ipv6_stateless_and_get_ipv6(
         return host.get_interface_ip6addr(host.iface_dut)
     except (PexpectErrorTimeout, BftIfaceNoIpV6Addr) as e:
         raise UseCaseFailure(f"Unable to get the IPv6 address due to {e}")
+
+
+def block_ipv4_traffic(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    destination: Union[str, IPv4Address],
+) -> None:
+    """block the traffic to and from the destination address
+
+    :param device: device class object
+    :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
+    :param destination: destination ip or the corresponding domain name to be blocked
+    :type destination: Union[str,IPv4Address]
+    """
+    device.firewall.add_drop_rule_iptables("-s", destination)
+    device.firewall.add_drop_rule_iptables("-d", destination)
+
+
+def block_ipv6_traffic(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    destination: Union[str, IPv6Address],
+) -> None:
+    """block the traffic to and from the destination address
+
+    :param device: device class object
+    :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
+    :param destination: destination ip or the corresponding domain name to be blocked
+    :type destination: Union[str,IPv6Address]
+    """
+    device.firewall.add_drop_rule_ip6tables("-s", destination)
+    device.firewall.add_drop_rule_ip6tables("-d", destination)
+
+
+def unblock_ipv4_traffic(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    destination: Union[str, IPv4Address],
+) -> None:
+    """unblock the traffic to and from the destination address on a device
+
+    :param device: device class object
+    :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
+    :param destination: destination ip or the corresponding domain name to be unblocked
+    :type destination: Union[str,IPv4Address]
+    """
+    device.firewall.del_drop_rule_iptables("-s", destination)
+    device.firewall.del_drop_rule_iptables("-d", destination)
+
+
+def unblock_ipv6_traffic(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    destination: Union[str, IPv6Address],
+) -> None:
+    """unblock the traffic to and from the destination address
+
+    :param device: device class object
+    :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
+    :param destination: destination ip or the corresponding domain name to be unblocked
+    :type destination: Union[str,IPv6Address]
+    """
+    device.firewall.del_drop_rule_ip6tables("-s", destination)
+    device.firewall.del_drop_rule_ip6tables("-d", destination)

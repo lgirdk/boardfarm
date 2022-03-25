@@ -1,6 +1,7 @@
 import re
 from typing import Union
 
+from boardfarm.exceptions import CodeError
 from boardfarm.lib.dns_parser import DnsParser
 from boardfarm.lib.firewall_parser import iptable_parser
 from boardfarm.lib.netstat_parser import NetstatParser
@@ -161,11 +162,19 @@ class NwFirewall(NwFirewallStub):
         :type valid_ip : valid ip string
         """
         out = self.dev.check_output(f"iptables -C INPUT {option} {valid_ip} -j DROP")
+        if re.search(rf"host\/network.*{valid_ip}.*not found", out):
+            raise CodeError(
+                f"Firewall rule cannot be added as the ip address: {valid_ip} could not be found"
+            )
         if "Bad rule" in out:
             self.dev.check_output(f"iptables -I INPUT 1 {option} {valid_ip} -j DROP")
 
     def add_drop_rule_ip6tables(self, option, valid_ip):
         out = self.dev.check_output(f"ip6tables -C INPUT {option} {valid_ip} -j DROP")
+        if re.search(rf"host\/network.*{valid_ip}.*not found", out):
+            raise CodeError(
+                f"Firewall rule cannot be added as the ip address: {valid_ip} could not be found"
+            )
         if "Bad rule" in out:
             self.dev.check_output(f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP")
 
