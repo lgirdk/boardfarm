@@ -11,6 +11,7 @@ from boardfarm.devices.base_devices.mib_template import MIBTemplate
 from boardfarm.exceptions import CodeError
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper as PexpectHelper
 from boardfarm.lib.env_helper import EnvHelper
+from boardfarm.lib.linux_nw_utility import DeviceNwUtility, NwFirewall
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
 
 from .fxo_template import FXOTemplate
@@ -97,6 +98,8 @@ class BoardHWTemplate(metaclass=__MetaSignatureChecker):
 class BoardSWTemplate(metaclass=__MetaSignatureChecker):
     voice: Optional[FXOTemplate] = None
     mib: Optional[MIBTemplate] = None
+    nw_utility: Optional[DeviceNwUtility] = None
+    firewall: Optional[NwFirewall] = None
 
     @property
     def version(self) -> str:
