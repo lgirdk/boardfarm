@@ -71,13 +71,13 @@
             "black",
             "commitizen >=2.20.0",
             "flake8",
-            "flake8-bugbear",
+            "flake8-bugbear==22.1.11",
             "flake8-docstrings",
             "flake8-rst",
             "flake8-rst-docstrings",
             "mypy",
             "pre-commit",
-            "pylint==2.13.3",
+            "pylint==2.12.2",
             "types-termcolor",
         ]
         doc = ["sphinx"]
