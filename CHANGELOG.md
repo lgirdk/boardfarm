@@ -1,3 +1,24 @@
+## 2022.13.0 (2022-03-31)
+
+### Feat
+
+- **use_cases:console.py**: implement usecase to restart the erouter interface
+- **linux.py,networking.py**: add support to set static ip , ip search in pool
+- **contingency_checks.py**: add support to disable lan client init
+- **wifi_use_cases**: update access to wifi object getter, change the usage in use cases
+
+### Fix
+
+- **pyproject.toml**: freeze pylint dependency to last working version
+
+### Refactor
+
+- **dockerfiles**: Create dockerfile for each device and cleanup
+
+### BREAKING CHANGE
+
+- BOARDFARM-1734
+
 ## 2022.11.0 (2022-03-16)
 
 ### Feat
