@@ -16,7 +16,7 @@ from termcolor import colored
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.devices.debian_wifi import DebianWifi
-from boardfarm.exceptions import UseCaseFailure
+from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout, UseCaseFailure
 from boardfarm.lib.common import http_service_kill, ip_pool_to_list
 from boardfarm.lib.DeviceManager import get_device_by_name
 
@@ -364,3 +364,60 @@ def resolve_dns(
         return result
     else:
         raise UseCaseFailure(f"Failed to resolve {domain_name}")
+
+
+def dhcp_renew_ipv4_and_get_ipv4(host: Union[DebianLAN, DebianWifi]) -> IPv4Address:
+    """release and renew ipv4 in the device and return IPV4
+
+    :param host: host where the ip has to be renewed
+    :type host:  Union[DebianLAN,DebianWifi]
+    :return: ipv4 address of the device
+    :rtype: IPv4Address
+    :raises: UseCaseFailure
+    """
+    try:
+        host.release_dhcp(host.iface_dut)
+        host.renew_dhcp(host.iface_dut)
+        return host.get_interface_ipaddr(host.iface_dut)
+    except PexpectErrorTimeout as e:
+        raise UseCaseFailure(f"Unable to get the IPv4 address due to {e}")
+
+
+def dhcp_renew_stateful_ipv6_and_get_ipv6(
+    host: Union[DebianLAN, DebianWifi]
+) -> IPv6Address:
+    """release and renew stateful ipv6 in the device and return IPV6
+
+    :param host: host where the ip has to be renewed
+    :type host:  Union[DebianLAN,DebianWifi]
+    :return: ipv6 address of the device
+    :rtype: IPv6Address
+    :raises: UseCaseFailure
+    """
+    try:
+        host.release_ipv6(host.iface_dut)
+        host.renew_ipv6(host.iface_dut)
+        return host.get_interface_ip6addr(host.iface_dut)
+    except (PexpectErrorTimeout, BftIfaceNoIpV6Addr) as e:
+        raise UseCaseFailure(f"Unable to get the IPv6 address due to {e}")
+
+
+def dhcp_renew_ipv6_stateless_and_get_ipv6(
+    host: Union[DebianLAN, DebianWifi]
+) -> IPv6Address:
+    """release and renew stateless ipv6 in the device and return IPV6
+
+    :param host: host where the ip has to be renewed
+    :type host:  Union[DebianLAN,DebianWifi]
+    :return: ipv6 address of the device
+    :rtype: IPv6Address
+    :raises: UseCaseFailure
+    """
+    try:
+        host.release_ipv6(host.iface_dut, stateless=True)
+        host.set_link_state(host.iface_dut, "down")
+        host.set_link_state(host.iface_dut, "up")
+        host.renew_ipv6(host.iface_dut, stateless=True)
+        return host.get_interface_ip6addr(host.iface_dut)
+    except (PexpectErrorTimeout, BftIfaceNoIpV6Addr) as e:
+        raise UseCaseFailure(f"Unable to get the IPv6 address due to {e}")
