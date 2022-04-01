@@ -1,4 +1,4 @@
-FROM debian_ssh_server:2022.03
+FROM debian_ssh_server
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3=3.7.3-1 \

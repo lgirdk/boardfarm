@@ -1,4 +1,7 @@
-FROM debian:9.13-slim
+FROM debian:stretch-20220316-slim
+
+RUN sed -i '/^deb /d' /etc/apt/sources.list \
+    && sed -i 's/# deb /deb [check-valid-until=no]  /' /etc/apt/sources.list
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \

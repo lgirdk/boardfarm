@@ -1,4 +1,4 @@
-FROM debian_ssh_server:2022.03
+FROM debian_ssh_server
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \

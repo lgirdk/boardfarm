@@ -1,5 +1,8 @@
 # AFTR package build stage.
-FROM debian:10.11-slim AS builder
+FROM debian:buster-20220316-slim AS builder
+
+RUN sed -i '/^deb /d' /etc/apt/sources.list \
+    && sed -i 's/# deb /deb [check-valid-until=no] /' /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential=12.6 \
@@ -15,7 +18,7 @@ RUN ./configure && make
 
 
 # DEBIAN WAN Image start from here.
-FROM debian_ssh_server:2022.03
+FROM debian_ssh_server
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
