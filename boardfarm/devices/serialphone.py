@@ -62,7 +62,7 @@ class SerialPhone:
         self.expect(self.prompt)
         return bool(
             re.search(
-                (fr" find /dev/tty{self.line}\r\n/dev/tty{self.line}\r\n"),
+                (rf" find /dev/tty{self.line}\r\n/dev/tty{self.line}\r\n"),
                 self.before,
             )
         )

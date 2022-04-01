@@ -3,12 +3,12 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/commitizen-tools/commitizen
-      rev: v2.17.13
+      rev: v2.23.0
       hooks:
           - id: commitizen
             stages: [commit-msg]
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.0.1
+      rev: v4.1.0
       hooks:
           - id: check-ast
             stages: [commit]
@@ -43,7 +43,7 @@ repos:
             files: \.py$
             stages: [commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.1.10
+      rev: v1.1.13
       hooks:
           - id: remove-crlf
             stages: [commit]
@@ -67,7 +67,7 @@ repos:
             args: [--in-place]
             stages: [commit]
     - repo: https://github.com/timothycrosley/isort
-      rev: 5.9.2
+      rev: 5.10.1
       hooks:
           - id: isort
             name: isort
@@ -77,13 +77,13 @@ repos:
             types: [python]
             stages: [commit]
     - repo: https://github.com/asottile/pyupgrade
-      rev: v2.21.0
+      rev: v2.31.1
       hooks:
           - id: pyupgrade
             args: [--py36-plus]
             stages: [commit]
     - repo: https://github.com/ikamensh/flynt/
-      rev: '0.63'
+      rev: '0.76'
       hooks:
           - id: flynt
             stages: [commit]
@@ -93,17 +93,16 @@ repos:
           - id: yamlfmt
             stages: [commit]
     - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.26.1
+      rev: v1.26.3
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
             stages: [commit]
     - repo: https://github.com/psf/black
-      rev: 21.6b0
+      rev: 22.3.0
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'
-            additional_dependencies: [click==8.0.4]
             args: [--safe]
             stages: [commit]
     - repo: https://gitlab.com/pycqa/flake8
@@ -114,7 +113,7 @@ repos:
                 # - flake8-docstrings
                 - flake8-rst
                 - flake8-rst-docstrings
-                - flake8-bugbear==22.1.11
+                - flake8-bugbear
             stages: [commit]
     - repo: local
       hooks:

@@ -284,7 +284,7 @@ class SoftPhone(SIPPhoneTemplate):
     @Checks.is_phone_started
     def is_dialing(self) -> bool:
         return self.validate_state(
-            fr"You have 1 active call.*Current call id=[0-9]* to sip:[0-9]*@{self._proxy_ip} \[EARLY\]"
+            rf"You have 1 active call.*Current call id=[0-9]* to sip:[0-9]*@{self._proxy_ip} \[EARLY\]"
         )
 
     @Checks.is_phone_started

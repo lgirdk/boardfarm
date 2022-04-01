@@ -205,7 +205,7 @@ class SnmpMibs(metaclass=SnmpMibsMeta):
 
         if err:
             raise Exception("SnmpMibs failed to initialize.")
-        logger.debug("# %d MIB modules compiled" % len(mib_dict))
+        logger.debug(f"# {len(mib_dict)} MIB modules compiled")
 
     def callback_func(self, mibName, jsonDoc, cbCtx):
         """Add and prints the mib dict for mib name passed."""

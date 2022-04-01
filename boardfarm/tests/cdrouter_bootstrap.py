@@ -193,7 +193,9 @@ testvar lanVlanId """
                     raise exp
 
             # TODO: mask from config? wanNatIp vs. wanIspAssignGateway?
-            contents = contents + """
+            contents = (
+                contents
+                + """
 testvar ipv6LanIp {}%eui64%
 testvar ipv6LanPrefixLen 64
 testvar healthCheckEnable yes
@@ -222,17 +224,18 @@ testvar IPv4HopCount {}
 testvar lanDnsServer {}
 testvar wanDnsServer {}
 """.format(
-                fixed_prefix6,
-                cdrouter.bf_args.wanispip_v6,
-                cdrouter.bf_args.wanispgateway_v6,
-                wan_ip6,
-                cdrouter.bf_args.wanispip,
-                cdrouter.bf_args.wanispgateway,
-                wan_ip,
-                wan_ip,
-                cdrouter.bf_args.ipv4hopcount,
-                board.get_dns_server(),
-                board.get_dns_server_upstream(),
+                    fixed_prefix6,
+                    cdrouter.bf_args.wanispip_v6,
+                    cdrouter.bf_args.wanispgateway_v6,
+                    wan_ip6,
+                    cdrouter.bf_args.wanispip,
+                    cdrouter.bf_args.wanispgateway,
+                    wan_ip,
+                    wan_ip,
+                    cdrouter.bf_args.ipv4hopcount,
+                    board.get_dns_server(),
+                    board.get_dns_server_upstream(),
+                )
             )
 
         print("Using below for config:")

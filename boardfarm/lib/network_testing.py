@@ -675,7 +675,7 @@ def rtp_flow_check(device, capture_file, src_ip, dst_ip, rm_file=False, negate=F
     invite = [
         re.search(r"\d+", trace).group(0)
         for trace in split_sip_pcap
-        if re.search(fr".*{src_ip}.*{dst_ip}.*SIP.*sip:\d+@", trace)
+        if re.search(rf".*{src_ip}.*{dst_ip}.*SIP.*sip:\d+@", trace)
     ]
     invite_num_reverse = invite[::-1]
     if invite:

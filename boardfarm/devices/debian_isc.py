@@ -987,7 +987,7 @@ EOF"""
         try:
             self.sendline(f"cat  /etc/dhcp/dhcpd.conf.{station}")
             idx = self.expect(
-                [fr"({dev}-{station}\s\{{([^}}]+)({attr}\s({exp_pattern}))\;)"]
+                [rf"({dev}-{station}\s\{{([^}}]+)({attr}\s({exp_pattern}))\;)"]
                 + ["No such file or directory"]
                 + [pexpect.TIMEOUT],
                 timeout=10,
