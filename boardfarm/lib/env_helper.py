@@ -176,6 +176,14 @@ class EnvHelper:
                 out[k] = f"{v}"
         return out
 
+    def get_board_hardware_type(self):
+        """Returns board hardware type according to
+        ["environment_def"]["board"]["model"]
+        :return: unknown if not found in mapping
+        """
+        board_model = self.get_board_model()
+        return {"F5685LGE": "mv3"}.get(board_model, "unknown")
+
     def env_check(self, test_environment):
         """Test environment check.
 
