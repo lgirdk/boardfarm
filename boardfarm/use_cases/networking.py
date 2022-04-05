@@ -18,7 +18,12 @@ from boardfarm.devices.base_devices.board_templates import BoardSWTemplate
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.devices.debian_wifi import DebianWifi
-from boardfarm.exceptions import BftIfaceNoIpV6Addr, PexpectErrorTimeout, UseCaseFailure
+from boardfarm.exceptions import (
+    BftIfaceNoIpV6Addr,
+    CodeError,
+    PexpectErrorTimeout,
+    UseCaseFailure,
+)
 from boardfarm.lib.common import http_service_kill, ip_pool_to_list
 from boardfarm.lib.DeviceManager import get_device_by_name
 
@@ -72,6 +77,53 @@ class HTTPResult:
                 return raw, code, beautified_text
 
         self.raw, self.code, self.beautified_text = parse_response(response)
+
+
+@contextmanager
+def start_http_server(
+    device: Union[DebianLAN, DebianWifi, DebianWAN],
+    port: Union[int, str],
+    ip_version: Union[str, int],
+) -> None:
+    """start http server on given client.
+
+    :param device: device on which server will start
+    :type device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param port: port on which the server listen for incomming connections
+    :type port: Union[int, str]
+    :param ip_version: ip version of server values can strictly be 4 or 6
+    :type ip_version: Union[str, int]
+    :raises CodeError: wrong ip_version value is given in api call
+    :raises UseCaseFailure: if the port is being used by other process
+    :yield: pid
+    :rtype: str
+    """
+    pid: str = ""
+    if str(ip_version) not in ["4", "6"]:
+        raise CodeError(
+            f"ip_version value can be 4 or 6 while given value is {ip_version}"
+        )
+
+    process_id = device.get_nw_process_pid("webfsd", str(port), ip_version)
+    if process_id:
+        device.kill_process(process_id, 9)  # kill forefully
+    if device.get_nw_process_pid("", str(port), ip_version):
+        raise UseCaseFailure(
+            f"Cannot proceed to start http server as port={port} is still in use, try another port"
+        )
+    try:
+        command_params = f"-F -p {port} -{ip_version} &"
+        device.sendline(f"webfsd {command_params}")
+        device.expect(device.prompt, timeout=10)
+        if "Address already in use" in device.before:
+            raise UseCaseFailure(
+                f"Address already in use, Failed to start HTTP server on {device.name}"
+            )
+
+        pid = re.search(r"(\[\d{1,}\]\s(\d+))", device.before).group(2)
+        yield pid
+    finally:
+        device.kill_process(pid=pid, signal=15)
 
 
 @contextmanager

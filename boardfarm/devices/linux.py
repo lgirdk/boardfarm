@@ -688,17 +688,19 @@ EOFEOFEOFEOF"""
             ["Connected to"]
             + ["DOCTYPE html PUBLIC"]
             + ["doctype html"]
+            + ["webfs/.*"]
             + ["Connection timed out"]
             + ["Failed to connect to"]
             + ["Couldn't connect to server"],
             timeout=100,
         )
+
         try:
             self.expect_prompt()
         except pexpect.exceptions.TIMEOUT:
             self.sendcontrol("c")
             self.expect_prompt()
-        return index in [0, 1, 2]
+        return index in [0, 1, 2, 3]
 
     def get_lease_time(self):
         """Get DHCP lease time from dhclient.leases file.
@@ -974,6 +976,62 @@ EOFEOFEOFEOF"""
 
         logger.info(f"{build} downloaded as {build}")
         return "saved" in self.before or "already there; not retrieving" in self.before
+
+    def kill_process(self, pid: str, signal: int):
+        """Kill any process using pid and signal name.
+
+        :param pid: process id to kill
+        :type pid: str
+        :param signal: signal to send to running process, 1 for SIGHUP, 3 for SIGQUIT, 9 for SIGKILL, 15 for SIGTERM
+        :type signal: int
+        :raises CodeError: raises if failed to kill the process due to privilege
+        """
+        logger.info(f"killing process with id {pid}")
+        self.sendline(f"kill -n {signal} {pid}")
+        self.expect(self.prompt)
+        if "No such process" in self.before:
+            logger.error(
+                f"No process running on {self.name}  with PID: {pid}\n hint: Check if process was started with same privilages"
+            )
+        if "Operation not permitted" in self.before:
+            raise CodeError(
+                "Failed to kill process, process with launced with elevated prevalages"
+            )
+
+    def get_nw_process_pid(
+        self, process_name: str, port: str, ip_version: str
+    ) -> Optional[str]:
+        """get process that uses network service using process name and port
+
+        :param process_name: name of the process for which pid is required
+        :type process_name: str
+        :param port: port being used by the process
+        :type port: str
+        :param ip_version: ip_version on which the port is open value can be 4 or 6
+        :type port: str
+        :raises CodeError: raises the exception invalid parameter value is provided
+        :return: pid if process is running on given port else None
+        :rtype: Optional[str]
+        """
+        pid = ""
+        command = f"ss -lp{ip_version} 'sport = :{port}'"
+        self.sendline(command)
+        self.expect(self.prompt)
+        if "invalid option" in self.before:
+            raise CodeError(f"invalid parameter options for ss command {self.before}")
+        if process_name:
+            process_expression = rf"\"{process_name}\",(pid=\d+),fd=\d+"
+        else:
+            process_expression = r",(pid=\d+),fd=\d+"
+
+        _process = re.search(process_expression, self.before)
+        if _process:
+            pid = _process.group(1).split("=")[1]
+            logger.info(f"found running process={_process.group(1)} ")
+        else:
+            logger.warning(f"No {process_name} process is running on port={port}")
+
+        return pid
 
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
