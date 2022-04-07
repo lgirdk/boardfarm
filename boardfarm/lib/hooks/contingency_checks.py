@@ -5,7 +5,7 @@ import logging
 
 from nested_lookup import nested_lookup
 
-from boardfarm.exceptions import ContingencyCheckError
+from boardfarm.exceptions import ContingencyCheckError, SkipTest
 from boardfarm.lib.common import check_prompts, domain_ip_reach_check
 from boardfarm.lib.DeviceManager import device_type
 from boardfarm.lib.hooks import contingency_impl, hookimpl
@@ -47,6 +47,9 @@ class ContingencyCheck:
         dns_env = nested_lookup("DNS", env_req.get("environment_def", {}))
         if dns_env:
             plugins_to_register.append(all_impls["boardfarm.DNS"])
+
+        if nested_lookup("cwmp_version", env_req.get("environment_def", {})):
+            plugins_to_register.append(all_impls["boardfarm.Cwmp"])
 
         # ACS reference from boardfarm-lgi
         if "tr-069" in env_req.get("environment_def", {}):
@@ -213,3 +216,21 @@ class ACS:
             check_packet_analysis_enable()
 
         logger.info("ACS service checks for BF executed")
+
+
+class Cwmp:
+
+    impl_type = "feature"
+
+    @contingency_impl
+    def service_check(self, env_req, dev_mgr, env_helper):
+        """Contingency check for CWMP version"""
+
+        logger.info("Executing CWMP service check for BF Docsis")
+
+        board = dev_mgr.by_type(device_type.DUT)
+        env_cwmp_v = nested_lookup("cwmp_version", env_req["environment_def"])
+        if env_cwmp_v[0] != board.cwmp_version():
+            raise SkipTest("Skipping Test: CWMP version mismatch")
+
+        logger.info("CWMP service check executed for BF Docsis")
