@@ -4,6 +4,7 @@ import time
 import traceback
 import warnings
 
+from boardfarm_docsis.lib.booting_utils import set_static_ip_and_default_gw
 from termcolor import colored
 
 import boardfarm.lib.voice
@@ -191,7 +192,7 @@ def post_boot_lan_clients(config, env_helper, devices):
                 else:
                     v.configure_dhclient(([option, False],))
     if config.setup_device_networking:
-        for x in devices.board.dev.lan_clients:
+        for idx, x in enumerate(devices.board.dev.lan_clients):
             if isinstance(x, DebianLAN):  # should this use devices.lan_clients?
                 logger.info(f"Starting LAN client on {x.name}")
                 for n in range(3):
@@ -207,6 +208,14 @@ def post_boot_lan_clients(config, env_helper, devices):
                         else:
                             x.start_ipv4_lan_client(wan_gw=devices.wan.gw)
                         x.configure_proxy_pkgs()
+                        if env_helper.get_prov_mode() in [
+                            "ipv4",
+                            "dual",
+                        ] and env_helper.is_set_static_ipv4(idx):
+                            # set static ip address
+                            set_static_ip_and_default_gw(
+                                client=x,
+                            )
                         break
                     except Exception as e:
                         logger.warning(e)
