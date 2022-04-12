@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wpasupplicant=2:2.7+git20190128+0c1e29f-6+deb10u3 \
     xinetd=1:2.3.15.3-1 \
     xxd=2:8.1.0875-5 \
+    webfs=1.21+ds1-12\
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /tftpboot

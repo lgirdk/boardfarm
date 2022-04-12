@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget=1.20.1-1.1 \
     xinetd=1:2.3.15.3-1 \
     xxd=2:8.1.0875-5 \
+    webfs=1.21+ds1-12\
     && rm -rf /var/lib/apt/lists/*
 
 # Copy AFTR from build stage.
