@@ -87,17 +87,6 @@ repos:
       hooks:
           - id: flynt
             stages: [commit]
-    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.1.1
-      hooks:
-          - id: yamlfmt
-            stages: [commit]
-    - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.26.3
-      hooks:
-          - id: yamllint
-            args: [--format, parsable, --strict]
-            stages: [commit]
     - repo: https://github.com/psf/black
       rev: 22.3.0
       hooks:
