@@ -42,6 +42,8 @@ class DebianWAN(debian.DebianBox):
             {
                 "ipv4wan.boardfarm.com": [str(self.gw)],
                 "ipv6wan.boardfarm.com": [str(self.gwv6)],
+                "ipv6.google.com": [str(self.gwv6)],
+                "www.google.com": [str(self.gw)],
             }
         )
         self.sendline("killall iperf ab hping3")
