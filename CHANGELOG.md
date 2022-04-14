@@ -1,3 +1,25 @@
+## 2022.15.0 (2022-04-14)
+
+### Fix
+
+- remove yamlfmt/yamllint from pre-commit
+- bumps the env version
+- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
+
+### BREAKING CHANGE
+
+- MVX_TST-56392
+- BOARDFARM-1666
+
+### Feat
+
+- **devices:base_devices:board_templates**: update BoardSWTemplate with nw_utility and firewall instances
+- **use_cases:networking.py**: use cases to block and unblock traffic via iptables firewall rule
+- **networking.py**: add usecase for dhcp renew
+- update template and booting for new board
+- add new api to resolve board type
+- **dhcp.py**: add DHCP parse Use Cases
+
 ## 2022.13.0 (2022-03-31)
 
 ### Feat
