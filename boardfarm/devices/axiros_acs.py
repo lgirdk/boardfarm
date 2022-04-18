@@ -177,7 +177,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
     CPE_wait_time = default_timeout
     Count_retry_on_error = 3  # to be audited
-    skip_capture = False
+    skip_capture = True
     _cpeid: str = ""
 
     @property
