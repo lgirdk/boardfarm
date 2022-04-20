@@ -7,6 +7,7 @@ from typing import Dict, Generator, Type
 from pluggy import PluginManager
 
 from boardfarm import hookimpl
+from boardfarm.devices.axiros_acs import AxirosACS
 from boardfarm.devices.base_devices import BoardfarmDevice
 from boardfarm.devices.linux_lan import LinuxLAN
 from boardfarm.devices.linux_tftp import LinuxTFTP
@@ -22,7 +23,12 @@ def boardfarm_add_devices() -> Dict[str, Type[BoardfarmDevice]]:
 
     :returns: devices dictionary
     """
-    return {"debian_lan": LinuxLAN, "debian_wan": LinuxWAN, "debian_tftp": LinuxTFTP}
+    return {
+        "debian_lan": LinuxLAN,
+        "debian_wan": LinuxWAN,
+        "debian_tftp": LinuxTFTP,
+        "axiros_acs_soap": AxirosACS,
+    }
 
 
 @hookimpl

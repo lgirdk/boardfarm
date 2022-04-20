@@ -39,3 +39,11 @@ class ConfigurationFailure(BoardfarmException):
 
 class DeviceBootFailure(BoardfarmException):
     """Raise this on device boot failure."""
+
+
+class TR069ResponseError(BoardfarmException):
+    """Raise this on TR069 response error."""
+
+
+class TR069FaultCode(BoardfarmException):
+    """Raise this on TR069 response error."""

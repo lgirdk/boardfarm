@@ -26,6 +26,11 @@ class LinuxWAN(LinuxDevice, WAN):
         _LOGGER.info("Shutdown %s(%s) device", self.device_name, self.device_type)
         self._disconnect()
 
+    @property
+    def iface_dut(self) -> str:
+        """Name of the interface that is connected to DUT."""
+        return self.eth_interface
+
     def copy_local_file_to_tftpboot(self, local_file_path: str) -> None:
         """SCP local file to tftpboot directory.
 

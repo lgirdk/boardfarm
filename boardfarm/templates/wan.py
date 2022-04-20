@@ -1,10 +1,17 @@
 """Boardfarm WAN device template."""
 
 from abc import ABC, abstractmethod
+from ipaddress import IPv4Address
+from typing import Optional, Union
 
 
 class WAN(ABC):
     """Boardfarm WAN device template."""
+
+    @property
+    @abstractmethod
+    def iface_dut(self) -> str:
+        """Name of the interface that is connected to DUT."""
 
     @abstractmethod
     def copy_local_file_to_tftpboot(self, local_file_path: str) -> str:
@@ -48,3 +55,61 @@ class WAN(ABC):
         :returns: given snmp command output
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_ipv4addr(self, interface: str) -> str:
+        """Return ipv4 address of the interface.
+
+        :param interface: interface name
+        :return: IPv4 of the interface
+        :raises BoardfarmException: in case IPv4 is not found
+        """
+
+    @abstractmethod
+    def get_interface_ipv6addr(self, interface: str) -> str:
+        """Return ipv4 address of the interface.
+
+        :param interface: interface name
+        :return: IPv6 of the interface
+        :raises BoardfarmException: in case IPv6 is not found
+        """
+
+    @abstractmethod
+    def ping(
+        self,
+        ping_ip: str,
+        ping_count: int = 4,
+        ping_interface: Optional[str] = None,
+        options: str = "",
+        timeout: int = 50,
+        json_output: bool = False,
+    ) -> Union[bool, dict]:
+        """Ping remote host.
+
+        Return True if ping has 0% loss
+        or parsed output in JSON if json_output=True flag is provided.
+
+        :param ping_ip: ping ip
+        :param ping_count: number of ping, defaults to 4
+        :param ping_interface: ping via interface, defaults to None
+        :param options: extra ping options, defaults to ""
+        :param timeout: timeout, defaults to 50
+        :param json_output: return ping output in dictionary format, defaults to False
+        :return: ping output
+        """
+
+    @abstractmethod
+    def curl(
+        self,
+        url: Union[str, IPv4Address],
+        protocol: str,
+        port: Optional[Union[str, int]] = None,
+        options: str = "",
+    ) -> bool:
+        """Perform curl action to web service.
+
+        :param url : web service address
+        :param protocol : Web Protocol (http or https)
+        :param port : port number of server
+        :param options : Additional curl options
+        """

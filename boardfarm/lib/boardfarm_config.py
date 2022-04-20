@@ -58,6 +58,42 @@ class BoardfarmConfig:
                 return device_config
         raise EnvConfigError(f"{device_name} - Unknown device name")
 
+    def get_board_sku(self) -> str:
+        """Return the env config ["environment_def"]["board"]["SKU"] value.
+
+        :return: SKU value
+        """
+        try:
+            return self.env_config["environment_def"]["board"]["SKU"]
+        except (KeyError, AttributeError) as e:
+            raise EnvConfigError("Board SKU is not found in env config.") from e
+
+    def get_board_model(self) -> str:
+        """Return the env config ["environment_def"]["board"]["model"].
+
+        :return: Board model
+        """
+        try:
+            return self.env_config["environment_def"]["board"]["model"]
+        except (KeyError, AttributeError) as e:
+            raise EnvConfigError(
+                "Unable to find board.model entry in env config."
+            ) from e
+
+    def get_prov_mode(self) -> str:
+        """Return the provisioning mode of the DUT.
+
+        Possible values: ipv4, ipv6, dslite, dualstack, disabled
+        """
+        try:
+            return self.env_config["environment_def"]["board"][
+                "eRouter_Provisioning_mode"
+            ]
+        except (KeyError, AttributeError) as e:
+            raise EnvConfigError(
+                "Unable to find eRouter_Provisioning_mode entry in env config."
+            ) from e
+
 
 def parse_boardfarm_config(
     resource_name: str, env_json_path: str, inventory_json_path: str

@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 import pexpect
 
-from boardfarm.exceptions import DeviceConnectionError
+from boardfarm.exceptions import BoardfarmException, DeviceConnectionError
 from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
@@ -32,6 +32,8 @@ class SSHConnection(BoardfarmPexpect):
         :param password: password, defaults to None
         """
         self._shell_prompt = shell_prompt
+        self._username = username
+        self._password = password
         args = [
             f"{username}@{ip_addr}",
             f"-p {port}",
@@ -39,9 +41,10 @@ class SSHConnection(BoardfarmPexpect):
             "-o UserKnownHostsFile=/dev/null",
             "-o ServerAliveInterval=60",
             "-o ServerAliveCountMax=5",
+            "-o IdentitiesOnly=yes",
         ]
         super().__init__(name, "ssh", args)
-        self._login_to_server(password)
+        self._login_to_server(self._password)
 
     def _login_to_server(self, password: str) -> None:
         """Login to SSH session.
@@ -67,3 +70,39 @@ class SSHConnection(BoardfarmPexpect):
         self.expect(self.linesep)
         self.expect(self._shell_prompt, timeout=timeout)
         return self.get_last_output()
+
+    def check_output(self, cmd: str, timeout: int = 30) -> str:
+        """Return an output of the command.
+
+        :param cmd: command to execute
+        :param timeout: timeout for command execute, defaults to 30
+        :raises BoardfarmException: if command doesn't execute in specified timeout
+        :return: command output
+        """
+        self.sendline("\n" + cmd)
+        self.expect_exact(cmd, timeout=timeout)
+        try:
+            self.expect(self._shell_prompt, timeout=timeout)
+        except Exception as e:
+            self.sendcontrol("c")
+            raise BoardfarmException(
+                f"Command did not complete within {timeout} seconds. "
+                f"{self.name} prompt was not seen."
+            ) from e
+        return self.before.strip()
+
+    def sudo_sendline(self, cmd: str) -> None:
+        """Add sudo in the sendline if username is root.
+
+        :param cmd: command to send
+        """
+        if self._username != "root":
+            self.sendline("sudo true")
+            password_requested = self.expect(
+                self._shell_prompt + ["password for .*:", "Password:"]
+            )
+            if password_requested:
+                self.sendline(self._password)
+                self.expect(self._shell_prompt)
+            cmd = "sudo " + cmd
+        self.sendline(cmd)

@@ -175,7 +175,7 @@ def boardfarm_post_deploy_devices(
         try:
             device_name = _get_device_name_from_user(devices_dict, exit_code)
         except (KeyboardInterrupt, EOFError) as err:
-            print(colored(f"\nReceived {err.__repr__()}", color="red"))
+            print(colored(f"\nReceived {repr(err)}", color="red"))
             continue
         if device_name == exit_code:
             break

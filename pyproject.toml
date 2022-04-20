@@ -23,12 +23,15 @@
     requires-python = ">=3.6"
 
     dependencies = [
-        "pexpect",
-        "pluggy>=1.0.0",
+        "jc",
+        "nested_lookup",
         "netaddr",
+        "pluggy>=1.0.0",
         "ptipython",
         "pysmi",
         "termcolor",
+        "zeep",
+        "pexpect",
     ]
 
     [project.optional-dependencies]
@@ -46,6 +49,7 @@
             "pylint",
             "types-ipaddress",
             "types-termcolor",
+            "types-requests"
         ]
         doc = ["sphinx"]
         test = [

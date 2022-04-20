@@ -12,7 +12,7 @@ class BoardfarmDevice:
     def __init__(self, config: Dict, cmdline_args: Namespace) -> None:
         """Initialize boardfarm base device.
 
-        :param config: divice configuration
+        :param config: device configuration
         :param cmdline_args: command line arguments
         """
         self._config: Dict = config
@@ -42,7 +42,6 @@ class BoardfarmDevice:
         """
         return self._config.get("type")
 
-    # pylint: disable=no-self-use  # to avoid mypy signature mismatch error
     def get_interactive_consoles(self) -> Dict[str, BoardfarmPexpect]:
         """Get interactive consoles from device.
 
