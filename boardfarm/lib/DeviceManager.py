@@ -74,6 +74,7 @@ class device_type(Enum):
     fxs2 = 32
     lan3 = 33
     lan4 = 34
+    acs_server2 = 35
 
 
 class device_array_type(Enum):

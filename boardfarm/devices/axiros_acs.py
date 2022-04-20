@@ -172,7 +172,6 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     """ACS connection class used to perform TR069 operations on stations/board."""
 
     model = "axiros_acs_soap"
-    name = "acs_server"
     # should the following be dynamic?
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
     CPE_wait_time = default_timeout
@@ -201,6 +200,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         """
         self.args = args
         self.kwargs = kwargs
+        name = self.name = self.kwargs.get("name", "acs_server")
         self.username = self.kwargs["username"]
         self.password = self.kwargs["password"]
         self.ipaddr = self.kwargs["ipaddr"]
@@ -259,9 +259,9 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                     "ServerAliveCountMax=5",
                 ],
             )
-            self.check_connection(self.cli_username, self.name, self.cli_password)
+            self.check_connection(self.cli_username, name, self.cli_password)
             self.print_connected_console_msg(
-                self.ipaddr, self.cli_port, self.color, self.name
+                self.ipaddr, self.cli_port, self.color, name
             )
             self.session_connected = True
 
