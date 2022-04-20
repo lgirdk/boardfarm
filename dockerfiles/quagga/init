@@ -1,10 +1,19 @@
 #! /bin/bash -xe
 
 # Wait for all interfaces to get added.
-while [ -z $(ls /sys/class/net | grep cm) ]; do
-    echo "CM interface not found"
-    sleep 2
-done
+# By default only check for WAN and AUX interfaces
+# Any other interface needs to be passed via command line to be checked.
+if [[ $# -ne 0 ]]
+then
+    for i in $@;
+    do
+        while [ -z $(ls /sys/class/net | grep $i) ]
+        do
+            echo "$i interface not found"
+            sleep 2
+        done
+    done
+fi
 while [ -z $(ls /sys/class/net | grep eth1) ]; do
     echo "WAN interface not found"
     sleep 2
@@ -32,18 +41,6 @@ service monit start
 service mrouted start
 
 iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-dhcrelay -4 -iu eth1 -id cm 172.25.1.20 || true
-dhcrelay -6 -l cm -u 2001:dead:beef:2::20%eth1 || true
 
-if [[ $# -gt 0 ]]; then
-    exec "$@"
-else
-    # Keep the console alive.
-    while :; do
-        echo "------------------------------------------------------"
-        echo "Attaching console. To disconnect, press Ctrl-P Ctrl-Q."
-        echo "------------------------------------------------------"
-        vtysh || :
-        sleep 1
-    done
-fi
+# Run sshd by default
+/usr/sbin/sshd -D

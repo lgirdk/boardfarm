@@ -63,5 +63,9 @@ RUN chown -R quagga /etc/quagga \
     ;chown quagga /var/log/quagga \
     ;chmod +x /root/init
 
+RUN echo "root:bigfoot1" | chpasswd
+
+EXPOSE 22
+
 ENV PATH "/sbin:/bin:/usr/sbin:/usr/bin"
 ENTRYPOINT [ "/root/init" ]
