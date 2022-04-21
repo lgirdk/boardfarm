@@ -135,6 +135,8 @@ repos:
       rev: v0.920
       hooks:
           - id: mypy
+            additional_dependencies:
+                - types-termcolor
             name: mypy
             entry: mypy
             language: python

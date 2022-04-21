@@ -26,7 +26,9 @@
         "pexpect",
         "pluggy>=1.0.0",
         "netaddr",
+        "ptipython==1.0.1",
         "pysmi",
+        "termcolor",
     ]
 
     [project.optional-dependencies]
@@ -42,6 +44,7 @@
             "pre-commit",
             "pylint",
             "types-ipaddress",
+            "types-termcolor",
         ]
         doc = ["sphinx"]
         test = [

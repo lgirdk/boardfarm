@@ -1,15 +1,19 @@
 """Boardfarm core plugin."""
 
+import logging
 from argparse import ArgumentParser, Namespace
 from typing import Dict, List
 
 from pluggy import PluginManager
+from ptpython.ipython import IPythonInput, embed
+from termcolor import colored
 
 from boardfarm import hookimpl
 from boardfarm.devices.base_devices import BoardfarmDevice
+from boardfarm.lib.boardfarm_config import BoardfarmConfig
 from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm.lib.device_manager import DeviceManager
-from boardfarm.plugins.hookspecs import devices
+from boardfarm.plugins.hookspecs import devices as Devices
 
 
 @hookimpl
@@ -18,7 +22,7 @@ def boardfarm_add_hookspecs(plugin_manager: PluginManager) -> None:
 
     :param plugin_manager: plugin manager
     """
-    plugin_manager.add_hookspecs(devices)
+    plugin_manager.add_hookspecs(Devices)
 
 
 @hookimpl
@@ -33,6 +37,16 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     )
     argparser.add_argument(
         "--inventory-config", required=True, help="Inventory JSON config file path"
+    )
+    argparser.add_argument(
+        "--legacy",
+        action="store_true",
+        help="allows for devices.<device> obj to be exposed (only for legacy use)",
+    )
+    argparser.add_argument(
+        "--skip-boot",
+        action="store_true",
+        help="Skips the booting process, all devices will be used as they are",
     )
 
 
@@ -61,11 +75,16 @@ def _get_device_name_from_user(
         device = devices_dict.get(device_name)
         num_consoles = len(device.get_interactive_consoles())
         print(f"{i: >2}  {device_name: <16} {device.device_type: <16} {num_consoles}")
+    print("----------------------------------------------")
+    print(f"{'p': >2} {' python': <16} {' interactive shell': <16}")
+
     print(f"\nEnter '{exit_code}' to exit the interactive shell.\n")
     device_name = None
     device_id = input("Please enter a device ID: ")
     if device_id == exit_code:
         device_name = device_id
+    elif device_id == "p":
+        device_name = "python"
     elif not device_id.isdigit():
         print("\nERROR: Wrong input. Please try again.\n")
     elif int(device_id) > len(device_names):
@@ -108,8 +127,39 @@ def _get_console_name_from_user(
     return console_name
 
 
+def _configure_repl(repl: IPythonInput) -> None:
+    """Configure a few useful defaults."""
+    repl.show_signature = True
+    repl.show_docstring = True
+    repl.show_line_numbers = True
+    repl.highlight_matching_parenthesis = True
+
+
+def _interactive_ptpython_shell(
+    config: BoardfarmConfig,  # pylint: disable=unused-argument
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+
+    logging.getLogger("parso").setLevel("INFO")
+    logging.getLogger("asyncio").setLevel("INFO")
+
+    if cmdline_args.legacy:
+        devices = Namespace(**device_manager.get_devices_by_type(BoardfarmDevice))
+        print(
+            colored(
+                f"Use devices.<name> to access one of {list(vars(devices).keys())}",
+                color="green",
+                attrs=["bold"],
+            )
+        )
+    embed(configure=_configure_repl)
+
+
 @hookimpl(trylast=True)
-def boardfarm_post_deploy_devices(device_manager: DeviceManager) -> None:
+def boardfarm_post_deploy_devices(
+    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+) -> None:
     """Enter into boardfarm interactive session after deployment.
 
     :param device_manager: device manager
@@ -122,10 +172,17 @@ def boardfarm_post_deploy_devices(device_manager: DeviceManager) -> None:
         if not devices_dict:
             print("No device available in the environment.")
             break
-        device_name = _get_device_name_from_user(devices_dict, exit_code)
+        try:
+            device_name = _get_device_name_from_user(devices_dict, exit_code)
+        except (KeyboardInterrupt, EOFError) as err:
+            print(colored(f"\nReceived {err.__repr__()}", color="red"))
+            continue
         if device_name == exit_code:
             break
         if device_name is None:
+            continue
+        if device_name == "python":
+            _interactive_ptpython_shell(config, cmdline_args, device_manager)
             continue
         device = devices_dict.get(device_name)
         consoles = device.get_interactive_consoles()
