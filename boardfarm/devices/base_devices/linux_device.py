@@ -40,8 +40,8 @@ class LinuxDevice(BoardfarmDevice):
             self._console = connection_factory(
                 self._config.get("connection_type"),
                 f"{self.device_name}.console",
-                username=self._config.get("username"),
-                password=self._config.get("password"),
+                username=self._config.get("username", "root"),
+                password=self._config.get("password", "bigfoot1"),
                 ip_addr=self._config.get("ipaddr"),
                 port=self._config.get("port", "22"),
                 shell_prompt=self._shell_prompt,
