@@ -86,7 +86,7 @@ class DebianBox(linux.LinuxDevice):
         lan_gateway = ipaddress.IPv4Interface(
             str(kwargs.pop("lan_gateway", "192.168.1.1/24"))
         ).ip
-
+        self.shim = ""
         self.http_proxy = kwargs.pop("http_proxy", ipaddr + ":8080")
 
         if pre_cmd_host is not None:

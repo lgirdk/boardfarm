@@ -30,6 +30,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
         lan.expect(prompt)
 
         prev_failed = 0
+        prev_conn = None
         for con_conn in range(32, 513, 16):
             try:
                 tstart = datetime.now()
@@ -37,9 +38,12 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 failed_cons = 0
                 while (datetime.now() - tstart).seconds < (time * 2):
                     timeout = (time * 2) - (datetime.now() - tstart).seconds
-                    if 0 == lan.expect(
-                        ["write failed: Connection reset by peer"] + prompt,
-                        timeout=timeout,
+                    if (
+                        lan.expect(
+                            ["write failed: Connection reset by peer"] + prompt,
+                            timeout=timeout,
+                        )
+                        == 0
                     ):
                         failed_cons += 1
                     else:
@@ -54,16 +58,12 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 prev_conn = con_conn
                 prev_failed = failed_cons
 
-                if con_conn == 512:
-                    self.result_message = (
-                        "iPerf Concurrent passed 512 connections (failed conns = %s)"
-                        % failed_cons
-                    )
+                if prev_conn == 512:
+                    self.result_message = f"iPerf Concurrent passed 512 connections (failed conns = {failed_cons})"
+
             except Exception:
-                self.result_message = (
-                    "iPerf Concurrent Connections failed entirely at %s (failed conns = %s)"
-                    % (prev_conn, prev_failed)
-                )
+                self.result_message = f"iPerf Concurrent Connections failed entirely at {prev_conn} (failed conns = {prev_failed})"
+
                 break
 
         print(self.result_message)
@@ -78,7 +78,7 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
 
         for d in [wan, lan]:
             d.sendcontrol("z")
-            if 0 == d.expect([pexpect.TIMEOUT] + prompt):
+            if d.expect([pexpect.TIMEOUT] + prompt) == 0:
                 d.sendcontrol("c")
                 d.sendcontrol("c")
                 d.sendcontrol("c")
@@ -88,11 +88,9 @@ class ConcurrentIperf(rootfs_boot.RootFSBootTest):
                 d.sendline("echo FOOBAR")
                 d.expect_exact("echo FOOBAR")
                 d.expect_exact("FOOBAR")
-                d.expect(prompt)
             else:
                 d.sendline("kill %1")
-                d.expect(prompt)
-
+            d.expect(prompt)
             d.sendline("pkill -9 -f iperf")
             d.expect_exact("pkill -9 -f iperf")
             d.expect(prompt)

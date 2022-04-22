@@ -77,7 +77,7 @@
             "flake8-rst-docstrings",
             "mypy",
             "pre-commit",
-            "pylint==2.12.2",
+            "pylint==2.13.7",
             "types-termcolor",
         ]
         doc = ["sphinx"]

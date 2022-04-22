@@ -136,9 +136,7 @@ def get_classes_lib_functions(directories, debug=False):
             for name in library_function_names:
                 if name in line:
                     result[current_class_name] |= {name}
-    for key in result:
-        result[key] = sorted(result[key])
-    return result
+    return {key: sorted(result[key]) for key in result}
 
 
 def changed_functions(directories, start, end, debug=False):

@@ -561,6 +561,7 @@ def run_tests(config, device_mgr, env_helper):
             sys.exit(1)
 
     logger.info("==========")
+    curr_test = None
     try:
         tests_pass = tests_fail = tests_skip = 0
         stop_testing = False
