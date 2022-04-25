@@ -26,7 +26,7 @@
         "pexpect",
         "pluggy>=1.0.0",
         "netaddr",
-        "ptipython==1.0.1",
+        "ptipython",
         "pysmi",
         "termcolor",
     ]
@@ -41,6 +41,7 @@
             "flake8-rst",
             "flake8-rst-docstrings",
             "mypy",
+            "nox",
             "pre-commit",
             "pylint",
             "types-ipaddress",

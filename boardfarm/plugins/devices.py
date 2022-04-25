@@ -38,9 +38,7 @@ def boardfarm_register_devices(
     :raises EnvConfigError: when a device in inventory is unknown to boardfarm
     """
     device_manager = DeviceManager(plugin_manager)
-    known_devices_list: ChainMap[str, Type[BoardfarmDevice]] = ChainMap(
-        *plugin_manager.hook.boardfarm_add_devices()
-    )
+    known_devices_list = ChainMap(*plugin_manager.hook.boardfarm_add_devices())
     for device_config in config.get_devices_config():
         device_type = device_config.get("type")
         if device_type in known_devices_list:
