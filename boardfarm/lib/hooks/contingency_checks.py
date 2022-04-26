@@ -3,7 +3,6 @@
 
 import logging
 
-from boardfarm_docsis.lib.booting_utils import set_static_ip_and_default_gw
 from nested_lookup import nested_lookup
 
 from boardfarm.exceptions import ContingencyCheckError, SkipTest
@@ -131,14 +130,6 @@ class CheckInterface:
                 # We need to restart DUT interface only once
                 kwargs["prep_iface"] = False
             ip[dev.name] = ip_lan
-            if (
-                env_helper.get_prov_mode() in ["ipv4", "dual"]
-                and env_helper.is_set_static_ipv4()
-            ):
-                # set static ip address
-                set_static_ip_and_default_gw(
-                    client=dev,
-                )
 
         prov_mode = env_helper.get_prov_mode() if env_helper.has_prov_mode() else "dual"
         flags = []
@@ -147,18 +138,10 @@ class CheckInterface:
         if prov_mode != "ipv4":
             flags.append("ipv6")
 
-        for idx, dev in enumerate(lan_devices):
+        for dev in lan_devices:
             dev.configure_docker_iface()
             call_lan_clients(dev, flags, prep_iface=True)
             dev.configure_proxy_pkgs()
-            if env_helper.get_prov_mode() in [
-                "ipv4",
-                "dual",
-            ] and env_helper.is_set_static_ipv4(idx):
-                # set static ip address
-                set_static_ip_and_default_gw(
-                    client=dev,
-                )
 
         def _setup_as_wan_gateway():
             ipv4 = wan.get_interface_ipaddr(wan.iface_dut)
