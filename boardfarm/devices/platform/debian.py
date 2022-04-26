@@ -438,7 +438,7 @@ class DebianBox(linux.LinuxDevice):
         url: str,
         extra: str = "",
     ):
-        self.sendline(f"wget {url} {extra}")
+        self.sendline(f"mgmt wget {url} {extra}")
         self.expect_prompt(timeout=120)
 
     def start_tftp_server(self, ip=None):
