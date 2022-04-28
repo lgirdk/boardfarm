@@ -1,3 +1,23 @@
+## 2022.17.0 (2022-04-28)
+
+### Feat
+
+- add schema 2.22 to env helper
+- **linux.py,networking.py**: add support to spin up/down webserver using webfsd
+- **booting.py,contingency_checks.py**: add support for static ip assignment for lan/wlan clients
+- **lib:hooks:contingency_checks.py**: Contingency Check Functionality Segregation
+
+### Fix
+
+- add mgmt when fetching from server
+- **acs_server**: add support for another ACS
+- **devices:debian_wan.py**: add ipv6.google.com to resolve as wan container's ip address
+- disable acs pcap capture by default
+
+### Refactor
+
+- **pylint-fixes**: fix pylint errors
+
 ## 2022.15.0 (2022-04-14)
 
 ### Fix
