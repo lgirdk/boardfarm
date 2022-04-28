@@ -385,17 +385,19 @@ def is_client_ip_in_pool(
 
 
 def set_static_ip_from_rip_config(
-    ip_address: IPv4Address, client: Union[DebianLAN, DebianWifi]
+    ip_address: IPv4Address, client: Union[DebianLAN, DebianWifi], rip_iface_index: int
 ) -> None:
     """Set static ip for lan, wifiLan clients based on ripv2 configs
 
     :param ip_address: ip address to be assigned to client interface
     :type ip_address: IPv4Address
+    :param rip_iface_index: index of rip interface, value can be 1or 4 [1 for erouter0 and 4 for primary lan]
+    :type rip_iface_index: int
     :param client: lan or wifiLan client for which it is required to set static ip
     :type client: Union[DebianLAN, DebianWifi]
     """
     board = get_device_by_name("board")
-    rip_interface_ip, subnet = board.get_rip_iface_configs()
+    rip_interface_ip, subnet = board.get_rip_iface_configs(rip_iface_index)
     client.set_static_ip(client.iface_dut, ip_address, subnet.netmask)
     client.set_default_gw(rip_interface_ip, client.iface_dut)
 
