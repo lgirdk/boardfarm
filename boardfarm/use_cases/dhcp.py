@@ -1,3 +1,4 @@
+import ipaddress
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -8,6 +9,8 @@ from boardfarm.devices.debian_isc import DebianISCProvisioner
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.exceptions import UseCaseFailure
+from boardfarm.lib.DeviceManager import get_device_by_name
+from boardfarm.lib.dhcpoption import configure_option125
 from boardfarm.use_cases.networking import IPAddresses
 
 RecursiveDict = Dict[str, Any]
@@ -180,3 +183,69 @@ def get_dhcp_suboption_details(
         return out
     except KeyError:
         raise UseCaseFailure(f"Failed to find suboption {str(suboption)} ")
+
+
+def configure_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
+    """configure dhclient.conf with vendor specific suboptions in DHCP option 125
+
+    :param client:  Object of the linux device class where dhclient.conf needs to be configured
+    :type client: Union[DebianLAN, DebianWAN]
+    """
+    configure_option125(client, enable=True)
+
+
+def remove_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
+    """remove the DHCP option 125 related configuration on dhclient.conf
+
+    :param client:  Object of the linux device class where the configuration needs to be removed
+    :type client: Union[DebianLAN, DebianWAN]
+    """
+    configure_option125(client, enable=False)
+
+
+def configure_dhcp_inform(client: Union[DebianLAN, DebianWAN]) -> None:
+    """configure dhclient.conf to send DHCPINFORM messages
+
+    :param client:  Object of the linux device class where dhclient.conf needs to be configured for DHCPINFORM
+    :type client: Union[DebianLAN, DebianWAN]
+    """
+    msg_type = "send dhcp-message-type 8;"
+    out = client.check_output(f"egrep '{msg_type}' /etc/dhcp/dhclient.conf")
+    if not re.search(msg_type, out):
+        client.sendline("cat>>/etc/dhcp/dhclient.conf<<EOF")
+        client.sendline(msg_type)
+        client.sendline("EOF")
+        client.expect(client.prompt)
+
+
+def remove_dhcp_inform_config(client: Union[DebianLAN, DebianWAN]) -> None:
+    """remove the DHCPINFORM related configuration on dhclient.conf
+
+    :param client:  Object of the linux device class where the configuration needs to be removed
+    :type client: Union[DebianLAN, DebianWAN]
+    """
+    client.sendline("sed -i '/dhcp-message-type 8/d' /etc/dhcp/dhclient.conf")
+    client.expect(client.prompt)
+
+
+def trigger_dhcp_inform(client: Union[DebianLAN, DebianWAN]) -> None:
+    """configure the dhclient.conf with DHCPINFORM and assign back the static ip after dhcp release
+
+    :param client:  Object of the linux device class from where the dhcp inform messages are triggered
+    :type client: Union[DebianLAN, DebianWAN]
+    """
+    board = get_device_by_name("board")
+    iface = client.iface_dut
+    netmask = ipaddress.IPv4Address(
+        board.dmcli.GPV("Device.IP.Interface.4.IPv4Address.1.SubnetMask").rval
+    )
+    default_gw = ipaddress.IPv4Address(
+        board.dmcli.GPV("Device.DHCPv4.Server.Pool.1.IPRouters").rval
+    )
+    ip_address = client.get_interface_ipaddr(iface)
+
+    configure_dhcp_inform(client)
+    client.release_dhcp(iface)
+    client.set_static_ip(iface, ip_address, netmask)
+    client.set_default_gw(default_gw, iface)
+    remove_dhcp_inform_config(client)
