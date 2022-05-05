@@ -1,5 +1,4 @@
 import logging
-from collections import ChainMap
 from typing import Dict, List, Optional, Union
 
 from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
@@ -572,20 +571,19 @@ class EnvHelper:
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError("Unable to find board.model entry in env.")
 
-    def get_dhcpv4_options(self) -> Dict[Optional[str], Optional[Union[str, int]]]:
-        """Return Dict of dhcpv4 options from environment definition
+    def get_provisioner_options(
+        self,
+    ) -> Dict[Optional[str], Optional[Union[str, int]]]:
+        """Return Dict of options on provisioner from environment definition
 
         :return: List of dhcpv4 options
         :rtype: Dict[Optional[str], Optional[Union[str, int]]]
         """
-        dhcp_options = (
+        return (
             self.env.get("environment_def", {})
             .get("provisioner", {})
             .get("options", {})
-            .get("dhcpv4", {})
         )
-
-        return dict(ChainMap(*dhcp_options))
 
     def is_route_gateway_valid(self) -> bool:
         """check if valid dhcp gateways ip configurations should be deployed
@@ -593,7 +591,7 @@ class EnvHelper:
         :return: return True if dhcp option route_gateway is valid else False
         :rtype: bool
         """
-        return self.get_dhcpv4_options().get("route_gateway") != "invalid"
+        return self.get_provisioner_options().get("route_gateway", None) != "invalid"
 
     def get_mta_config(self):
         """Returns the ["environment_def"]["voice"]["mta_config_boot"]["snmp_mibs"] values
