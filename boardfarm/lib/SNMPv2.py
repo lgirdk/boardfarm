@@ -154,14 +154,13 @@ class SNMPv2:
         if not match:
             raise SNMPError(output)
         if value:
-            assert value.strip("'0x")[-1] in match.group(
-                2
-            ), "Set value did not match with output value: Expected: {} Actual: {}".format(
-                value.strip("'0x")[-1], match.group(2)
-            )
+            value = value.strip("'").strip("0x")
+            assert (
+                value in match[2]
+            ), f"Set value did not match with output value: Expected: {value} Actual: {match[2]}"
 
         """Returns the list containing the get value, type of the value and output recieved from snmp command"""
-        return match.group(2).replace('"', ""), match.group(1), match.group()
+        return match[2].replace('"', ""), match[1], match.group()
 
     def parse_snmpwalk_output(self, oid, output):
         result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
