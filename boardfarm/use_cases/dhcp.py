@@ -167,19 +167,29 @@ def get_dhcp_suboption_details(
     :return: suboption Dict
     :rtype: Dict
     """
+    option_key_dict = {125: "dhcp.option.vi.enterprise_tree"}
     sub_option_data = get_dhcp_option_details(packet, option)
+    out = {}
+    if option in option_key_dict:
+        sub_options = sub_option_data[option_key_dict[option]]
+    else:
+        sub_options = sub_option_data
     try:
-        for key, value in sub_option_data.items():
+        for key, value in sub_options.items():
             if "suboption" in key and value == str(suboption):
                 if re.search(r"_\d", key):
-                    out = sub_option_data[
+                    out = sub_options[
                         key.split("_")[0]
                         + "_tree_"
                         + key.split("_")[len(key.split("_")) - 1]
                     ]
                     break
                 else:
-                    out = sub_option_data[key + "_tree"]
+                    out = sub_options[key + "_tree"]
+        if not out:
+            raise UseCaseFailure(
+                f"Failed to fetch suboption {suboption} for option {option} in \n{sub_options}"
+            )
         return out
     except KeyError:
         raise UseCaseFailure(f"Failed to find suboption {str(suboption)} ")
