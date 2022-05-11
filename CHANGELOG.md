@@ -1,3 +1,21 @@
+## 2022.19.0 (2022-05-11)
+
+### Fix
+
+- **lib:SNMPv2.py**: fix parse_snmp_output for IndexError
+- **dockerfiles**: fix missing debian binay packages
+- **networking.py**: fix off by one bug related to /32 subnet
+
+### Feat
+
+- **use_cases:dhcp.py**: implement usecases to configure and trigger dhcpinform packets
+- **debian_lan,debian_wan**: add support to add webfs server
+- add debian_kea_provisioner dockerfile
+
+### Refactor
+
+- **lib:env_helper.py**: segregate docsis and non-docsis env_helper
+
 ## 2022.17.0 (2022-04-28)
 
 ### Feat
