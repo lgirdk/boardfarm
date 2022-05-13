@@ -60,6 +60,7 @@ class EnvHelper:
             "2.20",
             "2.21",
             "2.22",
+            "2.23",
         ], "Unknown environment version!"
         self.env = env
         self.mirror = ""
@@ -486,6 +487,26 @@ class EnvHelper:
         :rtype: bool"""
         try:
             self.get_board_sku()
+            return True
+        except BftEnvExcKeyError:
+            return False
+
+    def get_board_gui_language(self):
+        """Returns the ["environment_def"]["board"]["GUI_Language"] value
+        :return: GUI_Language values from eval list
+        :rtype: String"""
+
+        try:
+            return self.env["environment_def"]["board"]["GUI_Language"]
+        except (KeyError, AttributeError) as GUILangError:
+            raise BftEnvExcKeyError from GUILangError
+
+    def has_board_gui_language(self):
+        """Returns True if  ["environment_def"]["board"]["GUI_Language"] exists
+        :return: possible values are True/False
+        :rtype: bool"""
+        try:
+            self.get_board_gui_language()
             return True
         except BftEnvExcKeyError:
             return False
