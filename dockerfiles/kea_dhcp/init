@@ -1,0 +1,14 @@
+#! /bin/bash -xe
+
+# Wait for all interfaces to get added.
+while [ $(ls -1 /etc/kea/ | wc -l) -eq 0 ]; do
+    echo "No configuration files loaded"
+    sleep 2
+done
+
+sleep 10
+
+keactrl start
+python3 /root/kea_api.py &
+
+exec "$@"
