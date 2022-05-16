@@ -17,19 +17,30 @@ class MIBTemplate(ABC):
     @property
     @abstractmethod
     def vendor_prefix(self) -> str:
-        NotImplementedError("Vendor Prefix string must be defined for the gateway")
+        raise NotImplementedError(
+            "Vendor Prefix string must be defined for the gateway"
+        )
 
     @property
     @abstractmethod
     def sw_method_mib(self) -> str:
-        NotImplementedError(
+        raise NotImplementedError(
             "SW Method MIB name supported by vendor must be defined for the gateway"
         )
 
     @property
     @abstractmethod
+    def sw_server_address_mib(self) -> str:
+        raise NotImplementedError(
+            "SW Server Address MIB name supported by vendor must be defined for the gateway"
+        )
+
+    @property
+    @abstractmethod
     def mfg_cvc(self) -> str:
-        NotImplementedError("Manufacturer CVC Details must be defined for the gateway")
+        raise NotImplementedError(
+            "Manufacturer CVC Details must be defined for the gateway"
+        )
 
     @abstractmethod
     def get_sw_update_mibs(
@@ -61,6 +72,6 @@ class MIBTemplate(ABC):
         :return: the list of all the docsis specific mibs with values passed as parameters
         :rtype: List[MIBInfo]
         """
-        NotImplementedError(
+        raise NotImplementedError(
             "Vendor Specific Software Update MIBs must be defined for the gateway"
         )
