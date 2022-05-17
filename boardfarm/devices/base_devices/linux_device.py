@@ -34,14 +34,22 @@ class LinuxDevice(BoardfarmDevice):
         self._console: BoardfarmPexpect = None
         self._shell_prompt = ["[\\w-]+@[\\w-]+:[\\w/~]+#"]
 
+    @property
+    def _username(self) -> str:
+        return self._config.get("username", "root")
+
+    @property
+    def _password(self) -> str:
+        return self._config.get("password", "bigfoot1")
+
     def _connect(self) -> None:
         """Establish connection to the device via SSH."""
         if self._console is None:
             self._console = connection_factory(
                 self._config.get("connection_type"),
                 f"{self.device_name}.console",
-                username=self._config.get("username", "root"),
-                password=self._config.get("password", "bigfoot1"),
+                username=self._username,
+                password=self._password,
                 ip_addr=self._config.get("ipaddr"),
                 port=self._config.get("port", "22"),
                 shell_prompt=self._shell_prompt,
@@ -132,8 +140,7 @@ class LinuxDevice(BoardfarmDevice):
         :raises SCPConnectionError: when SCP command return non-zero exit code
         """
         destination_path = (
-            f"{self._config.get('username')}"
-            f"@{self._config.get('ipaddr')}:{destination_path}"
+            f"{self._username}@{self._config.get('ipaddr')}:{destination_path}"
         )
         args = [
             f"-P {self._config.get('port', '22')}",
@@ -154,11 +161,7 @@ class LinuxDevice(BoardfarmDevice):
                 f"Failed to perform SCP from {local_path} to {destination_path}"
             )
         if match_index == 0:
-            password = self._config.get("password", None)
-            if password is not None:
-                session.sendline(password)
-            else:
-                raise EnvConfigError("Password shouldn't be None")
+            session.sendline(self._password)
         session.expect(pexpect.EOF, timeout=90)
         if session.wait() != 0:
             raise SCPConnectionError(
