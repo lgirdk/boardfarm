@@ -107,6 +107,10 @@ class DebianBox(linux.LinuxDevice):
                     self.static_route = opt.replace("static-route:", "").replace(
                         "-", " via "
                     )
+                elif opt.startswith("static-route6:"):
+                    self.static_route6 = opt.replace("static-route6:", "").replace(
+                        "-", " via "
+                    )
                 elif opt.startswith("wan-static-route:"):
                     self.static_route = opt.replace("wan-static-route:", "").replace(
                         "-", " via "

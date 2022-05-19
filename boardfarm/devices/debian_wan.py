@@ -96,6 +96,10 @@ class DebianWAN(debian.DebianBox):
                 f"ip -6 addr add {self.gwv6}/{self.ipv6_prefix} dev {self.iface_dut}"
             )
             self.expect(self.prompt)
+            static_route6 = getattr(self, "static_route6", "")
+            if static_route6:
+                self.sendline(f"ip -6 route add {static_route6} dev {self.iface_dut}")
+                self.expect(self.prompt)
 
         # configure routing
         self.sendline("sysctl net.ipv4.ip_forward=1")
