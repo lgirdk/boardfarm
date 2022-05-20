@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from ipaddress import IPv4Address
 from typing import Optional, Union
 
+# pylint: disable=duplicate-code
+
 
 class WAN(ABC):
     """Boardfarm WAN device template."""
@@ -12,6 +14,7 @@ class WAN(ABC):
     @abstractmethod
     def iface_dut(self) -> str:
         """Name of the interface that is connected to DUT."""
+        raise NotImplementedError
 
     @abstractmethod
     def copy_local_file_to_tftpboot(self, local_file_path: str) -> str:
@@ -64,6 +67,7 @@ class WAN(ABC):
         :return: IPv4 of the interface
         :raises BoardfarmException: in case IPv4 is not found
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_interface_ipv6addr(self, interface: str) -> str:
@@ -73,6 +77,7 @@ class WAN(ABC):
         :return: IPv6 of the interface
         :raises BoardfarmException: in case IPv6 is not found
         """
+        raise NotImplementedError
 
     @abstractmethod
     def ping(
@@ -97,6 +102,7 @@ class WAN(ABC):
         :param json_output: return ping output in dictionary format, defaults to False
         :return: ping output
         """
+        raise NotImplementedError
 
     @abstractmethod
     def curl(
@@ -113,3 +119,22 @@ class WAN(ABC):
         :param port : port number of server
         :param options : Additional curl options
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_http_service(self, port: str, ip_version: str) -> str:
+        """Start HTTP service on given port number.
+
+        :param port: port number
+        :param ip_version: ip version, 4 - IPv4, 6 - IPv6
+        :return: pid number of the http service
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def stop_http_service(self, port: str) -> None:
+        """Stop http service running on given port.
+
+        :param port: port number
+        """
+        raise NotImplementedError

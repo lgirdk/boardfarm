@@ -50,7 +50,9 @@ class AxirosACS(LinuxDevice, ACS):
     _cpeid: str = ""
 
     def __init__(self, config: Dict, cmdline_args: Namespace):
-        """Initialize the AxirosACS.
+        """Initialize the variable that are used in establishing connection to the ACS.
+
+        Also, Initialize an HTTP SOAP client which will authenticate with the ACS server
 
         :param config: the device configuration
         :type config: dict
@@ -204,8 +206,7 @@ class AxirosACS(LinuxDevice, ACS):
             [result.get("details"), result.get("message"), result.get("ticketid")]
         ):
             raise TR069ResponseError(
-                "ACS malformed response (issues with either "
-                "details/message/ticketid)."
+                "ACS malformed response (issues with either details/message/ticketid)."
             )
         fault = "faultcode" in msg
         if fault:

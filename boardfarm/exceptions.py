@@ -47,3 +47,7 @@ class TR069ResponseError(BoardfarmException):
 
 class TR069FaultCode(BoardfarmException):
     """Raise this on TR069 response error."""
+
+
+class UseCaseFailure(BoardfarmException):
+    """Raise this on failures in use cases."""

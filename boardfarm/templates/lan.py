@@ -1,8 +1,11 @@
 """Boardfarm LAN device template."""
+
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from ipaddress import IPv4Address
 from typing import Any, Dict, Generator, Optional, Union
+
+# pylint: disable=too-few-public-methods,too-many-public-methods, duplicate-code
 
 
 class LAN(ABC):
@@ -235,5 +238,23 @@ class LAN(ABC):
         :param protocol : Web Protocol (http or https)
         :param port : port number of server
         :param options : Additional curl options
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_http_service(self, port: str, ip_version: str) -> str:
+        """Start HTTP service on given port number.
+
+        :param port: port number
+        :param ip_version: ip version, 4 - IPv4, 6 - IPv6
+        :return: pid number of the http service
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def stop_http_service(self, port: str) -> None:
+        """Stop http service running on given port.
+
+        :param port: port number
         """
         raise NotImplementedError

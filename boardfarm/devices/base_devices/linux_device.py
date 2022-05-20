@@ -21,7 +21,8 @@ from boardfarm.lib.connections.local_cmd import LocalCmd
 from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 
 
-class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attributes
+# pylint: disable-next=too-many-instance-attributes,too-many-public-methods
+class LinuxDevice(BoardfarmDevice):
     """Boardfarm Linux device."""
 
     eth_interface = "eth1"
@@ -123,7 +124,7 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param is_ipv6: is ipv6 address
         :returns: IP address list
         """
-        prefix = "inet" if not is_ipv6 else "inet6"
+        prefix = "inet6" if is_ipv6 else "inet"
         ip_regex = prefix + r"\s(?:addr:)?\s*([^\s/]+)"
         output = self._console.execute_command(f"ifconfig {interface_name}")
         return re.findall(ip_regex, output)
@@ -134,11 +135,11 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param network_interface: network interface name
         :returns: IPv4 address of the given interface, None if not available
         """
-        ipv4_address = None
-        ips = self._get_nw_interface_ip_address(network_interface, False)
-        if ips:
-            ipv4_address = ips[0]
-        return ipv4_address
+        return (
+            ips[0]
+            if (ips := self._get_nw_interface_ip_address(network_interface, False))
+            else None
+        )
 
     def _get_nw_interface_ipv6_address(
         self, network_interface: str, address_type: str = "global"
@@ -149,14 +150,16 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param address_type: ipv6 address type. defaults to "global".
         :returns: IPv6 address of the given interface, None if not available
         """
-        ipv6_address = None
         address_type = address_type.replace("-", "_")
         ip_addresses = self._get_nw_interface_ip_address(network_interface, True)
-        for ip_addr in ip_addresses:
-            if getattr(IPv6Interface(ip_addr), f"is_{address_type}"):
-                ipv6_address = ip_addr
-                break
-        return ipv6_address
+        return next(
+            (
+                ip_addr
+                for ip_addr in ip_addresses
+                if getattr(IPv6Interface(ip_addr), f"is_{address_type}")
+            ),
+            None,
+        )
 
     def get_eth_interface_ipv4_address(self) -> str:
         """Get eth interface ipv4 address.
@@ -246,7 +249,7 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
             url = str(url)
         if port:
             if re.search(AllValidIpv6AddressesRegex, url) and "[" not in url:
-                url = "[" + url + "]"
+                url = f"[{url}]"
             web_addr = f"{protocol}://{url}:{str(port)}"
         else:
             web_addr = f"{protocol}://{url}"
@@ -408,16 +411,13 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
             command_str += additional_args
 
         try:
-
             self._console.sendline(f"sudo {command_str} &")
             self._console.expect_exact(f"tcpdump: listening on {interface}")
-            process_id = re.search(
-                r"(\[\d{1,10}\]\s(\d+))", self._console.before
-            ).group(2)
+            process_id = re.search(r"(\[\d{1,10}\]\s(\d+))", self._console.before)[2]
+
             yield process_id
 
         finally:
-
             # This should always be executed, might kill other tcpdumps[need to agree]
             if process_id:
                 self._console.sudo_sendline(f"kill {process_id}")
@@ -444,12 +444,10 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param rm_pcap: if True remove packet capture file after read, defaults to False
         :return: console output from the command execution
         """
-        read_command = f"sudo tcpdump -n -r {fname} "
-        if additional_args:
-            read_command += additional_args
-        self._console.sendline(read_command)
-        self._console.expect(self._shell_prompt, timeout=timeout)
-        output = self._console.before
+        output = self._run_command_with_args(
+            "sudo tcpdump -n -r", fname, additional_args, timeout
+        )
+
         if "No such file or directory" in output:
             raise FileNotFoundError(
                 f"pcap file {fname} not found on {self.device_name} device"
@@ -479,13 +477,10 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param rm_pcap: If True remove the packet capture file after reading it
         :return: return tshark read command console output
         """
-        read_command = f"sudo tshark -r {fname} "
-        if additional_args:
-            read_command += additional_args
+        output = self._run_command_with_args(
+            "sudo tshark -r", fname, additional_args, timeout
+        )
 
-        self._console.sendline(read_command)
-        self._console.expect(self._shell_prompt, timeout=timeout)
-        output = self._console.before
         if f'The file "{fname}" doesn\'t exist' in output:
             raise FileNotFoundError(
                 f"pcap file not found {fname} on device {self.device_name}"
@@ -499,6 +494,17 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
             self._console.sendline(f"sudo rm {fname}")
             self._console.expect(self._shell_prompt)
         return output
+
+    def _run_command_with_args(
+        self, command: str, fname: str, additional_args: Optional[str], timeout: int
+    ) -> str:
+        """Run command with given arguments and return the output."""
+        read_command = f"{command} {fname} "
+        if additional_args:
+            read_command += additional_args
+        self._console.sendline(read_command)
+        self._console.expect(self._shell_prompt, timeout=timeout)
+        return self._console.before
 
     def release_dhcp(self, interface: str) -> None:
         """Release ipv4 of the interface.
@@ -514,8 +520,9 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         :param interface: renew an ipv4 on this iface
         """
         self._console.sudo_sendline(f"dhclient -v {interface!s}")
-        if 0 == self._console.expect(
-            [pexpect.TIMEOUT] + self._shell_prompt, timeout=30
+        if (
+            self._console.expect([pexpect.TIMEOUT] + self._shell_prompt, timeout=30)
+            == 0
         ):
             self._console.sendcontrol("c")
             self._console.expect(self._shell_prompt)
@@ -538,8 +545,39 @@ class LinuxDevice(BoardfarmDevice):  # pylint: disable=too-many-instance-attribu
         """
         mode = "-S" if stateless else "-6"
         self._console.sudo_sendline(f"dhclient {mode} -v {interface!s}")
-        if 0 == self._console.expect(
-            [pexpect.TIMEOUT] + self._shell_prompt, timeout=15
+        if (
+            self._console.expect([pexpect.TIMEOUT] + self._shell_prompt, timeout=15)
+            == 0
         ):
             self._console.sendcontrol("c")
             self._console.expect(self._shell_prompt)
+
+    def start_http_service(self, port: str, ip_version: str) -> str:
+        """Start HTTP service on given port number.
+
+        :param port: port number
+        :param ip_version: ip version, 4 - IPv4, 6 - IPv6
+        :return: pid number of the http service
+        """
+        cmd_output = self._console.execute_command(
+            f"webfsd -F -p {port} -{ip_version} &"
+        )
+        if "Address already in use" in cmd_output:
+            raise BoardfarmException(f"Failed to start http service on port {port}.")
+        return re.search(r"(\[\d{1,}\]\s(\d+))", cmd_output)[2]
+
+    def stop_http_service(self, port: str) -> None:
+        """Stop http service running on given port.
+
+        :param port: port number
+        """
+        ps_cmd = f"""ps auxwww | grep "webfsd -F -p {port}" | grep -v grep"""
+        if not self._console.execute_command(ps_cmd).splitlines():
+            return
+        self._console.execute_command(
+            ps_cmd + " | awk -F ' ' '{print $2}' | xargs kill -9 "
+        )
+        if self._console.execute_command(ps_cmd).splitlines():
+            raise BoardfarmException(
+                f"Failed to kill webfsd process running on port {port}"
+            )
