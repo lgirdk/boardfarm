@@ -6,7 +6,8 @@ All APIs are independent of board under test.
 """
 import logging
 from contextlib import contextmanager
-from typing import Generator
+from types import SimpleNamespace
+from typing import Generator, List, Tuple
 
 from termcolor import colored
 
@@ -17,6 +18,11 @@ from boardfarm.lib.network_testing import kill_process, tcpdump_capture
 from boardfarm.use_cases.descriptors import VoiceClient, VoiceServer
 
 logger = logging.getLogger("bft")
+
+
+VoiceResource = Tuple[List[VoiceClient], VoiceServer, str, SimpleNamespace]
+
+VoiceResourceGen = Generator[VoiceResource, None, None]
 
 
 def get_sip_proxy() -> VoiceServer:

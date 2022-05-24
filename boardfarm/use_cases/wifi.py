@@ -1,9 +1,15 @@
 """Wifi use cases library.
 All APIs are independent of board under test.
 """
+from typing import Generator, List, Tuple
+
 from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.wifi_lib import wifi_mgr
+
+wifi_resource_output = Tuple[List[WIFITemplate], List[WIFITemplate]]
+
+wifi_resource_generator = Generator[wifi_resource_output, None, None]
 
 
 def get_wifi_client(band: float, network_type: str) -> WIFITemplate:
