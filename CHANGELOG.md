@@ -1,3 +1,16 @@
+## 2022.21.0 (2022-05-25)
+
+### Fix
+
+- **devices:base_devices:mib_template.py**: add sw_server_address_mib property to MIBTemplate
+- **use_cases:dhcp.py**: fix use-case get_dhcp_suboption_details to fetch suboptions for option 125
+- **debian_wan**: add option to set static ipv6 route
+- **lib:env_helper.py**: fix failures with provisioner dhcp options
+
+### Feat
+
+- **kea_provisioner**: add HTTP APIs for DHCP
+
 ## 2022.19.0 (2022-05-11)
 
 ### Fix
