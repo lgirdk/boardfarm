@@ -553,8 +553,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline(
             "addn-hosts=/etc/dnsmasq.hosts"
         )  # all additional hosts will be added to dnsmasq.hosts
-        self.sendline("auth-zone=ipv6wan.boardfarm.com")
-        self.sendline("auth-zone=ipv4wan.boardfarm.com")
+        self.sendline("auth-zone=boardfarm.com")
+        self.sendline("auth-zone=google.com")
+        self.sendline(f"auth-server=wan.boardfarm.com,{self.iface_dut}")
         self.check_output("EOF")
         self.add_hosts(config=config)
         self.restart_dns_server()
@@ -562,7 +563,7 @@ class DebianBox(linux.LinuxDevice):
     def restart_dns_server(self):
         self.sendline("/etc/init.d/dnsmasq restart")
         self.expect(self.prompt)
-        self.sendline('echo "nameserver 127.0.0.1" > /etc/resolv.conf')
+        self.sendline(f'echo "nameserver {self.gw}" > /etc/resolv.conf')
         self.expect(self.prompt)
 
     def modify_dns_hosts(self, dns_entry=None):
