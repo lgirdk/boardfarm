@@ -37,6 +37,13 @@ class MIBTemplate(ABC):
 
     @property
     @abstractmethod
+    def sw_model_table_mib(self) -> str:
+        raise NotImplementedError(
+            "SW update table MIB name supported by vendor must be defined for the gateway"
+        )
+
+    @property
+    @abstractmethod
     def mfg_cvc(self) -> str:
         raise NotImplementedError(
             "Manufacturer CVC Details must be defined for the gateway"
