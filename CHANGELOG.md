@@ -1,3 +1,19 @@
+## 2022.23.0 (2022-06-08)
+
+### Feat
+
+- **devices:base_devices:mib_template.py**: add sw_update_table_mib to the mib template of the BoardSWTemplate
+- **env_helper.py**: add get_board_gui_language
+
+### Refactor
+
+- **voice.py,-wifi.py**: add voice resources and wifi resources
+
+### Fix
+
+- **debian_dns**: update apt libraries' version
+- **quagga**: allows addition of more interfaces
+
 ## 2022.21.0 (2022-05-25)
 
 ### Fix
