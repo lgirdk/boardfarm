@@ -38,7 +38,9 @@ def _manage_duplicates(pairs):
 
 
 def parse_dhcp_trace(
-    on_which_device: Union[DebianLAN, DebianWAN, DebianISCProvisioner], fname: str
+    on_which_device: Union[DebianLAN, DebianWAN, DebianISCProvisioner],
+    fname: str,
+    timeout: int = 30,
 ) -> List[DHCPTraceData]:
     """Read and filter the DHCP packets from the pcap file and returns the DHCP packets.
 
@@ -46,12 +48,14 @@ def parse_dhcp_trace(
     :type on_which_device: Union[DebianLAN, DebianWAN,DebianISCProvisioner]
     :param fname: Name of the captured pcap file
     :type fname: str
+    :param timeout: time out for tshark read to be executed, defaults to 30
+    :type timeout: int
     :return: Sequence of DHCP packets filtered from captured pcap file
     :rtype: List[DHCPTraceData]
     """
     try:
         out = on_which_device.tshark_read_pcap(
-            fname=fname, additional_args="-Y bootp -T json"
+            fname=fname, additional_args="-Y bootp -T json", timeout=timeout
         )
         output: List[DHCPTraceData] = []
         data = "[" + out.split("[", 1)[-1].replace("\r\n", "")
