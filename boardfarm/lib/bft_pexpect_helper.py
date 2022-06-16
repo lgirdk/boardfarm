@@ -135,6 +135,21 @@ class bft_pexpect_helper(pexpect.spawn):
 
                 self.sendline(password)
 
+        def check_output(self, cmd, timeout=30):
+            # sourcery skip: raise-specific-error
+            """Send a string to device then  return the output between that string and the next prompt."""
+            self.sendline("\n" + cmd)
+            self.expect_exact(cmd, timeout=5)
+            try:
+                self.expect(self.prompt, timeout=timeout)
+            except Exception as e:
+                self.sendcontrol("c")
+                raise Exception(
+                    f"Command did not complete within {timeout} seconds. {self.name} prompt was not seen."
+                ) from e
+
+            return self.before.strip()
+
     def __init__(self, *args, **kwargs):
         """Instance initialization."""
         # Filters out boardfarm specific
