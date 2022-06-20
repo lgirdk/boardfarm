@@ -1,3 +1,15 @@
+## 2022.25.0 (2022-06-20)
+
+### Fix
+
+- **dhcp.py**: add timeout for parse_dhcp_trace
+- dnsmasq not starting when "auth-zone=" in .conf
+
+### Feat
+
+- **bft_pexepct_helper**: add check_output
+- **pylint**: bump pylint to 2.14.1
+
 ## 2022.23.0 (2022-06-08)
 
 ### Feat
