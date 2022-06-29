@@ -553,7 +553,9 @@ class DebianBox(linux.LinuxDevice):
         self.sendline(
             "addn-hosts=/etc/dnsmasq.hosts"
         )  # all additional hosts will be added to dnsmasq.hosts
-        self.sendline("auth-zone=boardfarm.com")
+        self.sendline(
+            f"auth-zone=boardfarm.com,{self.gw_ng.network},{self.ipv6_interface.network}"
+        )
         self.sendline("auth-zone=google.com")
         self.sendline(f"auth-server=wan.boardfarm.com,{self.iface_dut}")
         self.check_output("EOF")
