@@ -14,6 +14,7 @@ from boardfarm.exceptions import (
     DeviceDoesNotExistError,
     NoTFTPServer,
 )
+from boardfarm.lib.booting_utils import check_and_connect_to_wifi
 from boardfarm.library import check_devices
 
 logger = logging.getLogger("bft")
@@ -229,8 +230,17 @@ def post_boot_lan_clients(config, env_helper, devices):
 def post_boot_wlan_clients(config, env_helper, devices):
     wifi_clients = env_helper.wifi_clients()
     if wifi_clients:
-        logger.error("No wifi implemented yet")
-        raise CodeError("No wifi implemented yet")
+
+        # Register all wifi clients in wifi manager
+        for client in wifi_clients:
+            devices.wlan_clients.register(client)
+
+        # Start to connect all clients after registartions done:
+        for client in wifi_clients:
+            check_and_connect_to_wifi(devices, client)
+
+        logger.info(colored("\nWlan clients:", color="green"))
+        devices.wlan_clients.registered_clients_summary()
 
 
 def post_boot_env(config, env_helper, devices):
