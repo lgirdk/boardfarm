@@ -121,7 +121,7 @@ EOF"""
         param password: the password of the user
         type password: string, Defaults to None
         """
-        password = self.password if not password else password
+        password = self.user_password if not password else password
         if isinstance(user, str):
             user = [user]
         for i in user:
