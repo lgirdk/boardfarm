@@ -362,7 +362,7 @@ def connect_to_devices(config):
                     aux_board = connect_to_board(board_config, None, None, None)
 
                     # This will be done in booting, once env schema is updated.
-                    aux_board.power.turn_off()
+                    aux_board.hw.power.turn_off()
 
                     deny_list.append(aux_board)
                     setattr(device_mgr, f"__board{idx+2}", aux_board)
