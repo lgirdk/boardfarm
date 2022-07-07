@@ -1,3 +1,16 @@
+## 2022.27.0 (2022-07-07)
+
+### Fix
+
+- flake8 B023 error
+- fix wifi board fail at post boot
+- invoke power off on board.hw
+
+### Feat
+
+- **platform/debian**: add ptr record suppport
+- **DeviceManager**: add enum for olt
+
 ## 2022.25.0 (2022-06-20)
 
 ### Fix
