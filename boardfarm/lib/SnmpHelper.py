@@ -76,7 +76,7 @@ def find_files_in_tree(root_dir, no_ext=True, no_dup=True, ignore=None):
         for d in root_dir:
             for _root, _dirs, files in os.walk(d):
                 for f in files:
-                    if any(map(lambda x: x in f, ignore)):
+                    if any(map(lambda x: x in f, ignore)):  # noqa: B023
                         continue
                     if no_ext:
                         f = os.path.splitext(f)[0]
