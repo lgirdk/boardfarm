@@ -417,7 +417,7 @@ def connect_to_devices(config):
             if "devices" in config.board:
                 setup_dynamic_devices(config, device_mgr, env_helper)
 
-            def get_tftp_config(dev):
+            def get_tftp_config(dev, board):
                 saved = dev.logfile_read
                 dev.logfile_read = None
                 if hasattr(dev, "gw"):
@@ -436,7 +436,7 @@ def connect_to_devices(config):
             # if we still have not configured a tftp server
             for x in config.board["devices"]:
                 if "tftpd-server" in x.get("options", ""):
-                    get_tftp_config(getattr(config, x["name"]))
+                    get_tftp_config(getattr(config, x["name"]), board)
                     # TODO: how do we handle multiple tftp servers, break for now
                     break
 
