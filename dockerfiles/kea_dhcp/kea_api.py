@@ -44,17 +44,22 @@ class DHCPData(BaseModel):
 
 def _update_reservation(data: DHCPData, mode: str):
     """Use to update DHCPv4/v6 reservation data for a board."""
-    # Hardcoding the path, since it runs for a Debian Image.
+    # Hardcoding the path, since it runs on a Debian Image.
     fpath = f"/etc/kea/board-v{mode}-{data.board_id}.json"
 
     path = Path(fpath)
-    reservation = json.load(path.open(encoding="UTF-8"))
-    # make a copy for rollback
-    json.dump(reservation, Path(f"{fpath}.old").open("w", encoding="UTF-8"), indent=4)
+    Path(f"{fpath}.old").write_text(path.read_text(), encoding="UTF-8")
 
     # write new config
-    reservation.update(data.reservation_data)
-    json.dump(reservation, path.open("w", encoding="UTF-8"), indent=4)
+    if (
+        "data" in data.reservation_data
+        or "voice" in data.reservation_data
+        or "oam" in data.reservation_data
+    ):
+        blocks = [json.dumps(i, indent=4) for i in data.reservation_data.values()]
+        path.write_text(",\n".join(blocks), encoding="UTF-8")
+    else:
+        json.dump(data.reservation_data, path.open("w", encoding="UTF-8"), indent=4)
 
     # reload the DHCP server via KEA Backend API.
     response = httpx.post(
@@ -72,8 +77,7 @@ def rollback(data: DHCPData, mode: str):
     """Rollback DHCPv4/v6 configurations."""
     fpath = f"/etc/kea/board-v{mode}-{data.board_id}.json"
 
-    backup = json.load(Path(f"{fpath}.old").open(encoding="UTF-8"))
-    json.dump(backup, Path(fpath).open("w", encoding="UTF-8"), indent=4)
+    Path(fpath).write_text(Path(f"{fpath}.old").read_text(), encoding="UTF-8")
 
     response = httpx.post(
         url="http://localhost:8000",
