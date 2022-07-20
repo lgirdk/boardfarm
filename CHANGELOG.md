@@ -1,3 +1,17 @@
+## 2022.29.0 (2022-07-20)
+
+### Refactor
+
+- sonarQ reporting moved to cicd
+
+### Feat
+
+- **kea_dhcp**: allow multiple host reservations
+
+### Fix
+
+- **devices:kamailio.py**: fix the sipserver_user_add function to take the correct password for a sip user
+
 ## 2022.27.0 (2022-07-07)
 
 ### Fix
