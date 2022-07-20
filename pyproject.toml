@@ -25,6 +25,7 @@
     dependencies = [
         "aenum",
         "apscheduler",
+        "beautifulsoup4",
         "boto3",
         "cdrouter>=0.5.5",
         "debtcollector",
@@ -37,7 +38,6 @@
         "jc",
         "jsonschema",
         "matplotlib",
-        "mitmproxy",
         "nested_lookup",
         "netaddr",
         "ouimeaux",
@@ -52,11 +52,11 @@
         "pyserial",
         "pysmi",
         "pysnmp",
+        "pytest",                                      # see tests folder
         "pyvirtualdisplay==2.2",
         "requests",
         "retry",
         "selenium==4.1.0",
-        "simplejson",
         "tabulate",
         "termcolor",
         "xmltodict",
