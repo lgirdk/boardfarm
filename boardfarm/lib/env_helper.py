@@ -217,9 +217,12 @@ class EnvHelper:
         :return: mv1/mv2/mv2+/mv3 etc. or unknown if not found in mapping
         """
         board_model = self.get_board_model()
-        return {"F3896LG": "mv2+", "CH7465LG": "mv1", "F5685LGE": "mv3"}.get(
-            board_model, "unknown"
-        )
+        return {
+            "F3896LG": "mv2+",
+            "CH7465LG": "mv1",
+            "F5685LGE": "mv3",
+            "F5685LGB": "mv3",
+        }.get(board_model, "unknown")
 
     def env_check(self, test_environment):
         """Test environment check.
