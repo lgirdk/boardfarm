@@ -66,7 +66,7 @@ class HTTPResult:
         # Todo: Wget parsing has to be added
 
         def parse_response(response: str = response):
-            if "Connection refused" in response:
+            if "Connection refused" in response or "Connection timed out" in response:
                 raise UseCaseFailure(
                     f"Curl Failure due to the following reason {response}"
                 )
