@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from boardfarm.exceptions import BftEnvExcKeyError, BftEnvMismatch
 
@@ -61,6 +61,7 @@ class EnvHelper:
             "2.21",
             "2.22",
             "2.23",
+            "2.24",
         ], "Unknown environment version!"
         self.env = env
         self.mirror = ""
@@ -667,3 +668,14 @@ class EnvHelper:
             return self.get_lan_client_options()[idx].get("static_ipv4")
         except (IndexError, KeyError, AttributeError):
             return False
+
+    def get_value(self, key: str) -> Optional[Dict[str, Any]]:
+        """Return the value of the key provided.
+
+        :return: The value of the key provided
+        :rtype: Union[Dict[str,Any], bool]
+        """
+        try:
+            return self.env["environment_def"][key]
+        except (KeyError, AttributeError):
+            return None
