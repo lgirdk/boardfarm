@@ -175,19 +175,27 @@ def is_wan_http_server_running() -> bool:
     return False
 
 
-def http_get(which_client: Union[DebianWifi, VoiceClient], url: str) -> str:
-    """To check if wan http server is running.
+def http_get(
+    which_client: Union[DebianLAN, DebianWifi, VoiceClient], url: str, timeout: int = 20
+) -> str:
+    """Check if the given HTTP server in WAN is running.
+
+    This Use Case executes a curl command with a given timeout from the given
+    client. The destination is specified by the url parameter
+
     :param which_client : the client from where http response is got
     :type which_client: Union[DebianWifi, VoiceClient]
     :param url : url to get the response
-    :type url: string
+    :type url: string,
+    :param timeout: connection timeout for the curl command in seconds
+    :type timeout: integer
     :return: Http response
     :rtype: object
     """
     client = which_client._obj() if type(which_client) == VoiceClient else which_client
 
-    client.sendline(f"curl -v {url}")
-    client.expect(client.prompt)
+    client.sendline(f"curl -v --connect-timeout {timeout} {url}")
+    client.expect(client.prompt, timeout=timeout + 10)
     return HTTPResult(client.before)
 
 
