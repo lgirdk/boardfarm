@@ -83,16 +83,16 @@ class DefaultChecks:
 
         provisioner = dev_mgr.by_type(device_type.provisioner)
         wan = dev_mgr.by_type(device_type.wan)
-        sipserver = dev_mgr.by_type(device_type.sipcenter)
-        softphone = dev_mgr.by_type(device_type.softphone)
 
         wan_devices = [wan, provisioner]
-        lan_devices = []
+        lan_devices = [dev_mgr.lan, dev_mgr.lan2]
 
         voice = "voice" in env_req.get("environment_def", {})
+
         if voice:
-            lan_devices = [dev_mgr.lan, dev_mgr.lan2]
-            wan_devices = [wan, provisioner, sipserver, softphone]
+            sipserver = dev_mgr.by_type(device_type.sipcenter)
+            softphone = dev_mgr.by_type(device_type.softphone)
+            wan_devices = wan_devices + [sipserver, softphone]
 
         check_prompts(wan_devices + lan_devices)
 
@@ -112,10 +112,7 @@ class CheckInterface:
 
         ip = {}
         wan = dev_mgr.by_type(device_type.wan)
-        amount_of_clients_to_be_tested = len(
-            env_req.get("environment_def", {}).get("board", {}).get("lan_clients", [])
-        )
-        lan_devices = dev_mgr.lan_clients[:amount_of_clients_to_be_tested]
+        lan_devices = [dev_mgr.lan, dev_mgr.lan2]
 
         def call_lan_clients(dev, flags, **kwargs):
             ip_lan = {}
