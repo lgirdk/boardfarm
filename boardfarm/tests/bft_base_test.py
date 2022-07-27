@@ -10,10 +10,9 @@ import sys
 import time
 import traceback
 import warnings
+from unittest import TestCase as UTest
 
 import debtcollector
-import six
-from unittest2 import TestCase as UTest
 
 import boardfarm.config
 import boardfarm.exceptions

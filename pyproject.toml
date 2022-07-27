@@ -59,7 +59,6 @@
         "simplejson",
         "tabulate",
         "termcolor",
-        "unittest2",
         "xmltodict",
         "xvfbwrapper",
         "zeep",
@@ -81,6 +80,7 @@
         ]
         doc = ["sphinx"]
         test = [
+            "ftfy",
             "pytest",
             "pytest-cov",
             "pytest-html",
