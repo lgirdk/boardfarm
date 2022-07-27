@@ -76,6 +76,7 @@ class device_type(Enum):
     lan4 = 34
     acs_server2 = 35
     olt = 36
+    securingsam = 37
 
 
 class device_array_type(Enum):
