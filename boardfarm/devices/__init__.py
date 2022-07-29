@@ -165,7 +165,7 @@ def bf_node(cls_list, model, device_mgr, **kwargs):
             cls.__init__(self, *args, **kwargs)
 
     ret = type(cls_name, tuple(cls_list), {"__init__": __init__})(
-        model, mgr=device_mgr, **kwargs
+        mgr=device_mgr, **kwargs
     )
     ret.target = kwargs
 
