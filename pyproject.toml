@@ -74,6 +74,7 @@
             "flake8-rst",
             "flake8-rst-docstrings",
             "mypy",
+            "nox",
             "pre-commit",
             "pylint==2.14.1",
             "types-termcolor",
