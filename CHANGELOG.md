@@ -1,3 +1,15 @@
+## 2022.31.0 (2022-08-03)
+
+### Fix
+
+- add mitm as it is needed in scripts
+- **contingency_checks.py**: fix contingency check device list
+- **debian_dns**: update dnsutils package version
+- **networking.py**: modify the use case http_get
+- **networking.py**: fix the parse response logic for failure
+- **lib:env_helper.py**: update get_board_hardware_type with F5685LGB from env_helper
+- **pyproject.toml**: rm jira from dependencies
+
 ## 2022.29.0 (2022-07-20)
 
 ### Refactor
@@ -185,8 +197,6 @@
 
 ### BREAKING CHANGE
 
-- Do not merge until all the executors have been updated!
-BOARDFARM-1698
 - BOARDFARM-1500
 
 ## 2022.07.0 (2022-02-16)
