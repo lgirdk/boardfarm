@@ -38,6 +38,7 @@
         "jc",
         "jsonschema",
         "matplotlib",
+        "mitmproxy",
         "nested_lookup",
         "netaddr",
         "ouimeaux",
