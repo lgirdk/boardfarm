@@ -412,8 +412,9 @@ class DebianBox(linux.LinuxDevice):
             self.sendline(f"ifconfig {self.iface_dut} up")
             self.expect(self.prompt)
             if self.static_route is not None:
-                self.sendline(f"ip route add {self.static_route}")
-                self.expect(self.prompt)
+                for route in self.static_route.split(";"):
+                    self.sendline(f"ip route add {route}")
+                    self.expect(self.prompt)
 
     def turn_on_pppoe(self):
         self.sendline("cat > /etc/ppp/pppoe-server-options << EOF")
@@ -533,31 +534,21 @@ class DebianBox(linux.LinuxDevice):
 
         if self.static_route is not None:
             # TODO: add some ppint handle this more robustly
-            self.send(f"ip route del {self.static_route.split(' via ')[0]}; ")
-            self.sendline(f"ip route add {self.static_route}")
-            self.expect(self.prompt)
+            for route in self.static_route.split(";"):
+                self.send(f"ip route del {route.split(' via ')[0]}; ")
+                self.sendline(f"ip route add {route}")
+                self.expect(self.prompt)
 
     def setup_dnsmasq(self, config=None):
+        upstream_dns = self.mgmt_dns or "8.8.4.4"
         self.sendline("cat > /etc/dnsmasq.conf << EOF")
         self.sendline("local-ttl=60")
-        upstream_dns = "8.8.4.4"
-        if self.mgmt_dns:
-            upstream_dns = self.mgmt_dns
-        if self.auth_dns:
-            upstream_dns = "127.0.0.1"
+        self.sendline("no-resolv")
+        self.sendline("no-hosts")
+        self.sendline("local=/boardfarm.com/")
         self.sendline(f"server={upstream_dns}")
-        self.sendline("listen-address=127.0.0.1")
-        self.sendline(f"listen-address={self.gw}")
-        if self.gwv6 is not None:
-            self.sendline(f"listen-address={self.gwv6}")
-        self.sendline(
-            "addn-hosts=/etc/dnsmasq.hosts"
-        )  # all additional hosts will be added to dnsmasq.hosts
-        self.sendline(
-            f"auth-zone=boardfarm.com,{self.gw_ng.network},{self.ipv6_interface.network}"
-        )
-        self.sendline("auth-zone=google.com")
-        self.sendline(f"auth-server=wan.boardfarm.com,{self.iface_dut}")
+        self.sendline(f"interface={self.iface_dut}")
+        self.sendline("addn-hosts=/etc/dnsmasq.hosts")
         self.check_output("EOF")
         self.add_hosts(config=config)
         self.restart_dns_server()
