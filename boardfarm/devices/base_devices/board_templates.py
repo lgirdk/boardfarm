@@ -1,7 +1,7 @@
 """Generic Templates."""
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from boardfarm_lgi_shared.lib.ofw.dmcli import DMCLIAPI
 
@@ -100,6 +100,7 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
     mib: Optional[MIBTemplate] = None
     nw_utility: Optional[DeviceNwUtility] = None
     firewall: Optional[NwFirewall] = None
+    tones_dict: Dict[str, Dict[str, str]] = {}
 
     @property
     def version(self) -> str:
