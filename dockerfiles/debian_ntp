@@ -1,0 +1,11 @@
+FROM debian_ssh_server
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xinetd=1:2.3.15.3-1 \
+    ntp=1:4.2.8p12+dfsg-4 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i -E 's/disable.+= yes/disable         = no/' /etc/xinetd.d/time
+RUN sed  -i '/INTERNAL/a \        flags           = IPv6' /etc/xinetd.d/time
+
+CMD service xinetd start; service ntp start; /usr/sbin/sshd -D
