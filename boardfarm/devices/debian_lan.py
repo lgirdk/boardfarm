@@ -18,7 +18,7 @@ from termcolor import colored
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
-from boardfarm.lib.installers import apt_install, install_tshark
+from boardfarm.lib.installers import install_tshark
 from boardfarm.lib.linux_nw_utility import Ping
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture, tshark_read
 
@@ -100,13 +100,6 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline(f"pkill --signal 9 -f dhclient.*{self.iface_dut}")
         self.expect(self.prompt)
-        apt_install(self, "ndisc6 python-serial")
-        if 0 == self.expect(["Reading package", pexpect.TIMEOUT], timeout=60):
-            self.expect(self.prompt, timeout=60)
-        else:
-            logger.error("Failed to download packages, things might not work")
-            self.sendcontrol("c")
-            self.expect(self.prompt)
 
     def prepare_interface(self):
         # bring ip link down and up
