@@ -20,7 +20,7 @@ warnings.simplefilter("always", UserWarning)
 logger = logging.getLogger("bft")
 
 
-def apt_install(device, name, timeout=120, dpkg_options=""):
+def apt_install(device, name, timeout=120, dpkg_options="", force=False):
     """Install a package using apt-get.
 
     :param device: Object of DebianBox
@@ -45,6 +45,14 @@ def apt_install(device, name, timeout=120, dpkg_options=""):
     shim_prefix = (
         device.get_shim_prefix() if getattr(device, "get_shim_prefix", "") else ""
     )
+    deprecate(
+        "Installing Ppackages in a device is deprectated.\n",
+        removal_version=">= 2022.31.0",
+        category=UserWarning,
+    )
+    if not force:
+        # installing needs to be forced...
+        return
 
     _kill_stale_apt()
     for _ in range(2):

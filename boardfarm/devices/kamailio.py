@@ -209,13 +209,23 @@ EOF"""
             self.expect(r"\(y\/n\)\:", timeout=60)
             self.sendline("y")
 
+    def _does_kamailio_exist(self) -> bool:
+        self.sendline("kamailio -v")
+        res = self.expect(
+            [
+                "kamailio: (command not found|No such file or directory)",
+                "version: kamailio",
+            ]
+        )
+        self.expect(self.prompt)
+        return res != 0
+
     def _kamailio_boot(self):
         """Method to accumulate all the boot functionalities."""
         try:
-            self.sipserver_kill()
-            self.sipserver_purge()
+            if not self._does_kamailio_exist():
+                self.sipserver_install()
             rtpproxy_stop(self)
-            self.sipserver_install()
             self.sipserver_configuration()
             self.generate_kamailio_cfg()
             self.sipserver_kill()
