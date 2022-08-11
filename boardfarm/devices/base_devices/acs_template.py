@@ -1,7 +1,10 @@
 from abc import abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
+
+SpvObject = Dict[str, Union[str, int, bool]]
+SpvStructure = List[SpvObject]
 
 
 class AcsTemplate(metaclass=__MetaSignatureChecker):
@@ -49,7 +52,7 @@ class AcsTemplate(metaclass=__MetaSignatureChecker):
         """
 
     @abstractmethod
-    def SPV(self, cpe_id: str, key_value: List[Dict[str, str]]) -> int:
+    def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
         """Send SetParamaterValues command via ACS server.
 
         :param cpe_id: CPE idetifier.

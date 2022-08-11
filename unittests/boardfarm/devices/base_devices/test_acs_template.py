@@ -2,7 +2,7 @@ from typing import Dict, List
 
 import pytest
 
-from boardfarm.devices.base_devices.acs_template import AcsTemplate
+from boardfarm.devices.base_devices.acs_template import AcsTemplate, SpvStructure
 
 
 def test_cannot_instantiate_abc_acs():
@@ -25,7 +25,7 @@ def test_cannot_instantiate_derived_acs_missing_model():
             def GPV(self, cpe_id: str, parameter: str) -> None:
                 pass
 
-            def SPV(self, cpe_id: str, key_value: List[Dict[str, str]]) -> int:
+            def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
                 pass
 
         acs = MyAcs()  # noqa: F841
@@ -48,7 +48,7 @@ def test_cannot_instantiate_derived_acs_incorrect_signature():
             def GPV(self, parameter: str):
                 pass
 
-            def SPV(self, cpe_id: str, key_value: List[Dict[str, str]]) -> int:
+            def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
                 pass
 
         acs = MyAcs()  # noqa: F841
@@ -71,7 +71,7 @@ def test_can_instantiate_derived_acs_with_correct_structure():
         def GPV(self, cpe_id: str, parameter: str) -> None:
             pass
 
-        def SPV(self, cpe_id: str, key_value: List[Dict[str, str]]) -> int:
+        def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
             pass
 
     acs = MyAcs()  # noqa: F841
