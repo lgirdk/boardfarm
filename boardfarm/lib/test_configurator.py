@@ -3,6 +3,7 @@ import logging
 import os
 import re
 
+import httpx
 import six
 
 import boardfarm
@@ -71,17 +72,20 @@ def get_station_config(location=None, ignore_redir=False):
 
 def read_station_config(location):
     """
+    Get the boards inventory.
+
     Given a location (ether "http://..." or file path) for a config file
     of boardfarm stations, read it, and process it as JSON.
     """
     if location.startswith("http"):
-        data = BoardfarmWebClient(
+        _res = httpx.get(
             location,
-            bf_version=boardfarm.__version__,
-            debug=os.environ.get("BFT_DEBUG", False),
-        ).bf_config_str
+            auth=tuple(os.environ.get("LDAP_CREDENTIALS").split(";")),
+        )
+        _res.raise_for_status()
+        data = _res.text
     else:
-        data = open(location).read()
+        data = open(location, encoding="utf-8").read()
 
     return json.loads(data)
 
