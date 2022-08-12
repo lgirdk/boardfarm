@@ -161,7 +161,7 @@ def filter_station_config(
             if (
                 len(board_names) != 1
                 and "available_for_autotests" in boardfarm_config[b]
-                and boardfarm_config[b]["available_for_autotests"] == False
+                and boardfarm_config[b]["available_for_autotests"] is False
             ):
                 # Skip this board
                 continue
