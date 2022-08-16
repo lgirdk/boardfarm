@@ -1304,6 +1304,6 @@ if __name__ == "__main__":
         raise
     except Exception as e:
         logger.error("==== Received UNEXPECTED exception:======")
-        logger.debug(pprint(e))
+        logger.debug(e)
         logger.debug("=========================================")
         raise
