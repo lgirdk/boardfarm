@@ -502,7 +502,7 @@ def parse():
     if args.golden:
         config.golden = args.golden
     config.golden_master_results = {}
-    if config.golden is not []:
+    if config.golden != []:
         import requests
 
         for g in config.golden:
