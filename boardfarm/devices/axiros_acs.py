@@ -1299,7 +1299,7 @@ if __name__ == "__main__":
         pprint(ret)
     except TR069FaultCode as fault:
         logger.error("==== Received TR069FaultCode exception:====")
-        logger.debug(pprint(fault.faultdict))
+        logger.debug(fault.faultdict)
         logger.debug("=========================================")
         raise
     except Exception as e:
