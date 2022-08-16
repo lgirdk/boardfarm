@@ -73,7 +73,7 @@ class HTTPResult:
             else:
                 raw = re.findall(r"\<\!.*\>", response, re.S)[0]
                 code = re.findall(r"< HTTP\/.*\s(\d+)", response)[0]
-                beautified_text = print(BeautifulSoup(raw, "html.parser").prettify())
+                beautified_text = BeautifulSoup(raw, "html.parser").prettify()
                 return raw, code, beautified_text
 
         self.raw, self.code, self.beautified_text = parse_response(response)
