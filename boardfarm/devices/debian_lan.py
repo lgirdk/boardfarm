@@ -150,18 +150,13 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline("rm /var/lib/dhcp/dhclient.leases")
         self.expect(self.prompt)
+        # TODO: remove the whole thing once LAN image is cleaned up.
         if self.mgmt_dns is not None:
             self.sendline(
                 "sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf"
                 % str(self.mgmt_dns)
             )
             self.expect(self.prompt)
-            self.sendline(
-                'echo "append domain-name-servers %s;" >> /etc/dhcp/dhclient.conf'
-                % str(self.mgmt_dns)
-            )
-            self.expect(self.prompt)
-
         self.configure_dhclient((["60", True], ["61", True]))
 
         install_tshark(self)
