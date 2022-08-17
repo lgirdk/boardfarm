@@ -374,7 +374,7 @@ EOF"""
         self.expect(self.prompt)
 
         # can't provision without this, so let's ignore v6 if that's the case
-        if tftp_server is None or self.dev.board.cm_cfg.cm_configmode == "ipv4":
+        if tftp_server is None:
             self.sendline("rm /etc/dhcp/dhcpd6.conf." + board_config.get_station())
             self.expect(self.prompt)
 
@@ -528,10 +528,10 @@ EOF"""
         self.sendline(to_send)
         self.expect(self.prompt)
 
-        self.sendline("rm /etc/dhcp/dhcpd.conf." "" + board_config.get_station())
+        self.sendline(f"rm /etc/dhcp/dhcpd.conf.{board_config.get_station()}")
         self.expect(self.prompt)
 
-        cfg_file = "/etc/dhcp/dhcpd.conf-" + board_config.get_station()
+        cfg_file = f"/etc/dhcp/dhcpd.conf-{board_config.get_station()}"
 
         # zero out old config
         self.sendline(f"cp /dev/null {cfg_file}")
@@ -543,13 +543,6 @@ EOF"""
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config["extra_provisioning"].items():
-            # skip only erouter for ipv6/disabled only
-            if (
-                self.dev.board.cm_cfg.cm_configmode
-                in ("bridge", "disabled", "dslite", "ipv6")
-                and dev == "erouter"
-            ):
-                continue
             self.sendline(
                 "echo 'host %s-%s {' >> %s"
                 % (dev, board_config.get_station(), cfg_file)
@@ -565,12 +558,13 @@ EOF"""
             self.sendline("echo '}' >> %s" % cfg_file)
 
         self.sendline(
-            "mv " + cfg_file + " /etc/dhcp/dhcpd.conf." + board_config.get_station()
+            f"mv {cfg_file} /etc/dhcp/dhcpd.conf.{board_config.get_station()}"
         )
+
         self.expect(self.prompt)
 
         if tftp_server is None:
-            self.sendline("rm /etc/dhcp/dhcpd.conf." + board_config.get_station())
+            self.sendline(f"rm /etc/dhcp/dhcpd.conf.{board_config.get_station()}")
             self.expect(self.prompt)
 
         # combine all configs into one
