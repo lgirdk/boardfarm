@@ -26,11 +26,11 @@ class DeviceManager:
         :param device_type: device type
         :returns: devices of given type
         """
-        devices = {}
-        for name, plugin in self._plugin_manager.list_name_plugin():
-            if isinstance(plugin, device_type):
-                devices[name] = plugin
-        return devices
+        return {
+            name: plugin
+            for name, plugin in self._plugin_manager.list_name_plugin()
+            if isinstance(plugin, device_type)
+        }
 
     def get_device_by_type(self, device_type: Type[T]) -> T:
         """Get first device of the given type.
