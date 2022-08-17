@@ -1,3 +1,20 @@
+## 2022.33.0 (2022-08-17)
+
+### Feat
+
+- can read the inventory.json from web location
+- add tones_dict to sw template
+- **DeviceManager.py**: add ssam client to device manager
+
+### Fix
+
+- **debian_lan**: fix dhclient-script issue
+- pylint issue == to is
+- do not install packages
+- **debian_sipcenter**: add bind.so to sipcenter
+- **debian**: fix dnsmasq configuration
+- **__init__.py**: remove argument model
+
 ## 2022.31.0 (2022-08-03)
 
 ### Fix
@@ -12,10 +29,6 @@
 
 ## 2022.29.0 (2022-07-20)
 
-### Refactor
-
-- sonarQ reporting moved to cicd
-
 ### Feat
 
 - **kea_dhcp**: allow multiple host reservations
@@ -24,7 +37,16 @@
 
 - **devices:kamailio.py**: fix the sipserver_user_add function to take the correct password for a sip user
 
+### Refactor
+
+- sonarQ reporting moved to cicd
+
 ## 2022.27.0 (2022-07-07)
+
+### Feat
+
+- **platform/debian**: add ptr record suppport
+- **DeviceManager**: add enum for olt
 
 ### Fix
 
@@ -32,22 +54,17 @@
 - fix wifi board fail at post boot
 - invoke power off on board.hw
 
-### Feat
-
-- **platform/debian**: add ptr record suppport
-- **DeviceManager**: add enum for olt
-
 ## 2022.25.0 (2022-06-20)
-
-### Fix
-
-- **dhcp.py**: add timeout for parse_dhcp_trace
-- dnsmasq not starting when "auth-zone=" in .conf
 
 ### Feat
 
 - **bft_pexepct_helper**: add check_output
 - **pylint**: bump pylint to 2.14.1
+
+### Fix
+
+- **dhcp.py**: add timeout for parse_dhcp_trace
+- dnsmasq not starting when "auth-zone=" in .conf
 
 ## 2022.23.0 (2022-06-08)
 
@@ -56,16 +73,20 @@
 - **devices:base_devices:mib_template.py**: add sw_update_table_mib to the mib template of the BoardSWTemplate
 - **env_helper.py**: add get_board_gui_language
 
-### Refactor
-
-- **voice.py,-wifi.py**: add voice resources and wifi resources
-
 ### Fix
 
 - **debian_dns**: update apt libraries' version
 - **quagga**: allows addition of more interfaces
 
+### Refactor
+
+- **voice.py,-wifi.py**: add voice resources and wifi resources
+
 ## 2022.21.0 (2022-05-25)
+
+### Feat
+
+- **kea_provisioner**: add HTTP APIs for DHCP
 
 ### Fix
 
@@ -74,23 +95,19 @@
 - **debian_wan**: add option to set static ipv6 route
 - **lib:env_helper.py**: fix failures with provisioner dhcp options
 
-### Feat
-
-- **kea_provisioner**: add HTTP APIs for DHCP
-
 ## 2022.19.0 (2022-05-11)
-
-### Fix
-
-- **lib:SNMPv2.py**: fix parse_snmp_output for IndexError
-- **dockerfiles**: fix missing debian binay packages
-- **networking.py**: fix off by one bug related to /32 subnet
 
 ### Feat
 
 - **use_cases:dhcp.py**: implement usecases to configure and trigger dhcpinform packets
 - **debian_lan,debian_wan**: add support to add webfs server
 - add debian_kea_provisioner dockerfile
+
+### Fix
+
+- **lib:SNMPv2.py**: fix parse_snmp_output for IndexError
+- **dockerfiles**: fix missing debian binay packages
+- **networking.py**: fix off by one bug related to /32 subnet
 
 ### Refactor
 
@@ -118,12 +135,6 @@
 
 ## 2022.15.0 (2022-04-14)
 
-### Fix
-
-- remove yamlfmt/yamllint from pre-commit
-- bumps the env version
-- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
-
 ### BREAKING CHANGE
 
 - MVX_TST-56392
@@ -138,7 +149,17 @@
 - add new api to resolve board type
 - **dhcp.py**: add DHCP parse Use Cases
 
+### Fix
+
+- remove yamlfmt/yamllint from pre-commit
+- bumps the env version
+- **pre-commit**: update pre-commit hooks to latest versions and autofix issues
+
 ## 2022.13.0 (2022-03-31)
+
+### BREAKING CHANGE
+
+- BOARDFARM-1734
 
 ### Feat
 
@@ -154,10 +175,6 @@
 ### Refactor
 
 - **dockerfiles**: Create dockerfile for each device and cleanup
-
-### BREAKING CHANGE
-
-- BOARDFARM-1734
 
 ## 2022.11.0 (2022-03-16)
 
@@ -180,6 +197,10 @@
 
 ## 2022.09.0 (2022-03-02)
 
+### BREAKING CHANGE
+
+- BOARDFARM-1500
+
 ### Feat
 
 - **debian_isc.py**: add support for invalid dhcp gateway
@@ -195,15 +216,7 @@
 - **voice.py**: reduce sleep time in makecall
 - **quagga_router.py**: update atexit call and docstrings
 
-### BREAKING CHANGE
-
-- BOARDFARM-1500
-
 ## 2022.07.0 (2022-02-16)
-
-### Refactor
-
-- **pyproject.toml**: freeze selenium dependency to 4.1.0
 
 ### Feat
 
@@ -217,6 +230,10 @@
 - **pyproject.toml**: freeze pyvirtualdisplay package version to 2.2
 - **pyproject.toml**: pin elasticsearch to stay compliant with api
 - increase cli size
+
+### Refactor
+
+- **pyproject.toml**: freeze selenium dependency to 4.1.0
 
 ## 2022.05.0 (2022-02-02)
 
@@ -237,6 +254,10 @@
 
 ## 2022.03.0 (2022-01-20)
 
+### BREAKING CHANGE
+
+- BOARDFARM-1456
+
 ### Feat
 
 - **devices:softphone.py**: implement the unimplemented usecases for softphone
@@ -254,21 +275,17 @@
 - **debian**: fix pexpect xterm env set
 - **installers**: minor fix on apt_install
 
+## 2022.01.0 (2022-01-05)
+
 ### BREAKING CHANGE
 
-- BOARDFARM-1456
-
-## 2022.01.0 (2022-01-05)
+- If using Docsis devices the latest Docsis change must be picked.
 
 ### Feat
 
 - get image use image_uri
 - **multicast**: add multicast usecases
 - **quagga**: add mrouted daemon
-
-### BREAKING CHANGE
-
-- If using Docsis devices the latest Docsis change must be picked.
 
 ### Fix
 
@@ -278,18 +295,18 @@
 
 ## 2021.51.0 (2021-12-22)
 
+### Feat
+
+- **quagga-pim**: add IGMP multicast routing for interface
+- enable/disable acs pcap capture
+- improved name discovery
+
 ### Fix
 
 - **devices:linux.py**: add fix to fetch erouter0/lan ipv6 on linux console when output is delayed/untidy after command execution
 - do not use get_pytest_name yet
 - fix test name fetching in acs intercept
 - **devices:debian_lan.py**: handle timeout error when tshark read is too long for failed lan renewal
-
-### Feat
-
-- **quagga-pim**: add IGMP multicast routing for interface
-- enable/disable acs pcap capture
-- improved name discovery
 
 ## 2021.49.0 (2021-12-09)
 
