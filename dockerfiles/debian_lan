@@ -38,4 +38,6 @@ EXPOSE 69/udp
 RUN rm -rf /var/www/html && ln -s /tftpboot /var/www/html
 EXPOSE 80/tcp
 
+COPY ./resources/dhclient-script /sbin/dhclient-script
+
 CMD service tftpd-hpa start; service lighttpd start; /usr/sbin/sshd -D

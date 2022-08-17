@@ -150,10 +150,6 @@ class DebianLAN(debian.DebianBox):
         self.expect(self.prompt)
         self.sendline("rm /var/lib/dhcp/dhclient.leases")
         self.expect(self.prompt)
-        self.sendline(
-            "sed -e 's/mv -f $new_resolv_conf $resolv_conf/cat $new_resolv_conf > $resolv_conf/g' -i /sbin/dhclient-script"
-        )
-        self.expect(self.prompt)
         if self.mgmt_dns is not None:
             self.sendline(
                 "sed '/append domain-name-servers %s/d' -i /etc/dhcp/dhclient.conf"
