@@ -93,7 +93,7 @@ make_resolv_conf() {
             done
         fi
         # Append old nameservers either way
-        sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf | head -n 4 >> $new_resolv_conf
+        sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf | head -n 2 >> $new_resolv_conf
 
     if [ -f $resolv_conf ]; then
         chown --reference=$resolv_conf $new_resolv_conf
@@ -126,7 +126,7 @@ make_resolv_conf() {
             done
         fi
         # Append old nameservers either way
-        sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf | head -n 4 >> $new_resolv_conf
+        sed -n /^\w*[Nn][Aa][Mm][Ee][Ss][Ee][Rr][Vv][Ee][Rr]/p $resolv_conf | head -n 2 >> $new_resolv_conf
 
     if [ -f $resolv_conf ]; then
             chown --reference=$resolv_conf $new_resolv_conf
