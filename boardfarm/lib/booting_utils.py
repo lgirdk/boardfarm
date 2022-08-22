@@ -2,10 +2,9 @@
 Utils file for functions that are used in booting process.
 Created in order to keep booting.py implementation as clean as possible
 """
-import logging
 import time
 
-logger = logging.getLogger("bft")
+from loguru import logger
 
 
 def check_and_connect_to_wifi(devices, wifi_client_data: dict) -> None:
@@ -14,6 +13,7 @@ def check_and_connect_to_wifi(devices, wifi_client_data: dict) -> None:
     :param devices: device manager
     :param wifi_client_data: wifi client config dict from envvironment definition
     """
+
     wifi = devices.board.wifi
     # Get desired wlan details from env definition
     band = wifi_client_data.get("band")
@@ -66,18 +66,19 @@ def check_and_connect_to_wifi(devices, wifi_client_data: dict) -> None:
         return
 
     # Connect appropriate client to the network
-    try:
-        wlan_client = devices.wlan_clients.filter(network, band)[0]
-        wlan_client.wifi_client_connect(
-            ssid_name=ssid,
-            password=password,
-            bssid=bssid,
-            security_mode=authentication,
-        )
-        wlan_client.configure_proxy_pkgs()
+    if wifi_client_data.get("connect_wifi"):
+        try:
+            wlan_client = devices.wlan_clients.filter(network, band)[0]
+            wlan_client.wifi_client_connect(
+                ssid_name=ssid,
+                password=password,
+                bssid=bssid,
+                security_mode=authentication,
+            )
+            wlan_client.configure_proxy_pkgs()
 
-    except AssertionError as e:
-        logger.error(e)
-        logger.error(
-            f"Unable to connect to {band} GHz {network} network: connection error"
-        )
+        except AssertionError as e:
+            logger.exception(
+                f"Unable to connect to {band} GHz {network} network: connection error"
+            )
+            raise AssertionError from e
