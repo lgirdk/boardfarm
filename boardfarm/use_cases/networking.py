@@ -1,5 +1,4 @@
-"""All APIs are independent of board under test.
-"""
+"""All APIs are independent of board under test."""
 import ipaddress
 import logging
 import re
@@ -34,7 +33,7 @@ logger = logging.getLogger("bft")
 
 @dataclass
 class IPAddresses:
-    """This is an IP address data classes to hold ip objects or None."""
+    """This is an IP address data classes to hold IP objects or None."""
 
     ipv4: Optional[IPv4Address]
     ipv6: Optional[IPv6Address]
@@ -43,15 +42,20 @@ class IPAddresses:
 
 @dataclass
 class ICMPPacketData:
-    """ICMP packet data class to hold all the packet information specific to ICMP packets
-    source and destination could be either ipv4 or ipv6 addresses
-    query_code defines the type of message received or sent and could be among the following:
-        Type 0 = Echo Reply
-        Type 8 = Echo Request
-        Type 9 = Router Advertisement
-        Type 10 = Router Solicitation
-        Type 13 = Timestamp Request
-        Type 14 = Timestamp Reply
+    """ICMP packet data class.
+
+    To hold all the packet information specific to ICMP packets.
+
+    ``source`` and ``destination`` could be either ipv4 or ipv6 addresses.
+    ``query_code`` defines the type of message received or sent and could be
+    among the following:
+
+        * Type 0 = Echo Reply
+        * Type 8 = Echo Request
+        * Type 9 = Router Advertisement
+        * Type 10 = Router Solicitation
+        * Type 13 = Timestamp Request
+        * Type 14 = Timestamp Reply
     """
 
     source: IPAddresses
@@ -85,13 +89,13 @@ def start_http_server(
     port: Union[int, str],
     ip_version: Union[str, int],
 ) -> None:
-    """start http server on given client.
+    """Start http server on given client.
 
     :param device: device on which server will start
     :type device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param port: port on which the server listen for incomming connections
     :type port: Union[int, str]
-    :param ip_version: ip version of server values can strictly be 4 or 6
+    :param ip_version: IP version of server values can strictly be 4 or 6
     :type ip_version: Union[str, int]
     :raises CodeError: wrong ip_version value is given in api call
     :raises UseCaseFailure: if the port is being used by other process
@@ -109,7 +113,8 @@ def start_http_server(
         device.kill_process(process_id, 9)  # kill forefully
     if device.get_nw_process_pid("", str(port), ip_version):
         raise UseCaseFailure(
-            f"Cannot proceed to start http server as port={port} is still in use, try another port"
+            f"Cannot proceed to start http server as port={port} is still in use, "
+            "try another port"
         )
     try:
         command_params = f"-F -p {port} -{ip_version} &"
@@ -128,7 +133,8 @@ def start_http_server(
 
 @contextmanager
 def start_wan_ipv6_http_server(port: int = 9001) -> str:
-    """To start wan http server.
+    """To start a WAN HTTP server.
+
     :param mode: mode to run the server ipv6/ipv4
     :type mode: string
     :param port: port in which the http server should run
@@ -163,6 +169,7 @@ EOF"""
 
 def is_wan_http_server_running() -> bool:
     """To check if wan http server is running.
+
     :return: True/False
     :rtype: bool
     """
@@ -203,13 +210,15 @@ def http_get(
 def tcpdump_on_board(
     fname: str, interface: str, filters: str = ""
 ) -> Generator[str, None, None]:
-    """Contextmanager to start the tcpdump on the board console and kills the
-    process outside its scope
+    """Contextmanager to perform tcpdump on the board.
+
+    Start ``tcpdump`` on the board console and kill it outside its scope
 
     Args:
         fname (str): the filename or the complete path of the resourcel
         interface (str): interface name on which the tcp traffic will listen to
-        filters (str, optional): Additional filters for the tcpdump command. Defaults to "".
+        filters (str, optional): Additional filters for the tcpdump command.
+        Defaults to "".
 
     Yields:
         Generator[str, None, None]: Yields the process id of the tcp capture started
@@ -226,16 +235,18 @@ def tcpdump_on_board(
 def read_tcpdump_from_board(
     fname: str, protocol: str = "", opts: str = "", rm_pcap=True
 ) -> str:
-    """Read the tcpdump packets and deletes the capture file after read
+    """Read the tcpdump packets and delete the capture file afterwards.
 
-    Args:
-        fname (str): filename or the complete path of the pcap file
-        protocol (str, optional): protocol to filter. Defaults to ""
-        opts (str, optional): [description]. Defaults to "".
-        rm_pcap (bool, optional): [description]. Defaults to True.
-
-    Returns:
-        str: Output of tcpdump read command
+    :param fname: filename or the complete path of the pcap file
+    :type fname: str
+    :param protocol: protocol to filter, defaults to ""
+    :type protocol: str, optional
+    :param opts: _description_, defaults to ""
+    :type opts: str, optional
+    :param rm_pcap: _description_, defaults to True
+    :type rm_pcap: bool, optional
+    :return: Output of tcpdump read command
+    :rtype: str
     """
     board = get_device_by_name("board")
     return board.nw_utility.read_tcpdump(
@@ -246,13 +257,18 @@ def read_tcpdump_from_board(
 def perform_scp_action_on_board(
     path_on_board: str, path_on_host: str, which_host: str, action: str
 ) -> None:
-    """Allows you to securely copy files and directories between the board and the remote host
+    """Copy files and directories between the board and the remote host.
 
-    Args:
-        path_on_board (str): Path on the board
-        path_on_host (str): Path on the remote host
-        which_host (str): name of the remote host i.e lan, lan2, wan
-        action (str): scp action to perform i.e upload, download
+    Copy is made over SSH.
+
+    :param path_on_board: Path on the board
+    :type path_on_board: str
+    :param path_on_host: Path on the remote host
+    :type path_on_host: str
+    :param which_host: name of the remote host i.e lan, lan2, wan
+    :type which_host: str
+    :param action: scp action to perform i.e upload, download
+    :type action: str
     """
     (src, dst) = (
         (path_on_board, path_on_host)
@@ -273,15 +289,17 @@ def perform_scp_action_on_board(
 
 
 def get_traceroute_from_board(host_ip, version="", options="") -> str:
-    """Runs the Traceroute command on board console to a host ip and returns the route packets take to a network host
+    """Run the ``traceroute`` on board console.
+
+    Returns the route packets take to a network host.
 
     Args:
-        host_ip (str): ip address of the host
+        host_IP (str): IP address of the host
         version (str): Version of the traceroute command. Defaults to "".
         options (str): Additional options in the command. Defaults to "".
 
     Returns:
-        dict: Return the entire route to the host ip from linux device
+        dict: Return the entire route to the host IP from linux device
     """
     board = get_device_by_name("board")
     return board.nw_utility.traceroute_host(host_ip)
@@ -290,7 +308,8 @@ def get_traceroute_from_board(host_ip, version="", options="") -> str:
 def parse_icmp_trace(
     device: Union[DebianLAN, DebianWAN, DebianWifi], fname: str
 ) -> List[ICMPPacketData]:
-    """Reads and Filters out the ICMP packets from the pcap file with fields
+    """Read and Filter out the ICMP packets from the pcap file with fields.
+
     Source, Destinationa and Code of Query Type
 
     :param device: Object of the device class where tcpdump is captured
@@ -331,20 +350,25 @@ def parse_icmp_trace(
 def is_icmp_packet_present(
     captured_sequence: List[ICMPPacketData], expected_sequence: List[ICMPPacketData]
 ) -> bool:
-    """Checks whether the expected ICMP sequence matches with the captured sequence or not
+    """Check whether the expected ICMP sequence matches with the captured sequence.
 
     :param captured_sequence: Sequence of ICMP packets filtered from captured pcap file
     :type captured_sequence: List[ICMPPacketData]
-    :param expected_sequence: Example for IPv4 source and destination and query_code as 8(Echo Request)
-                            [
-                                ICMPPacketData(
-                                    IPAddresses(IPv4Address("172.25.1.109"),None,None),
-                                    IPAddresses(IPv4Address("192.168.178.22"),None,None),
-                                    8
-                                ),
-                            ]
+    :param expected_sequence: Example for IPv4 source and destination and ``query_code``
+        as 8 (Echo Request)
+
+            .. code-block:: python
+
+                [
+                    ICMPPacketData(
+                        IPAddresses(IPv4Address("172.25.1.109"),None,None),
+                        IPAddresses(IPv4Address("192.168.178.22"),None,None),
+                        8
+                    ),
+                ]
+
     :type expected_sequence: List[ICMPPacketData]
-    :return: Return True if ICMP expected sequences matches with the captured sequence else False
+    :return: True if ICMP expected sequences matches with the captured sequence
     :rtype: bool
     """
     last_check = 0
@@ -376,13 +400,13 @@ def is_client_ip_in_pool(
     pool_bounds: Tuple[ipaddress.IPv4Address, ipaddress.IPv4Address],
     client: Union[DebianLAN, DebianWifi, DebianWAN],
 ) -> bool:
-    """Check for client ip in ip pool.
+    """Check for client IP in IP pool.
 
-    :param pool_bounds: lowest and highest ip from dhcp pool
+    :param pool_bounds: lowest and highest IP from dhcp pool
     :type pool_bounds: Tuple[ipaddress.IPv4Address, ipaddress.IPv4Address]
     :param device: devices which are to be check
     :type device: Union[DebianLAN, DebianWifi, DebianWAN]
-    :return: True if lan/wifilan ip is lowest in pool range
+    :return: True if lan/wifilan IP is lowest in pool range
     :rtype: bool
     """
     lan_ip_address = ipaddress.IPv4Address(
@@ -395,11 +419,12 @@ def is_client_ip_in_pool(
 def set_static_ip_from_rip_config(
     ip_address: IPv4Address, client: Union[DebianLAN, DebianWifi], rip_iface_index: int
 ) -> None:
-    """Set static ip for lan, wifiLan clients based on ripv2 configs
+    """Set static IP for lan, wifiLan clients based on ripv2 configs.
 
-    :param ip_address: ip address to be assigned to client interface
+    :param ip_address: IP address to be assigned to client interface
     :type ip_address: IPv4Address
-    :param rip_iface_index: index of rip interface, value can be 1or 4 [1 for erouter0 and 4 for primary lan]
+    :param rip_iface_index: index of rIP interface, value can be 1 or 4
+        [1 for erouter0 and 4 for primary lan]
     :type rip_iface_index: int
     :param client: lan or wifiLan client for which it is required to set static ip
     :type client: Union[DebianLAN, DebianWifi]
@@ -413,7 +438,7 @@ def set_static_ip_from_rip_config(
 def resolve_dns(
     host: Union[DebianLAN, DebianWAN, DebianWifi], domain_name: str
 ) -> List[Dict[str, Any]]:
-    """perform dig command in the devices to resolve dns
+    """Perform ``dig`` command in the devices to resolve DNS.
 
     :param host: host where the dig command has to be run
     :type host: Union[DebianLAN, DebianWAN,DebianWifi]
@@ -431,9 +456,9 @@ def resolve_dns(
 
 
 def dhcp_renew_ipv4_and_get_ipv4(host: Union[DebianLAN, DebianWifi]) -> IPv4Address:
-    """release and renew ipv4 in the device and return IPV4
+    """Release and renew ipv4 in the device and return IPV4.
 
-    :param host: host where the ip has to be renewed
+    :param host: host where the IP has to be renewed
     :type host:  Union[DebianLAN,DebianWifi]
     :return: ipv4 address of the device
     :rtype: IPv4Address
@@ -450,9 +475,9 @@ def dhcp_renew_ipv4_and_get_ipv4(host: Union[DebianLAN, DebianWifi]) -> IPv4Addr
 def dhcp_renew_stateful_ipv6_and_get_ipv6(
     host: Union[DebianLAN, DebianWifi]
 ) -> IPv6Address:
-    """release and renew stateful ipv6 in the device and return IPV6
+    """Release and renew stateful ipv6 in the device and return IPV6.
 
-    :param host: host where the ip has to be renewed
+    :param host: host where the IP has to be renewed
     :type host:  Union[DebianLAN,DebianWifi]
     :return: ipv6 address of the device
     :rtype: IPv6Address
@@ -469,9 +494,9 @@ def dhcp_renew_stateful_ipv6_and_get_ipv6(
 def dhcp_renew_ipv6_stateless_and_get_ipv6(
     host: Union[DebianLAN, DebianWifi]
 ) -> IPv6Address:
-    """release and renew stateless ipv6 in the device and return IPV6
+    """Release and renew stateless ipv6 in the device and return IPV6.
 
-    :param host: host where the ip has to be renewed
+    :param host: host where the IP has to be renewed
     :type host:  Union[DebianLAN,DebianWifi]
     :return: ipv6 address of the device
     :rtype: IPv6Address
@@ -491,11 +516,11 @@ def block_ipv4_traffic(
     device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
     destination: Union[str, IPv4Address],
 ) -> None:
-    """block the traffic to and from the destination address
+    """Block the traffic to and from the destination address.
 
     :param device: device class object
     :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
-    :param destination: destination ip or the corresponding domain name to be blocked
+    :param destination: destination IP or the corresponding domain name to be blocked
     :type destination: Union[str,IPv4Address]
     """
     device.firewall.add_drop_rule_iptables("-s", destination)
@@ -506,11 +531,11 @@ def block_ipv6_traffic(
     device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
     destination: Union[str, IPv6Address],
 ) -> None:
-    """block the traffic to and from the destination address
+    """Block the traffic to and from the destination address.
 
     :param device: device class object
     :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
-    :param destination: destination ip or the corresponding domain name to be blocked
+    :param destination: destination IP or the corresponding domain name to be blocked
     :type destination: Union[str,IPv6Address]
     """
     device.firewall.add_drop_rule_ip6tables("-s", destination)
@@ -521,11 +546,11 @@ def unblock_ipv4_traffic(
     device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
     destination: Union[str, IPv4Address],
 ) -> None:
-    """unblock the traffic to and from the destination address on a device
+    """Unblock the traffic to and from the destination address on a device.
 
     :param device: device class object
     :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
-    :param destination: destination ip or the corresponding domain name to be unblocked
+    :param destination: destination IP or the corresponding domain name to be unblocked
     :type destination: Union[str,IPv4Address]
     """
     device.firewall.del_drop_rule_iptables("-s", destination)
@@ -536,11 +561,11 @@ def unblock_ipv6_traffic(
     device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
     destination: Union[str, IPv6Address],
 ) -> None:
-    """unblock the traffic to and from the destination address
+    """Unblock the traffic to and from the destination address.
 
     :param device: device class object
     :type device: Union[DebianLAN, DebianWAN, DebianWifi, AxirosACS, BoardSWTemplate]
-    :param destination: destination ip or the corresponding domain name to be unblocked
+    :param destination: destination IP or the corresponding domain name to be unblocked
     :type destination: Union[str,IPv6Address]
     """
     device.firewall.del_drop_rule_ip6tables("-s", destination)
