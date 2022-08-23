@@ -37,9 +37,11 @@
     [project.optional-dependencies]
         dev = [
             "black",
-            "commitizen >=2.20.0",
+            "commitizen>=2.20.0",
             "flake8",
             "flake8-bugbear",
+            "flake8-builtins",
+            "flake8-comprehensions",
             "flake8-docstrings",
             "flake8-rst",
             "flake8-rst-docstrings",
@@ -49,7 +51,7 @@
             "pylint",
             "types-ipaddress",
             "types-termcolor",
-            "types-requests"
+            "types-requests",
         ]
         doc = ["sphinx"]
         test = [
@@ -63,11 +65,11 @@
         boardfarm = "boardfarm.main:main"
 
     [project.entry-points."boardfarm"]
-        core = "boardfarm.plugins.core"
+        core    = "boardfarm.plugins.core"
         devices = "boardfarm.plugins.devices"
 
-    [project.urls]
-        Source = "https://github.com/lgirdk/boardfarm"
+[project.urls]
+    Source = "https://github.com/lgirdk/boardfarm"
 
 [tool.commitizen]
     bump_message = "Bump version to $new_version"
@@ -96,13 +98,13 @@
     profile = "black"
 
 [tool.mypy]
-    pretty = true
-    no_strict_optional = true
+    disallow_untyped_defs  = true
     ignore_missing_imports = true
-    warn_redundant_casts = true
-    warn_unreachable = true
-    disallow_untyped_defs = true
-    show_error_codes = true
+    no_strict_optional     = true
+    pretty                 = true
+    show_error_codes       = true
+    warn_redundant_casts   = true
+    warn_unreachable       = true
 
 [tool.tbump]
     # Uncomment this if your project is hosted on GitHub:
