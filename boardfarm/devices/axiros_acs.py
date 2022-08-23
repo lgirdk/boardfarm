@@ -50,17 +50,15 @@ class AxirosACS(LinuxDevice, ACS):
     _cpeid: str = ""
 
     def __init__(self, config: Dict, cmdline_args: Namespace):
-        """Initialize the variable that are used in establishing connection to the ACS and\
-           Initialize an HTTP SOAP client which will authenticate with the ACS server.
+        """Initialize the AxirosACS.
 
-        :param ``*args``: the arguments to be used if any
-        :type ``*args``: tuple
-        :param ``**kwargs``: extra args to be used if any
-            (mainly contains username, password, ipadress and port)
-        :type ``**kwargs``: dict
+        :param config: the device configuration
+        :type config: dict
+        :param cmdline_args: command line arguments
+        :type cmdline_args: argparse.Namespace
         """
         super().__init__(config, cmdline_args)
-        self._cpeid: str = config.get("cpe_id")
+        self._cpeid: str = str(config.get("cpe_id"))
         self._client: Optional[zeep.Client] = None
         if "options" not in self._config:
             return

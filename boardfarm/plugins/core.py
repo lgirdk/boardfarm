@@ -70,7 +70,7 @@ def _get_device_name_from_user(
     print("----------------------------------------------")
     print("ID  Device name      Device type      Consoles")
     print("----------------------------------------------")
-    device_names = sorted(list(devices_dict.keys()))
+    device_names = sorted(devices_dict.keys())
     for i, device_name in enumerate(device_names, start=1):
         device = devices_dict.get(device_name)
         num_consoles = len(device.get_interactive_consoles())
@@ -99,7 +99,7 @@ def _get_console_name_from_user(
 ) -> str:
     """Get device console name from user."""
     console_name = None
-    console_names = sorted(list(consoles.keys()))
+    console_names = sorted(consoles.keys())
     while True:
         if not console_names:
             print(
