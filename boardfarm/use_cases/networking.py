@@ -168,7 +168,7 @@ EOF"""
 
 
 def is_wan_http_server_running() -> bool:
-    """To check if wan http server is running.
+    """To check if WAN HTTP server is running.
 
     :return: True/False
     :rtype: bool
@@ -214,14 +214,14 @@ def tcpdump_on_board(
 
     Start ``tcpdump`` on the board console and kill it outside its scope
 
-    Args:
-        fname (str): the filename or the complete path of the resourcel
-        interface (str): interface name on which the tcp traffic will listen to
-        filters (str, optional): Additional filters for the tcpdump command.
-        Defaults to "".
-
-    Yields:
-        Generator[str, None, None]: Yields the process id of the tcp capture started
+    :param fname: the filename or the complete path of the resource
+    :type fname: str
+    :param interface: interface name on which the tcp traffic will listen to
+    :type interface: str
+    :param filters: Additional filters for the tcpdump command, defaults to ""
+    :type filters: str, optional
+    :yield: Yields the process id of the tcp capture started
+    :rtype: Generator[str, None, None]
     """
     pid: str = ""
     board = get_device_by_name("board")
@@ -293,13 +293,14 @@ def get_traceroute_from_board(host_ip, version="", options="") -> str:
 
     Returns the route packets take to a network host.
 
-    Args:
-        host_IP (str): IP address of the host
-        version (str): Version of the traceroute command. Defaults to "".
-        options (str): Additional options in the command. Defaults to "".
-
-    Returns:
-        dict: Return the entire route to the host IP from linux device
+    :param host_ip: IP address of the host
+    :type host_ip: :str
+    :param version: Version of the traceroute command, defaults to ""
+    :type version: str, optional
+    :param options: Additional options in the command, defaults to ""
+    :type options: str, optional
+    :return: Return the entire route to the host IP from linux device
+    :rtype: str
     """
     board = get_device_by_name("board")
     return board.nw_utility.traceroute_host(host_ip)
