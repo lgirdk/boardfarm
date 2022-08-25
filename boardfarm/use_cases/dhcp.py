@@ -94,7 +94,17 @@ def get_dhcp_packet_by_message(
 
     :param trace:  Sequence of DHCP packets filtered from captured pcap file and stored in DHCPTraceData
     :type trace: List[DHCPTraceData]
-    :param message_type: DHCP message according to RFC2132 and could be any of DHCPDISCOVER,DHCPOFFER,DHCPREQUEST,DHCPDECLINE,DHCPACK,DHCPACK,DHCPRELEASE,DHCPINFORM
+    :param message_type: DHCP message according to RFC2132 and could be any of:
+
+        * DHCPDISCOVER,
+        * DHCPOFFER,
+        * DHCPREQUEST,
+        * DHCPDECLINE,
+        * DHCPACK,
+        * DHCPACK,
+        * DHCPRELEASE,
+        * DHCPINFORM
+
     :type message_type: str
     :return: Sequence of DHCP packets filtered with the message type
     :rtype: List[DHCPTraceData]
