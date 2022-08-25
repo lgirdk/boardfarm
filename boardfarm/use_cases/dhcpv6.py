@@ -186,7 +186,22 @@ def get_dhcpv6_packet_by_message(
 
     :param trace: Sequence of DHCPV6 packets filtered from captured pcap file and stored in DHCPV6TraceData
     :type trace: List[DHCPV6TraceData]
-    :param message_type: DHCP message according to RFC3315 and could be any of SOLICIT,ADVERTISE,REQUEST,CONFIRM,RENEW,REBIND,REPLY,RELEASE,DECLINE,RECONFIGURE,INFORMATION-REQUEST,RELAY-FORW,RELAY-REPL
+    :param message_type: DHCP message according to RFC3315 and could be any of:
+
+        * SOLICIT,
+        * ADVERTISE,
+        * REQUEST,
+        * CONFIRM,
+        * RENEW,
+        * REBIND,
+        * REPLY,
+        * RELEASE,
+        * DECLINE,
+        * RECONFIGURE,
+        * INFORMATION-REQUEST,
+        * RELAY-FORW,
+        * RELAY-REPL
+
     :type message_type: str
     :return: Sequence of DHCPV6 packets filtered with the message type
     :rtype: List[DHCPV6TraceData]
