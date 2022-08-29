@@ -51,3 +51,7 @@ class TR069FaultCode(BoardfarmException):
 
 class UseCaseFailure(BoardfarmException):
     """Raise this on failures in use cases."""
+
+
+class NotSupportedError(BoardfarmException):
+    """Raise this on feature not supported."""
