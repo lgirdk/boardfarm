@@ -63,6 +63,17 @@ class ICMPPacketData:
     query_code: int
 
 
+@dataclass
+class IPerf3TrafficGenerator:
+    """This is an IPerf3TrafficGenerator data classes to hold sender/receiver
+    devices and their process ids."""
+
+    traffic_sender: Union[DebianLAN, DebianWifi, DebianWAN]
+    sender_pid: int
+    traffic_receiver: Union[DebianLAN, DebianWifi, DebianWAN]
+    receiver_pid: int
+
+
 class HTTPResult:
     def __init__(self, response: str):
         self.response = response
@@ -571,3 +582,372 @@ def unblock_ipv6_traffic(
     """
     device.firewall.del_drop_rule_ip6tables("-s", destination)
     device.firewall.del_drop_rule_ip6tables("-d", destination)
+
+
+def send_ipv6_traffic_from_wan_to_non_existing_endpoint(
+    wan_device: DebianWAN,
+    sink_ip_addr: Union[str, IPv6Address, IPv4Address],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+) -> IPerf3TrafficGenerator:
+    """Send IPv6 data traffic from WAN client to an invalid destination address.
+
+    :param wan_device: WAN device class object
+    :type wan_device: DebianWAN
+    :param sink_ip_addr: an unreachable ip address
+    :type sink_ip_addr: Union[str, IPv6Address, IPv4Address]
+    :param traffic_port: server port to connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP, defaults to False
+    :type udp_protocol: bool
+    :return: IPerf3TrafficGenerator data class that holds sender/receiver devices
+    and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    source_pid = wan_device.start_traffic_sender(
+        sink_ip_addr, traffic_port, ipv=6, udp_protocol=udp_protocol, time=time
+    )
+    return IPerf3TrafficGenerator(wan_device, source_pid, None, None)
+
+
+def initiate_v4_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers the ipv4 only
+    traffic from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip = destination_device.get_interface_ipaddr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=4, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip,
+        traffic_port,
+        ipv=4,
+        udp_protocol=udp_protocol,
+        time=time,
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def initiate_v6_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers the ipv6 only
+    traffic from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip6 = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip6,
+        traffic_port,
+        ipv=6,
+        udp_protocol=udp_protocol,
+        time=time,
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def initiate_bidirectional_ipv4_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers a
+    bidirectional ipv4 only traffic from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip = destination_device.get_interface_ipaddr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=4, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip,
+        traffic_port,
+        ipv=4,
+        udp_protocol=udp_protocol,
+        time=time,
+        direction="--bidir",
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def initiate_bidirectional_ipv6_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers a
+    bidirectional ipv6 only traffic from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip,
+        traffic_port,
+        ipv=6,
+        udp_protocol=udp_protocol,
+        time=time,
+        direction="--bidir",
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def initiate_downstream_ipv4_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers a
+    downstream ipv4 only traffic(server sends, client receives)
+    from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip,
+        traffic_port,
+        ipv=6,
+        udp_protocol=udp_protocol,
+        time=time,
+        direction="--reverse",
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def initiate_downstream_ipv6_traffic(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    traffic_port: int,
+    time: int,
+    udp_protocol: bool,
+    bind_sender_ip: Optional[str] = None,
+    bind_receiver_ip: Optional[str] = None,
+) -> IPerf3TrafficGenerator:
+    """Starts the iperf3 server on a traffic receiver and triggers a
+    downstream ipv6 only traffic(server sends, client receives)
+    from client device.
+
+    :param source_device: device class object of a iperf client
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: device class object of a iperf server
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param traffic_port: server port to listen on/connect to
+    :type traffic_port: int
+    :param time: time in seconds to transmit for
+    :type time: int
+    :param udp_protocol: use UDP rather than TCP
+    :type udp_protocol: bool
+    :param bind_sender_ip: bind to the interface associated with the
+        client address, defaults to None
+    :type bind_sender_ip: str, optional
+    :param bind_receiver_ip: bind to the interface associated with the
+        host address, defaults to None
+    :type bind_receiver_ip: str, optional
+    :return: IPerf3TrafficGenerator data class that holds
+        sender/receiver devices and their process ids
+    :rtype: IPerf3TrafficGenerator
+    """
+    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    dest_pid = destination_device.start_traffic_receiver(
+        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
+    )
+    if not dest_pid:
+        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
+    source_pid = source_device.start_traffic_sender(
+        dest_ip,
+        traffic_port,
+        ipv=6,
+        udp_protocol=udp_protocol,
+        time=time,
+        direction="--reverse",
+        bind_to_ip=bind_sender_ip,
+    )
+    return IPerf3TrafficGenerator(
+        source_device, source_pid, destination_device, dest_pid
+    )
+
+
+def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
+    """stops the iprf3 processes of the sender and receiver of a
+    IPerf3TrafficGenerator instance.
+
+    :param iperf_generator: data class that holds sender/receiver devices and
+        their process ids
+    :type iperf_generator: IPerf3TrafficGenerator
+    :raises UseCaseFailure: Raises the exception when either of the iperf3
+        server or client processes can't be killed
+    """
+    sender = (
+        iperf_generator.traffic_sender.stop_traffic(iperf_generator.sender_pid)
+        if iperf_generator.traffic_sender and iperf_generator.sender_pid
+        else None
+    )
+
+    receiver = (
+        iperf_generator.traffic_receiver.stop_traffic(iperf_generator.receiver_pid)
+        if iperf_generator.traffic_receiver and iperf_generator.receiver_pid
+        else None
+    )
+
+    if not (sender and receiver):
+        raise UseCaseFailure(
+            f"Either Sender(Client) or Receiver(Server) process cannot be killed: Sender-{sender} Receiver:{receiver}"
+        )

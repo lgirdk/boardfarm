@@ -1033,6 +1033,86 @@ EOFEOFEOFEOF"""
 
         return pid
 
+    def start_traffic_receiver(
+        self,
+        traffic_port: int,
+        bind_to_ip: str = None,
+        ipv: int = None,
+    ) -> Union[int, bool]:
+        """uses iperf3 to start the server on a linux device to generate traffic in a network
+
+        :param traffic_port: server port to listen on
+        :type traffic_port: int
+        :param bind_to_ip: bind to the interface associated with the address host, defaults to None
+        :type bind_to_ip: str, optional
+        :param ipv: 4 or 6 if it uses only IPv4 or IPv6, defaults to None
+        :type ipv: int, optional
+        :return: either the process id(pid) or False if pid could not be generated
+        :rtype: Union[int, bool]
+        """
+        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -s -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}  -D"
+        self.check_output(cmd)
+        output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
+        if "iperf3" in output:
+            out = re.search(f".* -p {traffic_port}.*", output).group()
+            return int(out.split()[1])
+        else:
+            return False
+
+    def start_traffic_sender(
+        self,
+        host: str,
+        traffic_port: int,
+        bind_to_ip: str = None,
+        direction: str = None,
+        ipv: int = None,
+        udp_protocol: bool = False,
+        time: int = 10,
+    ) -> Union[int, bool]:
+        """uses iperf3 to generate the traffic on a linux client in a network
+
+        :param host: run in client mode, connecting to a host
+        :type host: str
+        :param traffic_port: server port to connect to
+        :type traffic_port: int
+        :param bind_to_ip: bind to the interface associated with the address host, defaults to None
+        :type bind_to_ip: str, optional
+        :param direction: `--reverse` to run in reverse mode (server sends, client receives) and `--bidir` to run in bidirectional mode, defaults to None
+        :type direction: str
+        :param ipv: 4 or 6 if it uses only IPv4 or IPv6, defaults to None
+        :type ipv: int, optional
+        :param udp_protocol: use UDP rather than TCP, defaults to False
+        :type udp_protocol: bool, optional
+        :param time: time in seconds to transmit for, defaults to 10
+        :type time: int, optional
+        :return: either the process id(pid) or False if pid could not be generated
+        :rtype: Union[int, bool]
+        """
+        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -c {host} -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} -t {time} {direction or ''}{' -u' if udp_protocol else ''} 2>&1 > /dev/null &"
+        self.check_output(cmd)
+        output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
+        if "iperf3" in output and "Exit 1" not in output:
+            out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
+            return int(out.split()[1])
+        else:
+            return False
+
+    def stop_traffic(self, pid: int = None) -> bool:
+        """stops the iprf3 process for a specific pid or killall otherwise
+
+        :param pid: process id for a iperf3 service either for reciever or sender, defaults to None
+        :type pid: int, optional
+        :return: True if process is stopped else False
+        :rtype: bool
+        """
+        if pid:
+            self.check_output(f"kill -9 {pid}")
+        else:
+            self.check_output("killall -9 iperf3")
+
+        output = self.check_output("ps auxwwww|grep iperf3|grep -v grep")
+        return str(pid) not in output if pid else "iperf3" not in output
+
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
     """This aggregates the basedevice and its implementation"""
