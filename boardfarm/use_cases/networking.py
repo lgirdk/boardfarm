@@ -75,7 +75,7 @@ class HTTPResult:
                     f"Curl Failure due to the following reason {response}"
                 )
             else:
-                raw = re.findall(r"\<head.*\>", response, re.S)[0]
+                raw = re.findall(r"\<(\!DOC|head).*\>", response, re.S)[0]
                 code = re.findall(r"< HTTP\/.*\s(\d+)", response)[0]
                 beautified_text = BeautifulSoup(raw, "html.parser").prettify()
                 return raw, code, beautified_text
