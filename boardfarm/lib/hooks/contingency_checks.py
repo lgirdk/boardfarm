@@ -55,6 +55,9 @@ class ContingencyCheck:
         if "tr-069" in env_req.get("environment_def", {}):
             plugins_to_register.append(all_impls["boardfarm.ACS"])
 
+        if nested_lookup("multicast_server_count", env_req.get("environment_def", {})):
+            plugins_to_register.append(all_impls["boardfarm.Multicast"])
+
         plugins_to_register.append(all_impls["boardfarm.CheckInterface"])
 
         # since Pluggy executes plugin in LIFO order of registration
@@ -231,3 +234,24 @@ class Cwmp:
             raise SkipTest("Skipping Test: CWMP version mismatch")
 
         logger.info("CWMP service check executed for BF Docsis")
+
+
+class Multicast:
+
+    impl_type = "feature"
+
+    @contingency_impl
+    def service_check(self, env_req):
+        """Contingency check for multicast server count."""
+
+        logger.info("Executing multicast server count check BF Docsis")
+
+        server_count = nested_lookup(
+            "multicast_server_count", env_req["environment_def"]
+        )
+        if server_count[0] < 1:
+            raise SkipTest(
+                "Skipping Test: Required multicast server count is not specified"
+            )
+
+        logger.info("Multicast server count check executed for BF Docsis")
