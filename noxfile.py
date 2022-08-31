@@ -16,14 +16,14 @@ def lint(session: nox.Session) -> None:
     session.run("black", ".", "--check")
     session.run("isort", ".", "--check-only")
     session.run("flake8", ".")
-    session.run("mypy", "boardfarm")
+    session.run("mypy", "boardfarm3")
 
 
 @nox.session(python=_PYTHON_VERSIONS)
 def pylint(session: nox.Session) -> None:
     """Lint boardfarm using pylint without dev dependencies."""
     session.install("--upgrade", ".", "pylint")
-    session.run("pylint", "boardfarm")
+    session.run("pylint", "boardfarm3")
 
 
 @nox.session(python=_PYTHON_VERSIONS)

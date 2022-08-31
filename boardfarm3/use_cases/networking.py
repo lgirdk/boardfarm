@@ -3,8 +3,8 @@
 from contextlib import contextmanager
 from typing import Generator, Union
 
-from boardfarm.templates.lan import LAN
-from boardfarm.templates.wan import WAN
+from boardfarm3.templates.lan import LAN
+from boardfarm3.templates.wan import WAN
 
 
 @contextmanager

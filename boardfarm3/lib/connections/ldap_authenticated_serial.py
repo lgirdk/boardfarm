@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 
 import pexpect
 
-from boardfarm.exceptions import DeviceConnectionError
-from boardfarm.lib.connections.ssh_connection import SSHConnection
+from boardfarm3.exceptions import DeviceConnectionError
+from boardfarm3.lib.connections.ssh_connection import SSHConnection
 
 
 class LdapAuthenticatedSerial(SSHConnection):

@@ -2,9 +2,9 @@
 
 import logging
 
-from boardfarm import hookimpl
-from boardfarm.devices.base_devices import LinuxDevice
-from boardfarm.templates.wan import WAN
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import LinuxDevice
+from boardfarm3.templates.wan import WAN
 
 _LOGGER = logging.getLogger(__name__)
 

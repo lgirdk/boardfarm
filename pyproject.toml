@@ -18,7 +18,7 @@
         "Topic :: Software Development :: Testing :: Acceptance",
     ]
     dynamic = ['version', 'description']
-    name = "boardfarm"
+    name = "boardfarm3"
     readme = "README.md"
     requires-python = ">=3.6"
 
@@ -62,7 +62,7 @@
         ]
 
     [project.scripts]
-        boardfarm = "boardfarm.main:main"
+        boardfarm = "boardfarm3.main:main"
 
     [project.entry-points."boardfarm"]
         core    = "boardfarm.plugins.core"
@@ -89,7 +89,7 @@
     tag_format = "$version"
     version = "2022.11.0"
     version_files = [
-        "boardfarm/__init__.py:version",
+        "boardfarm3/__init__.py:version",
         "pyproject.toml:version",
         "pyproject.toml:current",
     ]
@@ -131,7 +131,7 @@
     # section containing the path of the file, relative to the
     # pyproject.toml location.
     [[tool.tbump.file]]
-        src = "boardfarm/__init__.py"
+        src = "boardfarm3/__init__.py"
 
     [[tool.tbump.file]]
         src = "pyproject.toml"

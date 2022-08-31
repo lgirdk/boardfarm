@@ -5,7 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List
 
-from boardfarm.exceptions import EnvConfigError
+from boardfarm3.exceptions import EnvConfigError
 
 
 class BoardfarmConfig:

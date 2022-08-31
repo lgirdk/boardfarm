@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from boardfarm import testsuites
+from boardfarm3 import testsuites
 
 
 def get_num(name):

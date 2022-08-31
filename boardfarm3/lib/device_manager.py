@@ -4,8 +4,8 @@ from typing import Dict, Type, TypeVar
 
 from pluggy import PluginManager
 
-from boardfarm.devices.base_devices import BoardfarmDevice
-from boardfarm.exceptions import DeviceNotFound
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.exceptions import DeviceNotFound
 
 T = TypeVar("T")  # pylint: disable=invalid-name
 

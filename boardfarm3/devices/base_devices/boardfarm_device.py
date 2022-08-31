@@ -3,7 +3,7 @@
 from argparse import Namespace
 from typing import Dict
 
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
 class BoardfarmDevice:

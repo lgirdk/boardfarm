@@ -2,10 +2,10 @@
 
 import logging
 
-from boardfarm import hookimpl
-from boardfarm.devices.base_devices import LinuxDevice
-from boardfarm.lib.device_manager import DeviceManager
-from boardfarm.templates.tftp import TFTP
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import LinuxDevice
+from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.templates.tftp import TFTP
 
 _LOGGER = logging.getLogger(__name__)
 

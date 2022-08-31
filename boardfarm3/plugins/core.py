@@ -8,12 +8,12 @@ from pluggy import PluginManager
 from ptpython.ipython import IPythonInput, embed
 from termcolor import colored
 
-from boardfarm import hookimpl
-from boardfarm.devices.base_devices import BoardfarmDevice
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
-from boardfarm.lib.device_manager import DeviceManager
-from boardfarm.plugins.hookspecs import devices as Devices
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.plugins.hookspecs import devices as Devices
 
 
 @hookimpl

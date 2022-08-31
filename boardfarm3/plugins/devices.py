@@ -6,14 +6,14 @@ from typing import Dict, Generator, Type
 
 from pluggy import PluginManager
 
-from boardfarm import hookimpl
-from boardfarm.devices.base_devices import BoardfarmDevice
-from boardfarm.devices.linux_lan import LinuxLAN
-from boardfarm.devices.linux_tftp import LinuxTFTP
-from boardfarm.devices.linux_wan import LinuxWAN
-from boardfarm.exceptions import EnvConfigError
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.device_manager import DeviceManager
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.devices.linux_lan import LinuxLAN
+from boardfarm3.devices.linux_tftp import LinuxTFTP
+from boardfarm3.devices.linux_wan import LinuxWAN
+from boardfarm3.exceptions import EnvConfigError
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.device_manager import DeviceManager
 
 
 @hookimpl

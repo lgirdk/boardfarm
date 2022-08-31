@@ -9,9 +9,9 @@ from typing import Any, Optional, Union
 import pexpect
 from termcolor import colored
 
-from boardfarm import hookimpl
-from boardfarm.devices.base_devices import LinuxDevice
-from boardfarm.templates.lan import LAN
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import LinuxDevice
+from boardfarm3.templates.lan import LAN
 
 _LOGGER = logging.getLogger(__name__)
 

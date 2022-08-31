@@ -9,16 +9,16 @@ from typing import Any, Dict, Generator, List, Optional, Union
 import jc.parsers.ping
 import pexpect
 
-from boardfarm.devices.base_devices.boardfarm_device import BoardfarmDevice
-from boardfarm.exceptions import (
+from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
+from boardfarm3.exceptions import (
     BoardfarmException,
     ConfigurationFailure,
     SCPConnectionError,
 )
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
-from boardfarm.lib.connection_factory import connection_factory
-from boardfarm.lib.connections.local_cmd import LocalCmd
-from boardfarm.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.connection_factory import connection_factory
+from boardfarm3.lib.connections.local_cmd import LocalCmd
+from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 
 
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods

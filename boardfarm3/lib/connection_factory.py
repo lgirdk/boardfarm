@@ -3,10 +3,10 @@
 
 from typing import Any
 
-from boardfarm.exceptions import EnvConfigError
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
-from boardfarm.lib.connections.ldap_authenticated_serial import LdapAuthenticatedSerial
-from boardfarm.lib.connections.ssh_connection import SSHConnection
+from boardfarm3.exceptions import EnvConfigError
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.connections.ldap_authenticated_serial import LdapAuthenticatedSerial
+from boardfarm3.lib.connections.ssh_connection import SSHConnection
 
 
 def connection_factory(

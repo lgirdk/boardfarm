@@ -5,9 +5,9 @@ from typing import List
 
 from pluggy import PluginManager
 
-from boardfarm import hookspec
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.device_manager import DeviceManager
+from boardfarm3 import hookspec
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.device_manager import DeviceManager
 
 # pylint: disable=unused-argument
 

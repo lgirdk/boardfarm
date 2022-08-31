@@ -5,10 +5,10 @@ from typing import Dict, Type
 
 from pluggy import PluginManager
 
-from boardfarm import hookspec
-from boardfarm.devices.base_devices import BoardfarmDevice
-from boardfarm.lib.boardfarm_config import BoardfarmConfig
-from boardfarm.lib.device_manager import DeviceManager
+from boardfarm3 import hookspec
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.device_manager import DeviceManager
 
 # pylint: disable=unused-argument
 

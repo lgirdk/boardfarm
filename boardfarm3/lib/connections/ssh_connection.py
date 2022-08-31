@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 
 import pexpect
 
-from boardfarm.exceptions import BoardfarmException, DeviceConnectionError
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.exceptions import BoardfarmException, DeviceConnectionError
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
 class SSHConnection(BoardfarmPexpect):

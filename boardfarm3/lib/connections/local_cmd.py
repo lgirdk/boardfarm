@@ -3,7 +3,7 @@
 
 from typing import Any, Dict, List
 
-from boardfarm.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
 class LocalCmd(BoardfarmPexpect):

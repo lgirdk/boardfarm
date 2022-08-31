@@ -5,8 +5,8 @@ import glob
 import os
 import sys
 
-import boardfarm
-from boardfarm.lib.code import (
+import boardfarm3
+from boardfarm3.lib.code import (
     changed_classes,
     changed_functions,
     get_all_classes_from_code,
@@ -33,10 +33,10 @@ if __name__ == "__main__":
 
     # Find locations of 'tests' subdirectories
     all_boardfarm_dirs = [
-        os.path.dirname(boardfarm.plugins[m].__file__)
-        for m in sorted(boardfarm.plugins)
+        os.path.dirname(boardfarm3.plugins[m].__file__)
+        for m in sorted(boardfarm3.plugins)
     ]
-    all_boardfarm_dirs.append(os.path.dirname(boardfarm.__file__))
+    all_boardfarm_dirs.append(os.path.dirname(boardfarm3.__file__))
     test_code_loc = []
     for d in sorted(all_boardfarm_dirs):
         tmp = glob.glob(os.path.join(d, "tests")) + glob.glob(
