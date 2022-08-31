@@ -11,7 +11,7 @@ for change_id in $(repo forall -r ^$GERRIT_PROJECT$ -c  'git show --format=%b -s
     read -r ref proj <<<$(echo $raw)
 
     echo "Picking $ref from $proj"
-    repo forall -r ^$proj\$ -c "pwd && git fetch gerrit ${ref} && git checkout FETCH_HEAD"
+    repo forall -r ^$proj\$ -c 'pwd && git fetch gerrit '$ref' && git rebase FETCH_HEAD && git rebase m/master'
 done
 
 rm -f .env
