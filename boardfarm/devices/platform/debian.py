@@ -38,6 +38,7 @@ class DebianBox(linux.LinuxDevice):
     tftp_device = None
     tftp_dir = "/tftpboot"
     iface_dut = "eth1"
+    iface_dut_mgmt = "eth1"
     gw = None
     init_static_ip = ipaddress.ip_address("192.168.0.10")
     ipv6_prefix = 64

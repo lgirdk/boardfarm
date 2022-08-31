@@ -210,6 +210,17 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         """Return the SW version as a string."""
         raise NotImplementedError
 
+    @abstractmethod
+    def is_link_up(self, interface: str) -> bool:
+        """Return the status of the interface link if up or down
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: True if interface is up else False
+        :rtype: bool
+        """
+        raise NotImplementedError
+
 
 class BoardTemplate(metaclass=__MetaSignatureChecker):
     """This class shows a basic set of interfaces to be implemented for testing

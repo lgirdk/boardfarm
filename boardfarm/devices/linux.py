@@ -30,6 +30,7 @@ class LinuxInterface:
     tftp_dir = "/tftpboot"
     sign_check = True
     iface_dut: Optional[str] = None
+    iface_dut_mgmt: Optional[str] = None
     name: str = ""
     gw: str = ""
 
