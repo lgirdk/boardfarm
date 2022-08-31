@@ -2,7 +2,7 @@ import abc
 import inspect
 
 
-class __MetaSignatureChecker(abc.ABCMeta):
+class __MetaSignatureChecker(abc.ABCMeta):  # noqa: B024
     def __init__(cls, name, bases, attrs):
         errors = []
         for base_cls in bases:
