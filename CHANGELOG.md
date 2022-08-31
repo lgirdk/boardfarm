@@ -1,3 +1,29 @@
+## 2022.35.0 (2022-08-31)
+
+### Feat
+
+- **dhcpv6.py**: add timeout to parse_dhcpv6_trace usecase
+- **booting_utils.py**: add condition to connect wifi
+- **env_helper.py**: add support to new env schema
+
+### Fix
+
+- disable check on signature checker
+- depends-on change rebase -> checkout
+- **networking.py**: update the regex in http_get usecase
+- **networking.py**: fix the regex in http_get usecase
+- **dhclient-script**: ns count fix
+- **debian_lan**: no mgmt dns in dhclient.conf
+- **debian_isc**: run v4/v6 config together
+- **arguments.py**: change operator
+- **axiros_acs.py**: remove pprint
+- **axiros_acs.py**: remove pprint from output
+- **networking.py**: remove the use of the output from print
+
+### Refactor
+
+- **acs_template**: add bool and int to SPV type hinting
+
 ## 2022.33.0 (2022-08-17)
 
 ### Feat
