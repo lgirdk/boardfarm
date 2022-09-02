@@ -66,8 +66,8 @@
         boardfarm = "boardfarm3.main:main"
 
     [project.entry-points."boardfarm"]
-        core    = "boardfarm.plugins.core"
-        devices = "boardfarm.plugins.devices"
+        core    = "boardfarm3.plugins.core"
+        devices = "boardfarm3.plugins.devices"
 
 [project.urls]
     Source = "https://github.com/lgirdk/boardfarm"
