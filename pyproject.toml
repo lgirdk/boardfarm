@@ -45,6 +45,7 @@
             "flake8-docstrings",
             "flake8-rst",
             "flake8-rst-docstrings",
+            "darglint",
             "mypy",
             "nox",
             "pre-commit",

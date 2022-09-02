@@ -20,7 +20,7 @@ exclude =
     venv
 max-complexity = 10
 max-line-length = 88
-
+extend-ignore = DAR
 rst-roles =
     class,
     func,
@@ -28,3 +28,6 @@ rst-roles =
 rst-directives =
     envvar,
     exception,
+
+# darglint options
+docstring_style=sphinx
