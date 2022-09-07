@@ -65,8 +65,10 @@ class ICMPPacketData:
 
 @dataclass
 class IPerf3TrafficGenerator:
-    """This is an IPerf3TrafficGenerator data classes to hold sender/receiver
-    devices and their process ids."""
+    """This is an IPerf3TrafficGenerator data classes.
+
+    It holds sender/receiver devices and their process ids.
+    """
 
     traffic_sender: Union[DebianLAN, DebianWifi, DebianWAN]
     sender_pid: int
@@ -75,7 +77,15 @@ class IPerf3TrafficGenerator:
 
 
 class HTTPResult:
+    """Class to save the object of parsed HTTP response."""
+
     def __init__(self, response: str):
+        """Parse the response and save it as an instance.
+
+        :param response: response from HTTP request
+        :type response: str
+        :raises UseCaseFailure: in case the response has some error
+        """
         self.response = response
 
         # Todo: Wget parsing has to be added
@@ -603,8 +613,8 @@ def send_ipv6_traffic_from_wan_to_non_existing_endpoint(
     :type time: int
     :param udp_protocol: use UDP rather than TCP, defaults to False
     :type udp_protocol: bool
-    :return: IPerf3TrafficGenerator data class that holds sender/receiver devices
-    and their process ids
+    :return: IPerf3TrafficGenerator data class that holds sender/receiver
+        devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
     source_pid = wan_device.start_traffic_sender(
@@ -622,8 +632,10 @@ def initiate_v4_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers the ipv4 only
-    traffic from client device.
+    """Initiate IPv4 only traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the IPv4 only
+    traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -673,8 +685,10 @@ def initiate_v6_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers the ipv6 only
-    traffic from client device.
+    """Initiate IPv6 only traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the IPv6 only
+    traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -724,8 +738,10 @@ def initiate_bidirectional_ipv4_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers a
-    bidirectional ipv4 only traffic from client device.
+    """Initiate bidirectional traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the
+    bidirectional IPv4 only traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -776,8 +792,10 @@ def initiate_bidirectional_ipv6_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers a
-    bidirectional ipv6 only traffic from client device.
+    """Initiate bidirectional traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the
+    bidirectional IPv6 only traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -828,9 +846,10 @@ def initiate_downstream_ipv4_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers a
-    downstream ipv4 only traffic(server sends, client receives)
-    from client device.
+    """Initiate downstream traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the
+    downstream IPv4 only traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -881,9 +900,10 @@ def initiate_downstream_ipv6_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
-    """Starts the iperf3 server on a traffic receiver and triggers a
-    downstream ipv6 only traffic(server sends, client receives)
-    from client device.
+    """Initiate downstream traffic from source device to destination device.
+
+    Starts the iperf3 server on a traffic receiver and triggers the
+    downstream IPv6 only traffic from source device.
 
     :param source_device: device class object of a iperf client
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
@@ -926,8 +946,7 @@ def initiate_downstream_ipv6_traffic(
 
 
 def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
-    """stops the iprf3 processes of the sender and receiver of a
-    IPerf3TrafficGenerator instance.
+    """Stop the iprf3 processes on sender as well as receiver.
 
     :param iperf_generator: data class that holds sender/receiver devices and
         their process ids
