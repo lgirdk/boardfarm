@@ -158,3 +158,6 @@ style.css
 
 # geckodriver log
 geckodriver.log
+
+# symlink
+boardfarm/bft.py
