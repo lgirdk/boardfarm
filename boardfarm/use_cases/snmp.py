@@ -13,7 +13,7 @@ def snmp_get(
     timeout: int = 10,
     retries: int = 3,
 ) -> Tuple[str, str, str]:
-    """SNMP GET board MIB from wan device via SNMPv2
+    """SNMP GET board MIB from wan device via SNMPv2.
 
     :param mib_name: MIB name. Will be searched in loaded MIB libraries.
     :param index: MIB index, default to 0
@@ -43,7 +43,7 @@ def snmp_set(
     timeout: int = 10,
     retries: int = 3,
 ) -> Tuple[str, str, str]:
-    """SNMP SET board MIB from wan device via SNMPv2
+    """SNMP SET board MIB from wan device via SNMPv2.
 
     :param mib_name: MIB name. Will be searched in loaded MIB libraries.
     :param value: value to be set.
@@ -77,7 +77,7 @@ def snmp_walk(
     timeout: int = 10,
     retries: int = 3,
 ) -> Tuple[Dict[str, Tuple[str, str]], str]:
-    """SNMP WALK board MIB from wan device via SNMPv2
+    """SNMP WALK board MIB from wan device via SNMPv2.
 
     :param mib_name: MIB name. Will be searched in loaded MIB libraries.
     :param index: MIB index, default to 0
