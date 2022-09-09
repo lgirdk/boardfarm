@@ -164,7 +164,7 @@ EOF"""
     dev.expect(dev.prompt)
 
 
-def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
+def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[str]]:
     """Read and filter SIP packets from the captured file.
 
     The Session Initiation Protocol is a signaling protocol used for initiating,
@@ -176,6 +176,8 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
     :param fname: PCAP file to be read
     :type fname: str
     :return: list of SIP packets as [(frame, src ip, dst ip, sip contact, sip msg:media_attribute:connection:info, time)]
+    :param timeout: time out for tshark command to be executed
+    :type timeout: int
     :rtype: List[Tuple[str]]
     """
     device = dev._obj()
@@ -186,7 +188,7 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
     )
 
     device.sudo_sendline(cmd + fields)
-    device.expect(device.prompt)
+    device.expect(device.prompt, timeout=timeout)
     out = device.before.splitlines()
     for _i, o in enumerate(out):
         if "This could be dangerous." in o:
@@ -221,7 +223,7 @@ def _read_sip_trace(dev: VoiceServer, fname: str) -> List[Tuple[str]]:
 
 
 def parse_sip_trace(
-    dev: VoiceServer, fname: str, expected_sequence: List[Tuple[str]]
+    dev: VoiceServer, fname: str, expected_sequence: List[Tuple[str]], timeout: int = 30
 ) -> List[Tuple[str]]:
     """Reads the pcap file and creates the matched sequence with the expected sequence of sip packets.
     This creates a matched sequence of the same size as expected sequence with the rtp traces appended as it is
@@ -234,9 +236,11 @@ def parse_sip_trace(
     :param expected_sequence: expected list of sequence to match for the captured sequence
     :type expected_sequence: List[Tuple[str]]
     :return: matched expected sequence with the captured sequence
+    :param timeout: time out for tshark command to be executed, defaults to 30
+    :type timeout: int
     :rtype: List[Tuple[str]]
     """
-    captured_sequence = _read_sip_trace(dev, fname)
+    captured_sequence = _read_sip_trace(dev, fname, timeout)
     last_check = 0
     final_result = []
     for src, dst, sip_contact, msg in expected_sequence:
