@@ -39,6 +39,17 @@ def get_sip_proxy() -> VoiceServer:
 def tcpdump(
     dev: VoiceServer, fname: str, filters: str = ""
 ) -> Generator[str, None, None]:
+    """Start packet capture using tcpdump and kills the process at the end.
+
+    :param dev: device object for a VoiceServer
+    :type dev: VoiceServer
+    :param fname: name of the pcap file to which the capture will be stored
+    :type fname: str
+    :param filters: additional filters for capture, defaults to ""
+    :type filters: str, optional
+    :yield: process id
+    :rtype: Generator[str, None, None]
+    """
     pid: str = ""
     device = dev._obj()
     try:
@@ -55,7 +66,7 @@ def tcpdump(
 
 
 def make_a_call(caller: VoiceClient, callee: VoiceClient) -> None:
-    """To make a call by caller to callee
+    """To make a call by caller to callee.
 
     :param caller: SIP agent who intiates the call
     :type caller: VoiceClient
@@ -73,7 +84,7 @@ def make_a_call(caller: VoiceClient, callee: VoiceClient) -> None:
 
 
 def put_phone_offhook(who_puts_offhook: VoiceClient) -> None:
-    """Puts the phone off hook
+    """Put the phone off hook.
 
     :param who_puts_offhook: SIP agent who puts phone off hook
     :type who_puts_offhook: VoiceClient
@@ -158,7 +169,7 @@ def is_line_busy(on_which_agent: VoiceClient, who_is_busy: VoiceClient) -> bool:
 
 
 def is_call_not_answered(whose_call: VoiceClient) -> bool:
-    """Verify if callee did not pick up the call
+    """Verify if callee did not pick up the call.
 
     The Caller will receive a NO CARRIER or TIMEOUT reply.
 
@@ -250,6 +261,7 @@ def reject_waiting_call(who_rejects: VoiceClient) -> None:
 
 def place_call_onhold(who_places: VoiceClient) -> None:
     """Place an ongoing call on-hold.
+
     There must be an active call to be placed on hold.
 
     :param who_places: SIP agent that is suppose to place the call on-hold.
@@ -264,6 +276,7 @@ def place_call_onhold(who_places: VoiceClient) -> None:
 
 def place_call_offhold(who_places: VoiceClient) -> None:
     """Place an ongoing call on hold to off-hold.
+
     There must be an active call to be placed off hold.
 
     :param who_places: SIP agent that is suppose to place the call off-hold.
@@ -286,7 +299,7 @@ def press_R_button(who_presses: VoiceClient) -> None:
 
 
 def is_call_dialing(who_is_dialing: VoiceClient) -> bool:
-    """Verify if a phone is dialing and a call in progress
+    """Verify if a phone is dialing and a call in progress.
 
     :param who_is_dialing: SIP agent used to verify dialing
     :type who_is_dialing: VoiceClient
@@ -297,7 +310,7 @@ def is_call_dialing(who_is_dialing: VoiceClient) -> bool:
 
 
 def is_incall_dialing(who_is_incall_dialing: VoiceClient) -> bool:
-    """Verify if a phone is incall and call is dialing/in progress
+    """Verify if a phone is incall and call is dialing/in progress.
 
     :param who_is_incall_dialing: SIP agent used to verify incall dialing
     :type who_is_incall_dialing: VoiceClient
@@ -308,7 +321,7 @@ def is_incall_dialing(who_is_incall_dialing: VoiceClient) -> bool:
 
 
 def is_call_idle(who_is_idle: VoiceClient) -> bool:
-    """Verify if a phone is in idle state
+    """Verify if a phone is in idle state.
 
     :param who_is_idle: SIP agent used to verify idle
     :type who_is_idle: VoiceClient
@@ -319,7 +332,7 @@ def is_call_idle(who_is_idle: VoiceClient) -> bool:
 
 
 def is_call_ringing(who_is_ringing: VoiceClient) -> bool:
-    """Verify if a ringtone is detected on a phone device
+    """Verify if a ringtone is detected on a phone device.
 
     :param who_is_ringing: SIP agent used to verify ringtone
     :type who_is_ringing: VoiceClient
@@ -330,7 +343,7 @@ def is_call_ringing(who_is_ringing: VoiceClient) -> bool:
 
 
 def is_call_connected(who_is_connected: VoiceClient) -> bool:
-    """Verify if a call is connected
+    """Verify if a call is connected.
 
     :param who_is_connected: SIP client on which connection needs to be checked
     :type who_is_connected: VoiceClient
@@ -341,7 +354,7 @@ def is_call_connected(who_is_connected: VoiceClient) -> bool:
 
 
 def is_incall_connected(who_is_incall_connected: VoiceClient) -> bool:
-    """Verify if a call is incall connected
+    """Verify if a call is incall connected.
 
     :param who_is_incall_connected: SIP client on which connection needs to be checked
     :type who_is_incall_connected: VoiceClient
@@ -352,7 +365,7 @@ def is_incall_connected(who_is_incall_connected: VoiceClient) -> bool:
 
 
 def is_call_on_hold(who_is_onhold: VoiceClient) -> bool:
-    """Verify if a call is on hold
+    """Verify if a call is on hold.
 
     :param who_is_onhold: SIP client on which hold state needs to be checked
     :type who_is_onhold: VoiceClient
@@ -363,7 +376,7 @@ def is_call_on_hold(who_is_onhold: VoiceClient) -> bool:
 
 
 def is_call_in_conference(who_in_conference: VoiceClient) -> bool:
-    """Verify if a call is in conference
+    """Verify if a call is in conference.
 
     :param who_in_conference: SIP client on which conference state needs to be checked
     :type who_in_conference: VoiceClient
@@ -374,7 +387,7 @@ def is_call_in_conference(who_in_conference: VoiceClient) -> bool:
 
 
 def is_playing_dialtone(who_is_playing_dialtone: VoiceClient) -> bool:
-    """Verify if the phone is playing a dialtone
+    """Verify if the phone is playing a dialtone.
 
     :param who_is_playing_dialtone: SIP Client
     :type who_is_playing_dialtone: VoiceClient
@@ -385,7 +398,7 @@ def is_playing_dialtone(who_is_playing_dialtone: VoiceClient) -> bool:
 
 
 def is_call_ended(whose_call_ended: VoiceClient) -> bool:
-    """Verify if the call has been disconnected and ended
+    """Verify if the call has been disconnected and ended.
 
     :param whose_call_ended: SIP Client
     :type whose_call_ended: VoiceClient
@@ -396,7 +409,7 @@ def is_call_ended(whose_call_ended: VoiceClient) -> bool:
 
 
 def is_code_ended(whose_code_ended: VoiceClient) -> bool:
-    """Verify if the dialed code or number has expired
+    """Verify if the dialed code or number has expired.
 
     :param whose_code_ended: SIP Client
     :type whose_code_ended: VoiceClient
@@ -407,7 +420,7 @@ def is_code_ended(whose_code_ended: VoiceClient) -> bool:
 
 
 def is_call_waiting(who_is_waiting: VoiceClient) -> bool:
-    """Verify if the phone notifies for the call on other line to be waiting
+    """Verify if the phone notifies for the call on other line to be waiting.
 
     :param who_is_waiting: SIP Client
     :type who_is_waiting: VoiceClient
@@ -418,7 +431,7 @@ def is_call_waiting(who_is_waiting: VoiceClient) -> bool:
 
 
 def is_incall_playing_dialtone(who_is_playing_incall_dialtone: VoiceClient) -> bool:
-    """Verify if the phone is connected on one line and playing dialtone on another line
+    """Verify if the phone is connected on one line and playing dialtone on another line.
 
     :param who_is_playing_incall_dialtone: SIP Client
     :type who_is_playing_incall_dialtone: VoiceClient
@@ -429,7 +442,7 @@ def is_incall_playing_dialtone(who_is_playing_incall_dialtone: VoiceClient) -> b
 
 
 def is_off_hook_warning(who_has_offhook_warning: VoiceClient) -> bool:
-    """Verify if the the phone has been left off-hook without use for an extended period
+    """Verify if the the phone has been left off-hook without use for an extended period.
 
     :param who_has_offhook_warning: SIP Client
     :type who_has_offhook_warning: VoiceClient
@@ -440,7 +453,7 @@ def is_off_hook_warning(who_has_offhook_warning: VoiceClient) -> bool:
 
 
 def enable_call_waiting(who_enables: VoiceClient) -> None:
-    """Enables the call waiting by dialing the desired number
+    """Enable the call waiting by dialing the desired number.
 
     :param who_enables: Agent that enables call waiting
     :type who_enables: VoiceClient
@@ -451,7 +464,9 @@ def enable_call_waiting(who_enables: VoiceClient) -> None:
 def enable_call_forwarding_busy(
     who_forwards: VoiceClient, forward_to: VoiceClient
 ) -> None:
-    """Enables call forwarding on a phone when busy which can then be used to forward a call to other no.
+    """Enable call forwarding on a phone when busy.
+
+    This thus forwards a call to another user
 
     :param who_forwards: Agent that enables call forwarding busy
     :type who_forwards: VoiceClient
@@ -462,7 +477,7 @@ def enable_call_forwarding_busy(
 
 
 def disable_call_forwarding_busy(who_disables: VoiceClient) -> None:
-    """Disables call forwarding on a phone when busy
+    """Disable call forwarding on a phone when busy.
 
     :param who_disables: Agent that disables call forwarding busy
     :type who_disables: VoiceClient
@@ -471,7 +486,7 @@ def disable_call_forwarding_busy(who_disables: VoiceClient) -> None:
 
 
 def disable_call_waiting_overall(agent: VoiceClient) -> None:
-    """Disables the call waiting overall on a phone by dialing a desired number
+    """Disable the call waiting overall on a phone by dialing a desired number.
 
     :param agent: Agent that disables call waiting
     :type agent: VoiceClient
@@ -480,7 +495,7 @@ def disable_call_waiting_overall(agent: VoiceClient) -> None:
 
 
 def disable_call_waiting_per_call(agent: VoiceClient) -> None:
-    """Disables the call waiting per call on a phone by dialing a desired number
+    """Disable the call waiting per call on a phone by dialing a desired number.
 
     :param agent: Agent that disables call waiting
     :type agent: VoiceClient
@@ -491,7 +506,7 @@ def disable_call_waiting_per_call(agent: VoiceClient) -> None:
 def remove_user_profile(
     where_to_remove: VoiceServer, whom_to_remove: VoiceClient
 ) -> None:
-    """Deregister user profile from the sip server
+    """Deregister user profile from the sip server.
 
     :param where_to_remove: SIP Server
     :type where_to_remove: VoiceServer
@@ -506,7 +521,7 @@ def remove_user_profile(
 
 
 def add_user_profile(where_to_add: VoiceServer, whom_to_add: VoiceClient) -> None:
-    """Registers user profile on the sip server
+    """Register user profile on the sip server.
 
     :param where_to_add: SIP Server
     :type where_to_add: VoiceServer
@@ -521,7 +536,7 @@ def add_user_profile(where_to_add: VoiceServer, whom_to_add: VoiceClient) -> Non
 
 
 def is_user_profile_present(sip_proxy: VoiceServer, whose_profile: VoiceClient) -> bool:
-    """Checks whether the user profile is registered on the sip server or not
+    """Check whether the user profile is registered on the sip server or not.
 
     :param sip_proxy: SIP Server
     :type sip_proxy: VoiceServer
@@ -534,7 +549,7 @@ def is_user_profile_present(sip_proxy: VoiceServer, whose_profile: VoiceClient) 
 
 
 def set_sip_expiry_time(sip_proxy: VoiceServer, to_what_time: int = 60) -> None:
-    """Modify the call expires timer in the config file of the sip_proxy eg: kamailio.cfg for Kamailio sipserver
+    """Modify the call expires timer in the config file of the sip_proxy.
 
     :param sip_proxy: SIP Server
     :type sip_proxy: VoiceServer
