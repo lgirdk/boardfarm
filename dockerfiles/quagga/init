@@ -25,6 +25,7 @@ done
 
 sysctl -p /etc/sysctl.conf
 
+
 echo "Starting daemons."
 for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd pimd; do
  if [ -f /etc/quagga/${svc}.conf ]; then
@@ -36,6 +37,14 @@ for svc in zebra bgpd isisd ospfd ospf6d ripd ripngd pimd; do
 EOF
  fi
 done
+
+# Add PIM6SD daemon
+cp /usr/local/share/doc/pim6sd/pim6sd.conf.sample /etc/pim6sd.conf
+cat >> /etc/monit/conf.d/pim6sd << EOF
+  check process pim6sd with pidfile /var/run/pim6sd.pid
+    start program = "/usr/local/sbin/pim6sd -f /etc/pim6sd.conf"
+    stop program  = "kill -9 $(pgrep pim6sd)"
+EOF
 
 service monit start
 service mrouted start
