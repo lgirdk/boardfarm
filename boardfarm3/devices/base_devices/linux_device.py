@@ -98,6 +98,10 @@ class LinuxDevice(BoardfarmDevice):
                 port=self._port,
                 shell_prompt=self._shell_prompt,
             )
+            # This fixes the terminal prompt on long lines
+            self._console.execute_command(
+                "stty columns 400; export TERM=xterm",
+            )
 
     def _disconnect(self) -> None:
         """Disconnect SSH connection to the server."""
