@@ -26,12 +26,13 @@
         "jc",
         "nested_lookup",
         "netaddr",
+        "pandas",
+        "pexpect",
         "pluggy>=1.0.0",
         "ptipython",
         "pysmi",
         "termcolor",
         "zeep",
-        "pexpect",
     ]
 
     [project.optional-dependencies]
