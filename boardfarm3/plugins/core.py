@@ -4,6 +4,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Dict, List
 
+import jedi
 from pluggy import PluginManager
 from ptpython.ipython import IPythonInput, embed
 from termcolor import colored
@@ -143,6 +144,14 @@ def _interactive_ptpython_shell(
 
     logging.getLogger("parso").setLevel("INFO")
     logging.getLogger("asyncio").setLevel("INFO")
+
+    # The following prevents __getattr__ from
+    # running the object prperties (which happens
+    # on autocompletion)
+    __int = jedi.Interpreter
+
+    # pylint: disable=protected-access
+    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]
 
     if cmdline_args.legacy:
         devices = Namespace(**device_manager.get_devices_by_type(BoardfarmDevice))
