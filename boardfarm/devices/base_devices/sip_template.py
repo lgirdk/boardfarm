@@ -1,84 +1,11 @@
 from abc import ABC, abstractmethod
+from typing import List, Union
 
+from debtcollector import moves
+
+from boardfarm.devices.base_devices import fxo_template
 from boardfarm.devices.linux import LinuxInterface
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
-
-
-class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
-    """SIP server template class.
-    Contains basic list of APIs to be able to use TR069 intercation with CPE
-    All methods, marked with @abstractmethod annotation have to be implemented in derived
-    class with the same signatures as in template. You can use 'pass' keyword if you don't
-    need some methods in derived class.
-    """
-
-    @property
-    @abstractmethod
-    def model(self):
-        """This attribute is used by boardfarm to match parameters entry from config
-        and initialise correct object.
-        This property shall be any string value that matches the "type"
-        attribute of SIP entry in the inventory config file.
-        See devices/kamailio.py as a reference
-        """
-
-    @abstractmethod
-    def __init__(self, *args, **kwargs) -> None:
-        """Initialize SIP parameters.
-        Config data dictionary will be unpacked and passed to init as kwargs.
-        You can use kwargs in a following way:
-            self.username = kwargs.get("username", "DEFAULT_USERNAME")
-            self.password = kwargs.get("password", "DEFAULT_PASSWORD")
-        """
-        super().__init__(*args, **kwargs)  # type: ignore
-
-    @abstractmethod
-    def sipserver_install(self) -> None:
-        """Install sipserver."""
-
-    @abstractmethod
-    def sipserver_purge(self) -> None:
-        """To purge the sipserver installation."""
-
-    @abstractmethod
-    def sipserver_configuration(self) -> None:
-        """Configure sipserver."""
-
-    @abstractmethod
-    def sipserver_start(self) -> None:
-        """Start the server"""
-
-    @abstractmethod
-    def sipserver_stop(self) -> None:
-        """Stop the server."""
-
-    @abstractmethod
-    def sipserver_restart(self) -> None:
-        """Restart the server."""
-
-    @abstractmethod
-    def sipserver_status(self) -> str:
-        """Return the status of the server."""
-
-    @abstractmethod
-    def sipserver_kill(self) -> None:
-        """Kill the server."""
-
-    @abstractmethod
-    def sipserver_user_add(self, user: str, password: str) -> None:
-        """Add user to the directory."""
-
-    @abstractmethod
-    def sipserver_user_remove(self, user: str) -> None:
-        """Remove a user from the directory."""
-
-    @abstractmethod
-    def sipserver_user_update(self, user: str, password: str) -> None:
-        """Update user in the directory."""
-
-    @abstractmethod
-    def sipserver_user_registration_status(self, user: str, ip_address: str) -> str:
-        """Return the registration status."""
 
 
 class SIPPhoneTemplate(LinuxInterface, ABC):
@@ -382,3 +309,157 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
     def hook_flash(self) -> None:
         """Perform hook flash."""
         raise NotImplementedError("Not supported!")
+
+
+class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
+    """SIP server template class.
+    Contains basic list of APIs to be able to use TR069 intercation with CPE
+    All methods, marked with @abstractmethod annotation have to be implemented in derived
+    class with the same signatures as in template. You can use 'pass' keyword if you don't
+    need some methods in derived class.
+    """
+
+    @property
+    @abstractmethod
+    def model(self):
+        """This attribute is used by boardfarm to match parameters entry from config
+        and initialise correct object.
+        This property shall be any string value that matches the "type"
+        attribute of SIP entry in the inventory config file.
+        See devices/kamailio.py as a reference
+        """
+
+    @abstractmethod
+    def __init__(self, *args, **kwargs) -> None:
+        """Initialize SIP parameters.
+        Config data dictionary will be unpacked and passed to init as kwargs.
+        You can use kwargs in a following way:
+            self.username = kwargs.get("username", "DEFAULT_USERNAME")
+            self.password = kwargs.get("password", "DEFAULT_PASSWORD")
+        """
+        super().__init__(*args, **kwargs)  # type: ignore
+
+    @abstractmethod
+    def sipserver_install(self) -> None:
+        """Install sipserver."""
+
+    @abstractmethod
+    def sipserver_purge(self) -> None:
+        """To purge the sipserver installation."""
+
+    @abstractmethod
+    def sipserver_configuration(self) -> None:
+        """Configure sipserver."""
+
+    @abstractmethod
+    def sipserver_start(self) -> None:
+        """Start the server"""
+
+    @abstractmethod
+    def sipserver_stop(self) -> None:
+        """Stop the server."""
+
+    @abstractmethod
+    def sipserver_restart(self) -> None:
+        """Restart the server."""
+
+    @abstractmethod
+    def sipserver_status(self) -> str:
+        """Return the status of the server."""
+
+    @abstractmethod
+    def sipserver_kill(self) -> None:
+        """Kill the server."""
+
+    @moves.moved_method("add_endpoint_to_sipserver")
+    def sipserver_user_add(self, user: str, password: str = None) -> None:
+        """Add user to the directory.
+
+        param user: the user entry to be added
+        type user: string
+        param password: the password of the endpoint is determined by the user, defaults to None
+        type password: string
+        """
+        self.add_endpoint_to_sipserver(endpoint=user, password=password)
+
+    @abstractmethod
+    def add_endpoint_to_sipserver(self, endpoint: str, password: str) -> None:
+        """Add endpoint to the directory.
+
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param password: the password of the endpoint
+        type password: string
+        """
+
+    @moves.moved_method("remove_endpoint_from_sipserver")
+    def sipserver_user_remove(self, user: str) -> None:
+        """Remove a user from the directory.
+        param user: the user entry to be added
+        type user: string
+        """
+        self.remove_endpoint_from_sipserver(endpoint=user)
+
+    @abstractmethod
+    def remove_endpoint_from_sipserver(self, endpoint: str) -> None:
+        """Remove an endpoint from the directory.
+
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        """
+
+    @moves.moved_method("update_endpoint_in_sipserver")
+    def sipserver_user_update(self, user: str, password: str) -> None:
+        """Update user in the directory.
+
+        param user: the user entry to be added
+        type user: string
+        param password: the password of the user
+        type password: string
+        """
+        self.update_endpoint_in_sipserver(endpoint=user, password=password)
+
+    @abstractmethod
+    def update_endpoint_in_sipserver(self, endpoint: str, password: str) -> None:
+        """Update an endpoint in the directory.
+
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param password: the password of the endpoint
+        type password: string
+        """
+
+    @abstractmethod
+    def configure_tls_to_endpoint_in_sipserver(
+        self, phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]]
+    ) -> None:
+        """Configure TLS for the devices mentioned
+
+        param phone_list: list of phones which needs tls to be configured
+        type phone_list: List[FXOTemplate]
+        """
+
+    @moves.moved_method("endpoint_registration_status_in_sipserver")
+    def sipserver_user_registration_status(self, user: str, ip_address: str) -> str:
+        """Return the registration status.
+
+        param user: the user entry to be added
+        type user: string
+        param ip_address: the password of the user
+        type ip_address: string
+        """
+        self.endpoint_registration_status_in_sipserver(
+            endpoint=user, ip_address=ip_address
+        )
+
+    @abstractmethod
+    def endpoint_registration_status_in_sipserver(
+        self, endpoint: str, ip_address: str
+    ) -> str:
+        """Return the registration status.
+
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param ip_address: the ip address of the endpoint
+        type ip_address: string
+        """

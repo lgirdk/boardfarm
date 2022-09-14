@@ -4,8 +4,12 @@ This module consists of SIPcenterKamailio class.
 """
 import pathlib
 import re
+from typing import List, Union
 
 from boardfarm.dbclients.mysql import MySQL
+from boardfarm.devices.base_devices import fxo_template
+from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
+from boardfarm.devices.debian import DebianBox
 from boardfarm.lib.installers import apt_install
 from boardfarm.lib.voice import (
     rtpproxy_configuration,
@@ -14,17 +18,14 @@ from boardfarm.lib.voice import (
     rtpproxy_stop,
 )
 
-from .base_devices.sipcenter_interface import ISIPCenter
-from .debian import DebianBox
 
-
-class SIPcenterKamailio(DebianBox, ISIPCenter):
+class SIPcenterKamailio(DebianBox, SIPTemplate):
     """Kamailio server."""
 
     model = "kamailio"
     profile = {}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Instance initialization of kamailio class."""
         self.args = args
         self.kwargs = kwargs
@@ -40,21 +41,21 @@ class SIPcenterKamailio(DebianBox, ISIPCenter):
     def __str__(self):
         return "kamailio"
 
-    def sipserver_install(self):
+    def sipserver_install(self) -> None:
         """Install kamailio from internet."""
         self.mysql.install()
         rtpproxy_install(self)
         apt_install(self, "kamailio", timeout=300)
         apt_install(self, "kamailio-mysql-modules", timeout=300)
 
-    def sipserver_purge(self):
+    def sipserver_purge(self) -> None:
         """Uninstall and purge kamailio server."""
         self.sendline("rm " + self.kamailio_cfg)
         self.expect(self.prompt)
         self.sendline("apt-get purge kamailio -y")
         self.expect(self.prompt, timeout=80)
 
-    def sipserver_configuration(self):
+    def sipserver_configuration(self) -> None:
         """Generate kamailio basic db and configuration file."""
         # basic configurations
         self.mysql.start()
@@ -81,29 +82,29 @@ CFGFILE=/etc/kamailio/kamailio.cfg
 EOF"""
         self.sendline(startup_conf)
 
-    def sipserver_start(self):
+    def sipserver_start(self) -> None:
         """Start the kamailio server if executable is present."""
         self.sendline("service kamailio start")
         self.expect("Starting")
         self.expect(self.prompt)
 
-    def sipserver_kill(self):
+    def sipserver_kill(self) -> None:
         """Kill the kamailio server."""
         self.sendline("killall  kamailio")
         self.expect(self.prompt)
 
-    def sipserver_stop(self):
+    def sipserver_stop(self) -> None:
         """Stop the kamailio server"""
         self.sendline("service kamailio stop")
         self.expect("Stopping")
         self.expect(self.prompt)
 
-    def sipserver_restart(self):
+    def sipserver_restart(self) -> None:
         """Restart the kamailio server"""
         self.sendline("service kamailio restart")
         self.expect(self.prompt)
 
-    def sipserver_status(self):
+    def sipserver_status(self) -> str:
         """Check the kamailio status"""
         self.sendline("kamailio status")
         index = self.expect(["Listening on", "command not found"] + self.prompt)
@@ -113,61 +114,68 @@ EOF"""
             return "Not installed"
         return "Not Running"
 
-    def sipserver_user_add(self, user, password=None):
-        """Add user and password to the sipserver.
+    def add_endpoint_to_sipserver(self, endpoint: str, password: str) -> None:
+        """Add endpoint to the directory.
 
-        param user: the user entry to be added
-        type user: list/string
-        param password: the password of the user
-        type password: string, Defaults to None
-        """
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param password: the password of the endpoint
+        type password: string"""
         password = self.user_password if not password else password
-        if isinstance(user, str):
-            user = [user]
-        for i in user:
+        if isinstance(endpoint, str):
+            endpoint = [endpoint]
+        for i in endpoint:
             self.sendline(f"kamctl add {i} {password}")
             index = self.expect(["MySQL password for user"] + self.prompt)
             if index == 0:
                 self.sendline(self.mysql.password)
                 self.expect(self.prompt)
 
-    def sipserver_user_remove(self, user):
-        """Remove the the user added.
+    def remove_endpoint_from_sipserver(self, endpoint: str) -> None:
+        """Remove endpoint from the directory.
 
-        param user: the user entry to be added
-        type user: string
-        """
-        self.sendline(f"kamctl rm {user}")
+        param endpoint: the endpoint entry to be added
+        type endpoint: string"""
+        self.sendline(f"kamctl rm {endpoint}")
         self.expect(self.prompt)
 
-    def sipserver_user_update(self, user, password):
-        """Update the user details.
+    def update_endpoint_in_sipserver(self, endpoint: str, password: str) -> None:
+        """Update the endpoint password to the directory.
 
-        param user: the user entry to be added
-        type user: string
-        param password: the password of the user
-        type password: string
-        """
-        self.sendline(f"kamctl passwd {user} {password}")
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param password: the password of the endpoint
+        type password: string"""
+        self.sendline(f"kamctl passwd {endpoint} {password}")
         self.expect(self.prompt)
 
-    def sipserver_user_registration_status(self, user, ip_address):
-        """Returns user registration status.
+    def configure_tls_to_endpoint_in_sipserver(
+        self, phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]]
+    ) -> None:
+        """Add user to the directory.
 
-        param user: the user entry to be added
-        type user: string
-        param password: the password of the user
-        type password: string
-        """
-        self.sendline(f"kamctl ul show {user}")
+        param endpoint: the endpoint entry to be added
+        type endpoint: string"""
+        raise NotImplementedError
+
+    def endpoint_registration_status_in_sipserver(
+        self, endpoint: str, ip_address: str
+    ) -> str:
+        """Return the registration status.
+
+        param endpoint: the endpoint entry to be added
+        type endpoint: string
+        param ip_address: the ip address of the endpoint
+        type ip_address: string"""
+        self.sendline(f"kamctl ul show {endpoint}")
         self.expect(self.prompt)
-        if f"sip:{user}@{ip_address}" in self.before:
+        if f"sip:{endpoint}@{ip_address}" in self.before:
             return "Registered"
         elif "404 AOR not found" in self.before:
             return "Unregistered"
         return self.before
 
-    def sipserver_get_online_users(self):
+    def sipserver_get_online_users(self) -> str:
         """Get sipserver online users"""
         self.sendline("kamctl online")
         self.expect(self.prompt)
