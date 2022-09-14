@@ -1,3 +1,4 @@
+"""DHCPv6 Use Cases library."""
 from dataclasses import dataclass
 from json import JSONDecoder
 from typing import Any, Dict, List, Optional, Union
@@ -14,10 +15,13 @@ ResultDict = Dict[str, Any]
 
 @dataclass
 class DHCPV6Options:
+    """DHCPv6 options parsing."""
+
     option_data: ResultDict
 
     @property
     def option_3(self) -> Optional[ResultDict]:
+        """Return option 3."""
         try:
             return self.option_data["Identity Association for Non-temporary Address"]
         except KeyError:
@@ -25,6 +29,7 @@ class DHCPV6Options:
 
     @property
     def option_5(self) -> Optional[ResultDict]:
+        """Return option 5."""
         try:
             return self.option_data["Identity Association for Non-temporary Address"][
                 "IA Address"
@@ -34,6 +39,7 @@ class DHCPV6Options:
 
     @property
     def option_25(self) -> Optional[ResultDict]:
+        """Return option 25."""
         try:
             return self.option_data["Identity Association for Prefix Delegation"]
         except KeyError:
@@ -41,6 +47,7 @@ class DHCPV6Options:
 
     @property
     def option_26(self) -> Optional[ResultDict]:
+        """Return option 26."""
         try:
             return self.option_data["Identity Association for Prefix Delegation"][
                 "IA Prefix"
@@ -50,6 +57,7 @@ class DHCPV6Options:
 
     @property
     def option_8(self) -> Optional[ResultDict]:
+        """Return option 8."""
         try:
             return self.option_data["Elapsed time"]
         except KeyError:
@@ -57,6 +65,7 @@ class DHCPV6Options:
 
     @property
     def option_2(self) -> Optional[ResultDict]:
+        """Return option 8."""
         try:
             return self.option_data["Server Identifier"]
         except KeyError:
@@ -64,6 +73,7 @@ class DHCPV6Options:
 
     @property
     def option_1(self) -> Optional[ResultDict]:
+        """Return option 1."""
         try:
             return self.option_data["Client Identifier"]
         except KeyError:
@@ -71,6 +81,7 @@ class DHCPV6Options:
 
     @property
     def option_20(self) -> Optional[ResultDict]:
+        """Return option 20."""
         try:
             return self.option_data["Reconfigure Accept"]
         except KeyError:
@@ -78,6 +89,7 @@ class DHCPV6Options:
 
     @property
     def option_16(self) -> Optional[ResultDict]:
+        """Return option 16."""
         try:
             return self.option_data["Vendor Class"]
         except KeyError:
@@ -85,6 +97,7 @@ class DHCPV6Options:
 
     @property
     def option_17(self) -> Optional[ResultDict]:
+        """Return option 17."""
         try:
             return self.option_data["Vendor-specific Information"]
         except KeyError:
@@ -92,6 +105,7 @@ class DHCPV6Options:
 
     @property
     def option_6(self) -> Optional[ResultDict]:
+        """Return option 6."""
         try:
             return self.option_data["Vendor-specific Information"]
         except KeyError:
@@ -99,6 +113,7 @@ class DHCPV6Options:
 
     @property
     def option_23(self) -> Optional[ResultDict]:
+        """Return option 23."""
         try:
             return self.option_data["Option Request"]
         except KeyError:
@@ -106,6 +121,7 @@ class DHCPV6Options:
 
     @property
     def option_24(self) -> Optional[ResultDict]:
+        """Return option 24."""
         try:
             return self.option_data["Domain Search List"]
         except KeyError:
@@ -113,6 +129,7 @@ class DHCPV6Options:
 
     @property
     def option_64(self) -> Optional[ResultDict]:
+        """Return option 64."""
         try:
             return self.option_data["Dual-Stack Lite AFTR Name"]
         except KeyError:
@@ -120,6 +137,7 @@ class DHCPV6Options:
 
     @property
     def option_14(self) -> Optional[ResultDict]:
+        """Return option 14."""
         try:
             return self.option_data["Rapid Commit"]
         except KeyError:
@@ -128,7 +146,7 @@ class DHCPV6Options:
 
 @dataclass
 class DHCPV6TraceData:
-    """This is a DHCPv6TraceData data class to hold source,destination,dhcpv6_packet and dhcpv6_message_type"""
+    """This is a DHCPv6TraceData data class to hold source,destination,dhcpv6_packet and dhcpv6_message_type."""
 
     source: IPAddresses
     destination: IPAddresses

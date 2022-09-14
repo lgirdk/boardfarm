@@ -1,4 +1,5 @@
 """Wifi use cases library.
+
 All APIs are independent of board under test.
 """
 from typing import Generator, List, Tuple

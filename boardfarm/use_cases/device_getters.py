@@ -1,3 +1,4 @@
+"""Device getters."""
 # Moving getters here to provide new signatures for the tests
 # Can not be placed in DevceManager.py due to circular dependencies
 from typing import List
@@ -32,4 +33,5 @@ def get_wan_clients(count) -> List[DebianWAN]:
 
 
 def get_provisioner() -> DebianISCProvisioner:
+    """Return the provisioner."""
     return get_device_by_name("provisioner")
