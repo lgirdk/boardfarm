@@ -1,3 +1,4 @@
+"""DHCP Use Cases library."""
 import ipaddress
 import re
 from collections import Counter, defaultdict
@@ -18,7 +19,7 @@ RecursiveDict = Dict[str, Any]
 
 @dataclass
 class DHCPTraceData:
-    """This is a DHCPTraceData data class to hold source,destination,dhcp_packet and dhcp_message_type"""
+    """This is a DHCPTraceData data class to hold source,destination,dhcp_packet and dhcp_message_type."""
 
     source: IPAddresses
     destination: IPAddresses
@@ -27,7 +28,7 @@ class DHCPTraceData:
 
 
 def _manage_duplicates(pairs):
-    """Internal function to manage duplicate keys in the Json"""
+    """Manage duplicate keys in the Json."""
     d = {}
     k_counter = Counter(defaultdict(int))
     for k, v in pairs:
@@ -200,7 +201,7 @@ def get_dhcp_suboption_details(
 
 
 def configure_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
-    """configure dhclient.conf with vendor specific suboptions in DHCP option 125
+    """Configure dhclient.conf with vendor specific suboptions in DHCP option 125.
 
     :param client:  Object of the linux device class where dhclient.conf needs to be configured
     :type client: Union[DebianLAN, DebianWAN]
@@ -209,7 +210,7 @@ def configure_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
 
 
 def remove_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
-    """remove the DHCP option 125 related configuration on dhclient.conf
+    """Remove the DHCP option 125 related configuration on dhclient.conf.
 
     :param client:  Object of the linux device class where the configuration needs to be removed
     :type client: Union[DebianLAN, DebianWAN]
@@ -218,7 +219,7 @@ def remove_dhcp_option125(client: Union[DebianLAN, DebianWAN]):
 
 
 def configure_dhcp_inform(client: Union[DebianLAN, DebianWAN]) -> None:
-    """configure dhclient.conf to send DHCPINFORM messages
+    """Configure dhclient.conf to send DHCPINFORM messages.
 
     :param client:  Object of the linux device class where dhclient.conf needs to be configured for DHCPINFORM
     :type client: Union[DebianLAN, DebianWAN]
@@ -233,7 +234,7 @@ def configure_dhcp_inform(client: Union[DebianLAN, DebianWAN]) -> None:
 
 
 def remove_dhcp_inform_config(client: Union[DebianLAN, DebianWAN]) -> None:
-    """remove the DHCPINFORM related configuration on dhclient.conf
+    """Remove the DHCPINFORM related configuration on dhclient.conf.
 
     :param client:  Object of the linux device class where the configuration needs to be removed
     :type client: Union[DebianLAN, DebianWAN]
@@ -243,7 +244,7 @@ def remove_dhcp_inform_config(client: Union[DebianLAN, DebianWAN]) -> None:
 
 
 def trigger_dhcp_inform(client: Union[DebianLAN, DebianWAN]) -> None:
-    """configure the dhclient.conf with DHCPINFORM and assign back the static ip after dhcp release
+    """Configure the dhclient.conf with DHCPINFORM and assign back the static ip after dhcp release.
 
     :param client:  Object of the linux device class from where the dhcp inform messages are triggered
     :type client: Union[DebianLAN, DebianWAN]
