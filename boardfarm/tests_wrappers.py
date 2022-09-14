@@ -79,6 +79,8 @@ def run_with_lock(lock):
 
 
 def check_plugin_for_probe_devices(cls):
+    """Check plugin for probe devices."""
+
     def wrapper(func):
         for _, mod in plugins.find_plugins().items():
             if getattr(mod, "override_probe_devices", False):
