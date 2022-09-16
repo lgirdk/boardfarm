@@ -1,8 +1,13 @@
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import pytest
 
-from boardfarm.devices.base_devices.acs_template import AcsTemplate, SpvStructure
+from boardfarm.devices.base_devices.acs_template import (
+    AcsTemplate,
+    GpvInput,
+    GpvResponse,
+    SpvInput,
+)
 
 
 def test_cannot_instantiate_abc_acs():
@@ -22,10 +27,20 @@ def test_cannot_instantiate_derived_acs_missing_model():
             def connect(self, *args, **kwargs) -> None:
                 pass
 
-            def GPV(self, cpe_id: str, parameter: str) -> None:
+            def GPV(
+                self,
+                param: GpvInput,
+                timeout: Optional[int] = None,
+                cpe_id: Optional[str] = None,
+            ) -> GpvResponse:
                 pass
 
-            def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
+            def SPV(
+                self,
+                param_value: SpvInput,
+                timeout: Optional[int] = None,
+                cpe_id: Optional[str] = None,
+            ) -> int:
                 pass
 
         acs = MyAcs()  # noqa: F841
@@ -44,11 +59,14 @@ def test_cannot_instantiate_derived_acs_incorrect_signature():
             def connect(self, *args, **kwargs) -> None:
                 pass
 
-            # cpe_id: str param should be present
-            def GPV(self, parameter: str):
+            def GPV(self, parameter: GpvInput):
                 pass
 
-            def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
+            def SPV(
+                self,
+                cpe_id: Optional[str],
+                key_value: SpvInput,
+            ) -> int:
                 pass
 
         acs = MyAcs()  # noqa: F841
@@ -68,10 +86,20 @@ def test_can_instantiate_derived_acs_with_correct_structure():
         def connect(self, *args, **kwargs) -> None:
             pass
 
-        def GPV(self, cpe_id: str, parameter: str) -> None:
+        def GPV(
+            self,
+            param: GpvInput,
+            timeout: Optional[int] = None,
+            cpe_id: Optional[str] = None,
+        ) -> GpvResponse:
             pass
 
-        def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
+        def SPV(
+            self,
+            param_value: SpvInput,
+            timeout: Optional[int] = None,
+            cpe_id: Optional[str] = None,
+        ) -> int:
             pass
 
     acs = MyAcs()  # noqa: F841

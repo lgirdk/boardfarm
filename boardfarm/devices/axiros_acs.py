@@ -8,6 +8,7 @@ import time
 import warnings
 import xml.dom.minidom
 from datetime import datetime
+from typing import Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 import pexpect
@@ -22,6 +23,12 @@ from zeep.cache import InMemoryCache
 from zeep.transports import Transport
 from zeep.wsse.username import UsernameToken
 
+from boardfarm.devices.base_devices.acs_template import (
+    AcsTemplate,
+    GpvInput,
+    GpvResponse,
+    SpvInput,
+)
 from boardfarm.exceptions import (
     ACSFaultCode,
     CodeError,
@@ -40,8 +47,7 @@ warnings.simplefilter("always", UserWarning)
 
 logger = logging.getLogger("zeep.transports")
 
-
-default_timeout = 60 * 2
+_DEFAULT_TIMEOUT = 120
 
 
 class Intercept:
@@ -168,13 +174,13 @@ class Intercept:
             return attr
 
 
-class AxirosACS(Intercept, base_acs.BaseACS):
+class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
     """ACS connection class used to perform TR069 operations on stations/board."""
 
     model = "axiros_acs_soap"
     # should the following be dynamic?
     namespaces = {"http://www.w3.org/2001/XMLSchema-instance": None}
-    CPE_wait_time = default_timeout
+    cpe_wait_time = _DEFAULT_TIMEOUT
     Count_retry_on_error = 3  # to be audited
     skip_capture = True
     _cpeid: str = ""
@@ -189,7 +195,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
     def cpeid(self, value: str):
         self._cpeid = value
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Initialize the variable that are used in establishing connection to the ACS and\
            Initialize an HTTP SOAP client which will authenticate with the ACS server.
 
@@ -214,7 +220,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         self.aux_url = self.kwargs.pop("aux_url", None)
         self.tcpdump_filter = ""
         self.aux_iface_dut = self.kwargs.pop("aux_iface", "aux0")
-        AxirosACS.CPE_wait_time = self.kwargs.pop("wait_time", AxirosACS.CPE_wait_time)
+        AxirosACS.cpe_wait_time = self.kwargs.pop("wait_time", AxirosACS.cpe_wait_time)
         self.firewall = NwFirewall(self)
 
         if self.options:
@@ -268,6 +274,17 @@ class AxirosACS(Intercept, base_acs.BaseACS):
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
         self.dns = DNS(self, self.options, self.aux_ip, self.aux_url)
+
+    def connect(self, *args, **kwargs) -> None:
+        """Connect to ACS & initialize session. Can be done using any http(s) library.
+
+        Here you can run initial commands in order to land on specific prompt
+        and/or initialize system
+        E.g. enter username/password, set stuff in device config or disable pagination
+
+        :raises NotImplementedError: raises exception if not implemented
+        """
+        raise NotImplementedError
 
     def enable_capture(self):
         self.skip_capture = False
@@ -540,7 +557,7 @@ class AxirosACS(Intercept, base_acs.BaseACS):
             raise CodeError("Invalid action: " + action)
 
         sync = kwargs.get("sync", True)
-        wait_time = kwargs.get("wait_time", AxirosACS.CPE_wait_time)
+        wait_time = kwargs.get("wait_time", AxirosACS.cpe_wait_time)
 
         CmdOptTypeStruct_data = self._get_cmd_data(Sync=sync, Lifetime=wait_time)
 
@@ -995,50 +1012,83 @@ class AxirosACS(Intercept, base_acs.BaseACS):
                 continue
         return None
 
-    def GPV(self, param, timeout=default_timeout):
+    def GPV(
+        self,
+        param: GpvInput,
+        timeout: Optional[int] = None,
+        cpe_id: Optional[str] = None,
+    ) -> GpvResponse:
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
-        :param param: path to the key that assigned value will be retrieved
-        :return: value as a dictionary
+        :param param: name of the parameter(s) to perform RPC
+        :type param: GpvInput
+        :param timeout: to set the Lifetime Expiry time, defaults to None
+        :type timeout: Optional[int], optional
+        :param cpe_id: cpe identifier, defaults to None
+        :type cpe_id: Optional[str], optional
+        :return: GPV response with keys, value and datatype
+            E.g.[
+                    {
+                    'key':'Device.WiFi.AccessPoint.1.AC.1.Alias',
+                    'value':'mok_1',
+                    'type':'string'
+                    }
+                ]
+        :rtype: GpvResponse
+        :raises: TR069ResponseError if the status is not (0/1)
         """
-        p, cmd, cpe_id = self._build_input_structs(
-            self.cpeid, param, action="GPV", wait_time=timeout
+        timeout = timeout or _DEFAULT_TIMEOUT
+        p, cmd, client_id = self._build_input_structs(
+            cpe_id or self.cpeid, param, action="GPV", wait_time=timeout
         )
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.GetParameterValues(p, cmd, cpe_id)
+            response = self.client.service.GetParameterValues(p, cmd, client_id)
         return AxirosACS._parse_soap_response(response)
 
-    def SPV(self, param_value, timeout=default_timeout):
+    def SPV(
+        self,
+        param_value: SpvInput,
+        timeout: Optional[int] = None,
+        cpe_id: Optional[str] = None,
+    ) -> int:
         """Modify the value of one or more CPE Parameters.
 
         It can take a single k,v pair or a list of k,v pairs.
+
         :param param_value: dictionary that contains the path to the key and
-        the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
-        :param timeout: to set the Lifetime Expiry time
+            the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
+        :type param_value: SpvInput
+        :param timeout: to set the Lifetime Expiry time, defaults to None
+        :type timeout: Optional[int], optional
+        :param cpe_id: cpe identifier, defaults to None
+        :type cpe_id: Optional[str], optional
+        :raises TR069ResponseError: if the status is not (0/1)
         :return: status of the SPV as int (0/1)
-        :raises: TR069ResponseError if the status is not (0/1)
+        :rtype: int
         """
-        p, cmd, cpe_id = self._build_input_structs(
-            self.cpeid, param_value, action="SPV", wait_time=timeout
+        timeout = timeout or _DEFAULT_TIMEOUT
+        p, cmd, cpeid = self._build_input_structs(
+            cpe_id or self.cpeid, param_value, action="SPV", wait_time=timeout
         )
 
         with self.client.settings(raw_response=True):
-            response = self.client.service.SetParameterValues(p, cmd, cpe_id)
+            response = self.client.service.SetParameterValues(p, cmd, cpeid)
         result = AxirosACS._parse_soap_response(response)
         status = int(result[0]["value"])
         if status not in [0, 1]:
             raise TR069ResponseError("SPV Invalid status: " + str(status))
         return status
 
-    def GPN(self, param, next_level, timeout=default_timeout):
+    def GPN(self, param, next_level, timeout: Optional[int] = _DEFAULT_TIMEOUT):
         """This method is used to  discover the Parameters accessible on a particular CPE
 
         :param param: parameter to be discovered
         :type param: string
-        :next_level: displays the next level children of the object if marked true
+        :param next_level: displays the next level children of the object if marked true
         :type next_level: boolean
-        :type timeout: to set the Lifetime Expiry time
+        :param timeout: to set the Lifetime Expiry time, defaults to _DEFAULT_TIMEOUT
+        :type timeout: Optional[int]
         :return: value as a dictionary
         """
         p, cmd, cpe_id = self._build_input_structs(

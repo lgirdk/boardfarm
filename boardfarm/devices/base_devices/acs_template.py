@@ -1,10 +1,13 @@
 from abc import abstractmethod
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from boardfarm.lib.signature_checker import __MetaSignatureChecker
 
-SpvObject = Dict[str, Union[str, int, bool]]
-SpvStructure = List[SpvObject]
+GpvStruct = Dict[str, Union[str, int, bool]]
+SpvStruct = Dict[str, Union[str, int, bool]]
+SpvInput = Union[SpvStruct, List[SpvStruct]]
+GpvInput = Union[str, List[str]]
+GpvResponse = List[GpvStruct]
 
 
 class AcsTemplate(metaclass=__MetaSignatureChecker):
@@ -42,20 +45,53 @@ class AcsTemplate(metaclass=__MetaSignatureChecker):
         Here you can run initial commands in order to land on specific prompt
         and/or initialize system
         E.g. enter username/password, set stuff in device config or disable pagination"""
+        raise NotImplementedError
 
     @abstractmethod
-    def GPV(self, cpe_id: str, parameter: str) -> None:
-        """Send GetParamaterValues command via ACS server
+    def GPV(
+        self,
+        param: GpvInput,
+        timeout: Optional[int] = None,
+        cpe_id: Optional[str] = None,
+    ) -> GpvResponse:
+        """Send GetParamaterValues command via ACS server.
 
-        :param cpe_id: CPE idetifier.
-        :param parameter: TR069 parameter to get values of.
+        :param param: TR069 parameters to get values of
+        :type param: GpvInput
+        :param timeout: wait time for the RPC to complete
+        :type timeout: int, optional
+        :param cpe_id: CPE identifier, defaults to None
+        :type cpe_id: str, optional
+        :return: List of all the attributes with Key, Value and Datatype
+            E.g.[
+                    {
+                    'key':'Device.WiFi.AccessPoint.1.AC.1.Alias',
+                    'value':'mok_1',
+                    'type':'string'
+                    }
+                ]
+        :rtype: GpvResponse
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def SPV(self, cpe_id: str, key_value: SpvStructure) -> int:
+    def SPV(
+        self,
+        param_value: SpvInput,
+        timeout: Optional[int] = None,
+        cpe_id: Optional[str] = None,
+    ) -> int:
         """Send SetParamaterValues command via ACS server.
 
-        :param cpe_id: CPE idetifier.
-        :param key_value: dictionary that contains the path to the key and the value to be set. E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
-        :returns: integer status of command
+        :param param_value: dictionary that contains the path to the key and
+            the value to be set.
+            E.g. {'Device.WiFi.AccessPoint.1.AC.1.Alias':'mok_1'}
+        :type param_value: SpvInput
+        :param timeout: wait time for the RPC to complete
+        :type timeout: int, optional
+        :param cpe_id: CPE identifier, defaults to None
+        :type cpe_id: str, optional
+        :return: status of the SPV i.e. either 0 or 1
+        :rtype: int
         """
+        raise NotImplementedError
