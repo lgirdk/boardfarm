@@ -289,7 +289,6 @@ class LinuxDevice(BoardfarmDevice):
 
     def get_interface_ipv4addr(self, interface: str) -> str:
         """Get ipv4 address of interface."""
-        self._console.sendline(f"\nifconfig {interface}")
         return self._get_nw_interface_ipv4_address(interface)
 
     def get_interface_ipv6addr(self, interface: str) -> str:
