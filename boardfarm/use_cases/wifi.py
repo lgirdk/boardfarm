@@ -23,7 +23,7 @@ def get_wifi_client(band: float, network_type: str) -> WIFITemplate:
     :return: Wifi client
     :rtype: WIFITemplate
     """
-    dev = wifi_mgr.filter(network_type, band=str(band))[0]
+    dev = wifi_mgr.filter(network_type, band=band)[0]
     dev.band = band
     dev.network_type = network_type
     return dev

@@ -218,6 +218,7 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         self.options = self.kwargs.pop("options", None)
         self.aux_ip = self.kwargs.pop("aux_ip", None)
         self.aux_url = self.kwargs.pop("aux_url", None)
+        self.dev_array = kwargs.pop("dev_array", None)
         self.tcpdump_filter = ""
         self.aux_iface_dut = self.kwargs.pop("aux_iface", "aux0")
         AxirosACS.cpe_wait_time = self.kwargs.pop("wait_time", AxirosACS.cpe_wait_time)
@@ -274,6 +275,9 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         # this should be populater ONLY when using __main__
         self.cpeid = self.kwargs.pop("cpeid", None)
         self.dns = DNS(self, self.options, self.aux_ip, self.aux_url)
+        if not self.dev_array:
+            self.legacy_add = True
+            self.dev_array = "acs_servers"
 
     def connect(self, *args, **kwargs) -> None:
         """Connect to ACS & initialize session. Can be done using any http(s) library.

@@ -25,6 +25,7 @@ class DebianWAN(debian.DebianBox):
     ipv6_prefix = 64
     auth_dns = False
     mgmt_dns = None
+    gw: str = None
 
     def __init__(self, *args, **kwargs):
         self.parse_device_options(*args, **kwargs)

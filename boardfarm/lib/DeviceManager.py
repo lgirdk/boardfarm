@@ -87,6 +87,7 @@ class device_array_type(Enum):
     wlan_clients = 3
     FXS = 4
     softphones = 5
+    acs_servers = 6
 
     _arrays = {
         "wan_clients": [],
@@ -94,6 +95,7 @@ class device_array_type(Enum):
         "wlan_clients": wifi_mgr,
         "FXS": [],
         "softphones": [],
+        "acs_servers": [],
     }
 
 
@@ -353,3 +355,15 @@ def clean_device_manager():
     ].cell_contents
     while instances:
         instances.popitem()
+
+
+def get_device_manager() -> device_manager:
+    """Return device manager instance if already instantiated.
+
+    When you run boardfarm it will initialize the DeviceManager.
+
+    :return: device manager instance
+    :rtype: device_manager
+    """
+    devices = device_manager()
+    return devices
