@@ -1,5 +1,6 @@
+import random
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Optional, Union
 
 from debtcollector import moves
 
@@ -463,3 +464,12 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
         param ip_address: the ip address of the endpoint
         type ip_address: string
         """
+
+    def allocate_number(self, number: Optional[str] = None) -> str:
+        """Allocate a number from the sipserver number list"""
+        if number:
+            number_to_be_allocated = number
+        else:
+            number_to_be_allocated = random.choice(self.users)
+        self.users.remove(number_to_be_allocated)
+        return number_to_be_allocated

@@ -85,17 +85,10 @@ def pre_boot_env(config, env_helper, devices):
         raise DeviceDoesNotExistError("No mitm device (requested by environment)")
 
     if env_helper.voice_enabled():
-        dev_list = [
-            devices.sipcenter,
-            devices.softphone,
-        ] + getattr(devices, "FXS", [devices.lan, devices.lan2])
-        if env_helper.get_external_voip():
-            dev_list.append(devices.softphone2)
-        boardfarm.lib.voice.voice_configure(
-            dev_list,
-            devices.sipcenter,
-            config,
-        )
+        for voice_device in devices.get_device_array(
+            "softphones"
+        ) + devices.get_device_array("FXS"):
+            voice_device.phone_config(devices.sipcenter.gw)
 
     prov = getattr(config, "provisioner", None)
     if prov:
@@ -273,6 +266,13 @@ def post_boot_env(config, env_helper, devices):
             raise BootFail(
                 "Factory reset has to performed for tr069 provisioning. Env json with factory reset true should be used."
             )
+
+    if env_helper.voice_enabled():
+        devices.board.sw.configure_voice(
+            {"1": devices.fxs1.own_number, "2": devices.fxs2.own_number},
+            "1234",
+            devices.sipcenter.data_ip,
+        )
     if hasattr(devices.board, "post_boot_env"):
         devices.board.post_boot_env()
 

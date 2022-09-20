@@ -134,7 +134,12 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         self.expect(self.prompt)
         return "No such file or directory" not in self.before
 
+    def get_number(self):
+        sipserver = get_device_by_name("sipcenter")
+        return sipserver.allocate_number(self.own_number)
+
     def phone_config(self, sip_server: str = "") -> None:
+        self.own_number = self.get_number()
         super().phone_config(sip_server)
 
     def phone_start(self) -> None:
