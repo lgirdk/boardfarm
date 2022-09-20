@@ -55,3 +55,7 @@ class UseCaseFailure(BoardfarmException):
 
 class NotSupportedError(BoardfarmException):
     """Raise this on feature not supported."""
+
+
+class SNMPError(BoardfarmException):
+    """Raise this on any SNMP related error."""
