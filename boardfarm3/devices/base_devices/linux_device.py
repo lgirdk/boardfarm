@@ -18,6 +18,7 @@ from boardfarm3.exceptions import (
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
+from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, dns_lookup, http_get
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 
 
@@ -37,6 +38,7 @@ class LinuxDevice(BoardfarmDevice):
         super().__init__(config, cmdline_args)
         self._console: BoardfarmPexpect = None
         self._shell_prompt = ["[\\w-]+@[\\w-]+:[\\w/~]+#"]
+        self.firewall = IptablesFirewall(self._console)
 
         if "options" in self._config:
             options = [x.strip() for x in self._config["options"].split(",")]
@@ -584,3 +586,25 @@ class LinuxDevice(BoardfarmDevice):
             raise BoardfarmException(
                 f"Failed to kill webfsd process running on port {port}"
             )
+
+    def http_get(self, url: str, timeout: int) -> HTTPResult:
+        """Peform http get (via curl) and return parsed result.
+
+        :param url: url to get the response
+        :type url: str
+        :param timeout: connection timeout for the curl command in seconds
+        :type timeout: int
+        :return: parsed http response
+        :rtype: HTTPResult
+        """
+        return http_get(self._console, url, timeout)
+
+    def dns_lookup(self, domain_name: str) -> List[Dict[str, Any]]:
+        """Run ``dig`` command and return the parsed result.
+
+        :param domain_name: domain name which needs lookup
+        :type domain_name: str
+        :return: parsed dig command output
+        :rtype: List[Dict[str, Any]]
+        """
+        return dns_lookup(self._console, domain_name)

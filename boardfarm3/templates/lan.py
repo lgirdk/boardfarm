@@ -3,13 +3,17 @@
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from ipaddress import IPv4Address
-from typing import Any, Dict, Generator, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
+
+from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
 # pylint: disable=too-few-public-methods,too-many-public-methods, duplicate-code
 
 
 class LAN(ABC):
     """Boardfarm LAN device template."""
+
+    firewall: IptablesFirewall
 
     @property
     @abstractmethod
@@ -256,5 +260,29 @@ class LAN(ABC):
         """Stop http service running on given port.
 
         :param port: port number
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def http_get(self, url: str, timeout: int) -> HTTPResult:
+        """Peform http get and return parsed result.
+
+        :param url: url to get the response
+        :type url: str
+        :param timeout: connection timeout for the curl command in seconds
+        :type timeout: int
+        :return: parsed http response
+        :rtype: HTTPResult
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def dns_lookup(self, domain_name: str) -> List[Dict[str, Any]]:
+        """Perform ``dig`` command in the devices to resolve DNS.
+
+        :param domain_name: domain name which needs lookup
+        :type domain_name: str
+        :return: parsed dig command ouput
+        :rtype: List[Dict[str, Any]]
         """
         raise NotImplementedError

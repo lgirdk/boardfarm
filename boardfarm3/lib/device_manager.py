@@ -8,6 +8,7 @@ from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.exceptions import DeviceNotFound
 
 T = TypeVar("T")  # pylint: disable=invalid-name
+_DEVICE_MANAGER_INSTANCE = None
 
 
 class DeviceManager:
@@ -18,7 +19,11 @@ class DeviceManager:
 
         :param plugin_manager: plugin manager
         """
+        global _DEVICE_MANAGER_INSTANCE  # pylint: disable=global-statement
+        if _DEVICE_MANAGER_INSTANCE is not None:
+            raise ValueError("DeviceManager is already initialized.")
         self._plugin_manager = plugin_manager
+        _DEVICE_MANAGER_INSTANCE = self
 
     def get_devices_by_type(self, device_type: Type[T]) -> Dict[str, T]:
         """Get devices of given type.
@@ -59,3 +64,17 @@ class DeviceManager:
         :param device_name: name of device to unregister
         """
         self._plugin_manager.set_blocked(device_name)
+
+
+def get_device_manager() -> DeviceManager:
+    """Return device manager instance if already instantiated.
+
+    When you run boardfarm it will initialize the DeviceManager.
+
+    :raises ValueError: when device manager in not instantiated
+    :return: device manager instance
+    :rtype: DeviceManager
+    """
+    if _DEVICE_MANAGER_INSTANCE is None:
+        raise ValueError("DeviceManager is not instantiated.")
+    return _DEVICE_MANAGER_INSTANCE

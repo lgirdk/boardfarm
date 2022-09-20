@@ -23,6 +23,7 @@
     requires-python = ">=3.6"
 
     dependencies = [
+        "beautifulsoup4",
         "jc",
         "nested_lookup",
         "netaddr",

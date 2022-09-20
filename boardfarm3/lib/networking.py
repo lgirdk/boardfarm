@@ -3,11 +3,13 @@
 import re
 from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address
-from typing import Any, DefaultDict, Dict, List, Optional, Protocol, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Protocol, Tuple, Union
 
+import jc
 import pexpect
+from bs4 import BeautifulSoup
 
-from boardfarm3.exceptions import SCPConnectionError
+from boardfarm3.exceptions import SCPConnectionError, UseCaseFailure
 from boardfarm3.lib.parsers.iptables_parser import IptablesParser
 from boardfarm3.lib.parsers.nslookup_parser import NslookupParser
 
@@ -492,3 +494,58 @@ class DNS:
             self.hosts_v6[f"{self._device_name}{self._dns_name_suffix}"].append(
                 str(ipv6)
             )
+
+
+class HTTPResult:  # pylint: disable=too-few-public-methods
+    """Class to save the object of parsed HTTP response."""
+
+    def __init__(self, response: str) -> None:
+        """Parse the response and save it as an instance.
+
+        :param response: response from HTTP request
+        :type response: str
+        :raises UseCaseFailure: in case the response has some error
+        """
+        self.response = response
+        self.raw, self.code, self.beautified_text = self._parse_response(response)
+
+    @staticmethod
+    def _parse_response(response: str) -> Tuple[str, str, str]:
+        if "Connection refused" in response or "Connection timed out" in response:
+            raise UseCaseFailure(f"Curl Failure due to the following reason {response}")
+        raw = re.findall(r"\<(\!DOC|head).*\>", response, re.S)[0]
+        code = re.findall(r"< HTTP\/.*\s(\d+)", response)[0]
+        beautified_text = BeautifulSoup(raw, "html.parser").prettify()
+        return raw, code, beautified_text
+
+
+def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
+    """Peform http get (via curl) and return parsed result.
+
+    :param console: console or device instance
+    :type console: _LinuxConsole
+    :param url: url to get the response
+    :type url: str
+    :param timeout: connection timeout for the curl command in seconds
+    :type timeout: int
+    :return: parsed http response
+    :rtype: HTTPResult
+    """
+    return HTTPResult(
+        console.execute_command(f"curl -v --connect-timeout {timeout} {url}")
+    )
+
+
+def dns_lookup(console: _LinuxConsole, domain_name: str) -> List[Dict[str, Any]]:
+    """Perform ``dig`` command in the devices to resolve DNS.
+
+    :param console: console or device instance
+    :type console: _LinuxConsole
+    :param domain_name: domain name which needs lookup
+    :type domain_name: str
+    :return: parsed dig command ouput
+    :rtype: List[Dict[str, Any]]
+    """
+    return jc.parsers.dig.parse(
+        console.execute_command(f"dig {domain_name}").split(";", 1)[-1]
+    )
