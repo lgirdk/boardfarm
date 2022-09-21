@@ -1,3 +1,15 @@
+## 2022.37.0 (2022-09-21)
+
+### Feat
+
+- **sip_template.py**: add endpoints specific functions
+- add check for multicast server count
+- **devices:linux.py,-use_cases:networking.py**: add device class implementation and usecases of the IPerfTrafficGenerator
+
+### Fix
+
+- add timeout to parse_sip_trace usecase
+
 ## 2022.35.0 (2022-08-31)
 
 ### Feat
