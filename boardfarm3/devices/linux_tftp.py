@@ -22,7 +22,9 @@ class LinuxTFTP(LinuxDevice, TFTP):
 
     _tftpboot_dir = "/tftpboot"
     _internet_access_cmd = "mgmt"
-    _last_ip_octect = 10
+    # This value will be updated on every LinuxTFTP device boot
+    # to make sure every LinuxTFTP device has a unique static ip address
+    _last_static_ip_address = IPv4Address("192.168.1.10")
 
     @hookimpl  # type: ignore
     def boardfarm_server_boot(self) -> None:
@@ -30,10 +32,8 @@ class LinuxTFTP(LinuxDevice, TFTP):
         _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
         self._connect()
         # TODO: to be cleaned up once Docker factory comes into place
-        LinuxTFTP._last_ip_octect += 1
-        self._set_eth_interface_ipv4_address(
-            IPv4Address(f"192.168.1.{LinuxTFTP._last_ip_octect}")
-        )
+        self._set_eth_interface_ipv4_address(LinuxTFTP._last_static_ip_address)
+        LinuxTFTP._last_static_ip_address += 1
 
     @hookimpl  # type: ignore
     def boardfarm_post_deploy_devices(self, device_manager: DeviceManager) -> None:
@@ -56,9 +56,9 @@ class LinuxTFTP(LinuxDevice, TFTP):
     def _set_eth_interface_ipv4_address(self, static_ip: IPv4Address) -> None:
         """Set a static IPv4 on the DUT connected interface.
 
-        :param static_ip: ipv4 address
-        :type static_ip: str
-        :raise: ConfigurationFailure if IP could not be set
+        :param static_ip: static ipv4 address
+        :type static_ip: IPv4Address
+        :raises ConfigurationFailure: On failed to set given static ip
         """
         self._console.execute_command(
             f"ifconfig {self.eth_interface} {static_ip} netmask 255.255.255.0 up",
