@@ -149,18 +149,21 @@ class SNMPv2:
         return self.device.before
 
     def parse_snmp_output(self, oid, output, value=None):
-        result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
+        result_pattern = rf".{oid}\s+\=\s+((\S+)\:\s+(\"?.*\"?)|(\"?.*\"?))\r\n"
         match = re.search(result_pattern, output)
         if not match:
             raise SNMPError(output)
         if value:
             value = value.strip("'").strip("0x")
             assert (
-                value in match[2]
-            ), f"Set value did not match with output value: Expected: {value} Actual: {match[2]}"
+                value in match[3]
+            ), f"Set value did not match with output value: Expected: {value} Actual: {match[3]}"
 
-        """Returns the list containing the get value, type of the value and output recieved from snmp command"""
-        return match[2].replace('"', ""), match[1], match.group()
+        """Returns the list containing the get value, type of the value(if output is not empty string) and output recieved from snmp command"""
+        if match[3]:
+            return match[3].replace('"', ""), match[1], match.group()
+        else:
+            return match[1], match.group()
 
     def parse_snmpwalk_output(self, oid, output):
         result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
