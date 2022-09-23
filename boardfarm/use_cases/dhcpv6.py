@@ -158,6 +158,7 @@ def parse_dhcpv6_trace(
     on_which_device: Union[DebianLAN, DebianWAN, DebianISCProvisioner],
     fname: str,
     timeout: int = 30,
+    additional_args: str = "dhcpv6",
 ) -> List[DHCPV6TraceData]:
     """Read and filter the DHCPV6 packets from the pcap file and returns the DHCPV6 packets.
 
@@ -167,12 +168,17 @@ def parse_dhcpv6_trace(
     :type fname: str
     :param timeout: time out for tshark command to be executed, defaults to 30
     :type timeout: int
+    :param additional_args: additional arguments for tshark command to
+                            display filtered output, defaults to dhcpv6
+    :type additional_args: str
     :return: Sequence of DHCPV6 packets filtered from captured pcap file
     :rtype: List[DHCPV6TraceData]
     """
     try:
         out = on_which_device.tshark_read_pcap(
-            fname=fname, additional_args="-Y dhcpv6 -T json", timeout=timeout
+            fname=fname,
+            additional_args=f"-Y '{additional_args}' -T json",
+            timeout=timeout,
         )
         output: List[DHCPV6TraceData] = []
         data = "[" + out.split("[", 1)[-1].replace("\r\n", "")
