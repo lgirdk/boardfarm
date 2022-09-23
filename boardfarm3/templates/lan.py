@@ -286,3 +286,29 @@ class LAN(ABC):
         :rtype: List[Dict[str, Any]]
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def set_static_ip(
+        self, interface: str, ip_address: IPv4Address, netmask: IPv4Address
+    ) -> None:
+        """Set given static ip for the LAN.
+
+        :param interface: interface name
+        :type interface: str
+        :param ip_address: static ip address
+        :type ip_address: IPv4Address
+        :param netmask: netmask
+        :type netmask: IPv4Address
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
+        """Set given ip address as default gateway address for given interface.
+
+        :param ip_address: gateway ip address
+        :type ip_address: IPv4Address
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError

@@ -3,8 +3,9 @@
 import binascii
 import logging
 import re
+from argparse import Namespace
 from ipaddress import AddressValueError, IPv4Address
-from typing import Any, Optional, Union
+from typing import Dict, Optional, Union
 
 import pexpect
 from termcolor import colored
@@ -19,9 +20,15 @@ _LOGGER = logging.getLogger(__name__)
 class LinuxLAN(LinuxDevice, LAN):
     """Boardfarm LAN device."""
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initialize linux LAN device."""
-        super().__init__(*args, **kwargs)
+    def __init__(self, config: Dict, cmdline_args: Namespace) -> None:
+        """Initialize linux LAN device.
+
+        :param config: device configuration
+        :type config: Dict
+        :param cmdline_args: command line arguments
+        :type cmdline_args: Namespace
+        """
+        super().__init__(config, cmdline_args)
         self.ipv4_client_started: bool = False
 
     @property
@@ -336,7 +343,7 @@ class LinuxLAN(LinuxDevice, LAN):
                 code_12 = ":".join([f"{j}{k}" for j, k in zip(hex_name, hex_name)])
                 len_12 = hex(len(self.device_name)).replace("0x", "").zfill(2)
                 option_17 = (
-                    f"00:00:0D:E9:00:0b:00:06:42:46:56:45:52:30:00:0c:00:"
+                    "00:00:0D:E9:00:0b:00:06:42:46:56:45:52:30:00:0c:00:"
                     f"{len_12}:{code_12}:00:0d:00:06:42:46:43:4c:41:4e"
                 )
                 self._console.sendline("cat >> /etc/dhcp/dhclient.conf << EOF")
@@ -344,3 +351,27 @@ class LinuxLAN(LinuxDevice, LAN):
                 self._console.sendline("")
                 self._console.sendline("EOF")
                 self._console.expect(self._shell_prompt)
+
+    def set_static_ip(
+        self, interface: str, ip_address: IPv4Address, netmask: IPv4Address
+    ) -> None:
+        """Set given static ip for the LAN.
+
+        :param interface: interface name
+        :type interface: str
+        :param ip_address: static ip address
+        :type ip_address: IPv4Address
+        :param netmask: netmask
+        :type netmask: IPv4Address
+        """
+        raise NotImplementedError
+
+    def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
+        """Set given ip address as default gateway address for given interface.
+
+        :param ip_address: gateway ip address
+        :type ip_address: IPv4Address
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError
