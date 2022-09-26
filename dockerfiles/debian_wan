@@ -44,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tftpd-hpa=5.2+20150808-1+b1 \
     traceroute=1:2.1.0-2 \
     tshark=2.6.20-0+deb10u2 \
+    vsftpd=3.0.3-12 \
     wget=1.20.1-1.1 \
     xinetd=1:2.3.15.3-1 \
     xxd=2:8.1.0875-5 \

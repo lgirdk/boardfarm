@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl=7.64.0-4+deb10u2 \
     dante-server=1.4.2+dfsg-6 \
     dnsutils=1:9.11.5.P4+dfsg-5.1+deb10u6 \
+    ftp=0.17-34.1 \
     iperf=2.0.12+dfsg1-2 \
     iperf3=3.6-2 \
     iproute2=4.20.0-2+deb10u1 \
