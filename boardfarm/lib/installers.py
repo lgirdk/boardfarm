@@ -689,16 +689,18 @@ def install_snmp(device):
         apt_install(device, "snmp")
 
 
-def install_vsftpd(device):
+def install_vsftpd(device, force=False):
     """Install vsftpd if not present.
 
     vsftpd is a FTP server for Unix-like systems, including Linux
     :param device: lan or wan
+    :param force: True or False
     :type device: Object
+    :type force: Boolean, optional
     :raises assertion: vsftpd install failed
     """
     try:
-        _configure_vsftpd(device)
+        _configure_vsftpd(device, force=force)
     except Exception as e:
         raise Exception(f"vsftpd Installation Failed: {e}")
 
@@ -716,25 +718,28 @@ def uninstall_vsftpd(device):
         raise Exception(f"vsftpd Uninstall Failed: {e}")
 
 
-def _configure_vsftpd(device, remove=False):
+def _configure_vsftpd(device, remove=False, force=False):
     """Install vsftpd if not present.
 
     vsftpd is a FTP server for Unix-like systems, including Linux
     :param device: lan or wan
+    :param force: True or False
     :type device: Object
     :param remove: True or False, defaults to False
     :type remove: Boolean, optional
+    :type force: Boolean, optional
     """
     if not remove:
-        device.sendline(
-            "{}apt-get update".format(
-                device.get_shim_prefix()
-                if getattr(device, "get_shim_prefix", "")
-                else ""
+        if force:
+            device.sendline(
+                "{}apt-get update".format(
+                    device.get_shim_prefix()
+                    if getattr(device, "get_shim_prefix", "")
+                    else ""
+                )
             )
-        )
-        device.expect(device.prompt, timeout=90)
-        apt_install(device, "vsftpd")
+            device.expect(device.prompt, timeout=90)
+            apt_install(device, "vsftpd", force=force)
         device.sendline(
             'sed -i "s/pam_service_name=vsftpd/pam_service_name=ftp/g" /etc/vsftpd.conf'
         )
