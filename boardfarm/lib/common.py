@@ -1669,9 +1669,9 @@ def ftp_useradd(device):
     index = device.expect(["already exists"] + [] + device.prompt, timeout=10)
     if index != 0:
         device.sendline("passwd client")
-        device.expect("Enter new UNIX password:", timeout=10)
+        device.expect(r"(?i)(enter ){0,1}new( unix){0,1} password:", timeout=10)
         device.sendline("client")
-        device.expect("Retype new UNIX password:", timeout=10)
+        device.expect(r"(?i)retype new( unix){0,1} password:", timeout=10)
         device.sendline("client")
         device.expect(device.prompt, timeout=10)
         device.sendline('echo "/usr/sbin/nologin" >> /etc/shells')
