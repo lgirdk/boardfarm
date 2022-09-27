@@ -1,7 +1,6 @@
 """Parser module for iptables command output."""
 
 import re
-from typing import Dict, List
 
 # TODO: Rewrite this library in a better way
 
@@ -9,14 +8,14 @@ from typing import Dict, List
 class IptablesParser:
     """Parse the iptables from table format to dict."""
 
-    def _get_headers(self, ip_tables: str) -> List[str]:
+    def _get_headers(self, ip_tables: str) -> list[str]:
         for line in ip_tables.splitlines():
             if line.startswith("num"):
                 header = line.split()
                 break
         return header
 
-    def iptables(self, ip_tables: str) -> Dict[str, List[Dict]]:
+    def iptables(self, ip_tables: str) -> dict[str, list[dict]]:
         """Return parsed given iptables output.
 
         :param ip_tables: iptables command output
@@ -27,10 +26,10 @@ class IptablesParser:
         headers = self._get_headers(ip_tables)
         split_chain = re.split("Chain", ip_tables)
         key = None
-        table_rule: Dict[str, List[Dict]] = {}
+        table_rule: dict[str, list[dict]] = {}
         # pylint: disable=too-many-nested-blocks, consider-using-enumerate
         for i in range(len(split_chain)):
-            rule_data: List[Dict] = []
+            rule_data: list[dict] = []
             for rule in split_chain[i].splitlines():
                 rule_details = {}
                 if re.match(r"\s[A-Za-z]", rule):
@@ -49,7 +48,7 @@ class IptablesParser:
         assert table_rule, "Invalid table name or Table doesn't exist"
         return table_rule
 
-    def ip6tables(self, ip6_tables: str) -> Dict[str, List[Dict]]:
+    def ip6tables(self, ip6_tables: str) -> dict[str, list[dict]]:
         """Return parsed given ip6tables output.
 
         :param ip_tables: ip6tables command output
@@ -61,7 +60,7 @@ class IptablesParser:
         header.remove("opt")
         split_chain = re.split("Chain", ip6_tables)
         key = None
-        table_rule: Dict[str, List[Dict]] = {}
+        table_rule: dict[str, list[dict]] = {}
         # pylint: disable=too-many-nested-blocks, consider-using-enumerate
         for i in range(len(split_chain)):
             rule_data = []

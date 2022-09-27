@@ -1,7 +1,7 @@
 """SSH connection module."""
 
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pexpect
 
@@ -17,9 +17,9 @@ class LdapAuthenticatedSerial(SSHConnection):
         name: str,
         ip_addr: str,
         ldap_credentials: str,
-        shell_prompt: List[str],
+        shell_prompt: list[str],
         port: int = 22,
-        **kwargs: Dict[str, Any],  # ignore other arguments
+        **kwargs: dict[str, Any],  # ignore other arguments
     ) -> None:
         """Initialize ldap authenticated serial connection.
 

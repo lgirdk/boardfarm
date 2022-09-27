@@ -4,7 +4,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from pysmi.codegen import JsonCodeGen
 from pysmi.compiler import MibCompiler
@@ -21,16 +21,16 @@ class MibsCompiler:
 
     # pylint: disable=too-few-public-methods
 
-    def __init__(self, mibs_dirs: List[str]):
+    def __init__(self, mibs_dirs: list[str]):
         """Initialize MIBs to JSON compiler.
 
         :param mibs_dirs: mibs directories
         """
-        self._mibs_dict: Dict[str, Dict] = {}
+        self._mibs_dict: dict[str, dict] = {}
         self._compile_mibs(mibs_dirs)
 
     @staticmethod
-    def _get_mib_names(mibs_dirs: List[str]) -> List[str]:
+    def _get_mib_names(mibs_dirs: list[str]) -> list[str]:
         """Get mib names from given directories.
 
         :param mibs_dirs: mibs directories
@@ -50,7 +50,7 @@ class MibsCompiler:
             if "oid" in value and "objects" not in value:
                 self._mibs_dict[item] = value
 
-    def _compile_mibs(self, mibs_dirs: List[str]) -> None:
+    def _compile_mibs(self, mibs_dirs: list[str]) -> None:
         """Compile mibs in the given directories.
 
         :param mibs_dirs: mibs directories

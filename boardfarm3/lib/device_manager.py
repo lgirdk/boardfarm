@@ -1,6 +1,6 @@
 """Boardfarm device manager."""
 
-from typing import Dict, Type, TypeVar
+from typing import TypeVar
 
 from pluggy import PluginManager
 
@@ -25,7 +25,7 @@ class DeviceManager:
         self._plugin_manager = plugin_manager
         _DEVICE_MANAGER_INSTANCE = self
 
-    def get_devices_by_type(self, device_type: Type[T]) -> Dict[str, T]:
+    def get_devices_by_type(self, device_type: type[T]) -> dict[str, T]:
         """Get devices of given type.
 
         :param device_type: device type
@@ -37,7 +37,7 @@ class DeviceManager:
             if isinstance(plugin, device_type)
         }
 
-    def get_device_by_type(self, device_type: Type[T]) -> T:
+    def get_device_by_type(self, device_type: type[T]) -> T:
         """Get first device of the given type.
 
         In order to get all devices of given type use get_devices_by_type.

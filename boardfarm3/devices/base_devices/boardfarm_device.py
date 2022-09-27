@@ -1,7 +1,6 @@
 """Boardfarm base device template."""
 
 from argparse import Namespace
-from typing import Dict
 
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
@@ -9,17 +8,17 @@ from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 class BoardfarmDevice:
     """Boardfarm base device which all devices inherit from."""
 
-    def __init__(self, config: Dict, cmdline_args: Namespace) -> None:
+    def __init__(self, config: dict, cmdline_args: Namespace) -> None:
         """Initialize boardfarm base device.
 
         :param config: device configuration
         :param cmdline_args: command line arguments
         """
-        self._config: Dict = config
+        self._config: dict = config
         self._cmdline_args = cmdline_args
 
     @property
-    def config(self) -> Dict:
+    def config(self) -> dict:
         """Get device configuration.
 
         :returns: device configuration
@@ -42,7 +41,7 @@ class BoardfarmDevice:
         """
         return self._config.get("type")
 
-    def get_interactive_consoles(self) -> Dict[str, BoardfarmPexpect]:
+    def get_interactive_consoles(self) -> dict[str, BoardfarmPexpect]:
         """Get interactive consoles from device.
 
         :returns: interactive consoles of the device

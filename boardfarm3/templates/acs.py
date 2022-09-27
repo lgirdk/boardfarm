@@ -1,6 +1,6 @@
 """Boardfarm LAN device template."""
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 # pylint: disable=invalid-name
 
@@ -9,7 +9,7 @@ class ACS(ABC):
     """Boardfarm LAN device template."""
 
     @abstractmethod
-    def GPA(self, param: str) -> List[Dict]:
+    def GPA(self, param: str) -> list[dict]:
         """Get parameter attribute of the parameter specified.
 
         Example usage:
@@ -23,8 +23,8 @@ class ACS(ABC):
 
     @abstractmethod
     def SPA(
-        self, param: Union[List[Dict], Dict], **kwargs: Union[int, str]
-    ) -> List[Dict]:
+        self, param: Union[list[dict], dict], **kwargs: Union[int, str]
+    ) -> list[dict]:
         """Set parameter attribute of the parameter specified.
 
         Example usage :
@@ -40,7 +40,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def GPV(self, param: str, timeout: int) -> List[Dict]:
+    def GPV(self, param: str, timeout: int) -> list[dict]:
         """Get value from CM by ACS for a single given parameter key path synchronously.
 
         :param param: path to the key that assigned value will be retrieved
@@ -50,7 +50,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def SPV(self, param_value: Dict[str, Any], timeout: int) -> int:
+    def SPV(self, param_value: dict[str, Any], timeout: int) -> int:
         """Modify the value of one or more CPE Parameters.
 
         It can take a single k,v pair or a list of k,v pairs.
@@ -64,7 +64,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def FactoryReset(self) -> List[Dict]:
+    def FactoryReset(self) -> list[dict]:
         """Execute FactoryReset RPC.
 
         Note: This method only informs if the FactoryReset request initiated or not.
@@ -75,7 +75,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def Reboot(self, command_key: str) -> List[Dict]:
+    def Reboot(self, command_key: str) -> list[dict]:
         """Execute Reboot.
 
         :return: reboot RPC response

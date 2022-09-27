@@ -1,7 +1,7 @@
 """nslookup command line utility output parser module."""
 
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4AddressRegex
 
@@ -10,7 +10,7 @@ from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, ValidIpv4Address
 class NslookupParser:
     """nslookup command line utility output parser module."""
 
-    def parse_nslookup_output(self, response: str) -> Dict[str, Any]:
+    def parse_nslookup_output(self, response: str) -> dict[str, Any]:
         """Parse the DNS query response into dict obj.
 
         :param response: nslookup CLI output
@@ -18,7 +18,7 @@ class NslookupParser:
         :return:
         :rtype: Dict[str, str]
         """
-        dns_dict_obj: Dict[str, Any] = {}
+        dns_dict_obj: dict[str, Any] = {}
         val = response.replace("\t\t", " ").replace("\t", " ")
         # pylint: disable-next=too-many-nested-blocks
         for i in val.split("\r\n\r\n"):
@@ -30,7 +30,7 @@ class NslookupParser:
                 dns_dict_obj["dns_server"] = matches
             elif "Name" in i:
                 dns_dict_obj["domain_name"] = re.search(r"(?:[\da-z\._]+)\.(\w+)", i)[0]
-                ips: List[str] = []
+                ips: list[str] = []
                 for value in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]:
                     ips.extend(matches[0] for matches in re.finditer(value, i))
                 dns_dict_obj["domain_ip_addr"] = ips

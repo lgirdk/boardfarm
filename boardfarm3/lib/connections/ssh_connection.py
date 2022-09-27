@@ -1,7 +1,7 @@
 """SSH connection module."""
 
 
-from typing import Any, Dict, List
+from typing import Any
 
 import pexpect
 
@@ -17,10 +17,10 @@ class SSHConnection(BoardfarmPexpect):
         name: str,
         ip_addr: str,
         username: str,
-        shell_prompt: List[str],
+        shell_prompt: list[str],
         port: int = 22,
         password: str = None,
-        **kwargs: Dict[str, Any],  # ignore other arguments
+        **kwargs: dict[str, Any],  # ignore other arguments
     ) -> None:
         """Initialize SSH connection.
 

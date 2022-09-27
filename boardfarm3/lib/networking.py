@@ -3,7 +3,7 @@
 import re
 from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address
-from typing import Any, DefaultDict, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, DefaultDict, Optional, Protocol, Union
 
 import jc
 import pexpect
@@ -32,7 +32,7 @@ class _LinuxConsole(Protocol):
         :param string: string to send
         """
 
-    def expect(self, pattern: Union[str, List[str]], timeout: int = -1) -> int:
+    def expect(self, pattern: Union[str, list[str]], timeout: int = -1) -> int:
         """Wait for given regex pattern(s) and return the match index.
 
         :param pattern: expected regex pattern or pattern list
@@ -41,7 +41,7 @@ class _LinuxConsole(Protocol):
         :type timeout: int
         """
 
-    def expect_exact(self, pattern: Union[str, List[str]], timeout: int = -1) -> int:
+    def expect_exact(self, pattern: Union[str, list[str]], timeout: int = -1) -> int:
         """Wait for given exact pattern(s) and return the match index.
 
         :param pattern: expected pattern or pattern list
@@ -56,7 +56,7 @@ def start_tcpdump(
     interface: str,
     port: Optional[str],
     output_file: str = "pkt_capture.pcap",
-    filters: Optional[Dict] = None,
+    filters: Optional[dict] = None,
     additional_filters: Optional[str] = "",
 ) -> str:
     """Start tcpdump capture on given interface.
@@ -224,7 +224,7 @@ class IptablesFirewall:
 
     def get_iptables_list(
         self, opts: str = "", extra_opts: str = ""
-    ) -> Dict[str, List[Dict]]:
+    ) -> dict[str, list[dict]]:
         """Return iptables rules as dictionary.
 
         :param opts: command line arguments for iptables command
@@ -252,7 +252,7 @@ class IptablesFirewall:
 
     def get_ip6tables_list(
         self, opts: str = "", extra_opts: str = ""
-    ) -> Dict[str, List[Dict]]:
+    ) -> dict[str, list[dict]]:
         """Return ip6tables rules as dictionary.
 
         :param opts: command line arguments for ip6tables command
@@ -356,7 +356,7 @@ class NSLookup:
 
     def __call__(
         self, domain_name: str, opts: str = "", extra_opts: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run nslookup with given arguments and return the parsed results.
 
         :param domain_name: domain name to perform nslookup on
@@ -372,7 +372,7 @@ class NSLookup:
 
     def nslookup(
         self, domain_name: str, opts: str = "", extra_opts: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run nslookup with given arguments and return the parsed results.
 
         :param domain_name: domain name to perform nslookup on
@@ -510,7 +510,7 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
         self.raw, self.code, self.beautified_text = self._parse_response(response)
 
     @staticmethod
-    def _parse_response(response: str) -> Tuple[str, str, str]:
+    def _parse_response(response: str) -> tuple[str, str, str]:
         if "Connection refused" in response or "Connection timed out" in response:
             raise UseCaseFailure(f"Curl Failure due to the following reason {response}")
         raw = re.findall(r"\<(\!DOC|head).*\>", response, re.S)[0]
@@ -536,7 +536,7 @@ def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
     )
 
 
-def dns_lookup(console: _LinuxConsole, domain_name: str) -> List[Dict[str, Any]]:
+def dns_lookup(console: _LinuxConsole, domain_name: str) -> list[dict[str, Any]]:
     """Perform ``dig`` command in the devices to resolve DNS.
 
     :param console: console or device instance

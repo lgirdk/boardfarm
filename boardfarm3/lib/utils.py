@@ -2,7 +2,6 @@
 
 import os
 from ipaddress import IPv4Address
-from typing import List
 
 from netaddr import EUI, mac_unix_expanded
 
@@ -29,7 +28,7 @@ def get_pytest_name() -> str:
     )
 
 
-def ip_pool_to_list(start_ip: IPv4Address, end_ip: IPv4Address) -> List[IPv4Address]:
+def ip_pool_to_list(start_ip: IPv4Address, end_ip: IPv4Address) -> list[IPv4Address]:
     """Generate ip address list based on ip pool boundaries.
 
     :param start_ip: first ip of the pool

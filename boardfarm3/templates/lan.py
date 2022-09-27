@@ -1,9 +1,10 @@
 """Boardfarm LAN device template."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from contextlib import contextmanager
 from ipaddress import IPv4Address
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Optional, Union
 
 from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
@@ -118,7 +119,7 @@ class LAN(ABC):
         options: str = "",
         timeout: int = 50,
         json_output: bool = False,
-    ) -> Union[bool, Dict[str, Any]]:
+    ) -> Union[bool, dict[str, Any]]:
         """Ping remote host.
 
         Return True if ping has 0% loss
@@ -277,7 +278,7 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def dns_lookup(self, domain_name: str) -> List[Dict[str, Any]]:
+    def dns_lookup(self, domain_name: str) -> list[dict[str, Any]]:
         """Perform ``dig`` command in the devices to resolve DNS.
 
         :param domain_name: domain name which needs lookup

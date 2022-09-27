@@ -2,7 +2,6 @@
 
 import logging
 from argparse import ArgumentParser, Namespace
-from typing import Dict, List
 
 import jedi
 from pluggy import PluginManager
@@ -53,7 +52,7 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
 
 @hookimpl
 def boardfarm_cmdline_parse(
-    argparser: ArgumentParser, cmdline_args: List[str]
+    argparser: ArgumentParser, cmdline_args: list[str]
 ) -> Namespace:
     """Parse command line arguments.
 
@@ -65,7 +64,7 @@ def boardfarm_cmdline_parse(
 
 
 def _get_device_name_from_user(
-    devices_dict: Dict[str, BoardfarmDevice], exit_code: str
+    devices_dict: dict[str, BoardfarmDevice], exit_code: str
 ) -> str:
     """Get device name from user."""
     print("----------------------------------------------")
@@ -96,7 +95,7 @@ def _get_device_name_from_user(
 
 
 def _get_console_name_from_user(
-    device_name: str, consoles: Dict[str, BoardfarmPexpect]
+    device_name: str, consoles: dict[str, BoardfarmPexpect]
 ) -> str:
     """Get device console name from user."""
     console_name = None

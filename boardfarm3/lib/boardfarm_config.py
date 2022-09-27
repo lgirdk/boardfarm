@@ -3,7 +3,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from boardfarm3.exceptions import EnvConfigError
 
@@ -11,13 +11,13 @@ from boardfarm3.exceptions import EnvConfigError
 class BoardfarmConfig:
     """Boardfarm environment config."""
 
-    _merged_devices_config: List[Dict]
+    _merged_devices_config: list[dict]
 
     def __init__(
         self,
-        merged_config: List[Dict],
-        env_config: Dict[str, Any],
-        inventory_config: Dict[str, Any],
+        merged_config: list[dict],
+        env_config: dict[str, Any],
+        inventory_config: dict[str, Any],
     ):
         """Initialize boardfarm config.
 
@@ -30,23 +30,23 @@ class BoardfarmConfig:
         self._merged_devices_config = merged_config
 
     @property
-    def env_config(self) -> Dict[str, Any]:
+    def env_config(self) -> dict[str, Any]:
         """Environment config dictionary."""
         return self._env_config
 
     @property
-    def inventory_config(self) -> Dict[str, Any]:
+    def inventory_config(self) -> dict[str, Any]:
         """Inventory config dictionary."""
         return self._inventory_config
 
-    def get_devices_config(self) -> List[Dict]:
+    def get_devices_config(self) -> list[dict]:
         """Get merged devices config.
 
         :returns: merged devices config
         """
         return self._merged_devices_config
 
-    def get_device_config(self, device_name: str) -> Dict[str, Any]:
+    def get_device_config(self, device_name: str) -> dict[str, Any]:
         """Get device merged config.
 
         :param device_name: device name

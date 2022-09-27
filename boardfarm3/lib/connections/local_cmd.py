@@ -1,7 +1,7 @@
 """Connect to a device with a local command."""
 
 
-from typing import Any, Dict, List
+from typing import Any
 
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
@@ -13,8 +13,8 @@ class LocalCmd(BoardfarmPexpect):
         self,  # pylint: disable=unused-argument
         name: str,
         conn_command: str,
-        args: List[str] = None,
-        **kwargs: Dict[str, Any],  # ignore other arguments
+        args: list[str] = None,
+        **kwargs: dict[str, Any],  # ignore other arguments
     ) -> None:
         """Initialize local command connection.
 

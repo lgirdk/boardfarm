@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from ipaddress import IPv4Address
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
@@ -175,7 +175,7 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def dns_lookup(self, domain_name: str) -> List[Dict[str, Any]]:
+    def dns_lookup(self, domain_name: str) -> list[dict[str, Any]]:
         """Perform ``dig`` command in the devices to resolve DNS.
 
         :param domain_name: domain name which needs lookup

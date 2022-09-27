@@ -2,7 +2,7 @@
 
 import collections
 from io import BytesIO
-from typing import Any, List, Tuple
+from typing import Any
 
 from pandas import DataFrame
 
@@ -13,7 +13,7 @@ class NetstatParser:
 
     def __init__(self) -> None:
         """Initialize the NetstatParser."""
-        self._inet_connections: List[str] = []
+        self._inet_connections: list[str] = []
 
     def parse_netstat_output(self, output: str) -> DataFrame:
         """Parse given netstat output.
@@ -47,7 +47,7 @@ class NetstatParser:
     # pylint: disable-next=inconsistent-return-statements,too-many-branches
     def _parse_inet_connection(  # noqa: C901
         self, line: bytes, header: bytes, sep: str = " "
-    ) -> Tuple[List[str], Any]:
+    ) -> tuple[list[str], Any]:
         lines = line.decode("utf-8").split(sep)
         headers = header.decode("utf-8").split(sep)
         fields = [it.replace("\r\n", "") for it in lines if it not in [sep, "", "\r\n"]]
@@ -62,7 +62,7 @@ class NetstatParser:
         ]
 
         dict_val = {}
-        inet_header: List[str] = []
+        inet_header: list[str] = []
         for val in fields1:
             if val == "Foreign":
                 inet_header.extend(("ForeignAddress", "ForeignPort"))

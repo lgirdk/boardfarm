@@ -3,7 +3,6 @@
 import re
 from abc import ABCMeta, abstractmethod
 from logging import Logger, getLogger
-from typing import List
 
 import pexpect
 
@@ -23,7 +22,7 @@ class _LogWrapper:
 
     def write(self, string: str) -> None:
         string = self._lastline + string
-        lines: List[str] = [line for line in string.splitlines(True) if line != "\r"]
+        lines: list[str] = [line for line in string.splitlines(True) if line != "\r"]
         if lines and not string.endswith("\n"):
             self._lastline = lines[-1]
             lines = lines[:-1]
@@ -45,7 +44,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         self,
         session_name: str,
         command: str,
-        args: List[str],
+        args: list[str],
     ):
         """Initialize boardfarm pexpect.
 

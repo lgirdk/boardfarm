@@ -2,9 +2,10 @@
 
 import re
 from argparse import Namespace
+from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Optional, Union
 
 import jc.parsers.ping
 import pexpect
@@ -29,7 +30,7 @@ class LinuxDevice(BoardfarmDevice):
     eth_interface = "eth1"
     _internet_access_cmd = ""
 
-    def __init__(self, config: Dict, cmdline_args: Namespace) -> None:  # noqa: C901
+    def __init__(self, config: dict, cmdline_args: Namespace) -> None:  # noqa: C901
         """Initialize linux device.
 
         :param config: device configuration
@@ -111,7 +112,7 @@ class LinuxDevice(BoardfarmDevice):
             self._console.close()
             self._console = None
 
-    def get_interactive_consoles(self) -> Dict[str, BoardfarmPexpect]:
+    def get_interactive_consoles(self) -> dict[str, BoardfarmPexpect]:
         """Get interactive consoles of the device.
 
         :returns: interactive consoles of the device
@@ -123,7 +124,7 @@ class LinuxDevice(BoardfarmDevice):
 
     def _get_nw_interface_ip_address(
         self, interface_name: str, is_ipv6: bool
-    ) -> List[str]:
+    ) -> list[str]:
         """Get network interface ip address.
 
         :param interface_name: interface name
@@ -336,7 +337,7 @@ class LinuxDevice(BoardfarmDevice):
         options: str = "",
         timeout: int = 50,
         json_output: bool = False,
-    ) -> Union[bool, Dict[str, Any]]:
+    ) -> Union[bool, dict[str, Any]]:
         """Ping remote host.
 
         Return True if ping has 0% loss
@@ -599,7 +600,7 @@ class LinuxDevice(BoardfarmDevice):
         """
         return http_get(self._console, url, timeout)
 
-    def dns_lookup(self, domain_name: str) -> List[Dict[str, Any]]:
+    def dns_lookup(self, domain_name: str) -> list[dict[str, Any]]:
         """Run ``dig`` command and return the parsed result.
 
         :param domain_name: domain name which needs lookup

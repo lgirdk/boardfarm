@@ -1,7 +1,6 @@
 """Boardfarm main hook specifications."""
 
 from argparse import ArgumentParser, Namespace
-from typing import List
 
 from pluggy import PluginManager
 
@@ -30,7 +29,7 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
 
 @hookspec(firstresult=True)
 def boardfarm_cmdline_parse(
-    argparser: ArgumentParser, cmdline_args: List[str]
+    argparser: ArgumentParser, cmdline_args: list[str]
 ) -> Namespace:
     """Parse command line arguments.
 

@@ -1,7 +1,6 @@
 """Boardfarm device hook specifications."""
 
 from argparse import Namespace
-from typing import Dict, Type
 
 from pluggy import PluginManager
 
@@ -27,7 +26,7 @@ def boardfarm_register_devices(
 
 
 @hookspec
-def boardfarm_add_devices() -> Dict[str, Type[BoardfarmDevice]]:
+def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     """Add devices to known devices list.
 
     :returns: added devices to boardfarm

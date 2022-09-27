@@ -2,7 +2,6 @@
 
 
 import re
-from typing import Dict, List, Tuple
 
 from boardfarm3.exceptions import SNMPError
 from boardfarm3.lib.mibs_compiler import MibsCompiler
@@ -47,7 +46,7 @@ class SNMPv2:
         extra_args: str = "",
         timeout: int = 10,
         retries: int = 3,
-    ) -> Tuple[str, str, str]:
+    ) -> tuple[str, str, str]:
         """Perform an snmpget with given arguments.
 
         :param mib_name: mib name used to perform snmp
@@ -82,7 +81,7 @@ class SNMPv2:
         extra_args: str = "",
         timeout: int = 10,
         retries: int = 3,
-    ) -> Tuple[str, str, str]:
+    ) -> tuple[str, str, str]:
         """Perform an snmpset with given arguments.
 
         :param mib_name: mib name used to perform snmp
@@ -162,7 +161,7 @@ class SNMPv2:
 
     def _parse_snmp_output(
         self, oid: str, output: str, value: str = None
-    ) -> Tuple[str, str, str]:
+    ) -> tuple[str, str, str]:
         """Return the tuple with value, type of the value and snmp command output."""
         result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
         match = re.search(result_pattern, output)
@@ -178,10 +177,10 @@ class SNMPv2:
 
     def _parse_snmpwalk_output(
         self, oid: str, output: str
-    ) -> Tuple[Dict[str, List[str]], str]:
+    ) -> tuple[dict[str, list[str]], str]:
         """Return list of dictionary of mib_oid as key and list(value, type) value."""
         result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
-        walk_key_value_dict: Dict[str, List[str]] = {}
+        walk_key_value_dict: dict[str, list[str]] = {}
         match = re.findall(result_pattern, output)
         if not match:
             raise SNMPError(output)
@@ -197,7 +196,7 @@ class SNMPv2:
         retries: int = 3,
         timeout: int = 100,
         extra_args: str = "",
-    ) -> Tuple[Dict[str, List[str]], str]:
+    ) -> tuple[dict[str, list[str]], str]:
         """Perform an snmpwalk with given arguments.
 
         :param mib_name: mib name used to perform snmp

@@ -77,10 +77,10 @@ repos:
             types: [python]
             stages: [commit]
     - repo: https://github.com/asottile/pyupgrade
-      rev: v2.21.0
+      rev: v2.38.2
       hooks:
           - id: pyupgrade
-            args: [--py36-plus]
+            args: [--py39-plus, --keep-runtime-typing]
             stages: [commit]
     - repo: https://github.com/ikamensh/flynt/
       rev: '0.63'

@@ -2,7 +2,7 @@
 
 from argparse import Namespace
 from collections import ChainMap
-from typing import Dict, Generator, Type
+from collections.abc import Generator
 
 from pluggy import PluginManager
 
@@ -17,7 +17,7 @@ from boardfarm3.lib.device_manager import DeviceManager
 
 
 @hookimpl
-def boardfarm_add_devices() -> Dict[str, Type[BoardfarmDevice]]:
+def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     """Add devices to known devices for deployment.
 
     :returns: devices dictionary

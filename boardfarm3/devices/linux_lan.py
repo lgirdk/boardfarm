@@ -5,7 +5,7 @@ import logging
 import re
 from argparse import Namespace
 from ipaddress import AddressValueError, IPv4Address
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 import pexpect
 from termcolor import colored
@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 class LinuxLAN(LinuxDevice, LAN):
     """Boardfarm LAN device."""
 
-    def __init__(self, config: Dict, cmdline_args: Namespace) -> None:
+    def __init__(self, config: dict, cmdline_args: Namespace) -> None:
         """Initialize linux LAN device.
 
         :param config: device configuration
