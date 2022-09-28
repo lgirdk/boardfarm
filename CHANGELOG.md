@@ -1,14 +1,23 @@
-## 2022.37.0 (2022-09-21)
+## 2022.39.0 (2022-09-28)
 
 ### Feat
 
+- **base_devices:board_templates.py**: add method is_link_up to BoardSWTemplate class
+- **installers.py**: add force parameter to install_vsftpd
 - **sip_template.py**: add endpoints specific functions
 - add check for multicast server count
 - **devices:linux.py,-use_cases:networking.py**: add device class implementation and usecases of the IPerfTrafficGenerator
 
 ### Fix
 
+- **common.py**: update expect statement of password prompt for ftp_useradd
+- **use_cases/dhcpv6.py**: add additional_args param
+- **SNMPv2.py**: correct the regex and match
 - add timeout to parse_sip_trace usecase
+
+### Refactor
+
+- **axiros_acs.py,acs_template.py**: update AcsTemplate and update AxirosACS
 
 ## 2022.35.0 (2022-08-31)
 
