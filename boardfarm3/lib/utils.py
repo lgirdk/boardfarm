@@ -1,7 +1,9 @@
 """Boardfarm common utilities module."""
 
 import os
+import time
 from ipaddress import IPv4Address
+from typing import Any, Callable
 
 from netaddr import EUI, mac_unix_expanded
 
@@ -44,3 +46,26 @@ def ip_pool_to_list(start_ip: IPv4Address, end_ip: IPv4Address) -> list[IPv4Addr
         ip_list.append(start_ip)
         start_ip += 1
     return ip_list
+
+
+def retry(func_name: Callable, max_retry: int, *args: str) -> Any:
+    """Retry a function if the output of the function is false.
+
+    TODO: consider replacing this with Tenacity or other solutions.
+
+    :param func_name: name of the function to retry
+    :type func_name: Object
+    :param max_retry: Maximum number of times to be retried
+    :type max_retry: Integer
+    :param args: Arguments passed to the function
+    :type args: args
+    :return: Output of the function if function is True
+    :rtype: Boolean (True/False) or None Type(None)
+    """
+    output = None
+    for _ in range(max_retry):
+        output = func_name(*args)
+        if output and output != "False":
+            return output
+        time.sleep(5)
+    return output
