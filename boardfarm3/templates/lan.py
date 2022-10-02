@@ -72,6 +72,21 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def is_link_up(
+        self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+    ) -> bool:
+        """Return the link status.
+
+        :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
+        :type interface: str
+        :param pattern: interface state
+        :type pattern: str, optional
+        :return: True if the link is up
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def get_interface_macaddr(self, interface: str) -> str:
         """Get the interface MAC address.
 

@@ -290,6 +290,21 @@ class LinuxDevice(BoardfarmDevice):
         self._console.sudo_sendline(f"ip link set {interface} {state}")
         self._console.expect(self._shell_prompt)
 
+    def is_link_up(
+        self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+    ) -> bool:
+        """Return the link status.
+
+        :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
+        :type interface: str
+        :param pattern: interface state
+        :type pattern: str, optional
+        :return: True if the link is up
+        :rtype: bool
+        """
+        link_state = self._console.execute_command(f"ip link show {interface}")
+        return pattern in link_state
+
     def get_interface_ipv4addr(self, interface: str) -> str:
         """Get ipv4 address of interface."""
         return self._get_nw_interface_ipv4_address(interface)
