@@ -42,6 +42,7 @@ def parse_dhcp_trace(
     on_which_device: Union[DebianLAN, DebianWAN, DebianISCProvisioner],
     fname: str,
     timeout: int = 30,
+    additional_args: str = "bootp",
 ) -> List[DHCPTraceData]:
     """Read and filter the DHCP packets from the pcap file and returns the DHCP packets.
 
@@ -51,12 +52,17 @@ def parse_dhcp_trace(
     :type fname: str
     :param timeout: time out for tshark read to be executed, defaults to 30
     :type timeout: int
+    :param additional_args: additional arguments for tshark command to
+        display filtered output, defaults to bootp
+    :type additional_args: str
     :return: Sequence of DHCP packets filtered from captured pcap file
     :rtype: List[DHCPTraceData]
     """
     try:
         out = on_which_device.tshark_read_pcap(
-            fname=fname, additional_args="-Y bootp -T json", timeout=timeout
+            fname=fname,
+            additional_args=f"-Y '{additional_args}' -T json",
+            timeout=timeout,
         )
         output: List[DHCPTraceData] = []
         data = "[" + out.split("[", 1)[-1].replace("\r\n", "")
@@ -154,6 +160,7 @@ def get_dhcp_option_details(packet: DHCPTraceData, option: int) -> RecursiveDict
     """
     option_data = get_all_dhcp_options(packet)
     try:
+        out = None
         for key, value in option_data.items():
             if value == str(option):
                 if re.search(r"_\d", key):
@@ -165,6 +172,8 @@ def get_dhcp_option_details(packet: DHCPTraceData, option: int) -> RecursiveDict
                     break
                 else:
                     out = option_data[key + "_tree"]
+        if not out:
+            raise UseCaseFailure(f"Failed to find option {str(option)}")
         return out
     except KeyError:
         raise UseCaseFailure(f"Failed to find option {str(option)}")
