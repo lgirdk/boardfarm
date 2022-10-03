@@ -1,6 +1,9 @@
 """Boardfarm exceptions for all plugins and modules used by framework."""
 
 
+from typing import Any
+
+
 class BoardfarmException(Exception):
     """Base exception all boardfarm exceptions inherit from."""
 
@@ -48,6 +51,8 @@ class TR069ResponseError(BoardfarmException):
 class TR069FaultCode(BoardfarmException):
     """Raise this on TR069 response error."""
 
+    faultdict: dict[str, Any]
+
 
 class UseCaseFailure(BoardfarmException):
     """Raise this on failures in use cases."""
@@ -58,4 +63,9 @@ class NotSupportedError(BoardfarmException):
 
 
 class SNMPError(BoardfarmException):
+    """Raise this on any SNMP related error."""
+
+
+# TODO: maybe move to testsuite
+class TeardownError(BoardfarmException):
     """Raise this on any SNMP related error."""
