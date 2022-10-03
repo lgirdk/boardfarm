@@ -6,6 +6,7 @@ from typing import List
 
 from boardfarm.devices.base_devices.acs_template import AcsTemplate
 from boardfarm.devices.base_devices.board_templates import BoardTemplate
+from boardfarm.devices.base_devices.provisioner import Provisioner
 from boardfarm.devices.base_devices.sip_template import SIPPhoneTemplate, SIPTemplate
 from boardfarm.devices.base_devices.wifi_template import WIFITemplate
 from boardfarm.devices.debian_lan import DebianLAN
@@ -168,6 +169,35 @@ class AnyCPE:
         return self.__obj
 
 
+@dataclass
+class DHCP:
+    """Descriptor for provisioner."""
+
+    __obj: Provisioner
+
+    @property
+    def _obj(self) -> Provisioner:
+        return self.__obj
+
+    @cached_property
+    def ip_addr(self) -> str:
+        """Return the IP address on IFACE facing DUT.
+
+        :return: IP address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_ipaddr(self.__obj.iface_dut)
+
+    @cached_property
+    def mac_addr(self) -> str:
+        """Return the L2 address of IFACE facing DUT.
+
+        :return: MAC address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_macaddr(self._obj.iface_dut)
+
+
 # Adding the getters below.
 def get_lan_clients(count: int) -> List[LanClients]:
     """Return a list of LAN client descriptors based on count.
@@ -258,3 +288,20 @@ def get_board_descriptor(count: int) -> List[AnyCPE]:
         raise IndexError("Invalid count provided")
     devices = device_manager()
     return [AnyCPE(devices.get_device_by_type(device_type.DUT))]
+
+
+def get_provisioner_descriptor(count: int) -> List[DHCP]:
+    """Return a list of provisioner descriptors based on count.
+
+    .. note:: At the moment count can only be 1
+
+    :param count: no. of devices requested
+    :type count: int
+    :raises IndexError: if an invalid count is provided
+    :return: Descriptors holding details of requested devices
+    :rtype: List[DHCP]
+    """
+    if count != 1:
+        raise IndexError("Invalid count provided")
+    devices = device_manager()
+    return [DHCP(devices.get_device_by_type(device_type.provisioner))]
