@@ -53,12 +53,21 @@ class LanClients:
 
     @cached_property
     def ip_addr(self) -> str:
-        """Return the IP address on IFACE facing DUT.
+        """Return the IPv4 address on IFACE facing DUT.
 
-        :return: IP address in string format.
+        :return: IPv4 address in string format.
         :rtype: str
         """
         return self._obj.get_interface_ipaddr(self.__obj.iface_dut)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_ip6addr(self.__obj.iface_dut)
 
     @cached_property
     def gw_mac_addr(self) -> str:
@@ -95,12 +104,21 @@ class WLanClients:
 
     @cached_property
     def ip_addr(self) -> str:
-        """Return the IP address on IFACE facing DUT.
+        """Return the IPv4 address on IFACE facing DUT.
 
-        :return: IP address in string format.
+        :return: IPv4 address in string format.
         :rtype: str
         """
         return self._obj.get_interface_ipaddr(self.__obj.iface_dut)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_ip6addr(self.__obj.iface_dut)
 
     @cached_property
     def gw_mac_addr(self) -> str:
@@ -138,12 +156,21 @@ class WanClients:
 
     @property
     def ip_addr(self) -> str:
-        """Return the IP address on IFACE facing DUT Headend.
+        """Return the IPv4 address on IFACE facing DUT Headend.
 
-        :return: IP address in string format.
+        :return: IPv4 address in string format.
         :rtype: str
         """
         return str(self._obj.gw)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_ip6addr(self.__obj.iface_dut)
 
 
 @dataclass
@@ -187,6 +214,15 @@ class DHCP:
         :rtype: str
         """
         return self._obj.get_interface_ipaddr(self.__obj.iface_dut)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self._obj.get_interface_ip6addr(self.__obj.iface_dut)
 
     @cached_property
     def mac_addr(self) -> str:
