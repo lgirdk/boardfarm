@@ -6,7 +6,7 @@ import logging
 from nested_lookup import nested_lookup
 
 from boardfarm.exceptions import ContingencyCheckError, SkipTest
-from boardfarm.lib.common import check_prompts, domain_ip_reach_check
+from boardfarm.lib.common import check_prompts
 from boardfarm.lib.DeviceManager import device_type
 from boardfarm.lib.hooks import contingency_impl, hookimpl
 from boardfarm.plugins import BFPluginManager
@@ -173,12 +173,14 @@ class DNS:
 
         if acs_dns:
             output = board.dns.nslookup("acs_server.boardfarm.com")
-            domain_ip_reach_check(
-                board.arm,
+            if not board.domain_ip_reach_check(
                 acs_dns["ipv4"]["reachable"] + acs_dns["ipv6"]["reachable"],
                 acs_dns["ipv4"]["unreachable"] + acs_dns["ipv6"]["unreachable"],
                 output,
-            )
+            ):
+                raise ContingencyCheckError(
+                    "DNS check for ipv4/ipv6 reachability failed"
+                )
 
         logger.info("DNS service checks for BF executed")
 
