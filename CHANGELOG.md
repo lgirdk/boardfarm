@@ -1,7 +1,14 @@
-## 2022.39.0 (2022-09-28)
+## 2022.41.0 (2022-10-12)
 
 ### Feat
 
+- **debian_lan**: add ftp in debian_lan and vsftp in debian_wan
+- **use_cases/descriptors.py**: return ipv6 addr
+- **booting.py**: add voice specify boot functions
+- **use_cases/descriptors.py**: add provisioner descriptor
+- **multicast**: ssm multicast libraries
+- **asterisk**: dockerfile
+- **quagga**: modify implementation to ubuntu
 - **base_devices:board_templates.py**: add method is_link_up to BoardSWTemplate class
 - **installers.py**: add force parameter to install_vsftpd
 - **sip_template.py**: add endpoints specific functions
@@ -10,6 +17,8 @@
 
 ### Fix
 
+- **networking.py**: add ipv6 dns resolve
+- **use_cases/dhcp.py**: update dhcp methods
 - **common.py**: update expect statement of password prompt for ftp_useradd
 - **use_cases/dhcpv6.py**: add additional_args param
 - **SNMPv2.py**: correct the regex and match
