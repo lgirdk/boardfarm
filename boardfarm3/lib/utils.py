@@ -4,7 +4,7 @@ import logging
 import os
 import time
 from ipaddress import IPv4Address
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from netaddr import EUI, mac_unix_expanded
 
@@ -51,31 +51,29 @@ def ip_pool_to_list(start_ip: IPv4Address, end_ip: IPv4Address) -> list[IPv4Addr
     return ip_list
 
 
-def retry(func_name: Callable, max_retry: int, *args: str) -> Any:  # type: ignore
+# TODO: consider replacing this with Tenacity or other solutions.
+def retry(func_name: Callable, max_retry: int, *args: Any) -> Any:
     """Retry a function if the output of the function is false.
-
-    TODO: consider replacing this with Tenacity or other solutions.
 
     :param func_name: name of the function to retry
     :type func_name: Callable
-    :param max_retry: Maximum number of times to be retried
+    :param max_retry: maximum number of times to be retried
     :type max_retry: int
-    :param args: Arguments passed to the function
-    :type args: args
-    :return: Output of the function if function is True
+    :param args: arguments to the function
+    :type args: Tuple[Any, ...]
+    :return: output of the function
     :rtype: Any
     """
-    output = None
-    for _ in range(max_retry):
+    for _ in range(max_retry - 1):
         output = func_name(*args)
         if output and output != "False":
             return output
         time.sleep(5)
-    return output
+    return func_name(*args)
 
 
 def retry_on_exception(
-    method: Callable, args: list, retries: int = 10, tout: int = 5  # type: ignore
+    method: Callable, args: Union[list, tuple], retries: int = 10, tout: int = 5
 ) -> Any:
     """Retry a method if any exception occurs.
 
@@ -84,20 +82,20 @@ def retry_on_exception(
 
     :param method: name of the function to retry
     :type method: Callable
-    :param args: Arguments passed to the function
-    :type args: list
-    :param retries: Maximum number of retries when a exception occur,defaults
+    :param args: arguments to the function
+    :type args: Union[List, Tuple]
+    :param retries: maximum number of retries when a exception occur,defaults
                     to 10. When negative, no retries are made.
     :type retries: int
-    :param tout: Sleep time after every exception occur, defaults to 5
+    :param tout: sleep time after every exception occur, defaults to 5
     :type tout: int
-    :return: Output of the function
+    :return: output of the function
     :rtype: Any
     """
-    for re_try in range(retries):
+    for re_try in range(1, retries):
         try:
             return method(*args)
         except Exception as exc:  # pylint: disable=broad-except
-            _LOGGER.debug("method failed %d time (%s)", (re_try + 1), exc)
+            _LOGGER.debug("method failed %d time (%s)", re_try, exc)
             time.sleep(tout)
     return method(*args)
