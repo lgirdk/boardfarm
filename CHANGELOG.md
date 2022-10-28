@@ -1,7 +1,8 @@
-## 2022.41.0 (2022-10-12)
+## 2022.43.0 (2022-10-28)
 
 ### Feat
 
+- **DeviceManager.py**: add samknows device to device manager
 - **debian_lan**: add ftp in debian_lan and vsftp in debian_wan
 - **use_cases/descriptors.py**: return ipv6 addr
 - **booting.py**: add voice specify boot functions
@@ -17,6 +18,7 @@
 
 ### Fix
 
+- **lib:hooks:contingency_checks.py**: remove the usage of arm in CC
 - **networking.py**: add ipv6 dns resolve
 - **use_cases/dhcp.py**: update dhcp methods
 - **common.py**: update expect statement of password prompt for ftp_useradd
