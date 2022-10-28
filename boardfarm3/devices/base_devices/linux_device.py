@@ -19,7 +19,13 @@ from boardfarm3.exceptions import (
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
-from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, dns_lookup, http_get
+from boardfarm3.lib.networking import (
+    HTTPResult,
+    IptablesFirewall,
+    dns_lookup,
+    http_get,
+    is_link_up,
+)
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 
 
@@ -293,7 +299,7 @@ class LinuxDevice(BoardfarmDevice):
     def is_link_up(
         self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
     ) -> bool:
-        """Return the link status.
+        """Check given interface is up or not.
 
         :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
         :type interface: str
@@ -302,8 +308,7 @@ class LinuxDevice(BoardfarmDevice):
         :return: True if the link is up
         :rtype: bool
         """
-        link_state = self._console.execute_command(f"ip link show {interface}")
-        return pattern in link_state
+        return is_link_up(self._console, interface, pattern)
 
     def get_interface_ipv4addr(self, interface: str) -> str:
         """Get ipv4 address of interface."""

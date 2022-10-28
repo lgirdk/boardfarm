@@ -549,3 +549,20 @@ def dns_lookup(console: _LinuxConsole, domain_name: str) -> list[dict[str, Any]]
     return jc.parsers.dig.parse(
         console.execute_command(f"dig {domain_name}").split(";", 1)[-1]
     )
+
+
+def is_link_up(
+    console: _LinuxConsole, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+) -> bool:
+    """Check given interface is up or not.
+
+    :param console: console or device instance
+    :type console: _LinuxConsole
+    :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
+    :type interface: str
+    :param pattern: interface state
+    :type pattern: str, optional
+    :return: True if the link is up
+    :rtype: bool
+    """
+    return pattern in console.execute_command(f"ip link show {interface}")
