@@ -164,9 +164,9 @@ class LinuxInterface:
         """Return seconds since last reboot. Stored in /proc/uptime."""
         self.sendcontrol("c")
         self.expect(self.prompt)
-        self.sendline("cat /proc/loadavg|awk '{print $1}'")
-        self.expect(r"((((\d+?\.\d+?) ){3})((\d{1,3})\/(((\d+?){1,9})) (\d{1,})))")
-        load = float(self.match.group(1))
+        self.sendline("cat /proc/loadavg")
+        self.expect(r"(((\d+?\.\d+?) ){3})((\d{1,3})\/(((\d+?){1,9})) (\d{1,}))")
+        load = float(self.match.group(1).strip().split()[0])
         self.expect(self.prompt)
         return load
 
