@@ -204,7 +204,12 @@ def is_wan_http_server_running() -> bool:
 
 
 def http_get(
-    which_client: Union[DebianLAN, DebianWifi, VoiceClient], url: str, timeout: int = 20
+    which_client: Union[DebianLAN, DebianWifi, VoiceClient],
+    url: str,
+    timeout: int = 20,
+    no_proxy: bool = False,
+    is_insecure: bool = False,
+    follow_redirects: bool = False,
 ) -> str:
     """Check if the given HTTP server in WAN is running.
 
@@ -217,12 +222,24 @@ def http_get(
     :type url: string,
     :param timeout: connection timeout for the curl command in seconds
     :type timeout: integer
+    :param no_proxy: no_proxy option for curl command, defaults to False
+    :type no_proxy: boolean
+    :param is_insecure: is_insecure option for curl command, defaults to False
+    :type is_insecure: boolean
+    :param follow_redirects: follow_redirects option for curl command, defaults to False
+    :type follow_redirects: boolean
     :return: Http response
     :rtype: object
     """
+    options = ""
+    if no_proxy:
+        options += "--noproxy '*' "
+    if is_insecure:
+        options += "-k "
+    if follow_redirects:
+        options += "-L "
     client = which_client._obj() if type(which_client) == VoiceClient else which_client
-
-    client.sendline(f"curl -v --connect-timeout {timeout} {url}")
+    client.sendline(f"curl -v {options}--connect-timeout {timeout} {url}")
     client.expect(client.prompt, timeout=timeout + 10)
     return HTTPResult(client.before)
 
