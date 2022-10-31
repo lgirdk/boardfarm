@@ -180,6 +180,17 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         raise NotImplementedError
 
     @abstractmethod
+    def get_memory_utilization(self) -> dict:
+        """Return memory utilization of the board.
+
+        Depending on the Vendor/Model this method shall return a value which
+        is representative of the memory utilization of the board.
+        :return: output of free command as dictionary
+        :rtype: dict
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def restart_erouter_interface(self) -> bool:
         """Restart the CM erouter interface
 

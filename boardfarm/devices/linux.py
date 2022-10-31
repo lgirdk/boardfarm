@@ -170,6 +170,18 @@ class LinuxInterface:
         self.expect(self.prompt)
         return load
 
+    def get_memory_utilization(self) -> dict:
+        """Return memory utilization in MB"""
+        memory_keys = ["total", "used", "free", "shared", "cache", "available"]
+        self.sendcontrol("c")
+        self.expect(self.prompt)
+        self.sendline("free -m")
+        self.expect(r"Mem:\s+((\d+)(\s+)(\d+)(\s+)(\d+)(\s+)(\d+)(\s+)(\d+)(\s+)(\d+))")
+        memory_val = self.match.group(1).strip().split()
+        memory = dict(zip(memory_keys, map(int, memory_val)))
+        self.expect(self.prompt)
+        return memory
+
     def enable_ipv6(self, interface):
         """Enable ipv6 of the interface."""
         self.sendline("sysctl net.ipv6.conf." + interface + ".accept_ra=2")
