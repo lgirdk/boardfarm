@@ -66,6 +66,10 @@ class SNMPError(BoardfarmException):
     """Raise this on any SNMP related error."""
 
 
+class VoiceError(BoardfarmException):
+    """Raise this on any voice related errors."""
+
+
 # TODO: maybe move to testsuite
 class TeardownError(BoardfarmException):
     """Raise this on any SNMP related error."""
