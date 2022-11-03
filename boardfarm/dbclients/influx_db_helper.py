@@ -113,7 +113,17 @@ class Influx_DB_Logger(InfluxDBClient, dict):
         self.process_table(datain, command, iteration, date, mode)
 
     def log_data(self, value):
-        iperf_data = []
+        data_to_post = []
+
+        def _fill_common_data(data_unit, idx):
+            data_unit["tags"]["board"] = self.board
+            data_unit["tags"]["test_run"] = self.test_run
+            data_unit["tags"]["service"] = idx["service"]
+            data_unit["fields"] = {}
+            data_unit["fields"] = dict(list(zip(idx["fields"], idx["value"])))
+            data_unit["time"] = datetimetostr(idx["timestamp"])
+            data_to_post.append(data_unit)
+
         for idx_dict in value:
             idx = idx_dict.copy()
             if "iperf" in idx["service"]:
@@ -139,18 +149,14 @@ class Influx_DB_Logger(InfluxDBClient, dict):
                     data_unit["time"] = datetimetostr(
                         idx["timestamp"] + timedelta(seconds=float(i["value"][0]))
                     )
-                    iperf_data.append(data_unit)
+                    data_to_post.append(data_unit)
+            elif idx["service"] in ["cpu_utilization", "memory_utilization"]:
+                data_unit = {"measurement": idx["service"], "tags": {}}
+                _fill_common_data(data_unit, idx)
             else:
                 data_unit = {"measurement": "response", "tags": {}}
-                data_unit["tags"]["board"] = self.board
-                data_unit["tags"]["test_run"] = self.test_run
-                data_unit["tags"]["service"] = idx["service"]
-                data_unit["fields"] = {}
-                data_unit["fields"] = dict(list(zip(idx["fields"], idx["value"])))
-                data_unit["time"] = datetimetostr(idx["timestamp"])
-                iperf_data.append(data_unit)
-
-        print(f"Update to DB : {self.write_points(iperf_data)!r}")
+                _fill_common_data(data_unit, idx)
+        print(f"Update to DB : {self.write_points(data_to_post)!r}")
 
     def __setitem__(self, key, value):
         func_call = {"influx": self.log_data, "board": self.process_table}

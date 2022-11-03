@@ -199,3 +199,14 @@ class GenericWrapper:
             "timestamp": timestamp,
         }
         self.logger["influx"] = [data_dict]
+
+    def get_utilization_data(self, utilization, service, timestamp=None):
+        if not timestamp:
+            timestamp = datetime.datetime.utcnow()
+        data_dict = {
+            "fields": list(utilization.keys()),
+            "value": list(utilization.values()),
+            "service": service,
+            "timestamp": timestamp,
+        }
+        self.logger["influx"] = [data_dict]

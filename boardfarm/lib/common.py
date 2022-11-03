@@ -2182,13 +2182,22 @@ def send_to_influx(device, **kwargs):
     s_fname = kwargs.get("s_fname", ["iperf3_wan.log"])
     c_fname = kwargs.get("c_fname", ["iperf3_lan.log"])
     response_time = kwargs.get("response_time", None)
+    utilization = kwargs.get("utilization", None)
     service = kwargs.get("service", "UNKNONW_SERVICE")
 
     db = validate_influx_connection(device)
     if not db:
         return
     try:
-        if response_time is None:
+        if response_time is not None:
+            db.get_response_data(
+                response_time, service, timestamp=kwargs.get("timestamp", None)
+            )
+        elif utilization is not None:
+            db.get_utilization_data(
+                utilization, service, timestamp=kwargs.get("timestamp", None)
+            )
+        else:
             server_data = [
                 val
                 for val in (db.get_details_dict(server, fname) for fname in s_fname)
@@ -2201,10 +2210,6 @@ def send_to_influx(device, **kwargs):
             ]
             for s_dict, c_dict in zip(server_data, client_data):
                 db.log_iperf_to_db(server, client, s_dict, c_dict)
-        else:
-            db.get_response_data(
-                response_time, service, timestamp=kwargs.get("timestamp", None)
-            )
     except Exception as e:
         logger.error(e)
         logger.error("Unable to load data to influx db")
