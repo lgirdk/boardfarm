@@ -6,7 +6,7 @@ import logging
 from nested_lookup import nested_lookup
 
 from boardfarm.exceptions import ContingencyCheckError, SkipTest
-from boardfarm.lib.common import check_prompts
+from boardfarm.lib.common import check_prompts, retry_on_exception
 from boardfarm.lib.DeviceManager import device_type
 from boardfarm.lib.hooks import contingency_impl, hookimpl
 from boardfarm.plugins import BFPluginManager
@@ -204,7 +204,14 @@ class ACS:
             board.get_cpeid()
 
         def check_acs_connection():
-            return bool(acs_server.GPV("Device.DeviceInfo.SoftwareVersion"))
+            return bool(
+                retry_on_exception(
+                    acs_server.GPV,
+                    ("Device.DeviceInfo.SoftwareVersion",),
+                    retries=10,
+                    tout=30,
+                )
+            )
 
         acs_connection = check_acs_connection()
         if not acs_connection:
