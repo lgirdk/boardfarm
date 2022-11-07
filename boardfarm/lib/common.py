@@ -1748,12 +1748,6 @@ def ftp_upload_download(device, ftp_load, timeout=200):
     :param ftp_load: "download" or "upload"
     :type ftp_load: String
     """
-    device.sendline("pass")
-    device.expect("ftp>", timeout=10)
-    if "Passive mode off" in device.before:
-        device.sendline("pass")
-        device.expect("Passive mode on", timeout=10)
-        device.expect("ftp>", timeout=10)
     if "download" in str(ftp_load):
         device.sendline(f"get {ftp_load}.txt")
     elif "upload" in str(ftp_load):
