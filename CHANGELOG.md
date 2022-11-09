@@ -1,7 +1,10 @@
-## 2022.43.0 (2022-10-28)
+## 2022.45.0 (2022-11-09)
 
 ### Feat
 
+- **influx**: add support for capturing cpu & memory utilization in influx db
+- **debian_ntp**: add debian ntp docker image
+- **linux.py**: add method get_memory_utilization
 - **DeviceManager.py**: add samknows device to device manager
 - **debian_lan**: add ftp in debian_lan and vsftp in debian_wan
 - **use_cases/descriptors.py**: return ipv6 addr
@@ -18,6 +21,9 @@
 
 ### Fix
 
+- **common.py**: remove passive mode connection from ftp_upload_download
+- **linux.py**: simplify regex for validating cpu load in get_load_avg method
+- **use_cases/networking.py**: add kwargs
 - **lib:hooks:contingency_checks.py**: remove the usage of arm in CC
 - **networking.py**: add ipv6 dns resolve
 - **use_cases/dhcp.py**: update dhcp methods
