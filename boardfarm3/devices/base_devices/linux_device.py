@@ -50,23 +50,10 @@ class LinuxDevice(BoardfarmDevice):
         if "options" in self._config:
             options = [x.strip() for x in self._config["options"].split(",")]
             for opt in options:
-                if opt.startswith("wan-static-route:"):
-                    self.static_route = opt.replace("wan-static-route:", "").replace(
-                        "-", " via "
-                    )
-                # TODO: remove wan-static-route at some point above
                 if opt.startswith("static-route:"):
                     self.static_route = opt.replace("static-route:", "").replace(
                         "-", " via "
                     )
-                if opt == "wan-dhcp-client":
-                    self.wan_dhcp = True
-                if opt == "wan-no-eth0":
-                    self.wan_no_eth0 = True
-                if opt == "wan-no-dhcp-server":
-                    self.wan_dhcp_server = False
-                if opt == "wan-dhcp-client-v6":
-                    self.wan_dhcpv6 = True
                 if opt.startswith("mgmt-dns:"):
                     value = str(opt.replace("mgmt-dns:", ""))
                     self.mgmt_dns = IPv4Interface(value).ip
