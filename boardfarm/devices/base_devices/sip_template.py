@@ -320,6 +320,8 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
     need some methods in derived class.
     """
 
+    users: List[str]
+
     @property
     @abstractmethod
     def model(self):
@@ -466,10 +468,22 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
         """
 
     def allocate_number(self, number: Optional[str] = None) -> str:
-        """Allocate a number from the sipserver number list"""
+        """Allocate a number from the sipserver number list.
+
+        :param number: number to be allocated
+        :type number: Optional[str], optional
+        :raises ValueError: If unable to allocate a number
+        :return: number allocated
+        :rtype: str
+        """
         if number:
             number_to_be_allocated = number
         else:
             number_to_be_allocated = random.choice(self.users)
-        self.users.remove(number_to_be_allocated)
+        try:
+            self.users.remove(number_to_be_allocated)
+        except ValueError as exc:
+            if number:
+                print(f"Number {number} already allocated!!!")
+            raise ValueError("Unable to allocate a number") from exc
         return number_to_be_allocated
