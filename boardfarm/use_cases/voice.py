@@ -189,7 +189,6 @@ def initialize_phone(target_phone: str) -> VoiceClient:
     """
     dev: SIPPhoneTemplate = get_device_by_name(target_phone)  # devices.fxs1
     sip_proxy: SIPTemplate = get_device_by_name("sipcenter")
-
     dev.phone_config(str(sip_proxy.gw))
     dev.phone_start()
     dev.on_hook()
@@ -458,7 +457,10 @@ def enable_call_waiting(who_enables: VoiceClient) -> None:
     :param who_enables: Agent that enables call waiting
     :type who_enables: VoiceClient
     """
-    who_enables._obj().enable_call_waiting()
+    board = get_device_by_name("board")
+    who_enables._obj().enable_call_waiting(
+        board.sw.voice.dtmf_codes["call_waiting_enable"]
+    )
 
 
 def enable_call_forwarding_busy(
@@ -473,16 +475,27 @@ def enable_call_forwarding_busy(
     :param forward_to: SIP Client to which agent forwards the call to
     :type forward_to: VoiceClient
     """
-    who_forwards._obj().enable_call_forwarding_busy(forward_to=forward_to)
+    board = get_device_by_name("board")
+    who_forwards._obj().enable_call_forwarding_busy(
+        dtmf_code=board.sw.voice.dtmf_codes["call_forwarding_busy_enable"],
+        forward_to=forward_to,
+    )
 
 
-def disable_call_forwarding_busy(who_disables: VoiceClient) -> None:
+def disable_call_forwarding_busy(
+    who_disables: VoiceClient,
+) -> None:
     """Disable call forwarding on a phone when busy.
 
     :param who_disables: Agent that disables call forwarding busy
     :type who_disables: VoiceClient
+    :param country: country which is tested
+    :type country:  Optional[str]
     """
-    who_disables._obj().disable_call_forwarding_busy()
+    board = get_device_by_name("board")
+    who_disables._obj().disable_call_forwarding_busy(
+        board.sw.voice.dtmf_codes["call_forwarding_busy_disable"]
+    )
 
 
 def disable_call_waiting_overall(agent: VoiceClient) -> None:
@@ -491,16 +504,10 @@ def disable_call_waiting_overall(agent: VoiceClient) -> None:
     :param agent: Agent that disables call waiting
     :type agent: VoiceClient
     """
-    agent._obj().disable_call_waiting_overall()
-
-
-def disable_call_waiting_per_call(agent: VoiceClient) -> None:
-    """Disable the call waiting per call on a phone by dialing a desired number.
-
-    :param agent: Agent that disables call waiting
-    :type agent: VoiceClient
-    """
-    agent._obj().disable_call_waiting_per_call()
+    board = get_device_by_name("board")
+    agent._obj().disable_call_waiting(
+        code=board.sw.voice.dtmf_codes["call_waiting_disable"]
+    )
 
 
 def remove_user_profile(

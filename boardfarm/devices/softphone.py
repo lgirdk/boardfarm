@@ -469,18 +469,20 @@ class SoftPhone(SIPPhoneTemplate):
         if not self.is_code_ended():
             raise CodeError(f"Call not ended after dialing a feature code: {code}")
 
-    def enable_call_waiting(self) -> None:
-        self._dial_feature_code("*42#")
+    def enable_call_waiting(self, dtmf_code: str) -> None:
+        self._dial_feature_code(dtmf_code)
 
-    def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
-        code = f"*67*{forward_to.number}#"
+    def enable_call_forwarding_busy(
+        self, dtmf_code: str, forward_to: SIPPhoneTemplate
+    ) -> None:
+        code = f"{dtmf_code}{forward_to.number}#"
         self._dial_feature_code(code)
 
-    def disable_call_forwarding_busy(self) -> None:
-        self._dial_feature_code("#67#")
+    def disable_call_forwarding_busy(self, dtmf_code: str) -> None:
+        self._dial_feature_code(dtmf_code)
 
-    def disable_call_waiting_overall(self) -> None:
-        self._dial_feature_code("#43#")
+    def disable_call_waiting_overall(self, dtmf_code: str) -> None:
+        self._dial_feature_code(dtmf_code)
 
-    def disable_call_waiting_per_call(self) -> None:
-        self._dial_feature_code("#43*")
+    def disable_call_waiting_per_call(self, dtmf_code: str) -> None:
+        self._dial_feature_code(dtmf_code)

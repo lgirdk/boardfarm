@@ -77,28 +77,44 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
         """
 
     @abstractmethod
-    def enable_call_waiting(self) -> None:
-        """Enables call waiting by dialing a number and then puts phone onhook"""
+    def enable_call_waiting(self, dtmf_code: str) -> None:
+        """Enables call waiting by dialing a number and then puts phone onhook.
+
+        :param dtmf_code: DTMF code to enable call waiting.
+        :type dtmf_code: str
+        """
 
     @abstractmethod
-    def enable_call_forwarding_busy(self, forward_to: "SIPPhoneTemplate") -> None:
-        """Enables call forwarding to a number when the call is busy
-        Dials a code and a number to which a call is supposed to forward and then puts phone onhook
+    def enable_call_forwarding_busy(
+        self, dtmf_code: str, forward_to: "SIPPhoneTemplate"
+    ) -> None:
+        """Enables call forwarding to a number when the call is busy.
+        Dials a code and a number to which a call is supposed to forward and then puts phone onhook.
 
+        :param dtmf_code: DTMF code to enable call forwarding busy.
+        :type dtmf_code: str
         :param forward_to: Device to which call needs to be forwarded to.
-        :type forward_to: SIPPhoneTemplate"""
+        :type forward_to: SIPPhoneTemplate
+        """
 
     @abstractmethod
-    def disable_call_forwarding_busy(self) -> None:
-        """Disables call forwarding busy by dialing a code and then puts phone onhook"""
+    def disable_call_forwarding_busy(self, dtmf_code: str) -> None:
+        """Disables call forwarding busy by dialing a code and then puts phone onhook.
+
+        :param dtmf_code: DTMF code to disable call forwarding busy.
+        :type dtmf_code: str
+        """
 
     @abstractmethod
-    def disable_call_waiting_overall(self) -> None:
-        """ """
+    def disable_call_waiting_overall(self, dtmf_code: str) -> None:
+        """Disables call waiting overall by dialing a number and then puts phone onhook.
+
+        :param dtmf_code: DTMF code to enable call waiting overall.
+        :type dtmf_code: str"""
 
     @abstractmethod
-    def disable_call_waiting_per_call(self) -> None:
-        """ """
+    def disable_call_waiting_per_call(self, dtmf_code: str) -> None:
+        """Disables call waiting per call by dialing a number and then puts phone onhook."""
 
     @abstractmethod
     def is_idle(self) -> bool:
