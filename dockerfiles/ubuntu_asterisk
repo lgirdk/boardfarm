@@ -184,10 +184,16 @@ RUN ASTERISK_BUILD_DEPS='\
     make && \
     make install && \
     \
-    ldconfig && \
-    \
-    ### Cleanup && FreePBX pre-req installation
-    mkdir -p /var/run/fail2ban && \
+    ldconfig
+
+COPY ./resources/voice/freepbx_config/extensions_additional.conf /etc/asterisk/extensions_additional.conf
+COPY ./resources/voice/freepbx_config/pjsip.aor_custom.conf /etc/asterisk/pjsip.aor_custom.conf
+COPY ./resources/voice/freepbx_config/pjsip.conf /etc/asterisk/pjsip.conf
+COPY ./resources/voice/freepbx_config/pjsip.endpoint_custom.conf /etc/asterisk/pjsip.endpoint_custom.conf
+COPY ./resources/voice/freepbx_config/extensions_additional.conf /etc/asterisk/extensions_additional.conf
+
+### Cleanup && FreePBX pre-req installation
+RUN mkdir -p /var/run/fail2ban && \
     cd / && \
     rm -rf /usr/src/* /tmp/* /etc/cron* && \
     apt-get purge -y $ASTERISK_BUILD_DEPS && \
