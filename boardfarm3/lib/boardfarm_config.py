@@ -112,7 +112,7 @@ def parse_boardfarm_config(
     board_config = inventory_config.get(resource_name)
     env_devices = board_config.pop("devices")
     board_config["type"] = board_config.pop("board_type")
-    location_config = inventory_config.get(board_config.pop("location"))
+    location_config = inventory_config["locations"].get(board_config.pop("location"))
     board_config["mirror"] = location_config.get("mirror")
     env_devices.append(board_config)
     env_devices.extend(location_config.get("devices"))
