@@ -88,16 +88,14 @@ class SIPPhoneTemplate(LinuxInterface, ABC):
         """
 
     @abstractmethod
-    def enable_call_forwarding_busy(
-        self, dtmf_code: str, forward_to: "SIPPhoneTemplate"
-    ) -> None:
+    def enable_call_forwarding_busy(self, dtmf_code: str, number: str) -> None:
         """Enables call forwarding to a number when the call is busy.
         Dials a code and a number to which a call is supposed to forward and then puts phone onhook.
 
         :param dtmf_code: DTMF code to enable call forwarding busy.
         :type dtmf_code: str
-        :param forward_to: Device to which call needs to be forwarded to.
-        :type forward_to: SIPPhoneTemplate
+        :param number: Number to which call needs to be forwarded to.
+        :type number: str
         """
 
     @abstractmethod

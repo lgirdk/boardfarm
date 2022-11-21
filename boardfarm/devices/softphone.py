@@ -482,10 +482,8 @@ class SoftPhone(SIPPhoneTemplate):
     def enable_call_waiting(self, dtmf_code: str) -> None:
         self._dial_feature_code(dtmf_code)
 
-    def enable_call_forwarding_busy(
-        self, dtmf_code: str, forward_to: SIPPhoneTemplate
-    ) -> None:
-        code = f"{dtmf_code}{forward_to.number}#"
+    def enable_call_forwarding_busy(self, dtmf_code: str, number: str) -> None:
+        code = f"{dtmf_code}{number}#"
         self._dial_feature_code(code)
 
     def disable_call_forwarding_busy(self, dtmf_code: str) -> None:

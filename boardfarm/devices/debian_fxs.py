@@ -446,8 +446,8 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
             raise CodeError("Cannot enable call waiting")
         self.on_hook()
 
-    def enable_call_forwarding_busy(self, forward_to: SIPPhoneTemplate) -> None:
-        self._dial(f"*67*{forward_to._obj().number}#")
+    def enable_call_forwarding_busy(self, number: str) -> None:
+        self._dial(f"*67*{number}#")
         self.on_hook()
 
     def disable_call_forwarding_busy(self) -> None:
