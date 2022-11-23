@@ -10,6 +10,9 @@ from boardfarm.lib.signature_checker import __MetaSignatureChecker
 
 
 class SIPPhoneTemplate(LinuxInterface, ABC):
+
+    own_number: str
+
     @property
     @abstractmethod
     def model(self):
@@ -482,24 +485,3 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
         param ip_address: the ip address of the endpoint
         type ip_address: string
         """
-
-    def allocate_number(self, number: Optional[str] = None) -> str:
-        """Allocate a number from the sipserver number list.
-
-        :param number: number to be allocated
-        :type number: Optional[str], optional
-        :raises ValueError: If unable to allocate a number
-        :return: number allocated
-        :rtype: str
-        """
-        if number:
-            number_to_be_allocated = number
-        else:
-            number_to_be_allocated = random.choice(self.users)
-        try:
-            self.users.remove(number_to_be_allocated)
-        except ValueError as exc:
-            if number:
-                print(f"Number {number} already allocated!!!")
-            raise ValueError("Unable to allocate a number") from exc
-        return number_to_be_allocated
