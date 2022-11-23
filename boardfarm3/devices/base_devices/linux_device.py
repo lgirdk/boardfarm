@@ -46,12 +46,12 @@ class LinuxDevice(BoardfarmDevice):
         self._console: BoardfarmPexpect = None
         self._shell_prompt = ["[\\w-]+@[\\w-]+:[\\w/~]+#"]
         self.firewall = IptablesFirewall(self._console)
-
+        self._static_route = ""
         if "options" in self._config:
             options = [x.strip() for x in self._config["options"].split(",")]
             for opt in options:
                 if opt.startswith("static-route:"):
-                    self.static_route = opt.replace("static-route:", "").replace(
+                    self._static_route = opt.replace("static-route:", "").replace(
                         "-", " via "
                     )
                 if opt.startswith("mgmt-dns:"):
