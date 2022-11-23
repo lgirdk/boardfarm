@@ -1,7 +1,9 @@
-## 2022.45.0 (2022-11-09)
+## 2022.47.0 (2022-11-23)
 
 ### Feat
 
+- **voice.py**: add voice usecases
+- **ubuntu_asterisk**: add freepbx config
 - **influx**: add support for capturing cpu & memory utilization in influx db
 - **debian_ntp**: add debian ntp docker image
 - **linux.py**: add method get_memory_utilization
@@ -21,6 +23,9 @@
 
 ### Fix
 
+- change gitlab to github
+- retry on acs contingency
+- **sip_template.py**: fix softphone initialisation error
 - **common.py**: remove passive mode connection from ftp_upload_download
 - **linux.py**: simplify regex for validating cpu load in get_load_avg method
 - **use_cases/networking.py**: add kwargs
