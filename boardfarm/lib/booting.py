@@ -86,10 +86,13 @@ def pre_boot_env(config, env_helper, devices):
         raise DeviceDoesNotExistError("No mitm device (requested by environment)")
 
     if env_helper.voice_enabled():
-        for voice_device in devices.get_device_array(
-            "softphones"
-        ) + devices.get_device_array("FXS"):
-            voice_device.phone_config(devices.sipcenter.gw)
+        try:
+            for voice_device in devices.get_device_array(
+                "softphones"
+            ) + devices.get_device_array("FXS"):
+                voice_device.phone_config(devices.sipcenter.gw)
+        except AttributeError as error:
+            raise (error + "Voice is not supported in this board.")
 
     prov = getattr(config, "provisioner", None)
     if prov:
@@ -269,10 +272,10 @@ def post_boot_env(config, env_helper, devices):
             )
 
     if env_helper.voice_enabled():
-        devices.board.sw.configure_voice(
+        devices.board.sw.voice.configure_voice(
             {"1": devices.fxs1.own_number, "2": devices.fxs2.own_number},
             "1234",
-            devices.sipcenter.data_ip,
+            devices.sipcenter.gw,
         )
     if hasattr(devices.board, "post_boot_env"):
         devices.board.post_boot_env()
