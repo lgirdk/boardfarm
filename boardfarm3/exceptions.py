@@ -77,3 +77,7 @@ class TeardownError(BoardfarmException):
 
 class ContingencyCheckError(BoardfarmException):
     """Raise this on any contingency check failure."""
+
+
+class WifiError(BoardfarmException):
+    """Raise this on any wifi related errors."""

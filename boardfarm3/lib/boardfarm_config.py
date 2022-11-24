@@ -5,6 +5,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from nested_lookup import nested_lookup
+
 from boardfarm3.exceptions import EnvConfigError
 
 
@@ -95,6 +97,16 @@ class BoardfarmConfig:
             ) from e
 
 
+def _merge_with_wifi_config(device: Any, wifi_config: Any) -> Any:
+    if device.get("type") == "debian_wifi" and wifi_config:
+        w_config = wifi_config
+        for wifi in w_config:
+            if device["band"] in [wifi["band"], "dual"]:
+                wifi_config.remove(wifi)
+                return wifi, wifi_config
+    return {}, wifi_config
+
+
 def parse_boardfarm_config(
     resource_name: str, env_json_path: str, inventory_json_path: str
 ) -> BoardfarmConfig:
@@ -117,11 +129,14 @@ def parse_boardfarm_config(
     env_devices.append(board_config)
     env_devices.extend(location_config.get("devices"))
     environment_def = env_json_config.get("environment_def")
+    wifi_config: list = nested_lookup("wifi_clients", env_json_config)
+    wifi_config = wifi_config[-1] if wifi_config else []
     merged_devices_config = []
     for device in env_devices:
         if device.get("name") in environment_def:
             device = environment_def[device.get("name")] | device
-        merged_devices_config.append(device)
+        wifi, wifi_config = _merge_with_wifi_config(device, wifi_config)
+        merged_devices_config.append(device | wifi)
     return BoardfarmConfig(
         merged_devices_config, env_json_config_copy, inventory_config_copy
     )
