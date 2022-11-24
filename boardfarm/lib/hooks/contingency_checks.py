@@ -173,10 +173,16 @@ class DNS:
 
         if acs_dns:
             output = board.dns.nslookup("acs_server.boardfarm.com")
+            ipv4 = nested_lookup("ipv4", acs_dns)
+            ipv6 = nested_lookup("ipv6", acs_dns)
+            total_reachable = (ipv4[0].get("reachable", 0) if ipv4 else 0) + (
+                ipv6[0].get("reachable", 0) if ipv6 else 0
+            )
+            total_unreachable = (ipv4[0].get("unreachable", 0) if ipv4 else 0) + (
+                ipv6[0].get("unreachable", 0) if ipv6 else 0
+            )
             if not board.domain_ip_reach_check(
-                acs_dns["ipv4"]["reachable"] + acs_dns["ipv6"]["reachable"],
-                acs_dns["ipv4"]["unreachable"] + acs_dns["ipv6"]["unreachable"],
-                output,
+                total_reachable, total_unreachable, output
             ):
                 raise ContingencyCheckError(
                     "DNS check for ipv4/ipv6 reachability failed"
