@@ -6,6 +6,7 @@ from typing import Any
 from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connections.ldap_authenticated_serial import LdapAuthenticatedSerial
+from boardfarm3.lib.connections.ser2net_connection import Ser2NetConnection
 from boardfarm3.lib.connections.ssh_connection import SSHConnection
 
 
@@ -24,6 +25,7 @@ def connection_factory(
         "ssh_connection": SSHConnection,
         "authenticated_ssh": SSHConnection,
         "ldap_authenticated_serial": LdapAuthenticatedSerial,
+        "ser2net": Ser2NetConnection,
     }
     if connection_type not in connection_dispatcher:
         raise EnvConfigError(f"Unsupported connection type: {connection_type}")
