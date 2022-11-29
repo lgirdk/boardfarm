@@ -117,6 +117,8 @@ def parse_boardfarm_config(
     :param inventory_json_path: inventory json file path
     :returns: environment configuration instance
     """
+    # TODO: this code needs revisiting as it the configuration inflexible
+    # and makes assumtions that may not be applicable
     env_json_config = json.loads(Path(env_json_path).read_text(encoding="utf-8"))
     inventory_config = json.loads(Path(inventory_json_path).read_text(encoding="utf-8"))
     env_json_config_copy = deepcopy(env_json_config)
@@ -124,10 +126,14 @@ def parse_boardfarm_config(
     board_config = inventory_config.get(resource_name)
     env_devices = board_config.pop("devices")
     board_config["type"] = board_config.pop("board_type")
-    location_config = inventory_config["locations"].get(board_config.pop("location"))
-    board_config["mirror"] = location_config.get("mirror")
+    location_config = {}
+    if inventory_config.get("locations", {}):  # optional, lab dependent
+        location_config = inventory_config["locations"].get(
+            board_config.pop("location")
+        )
+        board_config["mirror"] = location_config.get("mirror", None)  # optional
+        env_devices.extend(location_config.get("devices", []))
     env_devices.append(board_config)
-    env_devices.extend(location_config.get("devices"))
     environment_def = env_json_config.get("environment_def")
     wifi_config: list = nested_lookup("wifi_clients", env_json_config)
     wifi_config = wifi_config[-1] if wifi_config else []
