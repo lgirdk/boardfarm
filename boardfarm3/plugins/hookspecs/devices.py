@@ -1,6 +1,7 @@
 """Boardfarm device hook specifications."""
 
 from argparse import Namespace
+from typing import Any
 
 from pluggy import PluginManager
 
@@ -114,6 +115,17 @@ def boardfarm_attached_device_configure(
     :param config: boardfarm config
     :param cmdline_args: command line arguments
     :param device_manager: device manager
+    """
+
+
+@hookspec
+def contingency_check(env_req: dict[str, Any], device_manager: DeviceManager) -> None:
+    """Perform contingency check to make sure the device is working fine before use.
+
+    :param env_req: environment request dictionary
+    :type env_req: dict[str, Any]
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     """
 
 

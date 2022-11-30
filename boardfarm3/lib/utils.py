@@ -99,3 +99,26 @@ def retry_on_exception(
             _LOGGER.debug("method failed %d time (%s)", re_try, exc)
             time.sleep(tout)
     return method(*args)
+
+
+def get_value_from_dict(key: str, dictionary: dict) -> Any:
+    """Get value of given key from the dictionary recursively.
+
+    This method is used to avoid nested checks for None to get
+    a value from dictionary without raising KeyError.
+
+    :param key: name of the key
+    :type key: str
+    :param dictionary: dictionary instance
+    :type dictionary: dict
+    :return: value of given key if exists, otherwise None
+    :rtype: Any
+    """
+    for name, value in dictionary.items():
+        if name == key:
+            return value
+        if isinstance(value, dict):
+            return_value = get_value_from_dict(key, value)
+            if return_value is not None:
+                return return_value
+    return None

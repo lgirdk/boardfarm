@@ -48,6 +48,11 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
         action="store_true",
         help="Skips the booting process, all devices will be used as they are",
     )
+    argparser.add_argument(
+        "--skip-contingency-checks",
+        action="store_true",
+        help="Skip contingency checks while running tests",
+    )
 
 
 @hookimpl
@@ -140,7 +145,6 @@ def _interactive_ptpython_shell(
     cmdline_args: Namespace,
     device_manager: DeviceManager,
 ) -> None:
-
     logging.getLogger("parso").setLevel("INFO")
     logging.getLogger("asyncio").setLevel("INFO")
 

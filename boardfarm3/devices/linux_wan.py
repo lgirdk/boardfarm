@@ -6,6 +6,7 @@ from ipaddress import IPv4Interface, IPv6Interface
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
+from boardfarm3.exceptions import ContingencyCheckError
 from boardfarm3.templates.wan import WAN
 
 _LOGGER = logging.getLogger(__name__)
@@ -92,6 +93,17 @@ class LinuxWAN(LinuxDevice, WAN):
         """Boardfarm hook implementation to shutdown WAN device."""
         _LOGGER.info("Shutdown %s(%s) device", self.device_name, self.device_type)
         self._disconnect()
+
+    @hookimpl
+    def contingency_check(self) -> None:
+        """Make sure the WAN is working fine before use."""
+        if self._cmdline_args.skip_contingency_checks:
+            return
+        _LOGGER.info("Contingency check %s(%s)", self.device_name, self.device_type)
+        if "FOO" not in self._console.execute_command("echo FOO"):
+            raise ContingencyCheckError("WAN device console in not responding")
+        self.get_eth_interface_ipv4_address()
+        self.get_eth_interface_ipv6_address()
 
     @property
     def iface_dut(self) -> str:

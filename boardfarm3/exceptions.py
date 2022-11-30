@@ -72,4 +72,8 @@ class VoiceError(BoardfarmException):
 
 # TODO: maybe move to testsuite
 class TeardownError(BoardfarmException):
-    """Raise this on any SNMP related error."""
+    """Raise this on any test teardown failure."""
+
+
+class ContingencyCheckError(BoardfarmException):
+    """Raise this on any contingency check failure."""
