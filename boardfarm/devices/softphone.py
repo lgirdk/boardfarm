@@ -75,17 +75,12 @@ class SoftPhone(SIPPhoneTemplate):
         self.prefer_ipv4()
         install_pjsua(self, getattr(self, "pjsip_local_url", None))
 
-    def get_number(self):
-        sipserver = get_device_by_name("sipcenter")
-        return sipserver.allocate_number(self.own_number)
-
     def phone_config(self, sipserver_ip: str) -> None:
         """Configure the soft phone.
 
         Arguments:
         sipserver_ip(str): ip of sip server
         """
-        self.own_number = self.get_number()
         conf = f"""--local-port={self.num_port}
 --id=sip:{self.own_number}@{sipserver_ip}
 --registrar=sip:{sipserver_ip}
