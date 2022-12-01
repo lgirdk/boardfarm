@@ -372,7 +372,7 @@ class LinuxDevice(BoardfarmDevice):
 
         match = re.search(
             f"{ping_count} packets transmitted, {ping_count} "
-            "[packets ]*received, 0%% packet loss",
+            "[packets ]*received, 0% packet loss",
             self._console.before,
         )
         return bool(match)

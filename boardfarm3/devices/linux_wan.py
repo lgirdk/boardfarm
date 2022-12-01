@@ -1,12 +1,17 @@
 """Boardfarm WAN device module."""
 
 import logging
+import re
 from argparse import Namespace
 from ipaddress import IPv4Interface, IPv6Interface
+from typing import Any
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
 from boardfarm3.exceptions import ContingencyCheckError
+from boardfarm3.lib.networking import NSLookup
+from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex
+from boardfarm3.lib.utils import get_value_from_dict
 from boardfarm3.templates.wan import WAN
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,15 +100,49 @@ class LinuxWAN(LinuxDevice, WAN):
         self._disconnect()
 
     @hookimpl
-    def contingency_check(self) -> None:
-        """Make sure the WAN is working fine before use."""
+    def contingency_check(self, env_req: dict[str, Any]) -> None:
+        """Make sure the WAN is working fine before use.
+
+        :param env_req: test env request
+        :type env_req: dict[str, Any]
+        """
         if self._cmdline_args.skip_contingency_checks:
             return
         _LOGGER.info("Contingency check %s(%s)", self.device_name, self.device_type)
-        if "FOO" not in self._console.execute_command("echo FOO"):
-            raise ContingencyCheckError("WAN device console in not responding")
         self.get_eth_interface_ipv4_address()
         self.get_eth_interface_ipv6_address()
+        # Perform DNS service check
+        if acs_server_config := get_value_from_dict("ACS_SERVER", env_req):
+            self._validate_dns_env_request(acs_server_config)
+
+    def _validate_dns_env_request(
+        self, acs_server_config: dict[str, dict[str, str]]
+    ) -> None:
+        output = NSLookup(self._console).nslookup("acs_server.boardfarm.com")
+        ping_status = {
+            "ipv4": {"reachable": 0, "unreachable": 0},
+            "ipv6": {"reachable": 0, "unreachable": 0},
+        }
+        for ip_address in output.get("domain_ip_addr", []):
+            ip_version = (
+                "ipv6" if re.match(AllValidIpv6AddressesRegex, ip_address) else "ipv4"
+            )
+            if self.ping(ip_address, ping_count=2):
+                ping_status[ip_version]["reachable"] += 1
+            else:
+                ping_status[ip_version]["unreachable"] += 1
+        for ip_version, item in ping_status.items():
+            if ip_version not in acs_server_config:
+                continue
+            for status, value in item.items():
+                if status not in acs_server_config[ip_version]:
+                    continue
+                if acs_server_config[ip_version][status] != value:
+                    raise ContingencyCheckError(
+                        f"DNS check failed for {ip_version} {status} servers -"
+                        f" requested: {acs_server_config[ip_version][status]},"
+                        f" actual: {value}"
+                    )
 
     @property
     def iface_dut(self) -> str:
