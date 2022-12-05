@@ -614,6 +614,82 @@ def unblock_ipv6_traffic(
     device.firewall.del_drop_rule_ip6tables("-d", destination)
 
 
+def get_iptables_list(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    opts: str = "",
+    extra_opts: str = "-nvL --line-number",
+) -> dict:
+    """Get firewall's iptables.
+
+    :param device: device class object
+    :type device: Union[DebianWAN, AxirosACS, BoardSWTemplate]
+    :param opts: options for iptables command
+    :type opts: str
+    :param extra_opts: extra options for iptables command, defaults to -nvL --line-number
+    :type extra_opts: str
+    :return: dict of iptable
+    :rtype: dict
+    """
+    return device.firewall.get_iptables_list(opts, extra_opts)
+
+
+def is_iptable_empty(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    opts: str = "",
+    extra_opts: str = "-nvL --line-number",
+) -> bool:
+    """Check if device's firewall iptable is empty.
+
+    :param device: device class object
+    :type device: Union[DebianWAN, AxirosACS, BoardSWTemplate]
+    :param opts: options for iptables command
+    :type opts: str
+    :param extra_opts: extra options for iptables command, defaults to -nvL --line-number
+    :type extra_opts: str
+    :return: Whether iptable is empty
+    :rtype: bool
+    """
+    return device.firewall.is_iptable_empty(opts, extra_opts)
+
+
+def get_ip6tables_list(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    opts: str = "",
+    extra_opts: str = "-nvL --line-number",
+) -> dict:
+    """Get firewall's ip6tables.
+
+    :param device: device class object
+    :type device: Union[DebianWAN, AxirosACS, BoardSWTemplate]
+    :param opts: options for iptables command
+    :type opts: str
+    :param extra_opts: extra options for iptables command, defaults to -nvL --line-number
+    :type extra_opts: str
+    :return: dict of iptable
+    :rtype: dict
+    """
+    return device.firewall.get_ip6tables_list(opts, extra_opts)
+
+
+def is_ip6table_empty(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    opts: str = "",
+    extra_opts: str = "-nvL --line-number",
+) -> bool:
+    """Check if device's firewall ip6table is empty.
+
+    :param device: device class object
+    :type device: Union[DebianWAN, AxirosACS, BoardSWTemplate]
+    :param opts: options for iptables command
+    :type opts: str
+    :param extra_opts: extra options for iptables command, defaults to -nvL --line-number
+    :type extra_opts: str
+    :return: Whether iptable is empty
+    :rtype: bool
+    """
+    return device.firewall.is_ip6table_empty(opts, extra_opts)
+
+
 def send_ipv6_traffic_from_wan_to_non_existing_endpoint(
     wan_device: DebianWAN,
     sink_ip_addr: Union[str, IPv6Address, IPv4Address],
