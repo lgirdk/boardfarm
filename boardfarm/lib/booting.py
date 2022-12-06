@@ -15,6 +15,7 @@ from boardfarm.exceptions import (
     NoTFTPServer,
 )
 from boardfarm.lib.booting_utils import check_and_connect_to_wifi
+from boardfarm.lib.common import retry_on_exception
 from boardfarm.library import check_devices
 
 logger = logging.getLogger("bft")
@@ -261,7 +262,7 @@ def post_boot_env(config, env_helper, devices):
                 for acs_api in i:
                     API_func = getattr(devices.acs_server, acs_api)
                     for param in i[acs_api]:
-                        API_func(param)
+                        retry_on_exception(API_func, (param,), tout=60)
         else:
             raise BootFail(
                 "Factory reset has to performed for tr069 provisioning. Env json with factory reset true should be used."
