@@ -432,7 +432,7 @@ class EnvHelper:
             return self.env["environment_def"]["board"]["lan_clients"][idx][
                 "advertise_identity"
             ]
-        except (KeyError, AttributeError):
+        except (IndexError, KeyError, AttributeError):
             return False
 
     def get_mitm_devices(self):
