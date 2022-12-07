@@ -1,7 +1,9 @@
-## 2022.47.0 (2022-11-23)
+## 2022.49.0 (2022-12-07)
 
 ### Feat
 
+- **use_cases/networking.py**: add iptables use_cases
+- **softphone.py**: add nameserver entry
 - **voice.py**: add voice usecases
 - **ubuntu_asterisk**: add freepbx config
 - **influx**: add support for capturing cpu & memory utilization in influx db
@@ -23,6 +25,10 @@
 
 ### Fix
 
+- **booting**: retry on tr-069 provisioning
+- **env_helper**: lan clients number mismatch
+- **softphone.py,debian_fxs.py,sip_template.py**: remove allocate number funtion and related
+- **hooks:contingency_checks**: update acs dns check in contingency
 - change gitlab to github
 - retry on acs contingency
 - **sip_template.py**: fix softphone initialisation error
