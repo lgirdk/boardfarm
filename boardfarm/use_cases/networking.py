@@ -9,11 +9,15 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import jc.parsers.dig
 import pexpect
+import xmltodict
 from bs4 import BeautifulSoup
 from termcolor import colored
 
 from boardfarm.devices.axiros_acs import AxirosACS
-from boardfarm.devices.base_devices.board_templates import BoardSWTemplate
+from boardfarm.devices.base_devices.board_templates import (
+    BoardSWTemplate,
+    BoardTemplate,
+)
 from boardfarm.devices.debian_lan import DebianLAN
 from boardfarm.devices.debian_wan import DebianWAN
 from boardfarm.devices.debian_wifi import DebianWifi
@@ -1066,3 +1070,165 @@ def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
         raise UseCaseFailure(
             f"Either Sender(Client) or Receiver(Server) process cannot be killed: Sender-{sender} Receiver:{receiver}"
         )
+
+
+def _nmap(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+    port: Optional[Union[str, int]] = None,
+    protocol: Optional[str] = None,
+    max_retries: Optional[int] = None,
+    min_rate: Optional[int] = None,
+    opts: str = None,
+) -> dict:
+    iface = (
+        destination_device.erouter_iface
+        if type(destination_device) == BoardTemplate
+        else destination_device.iface_dut
+    )
+    if ip_type not in ["ipv4", "ipv6"]:
+        raise UseCaseFailure("Invalid ip type, should be either ipv4 or ipv6")
+    ipaddr = (
+        {destination_device.get_interface_ipaddr(iface)}
+        if ip_type == "ipv4"
+        else f"-6 {destination_device.get_interface_ip6addr(iface)}"
+    )
+    retries = f"-max-retries {max_retries}" if max_retries else ""
+    rate = f"-min-rate {min_rate}" if min_rate else ""
+    port = f"-p {port}" if port else ""
+    cmd = f"nmap {protocol or ''} {port} -Pn -r {opts or ''} {ipaddr} {retries} {rate} -oX -"
+    xml = source_device.check_output(cmd)
+    return xmltodict.parse(xml)
+
+
+def create_udp_session(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+    port: Union[str, int],
+    max_retries: int,
+) -> dict[str, str]:
+    """Create a UDP session from source to destination device on a port.
+
+    Runs nmap network utility on source device.
+
+    :param source_device: Source device
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: Destination device
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :param ip_type: type of ipaddress: "ipv4", "ipv6"
+    :type ip_type: str
+    :param port: port or range of ports: "666-999"
+    :type port: Union[str, int]
+    :param max_retries: maximum number retries for nmap
+    :type max_retries: int, optional
+    :return: xml output of the nmap command in form of dictionary
+    :rtype: dict[str,str]
+    """
+    return _nmap(source_device, destination_device, ip_type, port, "-sU", max_retries)
+
+
+def create_tcp_session(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+    port: Union[str, int],
+    max_retries: int = 4,
+) -> dict[str, str]:
+    """Create a TCP session from source to destination device on a port.
+
+    Runs nmap network utility on source device.
+
+    :param source_device: Source device
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: Destination device
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :param ip_type: type of ipaddress: "ipv4", "ipv6"
+    :type ip_type: str
+    :param port: port or range of ports: "666-999"
+    :type port: Union[str, int]
+    :param max_retries: maximum number retries for nmap
+    :type max_retries: int, optional
+    :return: xml output of the nmap command in form of dictionary
+    :rtype: dict[str,str]
+    """
+    return _nmap(source_device, destination_device, ip_type, port, "-sT", max_retries)
+
+
+def create_tcp_udp_session(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+    port: Union[str, int],
+    max_retries: int = 4,
+) -> dict[str, str]:
+    """Create both TCP and UDP session from source to destination device on a port.
+
+    Runs nmap network utility on source device.
+
+    :param source_device: Source device
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: Destination device
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :param ip_type: type of ipaddress: "ipv4", "ipv6"
+    :type ip_type: str
+    :param port: port or range of ports: "666-999"
+    :type port: Union[str, int]
+    :param max_retries: maximum number retries for nmap
+    :type max_retries: int, optional
+    :return: xml output of the nmap command in form of dictionary
+    :rtype: dict[str,str]
+    """
+    return _nmap(
+        source_device, destination_device, ip_type, port, "-sU -sT", max_retries
+    )
+
+
+def perform_ip_flooding(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+    port: Union[str, int],
+    min_rate: int,
+    max_retries: int = 4,
+) -> dict[str, str]:
+    """Perform ip flooding via nmap network utility on source device.
+
+    :param source_device: Source device
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: Destination device
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :param ip_type: type of ipaddress: "ipv4", "ipv6"
+    :type ip_type: str
+    :param port: port or range of ports: "666-999"
+    :type port: Union[str, int]
+    :param min_rate: Send packets no slower than min_rate per second
+    :type min_rate: int
+    :param max_retries: maximum number retries for nmap
+    :type max_retries: int, optional
+    :return: xml output of the nmap command in form of dictionary
+    :rtype: dict[str,str]
+    """
+    return _nmap(
+        source_device, destination_device, ip_type, port, "-sS", max_retries, min_rate
+    )
+
+
+def perform_complete_scan(
+    source_device: Union[DebianLAN, DebianWifi, DebianWAN],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ip_type: str,
+) -> dict:
+    """Perform Complete scan on destination via nmap network utility on source device.
+
+    :param source_device: Source device
+    :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param destination_device: Destination device
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :param ip_type: type of ipaddress: "ipv4", "ipv6"
+    :type ip_type: str
+    :return: xml output of the nmap command in form of dictionary
+    :rtype: dict[str,str]
+    """
+    return _nmap(source_device, destination_device, ip_type, opts="-F")
