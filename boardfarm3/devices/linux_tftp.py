@@ -5,7 +5,7 @@ from ipaddress import IPv4Address
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
-from boardfarm3.exceptions import ConfigurationFailure
+from boardfarm3.exceptions import ConfigurationFailure, DeviceBootFailure
 from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.templates.tftp import TFTP
 
@@ -28,20 +28,35 @@ class LinuxTFTP(LinuxDevice, TFTP):
 
     @hookimpl  # type: ignore
     def boardfarm_server_boot(self) -> None:
-        """Boardfarm hook implementation to boot TFTP device."""
+        """Boardfarm hook implementation to boot TFTP device.
+
+        :raises DeviceBootFailure: if tftpd fails to start
+        """
         _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
         self._connect()
+        if self._cmdline_args.skip_boot:
+            return
         # TODO: to be cleaned up once Docker factory comes into place
         self._set_eth_interface_ipv4_address(LinuxTFTP._last_static_ip_address)
         LinuxTFTP._last_static_ip_address += 1
+        if "Restarting" not in self._console.execute_command(
+            "/etc/init.d/tftpd-hpa restart"
+        ):
+            raise DeviceBootFailure("Failed to restart tftpd-hpa")
+        if "in.tftpd is running" not in self._console.execute_command(
+            "/etc/init.d/tftpd-hpa status"
+        ):
+            raise DeviceBootFailure("Failed tftpd-hpa not running")
 
     @hookimpl  # type: ignore
     def boardfarm_post_deploy_devices(self, device_manager: DeviceManager) -> None:
         """Boardfarm hook implementation to shutdown TFTP device.
 
         :param device_manager: device manager instance
+        :type device_manager: DeviceManager
         """
         _LOGGER.info("Shutdown %s(%s) device", self.device_name, self.device_type)
+        self._console.execute_command("/etc/init.d/tftpd-hpa stop")
         self._disconnect()
         device_manager.unregister_device(self.device_name)
 
@@ -49,7 +64,9 @@ class LinuxTFTP(LinuxDevice, TFTP):
         """Download image from given URI.
 
         :param image_uri: image file URI
+        :type image_uri: str
         :returns: downloaded image name
+        :rtype: str
         """
         return self.download_file_from_uri(image_uri, self._tftpboot_dir)
 
