@@ -197,7 +197,7 @@ def post_boot_lan_clients(config, env_helper, devices):
                         x.configure_docker_iface()
                         if env_helper.get_prov_mode() == "ipv6":
                             x.start_ipv6_lan_client(wan_gw=devices.wan.gw)
-                            if devices.board.cm_cfg.dslite:
+                            if env_helper.is_dslite_enabled():
                                 x.start_ipv4_lan_client(wan_gw=devices.wan.gw)
                         elif env_helper.get_prov_mode() == "dual":
                             x.start_ipv6_lan_client(wan_gw=devices.wan.gw)
