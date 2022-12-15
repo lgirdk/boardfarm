@@ -1,51 +1,101 @@
 ## 2022.49.0 (2022-12-07)
 
+ ### Feat
+
+-- **use_cases/networking.py**: add iptables use_cases
+-- **softphone.py**: add nameserver entry
+
+ ### Fix
+
+-- **booting**: retry on tr-069 provisioning
+-- **env_helper**: lan clients number mismatch
+-- **softphone.py,debian_fxs.py,sip_template.py**: remove allocate number funtion and related
+-- **hooks:contingency_checks**: update acs dns check in contingency
+
+## 2022.47.0 (2022-11-23)
+
+ ### Feat
+
+**voice.py**: add voice usecases
+**ubuntu_asterisk**: add freepbx config
+
+ ### Fix
+
+change gitlab to github
+retry on acs contingency
+**sip_template.py**: fix softphone initialisation error
+
+## 2022.45.0 (2022-11-09)
+
+ ### Feat
+
+**influx**: add support for capturing cpu & memory utilization in influx db
+**debian_ntp**: add debian ntp docker image
+**linux.py**: add method get_memory_utilization
+
+ ### Fix
+
+**common.py**: remove passive mode connection from ftp_upload_download
+**linux.py**: simplify regex for validating cpu load in get_load_avg method
+**use_cases/networking.py**: add kwargs
+
+## 2022.43.0 (2022-10-28)
+
+ ### Feat
+
+**DeviceManager.py**: add samknows device to device manager
+
+ ### Fix
+
+**lib:hooks:contingency_checks.py**: remove the usage of arm in CC
+
+## 2022.41.0 (2022-10-12)
+
+ ### Feat
+
+**debian_lan**: add ftp in debian_lan and vsftp in debian_wan
+**use_cases/descriptors.py**: return ipv6 addr
+**booting.py**: add voice specify boot functions
+**use_cases/descriptors.py**: add provisioner descriptor
+**multicast**: ssm multicast libraries
+**asterisk**: dockerfile
+**quagga**: modify implementation to ubuntu
+
+ ### Fix
+
+**networking.py**: add ipv6 dns resolve
+**use_cases/dhcp.py**: update dhcp methods
+
+## 2022.39.0 (2022-09-28)
+
+ ### Feat
+
+ **base_devices:board_templates.py**: add method is_link_up to BoardSWTemplate class
+ **installers.py**: add force parameter to install_vsftpd
+
+
+ ### Fix
+
+ **common.py**: update expect statement of password prompt for ftp_useradd
+ **use_cases/dhcpv6.py**: add additional_args param
+ **SNMPv2.py**: correct the regex and match
+
+
+### Refactor
+
+ **axiros_acs.py,acs_template.py**: update AcsTemplate and update AxirosACS
+
+## 2022.37.0 (2022-09-21)
+
 ### Feat
 
-- **use_cases/networking.py**: add iptables use_cases
-- **softphone.py**: add nameserver entry
-- **voice.py**: add voice usecases
-- **ubuntu_asterisk**: add freepbx config
-- **influx**: add support for capturing cpu & memory utilization in influx db
-- **debian_ntp**: add debian ntp docker image
-- **linux.py**: add method get_memory_utilization
-- **DeviceManager.py**: add samknows device to device manager
-- **debian_lan**: add ftp in debian_lan and vsftp in debian_wan
-- **use_cases/descriptors.py**: return ipv6 addr
-- **booting.py**: add voice specify boot functions
-- **use_cases/descriptors.py**: add provisioner descriptor
-- **multicast**: ssm multicast libraries
-- **asterisk**: dockerfile
-- **quagga**: modify implementation to ubuntu
-- **base_devices:board_templates.py**: add method is_link_up to BoardSWTemplate class
-- **installers.py**: add force parameter to install_vsftpd
 - **sip_template.py**: add endpoints specific functions
 - add check for multicast server count
 - **devices:linux.py,-use_cases:networking.py**: add device class implementation and usecases of the IPerfTrafficGenerator
 
 ### Fix
 
-- **booting**: retry on tr-069 provisioning
-- **env_helper**: lan clients number mismatch
-- **softphone.py,debian_fxs.py,sip_template.py**: remove allocate number funtion and related
-- **hooks:contingency_checks**: update acs dns check in contingency
-- change gitlab to github
-- retry on acs contingency
-- **sip_template.py**: fix softphone initialisation error
-- **common.py**: remove passive mode connection from ftp_upload_download
-- **linux.py**: simplify regex for validating cpu load in get_load_avg method
-- **use_cases/networking.py**: add kwargs
-- **lib:hooks:contingency_checks.py**: remove the usage of arm in CC
-- **networking.py**: add ipv6 dns resolve
-- **use_cases/dhcp.py**: update dhcp methods
-- **common.py**: update expect statement of password prompt for ftp_useradd
-- **use_cases/dhcpv6.py**: add additional_args param
-- **SNMPv2.py**: correct the regex and match
 - add timeout to parse_sip_trace usecase
-
-### Refactor
-
-- **axiros_acs.py,acs_template.py**: update AcsTemplate and update AxirosACS
 
 ## 2022.35.0 (2022-08-31)
 
