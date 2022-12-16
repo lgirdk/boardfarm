@@ -1,0 +1,63 @@
+#! /bin/bash -xe
+
+# Wait for all interfaces to get added.
+# By default only check for WAN and AUX interfaces
+# Any other interface needs to be passed via command line to be checked.
+if [[ $# -ne 0 ]]
+then
+    for i in $@;
+    do
+        while [ -z $(ls /sys/class/net | grep $i) ]
+        do
+            echo "$i interface not found"
+            sleep 2
+        done
+        ip link set $i up
+    done
+fi
+while [ -z $(ls /sys/class/net | grep eth1) ]; do
+    echo "WAN interface not found"
+    sleep 2
+done
+ip link set eth1 up
+while [ -z $(ls /sys/class/net | grep aux0) ]; do
+    echo "WAN interface not found"
+    sleep 2
+done
+ip link set aux0 up
+
+sysctl -p /etc/sysctl.conf
+
+# Zebra is loaded by default
+sed -i "/zebra_options=/d" /etc/frr/daemons
+echo "zebra_options=\"  -A 127.0.0.1 -s 90000000 -f /etc/frr/zebra.conf\"" >> /etc/frr/daemons
+
+
+echo "Starting daemons."
+for svc in bgpd isisd ospfd ospf6d ripd ripngd pimd pim6d; do
+    if [ -f /etc/frr/${svc}.conf ]; then
+        echo "Starting ${svc}."
+        sed -i s"/${svc}=no/${svc}=yes/" /etc/frr/daemons
+        sed -i "/${svc}_options=/d" /etc/frr/daemons
+        if [[ ${svc} == *"6"* ]]; then
+            # IPv6 service
+            echo "${svc}_options=\"  -A ::1 -f /etc/frr/${svc}.conf\"" >> /etc/frr/daemons
+        else
+            echo "${svc}_options=\"  -A 127.0.0.1 -f /etc/frr/${svc}.conf\"" >> /etc/frr/daemons
+        fi
+    fi
+done
+
+cat /etc/frr/daemons
+
+service frr start
+sleep 3
+service mrouted start
+service smcroute start
+
+update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+# Run sshd by default
+/usr/sbin/sshd -D
