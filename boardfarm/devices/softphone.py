@@ -70,7 +70,7 @@ class SoftPhone(SIPPhoneTemplate):
         ).splitlines()
         wan_ip_entry = f"nameserver {wan.get_interface_ipaddr(wan.iface_dut)}"
         if wan_ip_entry not in nameserver_list:
-            nameserver_list.append(wan_ip_entry)
+            nameserver_list.insert(0, wan_ip_entry)
         self.sendline("cat > /etc/resolv.conf <<EOF")
         for nameserver in nameserver_list:
             self.sendline(nameserver)
