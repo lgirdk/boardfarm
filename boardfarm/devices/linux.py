@@ -791,9 +791,9 @@ EOFEOFEOFEOF"""
         :return: True if set is successful
         :rtype: bool
         """
-        self.sendline(f"date {opt} {format}")
+        self.sendline(f"date {opt} '{format}'")
         self.expect_prompt()
-        return format in self.before
+        return format in self.before and "invalid date" not in self.before
 
     def get_default_gw(self):
         self.sendline("ip route show | grep default")

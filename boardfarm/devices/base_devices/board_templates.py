@@ -217,6 +217,17 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def set_dut_date(self, date: str) -> bool:
+        """Set the dut date and time from CM console.
+
+        :param date: value to be changed
+        :type date: str
+        :return: True if date is set else False
+        :rtype: bool
+        """
+        raise NotImplementedError
+
     def get_sw_version(self):
         """Return the SW version as a string."""
         raise NotImplementedError
