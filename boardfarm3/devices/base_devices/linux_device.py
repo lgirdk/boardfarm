@@ -9,6 +9,7 @@ from typing import Any, Optional, Union
 
 import jc.parsers.ping
 import pexpect
+import xmltodict
 
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
 from boardfarm3.exceptions import (
@@ -619,3 +620,43 @@ class LinuxDevice(BoardfarmDevice):
         :rtype: List[Dict[str, Any]]
         """
         return dns_lookup(self._console, domain_name)
+
+    def nmap(  # pylint: disable=too-many-arguments
+        self,
+        ipaddr: str,
+        ip_type: str,
+        port: Optional[Union[str, int]] = None,
+        protocol: Optional[str] = None,
+        max_retries: Optional[int] = None,
+        min_rate: Optional[int] = None,
+        opts: Optional[str] = None,
+    ) -> dict:
+        """Perform nmap operation on linux device.
+
+        :param ipaddr: ip address on which nmap is performed
+        :type ipaddr: str
+        :param ip_type: type of ip eg: ipv4/ipv6
+        :type ip_type: str
+        :param port: destination port on ip, defaults to None
+        :type port: Optional[Union[str, int]], optional
+        :param protocol: specific protocol to follow eg: tcp(-sT)/udp(-sU),
+            defaults to None
+        :type protocol: Optional[str], optional
+        :param max_retries: number of port scan probe retransmissions, defaults to None
+        :type max_retries: Optional[int], optional
+        :param min_rate: Send packets no slower than per second, defaults to None
+        :type min_rate: Optional[int], optional
+        :param opts: other options for a nmap command, defaults to None
+        :type opts: Optional[str], optional
+        :raises BoardfarmException: Raises exception if ip type is invalid
+        :return: response of nmap command in xml/dict format
+        :rtype: dict
+        """
+        if ip_type not in ["ipv4", "ipv6"]:
+            raise BoardfarmException("Invalid ip type, should be either ipv4 or ipv6")
+        retries = f"-max-retries {max_retries}" if max_retries else ""
+        rate = f"-min-rate {min_rate}" if min_rate else ""
+        port = f"-p {port}" if port else ""
+        cmd = f"nmap {protocol or ''} {port} -Pn -r {opts or ''} \
+            {ipaddr} {retries} {rate} -oX -"
+        return xmltodict.parse(self._console.execute_command(cmd))

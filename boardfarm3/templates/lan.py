@@ -328,3 +328,37 @@ class LAN(ABC):
         :type interface: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def nmap(  # pylint: disable=too-many-arguments
+        self,
+        ipaddr: str,
+        ip_type: str,
+        port: Optional[Union[str, int]] = None,
+        protocol: Optional[str] = None,
+        max_retries: Optional[int] = None,
+        min_rate: Optional[int] = None,
+        opts: str = None,
+    ) -> dict:
+        """Perform nmap operation on linux device.
+
+        :param ipaddr: ip address on which nmap is performed
+        :type ipaddr: str
+        :param ip_type: type of ip eg: ipv4/ipv6
+        :type ip_type: str
+        :param port: destination port on ip, defaults to None
+        :type port: Optional[Union[str, int]], optional
+        :param protocol: specific protocol to follow eg: tcp(-sT)/udp(-sU),
+            defaults to None
+        :type protocol: Optional[str], optional
+        :param max_retries: number of port scan probe retransmissions, defaults to None
+        :type max_retries: Optional[int], optional
+        :param min_rate: Send packets no slower than per second, defaults to None
+        :type min_rate: Optional[int], optional
+        :param opts: other options for a nmap command, defaults to None
+        :type opts: str, optional
+        :raises BoardfarmException: Raises exception if ip type is invalid
+        :return: response of nmap command in xml/dict format
+        :rtype: dict
+        """
+        raise NotImplementedError
