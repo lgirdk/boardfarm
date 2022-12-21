@@ -137,8 +137,8 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
     def iwlist_supported_channels(self, wifi_band: str) -> list[str]:
         """List of wifi client support channels.
 
-        :param wifi_mode: wifi frequency ['2' or '5']
-        :type wifi_mode: str
+        :param wifi_band: wifi frequency ['2.4' or '5']
+        :type wifi_band: str
         :return: list of channel in wifi mode
         :rtype: list[str]
         """
@@ -151,17 +151,6 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :raises CodeError: WLAN card was blocked due to some process.
         :return: List of Wi-FI SSIDs
         :rtype: list[str]
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def is_wifi_ssid_listed(self, ssid_name: str) -> bool:
-        """Check the SSID provided is present in the scan list.
-
-        :param ssid_name: SSID name to be verified
-        :type ssid_name: str
-        :return: True if given WiFi SSID is listed, False otherwise
-        :rtype: bool
         """
         raise NotImplementedError
 
