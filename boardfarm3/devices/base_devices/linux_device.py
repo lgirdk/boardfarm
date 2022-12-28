@@ -93,6 +93,7 @@ class LinuxDevice(BoardfarmDevice):
                 ip_addr=self._ipaddr,
                 port=self._port,
                 shell_prompt=self._shell_prompt,
+                save_console_logs=self._cmdline_args.save_console_logs,
             )
             # This fixes the terminal prompt on long lines
             self._console.execute_command(
@@ -197,7 +198,9 @@ class LinuxDevice(BoardfarmDevice):
             local_path,
             destination_path,
         ]
-        session = LocalCmd(f"{self.device_name}.scp", "scp", args)
+        session = LocalCmd(
+            f"{self.device_name}.scp", "scp", save_console_logs=False, args=args
+        )
         session.setwinsize(24, 80)
         match_index = session.expect(
             [" password:", "\\d+%", pexpect.TIMEOUT, pexpect.EOF], timeout=20

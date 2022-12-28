@@ -53,6 +53,9 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
         action="store_true",
         help="Skip contingency checks while running tests",
     )
+    argparser.add_argument(
+        "--save-console-logs", action="store_true", help="Save console logs to the disk"
+    )
 
 
 @hookimpl

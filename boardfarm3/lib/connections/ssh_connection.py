@@ -12,7 +12,7 @@ from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 class SSHConnection(BoardfarmPexpect):
     """Connect to a device via SSH."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,  # pylint: disable=unused-argument
         name: str,
         ip_addr: str,
@@ -20,16 +20,25 @@ class SSHConnection(BoardfarmPexpect):
         shell_prompt: list[str],
         port: int = 22,
         password: str = None,
+        save_console_logs: bool = False,
         **kwargs: dict[str, Any],  # ignore other arguments
     ) -> None:
         """Initialize SSH connection.
 
         :param name: connection name
+        :type name: str
         :param ip_addr: ip address
+        :type ip_addr: str
         :param username: ssh username
+        :type username: str
         :param shell_prompt: shell prompt pattern
+        :type shell_prompt: list[str]
         :param port: port number, defaults to 22
+        :type port: int, optional
         :param password: password, defaults to None
+        :type password: str, optional
+        :param save_console_logs: save console logs, defaults to False
+        :type save_console_logs: bool, optional
         """
         self._shell_prompt = shell_prompt
         self._username = username
@@ -43,7 +52,7 @@ class SSHConnection(BoardfarmPexpect):
             "-o ServerAliveCountMax=5",
             "-o IdentitiesOnly=yes",
         ]
-        super().__init__(name, "ssh", args)
+        super().__init__(name, "ssh", save_console_logs, args)
         self._login_to_server(self._password)
 
     def _login_to_server(self, password: str) -> None:

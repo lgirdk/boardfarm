@@ -22,7 +22,14 @@ class Ser2NetConnection(BoardfarmPexpect):
     No authentication needed.
     """
 
-    def __init__(self, name: str, ip_addr: str, port: str, shell_prompt: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        ip_addr: str,
+        port: str,
+        shell_prompt: str,
+        save_console_logs: bool,
+    ) -> None:
         """Initialize the class instance to open a pexpect session.
 
         :param name: the session name
@@ -33,13 +40,15 @@ class Ser2NetConnection(BoardfarmPexpect):
         :type port: str
         :param shell_prompt: shell prompt to expect
         :type shell_prompt: str
+        :param save_console_logs: save console logs to disk
+        :type save_console_logs: bool
         :raises DeviceConnectionError: on failure to connect
         """
         self._shell_prompt = shell_prompt
         self._ip_addr = ip_addr
         self._port = port
         self._shell_prompt = shell_prompt
-        super().__init__(name, "telnet", [ip_addr, port])
+        super().__init__(name, "telnet", save_console_logs, [ip_addr, port])
         if self.expect([f"ser2net port {port}", pexpect.TIMEOUT], timeout=10):
             raise DeviceConnectionError(
                 f"ser2net: Failed to run 'telnet {ip_addr} {port}'"

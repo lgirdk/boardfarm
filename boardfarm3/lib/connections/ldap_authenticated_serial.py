@@ -19,26 +19,36 @@ class LdapAuthenticatedSerial(SSHConnection):
         ldap_credentials: str,
         shell_prompt: list[str],
         port: int = 22,
+        save_console_logs: bool = False,
         **kwargs: dict[str, Any],  # ignore other arguments
     ) -> None:
         """Initialize ldap authenticated serial connection.
 
         :param name: connection name
+        :type name: str
         :param ip_addr: server ip address
+        :type ip_addr: str
         :param ldap_credentials: ldap credentials
-        :param shell_prompt: shell prompt pattern
+        :type ldap_credentials: str
+        :param shell_prompt: shell prompt patterns
+        :type shell_prompt: list[str]
         :param port: port number, defaults to 22
-        :raises ValueError: when ldap credentials is invalid
+        :type port: int, optional
+        :param save_console_logs: save console logs to disk, defaults to False
+        :type save_console_logs: bool, optional
         """
         if ";" not in ldap_credentials:
             raise ValueError("Invalid LDAP credentials")
         username, password = ldap_credentials.split(";")
-        super().__init__(name, ip_addr, username, shell_prompt, port, password)
+        super().__init__(
+            name, ip_addr, username, shell_prompt, port, password, save_console_logs
+        )
 
     def _login_to_server(self, password: str) -> None:
         """Login to serial server.
 
         :param password: LDAP password
+        :type password: str
         """
         if self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT]):
             raise DeviceConnectionError("Failed to connect to device via serial")
