@@ -27,6 +27,11 @@ class AcsTemplate(metaclass=__MetaSignatureChecker):
         See devices/axiros_acs.py as a reference
         """
 
+    @property
+    @abstractmethod
+    def url(self):
+        """This is the URL to access the ACS."""
+
     @abstractmethod
     def __init__(self, *args, **kwargs) -> None:
         """Initialize ACS parameters.

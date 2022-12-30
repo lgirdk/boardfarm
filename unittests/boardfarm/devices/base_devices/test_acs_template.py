@@ -27,6 +27,10 @@ def test_cannot_instantiate_derived_acs_missing_model():
             def connect(self, *args, **kwargs) -> None:
                 pass
 
+            @property
+            def url(self) -> str:
+                pass
+
             def GPV(
                 self,
                 param: GpvInput,
@@ -50,6 +54,39 @@ def test_cannot_instantiate_derived_acs_missing_model():
 def test_cannot_instantiate_derived_acs_incorrect_signature():
     with pytest.raises(TypeError) as err:
         # missing "model" property definition
+        class MyAcs(AcsTemplate):
+            model = "unittest"
+
+            def __init__(self, *args, **kwargs) -> None:
+                pass
+
+            def connect(self, *args, **kwargs) -> None:
+                pass
+
+            @property
+            def url(self) -> str:
+                pass
+
+            def GPV(self, parameter: GpvInput):
+                pass
+
+            def SPV(
+                self,
+                cpe_id: Optional[str],
+                key_value: SpvInput,
+            ) -> int:
+                pass
+
+        acs = MyAcs()  # noqa: F841
+    assert (
+        "Abstract method 'GPV'  not implemented with correct signature in 'MyAcs'"
+        in str(err.value)
+    )
+
+
+def test_cannot_instantiate_derived_acs_without_url():
+    with pytest.raises(TypeError) as err:
+        # missing "url" property definition
         class MyAcs(AcsTemplate):
             model = "unittest"
 
@@ -84,6 +121,10 @@ def test_can_instantiate_derived_acs_with_correct_structure():
             pass
 
         def connect(self, *args, **kwargs) -> None:
+            pass
+
+        @property
+        def url(self) -> str:
             pass
 
         def GPV(

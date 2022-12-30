@@ -195,6 +195,15 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
     def cpeid(self, value: str):
         self._cpeid = value
 
+    @property
+    def url(self) -> str:
+        """This is the URL to access the ACS.
+
+        :return: the acs url
+        :rtype: str
+        """
+        return self.kwargs["acs_mib"]
+
     def __init__(self, *args, **kwargs) -> None:
         """Initialize the variable that are used in establishing connection to the ACS and\
            Initialize an HTTP SOAP client which will authenticate with the ACS server.
