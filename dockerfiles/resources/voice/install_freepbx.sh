@@ -35,3 +35,4 @@ ln -s /data/etc/freepbx.conf /etc/freepbx.conf
 ### Set RTP ports and fix a FreePBX bug with upgrades
 mysql -e 'USE asterisk; ALTER TABLE featurecodes CHANGE column helptext helptext VARCHAR(10000); INSERT INTO sipsettings (keyword, data, seq, type) VALUES ("rtpstart","'"$RTP_START"'",1,0) ON DUPLICATE KEY UPDATE data="'"$RTP_START"'";INSERT INTO sipsettings (keyword, data, seq, type) VALUES ("rtpend","'"$RTP_FINISH"'",1,0) ON DUPLICATE KEY UPDATE data="'"$RTP_FINISH"'";'
 a2enmod rewrite
+service apache2 restart
