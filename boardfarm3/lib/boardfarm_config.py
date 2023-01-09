@@ -3,8 +3,9 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
+import requests
 from nested_lookup import nested_lookup
 
 from boardfarm3.exceptions import EnvConfigError
@@ -107,6 +108,15 @@ def _merge_with_wifi_config(device: Any, wifi_config: Any) -> Any:
     return {}, wifi_config
 
 
+def _get_json(resource_name: str) -> dict[str, Any]:
+    json_dict: str
+    if resource_name.startswith(("http://", "https://")):
+        json_dict = requests.get(resource_name, timeout=30).text
+    else:
+        json_dict = Path(resource_name).read_text(encoding="utf-8")
+    return cast(dict[str, Any], json.loads(json_dict))
+
+
 def parse_boardfarm_config(
     resource_name: str, env_json_path: str, inventory_json_path: str
 ) -> BoardfarmConfig:
@@ -119,8 +129,8 @@ def parse_boardfarm_config(
     """
     # TODO: this code needs revisiting as it the configuration inflexible
     # and makes assumtions that may not be applicable
-    env_json_config = json.loads(Path(env_json_path).read_text(encoding="utf-8"))
-    inventory_config = json.loads(Path(inventory_json_path).read_text(encoding="utf-8"))
+    env_json_config = _get_json(env_json_path)
+    inventory_config = _get_json(inventory_json_path)
     env_json_config_copy = deepcopy(env_json_config)
     inventory_config_copy = deepcopy(inventory_config)
     board_config = inventory_config.get(resource_name)

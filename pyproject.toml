@@ -32,6 +32,7 @@
         "pluggy>=1.0.0",
         "ptipython",
         "pysmi",
+        "requests",
         "termcolor",
         "zeep",
         "xmltodict",
