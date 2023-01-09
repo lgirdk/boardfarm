@@ -1232,3 +1232,42 @@ def perform_complete_scan(
     :rtype: dict[str,str]
     """
     return _nmap(source_device, destination_device, ip_type, opts="-F")
+
+
+def ping(
+    device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    ping_ip: str,
+    ping_count: Optional[int] = 4,
+    ping_interface: Optional[str] = None,
+    timeout: Optional[int] = 50,
+    json_output: Optional[bool] = False,
+) -> Union[bool, dict]:
+    """Ping remote host ip.
+
+    Return True if ping has 0% loss or parsed output in JSON if
+    json_output=True flag is provided.
+
+    :param device: device on which ping is performed
+    :type device: Union[DebianLAN, DebianWifi, DebianWAN]
+    :param ping_ip: ip to ping
+    :type ping_ip: str
+    :param ping_count: number of concurrent pings, defaults to 4
+    :type ping_count: Optional[int]
+    :param ping_interface: ping via interface, defaults to None
+    :type ping_interface: Optional[str]
+    :param timeout: timeout, defaults to 50
+    :type timeout: Optional[int]
+    :param json_output: True if ping output in dictionary format else False,
+        defaults to False
+    :type json_output: Optional[bool]
+    :return: bool or dict of ping output
+    :rtype: Union[bool, dict]
+    """
+    dev = device.sw.nw_utility.dev if hasattr(device, "sw") else device
+    return dev.ping(
+        ping_ip,
+        ping_count=ping_count,
+        ping_interface=ping_interface,
+        timeout=timeout,
+        json_output=json_output,
+    )
