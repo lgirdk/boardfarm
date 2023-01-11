@@ -1,6 +1,7 @@
 """Boardfarm main hook specifications."""
 
 from argparse import ArgumentParser, Namespace
+from typing import Any
 
 from pluggy import PluginManager
 
@@ -16,6 +17,7 @@ def boardfarm_add_hookspecs(plugin_manager: PluginManager) -> None:
     """Add new hookspecs to extend and/or update the framework.
 
     :param plugin_manager: plugin manager
+    :type plugin_manager: PluginManager
     """
 
 
@@ -24,6 +26,7 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     """Add new command line argument(s).
 
     :param argparser: argument parser
+    :type argparser: ArgumentParser
     """
 
 
@@ -34,8 +37,11 @@ def boardfarm_cmdline_parse(
     """Parse command line arguments.
 
     :param argparser: argument parser
+    :type argparser: ArgumentParser
     :param cmdline_args: command line arguments
-    :returns: command line arguments
+    :type cmdline_args: list[str]
+    :return: command line arguments
+    :rtype: Namespace
     """
 
 
@@ -50,8 +56,11 @@ def boardfarm_configure(
     when required.
 
     :param config: boardfarm config
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
     :param plugin_manager: plugin manager
+    :type plugin_manager: PluginManager
     """
 
 
@@ -62,8 +71,11 @@ def boardfarm_reserve_devices(
     """Reserve devices before starting the deployment.
 
     :param config: boardfarm config
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
+    :type plugin_manager: PluginManager
     """
 
 
@@ -74,9 +86,13 @@ def boardfarm_deploy_devices(
     """Deploy all the devices to the environment.
 
     :param config: boardfarm config
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
-    :returns: device manager with all devices in the environment
+    :type plugin_manager: PluginManager
+    :return: device manager with all devices in the environment
+    :rtype: DeviceManager
     """
 
 
@@ -87,18 +103,29 @@ def boardfarm_post_deploy_devices(
     """Call after all the devices are deployed to environment.
 
     :param config: boardfarm config
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
     :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     """
 
 
 @hookspec
 def boardfarm_release_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
+    deployment_status: dict[str, Any],
 ) -> None:
     """Release reserved devices after use.
 
     :param config: boardfarm config
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
+    :type plugin_manager: PluginManager
+    :param deployment_status: deployment status data
+    :type deployment_status: Dict[str, Any]
     """

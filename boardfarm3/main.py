@@ -3,6 +3,7 @@
 import logging.config
 import sys
 from argparse import ArgumentParser
+from typing import Any
 
 from pluggy import PluginManager
 
@@ -18,6 +19,7 @@ def get_plugin_manager() -> PluginManager:
     """Get boardfarm plugin manager.
 
     :return: boardfarm plugin manager
+    :rtype: PluginManager
     """
     plugin_manager = PluginManager(PROJECT_NAME)
     plugin_manager.add_hookspecs(core)
@@ -41,6 +43,7 @@ def main() -> None:
     plugin_manager.hook.boardfarm_configure(
         config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
     )
+    deployment_status: dict[str, Any] = {}
     try:
         plugin_manager.hook.boardfarm_reserve_devices(
             config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
@@ -51,9 +54,16 @@ def main() -> None:
         plugin_manager.hook.boardfarm_post_deploy_devices(
             config=config, cmdline_args=cmdline_args, device_manager=device_manager
         )
+        deployment_status = {"status": "success"}
+    except Exception:  # pylint: disable=broad-except
+        deployment_status = {"status": "failed", "exception": sys.exc_info()[1]}
+        raise
     finally:
         plugin_manager.hook.boardfarm_release_devices(
-            config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
+            config=config,
+            cmdline_args=cmdline_args,
+            plugin_manager=plugin_manager,
+            deployment_status=deployment_status,
         )
 
 
