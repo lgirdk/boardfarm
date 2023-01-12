@@ -52,7 +52,6 @@ cat /etc/frr/daemons
 
 service frr start
 sleep 3
-service mrouted start
 service smcroute start
 
 update-alternatives --set iptables /usr/sbin/iptables-legacy
