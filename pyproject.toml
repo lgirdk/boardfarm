@@ -57,7 +57,7 @@
         "pyvirtualdisplay==2.2",
         "requests",
         "retry",
-        "selenium==4.1.0",
+        "selenium>=4.3.0",
         "tabulate",
         "termcolor",
         "xmltodict",
