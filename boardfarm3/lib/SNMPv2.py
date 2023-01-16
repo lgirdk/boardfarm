@@ -110,7 +110,7 @@ class SNMPv2:
         """
         oid = self._get_mib_oid(mib_name) + f".{str(index)}"
         if re.findall(r"\s", value.strip()) and stype == "s":
-            value = f'"{value}"'
+            value = f"{value!r}"
         if str(value).lower().startswith("0x"):
             value = value.upper()
             set_value = f"{stype} {value[2:]}"

@@ -183,5 +183,5 @@ class LinuxWAN(LinuxDevice, WAN):
         # Only allowing snmp commands to be executed from wan
         # only wan has snmp utils installed on it.
         if not snmp_command.startswith("snmp"):
-            raise ValueError(f"'{snmp_command}' is not a SNMP command")
+            raise ValueError(f"{snmp_command!r} is not a SNMP command")
         return self._console.execute_command(snmp_command)

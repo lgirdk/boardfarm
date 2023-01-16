@@ -33,8 +33,7 @@
         "ptipython",
         "pysmi",
         "requests",
-        "termcolor",
-        "zeep",
+        "rich",
         "xmltodict",
     ]
 
@@ -55,7 +54,6 @@
             "pre-commit",
             "pylint",
             "types-ipaddress",
-            "types-termcolor",
             "types-requests",
         ]
         doc = ["sphinx"]

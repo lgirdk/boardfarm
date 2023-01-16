@@ -229,7 +229,7 @@ class LinuxDevice(BoardfarmDevice):
         file_name = file_uri.split("/")[-1]
         file_path = f"{destination_dir}/{file_name}"
         if " saved [" not in self._console.execute_command(
-            f"{self._internet_access_cmd} wget '{file_uri}' -O {file_path}"
+            f"{self._internet_access_cmd} wget {file_uri!r} -O {file_path}"
         ):
             raise ConfigurationFailure(f"Failed to download file from {file_uri}")
         return file_name
@@ -375,8 +375,10 @@ class LinuxDevice(BoardfarmDevice):
             return jc.parsers.ping.parse(self._console.before)
 
         match = re.search(
-            f"{ping_count} packets transmitted, {ping_count} "
-            "[packets ]*received, 0% packet loss",
+            (
+                f"{ping_count} packets transmitted, {ping_count} "
+                "[packets ]*received, 0% packet loss"
+            ),
             self._console.before,
         )
         return bool(match)
@@ -498,7 +500,7 @@ class LinuxDevice(BoardfarmDevice):
             "sudo tshark -r", fname, additional_args, timeout
         )
 
-        if f'The file "{fname}" doesn\'t exist' in output:
+        if f'The file "{fname}" doesn\'t exist' in output:  # noqa
             raise FileNotFoundError(
                 f"pcap file not found {fname} on device {self.device_name}"
             )
@@ -657,6 +659,8 @@ class LinuxDevice(BoardfarmDevice):
         retries = f"-max-retries {max_retries}" if max_retries else ""
         rate = f"-min-rate {min_rate}" if min_rate else ""
         port = f"-p {port}" if port else ""
-        cmd = f"nmap {protocol or ''} {port} -Pn -r {opts or ''} \
-            {ipaddr} {retries} {rate} -oX -"
+        cmd = (
+            f"nmap {protocol or ''} {port} -Pn -r {opts or ''}"
+            f" {ipaddr} {retries} {rate} -oX -"
+        )
         return xmltodict.parse(self._console.execute_command(cmd))

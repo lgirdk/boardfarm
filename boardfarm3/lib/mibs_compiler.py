@@ -77,4 +77,4 @@ class MibsCompiler:
             and "oid" in self._mibs_dict[mib_name]
         ):
             return self._mibs_dict[mib_name]["oid"]
-        raise ValueError(f"Unable to find OID of '{mib_name}' MIB")
+        raise ValueError(f"Unable to find OID of {mib_name!r} MIB")
