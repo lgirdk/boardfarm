@@ -39,7 +39,7 @@ exclude =
     scripts/*,
 
 max-line-length = 88
-extend-ignore = E203, E501
+extend-ignore = E203, E501, B028, B017
 rst-roles =
     class,
     func,
