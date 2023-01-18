@@ -1,3 +1,24 @@
+## 2023.03.0 (2023-01-18)
+
+### BREAKING CHANGE
+
+- BOARDFARM-2784
+
+### Feat
+
+- **pyproject.toml**: update selenium version
+- **frr**: added smcroute
+- **use_cases:networking.py**: add usecase to perform ping from a device
+- **debian_lan**: add multicast scapy support
+- **frr**: moving from quagga to frr
+- **use_cases:networking.py**: add set_dut_date for board sw
+
+### Fix
+
+- flake8 ignore  B028, B017
+- **acs.py**: use case to return acs urls
+- **softphone**: add nameserver to the top
+
 ## 2022.51.0 (2022-12-21)
 
 ### Feat
