@@ -10,17 +10,38 @@ import logging
 import os
 import re
 import time
+from enum import Enum
+from typing import List, Optional
 
 import pexpect
 from debtcollector import moves
 from termcolor import colored
 
 from boardfarm.devices.platform import debian
+from boardfarm.exceptions import CodeError
 from boardfarm.lib.dhcpoption import configure_option
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_tshark
 from boardfarm.lib.linux_nw_utility import Ping
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture, tshark_read
+
+
+class IGMPGroupRecordType(Enum):
+    """IGMPv3 Record Types."""
+
+    MODE_IS_INCLUDE = 1
+    MODE_IS_EXCLUDE = 2
+    CHANGE_TO_INCLUDE_MODE = 3
+    CHANGE_TO_EXCLUDE_MODE = 4
+    ALLOW_NEW_SOURCES = 5
+    BLOCK_OLD_SOURCES = 6
+
+
+# Add Type Hint support for IGMP Records
+MCAST_SOURCE = str
+MCAST_GROUP = str
+MCAST_GROUP_RECORD = List[tuple[List[MCAST_SOURCE], MCAST_GROUP, IGMPGroupRecordType]]
+
 
 logger = logging.getLogger("bft")
 
@@ -392,6 +413,63 @@ class DebianLAN(debian.DebianBox):
             )
             logger.error(msg)
         return output
+
+    def send_igmpv3_report(
+        self, mcast_group_record: MCAST_GROUP_RECORD, count: int
+    ) -> None:
+        """Send an IGMPv3 report with desired multicast record.
+
+        Multicast source and group must be IPv4 addresses.
+        Multicast sources need to be non-multicast addresses and
+        group address needs to be a multicast address.
+
+        Implementation relies on a custom send_igmp_report
+        script based on scapy.
+
+        :param mcast_group_record: IGMPv3 multicast group record
+        :type mcast_group_record: MCAST_GROUP_RECORD
+        :param count: num of packets to send in 1s interval
+        :type count: int
+        :raises CodeError: if send_igmp_report command fails
+        """
+        command = f"send_igmp_report -i {self.iface_dut} -c {count}"
+        out = self._send_multicast_report(command, mcast_group_record)
+        if f"Sent {count} packets" not in out:
+            raise CodeError(f"Failed to execute send_mld_report command:\n{out}")
+
+    def send_mldv2_report(self, mcast_group_record: MCAST_GROUP_RECORD, count: int):
+        """Send an MLDv2 report with desired multicast record.
+
+        Multicast source and group must be IPv6 addresses.
+        Multicast sources need to be non-multicast addresses and
+        group address needs to be a multicast address.
+
+        Implementation relies on a custom send_mld_report
+        script based on scapy.
+
+        :param mcast_group_record: MLDv2 multicast group record
+        :type mcast_group_record: MCAST_GROUP_RECORD
+        :param count: num of packets to send in 1s interval
+        :type count: int
+        :raises CodeError: if send_mld_report command fails
+        """
+        command = f"send_mld_report -i {self.iface_dut} -c {count}"
+        out = self._send_multicast_report(command, mcast_group_record)
+        if f"Sent {count} packets" not in out:
+            raise CodeError(f"Failed to execute send_mld_report command:\n{out}")
+
+    def _send_multicast_report(
+        self, command: str, mcast_group_record: MCAST_GROUP_RECORD
+    ) -> str:
+        args = ""
+        for sources, group, rtype in mcast_group_record:
+            src = ",".join(sources)
+            args += f'-mr "{src};{group};{rtype.value} "'
+
+        out = self.check_output(f"{command} {args}")
+        if "Traceback" in out:
+            raise CodeError(f"Failed to send the report!!\n{self.before}")
+        return out
 
 
 if __name__ == "__main__":
