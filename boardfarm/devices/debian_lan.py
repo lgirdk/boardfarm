@@ -11,6 +11,7 @@ import os
 import re
 import time
 from enum import Enum
+from functools import cached_property
 from typing import List, Optional
 
 import pexpect
@@ -26,7 +27,7 @@ from boardfarm.lib.linux_nw_utility import Ping
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture, tshark_read
 
 
-class IGMPGroupRecordType(Enum):
+class MulticastGroupRecordType(Enum):
     """IGMPv3 Record Types."""
 
     MODE_IS_INCLUDE = 1
@@ -40,7 +41,9 @@ class IGMPGroupRecordType(Enum):
 # Add Type Hint support for IGMP Records
 MCAST_SOURCE = str
 MCAST_GROUP = str
-MCAST_GROUP_RECORD = List[tuple[List[MCAST_SOURCE], MCAST_GROUP, IGMPGroupRecordType]]
+MCAST_GROUP_RECORD = List[
+    tuple[List[MCAST_SOURCE], MCAST_GROUP, MulticastGroupRecordType]
+]
 
 
 logger = logging.getLogger("bft")
@@ -470,6 +473,53 @@ class DebianLAN(debian.DebianBox):
         if "Traceback" in out:
             raise CodeError(f"Failed to send the report!!\n{self.before}")
         return out
+
+    @cached_property
+    def ip_addr(self) -> str:
+        """Return the IPv4 address on IFACE facing DUT.
+
+        :return: IPv4 address in string format.
+        :rtype: str
+        """
+        return self.get_interface_ipaddr(self.iface_dut)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self.get_interface_ip6addr(self.iface_dut)
+
+    @cached_property
+    def gw_mac_addr(self) -> str:
+        """Return the L2 address of DUT gateway from ARP table.
+
+        :return: MAC address in string format.
+        :rtype: str
+        """
+        # must only be called post boot.
+        route = self.check_output("ip route show default")
+        gw_ip = re.findall(r"default via (.*) dev", route)[0]
+        out = self.check_output(f"arp -i {self.iface_dut} -a")
+        return re.findall(rf"\({gw_ip}\) at\s(.*)\s\[", out)[0]
+
+    @cached_property
+    def mac_addr(self) -> str:
+        """Return the L2 address of IFACE facing DUT.
+
+        :return: MAC address in string format.
+        :rtype: str
+        """
+        return self.get_interface_macaddr(self.iface_dut)
+
+    def clear_cache(self):
+        """To clear all the cached properties."""
+        self.__dict__.pop("ip_addr", None)
+        self.__dict__.pop("ip6_addr", None)
+        self.__dict__.pop("gw_mac_addr", None)
+        self.__dict__.pop("mac_addr", None)
 
 
 if __name__ == "__main__":
