@@ -5,6 +5,8 @@
 # This file is distributed under the Clear BSD license.
 # The full text can be found in LICENSE in the root directory.
 
+from functools import cached_property
+
 from boardfarm.devices.platform import debian
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.installers import install_tshark
@@ -179,6 +181,29 @@ class DebianWAN(debian.DebianBox):
             ["Starting ISC DHCP(v4)? server.*dhcpd.", "Starting isc-dhcp-server.*"]
         )
         self.expect(self.prompt)
+
+    @cached_property
+    def ip_addr(self) -> str:
+        """Return the IPv4 address on IFACE facing DUT.
+
+        :return: IPv4 address in string format.
+        :rtype: str
+        """
+        return self.get_interface_ipaddr(self.iface_dut)
+
+    @cached_property
+    def ip6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self.get_interface_ip6addr(self.iface_dut)
+
+    def clear_cache(self):
+        """To clear all the cached properties."""
+        self.__dict__.pop("ip_addr", None)
+        self.__dict__.pop("ip6_addr", None)
 
 
 if __name__ == "__main__":

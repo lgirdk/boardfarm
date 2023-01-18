@@ -10,11 +10,13 @@ from typing import Generator, List, Optional, Tuple, Union
 
 import pandas
 
+from boardfarm.devices.debian_lan import DebianLAN
+from boardfarm.devices.debian_wan import DebianWAN
+from boardfarm.devices.debian_wifi import DebianWifi
 from boardfarm.exceptions import BFTypeError, UseCaseFailure
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
-from boardfarm.use_cases.descriptors import LanClients, WanClients, WLanClients
 
-IperfDevice = Union[LanClients, WanClients, WLanClients]
+IperfDevice = Union[DebianLAN, DebianWAN, DebianWifi]
 
 
 @dataclass
@@ -87,7 +89,7 @@ def kill_all_iperf(device_list: List[IperfDevice]):
     :type device_list: List[IperfDevice]
     """
     for obj in device_list:
-        dev = obj._obj
+        dev = obj
         dev.sendcontrol("c")
         dev.expect_prompt()
         dev.check_output("for i in $(pgrep iperf); do kill -9 $i; done")
@@ -128,7 +130,7 @@ def tcpdump(
     :rtype: Generator[str, None, None]
     """
     pid: str = ""
-    device = dev._obj
+    device = dev
     try:
         pid = tcpdump_capture(
             device,
@@ -167,7 +169,7 @@ def _read_mcast_trace(dev: IperfDevice, fname: str) -> List[Tuple[str, ...]]:
     :return: list of parsed IP multicast packets
     :rtype: List[Tuple[str, ...]]
     """
-    device = dev._obj
+    device = dev
     cmd = f'tshark -r {fname} -E separator=, -Y "igmp or udp" '
     fields = (
         "-T fields -e ip.src -e ip.dst -e eth.src -e eth.dst "
