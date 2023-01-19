@@ -24,6 +24,7 @@
 
     dependencies = [
         "beautifulsoup4",
+        "importlib-metadata",
         "jc",
         "nested_lookup",
         "netaddr",
@@ -32,6 +33,7 @@
         "pluggy>=1.0.0",
         "ptipython",
         "pysmi",
+        "pytest",
         "requests",
         "rich",
         "xmltodict",
@@ -58,7 +60,6 @@
         ]
         doc = ["sphinx"]
         test = [
-            "pytest",
             "pytest-cov",
             "pytest-mock",
             "pytest-randomly",

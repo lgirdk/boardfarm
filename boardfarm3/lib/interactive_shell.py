@@ -1,11 +1,16 @@
 """Boardfarm interactive shell module."""
 
 import logging
+import re
+import sys
+import time
 from argparse import Namespace
 from collections.abc import Callable
 from typing import Any, Optional
 
 import jedi
+import pytest
+from importlib_metadata import entry_points
 from ptpython.ipython import IPythonInput, embed
 from rich import print as rich_print
 from rich.box import ASCII_DOUBLE_HEAD, Box
@@ -16,6 +21,7 @@ from rich.table import Table
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm3.lib.utils import disable_logs
 
 
 class OptionsTable:
@@ -207,6 +213,28 @@ def _interactive_ptpython_shell(
     embed(configure=_configure_repl)
 
 
+def _run_boardfarm_tests() -> None:
+    pytest_arguments = [
+        "--self-contained-html",
+        f"--html=report-{int(time.time())}.html",
+    ]
+    tests = Prompt.ask(
+        "[magenta]Enter comma separated test paths or JIRA IDs",
+    )
+    jira_test_ids: list[str] = []
+    for test in tests.split(","):
+        if re.match(r"^MVX_TST-\d+$", test.strip()):
+            jira_test_ids.append(f"test_{test}.py")
+            continue
+        pytest_arguments.append(test)
+    pytest_arguments.extend(["-k", f"{' or '.join(jira_test_ids)}"])
+    pexpect_logger = logging.getLogger("pexpect")
+    with disable_logs(), disable_logs("pexpect"):
+        pexpect_logger.propagate = True
+        pytest.main(sys.argv[1:] + pytest_arguments)
+        pexpect_logger.propagate = False
+
+
 def get_interactive_console_options(
     device_manager: DeviceManager, cmdline_args: Namespace
 ) -> OptionsTable:
@@ -232,4 +260,8 @@ def get_interactive_console_options(
         (cmdline_args, device_manager),
         {},
     )
+    if entry_points(group="pytest11", name="pytest_boardfarm"):
+        table.add_option(
+            "e", "execute boardfarm automated test(s)", _run_boardfarm_tests, (), {}
+        )
     return table

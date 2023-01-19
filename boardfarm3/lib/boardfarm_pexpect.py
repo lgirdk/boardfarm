@@ -1,14 +1,15 @@
 """Boardfarm pexpect session module."""
 
-import logging
 import re
 from abc import ABCMeta, abstractmethod
-from logging import Formatter, Logger, NullHandler, getLogger
+from logging import Formatter, Logger, getLogger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Union
 
 import pexpect
+
+from boardfarm3.lib.utils import disable_logs
 
 
 def _apply_backspace(string: str) -> str:
@@ -121,11 +122,5 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
 
     def start_interactive_session(self) -> None:
         """Start interactive pexpect session."""
-        pexpect_logger = logging.getLogger("pexpect")
-        pexpect_handlers = list(pexpect_logger.handlers)
-        list(map(pexpect_logger.removeHandler, pexpect_handlers))
-        pexpect_handler = NullHandler()
-        pexpect_logger.addHandler(pexpect_handler)
-        self.interact()
-        pexpect_logger.removeHandler(pexpect_handler)
-        list(map(pexpect_logger.addHandler, pexpect_handlers))
+        with disable_logs("pexpect"):
+            self.interact()

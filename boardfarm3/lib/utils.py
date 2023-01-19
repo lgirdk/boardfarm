@@ -3,8 +3,10 @@
 import logging
 import os
 import time
+from collections.abc import Generator
+from contextlib import contextmanager
 from ipaddress import IPv4Address
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional, Union
 
 from netaddr import EUI, mac_unix_expanded
 
@@ -122,3 +124,22 @@ def get_value_from_dict(key: str, dictionary: dict) -> Any:
             if return_value is not None:
                 return return_value
     return None
+
+
+@contextmanager
+def disable_logs(logger_name: Optional[str] = None) -> Generator:
+    """Disable logs for the logger with given name.
+
+    :param logger_name: logger name, defaults to None
+    :type logger_name: Optional[str], optional
+    """
+    logger = logging.getLogger(logger_name)
+    handlers = list(logger.handlers)
+    list(map(logger.removeHandler, handlers))
+    null_handler = logging.NullHandler()
+    logger.addHandler(null_handler)
+    try:
+        yield
+    finally:
+        logger.removeHandler(null_handler)
+        list(map(logger.addHandler, handlers))
