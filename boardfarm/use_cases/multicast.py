@@ -189,7 +189,10 @@ def _read_mcast_trace(dev: IperfDevice, fname: str) -> List[Tuple[str, ...]]:
 
 
 def parse_mcast_trace(
-    dev: IperfDevice, fname: str, expected_sequence: List[Tuple[str, ...]]
+    dev: IperfDevice,
+    fname: str,
+    expected_sequence: List[Tuple[str, ...]],
+    ip_version: int = 4,
 ) -> List[Tuple[str, ...]]:
     """Compare captured PCAP file against an expected sequence of packets.
 
@@ -212,6 +215,18 @@ def parse_mcast_trace(
         - IGMP Multicast Address (if provided in group records)
         - IGMP Source Address (if provided in group records)
 
+    IPv6 packets will be parsed and following values are returned in a list:
+
+        - IPv6 source
+        - IPv6 destination
+        - MAC source
+        - MAC destination
+        - IPv6 Next Header (0 - ICMPv6, 6 - TCP, 17 - UDP)
+        - MLDv2 version (130 - MLDv2 Query, 143 - MLDv2 Report)
+        - MLDv2 Record Type number (5 - Allow new sources, 6 - Block old sources)
+        - MLDv2 Multicast Address (if provided in group records)
+        - MLDv2 Source Address (if provided in group records)
+
     You can use * to mark a field as Any
 
     .. hint:: This Use Case assists in validating statements from the
@@ -228,10 +243,18 @@ def parse_mcast_trace(
     :type fname: str
     :param expected_sequence: expected sequence to match against captured sequence
     :type expected_sequence: List[Tuple[str, ...]]
+    :param ip_version: IP version, defaults to 4
+    :type ip_version: int
     :return: matched captured sequence against the expected sequence
     :rtype: List[Tuple[str, ...]]
+    :raises ValueError: if invalid IP version is provided
     """
-    captured_sequence = _read_mcast_trace(dev, fname)
+    if ip_version == 4:
+        captured_sequence = _read_mcast_trace(dev, fname)
+    elif ip_version == 6:
+        captured_sequence = _read_mcast6_trace(dev, fname)
+    else:
+        raise ValueError(f"Invalid IP version: {ip_version}")
     last_check = 0
     final_result = []
     for packet in expected_sequence:
@@ -256,3 +279,52 @@ def parse_mcast_trace(
             )
             final_result.append(())
     return final_result
+
+
+def _read_mcast6_trace(dev: IperfDevice, fname: str) -> List[Tuple[str, ...]]:
+    """Read and filter multicast packets from the captured file.
+
+    Multicast traffic include UDP stream packets as well as MLDv2 Group
+    membership reports.
+
+    IPv6 packets will be parsed and following values are returned in a list:
+
+        - IP source
+        - IP destination
+        - MAC source
+        - MAC destination
+        - IPv6 Next Header (0 - ICMPv6, 6 - TCP, 17 - UDP)
+        - MLDv2 version (130 - MLDv2 Query, 143 - MLDv2 Report)
+        - MLDv2 Record Type number (5 - Allow new sources, 6 - Block old sources)
+        - MLDv2 Multicast Address (if provided in group records)
+        - MLDv2 Source Address (if provided in group records)
+
+    :param dev: Descriptor of iperf capable device with PCAP file
+    :type dev: IperfDevice
+    :param fname: PCAP file to be read
+    :type fname: str
+    :return: list of parsed IP multicast packets
+    :rtype: List[Tuple[str, ...]]
+    """
+    device = dev
+    cmd = (
+        f"tshark -r {fname} -E separator=, -Y "
+        '"icmpv6.type==143 or icmpv6.type==130 or udp" '
+    )
+    fields = (
+        "-T fields -e ipv6.src -e ipv6.dst -e eth.src "
+        "-e eth.dst -e ipv6.nxt -e icmpv6.type "
+        "-e icmpv6.mldr.mar.record_type "
+        "-e icmpv6.mldr.mar.multicast_address "
+        "-e icmpv6.mldr.mar.source_address"
+    )
+
+    device.sudo_sendline(cmd + fields)
+    device.expect(device.prompt)
+    out = device.before.splitlines()
+    for _i, o in enumerate(out):
+        if "This could be dangerous." in o:
+            break
+    out = out[_i + 1 :]
+
+    return [tuple(line.strip().split(",")) for line in out]
