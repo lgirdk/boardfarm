@@ -15,16 +15,23 @@ from boardfarm3.plugins.hookspecs import core
 # pylint: disable=no-member  # plugin_manager.hook.* calls are dynamic
 
 
+_BOARDFARM_PLUGIN_MANAGER: PluginManager = None
+
+
 def get_plugin_manager() -> PluginManager:
     """Get boardfarm plugin manager.
 
     :return: boardfarm plugin manager
     :rtype: PluginManager
     """
+    global _BOARDFARM_PLUGIN_MANAGER  # pylint: disable=global-statement
+    if _BOARDFARM_PLUGIN_MANAGER is not None:
+        return _BOARDFARM_PLUGIN_MANAGER
     plugin_manager = PluginManager(PROJECT_NAME)
     plugin_manager.add_hookspecs(core)
     plugin_manager.load_setuptools_entrypoints(PROJECT_NAME)
     plugin_manager.hook.boardfarm_add_hookspecs(plugin_manager=plugin_manager)
+    _BOARDFARM_PLUGIN_MANAGER = plugin_manager
     return plugin_manager
 
 

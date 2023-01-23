@@ -13,7 +13,7 @@ import pytest
 from importlib_metadata import entry_points
 from ptpython.ipython import IPythonInput, embed
 from rich import print as rich_print
-from rich.box import ASCII_DOUBLE_HEAD, Box
+from rich.box import HORIZONTALS
 from rich.console import JustifyMethod
 from rich.prompt import Prompt
 from rich.table import Table
@@ -27,20 +27,14 @@ from boardfarm3.lib.utils import disable_logs
 class OptionsTable:
     """Boardfarm interactive console options table."""
 
-    def __init__(
-        self, table_style: Box, title: Optional[str] = None, min_width: int = 80
-    ) -> None:
+    def __init__(self, title: Optional[str] = None) -> None:
         """Initialize the OptionsTable.
 
-        :param table_style: table box style
-        :type table_style: Box
         :param title: title of the table, defaults to None
         :type title: Optional[str], optional
-        :param min_width: minimum with of the table, defaults to 100
-        :type min_width: int, optional
         """
         self._table = Table(
-            title=title, title_justify="center", box=table_style, min_width=min_width
+            title=title, title_justify="center", box=HORIZONTALS, show_lines=True
         )
         self._actions: dict[str, tuple[Callable, tuple[Any, ...], dict[str, Any]]] = {}
 
@@ -66,18 +60,15 @@ class OptionsTable:
 
     def add_option(
         self,
-        option: str,
-        description: str,
+        column_data: tuple[str, ...],
         function: Callable,
         args: tuple[Any, ...],
         kwargs: dict[str, Any],
     ) -> None:
         """Add an action item to the table.
 
-        :param option: option name
-        :type option: str
-        :param description: option description
-        :type description: str
+        :param column_data: table column data
+        :type column_data: tuple[str, ...]
         :param function: function to be called for this option
         :type function: Callable
         :param args: positional arguments to the function
@@ -85,8 +76,8 @@ class OptionsTable:
         :param kwargs: keyword arguments to the function
         :type kwargs: Dict[str, Any]
         """
-        self._table.add_row(option, description)
-        self._actions[option] = (function, args, kwargs)
+        self._table.add_row(*column_data)
+        self._actions[column_data[0]] = (function, args, kwargs)
 
     def show_table(self, exit_option: str, exit_option_description: str) -> None:
         """Show table and perform actions based on user input.
@@ -107,10 +98,6 @@ class OptionsTable:
                 *self._actions[option][1], **self._actions[option][2]
             )
             rich_print(self._table)
-
-    def add_section(self) -> None:
-        """Add a section in the table."""
-        self._table.add_section()
 
 
 def _start_interactive_session(
@@ -136,13 +123,12 @@ def _start_interactive_console(device: BoardfarmDevice) -> None:
         name, console_obj = consoles.popitem()
         _start_interactive_session(device.device_name, name, console_obj)
     elif len(consoles) > 1:
-        table = OptionsTable(ASCII_DOUBLE_HEAD, min_width=60)
-        table.add_column("Options", justify="center", style="cyan", width=1)
+        table = OptionsTable()
+        table.add_column("Choice", justify="center", style="cyan")
         table.add_column("Console Name", style="magenta")
         for index, console in enumerate(consoles.items(), start=1):
             table.add_option(
-                str(index),
-                console[0],
+                (str(index), console[0]),
                 _start_interactive_session,
                 (
                     device.device_name,
@@ -151,28 +137,25 @@ def _start_interactive_console(device: BoardfarmDevice) -> None:
                 ),
                 {},
             )
-        table.add_section()
         table.show_table("q", "go back")
 
 
 def _get_device_console_options(
     device_manager: DeviceManager,
-) -> list[tuple[str, str, Callable[..., None], tuple[Any, ...], dict[str, Any]]]:
+) -> list[tuple[tuple[str, ...], Callable[..., None], tuple[Any, ...], dict[str, Any]]]:
     console_options: list[
-        tuple[str, str, Callable[..., None], tuple[Any, ...], dict[str, Any]]
+        tuple[tuple[str, ...], Callable[..., None], tuple[Any, ...], dict[str, Any]]
     ] = []
     devices = device_manager.get_devices_by_type(BoardfarmDevice).values()
-    max_length = max(len(f"{x.device_name} ({x.device_type})") for x in devices)
     for index, device in enumerate(
         sorted(devices, key=lambda item: item.device_name), start=1
     ):
-        device_name = f"{device.device_name} ({device.device_type})"
         console_options.append(
             (
-                str(index),
                 (
-                    f"{device_name: <{max_length}} -"
-                    f" {len(device.get_interactive_consoles())} console(s)"
+                    str(index),
+                    f"{device.device_name} ({device.device_type})",
+                    str(len(device.get_interactive_consoles())),
                 ),
                 _start_interactive_console,
                 (device,),
@@ -247,21 +230,23 @@ def get_interactive_console_options(
     :return: option table with boardfarm interactive shell options
     :rtype: OptionsTable
     """
-    table = OptionsTable(ASCII_DOUBLE_HEAD, "BOARDFARM INTERACTIVE SHELL")
-    table.add_column("Options", justify="center", style="cyan")
+    table = OptionsTable("BOARDFARM INTERACTIVE SHELL")
+    table.add_column("Choice", justify="center", style="cyan")
     table.add_column("Description", style="magenta")
+    table.add_column("Consoles", justify="center")
     for option in _get_device_console_options(device_manager):
         table.add_option(*option)
-    table.add_section()
     table.add_option(
-        "p",
-        "python interactive shell(ptpython)",
+        ("p", "python interactive shell (ptpython)"),
         _interactive_ptpython_shell,
         (cmdline_args, device_manager),
         {},
     )
     if entry_points(group="pytest11", name="pytest_boardfarm"):
         table.add_option(
-            "e", "execute boardfarm automated test(s)", _run_boardfarm_tests, (), {}
+            ("e", "execute boardfarm automated test(s)"),
+            _run_boardfarm_tests,
+            (),
+            {},
         )
     return table
