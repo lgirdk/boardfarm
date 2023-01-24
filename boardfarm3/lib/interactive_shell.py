@@ -218,6 +218,20 @@ def _run_boardfarm_tests() -> None:
         pexpect_logger.propagate = False
 
 
+def _add_session_marker_in_console_logs() -> None:
+    message = Prompt.ask(
+        "[magenta]Enter your message", default="---", show_default=False
+    )
+    for (
+        name,
+        logger,
+    ) in logging.root.manager.loggerDict.items():  # pylint: disable=no-member
+        if isinstance(logger, logging.Logger) and "pexpect." in name:
+            logger.debug("#" * 80)
+            logger.debug(f"#{message.upper(): ^78}#")
+            logger.debug("#" * 80)
+
+
 def get_interactive_console_options(
     device_manager: DeviceManager, cmdline_args: Namespace
 ) -> OptionsTable:
@@ -246,6 +260,13 @@ def get_interactive_console_options(
         table.add_option(
             ("e", "execute boardfarm automated test(s)"),
             _run_boardfarm_tests,
+            (),
+            {},
+        )
+    if cmdline_args.save_console_logs:
+        table.add_option(
+            ("m", "add custom marker in console logs"),
+            _add_session_marker_in_console_logs,
             (),
             {},
         )
