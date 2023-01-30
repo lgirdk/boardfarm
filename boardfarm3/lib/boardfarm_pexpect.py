@@ -40,7 +40,7 @@ class _LogWrapper:
 
     def write(self, string: Union[str, bytes]) -> None:
         if isinstance(string, bytes):
-            string = string.decode("utf-8")
+            string = string.decode("utf-8", errors="ignore")
         string = self._lastline + string
         lines: list[str] = [line for line in string.splitlines(True) if line != "\r"]
         if lines and not string.endswith("\n"):
