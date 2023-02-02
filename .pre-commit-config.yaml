@@ -67,7 +67,7 @@ repos:
             args: [--in-place]
             stages: [commit]
     - repo: https://github.com/timothycrosley/isort
-      rev: 5.10.1
+      rev: 5.12.0
       hooks:
           - id: isort
             name: isort
