@@ -1,8 +1,17 @@
 """Boardfarm WLAN device template."""
 
+# pylint: disable=duplicate-code
+
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from collections.abc import Generator
+from contextlib import contextmanager
 from ipaddress import IPv4Address, IPv4Network
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
+
+if TYPE_CHECKING:
+    from boardfarm3.lib.multicast import Multicast
 
 
 class WLAN(ABC):  # pylint: disable=too-many-public-methods
@@ -19,6 +28,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def network(self) -> str:
         """Wifi network to which wlan device should connect.
 
@@ -28,6 +38,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def authentication(self) -> str:
         """Wifi authentication through which wlan device should connect.
 
@@ -37,6 +48,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def protocol(self) -> str:
         """Wifi protocol using which wlan device should connect.
 
@@ -82,6 +94,16 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
 
         :return: Ipv4 wlan gateway address
         :rtype: IPv4Address
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def multicast(self) -> Multicast:
+        """Return multicast component instance.
+
+        :return: multicast component instance
+        :rtype: Multicast
         """
         raise NotImplementedError
 
@@ -259,5 +281,21 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :raises BoardfarmException: Raises exception if ip type is invalid
         :return: response of nmap command in xml/dict format
         :rtype: dict
+        """
+        raise NotImplementedError
+
+    @contextmanager
+    @abstractmethod
+    def tcpdump_capture(
+        self, fname: str, interface: str = "any", additional_args: Optional[str] = None
+    ) -> Generator[str, None, None]:
+        """Capture packets from specified interface.
+
+        Packet capture using tcpdump utility at a specified interface.
+
+        :param fname: name of the file where packet captures will be stored
+        :param interface: name of the interface, defaults to "any"
+        :param additional_args: argument arguments to tcpdump executable
+        :yield: process id of tcpdump process
         """
         raise NotImplementedError

@@ -1,14 +1,18 @@
 """Boardfarm LAN device template."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import Generator
 from contextlib import contextmanager
 from ipaddress import IPv4Address
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
+if TYPE_CHECKING:
+    from boardfarm3.lib.multicast import Multicast
+    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
-# pylint: disable=too-few-public-methods,too-many-public-methods, duplicate-code
+# pylint: disable=too-many-public-methods
 
 
 class LAN(ABC):
@@ -32,6 +36,16 @@ class LAN(ABC):
     @abstractmethod
     def http_proxy(self) -> str:
         """SOCKS5 dante proxy address, e.g http://{proxy_ip}:{proxy_port}/."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def multicast(self) -> Multicast:
+        """Return multicast component instance.
+
+        :return: multicast component instance
+        :rtype: Multicast
+        """
         raise NotImplementedError
 
     @abstractmethod

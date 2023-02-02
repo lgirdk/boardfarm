@@ -1,12 +1,18 @@
 """Boardfarm WAN device template."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from collections.abc import Generator
+from contextlib import contextmanager
 from ipaddress import IPv4Address
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
-from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
+if TYPE_CHECKING:
+    from boardfarm3.lib.multicast import Multicast
+    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
-# pylint: disable=duplicate-code
+# pylint: disable=duplicate-code,too-many-public-methods
 
 
 class WAN(ABC):
@@ -18,6 +24,16 @@ class WAN(ABC):
     @abstractmethod
     def iface_dut(self) -> str:
         """Name of the interface that is connected to DUT."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def multicast(self) -> Multicast:
+        """Return multicast component instance.
+
+        :return: multicast component instance
+        :rtype: Multicast
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -231,5 +247,21 @@ class WAN(ABC):
         :raises BoardfarmException: Raises exception if ip type is invalid
         :return: response of nmap command in xml/dict format
         :rtype: dict
+        """
+        raise NotImplementedError
+
+    @contextmanager
+    @abstractmethod
+    def tcpdump_capture(
+        self, fname: str, interface: str = "any", additional_args: Optional[str] = None
+    ) -> Generator[str, None, None]:
+        """Capture packets from specified interface.
+
+        Packet capture using tcpdump utility at a specified interface.
+
+        :param fname: name of the file where packet captures will be stored
+        :param interface: name of the interface, defaults to "any"
+        :param additional_args: argument arguments to tcpdump executable
+        :yield: process id of tcpdump process
         """
         raise NotImplementedError

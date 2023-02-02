@@ -81,3 +81,7 @@ class ContingencyCheckError(BoardfarmException):
 
 class WifiError(BoardfarmException):
     """Raise this on any wifi related errors."""
+
+
+class MulticastError(BoardfarmException):
+    """Raise this on any multicast related errors."""

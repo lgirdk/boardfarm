@@ -9,6 +9,7 @@ from typing import Any
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
 from boardfarm3.exceptions import ContingencyCheckError
+from boardfarm3.lib.multicast import Multicast
 from boardfarm3.lib.networking import NSLookup
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex
 from boardfarm3.lib.utils import get_value_from_dict
@@ -35,6 +36,7 @@ class LinuxWAN(LinuxDevice, WAN):
         self._wan_no_eth0 = False
         self._wan_dhcp_server = False
         self._wan_dhcpv6 = False
+        self._multicast: Multicast = None
         super().__init__(config, cmdline_args)
 
     def _setup_wan(self) -> None:  # noqa: C901
@@ -89,6 +91,9 @@ class LinuxWAN(LinuxDevice, WAN):
         """Boardfarm hook implementation to boot WAN device."""
         _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
         self._connect()
+        self._multicast = Multicast(
+            self.device_name, self.iface_dut, self._console, self._shell_prompt
+        )
         if self._cmdline_args.skip_boot:
             return
         self._setup_wan()  # to be revisited when docker factory is implemented
@@ -152,6 +157,15 @@ class LinuxWAN(LinuxDevice, WAN):
         :rtype: str
         """
         return self.eth_interface
+
+    @property
+    def multicast(self) -> Multicast:
+        """Return multicast component instance.
+
+        :return: multicast component instance
+        :rtype: Multicast
+        """
+        return self._multicast
 
     def copy_local_file_to_tftpboot(self, local_file_path: str) -> None:
         """SCP local file to tftpboot directory.
