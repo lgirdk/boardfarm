@@ -1,3 +1,21 @@
+## 2023.05.0 (2023-02-03)
+
+### Feat
+
+- **ubuntu_asterisk**: add updated sip conf
+- **env_helper.py**: add support to latest env version
+- **use_cases**: parse ipv6 mldv2 packets
+- **debian_lan**: add multicast support
+
+### Fix
+
+- **multicast**: use cases signature fix
+- send dhcp-client-identifier as a string
+
+### Refactor
+
+- **pre-commit-config.yaml**: update isort version
+
 ## 2023.03.0 (2023-01-18)
 
 ### BREAKING CHANGE
