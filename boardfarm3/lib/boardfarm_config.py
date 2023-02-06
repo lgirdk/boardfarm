@@ -5,6 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, cast
 
+import jsonmerge
 import requests
 
 from boardfarm3.exceptions import EnvConfigError
@@ -166,38 +167,48 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
     :param inventory_json_path: inventory json file path
     :returns: environment configuration instance
     """
-    # TODO: this code needs revisiting as it the configuration inflexible
-    # and makes assumtions that may not be applicable
     env_json_config = _get_json(env_json_path)
     inventory_config = _get_json(inventory_json_path)
-    env_json_config_copy = deepcopy(env_json_config)
-    inventory_config_copy = deepcopy(inventory_config)
-    board_config = inventory_config.get(resource_name)
-    env_devices = board_config.pop("devices")
-    board_config["type"] = board_config.pop("board_type")
-    location_config = {}
-    if inventory_config.get("locations", {}):  # optional, lab dependent
-        location_config = inventory_config["locations"].get(
-            board_config.pop("location")
+    if resource_name not in inventory_config:
+        raise EnvConfigError(
+            f"{resource_name!r} resource not found in inventory config"
         )
-        board_config["mirror"] = location_config.get("mirror", None)  # optional
-        env_devices.extend(location_config.get("devices", []))
-    env_devices.append(board_config)
-    environment_def = env_json_config.get("environment_def")
-    merged_devices_config = []
-    wifi_devices = [config for config in env_devices if config["type"] == "debian_wifi"]
-    lan_devices = [config for config in env_devices if config["type"] == "debian_lan"]
-    other_devices = [
-        device for device in env_devices if device not in wifi_devices + lan_devices
+    resource_config = inventory_config.get(resource_name)
+    if "location" in resource_config:
+        if locations := inventory_config.get(
+            "locations", {}
+        ):  # optional, lab dependent
+            resource_config["devices"] += locations[
+                resource_config.pop("location")
+            ].get("devices", [])
+        else:
+            raise EnvConfigError(
+                f"{resource_config['location']!r} not found in inventory config"
+            )
+    wifi_devices = [
+        device
+        for device in resource_config["devices"]
+        if device["type"] == "debian_wifi"
     ]
-    if wifi_devices:
-        merged_devices_config += _merge_with_wifi_config(wifi_devices, env_json_config)
-    if lan_devices:
-        merged_devices_config += _merge_with_lan_config(lan_devices, env_json_config)
+    lan_devices = [
+        device
+        for device in resource_config["devices"]
+        if device["type"] == "debian_lan"
+    ]
+    other_devices = [
+        device
+        for device in resource_config["devices"]
+        if device not in wifi_devices + lan_devices
+    ]
+    merged_devices_config = []
+    environment_def = env_json_config.get("environment_def")
     for device in other_devices:
-        if device.get("name") in environment_def:
-            device = environment_def[device.get("name")] | device
-        merged_devices_config.append(device)
-    return BoardfarmConfig(
-        merged_devices_config, env_json_config_copy, inventory_config_copy
-    )
+        device_name = device.get("name")
+        merged_devices_config.append(
+            jsonmerge.merge(device, environment_def[device_name])
+            if device_name in environment_def
+            else device
+        )
+    merged_devices_config += _merge_with_lan_config(lan_devices, env_json_config)
+    merged_devices_config += _merge_with_wifi_config(wifi_devices, env_json_config)
+    return BoardfarmConfig(merged_devices_config, env_json_config, inventory_config)

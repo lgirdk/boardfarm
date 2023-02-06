@@ -26,7 +26,7 @@
         "beautifulsoup4",
         "importlib-metadata",
         "jc",
-        "nested_lookup",
+        "jsonmerge",
         "netaddr",
         "pandas",
         "pexpect",
