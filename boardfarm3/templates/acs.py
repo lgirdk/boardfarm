@@ -14,11 +14,11 @@ GpvResponse = list[GpvStruct]
 
 
 class ACS(ABC):
-    """Boardfarm LAN device template."""
+    """Boardfarm ACS device template."""
 
     @abstractmethod
     def GPA(self, param: str, cpe_id: Optional[str] = None) -> list[dict]:
-        """Get parameter attribute of the parameter specified.
+        """Execute GetParameterAttributes RPC call for the specified parameter.
 
         Example usage:
 
@@ -42,9 +42,9 @@ class ACS(ABC):
         access_list: list = None,
         cpe_id: Optional[str] = None,
     ) -> list[dict]:
-        """Set parameter attribute of the parameter specified.
+        """Execute SetParameterAttributes RPC call for the specified parameter.
 
-        Example usage :
+        Example usage:
 
         >>> acs_server.SPA({'Device.WiFi.SSID.1.SSID':'1'}),
 
@@ -77,7 +77,7 @@ class ACS(ABC):
         timeout: Optional[int] = None,
         cpe_id: Optional[str] = None,
     ) -> GpvResponse:
-        """Get value from CM by ACS for a single given parameter key path synchronously.
+        """Execute GetParameterValues RPC call for the specified parameter(s).
 
         :param param: name of the parameter(s) to perform RPC
         :type param: GpvInput
@@ -107,7 +107,7 @@ class ACS(ABC):
         timeout: Optional[int] = None,
         cpe_id: Optional[str] = None,
     ) -> int:
-        """Send SetParamaterValues command via ACS server.
+        """Execute SetParameterValues RPC call for the specified parameter.
 
         :param param_value: dictionary that contains the path to the key and
             the value to be set. Example:
@@ -141,7 +141,7 @@ class ACS(ABC):
 
     @abstractmethod
     def Reboot(self, CommandKey: str, cpe_id: Optional[str] = None) -> list[dict]:
-        """Execute Reboot.
+        """Execute Reboot RPC.
 
         :param CommandKey: reboot command key
         :type CommandKey: str
@@ -156,7 +156,7 @@ class ACS(ABC):
     def AddObject(
         self, param: str, param_key: str = "", cpe_id: Optional[str] = None
     ) -> list[dict]:
-        """Add object ACS of the parameter specified i.e a remote procedure call.
+        """Execute AddOjbect RPC call for the specified parameter.
 
         :param param: parameter to be used to add
         :type param: str
@@ -173,7 +173,7 @@ class ACS(ABC):
     def DelObject(
         self, param: str, param_key: str = "", cpe_id: Optional[str] = None
     ) -> list[dict]:
-        """Delete object ACS of the parameter specified i.e a remote procedure call.
+        """Execute DeleteObject RPC call for the specified parameter.
 
         :param param: parameter to be used to delete
         :type param: str
@@ -194,7 +194,7 @@ class ACS(ABC):
         timeout: Optional[int] = None,
         cpe_id: Optional[str] = None,
     ) -> list[dict]:
-        """Discover the Parameters accessible on a particular CPE.
+        """Execute GetParameterNames RPC call for the specified parameter.
 
         :param param: parameter to be discovered
         :type param: str
@@ -205,26 +205,6 @@ class ACS(ABC):
         :param cpe_id: cpe identifier, defaults to None
         :type cpe_id: Optional[str]
         :return: value as a list of dictionary
-        :rtype: list[dict]
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def ScheduleInform(
-        self,
-        CommandKey: str = "Test",
-        DelaySeconds: int = 20,
-        cpe_id: Optional[str] = None,
-    ) -> list[dict]:
-        """Execute ScheduleInform RPC.
-
-        :param CommandKey: the string paramenter passed to scheduleInform
-        :type CommandKey: str
-        :param DelaySeconds: delay of seconds in integer
-        :type DelaySeconds: int
-        :param cpe_id: cpe identifier, defaults to None
-        :type cpe_id: Optional[str]
-        :return: returns ScheduleInform response
         :rtype: list[dict]
         """
         raise NotImplementedError
