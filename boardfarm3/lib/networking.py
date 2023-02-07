@@ -2,8 +2,8 @@
 
 import re
 from collections import defaultdict
-from ipaddress import IPv4Address, IPv6Address
-from typing import Any, DefaultDict, Optional, Protocol, Union
+from ipaddress import IPv4Address, IPv6Address, ip_address
+from typing import Any, DefaultDict, Literal, Optional, Protocol, Union
 
 import jc
 import pexpect
@@ -148,13 +148,13 @@ def scp(  # pylint: disable=too-many-arguments
     password: str,
     src_path: str,
     dst_path: str,
-    action: str = "download",
+    action: Literal["download", "upload"] = "download",
     timeout: int = 30,
 ) -> None:
     """SCP file.
 
     :param console: linux device or console instance
-    :type console: LinuxConsole
+    :type console: _LinuxConsole
     :param host: remote ssh host ip address
     :type host: str
     :param port: remove ssh host port number
@@ -167,21 +167,22 @@ def scp(  # pylint: disable=too-many-arguments
     :type src_path: str
     :param dst_path: destination path
     :type dst_path: str
-    :param action: scp action(download/upload)
-    :type action: str
-    :param timeout: scp timeout in seconds
-    :type timeout: int
+    :param action: scp action(download/upload), defaults to "download"
+    :type action: Literal["download", "upload"], optional
+    :param timeout: scp timeout in seconds, defaults to 30
+    :type timeout: int, optional
     :raises SCPConnectionError: on failed to scp file
     """
+    host = host if isinstance(ip_address(host), IPv4Address) else f"[{host}]"
     if action == "download":
         command = (
             "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-            f" -q -P {port} {username}@{host}:{src_path} {dst_path}"
+            f" -P {port} {username}@{host}:{src_path} {dst_path}"
         )
     else:
         command = (
             "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-            f" -q -P {port} {src_path} {username}@{host}:{dst_path}"
+            f" -P {port} {src_path} {username}@{host}:{dst_path}"
         )
     console.sendline(command)
     if console.expect([pexpect.TIMEOUT, "assword:"], timeout=10):
