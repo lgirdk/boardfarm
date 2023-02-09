@@ -210,6 +210,29 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def ScheduleInform(
+        self,
+        CommandKey: str = "Test",
+        DelaySeconds: int = 20,
+        cpe_id: Optional[str] = None,
+    ) -> list[dict]:
+        """Execute ScheduleInform RPC.
+
+        :param CommandKey: string to return in the CommandKey element of the
+            InformStruct when the CPE calls the Inform method, defaults to "Test"
+        :type CommandKey: str, optional
+        :param DelaySeconds: number of seconds from the time this method is
+            called to the time the CPE is requested to initiate a one-time Inform
+            method call, defaults to 20
+        :type DelaySeconds: int, optional
+        :param cpe_id: cpe identifier, defaults to None
+        :type cpe_id: Optional[str], optional
+        :return: returns ScheduleInform response
+        :rtype: list[dict]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def GetRPCMethods(self, cpe_id: Optional[str] = None) -> list[dict]:
         """Execute GetRPCMethods RPC.
 
