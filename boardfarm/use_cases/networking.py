@@ -297,7 +297,12 @@ def read_tcpdump_from_board(
 
 
 def perform_scp_action_on_board(
-    path_on_board: str, path_on_host: str, which_host: str, action: str
+    path_on_board: str,
+    path_on_host: str,
+    which_host: str,
+    action: str,
+    port: Union[int, str] = 22,
+    ipv6: bool = False,
 ) -> None:
     """Copy files and directories between the board and the remote host.
 
@@ -311,6 +316,10 @@ def perform_scp_action_on_board(
     :type which_host: str
     :param action: scp action to perform i.e upload, download
     :type action: str
+    :param port: port to perform scp to
+    :type port: Union[int, str]
+    :param ipv6: wheter scp should be done to ipv4 or ipv6, defaults to ipv4
+    :type ipv6: bool
     """
     (src, dst) = (
         (path_on_board, path_on_host)
@@ -319,9 +328,14 @@ def perform_scp_action_on_board(
     )
     board = get_device_by_name("board")
     host = get_device_by_name(which_host)
+    ip = (
+        host.get_interface_ipaddr(host.iface_dut)
+        if not ipv6
+        else f"[{host.get_interface_ip6addr(host.iface_dut)}]"
+    )
     board.nw_utility.scp(
-        host.ipaddr,
-        host.port,
+        ip,
+        port,
         host.username,
         host.password,
         src,

@@ -751,10 +751,17 @@ EOFEOFEOFEOF"""
         :param scp_command: command name. Could be used if scp name was changed to something else
         :param timeout: timeout value for the expect
         """
+
         if action == "download":
-            command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
+            command = (
+                f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile"
+                f"=/dev/null -q -P {port} {username}@{host}:{src_path} {dst_path}"
+            )
         else:
-            command = f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
+            command = (
+                f"{scp_command} -o StrictHostKeyChecking=no -o UserKnownHostsFile"
+                f"=/dev/null -q -P {port} {src_path} {username}@{host}:{dst_path}"
+            )
         print(f"Sending {command}")
         self.sendline(command)
         first_time = self.expect(
