@@ -1076,9 +1076,10 @@ EOFEOFEOFEOF"""
         self,
         host: str,
         traffic_port: int,
-        bind_to_ip: str = None,
-        direction: str = None,
-        ipv: int = None,
+        bandwidth: Optional[int] = None,
+        bind_to_ip: Optional[str] = None,
+        direction: Optional[str] = None,
+        ipv: Optional[int] = None,
         udp_protocol: bool = False,
         time: int = 10,
     ) -> Union[int, bool]:
@@ -1090,6 +1091,8 @@ EOFEOFEOFEOF"""
         :type traffic_port: int
         :param bind_to_ip: bind to the interface associated with the address host, defaults to None
         :type bind_to_ip: str, optional
+        :param bandwidth: bandwidth(mbps) at which the traffic has to be generated, defaults to None
+        :type bandwidth: int, optional
         :param direction: `--reverse` to run in reverse mode (server sends, client receives) and `--bidir` to run in bidirectional mode, defaults to None
         :type direction: str
         :param ipv: 4 or 6 if it uses only IPv4 or IPv6, defaults to None
@@ -1101,7 +1104,7 @@ EOFEOFEOFEOF"""
         :return: either the process id(pid) or False if pid could not be generated
         :rtype: Union[int, bool]
         """
-        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -c {host} -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} -t {time} {direction or ''}{' -u' if udp_protocol else ''} 2>&1 > /dev/null &"
+        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -c {host} -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}{' -u' if udp_protocol else ''} 2>&1 > /dev/null &"
         self.check_output(cmd)
         output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
         if "iperf3" in output and "Exit 1" not in output:
