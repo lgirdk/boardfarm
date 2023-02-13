@@ -183,10 +183,9 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
     device = dev._obj()
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
-        "-T fields -e frame.number -e ip.src -e ip.dst -e sip.from.user -e sip.contact.user "
+        "-T fields -e frame.number -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst -e sip.from.user -e sip.contact.user "
         "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info -e frame.time"
     )
-
     device.sudo_sendline(cmd + fields)
     device.expect(device.prompt, timeout=timeout)
     out = device.before.splitlines()
@@ -194,36 +193,41 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
         if "This could be dangerous." in o:
             break
     out = out[_i + 1 :]
-
     output = []
     for line in out:
-        (
-            frame,
-            src,
-            dst,
-            sfrom,
-            contact,
-            req,
-            status,
-            media_attr,
-            connection_info,
-            frame_time,
-        ) = line.split("\t")
-        output.append(
+        if line:
             (
                 frame,
-                src,
-                dst,
-                contact or sfrom,
-                f"{req or status}:{media_attr}:{connection_info}",
+                src_ipv4,
+                src_ipv6,
+                dst_ipv4,
+                dst_ipv6,
+                sfrom,
+                contact,
+                req,
+                status,
+                media_attr,
+                connection_info,
                 frame_time,
+            ) = line.split("\t")
+            output.append(
+                (
+                    frame,
+                    src_ipv4 or src_ipv6,
+                    dst_ipv4 or dst_ipv6,
+                    contact or sfrom,
+                    f"{req or status}:{media_attr}:{connection_info}",
+                    frame_time,
+                )
             )
-        )
     return output
 
 
 def parse_sip_trace(
-    dev: VoiceServer, fname: str, expected_sequence: List[Tuple[str]], timeout: int = 30
+    dev: VoiceServer,
+    fname: str,
+    expected_sequence: List[Tuple[str]],
+    timeout: int = 30,
 ) -> List[Tuple[str]]:
     """Reads the pcap file and creates the matched sequence with the expected sequence of sip packets.
     This creates a matched sequence of the same size as expected sequence with the rtp traces appended as it is
@@ -248,9 +252,14 @@ def parse_sip_trace(
             flag = False
             for i in range(last_check, len(captured_sequence)):
                 result = []
-                frame_o, src_o, dst_o, sip_contact_o, msg_o, time_o = captured_sequence[
-                    i
-                ]
+                (
+                    frame_o,
+                    src_o,
+                    dst_o,
+                    sip_contact_o,
+                    msg_o,
+                    time_o,
+                ) = captured_sequence[i]
                 result.append(str(src) == src_o)
                 result.append(str(dst) == dst_o)
                 result.append(sip_contact == sip_contact_o)
