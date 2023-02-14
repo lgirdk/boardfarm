@@ -6,6 +6,7 @@ All APIs are independent of board under test.
 """
 import logging
 from contextlib import contextmanager
+from ipaddress import IPv4Address, ip_address
 from types import SimpleNamespace
 from typing import Generator, List, Tuple
 
@@ -32,7 +33,9 @@ def get_sip_proxy() -> VoiceServer:
     :rtype: VoiceServer
     """
     sip_proxy: SIPTemplate = get_device_by_name("sipcenter")
-    return VoiceServer(sip_proxy.name, str(sip_proxy.gw), sip_proxy)
+    return VoiceServer(
+        sip_proxy.name, str(sip_proxy.gw), str(sip_proxy.gwv6), sip_proxy
+    )
 
 
 @contextmanager
@@ -429,7 +432,9 @@ def is_call_waiting(who_is_waiting: VoiceClient) -> bool:
     return who_is_waiting._obj().is_call_waiting()
 
 
-def is_incall_playing_dialtone(who_is_playing_incall_dialtone: VoiceClient) -> bool:
+def is_incall_playing_dialtone(
+    who_is_playing_incall_dialtone: VoiceClient,
+) -> bool:
     """Verify if the phone is connected on one line and playing dialtone on another line.
 
     :param who_is_playing_incall_dialtone: SIP Client
@@ -567,3 +572,19 @@ def set_sip_expiry_time(sip_proxy: VoiceServer, to_what_time: int = 60) -> None:
     if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
         raise CodeError("Install the sipserver first")
     sip_proxy._obj().sipserver_set_expire_timer(to_timer=to_what_time)
+
+
+def determine_sipserver_ip(voice_client: VoiceClient) -> str:
+    """Determine whether SIP server IP is IPV4 or IPV6.
+
+    :param voice_client: SIP Server
+    :type voice_client: VoiceServer
+    :return: sipserver ip
+    :rtype: str
+    """
+    sip_server: SIPTemplate = get_device_by_name("sipcenter")
+    return (
+        sip_server.gw
+        if isinstance(ip_address(voice_client.ip), IPv4Address)
+        else sip_server.gwv6
+    )

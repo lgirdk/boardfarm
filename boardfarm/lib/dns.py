@@ -14,7 +14,7 @@ class DNS:
         self.device_options = device_options
         self.aux_options = aux_options
         self.aux_url = aux_url
-
+        self.url = self.device.name + ".boardfarm.com"
         self.dnsv4 = defaultdict(list)
         self.dnsv6 = defaultdict(list)
         self.auxv4 = None
@@ -51,12 +51,12 @@ class DNS:
                 else:
                     final = None
             if final:
-                self.dnsv4[self.device.name + ".boardfarm.com"].append(final)
+                self.dnsv4[self.url].append(final)
 
     def _add_dnsv6_hosts(self):
         gwv6 = getattr(self.device, "gwv6", None)
         if gwv6:
-            self.dnsv6[self.device.name + ".boardfarm.com"].append(str(gwv6))
+            self.dnsv6[self.url].append(str(gwv6))
 
     def _add_aux_hosts(self):
         self.auxv4 = ipaddress.IPv4Address(
@@ -65,7 +65,7 @@ class DNS:
                 self.aux_options,
             ).group(1)
         )
-        self.dnsv4[self.device.name + ".boardfarm.com"].append(str(self.auxv4))
+        self.dnsv4[self.url].append(str(self.auxv4))
         if self.aux_url:
             self.dnsv4[self.aux_url].append(str(self.auxv4))
 
@@ -76,7 +76,7 @@ class DNS:
                 self.aux_options,
             ).group(1)
         )
-        self.dnsv6[self.device.name + ".boardfarm.com"].append(str(self.auxv6))
+        self.dnsv6[self.url].append(str(self.auxv6))
         if self.aux_url:
             self.dnsv6[self.aux_url].append(str(self.auxv6))
 
@@ -99,13 +99,13 @@ class DNS:
         :param unreachable_ipv6: no.of unreachable IPv6 address for acs url
         :type unreachable_ipv6: int
         """
-        val_v4 = self.hosts_v4[self.device.name + ".boardfarm.com"][:reachable_ipv4]
-        val_v6 = self.hosts_v6[self.device.name + ".boardfarm.com"][:reachable_ipv6]
-        self.hosts_v4[self.device.name + ".boardfarm.com"] = val_v4
-        self.hosts_v6[self.device.name + ".boardfarm.com"] = val_v6
+        val_v4 = self.hosts_v4[self.url][:reachable_ipv4]
+        val_v6 = self.hosts_v6[self.url][:reachable_ipv6]
+        self.hosts_v4[self.url] = val_v4
+        self.hosts_v6[self.url] = val_v6
         for val in range(unreachable_ipv4):
             ipv4 = self.auxv4 + (val + 1)
-            self.hosts_v4[self.device.name + ".boardfarm.com"].append(str(ipv4))
+            self.hosts_v4[self.url].append(str(ipv4))
         for val in range(unreachable_ipv6):
             ipv6 = self.auxv6 + (val + 1)
-            self.hosts_v6[self.device.name + ".boardfarm.com"].append(str(ipv6))
+            self.hosts_v6[self.url].append(str(ipv6))

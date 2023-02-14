@@ -338,6 +338,7 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
     """
 
     users: List[str]
+    gwv6: str = ""
 
     @property
     @abstractmethod
@@ -451,7 +452,8 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
 
     @abstractmethod
     def configure_tls_to_endpoint_in_sipserver(
-        self, phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]]
+        self,
+        phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]],
     ) -> None:
         """Configure TLS for the devices mentioned
 

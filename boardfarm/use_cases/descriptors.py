@@ -35,6 +35,7 @@ class VoiceServer:
 
     name: str
     ip: str
+    ipv6: str
     __obj: SIPTemplate
 
     def _obj(self):

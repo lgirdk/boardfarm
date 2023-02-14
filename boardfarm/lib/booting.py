@@ -91,6 +91,9 @@ def pre_boot_env(config, env_helper, devices):
                 "softphones"
             ) + devices.get_device_array("FXS"):
                 voice_device.phone_config(devices.sipcenter.gw)
+            devices.sipcenter.configure_endpoint_transport(
+                [devices.fxs1.own_number, devices.fxs2.own_number]
+            )
         except AttributeError as error:
             raise (error + "Voice is not supported in this board.")
 
@@ -275,8 +278,13 @@ def post_boot_env(config, env_helper, devices):
         devices.board.sw.voice.configure_voice(
             {"1": devices.fxs1.own_number, "2": devices.fxs2.own_number},
             "1234",
-            devices.sipcenter.gw,
+            devices.sipcenter.dns.url,
         )
+        for fxs in devices.get_device_array("FXS"):
+            if devices.sipcenter.fxs_endpoint_transport == "ipv6":
+                fxs.gw = devices.board.get_interface_ip6addr(devices.board.mta_iface)
+            else:
+                fxs.gw = devices.board.get_interface_ipaddr(devices.board.mta_iface)
     if hasattr(devices.board, "post_boot_env"):
         devices.board.post_boot_env()
 
