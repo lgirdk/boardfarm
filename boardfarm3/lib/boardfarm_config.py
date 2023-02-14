@@ -1,6 +1,7 @@
 """Boardfarm environment config module."""
 
 import json
+import logging
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, cast
@@ -163,10 +164,18 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
     """Get environment config from given json files.
 
     :param resource_name: inventory resource name
+    :type resource_name: str
     :param env_json_path: environment json file path
+    :type env_json_path: str
     :param inventory_json_path: inventory json file path
-    :returns: environment configuration instance
+    :type inventory_json_path: str
+    :raises EnvConfigError: on resource name not found in inventory config
+    :raises EnvConfigError: on invalid location config
+    :return: environment configuration instance
+    :rtype: BoardfarmConfig
     """
+    # disable jsonmerge debug logs
+    logging.getLogger("jsonmerge").setLevel(logging.WARNING)
     env_json_config = _get_json(env_json_path)
     inventory_config = _get_json(inventory_json_path)
     if resource_name not in inventory_config:
@@ -183,7 +192,7 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
             ].get("devices", [])
         else:
             raise EnvConfigError(
-                f"{resource_config['location']!r} not found in inventory config"
+                f"{resource_config['location']!r} invalid location config"
             )
     wifi_devices = [
         device
