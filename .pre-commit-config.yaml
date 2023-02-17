@@ -3,12 +3,12 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/commitizen-tools/commitizen
-      rev: v2.17.13
+      rev: v2.42.0
       hooks:
           - id: commitizen
             stages: [commit-msg]
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.0.1
+      rev: v4.4.0
       hooks:
           - id: check-ast
             stages: [commit]
@@ -43,7 +43,7 @@ repos:
             files: \.py$
             stages: [commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.1.10
+      rev: v1.4.2
       hooks:
           - id: remove-crlf
             stages: [commit]
@@ -56,7 +56,7 @@ repos:
             exclude: cm-cfg
             stages: [commit]
     - repo: https://github.com/myint/eradicate
-      rev: v2.0.0
+      rev: v2.1.0
       hooks:
           - id: eradicate
             name: eradicate
@@ -77,29 +77,29 @@ repos:
             types: [python]
             stages: [commit]
     - repo: https://github.com/asottile/pyupgrade
-      rev: v2.38.2
+      rev: v3.3.1
       hooks:
           - id: pyupgrade
             args: [--py39-plus, --keep-runtime-typing]
             stages: [commit]
     - repo: https://github.com/ikamensh/flynt/
-      rev: '0.63'
+      rev: '0.77'
       hooks:
           - id: flynt
             stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.1.1
+      rev: 0.2.2
       hooks:
           - id: yamlfmt
             stages: [commit]
     - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.26.1
+      rev: v1.29.0
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
             stages: [commit]
     - repo: https://github.com/psf/black
-      rev: 22.3.0
+      rev: 23.1.0
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'
