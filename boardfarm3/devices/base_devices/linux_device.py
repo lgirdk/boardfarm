@@ -664,3 +664,41 @@ class LinuxDevice(BoardfarmDevice):
             f" {ipaddr} {retries} {rate} -oX -"
         )
         return xmltodict.parse(self._console.execute_command(cmd))
+
+    def start_danteproxy(self) -> None:
+        """Start the dante server for socks5 proxy connections.
+
+        :raises BoardfarmException: if dante is not in the device options
+        """
+        if not self.dante:
+            raise BoardfarmException(
+                f"Cannot start dante on {self.device_name}, it is not "
+                "configured in the device options."
+            )
+        to_send = [
+            "cat > /etc/danted.conf <<EOF",
+            "logoutput: stderr",
+            "internal: 0.0.0.0 port = 8080",
+            f"external: {self.eth_interface}",
+            "clientmethod: none",
+            "socksmethod: username none #rfc931",
+            "user.privileged: root",
+            "user.unprivileged: nobody",
+            "user.libwrap: nobody",
+            "client pass {",
+            "    from: 0.0.0.0/0 to: 0.0.0.0/0",
+            "    log: connect disconnect error",
+            "}",
+            "socks pass {",
+            "    from: 0.0.0.0/0 to: 0.0.0.0/0",
+            "    log: connect disconnect error",
+            "}",
+            "EOF",
+        ]
+        self._console.execute_command("\n".join(to_send))
+        # NOTE: service danted restart DOES NOT WORK, hence the stop/start!
+        self._console.execute_command("service danted stop; service danted start")
+
+    def stop_danteproxy(self) -> None:
+        """Stop the Dante proxy."""
+        self._console.execute_command("service danted stop")
