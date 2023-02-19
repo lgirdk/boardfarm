@@ -430,7 +430,7 @@ class LinuxDevice(BoardfarmDevice):
             command_str += additional_args
 
         try:
-            self._console.sendline(f"sudo {command_str} &")
+            self._console.sudo_sendline(f"{command_str} &")
             self._console.expect_exact(f"tcpdump: listening on {interface}")
             process_id = re.search(r"(\[\d{1,10}\]\s(\d+))", self._console.before)[2]
 
