@@ -1,3 +1,14 @@
+## 2023.08.0 (2023-02-20)
+
+### Feat
+
+- **voice.py**: modify parse pcap to support ipv6 check
+- **linux.py**: add bandwidth to the start traffic function
+
+### Fix
+
+- **linux.py**: add ipv6 support for scp
+
 ## 2023.05.0 (2023-02-03)
 
 ### Feat
