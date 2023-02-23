@@ -215,7 +215,7 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
                     frame,
                     src_ipv4 or src_ipv6,
                     dst_ipv4 or dst_ipv6,
-                    contact or sfrom,
+                    (("" if contact == "asterisk" else contact) or sfrom),
                     f"{req or status}:{media_attr}:{connection_info}",
                     frame_time,
                 )
