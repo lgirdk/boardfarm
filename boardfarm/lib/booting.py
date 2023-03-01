@@ -95,7 +95,9 @@ def pre_boot_env(config, env_helper, devices):
                 [devices.fxs1.own_number, devices.fxs2.own_number]
             )
         except AttributeError as error:
-            raise (error + "Voice is not supported in this board.")
+            raise DeviceDoesNotExistError(
+                f"Voice is not supported in this board. {str(error)}"
+            )
 
     prov = getattr(config, "provisioner", None)
     if prov:
