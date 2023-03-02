@@ -158,55 +158,66 @@ def _get_json(resource_name: str) -> dict[str, Any]:
     return cast(dict[str, Any], json.loads(json_dict))
 
 
-def parse_boardfarm_config(  # pylint: disable=too-many-locals
-    resource_name: str, env_json_path: str, inventory_json_path: str
-) -> BoardfarmConfig:
-    """Get environment config from given json files.
+def get_invetory_config(resource_name: str, inventory_json_path: str) -> dict[str, Any]:
+    """Return inventory config based on given arguments.
 
     :param resource_name: inventory resource name
     :type resource_name: str
-    :param env_json_path: environment json file path
-    :type env_json_path: str
-    :param inventory_json_path: inventory json file path
+    :param inventory_json_path: inventory json config path
     :type inventory_json_path: str
     :raises EnvConfigError: on resource name not found in inventory config
     :raises EnvConfigError: on invalid location config
-    :return: environment configuration instance
+    :return: inventory configuration
+    :rtype: dict[str, Any]
+    """
+    full_inventory_config = _get_json(inventory_json_path)
+    if resource_name not in full_inventory_config:
+        raise EnvConfigError(
+            f"{resource_name!r} resource not found in inventory config"
+        )
+    inventory_config = full_inventory_config.get(resource_name)
+    if "location" in inventory_config:
+        if locations := full_inventory_config.get(
+            "locations", {}
+        ):  # optional, lab dependent
+            inventory_config["devices"] += locations[
+                inventory_config.pop("location")
+            ].get("devices", [])
+        else:
+            raise EnvConfigError(
+                f"{inventory_config['location']!r} invalid location config"
+            )
+    return inventory_config
+
+
+def parse_boardfarm_config(  # pylint: disable=too-many-locals
+    inventory_config: dict[str, Any], env_json_path: str
+) -> BoardfarmConfig:
+    """Get environment config from given json files.
+
+    :param inventory_config: inventory config
+    :type inventory_config: dict[str, Any]
+    :param env_json_path: environment json file path
+    :type env_json_path: str
+    :return: boardfarm config instance
     :rtype: BoardfarmConfig
     """
     # disable jsonmerge debug logs
     logging.getLogger("jsonmerge").setLevel(logging.WARNING)
     env_json_config = _get_json(env_json_path)
-    inventory_config = _get_json(inventory_json_path)
-    if resource_name not in inventory_config:
-        raise EnvConfigError(
-            f"{resource_name!r} resource not found in inventory config"
-        )
-    resource_config = inventory_config.get(resource_name)
-    if "location" in resource_config:
-        if locations := inventory_config.get(
-            "locations", {}
-        ):  # optional, lab dependent
-            resource_config["devices"] += locations[
-                resource_config.pop("location")
-            ].get("devices", [])
-        else:
-            raise EnvConfigError(
-                f"{resource_config['location']!r} invalid location config"
-            )
     wifi_devices = [
         device
-        for device in resource_config["devices"]
+        for device in inventory_config["devices"]
         if device["type"] == "debian_wifi"
     ]
     lan_devices = [
         device
-        for device in resource_config["devices"]
+        for device in inventory_config["devices"]
         if device["type"] == "debian_lan"
     ]
     other_devices = [
         device
-        for device in resource_config["devices"]
+        for device in inventory_config["devices"]
         if device not in wifi_devices + lan_devices
     ]
     merged_devices_config = []

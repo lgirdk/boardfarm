@@ -44,17 +44,15 @@ def main() -> None:
     cmdline_args = plugin_manager.hook.boardfarm_cmdline_parse(
         argparser=argparser, cmdline_args=sys.argv[1:]
     )
-    config = parse_boardfarm_config(
-        cmdline_args.board_name, cmdline_args.env_config, cmdline_args.inventory_config
-    )
     plugin_manager.hook.boardfarm_configure(
-        config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
+        cmdline_args=cmdline_args, plugin_manager=plugin_manager
     )
+    inventory_config = plugin_manager.hook.boardfarm_reserve_devices(
+        cmdline_args=cmdline_args, plugin_manager=plugin_manager
+    )
+    config = parse_boardfarm_config(inventory_config, cmdline_args.env_config)
     deployment_status: dict[str, Any] = {}
     try:
-        plugin_manager.hook.boardfarm_reserve_devices(
-            config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
-        )
         device_manager = plugin_manager.hook.boardfarm_deploy_devices(
             config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
         )
@@ -67,7 +65,6 @@ def main() -> None:
         raise
     finally:
         plugin_manager.hook.boardfarm_release_devices(
-            config=config,
             cmdline_args=cmdline_args,
             plugin_manager=plugin_manager,
             deployment_status=deployment_status,

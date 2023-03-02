@@ -46,17 +46,13 @@ def boardfarm_cmdline_parse(
 
 
 @hookspec
-def boardfarm_configure(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
-) -> None:
+def boardfarm_configure(cmdline_args: Namespace, plugin_manager: PluginManager) -> None:
     """Configure boardfarm based on command line arguments or environment config.
 
     This hook allows to register/deregister boardfarm plugins when you pass a
     command line argument. This way a plugin will be registered to boardfarm only
     when required.
 
-    :param config: boardfarm config
-    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager
@@ -64,18 +60,18 @@ def boardfarm_configure(
     """
 
 
-@hookspec
+@hookspec(firstresult=True)
 def boardfarm_reserve_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
-) -> None:
+    cmdline_args: Namespace, plugin_manager: PluginManager
+) -> dict[str, Any]:
     """Reserve devices before starting the deployment.
 
-    :param config: boardfarm config
-    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
     :type plugin_manager: PluginManager
+    :return: inventory configuration
+    :rtype: dict[str, Any]
     """
 
 
@@ -113,15 +109,12 @@ def boardfarm_post_deploy_devices(
 
 @hookspec
 def boardfarm_release_devices(
-    config: BoardfarmConfig,
     cmdline_args: Namespace,
     plugin_manager: PluginManager,
     deployment_status: dict[str, Any],
 ) -> None:
     """Release reserved devices after use.
 
-    :param config: boardfarm config
-    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
