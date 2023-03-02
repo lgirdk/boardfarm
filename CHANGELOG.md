@@ -1,3 +1,16 @@
+## 2023.09.0 (2023-03-02)
+
+### Feat
+
+- **env_helper.py**: increase version numbers
+- increase env number
+- **booting.py**: add voice specific changes
+- **voice.py**: add pcap verification changes to the lib
+
+### Fix
+
+- **booting.py**: fix the error thrown
+
 ## 2023.08.0 (2023-02-20)
 
 ### Feat
