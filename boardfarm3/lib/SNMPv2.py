@@ -163,7 +163,7 @@ class SNMPv2:
         self, oid: str, output: str, value: str = None
     ) -> tuple[str, str, str]:
         """Return the tuple with value, type of the value and snmp command output."""
-        result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
+        result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
         match = re.search(result_pattern, output)
         if not match:
             raise SNMPError(output)
@@ -179,7 +179,7 @@ class SNMPv2:
         self, oid: str, output: str
     ) -> tuple[dict[str, list[str]], str]:
         """Return list of dictionary of mib_oid as key and list(value, type) value."""
-        result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)\r\n"
+        result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
         walk_key_value_dict: dict[str, list[str]] = {}
         match = re.findall(result_pattern, output)
         if not match:
