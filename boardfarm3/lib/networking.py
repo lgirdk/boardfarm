@@ -185,6 +185,8 @@ def scp(  # pylint: disable=too-many-arguments
             f" -P {port} {src_path} {username}@{host}:{dst_path}"
         )
     console.sendline(command)
+    if console.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=10):
+        console.sendline("y")
     if console.expect([pexpect.TIMEOUT, "assword:"], timeout=10):
         console.sendline(password)
     if console.expect_exact(["100%", pexpect.TIMEOUT], timeout=timeout):
