@@ -173,7 +173,7 @@ def _read_mcast_trace(dev: IperfDevice, fname: str) -> List[Tuple[str, ...]]:
     cmd = f'tshark -r {fname} -E separator=, -Y "igmp or udp" '
     fields = (
         "-T fields -e ip.src -e ip.dst -e eth.src -e eth.dst "
-        "-e ip.proto -e igmp.version -e igmp.record_type "
+        "-e ip.proto -e igmp.type -e igmp.record_type "
         "-e igmp.maddr -e igmp.saddr"
     )
 
@@ -210,7 +210,7 @@ def parse_mcast_trace(
         - MAC source
         - MAC destination
         - IP protocol number (1 - ICMP, 2 - IGMP, 6 - TCP, 17 - UDP)
-        - IGMP version (v3 by default)
+        - IGMP message type (0x00000011 - IGMP Query, 0x00000022 - IGMP Report)
         - IGMP Record Type number (5 - Allow new sources, 6 - Block old sources)
         - IGMP Multicast Address (if provided in group records)
         - IGMP Source Address (if provided in group records)
