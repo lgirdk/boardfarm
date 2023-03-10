@@ -396,8 +396,6 @@ class NSLookup:
 class DNS:
     """Holds DNS names and their addresses."""
 
-    _dns_name_suffix = ".boardfarm.com"
-
     # pylint: disable=too-many-arguments
     def __init__(
         self,
@@ -428,11 +426,11 @@ class DNS:
         """
         self.auxv4 = ipv4_aux_address
         self.auxv6 = ipv6_aux_address
-        self._device_name = device_name
         self.dnsv4: DefaultDict = defaultdict(list)
         self.dnsv6: DefaultDict = defaultdict(list)
         self.hosts_v4: DefaultDict = defaultdict(list)
         self.hosts_v6: DefaultDict = defaultdict(list)
+        self.fqdn = f"{device_name}.boardfarm.com"
         self._add_dns_addresses(ipv4_address, ipv6_address)
         self._add_aux_dns_addresses(aux_url)
         self.hosts_v4.update(self.dnsv4)
@@ -443,21 +441,17 @@ class DNS:
         self, ipv4_address: Optional[str], ipv6_address: Optional[str]
     ) -> None:
         if ipv4_address is not None:
-            self.dnsv4[f"{self._device_name}{self._dns_name_suffix}"].append(
-                ipv4_address
-            )
+            self.dnsv4[self.fqdn].append(ipv4_address)
         if ipv6_address is not None:
-            self.dnsv6[f"{self._device_name}{self._dns_name_suffix}"].append(
-                ipv6_address
-            )
+            self.dnsv6[self.fqdn].append(ipv6_address)
 
     def _add_aux_dns_addresses(self, aux_url: Optional[str]) -> None:
         if self.auxv4 is not None:
-            self.dnsv4[f"{self._device_name}{self._dns_name_suffix}"].append(self.auxv4)
+            self.dnsv4[self.fqdn].append(self.auxv4)
             if aux_url is not None:
                 self.dnsv4[aux_url].append(self.auxv4)
         if self.auxv6 is not None:
-            self.dnsv6[f"{self._device_name}{self._dns_name_suffix}"].append(self.auxv6)
+            self.dnsv6[self.fqdn].append(self.auxv6)
             if aux_url is not None:
                 self.dnsv6[aux_url].append(self.auxv6)
 
@@ -479,24 +473,16 @@ class DNS:
         :param unreachable_ipv6: no.of unreachable IPv6 address for acs url
         :type unreachable_ipv6: int
         """
-        val_v4 = self.hosts_v4[f"{self._device_name}{self._dns_name_suffix}"][
-            :reachable_ipv4
-        ]
-        val_v6 = self.hosts_v6[f"{self._device_name}{self._dns_name_suffix}"][
-            :reachable_ipv6
-        ]
-        self.hosts_v4[f"{self._device_name}{self._dns_name_suffix}"] = val_v4
-        self.hosts_v6[f"{self._device_name}{self._dns_name_suffix}"] = val_v6
+        val_v4 = self.hosts_v4[self.fqdn][:reachable_ipv4]
+        val_v6 = self.hosts_v6[self.fqdn][:reachable_ipv6]
+        self.hosts_v4[self.fqdn] = val_v4
+        self.hosts_v6[self.fqdn] = val_v6
         for val in range(unreachable_ipv4):
             ipv4 = self.auxv4 + (val + 1)
-            self.hosts_v4[f"{self._device_name}{self._dns_name_suffix}"].append(
-                str(ipv4)
-            )
+            self.hosts_v4[self.fqdn].append(str(ipv4))
         for val in range(unreachable_ipv6):
             ipv6 = self.auxv6 + (val + 1)
-            self.hosts_v6[f"{self._device_name}{self._dns_name_suffix}"].append(
-                str(ipv6)
-            )
+            self.hosts_v6[self.fqdn].append(str(ipv6))
 
 
 class HTTPResult:  # pylint: disable=too-few-public-methods
