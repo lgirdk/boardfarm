@@ -192,7 +192,7 @@ def initialize_phone(target_phone: str) -> VoiceClient:
     """
     dev: SIPPhoneTemplate = get_device_by_name(target_phone)  # devices.fxs1
     sip_proxy: SIPTemplate = get_device_by_name("sipcenter")
-    dev.phone_config(str(sip_proxy.gw))
+    dev.phone_config(sip_proxy.url)
     dev.phone_start()
     dev.on_hook()
 

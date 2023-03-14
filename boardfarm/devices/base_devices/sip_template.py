@@ -339,6 +339,7 @@ class SIPTemplate(LinuxInterface, metaclass=__MetaSignatureChecker):
 
     users: List[str]
     gwv6: str = ""
+    url: str = ""
 
     @property
     @abstractmethod

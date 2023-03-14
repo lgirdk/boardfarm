@@ -37,6 +37,7 @@ class SIPcenterKamailio(DebianBox, SIPTemplate):
         self.mysql = MySQL(self)
         sipcenter_profile = self.profile[self.name] = {}
         sipcenter_profile["on_boot"] = self._kamailio_boot
+        self.url = self.dns.url
 
     def __str__(self):
         return "kamailio"
@@ -150,7 +151,8 @@ EOF"""
         self.expect(self.prompt)
 
     def configure_tls_to_endpoint_in_sipserver(
-        self, phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]]
+        self,
+        phone_list: List[Union[fxo_template.FXOTemplate, SIPPhoneTemplate]],
     ) -> None:
         """Add user to the directory.
 
