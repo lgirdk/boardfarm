@@ -27,12 +27,7 @@ class SNMPv2:
         self._target_ip = target_ip
         self._mibs_compiler = mibs_compiler
 
-    def get_mib_oid(self, mib_name: str) -> str:
-        """Return the Object Identifier (OID) for a given mib.
-
-        :param mib_name: MIB name. Will be searched in loaded MIB libraries.
-        :type mib_name: str
-        """
+    def _get_mib_oid(self, mib_name: str) -> str:
         oid_regex = r"^([1-9][0-9]{0,6}|0)(\.([1-9][0-9]{0,6}|0)){3,30}$"
         if re.match(oid_regex, mib_name):
             oid = mib_name
@@ -70,7 +65,7 @@ class SNMPv2:
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
-        oid = self.get_mib_oid(mib_name) + f".{str(index)}"
+        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
         output = self._run_snmp_command(
             "snmpget", community, oid, timeout, retries, extra_args=extra_args
         )
@@ -113,7 +108,7 @@ class SNMPv2:
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
-        oid = self.get_mib_oid(mib_name) + f".{str(index)}"
+        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
         if re.findall(r"\s", value.strip()) and stype == "s":
             value = f"{value!r}"
         if str(value).lower().startswith("0x"):
@@ -223,7 +218,7 @@ class SNMPv2:
         """
         if mib_name:
             try:
-                oid = self.get_mib_oid(mib_name)
+                oid = self._get_mib_oid(mib_name)
                 if index:
                     oid = oid + f".{str(index)}"
             except Exception as exception:
