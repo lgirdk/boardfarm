@@ -167,6 +167,32 @@ class LinuxWAN(LinuxDevice, WAN):
         """
         return self._multicast
 
+    @property
+    def rssh_username(self) -> str:
+        """Return the WAN username for Reverse SSH.
+
+        :return: WAN username
+        :rtype: str
+        """
+        return (
+            self._config.get("rssh_username")
+            if "rssh_username" in self._config
+            else "root"
+        )
+
+    @property
+    def rssh_password(self) -> str:
+        """Return the WAN password for Reverse SSH.
+
+        :return: WAN password
+        :rtype: str
+        """
+        return (
+            self._config.get("rssh_password")
+            if "rssh_password" in self._config
+            else "bigfoot1"
+        )
+
     def copy_local_file_to_tftpboot(self, local_file_path: str) -> None:
         """SCP local file to tftpboot directory.
 

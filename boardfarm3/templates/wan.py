@@ -265,3 +265,23 @@ class WAN(ABC):
         :yield: process id of tcpdump process
         """
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def rssh_username(self) -> str:
+        """Return the WAN username for reverse SSH.
+
+        :return: WAN username
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def rssh_password(self) -> str:
+        """Return the WAN password for reverse SSH.
+
+        :return: WAN password
+        :rtype: str
+        """
+        raise NotImplementedError
