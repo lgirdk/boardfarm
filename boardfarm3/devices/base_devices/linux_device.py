@@ -695,7 +695,8 @@ class LinuxDevice(BoardfarmDevice):
             "}",
             "EOF",
         ]
-        self._console.execute_command("\n".join(to_send))
+        self._console.sendline("\n".join(to_send))
+        self._console.expect(self._shell_prompt)
         # NOTE: service danted restart DOES NOT WORK, hence the stop/start!
         self._console.execute_command("service danted stop; service danted start")
 
