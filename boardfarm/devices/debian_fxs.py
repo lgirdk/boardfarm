@@ -436,28 +436,51 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         """To perfrom hook flash"""
         self.press_R_button()
 
-    def enable_call_waiting(self) -> None:
-        """Enabled the call waiting.
+    def enable_call_waiting(self, dtmf_code: str) -> None:
+        """Enable call waiting.
 
-        This will enable call waiting by dialing the desired number
+        :param dtmf_code: Dual tone multi-frequency
+        :type dtmf_code: str
         """
-        self._dial("*43#")
+        self._dial(dtmf_code)
         if not self.is_code_ended():
             raise CodeError("Cannot enable call waiting")
         self.on_hook()
 
-    def enable_call_forwarding_busy(self, number: str) -> None:
-        self._dial(f"*67*{number}#")
+    def enable_call_forwarding_busy(self, dtmf_code: str, number: str) -> None:
+        """Enable call forwarding busy.
+
+        :param dtmf_code: Dual tone multi-frequency
+        :type dtmf_code: str
+        :param number: number to forward to
+        :type number: str
+        """
+        self._dial(f"{dtmf_code}{number}#")
         self.on_hook()
 
-    def disable_call_forwarding_busy(self) -> None:
-        self._dial("#67#")
+    def disable_call_forwarding_busy(self, dtmf_code: str) -> None:
+        """Disable call forwarding busy.
+
+        :param dtmf_code: Dual tone multi-frequency
+        :type dtmf_code: str
+        """
+        self._dial(dtmf_code)
         self.on_hook()
 
-    def disable_call_waiting_overall(self) -> None:
-        self._dial("#43#")
+    def disable_call_waiting_overall(self, dtmf_code: str) -> None:
+        """Disable call waiting.
+
+        :param dtmf_code: Dual tone multi-frequency
+        :type dtmf_code: str
+        """
+        self._dial(dtmf_code)
         self.on_hook()
 
-    def disable_call_waiting_per_call(self) -> None:
-        self._dial("#43*")
+    def disable_call_waiting_per_call(self, dtmf_code: str) -> None:
+        """Disablecall waiting per call.
+
+        :param dtmf_code: Dual tone multi-frequency
+        :type dtmf_code: str
+        """
+        self._dial(dtmf_code)
         self.on_hook()

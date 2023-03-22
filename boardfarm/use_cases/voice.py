@@ -510,8 +510,8 @@ def disable_call_waiting_overall(agent: VoiceClient) -> None:
     :type agent: VoiceClient
     """
     board = get_device_by_name("board")
-    agent._obj().disable_call_waiting(
-        code=board.sw.voice.dtmf_codes["call_waiting_disable"]
+    agent._obj().disable_call_waiting_overall(
+        dtmf_code=board.sw.voice.dtmf_codes["call_waiting_disable"]
     )
 
 
