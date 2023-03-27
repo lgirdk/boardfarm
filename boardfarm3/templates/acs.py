@@ -295,16 +295,3 @@ class ACS(ABC):
         :rtype: list[dict]
         """
         raise NotImplementedError
-
-    @abstractmethod
-    def provision_cpe_via_tr069(
-        self, tr069provision_api_list: list[dict[str, list[dict[str, str]]]], cpeid: str
-    ) -> None:
-        """Provision the cpe with tr069 parameters defined in env json.
-
-        :param tr069provision_api_list: List of tr069 operations and their values
-        :type tr069provision_api_list: list[dict[str, list[dict[str, str]]]]
-        :param cpeid: cpe id
-        :type cpeid: str
-        """
-        raise NotImplementedError
