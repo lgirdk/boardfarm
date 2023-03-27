@@ -5,9 +5,9 @@ from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from typing import Any, DefaultDict, Literal, Optional, Protocol, Union
 
-import jc
 import pexpect
 from bs4 import BeautifulSoup
+from jc.parsers import dig
 
 from boardfarm3.exceptions import SCPConnectionError, UseCaseFailure
 from boardfarm3.lib.parsers.iptables_parser import IptablesParser
@@ -535,9 +535,7 @@ def dns_lookup(console: _LinuxConsole, domain_name: str) -> list[dict[str, Any]]
     :return: parsed dig command ouput
     :rtype: List[Dict[str, Any]]
     """
-    return jc.parsers.dig.parse(
-        console.execute_command(f"dig {domain_name}").split(";", 1)[-1]
-    )
+    return dig.parse(console.execute_command(f"dig {domain_name}").split(";", 1)[-1])
 
 
 def is_link_up(
