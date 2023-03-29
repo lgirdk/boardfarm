@@ -67,7 +67,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         command: str,
         save_console_logs: bool,
         args: list[str],
-    ):
+    ) -> None:
         """Initialize boardfarm pexpect.
 
         :param session_name: pexpect session name
@@ -85,6 +85,8 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
             encoding="utf-8",
             dimensions=(24, 240),
             codec_errors="ignore",
+            # TODO: Investigate the issue of double prompt in freepbx
+            env={"TERM": "dumb"},
         )
         self._configure_logging(session_name, save_console_logs)
 
