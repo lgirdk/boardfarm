@@ -1,3 +1,10 @@
+## 2023.13.0 (2023-03-30)
+
+### Fix
+
+- **boardfarm/use_cases/voice.py**: change call waiting fn to use dtmf
+- **kamailio.py**: add url to sipcenter template
+
 ## 2023.11.0 (2023-03-15)
 
 ### Fix
