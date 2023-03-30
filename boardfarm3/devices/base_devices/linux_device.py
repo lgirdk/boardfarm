@@ -464,7 +464,7 @@ class LinuxDevice(BoardfarmDevice):
         :return: console output from the command execution
         """
         output = self._run_command_with_args(
-            "sudo tcpdump -n -r", fname, additional_args, timeout
+            "tcpdump -n -r", fname, additional_args, timeout
         )
 
         if "No such file or directory" in output:
@@ -477,7 +477,7 @@ class LinuxDevice(BoardfarmDevice):
                 f"review additional_args={additional_args}"
             )
         if rm_pcap:
-            self._console.sendline(f"sudo rm {fname}")
+            self._console.sudo_sendline(f"rm {fname}")
             self._console.expect(self._shell_prompt)
         return output
 
@@ -497,7 +497,7 @@ class LinuxDevice(BoardfarmDevice):
         :return: return tshark read command console output
         """
         output = self._run_command_with_args(
-            "sudo tshark -r", fname, additional_args, timeout
+            "tshark -r", fname, additional_args, timeout
         )
 
         if f'The file "{fname}" doesn\'t exist' in output:  # noqa
@@ -510,7 +510,7 @@ class LinuxDevice(BoardfarmDevice):
                 f"review additional_args={additional_args}"
             )
         if rm_pcap:
-            self._console.sendline(f"sudo rm {fname}")
+            self._console.sudo_sendline(f"rm {fname}")
             self._console.expect(self._shell_prompt)
         return output
 
@@ -521,7 +521,7 @@ class LinuxDevice(BoardfarmDevice):
         read_command = f"{command} {fname} "
         if additional_args:
             read_command += additional_args
-        self._console.sendline(read_command)
+        self._console.sudo_sendline(read_command)
         self._console.expect(self._shell_prompt, timeout=timeout)
         return self._console.before
 
