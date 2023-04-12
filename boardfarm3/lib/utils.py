@@ -5,7 +5,7 @@ import os
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address, IPv4Interface, IPv6Interface
 from typing import Any, Callable, Optional, Union
 
 from netaddr import EUI, mac_unix_expanded
@@ -143,3 +143,34 @@ def disable_logs(logger_name: Optional[str] = None) -> Generator:
     finally:
         logger.removeHandler(null_handler)
         list(map(logger.addHandler, handlers))
+
+
+def get_static_ipaddress(
+    config: dict[str, Any], ip_version: str = "ipv4"
+) -> Optional[str]:
+    """Return the static ip address of the device based on given ip version.
+
+    :param config: device config
+    :type config: dict[str, Any]
+    :param ip_version: ip version, defaults to "ipv4"
+    :type ip_version: str, optional
+    :return: the static ip address of the device
+    :rtype: Optional[str]
+    """
+    option_prefix: str = (
+        "wan-static-ip:" if ip_version == "ipv4" else "wan-static-ipv6:"
+    )
+    if (options := config["options"].split(",")) and (
+        match := next(
+            (
+                option.strip().split(option_prefix)[1]
+                for option in options
+                if option_prefix in option
+            ),
+            None,
+        )
+    ):
+        return str(
+            IPv4Interface(match).ip if ip_version == "ipv4" else IPv6Interface(match).ip
+        )
+    return None
