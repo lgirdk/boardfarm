@@ -2,7 +2,6 @@
 
 service mysql start
 fwconsole restart
-fwconsole reload
 
 if [[ $# -gt 0 ]]; then
     exec "$@"

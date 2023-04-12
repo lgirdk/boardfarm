@@ -22,7 +22,7 @@ FROM ubuntu:focal-20220826
 RUN echo "root:bigfoot1" | chpasswd
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssh-server=1:8.2p1-4ubuntu0.2 \
+    openssh-server=1:8.2p1-4ubuntu0.5 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /var/run/sshd \
