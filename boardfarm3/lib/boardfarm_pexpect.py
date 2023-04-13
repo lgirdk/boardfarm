@@ -1,5 +1,6 @@
 """Boardfarm pexpect session module."""
 
+import os
 import re
 from abc import ABCMeta, abstractmethod
 from logging import Formatter, Logger, getLogger
@@ -86,7 +87,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
             dimensions=(24, 240),
             codec_errors="ignore",
             # TODO: Investigate the issue of double prompt in freepbx
-            env={"TERM": "dumb"},
+            env={"PATH": os.getenv("PATH"), "TERM": "dumb"},
         )
         self._configure_logging(session_name, save_console_logs)
 
