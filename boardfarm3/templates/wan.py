@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from ipaddress import IPv4Address
 from typing import TYPE_CHECKING, Any, Optional, Union
@@ -283,5 +283,31 @@ class WAN(ABC):
 
         :return: WAN password
         :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def connect_to_board_via_reverse_ssh(
+        self, rssh_username: str, rssh_password: None, reverse_ssh_port: str
+    ) -> None:
+        """Perform reverse SSH from jump server to CPE.
+
+        :param rssh_username: username of the cpe
+        :type rssh_username: str
+        :param rssh_password: password to connect
+        :type rssh_password: None
+        :param reverse_ssh_port: the port number
+        :type reverse_ssh_port: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_network_statistics(
+        self,
+    ) -> Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]:
+        """Execute netstat command to get the port status.
+
+        :return: parsed output of netstat command
+        :rtype: Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]
         """
         raise NotImplementedError

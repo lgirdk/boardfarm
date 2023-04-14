@@ -3,8 +3,11 @@
 import logging
 import re
 from argparse import Namespace
+from collections.abc import Iterator
 from ipaddress import IPv4Interface, IPv6Interface
-from typing import Any
+from typing import Any, Union
+
+import jc
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
@@ -37,6 +40,7 @@ class LinuxWAN(LinuxDevice, WAN):
         self._wan_dhcp_server = False
         self._wan_dhcpv6 = False
         self._multicast: Multicast = None
+        self._board_prompt = "root@[\\w-]+:[\\w/~]+#"
         super().__init__(config, cmdline_args)
 
     def _setup_wan(self) -> None:  # noqa: C901
@@ -225,3 +229,66 @@ class LinuxWAN(LinuxDevice, WAN):
         if not snmp_command.startswith("snmp"):
             raise ValueError(f"{snmp_command!r} is not a SNMP command")
         return self._console.execute_command(snmp_command)
+
+    def connect_to_board_via_reverse_ssh(
+        self, rssh_username: str, rssh_password: None, reverse_ssh_port: str
+    ) -> None:
+        """Perform reverse SSH from jump server to CPE.
+
+        The board which needs to be connected using reverse ssh is identifed
+        by the reverse_ssh_port
+
+        :param rssh_username: username of the cpe
+        :type rssh_username: str
+        :param rssh_password: password to login the cpe
+        :type rssh_password: None
+        :param reverse_ssh_port: the port number
+        :type reverse_ssh_port: str
+        """
+        if rssh_password is not None:
+            raise ValueError(
+                "It is unexpected that a password must be used to connect to the CPE"
+            )
+        ssh_command = (
+            f"ssh {rssh_username}@localhost "
+            f"-p {reverse_ssh_port} -o StrictHostKeyChecking=no "
+            f"-o UserKnownHostsFile=/dev/null"
+        )
+        self._console.sendline(ssh_command)
+        self._console.expect(self._board_prompt)
+        self._console.sendline("ifconfig erouter0")
+        self._console.expect(self._board_prompt)
+        _LOGGER.debug("SSH done from jump server to DUT")
+        self._console.sendline("exit")
+        self._console.expect(self._shell_prompt)
+
+    def get_network_statistics(
+        self,
+    ) -> Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]:
+        """Execute netstat command to get the port status.
+
+        Sample block of the output
+
+        .. code-block:: python
+
+            [
+                {
+                    'proto': 'tcp',
+                    'recv_q': 0,
+                    'send_q': 224,
+                    'local_address': 'bft-node-cmts1-wan-',
+                    'foreign_address': '172.17.132.50',
+                    'state': 'ESTABLISHED',
+                    'kind': 'network',
+                    'local_port': 'ssh',
+                    'foreign_port': '51104',
+                    'transport_protocol': 'tcp',
+                    'network_protocol': 'ipv4',
+                    'foreign_port_num': 51104
+                }
+            ]
+
+        :return: parsed output of netstat command
+        :rtype: Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]
+        """
+        return jc.parse("netstat", self._console.execute_command("netstat -a"))
