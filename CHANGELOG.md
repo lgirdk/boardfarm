@@ -1,3 +1,9 @@
+## 2023.16.0 (2023-04-17)
+
+### Feat
+
+- **dockerfiles/resources/**: add changes to ubuntu asterisk
+
 ## 2023.13.0 (2023-03-30)
 
 ### Fix
