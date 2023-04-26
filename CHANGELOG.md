@@ -1,3 +1,9 @@
+## 2023.17.0 (2023-04-26)
+
+### Fix
+
+- **softphone.py**: change softphone nameserver order
+
 ## 2023.16.0 (2023-04-17)
 
 ### Feat
