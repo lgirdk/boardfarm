@@ -17,6 +17,7 @@ COPY ./resources/voice/freepbx_config/pjsip.endpoint_custom.conf /voice/pjsip.en
 COPY ./resources/voice/freepbx_config/pjsip.auth_custom.conf /voice/pjsip.auth_custom.conf
 COPY ./resources/voice/freepbx_config/pjsip.transports_custom.conf /voice/pjsip.transports_custom.conf
 COPY ./resources/voice/init.sh /root/init.sh
+COPY ./resources/voice/freepbx_config/astdb_script.sh /root/astdb_script.sh
 
 RUN ASTERISK_BUILD_DEPS='\
     autoconf=2.69-11.1 \
@@ -314,8 +315,12 @@ RUN ASTERISK_BUILD_DEPS='\
     curl -ssL http://mirror.freepbx.org/modules/packages/freepbx/7.4/freepbx-16.0-latest.tgz| tar xfz - --strip 1 -C /usr/src/freepbx && \
     /bin/bash -c /freepbx.sh && \
     rm -rf /usr/src/freepbx && \
-    chmod +x /root/init.sh
+    chmod +x /root/init.sh && \
+    chmod +x /root/astdb_script.sh && \
+    sed -i 's/\r$//' /root/astdb_script.sh && \
+    /bin/bash -c /root/astdb_script.sh \
 
-COPY ./resources/voice/freepbx_config/astdb.sqlite3 /var/lib/asterisk/astdb.sqlite3
+
+
 COPY ./resources/voice/freepbx_config/extensions_additional.conf /etc/asterisk/extensions_additional.conf
 ENTRYPOINT [ "/root/init.sh" ]
