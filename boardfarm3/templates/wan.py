@@ -288,14 +288,14 @@ class WAN(ABC):
 
     @abstractmethod
     def connect_to_board_via_reverse_ssh(
-        self, rssh_username: str, rssh_password: None, reverse_ssh_port: str
+        self, rssh_username: str, rssh_password: Optional[str], reverse_ssh_port: str
     ) -> None:
         """Perform reverse SSH from jump server to CPE.
 
         :param rssh_username: username of the cpe
         :type rssh_username: str
         :param rssh_password: password to connect
-        :type rssh_password: None
+        :type rssh_password: Optional[str]
         :param reverse_ssh_port: the port number
         :type reverse_ssh_port: str
         """

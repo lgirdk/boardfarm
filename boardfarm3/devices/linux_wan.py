@@ -5,7 +5,7 @@ import re
 from argparse import Namespace
 from collections.abc import Iterator
 from ipaddress import IPv4Interface, IPv6Interface
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import jc
 
@@ -231,7 +231,7 @@ class LinuxWAN(LinuxDevice, WAN):
         return self._console.execute_command(snmp_command)
 
     def connect_to_board_via_reverse_ssh(
-        self, rssh_username: str, rssh_password: None, reverse_ssh_port: str
+        self, rssh_username: str, rssh_password: Optional[str], reverse_ssh_port: str
     ) -> None:
         """Perform reverse SSH from jump server to CPE.
 
@@ -241,7 +241,7 @@ class LinuxWAN(LinuxDevice, WAN):
         :param rssh_username: username of the cpe
         :type rssh_username: str
         :param rssh_password: password to login the cpe
-        :type rssh_password: None
+        :type rssh_password: Optional[str]
         :param reverse_ssh_port: the port number
         :type reverse_ssh_port: str
         """
