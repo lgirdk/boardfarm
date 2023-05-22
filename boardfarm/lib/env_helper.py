@@ -230,6 +230,7 @@ class EnvHelper:
         return {
             "F3896LG": "mv2+",
             "CH7465LG": "mv1",
+            "TG2492LG": "mv1",
             "F5685LGE": "mv3",
             "F5685LGB": "mv3",
         }.get(board_model, "unknown")
