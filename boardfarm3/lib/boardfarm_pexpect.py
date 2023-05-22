@@ -17,7 +17,10 @@ def _apply_backspace(string: str) -> str:
     while True:
         # if you find a character followed by a backspace, remove both
         char_with_backspace = re.sub(
-            r"(.\x08\x1b\x5b\x4b)|(.\x08\x20\x08)", "", string, count=1
+            r"(.\x08\x1b\x5b\x4b)|(.\x08\x20\x08)",
+            "",
+            string,
+            count=1,
         )
         if len(string) == len(char_with_backspace):
             # now remove any backspaces from beginning of the string
@@ -32,7 +35,7 @@ class _LogWrapper:
 
     _chars_to_remove = re.compile(
         r"\x1B(?:[@-Z\\-_]|\[[0-?]*["
-        r" -/]*[@-~])|\r|\n|\x1B[78]|\x07|(\x1b\x5b\x48\x1b\x5b\x4a)"
+        r" -/]*[@-~])|\r|\n|\x1B[78]|\x07|(\x1b\x5b\x48\x1b\x5b\x4a)",
     )
 
     def __init__(self, logger: Logger) -> None:
@@ -49,10 +52,10 @@ class _LogWrapper:
             lines = lines[:-1]
         else:
             self._lastline = ""
-        for line in lines:
-            line = _apply_backspace(line)
+        for _line in lines:
+            line = _apply_backspace(_line)
             self._logger.debug(
-                self._chars_to_remove.sub("", line).replace("\t", "  ").rstrip()
+                self._chars_to_remove.sub("", line).replace("\t", "  ").rstrip(),
             )
 
     def flush(self) -> None:

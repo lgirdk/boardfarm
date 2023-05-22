@@ -6,6 +6,8 @@ from typing import Any
 
 from pandas import DataFrame
 
+# flake8: noqa
+
 
 # pylint: disable=too-few-public-methods
 class NetstatParser:
@@ -33,7 +35,8 @@ class NetstatParser:
             value = header[:5].decode("utf-8")
             counter += 1
             if counter == 20:
-                raise ValueError("Invalid netstat output")
+                msg = "Invalid netstat output"
+                raise ValueError(msg)
         val = file_out.readlines()
         for line in val:
             if "Active UNIX domain sockets" in str(line):
@@ -44,9 +47,13 @@ class NetstatParser:
         return DataFrame(self._inet_connections, columns=inet_header)
 
     # TODO: Rewrite this complex function
-    # pylint: disable-next=inconsistent-return-statements,too-many-branches
-    def _parse_inet_connection(  # noqa: C901
-        self, line: bytes, header: bytes, sep: str = " "
+    # pylint: disable-next=inconsistent-return-statements,too-many-branches,too-many-locals
+    def _parse_inet_connection(  # noqa: C901, RUF100
+        # ruff is not aware of C901, RUF100 is needed for coexistence
+        self,
+        line: bytes,
+        header: bytes,
+        sep: str = " ",
     ) -> tuple[list[str], Any]:
         lines = line.decode("utf-8").split(sep)
         headers = header.decode("utf-8").split(sep)
@@ -73,7 +80,8 @@ class NetstatParser:
             else:
                 inet_header.append(val)
         inet_connection = collections.namedtuple(  # type: ignore
-            "inet_connection", inet_header
+            "inet_connection",
+            inet_header,
         )
         try:  # pylint: disable=too-many-nested-blocks
             if not fields:
@@ -82,9 +90,7 @@ class NetstatParser:
                 if fields1[idx] in ["Local", "Foreign"]:
                     portpos = fields[idx].rfind(":")
                     dict_val[fields1[idx] + "Address"] = fields[idx][:portpos]
-                    dict_val[fields1[idx] + "Port"] = fields[idx][
-                        portpos + 1 :  # noqa: E203
-                    ]
+                    dict_val[fields1[idx] + "Port"] = fields[idx][portpos + 1 :]
                 elif fields[0].upper() == "UDP" and fields1[idx] == "State":
                     dict_val["State"] = ""
                 elif "PID" in fields1[idx]:
@@ -95,6 +101,7 @@ class NetstatParser:
                     dict_val[fields1[idx].replace("-", "")] = fields[idx]
             return inet_header, inet_connection(**dict_val)
         except Exception as e:
+            msg = f"Problem in parsing the output for the line {lines}!!!"
             raise ValueError(
-                f"Problem in parsing the output for the line {lines}!!!"
+                msg,
             ) from e

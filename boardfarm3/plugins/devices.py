@@ -29,7 +29,9 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
 
 @hookimpl
 def boardfarm_register_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
 ) -> DeviceManager:
     """Register devices as plugin with boardfarm.
 
@@ -45,13 +47,17 @@ def boardfarm_register_devices(
         device_type = device_config.get("type")
         if device_type in known_devices_list:
             device_obj = known_devices_list.get(device_type)(
-                device_config, cmdline_args
+                device_config,
+                cmdline_args,
             )
             device_manager.register_device(device_obj)
         else:
-            raise EnvConfigError(
+            msg = (
                 f"{device_type} - Unknown boardfarm device, please register "
                 f"{device_type} device using boardfarm_add_devices hook"
+            )
+            raise EnvConfigError(
+                msg,
             )
 
     return device_manager
@@ -59,7 +65,9 @@ def boardfarm_register_devices(
 
 @hookimpl
 def boardfarm_deploy_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
 ) -> DeviceManager:
     """Deploy registered devices to the environment.
 
@@ -69,28 +77,44 @@ def boardfarm_deploy_devices(
     :returns: device manager with all deployed devices
     """
     device_manager: DeviceManager = plugin_manager.hook.boardfarm_register_devices(
-        config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        plugin_manager=plugin_manager,
     )
     plugin_manager.hook.validate_device_requirements(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_server_boot(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_server_configure(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_device_boot(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_device_configure(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_attached_device_boot(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     plugin_manager.hook.boardfarm_attached_device_configure(
-        config=config, cmdline_args=cmdline_args, device_manager=device_manager
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
     )
     return device_manager
 

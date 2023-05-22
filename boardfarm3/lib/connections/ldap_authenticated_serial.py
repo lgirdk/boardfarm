@@ -12,7 +12,7 @@ from boardfarm3.lib.connections.ssh_connection import SSHConnection
 class LdapAuthenticatedSerial(SSHConnection):
     """Connect to a serial with ldap credentials."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         name: str,
         ip_addr: str,
@@ -20,7 +20,7 @@ class LdapAuthenticatedSerial(SSHConnection):
         shell_prompt: list[str],
         port: int = 22,
         save_console_logs: bool = False,
-        **kwargs: dict[str, Any],  # ignore other arguments
+        **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize ldap authenticated serial connection.
 
@@ -38,10 +38,17 @@ class LdapAuthenticatedSerial(SSHConnection):
         :type save_console_logs: bool, optional
         """
         if ";" not in ldap_credentials:
-            raise ValueError("Invalid LDAP credentials")
+            msg = "Invalid LDAP credentials"
+            raise ValueError(msg)
         username, password = ldap_credentials.split(";")
         super().__init__(
-            name, ip_addr, username, shell_prompt, port, password, save_console_logs
+            name,
+            ip_addr,
+            username,
+            shell_prompt,
+            port,
+            password,
+            save_console_logs,
         )
 
     def _login_to_server(self, password: str) -> None:
@@ -51,7 +58,9 @@ class LdapAuthenticatedSerial(SSHConnection):
         :type password: str
         """
         if self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT]):
-            raise DeviceConnectionError("Failed to connect to device via serial")
+            msg = "Failed to connect to device via serial"
+            raise DeviceConnectionError(msg)
         self.sendline(password)
         if self.expect_exact(["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT]):
-            raise DeviceConnectionError("Failed to connect to device via serial")
+            msg = "Failed to connect to device via serial"
+            raise DeviceConnectionError(msg)

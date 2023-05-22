@@ -29,10 +29,14 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     """
     argparser.add_argument("--board-name", required=True, help="Board name")
     argparser.add_argument(
-        "--env-config", required=True, help="Environment JSON config file path"
+        "--env-config",
+        required=True,
+        help="Environment JSON config file path",
     )
     argparser.add_argument(
-        "--inventory-config", required=True, help="Inventory JSON config file path"
+        "--inventory-config",
+        required=True,
+        help="Inventory JSON config file path",
     )
     argparser.add_argument(
         "--legacy",
@@ -50,13 +54,16 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
         help="Skip contingency checks while running tests",
     )
     argparser.add_argument(
-        "--save-console-logs", action="store_true", help="Save console logs to the disk"
+        "--save-console-logs",
+        action="store_true",
+        help="Save console logs to the disk",
     )
 
 
 @hookimpl
 def boardfarm_cmdline_parse(
-    argparser: ArgumentParser, cmdline_args: list[str]
+    argparser: ArgumentParser,
+    cmdline_args: list[str],
 ) -> Namespace:
     """Parse command line arguments.
 
@@ -72,7 +79,8 @@ def boardfarm_cmdline_parse(
 
 @hookimpl(trylast=True)
 def boardfarm_post_deploy_devices(
-    cmdline_args: Namespace, device_manager: DeviceManager
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Enter into boardfarm interactive session after deployment.
 
@@ -82,5 +90,6 @@ def boardfarm_post_deploy_devices(
     :type device_manager: DeviceManager
     """
     get_interactive_console_options(device_manager, cmdline_args).show_table(
-        "q", "exit"
+        "q",
+        "exit",
     )

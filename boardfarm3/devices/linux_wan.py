@@ -52,7 +52,8 @@ class LinuxWAN(LinuxDevice, WAN):
         for opt in options:
             if opt.startswith("wan-static-route:"):
                 self._static_route = opt.replace("wan-static-route:", "").replace(
-                    "-", " via "
+                    "-",
+                    " via ",
                 )
             elif opt == "wan-dhcp-client":
                 self._wan_dhcp = True
@@ -68,22 +69,22 @@ class LinuxWAN(LinuxDevice, WAN):
                 # we are bypassing this for now
                 # (see http://patchwork.ozlabs.org/patch/117949/)
                 self._console.execute_command(
-                    f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0"
+                    f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0",
                 )
                 self._console.execute_command(
-                    f"ip -6 addr del {ipv6_interface} dev {self.iface_dut}"
+                    f"ip -6 addr del {ipv6_interface} dev {self.iface_dut}",
                 )
                 self._console.execute_command(
-                    f"ip -6 addr add {ipv6_interface} dev {self.iface_dut}"
+                    f"ip -6 addr add {ipv6_interface} dev {self.iface_dut}",
                 )
             elif opt.startswith("wan-static-ip:"):
                 value = str(opt.replace("wan-static-ip:", ""))
                 ipv4_interface = IPv4Interface(value)
                 self._console.execute_command(
-                    f"ip -4 addr del {ipv4_interface} dev {self.iface_dut}"
+                    f"ip -4 addr del {ipv4_interface} dev {self.iface_dut}",
                 )
                 self._console.execute_command(
-                    f"ip -4 addr add {ipv4_interface} dev {self.iface_dut}"
+                    f"ip -4 addr add {ipv4_interface} dev {self.iface_dut}",
                 )
         if self._static_route:
             for route in self._static_route.split(";"):
@@ -96,7 +97,10 @@ class LinuxWAN(LinuxDevice, WAN):
         _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
         self._connect()
         self._multicast = Multicast(
-            self.device_name, self.iface_dut, self._console, self._shell_prompt
+            self.device_name,
+            self.iface_dut,
+            self._console,
+            self._shell_prompt,
         )
         if self._cmdline_args.skip_boot:
             return
@@ -125,7 +129,8 @@ class LinuxWAN(LinuxDevice, WAN):
             self._validate_dns_env_request(acs_server_config)
 
     def _validate_dns_env_request(
-        self, acs_server_config: dict[str, dict[str, str]]
+        self,
+        acs_server_config: dict[str, dict[str, str]],
     ) -> None:
         output = NSLookup(self._console).nslookup("acs_server.boardfarm.com")
         ping_status = {
@@ -147,10 +152,13 @@ class LinuxWAN(LinuxDevice, WAN):
                 if status not in acs_server_config[ip_version]:
                     continue
                 if acs_server_config[ip_version][status] != value:
+                    msg = (
+                        f"DNS check failed for {ip_version} {status} servers "
+                        "- requested: {acs_server_config[ip_version][status]}, "
+                        "actual: {value}"
+                    )
                     raise ContingencyCheckError(
-                        f"DNS check failed for {ip_version} {status} servers -"
-                        f" requested: {acs_server_config[ip_version][status]},"
-                        f" actual: {value}"
+                        msg,
                     )
 
     @property
@@ -227,11 +235,15 @@ class LinuxWAN(LinuxDevice, WAN):
         # Only allowing snmp commands to be executed from wan
         # only wan has snmp utils installed on it.
         if not snmp_command.startswith("snmp"):
-            raise ValueError(f"{snmp_command!r} is not a SNMP command")
+            msg = f"{snmp_command!r} is not a SNMP command"
+            raise ValueError(msg)
         return self._console.execute_command(snmp_command)
 
     def connect_to_board_via_reverse_ssh(
-        self, rssh_username: str, rssh_password: Optional[str], reverse_ssh_port: str
+        self,
+        rssh_username: str,
+        rssh_password: Optional[str],
+        reverse_ssh_port: str,
     ) -> None:
         """Perform reverse SSH from jump server to CPE.
 
@@ -246,9 +258,10 @@ class LinuxWAN(LinuxDevice, WAN):
         :type reverse_ssh_port: str
         """
         if rssh_password is not None:
-            raise ValueError(
+            err_msg = (
                 "It is unexpected that a password must be used to connect to the CPE"
             )
+            raise ValueError(err_msg)
         ssh_command = (
             f"ssh {rssh_username}@localhost "
             f"-p {reverse_ssh_port} -o StrictHostKeyChecking=no "

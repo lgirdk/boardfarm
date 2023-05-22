@@ -22,7 +22,7 @@ class Ser2NetConnection(BoardfarmPexpect):
     No authentication needed.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         name: str,
         ip_addr: str,
@@ -50,8 +50,9 @@ class Ser2NetConnection(BoardfarmPexpect):
         self._shell_prompt = shell_prompt
         super().__init__(name, "telnet", save_console_logs, [ip_addr, port])
         if self.expect([f"ser2net port {port}", pexpect.TIMEOUT], timeout=10):
+            msg = f"ser2net: Failed to run 'telnet {ip_addr} {port}'"
             raise DeviceConnectionError(
-                f"ser2net: Failed to run 'telnet {ip_addr} {port}'"
+                msg,
             )
 
     def execute_command(self, command: str, timeout: int = 30) -> str:

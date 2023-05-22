@@ -37,7 +37,7 @@ class LinuxDevice(BoardfarmDevice):
     eth_interface = "eth1"
     _internet_access_cmd = ""
 
-    def __init__(self, config: dict, cmdline_args: Namespace) -> None:  # noqa: C901
+    def __init__(self, config: dict, cmdline_args: Namespace) -> None:
         """Initialize linux device.
 
         :param config: device configuration
@@ -53,7 +53,8 @@ class LinuxDevice(BoardfarmDevice):
             for opt in options:
                 if opt.startswith("static-route:"):
                     self._static_route = opt.replace("static-route:", "").replace(
-                        "-", " via "
+                        "-",
+                        " via ",
                     )
                 if opt.startswith("mgmt-dns:"):
                     value = str(opt.replace("mgmt-dns:", ""))
@@ -65,17 +66,17 @@ class LinuxDevice(BoardfarmDevice):
 
     @property
     def _ipaddr(self) -> str:
-        """Management IP address of the device."""  # noqa: D401
+        """Management IP address of the device."""
         return self._config.get("ipaddr")
 
     @property
     def _port(self) -> str:
-        """Management connection port of the device."""  # noqa: D401
+        """Management connection port of the device."""
         return self._config.get("port", "22")
 
     @property
     def _username(self) -> str:
-        """Management connection username."""  # noqa: D401
+        """Management connection username."""
         return self._config.get("username", "root")
 
     @property
@@ -118,7 +119,9 @@ class LinuxDevice(BoardfarmDevice):
         return interactive_consoles
 
     def _get_nw_interface_ip_address(
-        self, interface_name: str, is_ipv6: bool
+        self,
+        interface_name: str,
+        is_ipv6: bool,
     ) -> list[str]:
         """Get network interface ip address.
 
@@ -144,7 +147,9 @@ class LinuxDevice(BoardfarmDevice):
         )
 
     def _get_nw_interface_ipv6_address(
-        self, network_interface: str, address_type: str = "global"
+        self,
+        network_interface: str,
+        address_type: str = "global",
     ) -> str:
         """Get IPv6 address of the given network interface.
 
@@ -200,22 +205,28 @@ class LinuxDevice(BoardfarmDevice):
             destination_path,
         ]
         session = LocalCmd(
-            f"{self.device_name}.scp", "scp", save_console_logs=False, args=args
+            f"{self.device_name}.scp",
+            "scp",
+            save_console_logs=False,
+            args=args,
         )
         session.setwinsize(24, 80)
         match_index = session.expect(
-            [" password:", "\\d+%", pexpect.TIMEOUT, pexpect.EOF], timeout=20
+            [" password:", "\\d+%", pexpect.TIMEOUT, pexpect.EOF],
+            timeout=20,
         )
         if match_index in (2, 3):
+            msg = f"Failed to perform SCP from {local_path} to {destination_path}"
             raise SCPConnectionError(
-                f"Failed to perform SCP from {local_path} to {destination_path}"
+                msg,
             )
         if match_index == 0:
             session.sendline(self._password)
         session.expect(pexpect.EOF, timeout=90)
         if session.wait() != 0:
+            msg = f"Failed to SCP file from {local_path} to {destination_path}"
             raise SCPConnectionError(
-                f"Failed to SCP file from {local_path} to {destination_path}"
+                msg,
             )
 
     def download_file_from_uri(self, file_uri: str, destination_dir: str) -> str:
@@ -229,9 +240,10 @@ class LinuxDevice(BoardfarmDevice):
         file_name = file_uri.split("/")[-1]
         file_path = f"{destination_dir}/{file_name}"
         if " saved [" not in self._console.execute_command(
-            f"{self._internet_access_cmd} wget {file_uri!r} -O {file_path}"
+            f"{self._internet_access_cmd} wget {file_uri!r} -O {file_path}",
         ):
-            raise ConfigurationFailure(f"Failed to download file from {file_uri}")
+            msg = f"Failed to download file from {file_uri}"
+            raise ConfigurationFailure(msg)
         return file_name
 
     def curl(
@@ -254,7 +266,7 @@ class LinuxDevice(BoardfarmDevice):
         if port:
             if re.search(AllValidIpv6AddressesRegex, url) and "[" not in url:
                 url = f"[{url}]"
-            web_addr = f"{protocol}://{url}:{str(port)}"
+            web_addr = f"{protocol}://{url}:{port!s}"
         else:
             web_addr = f"{protocol}://{url}"
         command = f"curl -v {options} {web_addr}"
@@ -288,7 +300,9 @@ class LinuxDevice(BoardfarmDevice):
         self._console.expect(self._shell_prompt)
 
     def is_link_up(
-        self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+        self,
+        interface: str,
+        pattern: str = "BROADCAST,MULTICAST,UP",
     ) -> bool:
         """Check given interface is up or not.
 
@@ -313,7 +327,8 @@ class LinuxDevice(BoardfarmDevice):
         :raises BoardfarmException: in case ipv6 can not be found
         """
         return self._get_nw_interface_ipv6_address(
-            network_interface=interface, address_type="global"
+            network_interface=interface,
+            address_type="global",
         )
 
     def get_interface_link_local_ipv6addr(self, interface: str) -> str:
@@ -324,7 +339,8 @@ class LinuxDevice(BoardfarmDevice):
         :raises BoardfarmException: in case ipv6 can not be found
         """
         return self._get_nw_interface_ipv6_address(
-            network_interface=interface, address_type="link-local"
+            network_interface=interface,
+            address_type="link-local",
         )
 
     def get_interface_macaddr(self, interface: str) -> str:
@@ -340,7 +356,7 @@ class LinuxDevice(BoardfarmDevice):
         self._console.expect(self._shell_prompt)
         return macaddr
 
-    def ping(
+    def ping(  # noqa: PLR0913
         self,
         ping_ip: str,
         ping_count: int = 4,
@@ -402,7 +418,9 @@ class LinuxDevice(BoardfarmDevice):
             self._console.sendline(f"traceroute{version} {options} {host_ip}")
             self._console.expect_exact(f"traceroute{version} {options} {host_ip}")
             self._console.expect(self._shell_prompt, timeout=timeout)
-            return self._console.before
+            # recommended refactoring for TRY300 would work if output type was
+            # not mixed
+            return self._console.before  # noqa: TRY300
         except pexpect.TIMEOUT:
             self._console.sendcontrol("c")
             self._console.expect(self._shell_prompt)
@@ -464,17 +482,24 @@ class LinuxDevice(BoardfarmDevice):
         :return: console output from the command execution
         """
         output = self._run_command_with_args(
-            "tcpdump -n -r", fname, additional_args, timeout
+            "tcpdump -n -r",
+            fname,
+            additional_args,
+            timeout,
         )
 
         if "No such file or directory" in output:
+            msg = f"pcap file {fname} not found on {self.device_name} device"
             raise FileNotFoundError(
-                f"pcap file {fname} not found on {self.device_name} device"
+                msg,
             )
         if "syntax error in filter expression" in output:
+            msg = (
+                "Invalid filters for tcpdump read, review "
+                f"additional_args={additional_args}"
+            )
             raise BoardfarmException(
-                "Invalid filters for tcpdump read, "
-                f"review additional_args={additional_args}"
+                msg,
             )
         if rm_pcap:
             self._console.sudo_sendline(f"rm {fname}")
@@ -497,17 +522,24 @@ class LinuxDevice(BoardfarmDevice):
         :return: return tshark read command console output
         """
         output = self._run_command_with_args(
-            "tshark -r", fname, additional_args, timeout
+            "tshark -r",
+            fname,
+            additional_args,
+            timeout,
         )
 
-        if f'The file "{fname}" doesn\'t exist' in output:  # noqa
+        if f'The file "{fname}" doesn\'t exist' in output:
+            msg = f"pcap file not found {fname} on device {self.device_name}"
             raise FileNotFoundError(
-                f"pcap file not found {fname} on device {self.device_name}"
+                msg,
             )
         if "was unexpected in this context" in output:
+            msg = (
+                "Invalid filters for tshark read, review "
+                f"additional_args={additional_args}"
+            )
             raise BoardfarmException(
-                "Invalid filters for tshark read, "
-                f"review additional_args={additional_args}"
+                msg,
             )
         if rm_pcap:
             self._console.sudo_sendline(f"rm {fname}")
@@ -515,7 +547,11 @@ class LinuxDevice(BoardfarmDevice):
         return output
 
     def _run_command_with_args(
-        self, command: str, fname: str, additional_args: Optional[str], timeout: int
+        self,
+        command: str,
+        fname: str,
+        additional_args: Optional[str],
+        timeout: int,
     ) -> str:
         """Run command with given arguments and return the output."""
         read_command = f"{command} {fname} "
@@ -540,7 +576,7 @@ class LinuxDevice(BoardfarmDevice):
         """
         self._console.sudo_sendline(f"dhclient -v {interface!s}")
         if (
-            self._console.expect([pexpect.TIMEOUT] + self._shell_prompt, timeout=30)
+            self._console.expect([pexpect.TIMEOUT, *self._shell_prompt], timeout=30)
             == 0
         ):
             self._console.sendcontrol("c")
@@ -565,7 +601,7 @@ class LinuxDevice(BoardfarmDevice):
         mode = "-S" if stateless else "-6"
         self._console.sudo_sendline(f"dhclient {mode} -v {interface!s}")
         if (
-            self._console.expect([pexpect.TIMEOUT] + self._shell_prompt, timeout=15)
+            self._console.expect([pexpect.TIMEOUT, *self._shell_prompt], timeout=15)
             == 0
         ):
             self._console.sendcontrol("c")
@@ -579,10 +615,11 @@ class LinuxDevice(BoardfarmDevice):
         :return: pid number of the http service
         """
         cmd_output = self._console.execute_command(
-            f"webfsd -F -p {port} -{ip_version} &"
+            f"webfsd -F -p {port} -{ip_version} &",
         )
         if "Address already in use" in cmd_output:
-            raise BoardfarmException(f"Failed to start http service on port {port}.")
+            msg = f"Failed to start http service on port {port}."
+            raise BoardfarmException(msg)
         return re.search(r"(\[\d{1,}\]\s(\d+))", cmd_output)[2]
 
     def stop_http_service(self, port: str) -> None:
@@ -594,11 +631,12 @@ class LinuxDevice(BoardfarmDevice):
         if not self._console.execute_command(ps_cmd).splitlines():
             return
         self._console.execute_command(
-            ps_cmd + " | awk -F ' ' '{print $2}' | xargs kill -9 "
+            ps_cmd + " | awk -F ' ' '{print $2}' | xargs kill -9 ",
         )
         if self._console.execute_command(ps_cmd).splitlines():
+            msg = f"Failed to kill webfsd process running on port {port}"
             raise BoardfarmException(
-                f"Failed to kill webfsd process running on port {port}"
+                msg,
             )
 
     def http_get(self, url: str, timeout: int) -> HTTPResult:
@@ -623,7 +661,7 @@ class LinuxDevice(BoardfarmDevice):
         """
         return dns_lookup(self._console, domain_name)
 
-    def nmap(  # pylint: disable=too-many-arguments
+    def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         ipaddr: str,
         ip_type: str,
@@ -655,7 +693,8 @@ class LinuxDevice(BoardfarmDevice):
         :rtype: dict
         """
         if ip_type not in ["ipv4", "ipv6"]:
-            raise BoardfarmException("Invalid ip type, should be either ipv4 or ipv6")
+            msg = "Invalid ip type, should be either ipv4 or ipv6"
+            raise BoardfarmException(msg)
         retries = f"-max-retries {max_retries}" if max_retries else ""
         rate = f"-min-rate {min_rate}" if min_rate else ""
         port = f"-p {port}" if port else ""
@@ -671,9 +710,12 @@ class LinuxDevice(BoardfarmDevice):
         :raises BoardfarmException: if dante is not in the device options
         """
         if not self.dante:
+            msg = (
+                f"Cannot start dante on {self.device_name}, "
+                "it is not configured in the device options."
+            )
             raise BoardfarmException(
-                f"Cannot start dante on {self.device_name}, it is not "
-                "configured in the device options."
+                msg,
             )
         to_send = [
             "cat > /etc/danted.conf <<EOF",

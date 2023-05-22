@@ -26,7 +26,7 @@ class LinuxTFTP(LinuxDevice, TFTP):
     # to make sure every LinuxTFTP device has a unique static ip address
     _last_static_ip_address = IPv4Address("192.168.1.10")
 
-    @hookimpl  # type: ignore
+    @hookimpl
     def boardfarm_server_boot(self) -> None:
         """Boardfarm hook implementation to boot TFTP device.
 
@@ -40,15 +40,17 @@ class LinuxTFTP(LinuxDevice, TFTP):
         self._set_eth_interface_ipv4_address(LinuxTFTP._last_static_ip_address)
         LinuxTFTP._last_static_ip_address += 1
         if "Restarting" not in self._console.execute_command(
-            "/etc/init.d/tftpd-hpa restart"
+            "/etc/init.d/tftpd-hpa restart",
         ):
-            raise DeviceBootFailure("Failed to restart tftpd-hpa")
+            msg = "Failed to restart tftpd-hpa"
+            raise DeviceBootFailure(msg)
         if "in.tftpd is running" not in self._console.execute_command(
-            "/etc/init.d/tftpd-hpa status"
+            "/etc/init.d/tftpd-hpa status",
         ):
-            raise DeviceBootFailure("Failed tftpd-hpa not running")
+            msg = "Failed tftpd-hpa not running"
+            raise DeviceBootFailure(msg)
 
-    @hookimpl  # type: ignore
+    @hookimpl
     def boardfarm_post_deploy_devices(self, device_manager: DeviceManager) -> None:
         """Boardfarm hook implementation to shutdown TFTP device.
 
@@ -81,6 +83,7 @@ class LinuxTFTP(LinuxDevice, TFTP):
             f"ifconfig {self.eth_interface} {static_ip} netmask 255.255.255.0 up",
         )
         if str(static_ip) != self._get_nw_interface_ipv4_address(self.eth_interface):
+            msg = f"Failed to configure {self.eth_interface} with {static_ip}"
             raise ConfigurationFailure(
-                f"Failed to configure {self.eth_interface} with {static_ip}",
+                msg,
             )

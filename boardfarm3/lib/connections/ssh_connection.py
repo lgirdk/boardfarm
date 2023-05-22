@@ -12,7 +12,7 @@ from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 class SSHConnection(BoardfarmPexpect):
     """Connect to a device via SSH."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,  # pylint: disable=unused-argument
         name: str,
         ip_addr: str,
@@ -21,7 +21,7 @@ class SSHConnection(BoardfarmPexpect):
         port: int = 22,
         password: str = None,
         save_console_logs: bool = False,
-        **kwargs: dict[str, Any],  # ignore other arguments
+        **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize SSH connection.
 
@@ -62,10 +62,22 @@ class SSHConnection(BoardfarmPexpect):
         """
         if password is not None:
             if self.expect(["password:", pexpect.EOF, pexpect.TIMEOUT]):
-                raise DeviceConnectionError("Connection failed to SSH server")
+                msg = "Connection failed to SSH server"
+                raise DeviceConnectionError(msg)
             self.sendline(password)
-        if self.expect([pexpect.EOF, pexpect.TIMEOUT] + self._shell_prompt) < 2:
-            raise DeviceConnectionError("Connection failed to SSH server")
+        # no idea
+        if (
+            self.expect(
+                [
+                    pexpect.EOF,
+                    pexpect.TIMEOUT,
+                    *self._shell_prompt,
+                ],
+            )
+            < 2  # not clear why 2  # noqa: PLR2004
+        ):
+            msg = "Connection failed to SSH server"
+            raise DeviceConnectionError(msg)
 
     def execute_command(self, command: str, timeout: int = -1) -> str:
         """Execute a command in the SSH session.
@@ -92,11 +104,14 @@ class SSHConnection(BoardfarmPexpect):
         self.expect_exact(cmd, timeout=timeout)
         try:
             self.expect(self._shell_prompt, timeout=timeout)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.sendcontrol("c")
-            raise BoardfarmException(
+            msg = (
                 f"Command did not complete within {timeout} seconds. "
                 f"{self.name} prompt was not seen."
+            )
+            raise BoardfarmException(
+                msg,
             ) from e
         return self.before.strip()
 
@@ -108,7 +123,7 @@ class SSHConnection(BoardfarmPexpect):
         if self._username != "root":
             self.sendline("sudo true")
             password_requested = self.expect(
-                self._shell_prompt + ["password for .*:", "Password:"]
+                [*self._shell_prompt, "password for .*:", "Password:"],
             )
             if password_requested:
                 self.sendline(self._password)

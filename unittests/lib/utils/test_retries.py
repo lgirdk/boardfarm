@@ -40,7 +40,7 @@ class HelperMethods:  # noqa: D101
     # pylint: disable=dangerous-default-value
     def raise_exception_two_times(i: list[int] = [0]) -> int:  # noqa: D102,B006
         i[0] += 1
-        if i[0] < 2:
+        if i[0] < 2:  # noqa: PLR2004
             raise NotImplementedError
         return i[0]
 
@@ -53,7 +53,7 @@ def helper_methods_fixture(mocker: MockerFixture) -> HelperMethods:  # noqa: D10
 
 
 @pytest.mark.parametrize(
-    "funct_name,exp_out,exp_count",
+    ("funct_name", "exp_out", "exp_count"),
     [
         ("_return_int", 42, 1),
         ("_return_str", "story", 1),
@@ -66,7 +66,7 @@ def test_retry_three_times(  # noqa: D103
     mocker: MockerFixture,
     helper_methods: HelperMethods,
     funct_name: str,
-    exp_out: Any,
+    exp_out: Any,  # noqa: ANN401
     exp_count: int,
 ) -> None:
     spy = mocker.spy(helper_methods, funct_name)
@@ -77,29 +77,31 @@ def test_retry_three_times(  # noqa: D103
 
 
 def test_retry_on_exception(  # noqa: D103
-    mocker: MockerFixture, helper_methods: HelperMethods
+    mocker: MockerFixture,
+    helper_methods: HelperMethods,
 ) -> None:
     spy = mocker.spy(helper_methods, "raise_exception")
 
     with pytest.raises(NotImplementedError):
         retry_on_exception(helper_methods.raise_exception, [])
-    assert spy.call_count == 10
+    assert spy.call_count == 10  # noqa: PLR2004
     assert spy.spy_return is None
 
 
 def test_retry_on_exception_that_goes_away(  # noqa: D103
-    mocker: MockerFixture, helper_methods: HelperMethods
+    mocker: MockerFixture,
+    helper_methods: HelperMethods,
 ) -> None:
     spy = mocker.spy(helper_methods, "raise_exception_two_times")
     exp_out = 2
 
     assert retry_on_exception(helper_methods.raise_exception_two_times, []) == exp_out
-    assert spy.call_count == 2
+    assert spy.call_count == 2  # noqa: PLR2004
     assert spy.spy_return == exp_out
 
 
 @pytest.mark.parametrize(
-    "funct_name,retries,exp_count",
+    ("funct_name", "retries", "exp_count"),
     [
         ("raise_exception", 0, 1),
         ("raise_exception", 3, 3),
@@ -116,7 +118,9 @@ def test_retries_on_exception(  # noqa: D103
 
     with pytest.raises(NotImplementedError):
         assert retry_on_exception(
-            getattr(helper_methods, funct_name), [], retries=retries
+            getattr(helper_methods, funct_name),
+            [],
+            retries=retries,
         )
     assert spy.call_count == exp_count
     assert spy.spy_return is None

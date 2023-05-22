@@ -19,9 +19,10 @@ class DeviceManager:
 
         :param plugin_manager: plugin manager
         """
-        global _DEVICE_MANAGER_INSTANCE  # pylint: disable=global-statement
+        global _DEVICE_MANAGER_INSTANCE  # pylint: disable=global-statement  # noqa: PLW0603, E501
         if _DEVICE_MANAGER_INSTANCE is not None:
-            raise ValueError("DeviceManager is already initialized.")
+            msg = "DeviceManager is already initialized."  # type: ignore[unreachable]
+            raise ValueError(msg)
         self._plugin_manager = plugin_manager
         _DEVICE_MANAGER_INSTANCE = self
 
@@ -49,7 +50,8 @@ class DeviceManager:
         for _, plugin in self._plugin_manager.list_name_plugin():
             if isinstance(plugin, device_type):
                 return plugin
-        raise DeviceNotFound(f"No device available of type {device_type}")
+        msg = f"No device available of type {device_type}"
+        raise DeviceNotFound(msg)
 
     def register_device(self, device: BoardfarmDevice) -> None:
         """Register a device as plugin with boardfarm.
@@ -76,5 +78,6 @@ def get_device_manager() -> DeviceManager:
     :rtype: DeviceManager
     """
     if _DEVICE_MANAGER_INSTANCE is None:
-        raise ValueError("DeviceManager is not instantiated.")
+        msg = "DeviceManager is not instantiated."
+        raise ValueError(msg)
     return _DEVICE_MANAGER_INSTANCE

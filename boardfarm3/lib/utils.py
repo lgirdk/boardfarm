@@ -54,7 +54,7 @@ def ip_pool_to_list(start_ip: IPv4Address, end_ip: IPv4Address) -> list[IPv4Addr
 
 
 # TODO: consider replacing this with Tenacity or other solutions.
-def retry(func_name: Callable, max_retry: int, *args: Any) -> Any:
+def retry(func_name: Callable, max_retry: int, *args: Any) -> Any:  # noqa: ANN401
     """Retry a function if the output of the function is false.
 
     :param func_name: name of the function to retry
@@ -75,8 +75,11 @@ def retry(func_name: Callable, max_retry: int, *args: Any) -> Any:
 
 
 def retry_on_exception(
-    method: Callable, args: Union[list, tuple], retries: int = 10, tout: int = 5
-) -> Any:
+    method: Callable,
+    args: Union[list, tuple],
+    retries: int = 10,
+    tout: int = 5,
+) -> Any:  # noqa: ANN401
     """Retry a method if any exception occurs.
 
     Eventually, at last, throw the exception.
@@ -97,13 +100,13 @@ def retry_on_exception(
     for re_try in range(1, retries):
         try:
             return method(*args)
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except  # noqa: BLE001
             _LOGGER.debug("method failed %d time (%s)", re_try, exc)
             time.sleep(tout)
     return method(*args)
 
 
-def get_value_from_dict(key: str, dictionary: dict) -> Any:
+def get_value_from_dict(key: str, dictionary: dict) -> Any:  # noqa: ANN401
     """Get value of given key from the dictionary recursively.
 
     This method is used to avoid nested checks for None to get
@@ -146,7 +149,8 @@ def disable_logs(logger_name: Optional[str] = None) -> Generator:
 
 
 def get_static_ipaddress(
-    config: dict[str, Any], ip_version: str = "ipv4"
+    config: dict[str, Any],
+    ip_version: str = "ipv4",
 ) -> Optional[str]:
     """Return the static ip address of the device based on given ip version.
 
@@ -171,6 +175,8 @@ def get_static_ipaddress(
         )
     ):
         return str(
-            IPv4Interface(match).ip if ip_version == "ipv4" else IPv6Interface(match).ip
+            IPv4Interface(match).ip
+            if ip_version == "ipv4"
+            else IPv6Interface(match).ip,
         )
     return None

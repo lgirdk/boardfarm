@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator, Iterator
 from contextlib import contextmanager
-from ipaddress import IPv4Address
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Generator, Iterator
+    from ipaddress import IPv4Address
+
     from boardfarm3.lib.multicast import Multicast
     from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
@@ -101,7 +102,9 @@ class WAN(ABC):
 
     @abstractmethod
     def is_link_up(
-        self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+        self,
+        interface: str,
+        pattern: str = "BROADCAST,MULTICAST,UP",
     ) -> bool:
         """Return the link status.
 
@@ -115,15 +118,15 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def ping(
+    def ping(  # noqa: PLR0913
         self,
         ping_ip: str,
         ping_count: int = 4,
-        ping_interface: Optional[str] = None,
+        ping_interface: str | None = None,
         options: str = "",
         timeout: int = 50,
         json_output: bool = False,
-    ) -> Union[bool, dict]:
+    ) -> bool | dict:
         """Ping remote host.
 
         Return True if ping has 0% loss
@@ -142,9 +145,9 @@ class WAN(ABC):
     @abstractmethod
     def curl(
         self,
-        url: Union[str, IPv4Address],
+        url: str | IPv4Address,
         protocol: str,
-        port: Optional[Union[str, int]] = None,
+        port: str | int | None = None,
         options: str = "",
     ) -> bool:
         """Perform curl action to web service.
@@ -191,7 +194,7 @@ class WAN(ABC):
     def tshark_read_pcap(
         self,
         fname: str,
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
         timeout: int = 30,
         rm_pcap: bool = False,
     ) -> str:
@@ -217,14 +220,14 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def nmap(  # pylint: disable=too-many-arguments
+    def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         ipaddr: str,
         ip_type: str,
-        port: Optional[Union[str, int]] = None,
-        protocol: Optional[str] = None,
-        max_retries: Optional[int] = None,
-        min_rate: Optional[int] = None,
+        port: str | int | None = None,
+        protocol: str | None = None,
+        max_retries: int | None = None,
+        min_rate: int | None = None,
         opts: str = None,
     ) -> dict:
         """Perform nmap operation on linux device.
@@ -253,7 +256,10 @@ class WAN(ABC):
     @contextmanager
     @abstractmethod
     def tcpdump_capture(
-        self, fname: str, interface: str = "any", additional_args: Optional[str] = None
+        self,
+        fname: str,
+        interface: str = "any",
+        additional_args: str | None = None,
     ) -> Generator[str, None, None]:
         """Capture packets from specified interface.
 
@@ -288,7 +294,10 @@ class WAN(ABC):
 
     @abstractmethod
     def connect_to_board_via_reverse_ssh(
-        self, rssh_username: str, rssh_password: Optional[str], reverse_ssh_port: str
+        self,
+        rssh_username: str,
+        rssh_password: str | None,
+        reverse_ssh_port: str,
     ) -> None:
         """Perform reverse SSH from jump server to CPE.
 
@@ -304,7 +313,7 @@ class WAN(ABC):
     @abstractmethod
     def get_network_statistics(
         self,
-    ) -> Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]:
+    ) -> dict[str, Any] | list[dict[str, Any]] | Iterator[dict[str, Any]]:
         """Execute netstat command to get the port status.
 
         :return: parsed output of netstat command

@@ -9,9 +9,9 @@ from enum import Enum
 from io import StringIO
 from ipaddress import IPv6Address, ip_address
 from time import sleep
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
-import pandas
+import pandas as pd
 
 from boardfarm3.exceptions import MulticastError
 
@@ -67,10 +67,10 @@ class IPerfStream:
 class IPerfResult:
     """Store results of IPerf server session."""
 
-    _data: Optional[pandas.DataFrame]
+    _data: pd.DataFrame | None
 
     @property
-    def bandwidth(self) -> Optional[str]:
+    def bandwidth(self) -> str | None:
         """Return resultant bandwidth in Mbps.
 
         :return: resultant bandwidth, None if iperf failed
@@ -83,7 +83,7 @@ class IPerfResult:
         )
 
     @property
-    def total_loss(self) -> Optional[str]:
+    def total_loss(self) -> str | None:
         """Return no. of datagrams lost.
 
         :return: resultant total loss, None if iperf failed
@@ -92,7 +92,7 @@ class IPerfResult:
         return str(self._data["lost"].iloc[-1]) if self._data is not None else None
 
     @property
-    def result(self) -> Optional[pandas.DataFrame]:
+    def result(self) -> pd.DataFrame | None:
         """Return the entire result as a dataframe.
 
         :return: iperf result in tablular format, None if iperf failed
@@ -209,13 +209,14 @@ class Multicast:
         for _index, line in enumerate(output_lines):
             if "This could be dangerous." in line:
                 break
-        results = output_lines[
-            _index + 1 :  # pylint: disable=undefined-loop-variable # noqa: E203
-        ]
+        results = output_lines[_index + 1 :]  # pylint: disable=undefined-loop-variable
         return [tuple(line.strip().split(",")) for line in results]
 
     def parse_mcast_trace(
-        self, fname: str, expected_sequence: list[tuple[str, ...]], ip_version: int = 4
+        self,
+        fname: str,
+        expected_sequence: list[tuple[str, ...]],
+        ip_version: int = 4,
     ) -> list[tuple[str, ...]]:
         """Compare captured PCAP file against an expected sequence of packets.
 
@@ -270,12 +271,13 @@ class Multicast:
         :return: matched captured sequence against the expected sequence
         :rtype: list[tuple[str, ...]]
         """
-        if ip_version == 4:
+        if ip_version == 4:  # noqa: PLR2004
             captured_sequence = self._read_mcast_ipv4_trace(fname)
-        elif ip_version == 6:
+        elif ip_version == 6:  # noqa: PLR2004
             captured_sequence = self._read_mcast_ipv6_trace(fname)
         else:
-            raise ValueError(f"Invalid IP version: {ip_version}")
+            msg = f"Invalid IP version: {ip_version}"
+            raise ValueError(msg)
         last_check = 0
         final_result = []
         for packet in expected_sequence:
@@ -308,18 +310,25 @@ class Multicast:
 
     def _iperf_session_check(self, multicast_address: str, port: int) -> None:
         if not ip_address(multicast_address).is_multicast:
-            raise ValueError(f"{multicast_address} is not a multicast address")
+            msg = f"{multicast_address} is not a multicast address"
+            raise ValueError(msg)
         # check before running that there should be no iperf sessions with same port
         if self._console.execute_command(
-            f"pgrep iperf -a | grep {port} | grep {multicast_address}"
+            f"pgrep iperf -a | grep {port} | grep {multicast_address}",
         ):
-            raise MulticastError(
+            msg = (
                 f"{self._device_name} already has an iperf session with "
                 f"port {port} and multicast address {multicast_address}"
             )
+            raise MulticastError(
+                msg,
+            )
 
     def join_iperf_multicast_ssm_group(
-        self, multicast_source_addr: str, multicast_group_addr: str, port: int
+        self,
+        multicast_source_addr: str,
+        multicast_group_addr: str,
+        port: int,
     ) -> IPerfSession:
         """Start an iperf server binding to a multicast address in background.
 
@@ -371,15 +380,17 @@ class Multicast:
         self._console.execute_command(
             f"iperf {ipv6_flag} -s -f m -u -U -p {port} "
             f"-B {multicast_group_addr} --ssm-host {multicast_source_addr} "
-            f"-i 1 -y C > {fname} &"
+            f"-i 1 -y C > {fname} &",
         )
         pid = self._console.execute_command(
-            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'"
+            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'",
         )
         return IPerfSession(None, pid, multicast_group_addr, port, fname)
 
     def join_iperf_multicast_asm_group(
-        self, multicast_group_addr: str, port: int
+        self,
+        multicast_group_addr: str,
+        port: int,
     ) -> IPerfSession:
         """Start an iperf server binding to a multicast address in background.
 
@@ -426,10 +437,10 @@ class Multicast:
         self._console.execute_command(
             f"iperf {ipv6_flag} -s -f m -u -U -p {port} "
             f"-B {multicast_group_addr} "
-            f"-i 1 -y C > {fname} &"
+            f"-i 1 -y C > {fname} &",
         )
         pid = self._console.execute_command(
-            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'"
+            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'",
         )
         return IPerfSession(None, pid, multicast_group_addr, port, fname)
 
@@ -449,13 +460,15 @@ class Multicast:
         :rtype: IPerfResult
         """
         if not self._console.execute_command(
-            f"pgrep iperf -a | grep {session.port}| grep {session.address}"
+            f"pgrep iperf -a | grep {session.port}| grep {session.address}",
         ):
             # Something is wrong, there should be a process ID always.
+            msg = (
+                f"iperf session with port {session.port} and {session.address} "
+                f"multicast group does not exist on {self._device_name}"
+            )
             raise MulticastError(
-                f"iperf session with port {session.port} "
-                f"and {session.address} multicast group does "
-                f"not exist on {self._device_name}"
+                msg,
             )
         # kill -15 iperf session
         self._console.execute_command(f"kill -15 {session.pid}")
@@ -465,7 +478,7 @@ class Multicast:
         if not output.strip():
             return IPerfResult(None)
 
-        csv = pandas.read_csv(StringIO(output.strip()))
+        csv = pd.read_csv(StringIO(output.strip()))
         cols = [
             "timestamp",
             "source_address",
@@ -480,10 +493,14 @@ class Multicast:
             "lost",
             "total",
         ]
-        return IPerfResult(pandas.DataFrame(csv.iloc[:, :-2].values, columns=cols))
+        return IPerfResult(pd.DataFrame(csv.iloc[:, :-2].values, columns=cols))
 
     def start_iperf_multicast_stream(
-        self, multicast_group_addr: str, port: int, time: int, bit_rate: float
+        self,
+        multicast_group_addr: str,
+        port: int,
+        time: int,
+        bit_rate: float,
     ) -> IPerfStream:
         """Start an iperf client sending data on multicast address in background.
 
@@ -522,10 +539,10 @@ class Multicast:
         self._console.execute_command(
             f"iperf {ipv6_flag} -u -f m -c {multicast_group_addr} "
             f"-p {port} --ttl 5 "
-            f"-t {time} -b {bit_rate}m > {fname} &"
+            f"-t {time} -b {bit_rate}m > {fname} &",
         )
         pid = self._console.execute_command(
-            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'"
+            f"pgrep iperf -a | grep {port} | awk '{{print$1}}'",
         )
         return IPerfStream(None, pid, multicast_group_addr, port, fname, time)
 
@@ -548,7 +565,7 @@ class Multicast:
         for _ in range(2):
             if not self._console.execute_command(
                 f"pgrep iperf -a | grep {iperf_stream.port}| grep"
-                f" {iperf_stream.address}"
+                f" {iperf_stream.address}",
             ):
                 break
             sleep(1)
@@ -557,13 +574,18 @@ class Multicast:
             self._console.execute_command(f"kill -9 {iperf_stream.pid}")
         self._console.execute_command(f"rm {iperf_stream.output_file}")
         if is_stream_still_running:
+            msg = (
+                f"{iperf_stream.address}:{iperf_stream.port} did not exit "
+                "within {iperf_stream.time}s"
+            )
             raise MulticastError(
-                f"{iperf_stream.address}:{iperf_stream.port} did not exit within"
-                f" {iperf_stream.time}s"
+                msg,
             )
 
     def send_igmpv3_report(
-        self, mcast_group_record: MulticastGroupRecord, count: int
+        self,
+        mcast_group_record: MulticastGroupRecord,
+        count: int,
     ) -> None:
         """Send an IGMPv3 report with desired multicast record.
 
@@ -583,12 +605,15 @@ class Multicast:
         command = f"send_igmp_report -i {self._iface_dut} -c {count}"
         output = self._send_multicast_report(command, mcast_group_record)
         if f"Sent {count} packets" not in output:
+            msg = f"Failed to execute send_mld_report command:\n{output}"
             raise MulticastError(
-                f"Failed to execute send_mld_report command:\n{output}"
+                msg,
             )
 
     def send_mldv2_report(
-        self, mcast_group_record: MulticastGroupRecord, count: int
+        self,
+        mcast_group_record: MulticastGroupRecord,
+        count: int,
     ) -> None:
         """Send an MLDv2 report with desired multicast record.
 
@@ -608,12 +633,15 @@ class Multicast:
         command = f"send_mld_report -i {self._iface_dut} -c {count}"
         output = self._send_multicast_report(command, mcast_group_record)
         if f"Sent {count} packets" not in output:
+            msg = f"Failed to execute send_mld_report command:\n{output}"
             raise MulticastError(
-                f"Failed to execute send_mld_report command:\n{output}"
+                msg,
             )
 
     def _send_multicast_report(
-        self, command: str, mcast_group_record: MulticastGroupRecord
+        self,
+        command: str,
+        mcast_group_record: MulticastGroupRecord,
     ) -> str:
         args = ""
         for sources, group, rtype in mcast_group_record:
@@ -621,7 +649,8 @@ class Multicast:
             args += f'-mr "{src};{group};{rtype.value} "'
         output = self._console.execute_command(f"{command} {args}")
         if "Traceback" in output:
-            raise MulticastError(f"Failed to send the report!!\n{output}")
+            msg = f"Failed to send the report!!\n{output}"
+            raise MulticastError(msg)
         return output
 
     @property

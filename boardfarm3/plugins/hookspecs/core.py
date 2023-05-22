@@ -32,7 +32,8 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
 
 @hookspec(firstresult=True)
 def boardfarm_cmdline_parse(
-    argparser: ArgumentParser, cmdline_args: list[str]
+    argparser: ArgumentParser,
+    cmdline_args: list[str],
 ) -> Namespace:
     """Parse command line arguments.
 
@@ -62,7 +63,8 @@ def boardfarm_configure(cmdline_args: Namespace, plugin_manager: PluginManager) 
 
 @hookspec(firstresult=True)
 def boardfarm_reserve_devices(
-    cmdline_args: Namespace, plugin_manager: PluginManager
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
 ) -> dict[str, Any]:
     """Reserve devices before starting the deployment.
 
@@ -77,7 +79,9 @@ def boardfarm_reserve_devices(
 
 @hookspec(firstresult=True)
 def boardfarm_deploy_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
 ) -> DeviceManager:
     """Deploy all the devices to the environment.
 
@@ -94,7 +98,9 @@ def boardfarm_deploy_devices(
 
 @hookspec
 def boardfarm_post_deploy_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Call after all the devices are deployed to environment.
 

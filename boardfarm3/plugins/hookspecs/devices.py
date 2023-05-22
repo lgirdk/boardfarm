@@ -1,5 +1,4 @@
-"""
-Boardfarm device hook specifications.
+"""Boardfarm device hook specifications.
 
 A Boardfarm device should belong to one of the following categories:
 
@@ -48,7 +47,9 @@ from boardfarm3.lib.device_manager import DeviceManager
 
 @hookspec(firstresult=True)
 def boardfarm_register_devices(
-    config: BoardfarmConfig, cmdline_args: Namespace, plugin_manager: PluginManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
 ) -> DeviceManager:
     """Register device to plugin manager.
 
@@ -82,7 +83,9 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
 
 @hookspec
 def validate_device_requirements(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Validate device requirements.
 
@@ -101,7 +104,9 @@ def validate_device_requirements(
 
 @hookspec
 def boardfarm_server_boot(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Boot boardfarm server device.
 
@@ -119,7 +124,9 @@ def boardfarm_server_boot(
 
 @hookspec
 def boardfarm_server_configure(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Configure boardfarm server device.
 
@@ -137,7 +144,9 @@ def boardfarm_server_configure(
 
 @hookspec
 def boardfarm_device_boot(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Boot boardfarm device.
 
@@ -155,7 +164,9 @@ def boardfarm_device_boot(
 
 @hookspec
 def boardfarm_device_configure(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Configure boardfarm device.
 
@@ -173,7 +184,9 @@ def boardfarm_device_configure(
 
 @hookspec
 def boardfarm_attached_device_boot(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Boot boardfarm attached device.
 
@@ -191,7 +204,9 @@ def boardfarm_attached_device_boot(
 
 @hookspec
 def boardfarm_attached_device_configure(
-    config: BoardfarmConfig, cmdline_args: Namespace, device_manager: DeviceManager
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
 ) -> None:
     """Configure boardfarm attached device.
 

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator
 from contextlib import contextmanager
-from ipaddress import IPv4Address
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from ipaddress import IPv4Address
+
     from boardfarm3.lib.multicast import Multicast
     from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
@@ -50,7 +51,9 @@ class LAN(ABC):
 
     @abstractmethod
     def start_ipv4_lan_client(
-        self, wan_gw: Optional[Union[str, IPv4Address]] = None, prep_iface: bool = False
+        self,
+        wan_gw: str | IPv4Address | None = None,
+        prep_iface: bool = False,
     ) -> str:
         """Restart ipv4 dhclient to obtain IP.
 
@@ -64,7 +67,9 @@ class LAN(ABC):
 
     @abstractmethod
     def start_ipv6_lan_client(
-        self, wan_gw: Optional[Union[str, IPv4Address]] = None, prep_iface: bool = False
+        self,
+        wan_gw: str | IPv4Address | None = None,
+        prep_iface: bool = False,
     ) -> str:
         """Restart ipv6 dhclient to obtain IP.
 
@@ -87,7 +92,9 @@ class LAN(ABC):
 
     @abstractmethod
     def is_link_up(
-        self, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+        self,
+        interface: str,
+        pattern: str = "BROADCAST,MULTICAST,UP",
     ) -> bool:
         """Return the link status.
 
@@ -140,15 +147,15 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def ping(
+    def ping(  # noqa: PLR0913
         self,
         ping_ip: str,
         ping_count: int = 4,
-        ping_interface: Optional[str] = None,
+        ping_interface: str | None = None,
         options: str = "",
         timeout: int = 50,
         json_output: bool = False,
-    ) -> Union[bool, dict[str, Any]]:
+    ) -> bool | dict[str, Any]:
         """Ping remote host.
 
         Return True if ping has 0% loss
@@ -209,7 +216,10 @@ class LAN(ABC):
     @contextmanager
     @abstractmethod
     def tcpdump_capture(
-        self, fname: str, interface: str = "any", additional_args: Optional[str] = None
+        self,
+        fname: str,
+        interface: str = "any",
+        additional_args: str | None = None,
     ) -> Generator[str, None, None]:
         """Capture packets from specified interface.
 
@@ -226,7 +236,7 @@ class LAN(ABC):
     def tshark_read_pcap(
         self,
         fname: str,
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
         timeout: int = 30,
         rm_pcap: bool = False,
     ) -> str:
@@ -243,11 +253,11 @@ class LAN(ABC):
     @abstractmethod
     def traceroute(
         self,
-        host_ip: Union[str, IPv4Address],
+        host_ip: str | IPv4Address,
         version: str = "",
         options: str = "",
         timeout: int = 60,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Return output of traceroute command.
 
         :param host_ip: destination ip
@@ -261,9 +271,9 @@ class LAN(ABC):
     @abstractmethod
     def curl(
         self,
-        url: Union[str, IPv4Address],
+        url: str | IPv4Address,
         protocol: str,
-        port: Optional[Union[str, int]] = None,
+        port: str | int | None = None,
         options: str = "",
     ) -> bool:
         """Perform curl action to web service.
@@ -319,7 +329,10 @@ class LAN(ABC):
 
     @abstractmethod
     def set_static_ip(
-        self, interface: str, ip_address: IPv4Address, netmask: IPv4Address
+        self,
+        interface: str,
+        ip_address: IPv4Address,
+        netmask: IPv4Address,
     ) -> None:
         """Set given static ip for the LAN.
 
@@ -344,14 +357,14 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def nmap(  # pylint: disable=too-many-arguments
+    def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         ipaddr: str,
         ip_type: str,
-        port: Optional[Union[str, int]] = None,
-        protocol: Optional[str] = None,
-        max_retries: Optional[int] = None,
-        min_rate: Optional[int] = None,
+        port: str | int | None = None,
+        protocol: str | None = None,
+        max_retries: int | None = None,
+        min_rate: int | None = None,
         opts: str = None,
     ) -> dict:
         """Perform nmap operation on linux device.

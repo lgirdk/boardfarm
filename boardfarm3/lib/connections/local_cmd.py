@@ -15,7 +15,7 @@ class LocalCmd(BoardfarmPexpect):
         conn_command: str,
         save_console_logs: bool,
         args: list[str] = None,
-        **kwargs: dict[str, Any],  # ignore other arguments
+        **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize local command connection.
 
@@ -32,12 +32,15 @@ class LocalCmd(BoardfarmPexpect):
             args = []
         super().__init__(name, conn_command, save_console_logs, args)
 
-    def execute_command(self, command: str, timeout: int = -1) -> str:
+    def execute_command(self, command: str, timeout: int = -1) -> str:  # noqa: ARG002
         """Execute command in the local command session.
 
         :raises NotImplementedError: not supported in LocalCmd connection.
         """
-        raise NotImplementedError(
-            "LocalCmd connection doesn't support execute_command method. "
+        msg = (
+            "LocalCmd connection does not support execute_command method. "
             "Please use other connection types which supports it."
+        )
+        raise NotImplementedError(
+            msg,
         )

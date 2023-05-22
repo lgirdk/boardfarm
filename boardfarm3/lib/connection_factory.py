@@ -11,7 +11,9 @@ from boardfarm3.lib.connections.ssh_connection import SSHConnection
 
 
 def connection_factory(
-    connection_type: str, connection_name: str, **kwargs: Any
+    connection_type: str,
+    connection_name: str,
+    **kwargs: Any,  # noqa: ANN401
 ) -> BoardfarmPexpect:
     """Return connection of given type.
 
@@ -28,7 +30,8 @@ def connection_factory(
         "ser2net": Ser2NetConnection,
     }
     if connection_type not in connection_dispatcher:
-        raise EnvConfigError(f"Unsupported connection type: {connection_type}")
+        msg = f"Unsupported connection type: {connection_type}"
+        raise EnvConfigError(msg)
     if connection_type == "ssh_connection":
         kwargs.pop("password")
     return connection_dispatcher[connection_type](connection_name, **kwargs)

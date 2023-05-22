@@ -5,12 +5,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator
 from contextlib import contextmanager
-from ipaddress import IPv4Address, IPv4Network
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+    from ipaddress import IPv4Address, IPv4Network
+
     from boardfarm3.lib.multicast import Multicast
 
 
@@ -180,9 +181,9 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
     def wifi_client_connect(
         self,
         ssid_name: str,
-        password: Optional[str] = None,
-        security_mode: Optional[str] = None,
-        bssid: Optional[str] = None,
+        password: str | None = None,
+        security_mode: str | None = None,
+        bssid: str | None = None,
     ) -> None:
         """Scan for SSID and verify wifi connectivity.
 
@@ -251,14 +252,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
-    def nmap(  # pylint: disable=too-many-arguments
+    def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         ipaddr: str,
         ip_type: str,
-        port: Optional[Union[str, int]] = None,
-        protocol: Optional[str] = None,
-        max_retries: Optional[int] = None,
-        min_rate: Optional[int] = None,
+        port: str | int | None = None,
+        protocol: str | None = None,
+        max_retries: int | None = None,
+        min_rate: int | None = None,
         opts: str = None,
     ) -> dict:
         """Perform nmap operation on linux device.
@@ -287,7 +288,10 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
     @contextmanager
     @abstractmethod
     def tcpdump_capture(
-        self, fname: str, interface: str = "any", additional_args: Optional[str] = None
+        self,
+        fname: str,
+        interface: str = "any",
+        additional_args: str | None = None,
     ) -> Generator[str, None, None]:
         """Capture packets from specified interface.
 

@@ -47,8 +47,9 @@ class PythonExecutor:
             self._console.expect(self._py_prompt)
 
         if "Traceback" in out:
+            msg = f"Failed to execute on python console command:\n{cmd}\nOutput:{out}"
             raise DeviceConnectionError(
-                f"Failed to execute on python console command:\n{cmd}\nOutput:{out}"
+                msg,
             )
 
         return out

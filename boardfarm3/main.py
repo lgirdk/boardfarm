@@ -24,7 +24,7 @@ def get_plugin_manager() -> PluginManager:
     :return: boardfarm plugin manager
     :rtype: PluginManager
     """
-    global _BOARDFARM_PLUGIN_MANAGER  # pylint: disable=global-statement
+    global _BOARDFARM_PLUGIN_MANAGER  # pylint: disable=global-statement  # noqa: PLW0603, E501
     if _BOARDFARM_PLUGIN_MANAGER is not None:
         return _BOARDFARM_PLUGIN_MANAGER
     plugin_manager = PluginManager(PROJECT_NAME)
@@ -42,22 +42,29 @@ def main() -> None:
     plugin_manager = get_plugin_manager()
     plugin_manager.hook.boardfarm_add_cmdline_args(argparser=argparser)
     cmdline_args = plugin_manager.hook.boardfarm_cmdline_parse(
-        argparser=argparser, cmdline_args=sys.argv[1:]
+        argparser=argparser,
+        cmdline_args=sys.argv[1:],
     )
     plugin_manager.hook.boardfarm_configure(
-        cmdline_args=cmdline_args, plugin_manager=plugin_manager
+        cmdline_args=cmdline_args,
+        plugin_manager=plugin_manager,
     )
     inventory_config = plugin_manager.hook.boardfarm_reserve_devices(
-        cmdline_args=cmdline_args, plugin_manager=plugin_manager
+        cmdline_args=cmdline_args,
+        plugin_manager=plugin_manager,
     )
     config = parse_boardfarm_config(inventory_config, cmdline_args.env_config)
     deployment_status: dict[str, Any] = {}
     try:
         device_manager = plugin_manager.hook.boardfarm_deploy_devices(
-            config=config, cmdline_args=cmdline_args, plugin_manager=plugin_manager
+            config=config,
+            cmdline_args=cmdline_args,
+            plugin_manager=plugin_manager,
         )
         plugin_manager.hook.boardfarm_post_deploy_devices(
-            config=config, cmdline_args=cmdline_args, device_manager=device_manager
+            config=config,
+            cmdline_args=cmdline_args,
+            device_manager=device_manager,
         )
         deployment_status = {"status": "success"}
     except Exception:  # pylint: disable=broad-except

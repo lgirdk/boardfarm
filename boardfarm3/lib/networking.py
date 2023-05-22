@@ -3,7 +3,7 @@
 import re
 from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Any, DefaultDict, Literal, Optional, Protocol, Union
+from typing import Any, Literal, Optional, Protocol, Union
 
 import pexpect
 from bs4 import BeautifulSoup
@@ -51,7 +51,7 @@ class _LinuxConsole(Protocol):
         """
 
 
-def start_tcpdump(
+def start_tcpdump(  # noqa: PLR0913
     console: _LinuxConsole,
     interface: str,
     port: Optional[str],
@@ -87,7 +87,8 @@ def start_tcpdump(
     else:
         output = console.execute_command(f"{command} {filter_str} &")
     if console.expect_exact([f"tcpdump: listening on {interface}", pexpect.TIMEOUT]):
-        raise ValueError(f"Failed to start tcpdump on {interface}")
+        msg = f"Failed to start tcpdump on {interface}"
+        raise ValueError(msg)
     return re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", output)[2]
 
 
@@ -102,10 +103,11 @@ def stop_tcpdump(console: _LinuxConsole, process_id: str) -> None:
     """
     console.execute_command(f"kill {process_id}")
     if console.expect_exact(["packets captured", pexpect.TIMEOUT]):
-        raise ValueError(f"Failed to stop tcpdump process with PID {process_id}")
+        msg = f"Failed to stop tcpdump process with PID {process_id}"
+        raise ValueError(msg)
 
 
-def tcpdump_read(
+def tcpdump_read(  # noqa: PLR0913
     console: _LinuxConsole,
     capture_file: str,
     protocol: str = "",
@@ -133,14 +135,15 @@ def tcpdump_read(
     if opts:
         protocol = f"{protocol} and {opts}"
     tcpdump_output = console.execute_command(
-        f"tcpdump -n -r {capture_file} {protocol}", timeout=timeout
+        f"tcpdump -n -r {capture_file} {protocol}",
+        timeout=timeout,
     )
     if rm_pcap:
         console.execute_command(f"rm {capture_file}")
     return tcpdump_output
 
 
-def scp(  # pylint: disable=too-many-arguments
+def scp(  # pylint: disable=too-many-arguments  # noqa: PLR0913
     console: _LinuxConsole,
     host: str,
     port: Union[int, str],
@@ -190,11 +193,15 @@ def scp(  # pylint: disable=too-many-arguments
     if console.expect([pexpect.TIMEOUT, "assword:"], timeout=10):
         console.sendline(password)
     if console.expect_exact(["100%", pexpect.TIMEOUT], timeout=timeout):
-        raise SCPConnectionError(f"Failed to scp from {src_path} to {dst_path}")
+        msg = f"Failed to scp from {src_path} to {dst_path}"
+        raise SCPConnectionError(msg)
 
 
 def traceroute_host(
-    console: _LinuxConsole, host_ip: str, version: str = "", options: str = ""
+    console: _LinuxConsole,
+    host_ip: str,
+    version: str = "",
+    options: str = "",
 ) -> str:
     """Traceroute given host ip and return the details.
 
@@ -210,7 +217,8 @@ def traceroute_host(
     :rtype: str
     """
     return console.execute_command(
-        f"traceroute{version} {options} {host_ip}", timeout=90
+        f"traceroute{version} {options} {host_ip}",
+        timeout=90,
     )
 
 
@@ -226,7 +234,9 @@ class IptablesFirewall:
         self._console = console
 
     def get_iptables_list(
-        self, opts: str = "", extra_opts: str = ""
+        self,
+        opts: str = "",
+        extra_opts: str = "",
     ) -> dict[str, list[dict]]:
         """Return iptables rules as dictionary.
 
@@ -238,7 +248,7 @@ class IptablesFirewall:
         :rtype: Dict[str, List[Dict]]
         """
         return IptablesParser().ip6tables(
-            self._console.execute_command(f"iptables {opts} {extra_opts}")
+            self._console.execute_command(f"iptables {opts} {extra_opts}"),
         )
 
     def is_iptable_empty(self, opts: str = "", extra_opts: str = "") -> bool:
@@ -254,7 +264,9 @@ class IptablesFirewall:
         return any(self.get_iptables_list(opts, extra_opts).values())
 
     def get_ip6tables_list(
-        self, opts: str = "", extra_opts: str = ""
+        self,
+        opts: str = "",
+        extra_opts: str = "",
     ) -> dict[str, list[dict]]:
         """Return ip6tables rules as dictionary.
 
@@ -266,7 +278,7 @@ class IptablesFirewall:
         :rtype: Dict[str, List[Dict]]
         """
         return IptablesParser().ip6tables(
-            self._console.execute_command(f"ip6tables {opts} {extra_opts}")
+            self._console.execute_command(f"ip6tables {opts} {extra_opts}"),
         )
 
     def is_ip6table_empty(self, opts: str = "", extra_opts: str = "") -> bool:
@@ -291,16 +303,19 @@ class IptablesFirewall:
         :raises ValueError: on given iptables rule can't be added
         """
         iptables_output = self._console.execute_command(
-            f"iptables -C INPUT {option} {valid_ip} -j DROP"
+            f"iptables -C INPUT {option} {valid_ip} -j DROP",
         )
         if re.search(rf"host\/network.*{valid_ip}.*not found", iptables_output):
+            msg = (
+                "Firewall rule cannot be added as the ip address: "
+                f"{valid_ip} could not be found"
+            )
             raise ValueError(
-                f"Firewall rule cannot be added as the ip address: {valid_ip} could not"
-                " be found"
+                msg,
             )
         if "Bad rule" in iptables_output:
             self._console.execute_command(
-                f"iptables -I INPUT 1 {option} {valid_ip} -j DROP"
+                f"iptables -I INPUT 1 {option} {valid_ip} -j DROP",
             )
 
     def add_drop_rule_ip6tables(self, option: str, valid_ip: str) -> None:
@@ -313,16 +328,19 @@ class IptablesFirewall:
         :raises ValueError: on given ip6tables rule can't be added
         """
         ip6tables_output = self._console.execute_command(
-            f"ip6tables -C INPUT {option} {valid_ip} -j DROP"
+            f"ip6tables -C INPUT {option} {valid_ip} -j DROP",
         )
         if re.search(rf"host\/network.*{valid_ip}.*not found", ip6tables_output):
+            msg = (
+                "Firewall rule cannot be added as the ip address: "
+                f"{valid_ip} could not be found"
+            )
             raise ValueError(
-                f"Firewall rule cannot be added as the ip address: {valid_ip} could not"
-                " be found"
+                msg,
             )
         if "Bad rule" in ip6tables_output:
             self._console.execute_command(
-                f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP"
+                f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP",
             )
 
     def del_drop_rule_iptables(self, option: str, valid_ip: str) -> None:
@@ -358,7 +376,10 @@ class NSLookup:
         self._hw = console
 
     def __call__(
-        self, domain_name: str, opts: str = "", extra_opts: str = ""
+        self,
+        domain_name: str,
+        opts: str = "",
+        extra_opts: str = "",
     ) -> dict[str, Any]:
         """Run nslookup with given arguments and return the parsed results.
 
@@ -374,7 +395,10 @@ class NSLookup:
         return self.nslookup(domain_name, opts, extra_opts)
 
     def nslookup(
-        self, domain_name: str, opts: str = "", extra_opts: str = ""
+        self,
+        domain_name: str,
+        opts: str = "",
+        extra_opts: str = "",
     ) -> dict[str, Any]:
         """Run nslookup with given arguments and return the parsed results.
 
@@ -388,7 +412,7 @@ class NSLookup:
         :rtype: Dict[str, Any]
         """
         return NslookupParser().parse_nslookup_output(
-            self._hw.execute_command(f"nslookup {opts} {domain_name} {extra_opts}")
+            self._hw.execute_command(f"nslookup {opts} {domain_name} {extra_opts}"),
         )
 
 
@@ -397,7 +421,7 @@ class DNS:
     """Holds DNS names and their addresses."""
 
     # pylint: disable=too-many-arguments
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         console: _LinuxConsole,
         device_name: str,
@@ -426,10 +450,10 @@ class DNS:
         """
         self.auxv4 = ipv4_aux_address
         self.auxv6 = ipv6_aux_address
-        self.dnsv4: DefaultDict = defaultdict(list)
-        self.dnsv6: DefaultDict = defaultdict(list)
-        self.hosts_v4: DefaultDict = defaultdict(list)
-        self.hosts_v6: DefaultDict = defaultdict(list)
+        self.dnsv4: defaultdict = defaultdict(list)
+        self.dnsv6: defaultdict = defaultdict(list)
+        self.hosts_v4: defaultdict = defaultdict(list)
+        self.hosts_v6: defaultdict = defaultdict(list)
         self.fqdn = f"{device_name}.boardfarm.com"
         self._add_dns_addresses(ipv4_address, ipv6_address)
         self._add_aux_dns_addresses(aux_url)
@@ -438,7 +462,9 @@ class DNS:
         self.nslookup = NSLookup(console)
 
     def _add_dns_addresses(
-        self, ipv4_address: Optional[str], ipv6_address: Optional[str]
+        self,
+        ipv4_address: Optional[str],
+        ipv6_address: Optional[str],
     ) -> None:
         if ipv4_address is not None:
             self.dnsv4[self.fqdn].append(ipv4_address)
@@ -501,7 +527,8 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _parse_response(response: str) -> tuple[str, str, str]:
         if "Connection refused" in response or "Connection timed out" in response:
-            raise UseCaseFailure(f"Curl Failure due to the following reason {response}")
+            msg = f"Curl Failure due to the following reason {response}"
+            raise UseCaseFailure(msg)
         raw = re.findall(r"\<(\!DOC|head).*\>", response, re.S)[0]
         code = re.findall(r"< HTTP\/.*\s(\d+)", response)[0]
         beautified_text = BeautifulSoup(raw, "html.parser").prettify()
@@ -521,7 +548,7 @@ def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
     :rtype: HTTPResult
     """
     return HTTPResult(
-        console.execute_command(f"curl -v --connect-timeout {timeout} {url}")
+        console.execute_command(f"curl -v --connect-timeout {timeout} {url}"),
     )
 
 
@@ -539,7 +566,9 @@ def dns_lookup(console: _LinuxConsole, domain_name: str) -> list[dict[str, Any]]
 
 
 def is_link_up(
-    console: _LinuxConsole, interface: str, pattern: str = "BROADCAST,MULTICAST,UP"
+    console: _LinuxConsole,
+    interface: str,
+    pattern: str = "BROADCAST,MULTICAST,UP",
 ) -> bool:
     """Check given interface is up or not.
 

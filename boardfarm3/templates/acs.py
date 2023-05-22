@@ -34,7 +34,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def SPA(
+    def SPA(  # noqa: PLR0913
         self,
         param: Union[list[dict], dict],
         notification_param: bool = True,
@@ -154,7 +154,10 @@ class ACS(ABC):
 
     @abstractmethod
     def AddObject(
-        self, param: str, param_key: str = "", cpe_id: Optional[str] = None
+        self,
+        param: str,
+        param_key: str = "",
+        cpe_id: Optional[str] = None,
     ) -> list[dict]:
         """Execute AddOjbect RPC call for the specified parameter.
 
@@ -171,7 +174,10 @@ class ACS(ABC):
 
     @abstractmethod
     def DelObject(
-        self, param: str, param_key: str = "", cpe_id: Optional[str] = None
+        self,
+        param: str,
+        param_key: str = "",
+        cpe_id: Optional[str] = None,
     ) -> list[dict]:
         """Execute DeleteObject RPC call for the specified parameter.
 
@@ -244,7 +250,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def Download(  # pylint: disable=too-many-arguments
+    def Download(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         url: str,
         filetype: str = "1 Firmware Upgrade Image",

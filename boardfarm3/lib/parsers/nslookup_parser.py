@@ -37,7 +37,8 @@ class NslookupParser:
             elif "AAAA" in i:
                 dns_dict_obj["domain_name"] = re.search(r"(?:[\da-z\.-]+)\.(\w+)", i)[0]
                 dns_dict_obj["domain_ipv6_addr"] = re.findall(
-                    AllValidIpv6AddressesRegex, i
+                    AllValidIpv6AddressesRegex,
+                    i,
                 )
         assert dns_dict_obj, f"Error response: {response}"
         return dns_dict_obj

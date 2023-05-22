@@ -12,7 +12,10 @@ class SNMPv2:
     """SNMP v2 module for SNMP communication."""
 
     def __init__(
-        self, device: WAN, target_ip: str, mibs_compiler: MibsCompiler
+        self,
+        device: WAN,
+        target_ip: str,
+        mibs_compiler: MibsCompiler,
     ) -> None:
         """Initialize SNMPv2.
 
@@ -35,10 +38,11 @@ class SNMPv2:
             try:
                 oid = self._mibs_compiler.get_mib_oid(mib_name)
             except ValueError as exception:
-                raise SNMPError(f"MIB not available, Error: {exception}") from exception
+                msg = f"MIB not available, Error: {exception}"
+                raise SNMPError(msg) from exception
         return oid
 
-    def snmpget(
+    def snmpget(  # noqa: PLR0913
         self,
         mib_name: str,
         index: int = 0,
@@ -65,13 +69,18 @@ class SNMPv2:
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
-        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
+        oid = self._get_mib_oid(mib_name) + f".{index!s}"
         output = self._run_snmp_command(
-            "snmpget", community, oid, timeout, retries, extra_args=extra_args
+            "snmpget",
+            community,
+            oid,
+            timeout,
+            retries,
+            extra_args=extra_args,
         )
         return self._parse_snmp_output(oid, output)
 
-    def snmpset(  # pylint: disable=too-many-arguments
+    def snmpset(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         mib_name: str,
         value: str,
@@ -108,7 +117,7 @@ class SNMPv2:
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
-        oid = self._get_mib_oid(mib_name) + f".{str(index)}"
+        oid = self._get_mib_oid(mib_name) + f".{index!s}"
         if re.findall(r"\s", value.strip()) and stype == "s":
             value = f"{value!r}"
         if str(value).lower().startswith("0x"):
@@ -127,7 +136,7 @@ class SNMPv2:
         )
         return self._parse_snmp_output(oid, output, value)
 
-    def _run_snmp_command(  # pylint: disable=too-many-arguments
+    def _run_snmp_command(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         action: str,
         community: str,
@@ -138,11 +147,17 @@ class SNMPv2:
         extra_args: str = "",
     ) -> str:
         cmd = self._create_snmp_cmd(
-            action, community, timeout, retries, oid, set_value, extra_args
+            action,
+            community,
+            timeout,
+            retries,
+            oid,
+            set_value,
+            extra_args,
         )
         return self._device.execute_snmp_command(cmd)
 
-    def _create_snmp_cmd(  # pylint: disable=too-many-arguments
+    def _create_snmp_cmd(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         action: str,
         community: str,
@@ -160,7 +175,10 @@ class SNMPv2:
         )
 
     def _parse_snmp_output(
-        self, oid: str, output: str, value: str = None
+        self,
+        oid: str,
+        output: str,
+        value: str = None,
     ) -> tuple[str, str, str]:
         """Return the tuple with value, type of the value and snmp command output."""
         result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
@@ -169,14 +187,19 @@ class SNMPv2:
             raise SNMPError(output)
         if value:
             value = value.strip("'").strip("0x")
-            assert value in match[2], (
-                f"Set value did not match with output value: Expected: {value} Actual:"
-                f" {match[2]}"
-            )
+            if value not in match[2]:
+                err_msg = (
+                    "Set value did not match with output value: Expected: "
+                    f"{value} Actual: {match[2]}"
+                )
+                raise AssertionError(err_msg)
+
         return match[2].replace('"', ""), match[1], match.group()
 
     def _parse_snmpwalk_output(
-        self, oid: str, output: str
+        self,
+        oid: str,
+        output: str,
     ) -> tuple[dict[str, list[str]], str]:
         """Return list of dictionary of mib_oid as key and list(value, type) value."""
         result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
@@ -188,7 +211,7 @@ class SNMPv2:
             walk_key_value_dict[m[0]] = [m[2].replace('"', ""), m[1]]
         return walk_key_value_dict, output
 
-    def snmpwalk(
+    def snmpwalk(  # noqa: PLR0913
         self,
         mib_name: str,
         index: int = None,
@@ -220,12 +243,18 @@ class SNMPv2:
             try:
                 oid = self._get_mib_oid(mib_name)
                 if index:
-                    oid = oid + f".{str(index)}"
-            except Exception as exception:
-                raise SNMPError(f"MIB not available, Error: {exception}") from exception
+                    oid = oid + f".{index!s}"
+            except (ValueError, SNMPError) as exception:
+                msg = f"MIB not available, Error: {exception}"
+                raise SNMPError(msg) from exception
         else:
             oid = ""
         output = self._run_snmp_command(
-            "snmpwalk", community, oid, timeout, retries, extra_args=extra_args
+            "snmpwalk",
+            community,
+            oid,
+            timeout,
+            retries,
+            extra_args=extra_args,
         )
         return self._parse_snmpwalk_output(oid, output)

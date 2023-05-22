@@ -39,11 +39,16 @@ class MibsCompiler:
         mib_names = []
         for path in mibs_dirs:
             mib_names.extend(
-                [file.stem for file in Path(path).glob("**/*") if file.is_file()]
+                [file.stem for file in Path(path).glob("**/*") if file.is_file()],
             )
         return mib_names
 
-    def _callback(self, mib_name: str, json_data: str, _: Any) -> None:
+    def _callback(
+        self,
+        mib_name: str,
+        json_data: str,
+        _: Any,  # noqa: ANN401
+    ) -> None:
         _LOGGER.debug("Processing %s MIB", mib_name)
         for item, value in json.loads(json_data).items():
             # skip item that has no use
@@ -56,7 +61,9 @@ class MibsCompiler:
         :param mibs_dirs: mibs directories
         """
         mibs_compiler = MibCompiler(
-            SmiStarParser(), JsonCodeGen(), CallbackWriter(self._callback)
+            SmiStarParser(),
+            JsonCodeGen(),
+            CallbackWriter(self._callback),
         )
         # search for source MIBs here
         mibs_compiler.addSources(*(FileReader(x) for x in mibs_dirs))
@@ -77,4 +84,5 @@ class MibsCompiler:
             and "oid" in self._mibs_dict[mib_name]
         ):
             return self._mibs_dict[mib_name]["oid"]
-        raise ValueError(f"Unable to find OID of {mib_name!r} MIB")
+        msg = f"Unable to find OID of {mib_name!r} MIB"
+        raise ValueError(msg)

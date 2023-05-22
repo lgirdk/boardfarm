@@ -10,7 +10,7 @@ def singleton(cls: type[AnyClass]) -> AnyClass:
     """Allow a class to become a decorator."""
     instances = {}
 
-    def getinstance(*args: tuple, **kwargs: Any) -> AnyClass:
+    def getinstance(*args: tuple, **kwargs: Any) -> AnyClass:  # noqa: ANN401
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
 

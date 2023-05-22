@@ -61,7 +61,8 @@ class BoardfarmConfig:
         for device_config in self._merged_devices_config:
             if device_config.get("name") == device_name:
                 return device_config
-        raise EnvConfigError(f"{device_name} - Unknown device name")
+        msg = f"{device_name} - Unknown device name"
+        raise EnvConfigError(msg)
 
     def get_board_sku(self) -> str:
         """Return the env config ["environment_def"]["board"]["SKU"] value.
@@ -71,7 +72,8 @@ class BoardfarmConfig:
         try:
             return self.env_config["environment_def"]["board"]["SKU"]
         except (KeyError, AttributeError) as e:
-            raise EnvConfigError("Board SKU is not found in env config.") from e
+            msg = "Board SKU is not found in env config."
+            raise EnvConfigError(msg) from e
 
     def get_board_model(self) -> str:
         """Return the env config ["environment_def"]["board"]["model"].
@@ -81,8 +83,9 @@ class BoardfarmConfig:
         try:
             return self.env_config["environment_def"]["board"]["model"]
         except (KeyError, AttributeError) as e:
+            msg = "Unable to find board.model entry in env config."
             raise EnvConfigError(
-                "Unable to find board.model entry in env config."
+                msg,
             ) from e
 
     def get_prov_mode(self) -> str:
@@ -95,23 +98,29 @@ class BoardfarmConfig:
                 "eRouter_Provisioning_mode"
             ]
         except (KeyError, AttributeError) as e:
+            msg = "Unable to find eRouter_Provisioning_mode entry in env config."
             raise EnvConfigError(
-                "Unable to find eRouter_Provisioning_mode entry in env config."
+                msg,
             ) from e
 
 
 def _merge_with_wifi_config(
-    wifi_devices: list[dict[str, Any]], env_json_config: dict[str, Any]
+    wifi_devices: list[dict[str, Any]],
+    env_json_config: dict[str, Any],
 ) -> list[dict[str, Any]]:
     wifi_clients: list[dict[str, Any]] = get_value_from_dict(
-        "wifi_clients", env_json_config
+        "wifi_clients",
+        env_json_config,
     )
     if wifi_clients is None:
         return []
     if len(wifi_devices) < len(wifi_clients):
+        msg = (
+            f"Inventory config doesn't have {len(wifi_clients)} "
+            "Wi-Fi clients requested by env config"
+        )
         raise EnvConfigError(
-            f"Inventory config doesn't have {len(wifi_clients)} wifi clients"
-            " requested by env config"
+            msg,
         )
     merged_wifi_devices: list[dict[str, Any]] = []
     wifi_devices_copy = deepcopy(wifi_devices)
@@ -124,25 +133,33 @@ def _merge_with_wifi_config(
                 wifi_devices_copy.remove(wifi_device)
                 break
         else:
+            msg = (
+                f"Unable to find a wifi device for {wifi_client} "
+                "env config Wi-Fi client in inventory config"
+            )
             raise EnvConfigError(
-                f"Unable to find a wifi device for {wifi_client}"
-                " env config wifi client in inventory config"
+                msg,
             )
     return merged_wifi_devices
 
 
 def _merge_with_lan_config(
-    lan_devices: list[dict[str, Any]], env_json_config: dict[str, Any]
+    lan_devices: list[dict[str, Any]],
+    env_json_config: dict[str, Any],
 ) -> list[dict[str, Any]]:
     lan_clients: list[dict[str, str]] = get_value_from_dict(
-        "lan_clients", env_json_config
+        "lan_clients",
+        env_json_config,
     )
     if lan_clients is None:
         return []
     if len(lan_devices) < len(lan_clients):
+        msg = (
+            f"Inventory config doesn't have {len(lan_clients)} "
+            "LAN clients requested by env config"
+        )
         raise EnvConfigError(
-            f"Inventory config doesn't have {len(lan_clients)} lan clients"
-            " requested by env config"
+            msg,
         )
     return [
         lan_devices[index] | lan_client for index, lan_client in enumerate(lan_clients)
@@ -172,26 +189,30 @@ def get_invetory_config(resource_name: str, inventory_json_path: str) -> dict[st
     """
     full_inventory_config = _get_json(inventory_json_path)
     if resource_name not in full_inventory_config:
+        msg = f"{resource_name!r} resource not found in inventory config"
         raise EnvConfigError(
-            f"{resource_name!r} resource not found in inventory config"
+            msg,
         )
     inventory_config = full_inventory_config.get(resource_name)
     if "location" in inventory_config:
         if locations := full_inventory_config.get(
-            "locations", {}
+            "locations",
+            {},
         ):  # optional, lab dependent
             inventory_config["devices"] += locations[
                 inventory_config.pop("location")
             ].get("devices", [])
         else:
+            msg = f"{inventory_config['location']!r} invalid location config"
             raise EnvConfigError(
-                f"{inventory_config['location']!r} invalid location config"
+                msg,
             )
     return inventory_config
 
 
 def parse_boardfarm_config(  # pylint: disable=too-many-locals
-    inventory_config: dict[str, Any], env_json_path: str
+    inventory_config: dict[str, Any],
+    env_json_path: str,
 ) -> BoardfarmConfig:
     """Get environment config from given json files.
 
@@ -227,7 +248,7 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
         merged_devices_config.append(
             jsonmerge.merge(device, environment_def[device_name])
             if device_name in environment_def
-            else device
+            else device,
         )
     merged_devices_config += _merge_with_lan_config(lan_devices, env_json_config)
     merged_devices_config += _merge_with_wifi_config(wifi_devices, env_json_config)

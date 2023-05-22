@@ -34,7 +34,10 @@ class OptionsTable:
         :type title: Optional[str], optional
         """
         self._table = Table(
-            title=title, title_justify="center", box=HORIZONTALS, show_lines=True
+            title=title,
+            title_justify="center",
+            box=HORIZONTALS,
+            show_lines=True,
         )
         self._actions: dict[str, tuple[Callable, tuple[Any, ...], dict[str, Any]]] = {}
 
@@ -91,24 +94,28 @@ class OptionsTable:
         rich_print(self._table)
         while (
             option := Prompt.ask(
-                "Enter your choice:", choices=list(self._actions.keys()) + [exit_option]
+                "Enter your choice:",
+                choices=[*list(self._actions.keys()), exit_option],
             )
         ) != exit_option:
             self._actions[option][0](
-                *self._actions[option][1], **self._actions[option][2]
+                *self._actions[option][1],
+                **self._actions[option][2],
             )
             rich_print(self._table)
 
 
 def _start_interactive_session(
-    device_name: str, console_name: str, console: BoardfarmPexpect
+    device_name: str,
+    console_name: str,
+    console: BoardfarmPexpect,
 ) -> None:
     rich_print(
         f"[magenta]Entering into {console_name} ({device_name})."
-        " Press Ctrl + ] to exit."
+        " Press Ctrl + ] to exit.",
     )
     console.start_interactive_session()
-    print()  # fix for broken table after exiting the terminal
+    print()  # fix for broken table after exiting the terminal  # noqa: T201
 
 
 def _start_interactive_console(device: BoardfarmDevice) -> None:
@@ -116,7 +123,7 @@ def _start_interactive_console(device: BoardfarmDevice) -> None:
     if not consoles:
         rich_print(
             f"[red]No console available for {device.device_name}. Please try"
-            " another device.[/red]"
+            " another device.[/red]",
         )
         return
     if len(consoles) == 1:
@@ -148,7 +155,8 @@ def _get_device_console_options(
     ] = []
     devices = device_manager.get_devices_by_type(BoardfarmDevice).values()
     for index, device in enumerate(
-        sorted(devices, key=lambda item: item.device_name), start=1
+        sorted(devices, key=lambda item: item.device_name),
+        start=1,
     ):
         console_options.append(
             (
@@ -160,7 +168,7 @@ def _get_device_console_options(
                 _start_interactive_console,
                 (device,),
                 {},
-            )
+            ),
         )
     return console_options
 
@@ -186,12 +194,12 @@ def _interactive_ptpython_shell(
     __int = jedi.Interpreter
 
     # pylint: disable=protected-access
-    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]
+    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]  # noqa: SLF001, E501  # pylint: disable=line-too-long
 
     if cmdline_args.legacy:
         devices = Namespace(**device_manager.get_devices_by_type(BoardfarmDevice))
         rich_print(
-            f"[green]Use devices.<name> to access one of {list(vars(devices).keys())}"
+            f"[green]Use devices.<name> to access one of {list(vars(devices).keys())}",
         )
     embed(configure=_configure_repl)
 
@@ -220,7 +228,9 @@ def _run_boardfarm_tests() -> None:
 
 def _add_session_marker_in_console_logs() -> None:
     message = Prompt.ask(
-        "[magenta]Enter your message", default="---", show_default=False
+        "[magenta]Enter your message",
+        default="---",
+        show_default=False,
     )
     for (
         name,
@@ -228,12 +238,13 @@ def _add_session_marker_in_console_logs() -> None:
     ) in logging.root.manager.loggerDict.items():  # pylint: disable=no-member
         if isinstance(logger, logging.Logger) and "pexpect." in name:
             logger.debug("#" * 80)
-            logger.debug(f"#{message.upper(): ^78}#")
+            logger.debug("{log_msg}", extra={"log_msg": f"#{message.upper(): ^78}#"})
             logger.debug("#" * 80)
 
 
 def get_interactive_console_options(
-    device_manager: DeviceManager, cmdline_args: Namespace
+    device_manager: DeviceManager,
+    cmdline_args: Namespace,
 ) -> OptionsTable:
     """Return options table with all boardfarm interactive shell options.
 
