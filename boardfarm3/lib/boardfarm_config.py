@@ -181,7 +181,9 @@ def get_json(resource_name: str) -> dict[str, Any]:
     return cast(dict[str, Any], json.loads(json_dict))
 
 
-def get_invetory_config(resource_name: str, inventory_json_path: str) -> dict[str, Any]:
+def get_inventory_config(
+    resource_name: str, inventory_json_path: str
+) -> dict[str, Any]:
     """Return inventory config based on given arguments.
 
     :param resource_name: inventory resource name
