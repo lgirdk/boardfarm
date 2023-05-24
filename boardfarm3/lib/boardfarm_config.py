@@ -166,8 +166,14 @@ def _merge_with_lan_config(
     ]
 
 
-def _get_json(resource_name: str) -> dict[str, Any]:
-    json_dict: str
+def get_json(resource_name: str) -> dict[str, Any]:
+    """Get the inventory json either from a URL or a system path.
+
+    :param resource_name: inventory resource name
+    :type resource_name: str
+    :return: the inventory json from the specified path
+    :rtype: dict[str, Any]
+    """
     if resource_name.startswith(("http://", "https://")):
         json_dict = requests.get(resource_name, timeout=30).text
     else:
@@ -187,7 +193,7 @@ def get_invetory_config(resource_name: str, inventory_json_path: str) -> dict[st
     :return: inventory configuration
     :rtype: dict[str, Any]
     """
-    full_inventory_config = _get_json(inventory_json_path)
+    full_inventory_config = get_json(inventory_json_path)
     if resource_name not in full_inventory_config:
         msg = f"{resource_name!r} resource not found in inventory config"
         raise EnvConfigError(
@@ -225,7 +231,7 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
     """
     # disable jsonmerge debug logs
     logging.getLogger("jsonmerge").setLevel(logging.WARNING)
-    env_json_config = _get_json(env_json_path)
+    env_json_config = get_json(env_json_path)
     wifi_devices = [
         device
         for device in inventory_config["devices"]
