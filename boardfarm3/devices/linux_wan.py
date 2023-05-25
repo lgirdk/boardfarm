@@ -304,4 +304,4 @@ class LinuxWAN(LinuxDevice, WAN):
         :return: parsed output of netstat command
         :rtype: Union[dict[str, Any], list[dict[str, Any]], Iterator[dict[str, Any]]]
         """
-        return jc.parse("netstat", self._console.execute_command("netstat -a"))
+        return jc.parse("netstat", self._console.execute_command("netstat -an"))
