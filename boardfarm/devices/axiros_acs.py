@@ -248,7 +248,7 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
 
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
-
+        session.verify = False
         self.client = Client(
             wsdl=self.wsdl,
             transport=Transport(session=session, cache=InMemoryCache(timeout=3600 * 3)),
