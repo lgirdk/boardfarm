@@ -303,3 +303,21 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :yield: process id of tcpdump process
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def enable_ipv6(self, interface_name: str) -> None:
+        """Enable ipv6 on the specified interface.
+
+        :param interface_name: connected client interface name
+        :type interface_name: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def disable_ipv6(self, interface_name: str) -> None:
+        """Disable ipv6 on the specified interface.
+
+        :param interface_name: connected client interface name
+        :type interface_name: str
+        """
+        raise NotImplementedError
