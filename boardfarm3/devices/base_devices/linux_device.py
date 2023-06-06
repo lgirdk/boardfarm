@@ -388,7 +388,12 @@ class LinuxDevice(BoardfarmDevice):
         self._console.expect(self._shell_prompt, timeout=timeout)
 
         if json_output:
-            return jc.parsers.ping.parse(self._console.before)
+            # Remove trailing stray characters observed in certain device consoles
+            clean_console_output = self._console.before.replace(
+                f"pipe {ping_count}\r\n",
+                "",
+            )
+            return jc.parsers.ping.parse(clean_console_output)
 
         match = re.search(
             (
