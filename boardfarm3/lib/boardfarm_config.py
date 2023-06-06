@@ -182,7 +182,8 @@ def get_json(resource_name: str) -> dict[str, Any]:
 
 
 def get_inventory_config(
-    resource_name: str, inventory_json_path: str
+    resource_name: str,
+    inventory_json_path: str,
 ) -> dict[str, Any]:
     """Return inventory config based on given arguments.
 
