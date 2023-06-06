@@ -161,13 +161,20 @@ class DNS:
     impl_type = "feature"
 
     @contingency_impl
-    def service_check(self, env_req, dev_mgr):
+    def service_check(self, env_req, dev_mgr, env_helper):
         """Implement Contingency Hook for DNS."""
 
         logger.info("Executing DNS service check for BF")
 
         board = dev_mgr.by_type(device_type.DUT)
+        acs = dev_mgr.by_type(device_type.acs_server)
+
+        ipv4_address = acs.get_interface_ipaddr(acs.iface_dut)
+        ipv6_address = acs.get_interface_ip6addr(acs.iface_dut)
+        ipv4_address_aux = acs.get_interface_ipaddr(acs.aux_iface_dut)
+        ipv6_address_aux = acs.get_interface_ip6addr(acs.aux_iface_dut)
         dns_env = nested_lookup("DNS", env_req["environment_def"])
+        prov_mode = env_helper.get_prov_mode()
         if nested_lookup("ACS_SERVER", dns_env):
             acs_dns = dns_env[0]["ACS_SERVER"]
 
@@ -175,12 +182,26 @@ class DNS:
             output = board.dns.nslookup("acs_server.boardfarm.com")
             ipv4 = nested_lookup("ipv4", acs_dns)
             ipv6 = nested_lookup("ipv6", acs_dns)
-            total_reachable = (ipv4[0].get("reachable", 0) if ipv4 else 0) + (
-                ipv6[0].get("reachable", 0) if ipv6 else 0
-            )
-            total_unreachable = (ipv4[0].get("unreachable", 0) if ipv4 else 0) + (
-                ipv6[0].get("unreachable", 0) if ipv6 else 0
-            )
+
+            if ipv6[0].get("reachable", 0) > 0 and prov_mode == "ipv4":
+                output["domain_ip_addr"] = [
+                    ip
+                    for ip in output["domain_ip_addr"]
+                    if ip not in (ipv6_address, ipv6_address_aux)
+                ]
+            elif ipv4[0].get("reachable", 0) > 0 and prov_mode == "ipv6":
+                output["domain_ip_addr"] = [
+                    ip
+                    for ip in output["domain_ip_addr"]
+                    if ip not in (ipv4_address, ipv4_address_aux)
+                ]
+
+            total_reachable = (
+                ipv4[0].get("reachable", 0) if (ipv4 and prov_mode == "ipv4") else 0
+            ) + (ipv6[0].get("reachable", 0) if (ipv6 and prov_mode == "ipv6") else 0)
+            total_unreachable = (
+                ipv4[0].get("unreachable", 0) if (ipv4 and prov_mode == "ipv4") else 0
+            ) + (ipv6[0].get("unreachable", 0) if (ipv6 and prov_mode == "ipv6") else 0)
             if not board.domain_ip_reach_check(
                 total_reachable, total_unreachable, output
             ):
@@ -234,7 +255,6 @@ class ACS:
 
 
 class Cwmp:
-
     impl_type = "feature"
 
     @contingency_impl
@@ -252,7 +272,6 @@ class Cwmp:
 
 
 class Multicast:
-
     impl_type = "feature"
 
     @contingency_impl
