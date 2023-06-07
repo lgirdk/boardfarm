@@ -1,3 +1,13 @@
+## 2023.23.0 (2023-06-07)
+
+### Feat
+
+- **ubuntu_asterisk**: make changes to the dockerfile
+
+### Fix
+
+- acs do not verify ssl session
+
 ## 2023.21.0 (2023-05-24)
 
 ### Feat
