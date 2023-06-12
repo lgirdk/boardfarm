@@ -1286,3 +1286,16 @@ def ping(
         timeout=timeout,
         json_output=json_output,
     )
+
+
+def enable_ipv6(device: Union[DebianLAN, DebianWifi]) -> None:
+    """Enable ipv6 on the connected client interface.
+
+    The use case executes the following commands:
+        - sysctl net.ipv6.conf.<interface>.disable_ipv6=0
+        - sysctl net.ipv6.conf.<interface>.accept_ra=2
+
+    :param device: LAN or WLAN device object
+    :type device: Union[DebianLAN,DebianWifi]
+    """
+    device.enable_ipv6(device.iface_dut)
