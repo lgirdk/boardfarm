@@ -1299,3 +1299,15 @@ def enable_ipv6(device: Union[DebianLAN, DebianWifi]) -> None:
     :type device: Union[DebianLAN,DebianWifi]
     """
     device.enable_ipv6(device.iface_dut)
+
+
+def disable_ipv6(device: Union[DebianLAN, DebianWifi]) -> None:
+    """Disable ipv6 on the specified interface.
+
+    The use case executes the following commands:
+        - sysctl net.ipv6.conf.<interface>.disable_ipv6=1
+
+    :param device: LAN or WLAN device object
+    :type device: Union[DebianLAN, DebianWifi]
+    """
+    device.disable_ipv6(device.iface_dut)
