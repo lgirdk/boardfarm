@@ -321,3 +321,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type interface_name: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_macaddr(self, interface: str) -> str:
+        """Get the interface MAC address.
+
+        :param interface: interface name
+        :type interface: str
+        :return: mac address of the interface
+        :rtype: str
+        """
+        raise NotImplementedError
