@@ -1,5 +1,5 @@
 """Boardfarm core plugin."""
-
+import argparse
 from argparse import ArgumentParser, Namespace
 
 from pluggy import PluginManager
@@ -8,6 +8,22 @@ from boardfarm3 import hookimpl
 from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.lib.interactive_shell import get_interactive_console_options
 from boardfarm3.plugins.hookspecs import devices as Devices
+
+
+def _non_empty_str(arg: str) -> str:
+    """Type to check boardfarm/pytest command line arguments empty value.
+
+    :param arg: command line argument
+    :type arg: str
+    :raises argparse.ArgumentTypeError: raises argparse ArgumentTypeError
+      for empty argument values
+    :return: arg if the argument is non empty
+    :rtype: str
+    """
+    if arg:
+        return arg
+    message = "Argument value should not be empty"
+    raise argparse.ArgumentTypeError(message)
 
 
 @hookimpl
@@ -27,14 +43,21 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     :param argparser: argument parser
     :type argparser: ArgumentParser
     """
-    argparser.add_argument("--board-name", required=True, help="Board name")
+    argparser.add_argument(
+        "--board-name",
+        type=_non_empty_str,
+        required=True,
+        help="Board name",
+    )
     argparser.add_argument(
         "--env-config",
+        type=_non_empty_str,
         required=True,
         help="Environment JSON config file path",
     )
     argparser.add_argument(
         "--inventory-config",
+        type=_non_empty_str,
         required=True,
         help="Inventory JSON config file path",
     )
