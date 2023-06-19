@@ -124,7 +124,7 @@ class SNMPv2:
             value = value.upper()
             set_value = f"{stype} {value[2:]}"
         else:
-            set_value = f"{stype} {value}"
+            set_value = f"{stype} '{value}'"
         output = self._run_snmp_command(
             "snmpset",
             community,
