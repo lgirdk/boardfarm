@@ -1,0 +1,160 @@
+@startuml Boardfarm Current Flow
+hide empty description
+
+
+[*] --> Main : start boardfarm
+Main --> PluginManager : init
+Main --> ArgParser : init
+
+state CLIEnd <<end>>
+state "CLI Parsing Stage" as CLI {
+    state "entry" as entry_cli_stage <<entrypoint>>
+    state "exit" as exit_cli_stage <<exitpoint>>
+    PluginManager --> entry_cli_stage
+    ArgParser --> entry_cli_stage : passed to
+    AddCLIArgsHook --> ParseCLIArgsHook
+
+}
+ParseCLIArgsHook -right-> CLIEnd : if incorrect CLI\nargs are provided
+exit_cli_stage -left-> BoardfarmConfigure
+
+
+state ReserveEnd <<end>>
+state "Reserve Device Stage" as Reservation{
+    state reservechoice <<choice>>
+    state "exit" as exit_reservation_stage <<exitpoint>>
+    state "entry" as entry_reservation_stage <<entrypoint>>
+
+    BoardfarmConfigure -down-> entry_reservation_stage
+
+    ReserveDeviceHook --> reservechoice
+    reservechoice --> LockableResource : lockable-resource != None
+    reservechoice --> CLIArgs : lockable-resource == None
+}
+reservechoice -up-> ReserveEnd : if both are empty
+
+
+exit_reservation_stage --> ParseInventory
+
+state "Env Initialization Stage" as EnvInit{
+    state "entry" as entry_env_stage <<entrypoint>>
+    state "exit" as exit_env_stage <<exitpoint>>
+
+    state DeployDeviceHook ##[bold]red
+    note left of DeployDeviceHook
+            We should rename this.
+            It does not deploy but calls all booting hooks.
+    end note
+
+    ParseInventory --> entry_env_stage: start deploying
+
+    State "Booting stage" as Booting {
+        state skip_choice_server <<choice>>
+        state skip_choice_cpe <<choice>>
+        state skip_choice_addn <<choice>>
+
+        state RegisterHook ##[bold]red
+        state AddDeviceHook ##[bold]red
+
+        note left of RegisterHook
+            No device class will implement it.
+            So why do we have this as a Device Hook.
+        end note
+
+        note left of skip_choice_server
+            This check is happening as part of a
+            device hook implementation, when it should
+            be handled by the core.
+        end note
+
+        note right of skip_choice_cpe
+            This check is happening as part of a
+            device hook implementation, when it should
+            be handled by the core.
+        end note
+
+        note right of skip_choice_addn
+            This check is happening as part of a
+            device hook implementation, when it should
+            be handled by the core.
+        end note
+
+        RegisterHook -right-> AddDeviceHook
+        RegisterHook --> ValidateDeviceHook
+        ValidateDeviceHook -right-> ServerBootHook
+
+        ServerBootHook -[#red]-> skip_choice_server
+        skip_choice_server -[#red]-> SetupServer : skip_boot == False
+        skip_choice_server -right[#red]-> ServerConfigureHook : skip_boot == True
+        SetupServer -right-> ServerConfigureHook
+
+        ServerConfigureHook --> DeviceBootHook
+        DeviceBootHook -[#red]-> skip_choice_cpe
+        skip_choice_cpe -left[#red]-> BootCPE : skip_boot == False
+        skip_choice_cpe -[#red]-> DeviceConfigureHook : skip_boot == True
+        BootCPE --> DeviceConfigureHook
+
+        DeviceConfigureHook -left-> AddnDeviceBootHook
+        AddnDeviceBootHook -[#red]-> skip_choice_addn
+        skip_choice_addn -left[#red]-> BootAddnDevice : skip_boot == False
+        skip_choice_addn -[#red]-> AddnDeviceConfigureHook : skip_boot == True
+        BootAddnDevice --> AddnDeviceConfigureHook
+
+    }
+
+    state DeployDeviceHook ##[bold]red
+    note left of PostDeployHook
+            We should rename this.
+            Since we're actually perform Post Boot actions.
+    end note
+
+    DeployDeviceHook --> Booting
+    Booting --> PostDeployHook : return device_manager
+}
+
+
+state choice_output <<choice>>
+
+exit_env_stage --> choice_output : returns deployment status
+
+choice_output --> [*] : if deployment status fails
+
+state "Release Env Stage" as ReleaseEnv {
+    state "entry" as entry_release_stage <<entrypoint>>
+    state "exit" as exit_release_stage <<exitpoint>>
+
+    choice_output --> entry_release_stage
+    Booting --> entry_release_stage : on fail
+    PostDeployHook --> entry_release_stage : on fail
+    ReleaseDeviceHook --> DeviceShutdownHook : calls
+    note right of DeviceShutdownHook
+            If we have a device shutdown hook.
+            Shouldn't we have a device powerup hook?
+    end note
+}
+
+exit_release_stage -left-> [*] : successful\nexit
+
+
+PluginManager: init all BF plugins\nReads BF entry-points
+AddCLIArgsHook : boardfarm_add_cmdline_args()
+ParseCLIArgsHook : boardfarm_cmdline_parse()
+ReserveDeviceHook : boardfarm_reserve_devices()
+LockableResource : return board ID
+BoardfarmConfigure: boardfarm_configure()\nTBD, adds hook stages to the core
+CLIArgs : pick board-name from CLI
+ParseInventory : parse_boardfarm_config()\nParses INV.json for devices
+DeployDeviceHook : boardfarm_deploy_devices()\nCalling all device booting hooks
+PostDeployHook : boardfarm_post_deploy_devices()\nDisconnect disposable services
+RegisterHook : boardfarm_register_devices()\nShould be a Core hook not device hook
+AddDeviceHook : boardfarm_add_devices()\nShould be a core hook not device hook
+ValidateDeviceHook : validate_device_requirements()\nValidate against INV.json
+ServerBootHook : boardfarm_server_boot()\bBBoot servers
+ServerConfigureHook : boardfarm_server_configure()\nConfigure servers
+DeviceBootHook : boardfarm_device_boot()\nBoot CPE
+DeviceConfigureHook : boardfarm_device_configure()\nConfigure CPE
+AddnDeviceBootHook : boardfarm_attached_device_boot()\nBoot Extras
+AddnDeviceConfigureHook : boardfarm_attached_device_configure()\nConfigure Extras
+ReleaseDeviceHook: boardfarm_release_devices()\nRelease all devices
+DeviceShutdownHook: boardfarm_shutdown_device()\nShutdown connections
+@enduml
