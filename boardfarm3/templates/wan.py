@@ -293,12 +293,12 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def connect_to_board_via_reverse_ssh(
+    def is_connect_to_board_via_reverse_ssh_successful(
         self,
         rssh_username: str,
         rssh_password: str | None,
         reverse_ssh_port: str,
-    ) -> None:
+    ) -> bool:
         """Perform reverse SSH from jump server to CPE.
 
         :param rssh_username: username of the cpe
@@ -307,6 +307,8 @@ class WAN(ABC):
         :type rssh_password: Optional[str]
         :param reverse_ssh_port: the port number
         :type reverse_ssh_port: str
+        :return: True if the RSSH is successful, false otherwise
+        :rtype: bool
         """
         raise NotImplementedError
 
