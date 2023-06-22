@@ -121,8 +121,7 @@ class SNMPv2:
         if re.findall(r"\s", value.strip()) and stype == "s":
             value = f"{value!r}"
         if str(value).lower().startswith("0x"):
-            value = value.upper()
-            set_value = f"{stype} {value[2:]}"
+            set_value = f"{stype} '{value[2:].upper()}'"
         else:
             set_value = f"{stype} '{value}'"
         output = self._run_snmp_command(
