@@ -1,3 +1,10 @@
+## 2023.25.0 (2023-06-23)
+
+### Fix
+
+- **boardfarm/lib/hooks/contingency_checks.py**: acs contingency check has to be performed based on the provisioning mode
+- selenium < 4.10.0
+
 ## 2023.23.0 (2023-06-07)
 
 ### Feat
