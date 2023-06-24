@@ -391,19 +391,11 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def enable_ipv6(self, interface_name: str) -> None:
-        """Enable ipv6 on the specified interface.
-
-        :param interface_name: connected client interface name
-        :type interface_name: str
-        """
+    def enable_ipv6(self) -> None:
+        """Enable ipv6 on the connected client interface."""
         raise NotImplementedError
 
     @abstractmethod
-    def disable_ipv6(self, interface_name: str) -> None:
-        """Disable ipv6 on the specified interface.
-
-        :param interface_name: connected client interface name
-        :type interface_name: str
-        """
+    def disable_ipv6(self) -> None:
+        """Disable ipv6 on the connected client interface."""
         raise NotImplementedError
