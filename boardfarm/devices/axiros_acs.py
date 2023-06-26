@@ -4,14 +4,16 @@ import ipaddress
 import logging
 import os
 import re
+import tempfile
 import time
 import warnings
 import xml.dom.minidom
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 from xml.etree import ElementTree
 
 import pexpect
+import requests
 import xmltodict
 from debtcollector import moves
 from nested_lookup import nested_lookup
@@ -248,7 +250,8 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
 
         session = Session()
         session.auth = HTTPBasicAuth(self.username, self.password)
-        session.verify = False
+        self._certs = None
+        session.verify = self._get_certs(self.kwargs.get("certs"))
         self.client = Client(
             wsdl=self.wsdl,
             transport=Transport(session=session, cache=InMemoryCache(timeout=3600 * 3)),
@@ -287,6 +290,26 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "acs_servers"
+
+    def _get_certs(self, certs: Union[bool, str, None]) -> Union[bool, str]:
+        if certs is None:
+            # by default do not check (can be modified later)
+            return False
+        elif isinstance(certs, bool):
+            # if bool then return what's in the json
+            return certs
+        elif not isinstance(certs, str):
+            # if it's not a string, raise an exception
+            msg = f"'certs' not an str: {repr(certs)}"
+            raise ValueError(msg)
+        elif certs.startswith(("http://", "https://")):
+            # allow for an online file, the local ref to be deleted by tempfile
+            self._certs = tempfile.NamedTemporaryFile(mode="w")
+            self._certs.write(requests.get(certs, allow_redirects=True).text)
+            self._certs.seek(0)
+            return self._certs.name
+        # must be a local filename
+        return certs
 
     def connect(self, *args, **kwargs) -> None:
         """Connect to ACS & initialize session. Can be done using any http(s) library.
@@ -533,7 +556,6 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
             ParValsParsClassArray_data = self._get_pars_val_data(p_arr_type, list_kv)
 
         elif action == "GPN":
-
             p_arr_type = "ns0:GetParameterNamesArgumentsStruct"
             ParValsParsClassArray_data = self._get_pars_val_data(
                 p_arr_type, NextLevel=next_level, ParameterPath=param
