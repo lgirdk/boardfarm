@@ -260,7 +260,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         protocol: str | None = None,
         max_retries: int | None = None,
         min_rate: int | None = None,
-        opts: str = None,
+        opts: str | None = None,
     ) -> dict:
         """Perform nmap operation on linux device.
 

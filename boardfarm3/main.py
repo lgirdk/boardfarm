@@ -36,7 +36,10 @@ def get_plugin_manager() -> PluginManager:
 
 
 def main() -> None:
-    """Boardfarm main function."""
+    """Boardfarm main function.
+
+    :raises Exception: when the deployment fails
+    """
     logging.config.dictConfig(LOGGING_CONFIG)
     argparser = ArgumentParser(PROJECT_NAME)
     plugin_manager = get_plugin_manager()

@@ -66,22 +66,38 @@ class LinuxDevice(BoardfarmDevice):
 
     @property
     def _ipaddr(self) -> str:
-        """Management IP address of the device."""
+        """Management IP address of the device.
+
+        :return: ipaddress of the device
+        :rtype: str
+        """
         return self._config.get("ipaddr")
 
     @property
     def _port(self) -> str:
-        """Management connection port of the device."""
+        """Management connection port of the device.
+
+        :return: management connection port of the device
+        :rtype: str
+        """
         return self._config.get("port", "22")
 
     @property
     def _username(self) -> str:
-        """Management connection username."""
+        """Management connection username.
+
+        :return: management iface username
+        :rtype: str
+        """
         return self._config.get("username", "root")
 
     @property
     def _password(self) -> str:
-        """IP address of the device."""
+        """Management connection password.
+
+        :return: management iface password
+        :rtype: str
+        """
         return self._config.get("password", "bigfoot1")
 
     def _connect(self) -> None:
@@ -186,10 +202,8 @@ class LinuxDevice(BoardfarmDevice):
     def scp_local_file_to_device(self, local_path: str, destination_path: str) -> None:
         """Copy a local file to a server using SCP.
 
-        :param source: local file path
-        :param destination: destination path
-        :raises SCPConnectionError: when failed to perform SCP
-        :raises EnvConfigError: when given password is None
+        :param local_path: local file path
+        :param destination_path: destination path
         :raises SCPConnectionError: when SCP command return non-zero exit code
         """
         destination_path = (
@@ -309,22 +323,29 @@ class LinuxDevice(BoardfarmDevice):
         :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
         :type interface: str
         :param pattern: interface state
-        :type pattern: str, optional
+        :type pattern: str
         :return: True if the link is up
         :rtype: bool
         """
         return is_link_up(self._console, interface, pattern)
 
     def get_interface_ipv4addr(self, interface: str) -> str:
-        """Get ipv4 address of interface."""
+        """Get ipv4 address of interface.
+
+        :param interface: interface name
+        :type interface: str
+        :return: Global ipv4 address of the interface
+        :rtype: str
+        """
         return self._get_nw_interface_ipv4_address(interface)
 
     def get_interface_ipv6addr(self, interface: str) -> str:
         """Get ipv6 address of the interface.
 
         :param interface: interface name to get the link local
+        :type interface: str
         :return: Global ipv6 address of the interface
-        :raises BoardfarmException: in case ipv6 can not be found
+        :rtype: str
         """
         return self._get_nw_interface_ipv6_address(
             network_interface=interface,
@@ -336,7 +357,6 @@ class LinuxDevice(BoardfarmDevice):
 
         :param interface: interface name
         :return: Link local ipv6 address of the interface
-        :raises BoardfarmException: in case ipv6 can not be found
         """
         return self._get_nw_interface_ipv6_address(
             network_interface=interface,
@@ -445,7 +465,7 @@ class LinuxDevice(BoardfarmDevice):
         :param fname: name of the file where packet captures will be stored
         :param interface: name of the interface, defaults to "all"
         :param additional_args: arguments to tcpdump command, defaults to None
-        :return: process id of tcpdump process
+        :yield: process id of tcpdump process
         """
         process_id: str = ""
         command_str = f"tcpdump -U -i {interface} -n -w {fname} "
@@ -485,6 +505,8 @@ class LinuxDevice(BoardfarmDevice):
         :param timeout: time for tcpdump read command to complete, defaults to 30
         :param rm_pcap: if True remove packet capture file after read, defaults to False
         :return: console output from the command execution
+        :raises  FileNotFoundError: when file is not found
+        :raises BoardfarmException: when invalid filters are added
         """
         output = self._run_command_with_args(
             "tcpdump -n -r",
@@ -525,6 +547,8 @@ class LinuxDevice(BoardfarmDevice):
         :param timeout: timeout for tshark command to be executed, defaults to 30
         :param rm_pcap: If True remove the packet capture file after reading it
         :return: return tshark read command console output
+        :raises  FileNotFoundError: when file is not found
+        :raises BoardfarmException: when invalid filters are added
         """
         output = self._run_command_with_args(
             "tshark -r",
@@ -558,7 +582,14 @@ class LinuxDevice(BoardfarmDevice):
         additional_args: Optional[str],
         timeout: int,
     ) -> str:
-        """Run command with given arguments and return the output."""
+        """Run command with given arguments and return the output.
+
+        :param command: command to run
+        :param fname: name of the file in which captures are saved
+        :param additional_args:  additional arguments to run command
+        :param timeout: timout for the command
+        :return: return read command console output
+        """
         read_command = f"{command} {fname} "
         if additional_args:
             read_command += additional_args
@@ -618,6 +649,7 @@ class LinuxDevice(BoardfarmDevice):
         :param port: port number
         :param ip_version: ip version, 4 - IPv4, 6 - IPv6
         :return: pid number of the http service
+        :raises BoardfarmException: when http service ifails to start
         """
         cmd_output = self._console.execute_command(
             f"webfsd -F -p {port} -{ip_version} &",
@@ -631,6 +663,7 @@ class LinuxDevice(BoardfarmDevice):
         """Stop http service running on given port.
 
         :param port: port number
+        :raises BoardfarmException: when http service ifails to stop
         """
         ps_cmd = f"""ps auxwww | grep "webfsd -F -p {port}" | grep -v grep"""
         if not self._console.execute_command(ps_cmd).splitlines():

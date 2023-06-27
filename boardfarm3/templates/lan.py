@@ -101,7 +101,7 @@ class LAN(ABC):
         :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
         :type interface: str
         :param pattern: interface state
-        :type pattern: str, optional
+        :type pattern: str
         :return: True if the link is up
         :rtype: bool
         """
@@ -365,7 +365,7 @@ class LAN(ABC):
         protocol: str | None = None,
         max_retries: int | None = None,
         min_rate: int | None = None,
-        opts: str = None,
+        opts: str | None = None,
     ) -> dict:
         """Perform nmap operation on linux device.
 

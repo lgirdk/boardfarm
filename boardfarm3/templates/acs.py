@@ -39,7 +39,7 @@ class ACS(ABC):
         param: Union[list[dict], dict],
         notification_param: bool = True,
         access_param: bool = False,
-        access_list: list = None,
+        access_list: Optional[list] = None,
         cpe_id: Optional[str] = None,
     ) -> list[dict]:
         """Execute SetParameterAttributes RPC call for the specified parameter.
@@ -55,11 +55,11 @@ class ACS(ABC):
         :param notification_param: If True, the value of Notification replaces the
             current notification setting for this Parameter or group of Parameters.
             If False, no change is made to the notification setting
-        :type notification_param: bool, optional
+        :type notification_param: bool
         :param access_param: If True, the value of AccessList replaces the current
             access list for this Parameter or group of Parameters.
             If False, no change is made to the access list
-        :type access_param: bool, optional
+        :type access_param: bool
         :param access_list: Array of zero or more entities for which write access to
             the specified Parameter(s) is granted
         :type access_list: list, optional
@@ -226,11 +226,11 @@ class ACS(ABC):
 
         :param CommandKey: string to return in the CommandKey element of the
             InformStruct when the CPE calls the Inform method, defaults to "Test"
-        :type CommandKey: str, optional
+        :type CommandKey: str
         :param DelaySeconds: number of seconds from the time this method is
             called to the time the CPE is requested to initiate a one-time Inform
             method call, defaults to 20
-        :type DelaySeconds: int, optional
+        :type DelaySeconds: int
         :param cpe_id: cpe identifier, defaults to None
         :type cpe_id: Optional[str], optional
         :return: returns ScheduleInform response
