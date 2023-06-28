@@ -18,6 +18,7 @@ class DeviceManager:
         """Initialize device manager.
 
         :param plugin_manager: plugin manager
+        :raises ValueError: when DeviceManager is already initialized
         """
         global _DEVICE_MANAGER_INSTANCE  # pylint: disable=global-statement  # noqa: PLW0603, E501
         if _DEVICE_MANAGER_INSTANCE is not None:

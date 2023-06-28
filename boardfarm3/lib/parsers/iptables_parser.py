@@ -51,8 +51,8 @@ class IptablesParser:
     def ip6tables(self, ip6_tables: str) -> dict[str, list[dict]]:
         """Return parsed given ip6tables output.
 
-        :param ip_tables: ip6tables command output
-        :type ip_tables: str
+        :param ip6_tables: ip6tables command output
+        :type ip6_tables: str
         :return: parsed ip6tables output in dictionary
         :rtype: Dict[str, List[Dict]]
         """

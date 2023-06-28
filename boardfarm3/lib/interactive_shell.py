@@ -44,8 +44,8 @@ class OptionsTable:
     def add_column(
         self,
         name: str,
-        justify: JustifyMethod = None,
-        style: str = None,
+        justify: Optional[JustifyMethod] = None,
+        style: Optional[str] = None,
         width: Optional[int] = None,
     ) -> None:
         """Add a table column.
@@ -151,7 +151,12 @@ def _get_device_console_options(
     device_manager: DeviceManager,
 ) -> list[tuple[tuple[str, ...], Callable[..., None], tuple[Any, ...], dict[str, Any]]]:
     console_options: list[
-        tuple[tuple[str, ...], Callable[..., None], tuple[Any, ...], dict[str, Any]]
+        tuple[
+            tuple[str, ...],
+            Callable[..., None],
+            tuple[Any, ...],
+            dict[str, Any],
+        ]
     ] = []
     devices = device_manager.get_devices_by_type(BoardfarmDevice).values()
     for index, device in enumerate(
@@ -174,7 +179,10 @@ def _get_device_console_options(
 
 
 def _configure_repl(repl: IPythonInput) -> None:
-    """Configure a few useful defaults."""
+    """Configure a few useful defaults.
+
+    :param repl: python input
+    """
     repl.show_signature = True
     repl.show_docstring = True
     repl.show_line_numbers = True

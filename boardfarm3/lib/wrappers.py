@@ -7,7 +7,11 @@ AnyClass = TypeVar("AnyClass")
 
 
 def singleton(cls: type[AnyClass]) -> AnyClass:
-    """Allow a class to become a decorator."""
+    """Allow a class to become a decorator.
+
+    :param cls: class to become a decorator
+    :return: AnyClass
+    """
     instances = {}
 
     def getinstance(*args: tuple, **kwargs: Any) -> AnyClass:  # noqa: ANN401

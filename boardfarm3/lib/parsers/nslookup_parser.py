@@ -15,7 +15,7 @@ class NslookupParser:
 
         :param response: nslookup CLI output
         :type response: str
-        :return:
+        :return: parsed nslookup output
         :rtype: Dict[str, str]
         """
         dns_dict_obj: dict[str, Any] = {}
@@ -31,7 +31,10 @@ class NslookupParser:
             elif "Name" in i:
                 dns_dict_obj["domain_name"] = re.search(r"(?:[\da-z\._]+)\.(\w+)", i)[0]
                 ips: list[str] = []
-                for value in [ValidIpv4AddressRegex, AllValidIpv6AddressesRegex]:
+                for value in [
+                    ValidIpv4AddressRegex,
+                    AllValidIpv6AddressesRegex,
+                ]:
                     ips.extend(matches[0] for matches in re.finditer(value, i))
                 dns_dict_obj["domain_ip_addr"] = ips
             elif "AAAA" in i:

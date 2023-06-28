@@ -62,7 +62,7 @@ def start_tcpdump(  # noqa: PLR0913
     """Start tcpdump capture on given interface.
 
     :param console: console or device instance
-    :type console: LinuxConsole
+    :type console: _LinuxConsole
     :param interface: inteface name where packets to be captured
     :type interface: str
     :param port: port number, can be a range of ports(eg: 443 or 433-443)
@@ -96,7 +96,7 @@ def stop_tcpdump(console: _LinuxConsole, process_id: str) -> None:
     """Stop tcpdump capture.
 
     :param console: linux console or device instance
-    :type console: LinuxConsole
+    :type console: _LinuxConsole
     :param process_id: tcpdump process id
     :type process_id: str
     :raises ValueError: on failed to stop tcpdump process
@@ -118,7 +118,7 @@ def tcpdump_read(  # noqa: PLR0913
     """Read the given tcpdump and delete the file afterwards.
 
     :param console: linux device or console instance
-    :type console: LinuxConsole
+    :type console: _LinuxConsole
     :param capture_file: pcap file path
     :type capture_file: str
     :param protocol: protocol to the filter
@@ -173,7 +173,7 @@ def scp(  # pylint: disable=too-many-arguments  # noqa: PLR0913
     :param action: scp action(download/upload), defaults to "download"
     :type action: Literal["download", "upload"], optional
     :param timeout: scp timeout in seconds, defaults to 30
-    :type timeout: int, optional
+    :type timeout: int
     :raises SCPConnectionError: on failed to scp file
     """
     host = host if isinstance(ip_address(host), IPv4Address) else f"[{host}]"
@@ -206,7 +206,7 @@ def traceroute_host(
     """Traceroute given host ip and return the details.
 
     :param console: linux device or console instance
-    :type console: LinuxConsole
+    :type console: _LinuxConsole
     :param host_ip: host ip address
     :type host_ip: str
     :param version: ip version
@@ -229,7 +229,7 @@ class IptablesFirewall:
         """Initialize IptablesFirewall.
 
         :param console: linux console or device instance
-        :type console: LinuxConsole
+        :type console: _LinuxConsole
         """
         self._console = console
 
@@ -371,7 +371,7 @@ class NSLookup:
         """Initialize NSLookup.
 
         :param console: console or device instance
-        :type console: LinuxConsole
+        :type console: _LinuxConsole
         """
         self._hw = console
 
@@ -434,7 +434,7 @@ class DNS:
         """Initialize DNS.
 
         :param console: console or device instance
-        :type console: LinuxConsole
+        :type console: _LinuxConsole
         :param device_name: device name
         :type device_name: str
         :param ipv4_address: ipv4 address of the device
@@ -519,7 +519,6 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
 
         :param response: response from HTTP request
         :type response: str
-        :raises UseCaseFailure: in case the response has some error
         """
         self.response = response
         self.raw, self.code, self.beautified_text = self._parse_response(response)
@@ -577,7 +576,7 @@ def is_link_up(
     :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
     :type interface: str
     :param pattern: interface state
-    :type pattern: str, optional
+    :type pattern: str
     :return: True if the link is up
     :rtype: bool
     """

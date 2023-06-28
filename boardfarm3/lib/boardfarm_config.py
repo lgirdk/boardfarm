@@ -36,12 +36,18 @@ class BoardfarmConfig:
 
     @property
     def env_config(self) -> dict[str, Any]:
-        """Environment config dictionary."""
+        """Environment config dictionary.
+
+        :returns: env config response
+        """
         return self._env_config
 
     @property
     def inventory_config(self) -> dict[str, Any]:
-        """Inventory config dictionary."""
+        """Inventory config dictionary.
+
+        :returns: inventory config response
+        """
         return self._inventory_config
 
     def get_devices_config(self) -> list[dict]:
@@ -68,6 +74,7 @@ class BoardfarmConfig:
         """Return the env config ["environment_def"]["board"]["SKU"] value.
 
         :return: SKU value
+        :raises EnvConfigError: when given sku is unknown
         """
         try:
             return self.env_config["environment_def"]["board"]["SKU"]
@@ -79,6 +86,7 @@ class BoardfarmConfig:
         """Return the env config ["environment_def"]["board"]["model"].
 
         :return: Board model
+        :raises EnvConfigError: when given model is unknown
         """
         try:
             return self.env_config["environment_def"]["board"]["model"]
@@ -91,7 +99,8 @@ class BoardfarmConfig:
     def get_prov_mode(self) -> str:
         """Return the provisioning mode of the DUT.
 
-        Possible values: ipv4, ipv6, dslite, dualstack, disabled
+        :return: ipv4, ipv6, dslite, dualstack, disabled
+        :raises EnvConfigError: when given sku is unknown
         """
         try:
             return self.env_config["environment_def"]["board"][

@@ -34,11 +34,12 @@ class SSHConnection(BoardfarmPexpect):
         :param shell_prompt: shell prompt pattern
         :type shell_prompt: list[str]
         :param port: port number, defaults to 22
-        :type port: int, optional
+        :type port: int
         :param password: password, defaults to None
-        :type password: str, optional
+        :type password: str
         :param save_console_logs: save console logs, defaults to False
-        :type save_console_logs: bool, optional
+        :type save_console_logs: bool
+        :param kwargs: other keyword arguments
         """
         self._shell_prompt = shell_prompt
         self._username = username
@@ -59,6 +60,7 @@ class SSHConnection(BoardfarmPexpect):
         """Login to SSH session.
 
         :param password: ssh password
+        :raises DeviceConnectionError: connection failed to SSH server
         """
         if password is not None:
             if self.expect(["password:", pexpect.EOF, pexpect.TIMEOUT]):

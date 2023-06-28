@@ -135,6 +135,7 @@ def disable_logs(logger_name: Optional[str] = None) -> Generator:
 
     :param logger_name: logger name, defaults to None
     :type logger_name: Optional[str], optional
+    :yield: log with the given name
     """
     logger = logging.getLogger(logger_name)
     handlers = list(logger.handlers)
@@ -157,7 +158,7 @@ def get_static_ipaddress(
     :param config: device config
     :type config: dict[str, Any]
     :param ip_version: ip version, defaults to "ipv4"
-    :type ip_version: str, optional
+    :type ip_version: str
     :return: the static ip address of the device
     :rtype: Optional[str]
     """

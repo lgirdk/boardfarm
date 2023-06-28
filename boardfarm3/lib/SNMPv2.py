@@ -2,6 +2,7 @@
 
 
 import re
+from typing import Optional
 
 from boardfarm3.exceptions import SNMPError
 from boardfarm3.lib.mibs_compiler import MibsCompiler
@@ -58,7 +59,7 @@ class SNMPv2:
         :param index: index used along with mib_name
         :type index: int
         :param community: SNMP Community string that allows access to DUT,
-         defaults to 'private'
+                            defaults to 'private'
         :type community: str
         :param extra_args: Any extra arguments to be passed in the command
         :type extra_args: str
@@ -98,15 +99,15 @@ class SNMPv2:
         :param value: value to be set for the mib name
         :type value: str
         :param stype: defines the datatype of value to be set for mib_name
-         stype: one of i, u, t, a, o, s, x, d, b
-         i: INTEGER, u: unsigned INTEGER, t: TIMETICKS, a: IPADDRESS
-         o: OBJID, s: STRING, x: HEX STRING, d: DECIMAL STRING, b: BITS
-         U: unsigned int64, I: signed int64, F: float, D: double
+                        stype: one of i, u, t, a, o, s, x, d, b
+                        i: INTEGER, u: unsigned INTEGER, t: TIMETICKS, a: IPADDRESS
+                        o: OBJID, s: STRING, x: HEX STRING, d: DECIMAL STRING, b: BITS
+                        U: unsigned int64, I: signed int64, F: float, D: double
         :type stype: str
         :param index: index used along with mib_name
         :type index: int
         :param community: SNMP Community string that allows access to DUT,
-         defaults to 'private'
+                        defaults to 'private'
         :type community: str
         :param extra_args: Any extra arguments to be passed in the command
         :type extra_args: str
@@ -177,9 +178,17 @@ class SNMPv2:
         self,
         oid: str,
         output: str,
-        value: str = None,
+        value: Optional[str] = None,
     ) -> tuple[str, str, str]:
-        """Return the tuple with value, type of the value and snmp command output."""
+        """Return the tuple with value, type of the value and snmp command output.
+
+        :param oid: object ID
+        :param output: SNMP output
+        :param value: additional options
+        :returns: parsed output
+        :raises SNMPError: no matching output
+        :raises AssertionError: set value did not match with output value
+        """
         result_pattern = rf".{oid}\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
         match = re.search(result_pattern, output)
         if not match:
@@ -200,7 +209,13 @@ class SNMPv2:
         oid: str,
         output: str,
     ) -> tuple[dict[str, list[str]], str]:
-        """Return list of dictionary of mib_oid as key and list(value, type) value."""
+        """Return list of dictionary of mib_oid as key and list(value, type) value.
+
+        :param oid: object ID
+        :param output: SNMP output
+        :returns: parsed output
+        :raises SNMPError: no matching output
+        """
         result_pattern = rf".({oid}[\.\d+]*)\s+\=\s+(\S+)\:\s+(\"?.*\"?)"
         walk_key_value_dict: dict[str, list[str]] = {}
         match = re.findall(result_pattern, output)
@@ -226,7 +241,7 @@ class SNMPv2:
         :param index: index used along with mib_name
         :type index: int
         :param community: SNMP Community string that allows access to DUT,
-         defaults to 'private'
+                            defaults to 'private'
         :type community: str
         :param retries: the no. of time the commands are executed on exception/timeout
         :type retries: int
@@ -235,8 +250,9 @@ class SNMPv2:
         :param extra_args: Any extra arguments to be passed in the command
         :type extra_args: str
         :return: dictionary of mib_oid as key and list(value, type) as value
-         and complete output
+                            and complete output
         :rtype: Tuple[Dict[str, List[str]], str]
+        :raises SNMPError: no matching output
         """
         if mib_name:
             try:

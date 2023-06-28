@@ -33,9 +33,11 @@ class LdapAuthenticatedSerial(SSHConnection):
         :param shell_prompt: shell prompt patterns
         :type shell_prompt: list[str]
         :param port: port number, defaults to 22
-        :type port: int, optional
+        :type port: int
         :param save_console_logs: save console logs to disk, defaults to False
-        :type save_console_logs: bool, optional
+        :type save_console_logs: bool
+        :param kwargs: other keyword arguments
+        :raises ValueError: invalid LDAP credentials
         """
         if ";" not in ldap_credentials:
             msg = "Invalid LDAP credentials"
@@ -56,6 +58,7 @@ class LdapAuthenticatedSerial(SSHConnection):
 
         :param password: LDAP password
         :type password: str
+        :raises DeviceConnectionError: failed to connect to device via serial
         """
         if self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT]):
             msg = "Failed to connect to device via serial"

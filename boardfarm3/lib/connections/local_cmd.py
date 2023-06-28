@@ -27,6 +27,7 @@ class LocalCmd(BoardfarmPexpect):
         :type save_console_logs: bool
         :param args: arguments to the command, defaults to None
         :type args: list[str], optional
+        :param kwargs: additional keyword args
         """
         if args is None:
             args = []
@@ -35,6 +36,8 @@ class LocalCmd(BoardfarmPexpect):
     def execute_command(self, command: str, timeout: int = -1) -> str:  # noqa: ARG002
         """Execute command in the local command session.
 
+        :param command: command to be executed
+        :param timeout: timeout
         :raises NotImplementedError: not supported in LocalCmd connection.
         """
         msg = (
