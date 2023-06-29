@@ -1,0 +1,3 @@
+[darglint2]
+docstring_style=sphinx
+ignore=DAR103

@@ -110,6 +110,10 @@ repos:
             description: 'Black: The uncompromising Python code formatter'
             args: [--safe]
             stages: [commit]
+    - repo: https://github.com/akaihola/darglint2
+      rev: v1.8.2
+      hooks:
+          - id: darglint2
     - repo: local
       hooks:
           - id: nox
