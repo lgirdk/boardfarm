@@ -1,14 +1,22 @@
 """Boardfarm device manager."""
 
-from typing import TypeVar
+from typing import Any, TypeVar
+from unittest import mock
 
 from pluggy import PluginManager
 
 from boardfarm3.devices.base_devices import BoardfarmDevice
-from boardfarm3.exceptions import DeviceNotFound
+from boardfarm3.exceptions import DeviceNotFound, NotSupportedError
 
 T = TypeVar("T")  # pylint: disable=invalid-name
 _DEVICE_MANAGER_INSTANCE = None
+
+
+def _get_attribute_with_ignore_exception(self: Any, __name: str) -> Any:  # noqa: ANN401
+    try:
+        return object.__getattribute__(self, __name)
+    except (NotImplementedError, NotSupportedError):
+        return None
 
 
 class DeviceManager:
@@ -58,8 +66,19 @@ class DeviceManager:
         """Register a device as plugin with boardfarm.
 
         :param device: device instance to register
+        :type device: BoardfarmDevice
         """
-        self._plugin_manager.register(device, device.device_name)
+        # During the registration of a plugin to the boardfarm, Pluggy calls all
+        # of its properties. However, if a plugin has a method that throws an
+        # exception, it can cause the boardfarm to crash. To address this issue
+        # with Pluggy, we ignore the NotImplementedError and NotSupportedError
+        # exceptions while registering a plugin.
+        with mock.patch.object(
+            device.__class__,
+            "__getattribute__",
+            _get_attribute_with_ignore_exception,
+        ):
+            self._plugin_manager.register(device, device.device_name)
 
     def unregister_device(self, device_name: str) -> None:
         """Unregister a device from boardfarm.
