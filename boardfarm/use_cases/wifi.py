@@ -5,6 +5,7 @@ All APIs are independent of board under test.
 from typing import Generator, List, Tuple
 
 from boardfarm.devices.base_devices.wifi_template import WIFITemplate
+from boardfarm.devices.debian_wifi import DebianWifi
 from boardfarm.lib.DeviceManager import get_device_by_name
 from boardfarm.lib.wifi_lib import wifi_mgr
 
@@ -130,3 +131,30 @@ def disconnect_wifi_client(who_to_disconnect: WIFITemplate) -> None:
     :type who_to_disconnect: WIFITemplate
     """
     who_to_disconnect.wifi_disconnect()
+
+
+def list_wifi_ssid(device: DebianWifi) -> list[str]:
+    """Return the list of WiFi SSIDs.
+
+    :param device: board object
+    :type device: DebianWifi
+    :return: list of Wi-FI SSIDs
+    :rtype: list[str]
+    """
+    return device.list_wifi_ssids()
+
+
+def scan_ssid_name(device: DebianWifi, network_type: str, band: float) -> bool:
+    """Scan for the particular SSID based on the network type and band.
+
+    :param device: board object
+    :type device: DebianWifi
+    :param network_type: network type of the client Eg: private,guest,community
+    :type network_type: str
+    :param band: band of the client
+    :type band: float
+    :return: true if the SSID is available, false otherwise
+    :rtype: bool
+    """
+    ssid_name = _get_ssid(network_type, band)
+    return bool(device.wifi_check_ssid(ssid_name))
