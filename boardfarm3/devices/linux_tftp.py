@@ -1,6 +1,8 @@
 """Boardfarm Linux TFTP device module."""
 
 import logging
+from collections.abc import Generator
+from contextlib import contextmanager
 from ipaddress import IPv4Address
 
 from boardfarm3 import hookimpl
@@ -87,3 +89,30 @@ class LinuxTFTP(LinuxDevice, TFTP):
             raise ConfigurationFailure(
                 msg,
             )
+
+    @contextmanager
+    def set_static_ip(self, static_address: IPv4Address) -> Generator[None, None, None]:
+        """Temporarily set a static IPv4 on the DUT connected iface via the `ip` cmd.
+
+        :param static_address: Static IPv4 address to be set
+        :type static_address: IPv4Address
+        :yield: The DUT connected interface with the static ip address applied
+        :rtype: Generator[None, None, None]
+        """
+        self._console.execute_command(
+            f"ip a add {static_address} dev {self.eth_interface}",
+        )
+        self._console.execute_command(f"ip link set {self.eth_interface} up")
+        self._console.execute_command("ip a")
+        yield
+        self._console.execute_command(
+            f"ip a del {static_address} dev {self.eth_interface}",
+        )
+
+    def restart_lighttpd(self) -> None:
+        """Restart lighttpd service."""
+        self._console.execute_command("service lighttpd restart")
+
+    def stop_lighttpd(self) -> None:
+        """Stop the lighttpd service."""
+        self._console.execute_command("service lighttpd stop")
