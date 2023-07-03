@@ -28,6 +28,7 @@ from boardfarm3.lib.networking import (
     is_link_up,
 )
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
+from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
 
 
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
@@ -41,11 +42,13 @@ class LinuxDevice(BoardfarmDevice):
         """Initialize linux device.
 
         :param config: device configuration
+        :type config: dict
         :param cmdline_args: command line arguments
+        :type cmdline_args: Namespace
         """
         super().__init__(config, cmdline_args)
         self._console: BoardfarmPexpect = None
-        self._shell_prompt = ["[\\w-]+@[\\w-]+:[\\w/~]+#"]
+        self._shell_prompt = [DEFAULT_BASH_SHELL_PROMPT_PATTERN]
         self.firewall = IptablesFirewall(self._console)
         self._static_route = ""
         if "options" in self._config:
