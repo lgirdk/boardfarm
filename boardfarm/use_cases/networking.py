@@ -1098,7 +1098,7 @@ def _nmap(
 ) -> dict:
     iface = (
         destination_device.erouter_iface
-        if type(destination_device) == BoardTemplate
+        if isinstance(destination_device, BoardTemplate)
         else destination_device.iface_dut
     )
     if ip_type not in ["ipv4", "ipv6"]:
