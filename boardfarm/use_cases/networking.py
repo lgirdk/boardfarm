@@ -29,6 +29,7 @@ from boardfarm.exceptions import (
 )
 from boardfarm.lib.common import http_service_kill, ip_pool_to_list
 from boardfarm.lib.DeviceManager import get_device_by_name
+from boardfarm.use_cases.descriptors import AnyCPE
 
 from .voice import VoiceClient
 
@@ -1088,7 +1089,7 @@ def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
 
 def _nmap(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE],
     ip_type: str,
     port: Optional[Union[str, int]] = None,
     protocol: Optional[str] = None,
@@ -1097,16 +1098,16 @@ def _nmap(
     opts: str = None,
 ) -> dict:
     iface = (
-        destination_device.erouter_iface
-        if isinstance(destination_device, BoardTemplate)
-        else destination_device.iface_dut
+        destination_device._obj.erouter_iface
+        if type(destination_device) == AnyCPE
+        else destination_device._obj.iface_dut
     )
     if ip_type not in ["ipv4", "ipv6"]:
         raise UseCaseFailure("Invalid ip type, should be either ipv4 or ipv6")
     ipaddr = (
-        {destination_device.get_interface_ipaddr(iface)}
+        {destination_device._obj.get_interface_ipaddr(iface)}
         if ip_type == "ipv4"
-        else f"-6 {destination_device.get_interface_ip6addr(iface)}"
+        else f"-6 {destination_device._obj.get_interface_ip6addr(iface)}"
     )
     retries = f"-max-retries {max_retries}" if max_retries else ""
     rate = f"-min-rate {min_rate}" if min_rate else ""
@@ -1118,7 +1119,7 @@ def _nmap(
 
 def create_udp_session(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE],
     ip_type: str,
     port: Union[str, int],
     max_retries: int,
@@ -1130,7 +1131,7 @@ def create_udp_session(
     :param source_device: Source device
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param destination_device: Destination device
-    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE]
     :param ip_type: type of ipaddress: "ipv4", "ipv6"
     :type ip_type: str
     :param port: port or range of ports: "666-999"
@@ -1145,7 +1146,7 @@ def create_udp_session(
 
 def create_tcp_session(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE],
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
@@ -1157,7 +1158,7 @@ def create_tcp_session(
     :param source_device: Source device
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param destination_device: Destination device
-    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE]
     :param ip_type: type of ipaddress: "ipv4", "ipv6"
     :type ip_type: str
     :param port: port or range of ports: "666-999"
@@ -1172,7 +1173,7 @@ def create_tcp_session(
 
 def create_tcp_udp_session(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE],
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
@@ -1184,7 +1185,7 @@ def create_tcp_udp_session(
     :param source_device: Source device
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param destination_device: Destination device
-    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE]
     :param ip_type: type of ipaddress: "ipv4", "ipv6"
     :type ip_type: str
     :param port: port or range of ports: "666-999"
@@ -1201,7 +1202,7 @@ def create_tcp_udp_session(
 
 def perform_ip_flooding(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
+    destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE],
     ip_type: str,
     port: Union[str, int],
     min_rate: int,
@@ -1212,7 +1213,7 @@ def perform_ip_flooding(
     :param source_device: Source device
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param destination_device: Destination device
-    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
+    :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, AnyCPE]
     :param ip_type: type of ipaddress: "ipv4", "ipv6"
     :type ip_type: str
     :param port: port or range of ports: "666-999"
