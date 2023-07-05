@@ -1,3 +1,13 @@
+## 2023.27.0 (2023-07-05)
+
+### Feat
+
+- allow acs seep session to use a certificate
+
+### Fix
+
+- **boardfarm/use_cases/networking.py**: fix nmap board condition
+
 ## 2023.25.0 (2023-06-23)
 
 ### Fix
