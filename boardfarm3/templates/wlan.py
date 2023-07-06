@@ -324,3 +324,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_mask(self, interface: str) -> str:
+        """Get the subnet mask of the interface.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: subnet mask of interface
+        :rtype: str
+        """
+        raise NotImplementedError

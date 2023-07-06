@@ -202,6 +202,19 @@ class LinuxDevice(BoardfarmDevice):
         """
         return self._get_nw_interface_ipv6_address(self.eth_interface, address_type)
 
+    def get_interface_mask(self, interface: str) -> str:
+        """Get the subnet mask of the interface.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: subnet mask of interface
+        :rtype: str
+        """
+        return re.search(
+            r"Mask:\s+(\S+)",
+            self._console.execute_command(f"ifconfig {interface}"),
+        ).group(1)
+
     def scp_local_file_to_device(self, local_path: str, destination_path: str) -> None:
         """Copy a local file to a server using SCP.
 
