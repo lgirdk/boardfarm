@@ -37,6 +37,8 @@ def boardfarm_cmdline_parse(
 ) -> Namespace:
     """Parse command line arguments.
 
+    # noqa: DAR202
+
     :param argparser: argument parser
     :type argparser: ArgumentParser
     :param cmdline_args: command line arguments
@@ -68,6 +70,9 @@ def boardfarm_reserve_devices(
 ) -> dict[str, Any]:
     """Reserve devices before starting the deployment.
 
+    This hook is used to reserve devices before deployment.
+
+    # noqa: DAR202
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
@@ -85,6 +90,9 @@ def boardfarm_deploy_devices(
 ) -> DeviceManager:
     """Deploy all the devices to the environment.
 
+    This hook is used to deploy boardfarm devices.
+
+    # noqa: DAR202
     :param config: boardfarm config
     :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
@@ -104,6 +112,9 @@ def boardfarm_post_deploy_devices(
 ) -> None:
     """Call after all the devices are deployed to environment.
 
+    This hook is used to perform required operations after the board is deployed.
+
+    # noqa: DAR202
     :param config: boardfarm config
     :type config: BoardfarmConfig
     :param cmdline_args: command line arguments

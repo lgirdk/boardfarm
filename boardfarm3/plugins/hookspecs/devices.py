@@ -56,6 +56,7 @@ def boardfarm_register_devices(
     This hook is responsible to register devices to the device manager after
     initialization based on the given inventory and environment config.
 
+    # noqa: DAR202
     :param config: boardfarm config instance
     :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
@@ -76,6 +77,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     Each repo with a boardfarm device should implement this hook to add each
     devices to the list of known devices.
 
+    # noqa: DAR202
     :return: dictionary with device name and class
     :rtype: dict[str, type[BoardfarmDevice]]
     """

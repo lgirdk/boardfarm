@@ -1,6 +1,5 @@
 """Boardfarm core plugin."""
-import argparse
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, ArgumentTypeError, Namespace
 
 from pluggy import PluginManager
 
@@ -15,15 +14,15 @@ def _non_empty_str(arg: str) -> str:
 
     :param arg: command line argument
     :type arg: str
-    :raises argparse.ArgumentTypeError: raises argparse ArgumentTypeError
-      for empty argument values
+    :raises ArgumentTypeError: raises argparse ArgumentTypeError
+                    for empty argument values
     :return: arg if the argument is non empty
     :rtype: str
     """
     if arg:
         return arg
     message = "Argument value should not be empty"
-    raise argparse.ArgumentTypeError(message)
+    raise ArgumentTypeError(message)
 
 
 @hookimpl
