@@ -1105,7 +1105,7 @@ def _nmap(
     if ip_type not in ["ipv4", "ipv6"]:
         raise UseCaseFailure("Invalid ip type, should be either ipv4 or ipv6")
     ipaddr = (
-        {destination_device._obj.get_interface_ipaddr(iface)}
+        destination_device._obj.get_interface_ipaddr(iface)
         if ip_type == "ipv4"
         else f"-6 {destination_device._obj.get_interface_ip6addr(iface)}"
     )
