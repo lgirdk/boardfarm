@@ -410,3 +410,31 @@ class LAN(ABC):
     def disable_ipv6(self) -> None:
         """Disable ipv6 on the connected client interface."""
         raise NotImplementedError
+
+    @abstractmethod
+    def create_upnp_rule(self, int_port: str, ext_port: str, protocol: str) -> str:
+        """Create UPnP rule on the device.
+
+        :param int_port: internal port for upnp
+        :type int_port: str
+        :param ext_port: external port for upnp
+        :type ext_port: str
+        :param protocol: protocol to be used
+        :type protocol: str
+        :return: output of upnpc add port command
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_upnp_rule(self, ext_port: str, protocol: str) -> str:
+        """Delete UPnP rule on the device.
+
+        :param ext_port: external port for upnp
+        :type ext_port: str
+        :param protocol: protocol to be used
+        :type protocol: str
+        :return: output of upnpc delete port command
+        :rtype: str
+        """
+        raise NotImplementedError
