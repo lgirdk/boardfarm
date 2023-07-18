@@ -38,7 +38,6 @@ def get_tftp(config):
 
 
 def pre_boot_wan_clients(config, env_helper, devices):
-
     tftp_device, tftp_servers = boardfarm.lib.booting.get_tftp(config)
     if not tftp_servers:
         logger.error(colored("No tftp server found", color="red", attrs=["bold"]))
@@ -130,12 +129,14 @@ pre_boot_actions = {
 def boot_board(config, env_helper, devices):
     try:
         devices.board.reset()
+        devices.board.hw.wait_for_hw_boot()
         if env_helper.get_software():
             devices.board.flash(env_helper)
             # store the timestamp, for uptime check later (in case the board
             # crashes on boot)
             devices.board.__reset__timestamp = time.time()
             devices.board.reset()
+            devices.board.hw.wait_for_hw_boot()
             for _ in range(5):
                 devices.board.touch()
                 time.sleep(10)
@@ -149,7 +150,6 @@ boot_actions = {"board_boot": boot_board}
 
 
 def post_boot_board(config, env_helper, devices):
-
     for _ in range(10):
         time.sleep(30)
         if devices.board.is_online():
@@ -232,7 +232,6 @@ def post_boot_lan_clients(config, env_helper, devices):
 def post_boot_wlan_clients(config, env_helper, devices):
     wifi_clients = env_helper.wifi_clients()
     if wifi_clients:
-
         # Register all wifi clients in wifi manager
         for client in wifi_clients:
             devices.wlan_clients.register(client)
