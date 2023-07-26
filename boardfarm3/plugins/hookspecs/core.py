@@ -6,6 +6,7 @@ from typing import Any
 from pluggy import PluginManager
 
 from boardfarm3 import hookspec
+from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
 
@@ -83,12 +84,13 @@ def boardfarm_reserve_devices(
 
 
 @hookspec(firstresult=True)
-def boardfarm_deploy_devices(
+def boardfarm_setup_env(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
     plugin_manager: PluginManager,
+    device_manager: DeviceManager,
 ) -> DeviceManager:
-    """Deploy all the devices to the environment.
+    """Boardfarm environment setup for all the devices.
 
     This hook is used to deploy boardfarm devices.
 
@@ -99,18 +101,20 @@ def boardfarm_deploy_devices(
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
     :type plugin_manager: PluginManager
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     :return: device manager with all devices in the environment
     :rtype: DeviceManager
     """
 
 
 @hookspec
-def boardfarm_post_deploy_devices(
+def boardfarm_post_setup_env(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
     device_manager: DeviceManager,
 ) -> None:
-    """Call after all the devices are deployed to environment.
+    """Call after the environment setup is completed for all the devices.
 
     This hook is used to perform required operations after the board is deployed.
 
@@ -138,4 +142,52 @@ def boardfarm_release_devices(
     :type plugin_manager: PluginManager
     :param deployment_status: deployment status data
     :type deployment_status: Dict[str, Any]
+    """
+
+
+@hookspec(firstresult=True)
+def boardfarm_register_devices(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    plugin_manager: PluginManager,
+) -> DeviceManager:
+    """Register device to plugin manager.
+
+    This hook is responsible to register devices to the device manager after
+    initialization based on the given inventory and environment config.
+
+    # noqa: DAR202
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param plugin_manager: plugin manager instance
+    :type plugin_manager: PluginManager
+    :return: device manager with all registered devices
+    :rtype: DeviceManager
+    """
+
+
+@hookspec
+def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
+    """Add devices to known devices list.
+
+    This hook is used to let boardfarm know the devices which are configured
+    in the inventory config.
+    Each repo with a boardfarm device should implement this hook to add each
+    devices to the list of known devices.
+
+    # noqa: DAR202
+    :return: dictionary with device name and class
+    :rtype: dict[str, type[BoardfarmDevice]]
+    """
+
+
+@hookspec
+def boardfarm_shutdown_device() -> None:
+    """Shutdown boardfarm device after use.
+
+    This hook should be used by a device to perform a clean shutdown of a device
+    after releasing all the resources (e.g. close all of the open ssh connections)
+    before the shutdown of the framework.
     """

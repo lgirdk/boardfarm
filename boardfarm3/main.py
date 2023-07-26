@@ -59,12 +59,18 @@ def main() -> None:
     config = parse_boardfarm_config(inventory_config, cmdline_args.env_config)
     deployment_status: dict[str, Any] = {}
     try:
-        device_manager = plugin_manager.hook.boardfarm_deploy_devices(
+        device_manager = plugin_manager.hook.boardfarm_register_devices(
             config=config,
             cmdline_args=cmdline_args,
             plugin_manager=plugin_manager,
         )
-        plugin_manager.hook.boardfarm_post_deploy_devices(
+        plugin_manager.hook.boardfarm_setup_env(
+            config=config,
+            cmdline_args=cmdline_args,
+            plugin_manager=plugin_manager,
+            device_manager=device_manager,
+        )
+        plugin_manager.hook.boardfarm_post_setup_env(
             config=config,
             cmdline_args=cmdline_args,
             device_manager=device_manager,

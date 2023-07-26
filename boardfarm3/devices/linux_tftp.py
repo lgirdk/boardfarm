@@ -36,8 +36,6 @@ class LinuxTFTP(LinuxDevice, TFTP):
         """
         _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
         self._connect()
-        if self._cmdline_args.skip_boot:
-            return
         # TODO: to be cleaned up once Docker factory comes into place
         self._set_eth_interface_ipv4_address(LinuxTFTP._last_static_ip_address)
         LinuxTFTP._last_static_ip_address += 1
@@ -51,6 +49,12 @@ class LinuxTFTP(LinuxDevice, TFTP):
         ):
             msg = "Failed tftpd-hpa not running"
             raise DeviceBootFailure(msg)
+
+    @hookimpl
+    def boardfarm_skip_boot(self) -> None:
+        """Boardfarm hook implementation to initialize TFTP device."""
+        _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
+        self._connect()
 
     @hookimpl
     def boardfarm_post_deploy_devices(self, device_manager: DeviceManager) -> None:

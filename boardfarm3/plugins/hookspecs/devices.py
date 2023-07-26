@@ -35,73 +35,11 @@ Hook responsibilities:
 from argparse import Namespace
 from typing import Any
 
-from pluggy import PluginManager
-
 from boardfarm3 import hookspec
-from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
 
 # pylint: disable=unused-argument
-
-
-@hookspec(firstresult=True)
-def boardfarm_register_devices(
-    config: BoardfarmConfig,
-    cmdline_args: Namespace,
-    plugin_manager: PluginManager,
-) -> DeviceManager:
-    """Register device to plugin manager.
-
-    This hook is responsible to register devices to the device manager after
-    initialization based on the given inventory and environment config.
-
-    # noqa: DAR202
-    :param config: boardfarm config instance
-    :type config: BoardfarmConfig
-    :param cmdline_args: command line arguments
-    :type cmdline_args: Namespace
-    :param plugin_manager: plugin manager instance
-    :type plugin_manager: PluginManager
-    :return: device manager with all registered devices
-    :rtype: DeviceManager
-    """
-
-
-@hookspec
-def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
-    """Add devices to known devices list.
-
-    This hook is used to let boardfarm know the devices which are configured
-    in the inventory config.
-    Each repo with a boardfarm device should implement this hook to add each
-    devices to the list of known devices.
-
-    # noqa: DAR202
-    :return: dictionary with device name and class
-    :rtype: dict[str, type[BoardfarmDevice]]
-    """
-
-
-@hookspec
-def validate_device_requirements(
-    config: BoardfarmConfig,
-    cmdline_args: Namespace,
-    device_manager: DeviceManager,
-) -> None:
-    """Validate device requirements.
-
-    This hook is responsible to validate the requirements of a device before
-    deploying devices to the environment.
-    This allows us to fail the deployment early.
-
-    :param config: boardfarm config instance
-    :type config: BoardfarmConfig
-    :param cmdline_args: command line arguments
-    :type cmdline_args: Namespace
-    :param device_manager: device manager instance
-    :type device_manager: DeviceManager
-    """
 
 
 @hookspec
@@ -114,6 +52,26 @@ def boardfarm_server_boot(
 
     This hook should be used to boot a device which is not dependent on other
     devices in the environment. E.g. WAN and CMTS.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
+def boardfarm_skip_boot(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Skips the booting for the device connected.
+
+    This hook skip the booting process on those
+    devices that implement the boot_device hook
 
     :param config: boardfarm config instance
     :type config: BoardfarmConfig
@@ -240,10 +198,21 @@ def contingency_check(env_req: dict[str, Any], device_manager: DeviceManager) ->
 
 
 @hookspec
-def boardfarm_shutdown_device() -> None:
-    """Shutdown boardfarm device after use.
+def validate_device_requirements(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Validate device requirements.
 
-    This hook should be used by a device to perform a clean shutdown of a device
-    after releasing all the resources (e.g. close all of the open ssh connections)
-    before the shutdown of the framework.
+    This hook is responsible to validate the requirements of a device before
+    deploying devices to the environment.
+    This allows us to fail the deployment early.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     """

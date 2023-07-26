@@ -75,7 +75,7 @@
 
     [project.entry-points."boardfarm"]
         core    = "boardfarm3.plugins.core"
-        devices = "boardfarm3.plugins.devices"
+        booting = "boardfarm3.plugins.setup_environment"
 
 [project.urls]
     Source = "https://github.com/lgirdk/boardfarm"
