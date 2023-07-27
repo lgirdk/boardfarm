@@ -1,0 +1,18 @@
+{
+    "services": {
+        "wan": {
+            "container_name": "wan",
+            "environment": {
+                "DNS_UPSTREAM": "10.64.36.53",
+                "LEGACY": "no"
+            },
+            "hostname": "wan",
+            "image": "10.64.38.13:5000/bf-wan:bullseye-3.11.1-lwds_lite_1.0",
+            "ports": [
+                "4002:22",
+                "10101:8080"
+            ],
+            "privileged": true
+        }
+    }
+}

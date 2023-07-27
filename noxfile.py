@@ -29,6 +29,12 @@ def pylint(session: nox.Session) -> None:
     # noqa: DAR101
     """
     session.install("--upgrade", ".", "pylint")
+    session.install(
+        "--upgrade",
+        ".",
+        "pylint",
+        "git+https://github.com/vigneshsubbaram/pylint-per-file-ignores",
+    )
     session.run("pylint", "boardfarm3")
 
 

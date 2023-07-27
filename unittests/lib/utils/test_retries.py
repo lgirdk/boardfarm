@@ -46,7 +46,7 @@ class HelperMethods:  # noqa: D101
 
 
 @pytest.fixture(name="helper_methods")
-def helper_methods_fixture(mocker: MockerFixture) -> HelperMethods:  # noqa: D103
+def helper_methods_fixture(mocker: MockerFixture) -> HelperMethods:
     # patch time.sleep to avoid unnecessary sleeps in the test
     mocker.patch("time.sleep")
     return HelperMethods()
@@ -62,7 +62,7 @@ def helper_methods_fixture(mocker: MockerFixture) -> HelperMethods:  # noqa: D10
         ("_return_false_as_string", "False", 3),
     ],
 )
-def test_retry_three_times(  # noqa: D103
+def test_retry_three_times(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
     funct_name: str,
@@ -76,7 +76,7 @@ def test_retry_three_times(  # noqa: D103
     assert spy.spy_return == exp_out
 
 
-def test_retry_on_exception(  # noqa: D103
+def test_retry_on_exception(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
 ) -> None:
@@ -88,7 +88,7 @@ def test_retry_on_exception(  # noqa: D103
     assert spy.spy_return is None
 
 
-def test_retry_on_exception_that_goes_away(  # noqa: D103
+def test_retry_on_exception_that_goes_away(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
 ) -> None:
@@ -107,7 +107,7 @@ def test_retry_on_exception_that_goes_away(  # noqa: D103
         ("raise_exception", 3, 3),
     ],
 )
-def test_retries_on_exception(  # noqa: D103
+def test_retries_on_exception(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
     funct_name: str,

@@ -39,6 +39,7 @@
         "ptipython",
         "pysmi",
         "pytest",
+        "PyYAML",
         "requests",
         "rich",
         "xmltodict",
@@ -61,6 +62,7 @@
             "pre-commit",
             "pylint",
             "types-ipaddress",
+            "types-PyYAML",
             "types-requests",
         ]
         doc = ["sphinx"]
@@ -218,9 +220,18 @@
         "unittests/*" = [
             "INP001", # pytest works this way
             "S101",   # we do use assert in unit test written for pytest
+            "D103",    # doc-strings are not mandatory for unittests
         ]
 
 
     [tool.ruff.mccabe]
         # Unlike Flake8, default to a complexity level of 10.
         max-complexity = 10
+
+[tool.pylint.MASTER]
+    load-plugins=[
+        "pylint_per_file_ignores",
+    ]
+
+[tool.pylint-per-file-ignores]
+    "/unittests/"="R0903,C0116,C0103,W0613"
