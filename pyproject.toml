@@ -43,7 +43,7 @@
         "jc",
         "jsonschema",
         "matplotlib",
-        "mitmproxy",
+        "mitmproxy==9.0.1",
         "nested_lookup",
         "netaddr",
         "ouimeaux",
