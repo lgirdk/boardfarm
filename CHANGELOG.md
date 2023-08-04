@@ -1,3 +1,16 @@
+## 2023.27.1 (2023-08-04)
+
+### Feat
+
+- **boardfarm/use_cases/networking.py**: add use case to disable ipv6 on lan/wlan
+- **boardfarm/use_cases/networking.py**: add use case to enable ipv6 on lan/wlan
+- **use_cases/wifi.py**: add Use Cases to list all ssid / check particular ssid in WLAN
+
+### Fix
+
+- **use_cases/networking.py**: fixed nmap method
+- **boardfarm/use_cases/networking.py**: update nmap board condition
+
 ## 2023.27.0 (2023-07-05)
 
 ### Feat
