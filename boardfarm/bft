@@ -705,29 +705,6 @@ def main():
             "Results stored locally."
         )
 
-    # Send Results to AWS, if configured
-    if {"BFT_AWS_ACCESS_KEY", "BFT_AWS_SECRET_ACCESS_KEY", "BFT_AWS_BUCKET"}.issubset(
-        os.environ
-    ):
-        try:
-            import boto3
-
-            filename = datetime.utcnow().strftime("%Y-%m-%dT%H-%M-%S.000Z") + ".json"
-            s3 = boto3.resource(
-                "s3",
-                aws_access_key_id=os.environ["BFT_AWS_ACCESS_KEY"],
-                aws_secret_access_key=os.environ["BFT_AWS_SECRET_ACCESS_KEY"],
-            )
-            s3object = s3.Object(os.environ["BFT_AWS_BUCKET"], filename)
-            s3object.put(
-                Body=(
-                    bytes(json.dumps(info_for_remote_log, default=str).encode("UTF-8"))
-                )
-            )
-        except Exception as e:
-            logger.warning("Failed to load data in AWS bucket")
-            logger.warning(e)
-
 
 if __name__ == "__main__":
     main()
