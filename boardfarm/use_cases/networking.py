@@ -794,9 +794,10 @@ def initiate_v4_traffic(
 def initiate_v6_traffic(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
     destination_device: Union[DebianLAN, DebianWifi, DebianWAN],
-    traffic_port: int,
+    source_port: int,
     time: int,
     udp_protocol: bool,
+    destination_port: Optional[int] = None,
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
@@ -809,12 +810,14 @@ def initiate_v6_traffic(
     :type source_device: Union[DebianLAN, DebianWifi, DebianWAN]
     :param destination_device: device class object of a iperf server
     :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN]
-    :param traffic_port: server port to listen on/connect to
-    :type traffic_port: int
+    :param source_port: server port to listen on/connect to
+    :type source_port: int
     :param time: time in seconds to transmit for
     :type time: int
     :param udp_protocol: use UDP rather than TCP
     :type udp_protocol: bool
+    :param destination_port: destination port to listen on/connect to
+    :type destination_port: Optional[int], defaults to None
     :param bind_sender_ip: bind to the interface associated with the
         client address, defaults to None
     :type bind_sender_ip: str, optional
@@ -826,14 +829,15 @@ def initiate_v6_traffic(
     :rtype: IPerf3TrafficGenerator
     """
     dest_ip6 = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    destination_port = source_port if destination_port is None else destination_port
     dest_pid = destination_device.start_traffic_receiver(
-        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
+        destination_port, ipv=6, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
         return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
     source_pid = source_device.start_traffic_sender(
         dest_ip6,
-        traffic_port,
+        source_port,
         ipv=6,
         udp_protocol=udp_protocol,
         time=time,
