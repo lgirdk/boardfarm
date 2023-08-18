@@ -1,3 +1,9 @@
+## 2023.33.0 (2023-08-18)
+
+### Fix
+
+- **boardfarm/lib/booting.py**: introduce wait for hw boot after reset in booting class
+
 ## 2023.29.0 (2023-07-20)
 
 ### Feat
