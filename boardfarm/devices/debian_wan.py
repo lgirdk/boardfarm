@@ -49,7 +49,7 @@ class DebianWAN(debian.DebianBox):
                 "www.google.com": [str(self.gw)],
             }
         )
-        self.sendline("killall iperf ab hping3")
+        self.sendline("killall iperf ab hping3 webfsd")
         self.expect(self.prompt)
 
         # potential cleanup so this wan device works
