@@ -273,3 +273,69 @@ class SNMPv2:
             extra_args=extra_args,
         )
         return self._parse_snmpwalk_output(oid, output)
+
+    def snmpbulkget(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+        self,
+        mib_name: str,
+        index: int = None,
+        community: str = "private",
+        non_repeaters: int = 0,
+        max_repetitions: int = 10,
+        retries: int = 3,
+        timeout: int = 100,
+        extra_args: str = "",
+    ) -> list[tuple[str, str, str]]:
+        """Perform SNMP bulkget on the device with given arguments.
+
+        :param mib_name: mib name used to perform snmp
+        :type mib_name: str
+        :param index: index used along with mib_name, defaults to None
+        :type index: int, optional
+        :param community: SNMP Community string, defaults to "private"
+        :type community: str, optional
+        :param non_repeaters: value treated as get request, defaults to 0
+        :type non_repeaters: int, optional
+        :param max_repetitions: value treated as get next operation, defaults to 10
+        :type max_repetitions: int, optional
+        :param retries:  no.of time commands are executed on exception, defaults to 3
+        :type retries: int, optional
+        :param timeout: timeout in seconds, defaults to 100
+        :type timeout: int, optional
+        :param extra_args: extra arguments to be passed in the command, defaults to ""
+        :type extra_args: str, optional
+        :raises SNMPError: when MIB is not available
+        :return: output of snmpbulkget command
+        :rtype: list[tuple[str, str, str]]
+        """
+        if mib_name:
+            try:
+                oid = self._get_mib_oid(mib_name)
+                if index:
+                    oid = f"{oid}.{index!s}"
+            except (ValueError, SNMPError) as exception:
+                msg = f"MIB not available, Error: {exception}"
+                raise SNMPError(msg) from exception
+        else:
+            oid = ""
+        cmd = (
+            f"snmpbulkget -v2c -On{extra_args} -Cn{non_repeaters} -Cr{max_repetitions}"
+            f" -c {community} -t {timeout} -r {retries} {self._target_ip} {oid}"
+            if extra_args
+            else f"snmpbulkget -v2c -Cn{non_repeaters} -Cr{max_repetitions}"
+            f" -c {community} -t {timeout} -r {retries} {self._target_ip} {oid}"
+        )
+        return self._parse_snmpbulk_output(self._device.execute_snmp_command(cmd))
+
+    def _parse_snmpbulk_output(self, output: str) -> list[tuple[str, str, str]]:
+        """Return the tuple with snmp output, data type and the value.
+
+        :param output: snmp bulk output
+        :type output: str
+        :raises SNMPError: when no matching output
+        :return: parsed output
+        :rtype: list[tuple[str, str, str]]
+        """
+        if not (match := re.findall(r"(iso[\.\d+]*\s\=\s(\S+)\:\s(\d+))", output)):
+            err_msg = "Failed to parse the SNMP Bulk get output"
+            raise SNMPError(err_msg)
+        return match
