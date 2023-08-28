@@ -95,3 +95,49 @@ def snmp_walk(
     return SNMPv2(wan, cmts.get_cmip(board.cm_mac)).snmpwalk(
         mib_name, index, community, retries, timeout, extra_args
     )
+
+
+def snmp_bulk_get(
+    mib_name: str,
+    index: int = None,
+    community: str = "private",
+    non_repeaters: int = 0,
+    max_repetitions: int = 10,
+    retries: int = 3,
+    timeout: int = 100,
+    extra_args: str = "",
+) -> list[tuple[str, str, str]]:
+    """Perform SNMP bulkget on the device with given arguments.
+
+    :param mib_name: mib name used to perform snmp
+    :type mib_name: str
+    :param index: index used along with mib_name, defaults to None
+    :type index: int, optional
+    :param community: SNMP Community string, defaults to "private"
+    :type community: str, optional
+    :param non_repeaters: value treated as get request, defaults to 0
+    :type non_repeaters:
+    :param max_repetitions: value treated as get next operation, defaults to 10
+    :type max_repetitions: int, optional
+    :param retries: no.of time commands are executed on exception, defaults to 3
+    :type retries: int, optional
+    :param timeout: timeout in seconds, defaults to 100
+    :type timeout: int, optional
+    :param extra_args: extra arguments to be passed in the command, defaults to ""
+    :type extra_args: str, optional
+    :return: output of snmpbulkget command
+    :rtype: list[tuple[str, str, str]]
+    """
+    wan = get_device_by_name("wan")
+    board = get_device_by_name("board")
+    cmts = get_device_by_name("cmts")
+    return SNMPv2(wan, cmts.get_cmip(board.cm_mac)).snmpbulkget(
+        mib_name,
+        index,
+        community,
+        non_repeaters,
+        max_repetitions,
+        retries,
+        timeout,
+        extra_args,
+    )
