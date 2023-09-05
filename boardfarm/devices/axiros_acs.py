@@ -423,11 +423,21 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         return data_list
 
     @staticmethod
+    def _replace_non_ascii_and_control_chars_with_hex(input_string):
+        non_ascii_and_control_pattern = re.compile(r"[\x00-\x08\x0E-\x1F\x7F-\x9F]")
+        return non_ascii_and_control_pattern.sub(
+            lambda x: "".join([f'\\x{x[0].encode("utf-8").hex()}']), input_string
+        )
+
+    @staticmethod
     def _get_xml_key(resp, k="text"):
+        response_content = AxirosACS._replace_non_ascii_and_control_chars_with_hex(
+            resp.content.decode("utf-8")
+        )
         return nested_lookup(
             "Result",
             xmltodict.parse(
-                resp.content,
+                response_content,
                 attr_prefix="",
                 cdata_key=k,
                 process_namespaces=True,
@@ -439,7 +449,10 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
     def _parse_soap_response(response):
         """Parse the ACS response and return a\
         list of dictionary with {key,type,value} pair."""
-        msg = xml.dom.minidom.parseString(response.text)
+        response_text = AxirosACS._replace_non_ascii_and_control_chars_with_hex(
+            response.text
+        )
+        msg = xml.dom.minidom.parseString(response_text)
         logger.debug(msg.toprettyxml(indent=" ", newl=""))
 
         result = AxirosACS._get_xml_key(response)
