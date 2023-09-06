@@ -1,0 +1,10 @@
+{
+    "color": "cyan",
+    "connection_type": "authenticated_ssh",
+    "http_proxy": "10.64.38.18:10102",
+    "ipaddr": "10.64.38.18",
+    "name": "wan",
+    "options": "tftpd-server, mgmt_dns: 10.64.36.53, wan-static-ip:172.25.1.102/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::102/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+    "port": 4102,
+    "type": "debian_wan"
+}

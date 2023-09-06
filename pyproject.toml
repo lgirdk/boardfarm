@@ -220,7 +220,11 @@
         "unittests/*" = [
             "INP001", # pytest works this way
             "S101",   # we do use assert in unit test written for pytest
-            "D103",    # doc-strings are not mandatory for unittests
+            "D103",   # doc-strings are not mandatory for unittests
+            "SLF001", # we do access private members for validation in unittests
+            "E501",   # line too long errors are ignored for unittests
+            "ANN401", # dynamically typed expressions (typing.Any) are used in arguments
+            "PLR2004" # Magic value used in comparison
         ]
 
 

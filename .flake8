@@ -31,5 +31,6 @@ rst-directives =
 
 # darglint options
 docstring_style=sphinx
+
 per-file-ignores =
-    unittests/*:D103
+    unittests/*:D103, E501

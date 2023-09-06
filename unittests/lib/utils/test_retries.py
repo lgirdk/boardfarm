@@ -11,7 +11,9 @@ from pytest_mock import MockerFixture
 from boardfarm3.lib.utils import retry, retry_on_exception
 
 
-class HelperMethods:  # noqa: D101
+class HelperMethods:
+    """Unittest helper class."""
+
     @staticmethod
     def _return_int() -> int:
         return 42
@@ -33,20 +35,40 @@ class HelperMethods:  # noqa: D101
         return "False"
 
     @staticmethod
-    def raise_exception() -> None:  # noqa: D102
+    def raise_exception() -> None:
+        """Raise a NotImplementedError exception.
+
+        :raises NotImplementedError: Always raises this exception.
+        """
         raise NotImplementedError
 
     @staticmethod
-    # pylint: disable=dangerous-default-value
-    def raise_exception_two_times(i: list[int] = [0]) -> int:  # noqa: D102,B006
+    def raise_exception_two_times(i: list[int]) -> int:
+        """Raise NotImplementedError 2 times.
+
+        :param i: exception counter
+        :type i: list[int], optional
+
+        :raises NotImplementedError: Raised when the counter is less than 2.
+
+        :return: Exception count.
+        :rtype: int
+        """
         i[0] += 1
-        if i[0] < 2:  # noqa: PLR2004
+        if i[0] < 2:
             raise NotImplementedError
         return i[0]
 
 
 @pytest.fixture(name="helper_methods")
 def helper_methods_fixture(mocker: MockerFixture) -> HelperMethods:
+    """Get the HelperMethods instance.
+
+    :param mocker: pytest mock object
+    :type mocker: MockerFixture
+    :return: HelperMethods class instance
+    :rtype: HelperMethods
+    """
     # patch time.sleep to avoid unnecessary sleeps in the test
     mocker.patch("time.sleep")
     return HelperMethods()
@@ -66,9 +88,22 @@ def test_retry_three_times(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
     funct_name: str,
-    exp_out: Any,  # noqa: ANN401
+    exp_out: Any,
     exp_count: int,
 ) -> None:
+    """Ensure that a method is executed a specified number of times if the method returns false.
+
+    :param mocker: pytest mock object
+    :type mocker: MockerFixture
+    :param helper_methods: HelperMethods class instance
+    :type helper_methods: HelperMethods
+    :param funct_name: function name to be called
+    :type funct_name: str
+    :param exp_out: expected output
+    :type exp_out: Any
+    :param exp_count: expected count
+    :type exp_count: int
+    """
     spy = mocker.spy(helper_methods, funct_name)
 
     assert retry(getattr(helper_methods, funct_name), 3) == exp_out
@@ -80,11 +115,18 @@ def test_retry_on_exception(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
 ) -> None:
+    """Ensure that a method retry is executed if the method raises an exception.
+
+    :param mocker: pytest mock object
+    :type mocker: MockerFixture
+    :param helper_methods: HelperMethods class instance
+    :type helper_methods: HelperMethods
+    """
     spy = mocker.spy(helper_methods, "raise_exception")
 
     with pytest.raises(NotImplementedError):
         retry_on_exception(helper_methods.raise_exception, [])
-    assert spy.call_count == 10  # noqa: PLR2004
+    assert spy.call_count == 10
     assert spy.spy_return is None
 
 
@@ -92,11 +134,20 @@ def test_retry_on_exception_that_goes_away(
     mocker: MockerFixture,
     helper_methods: HelperMethods,
 ) -> None:
+    """Ensure that a method retry is executed when on each exception.
+
+    :param mocker: pytest mock object
+    :type mocker: MockerFixture
+    :param helper_methods: HelperMethods class instance
+    :type helper_methods: HelperMethods
+    """
     spy = mocker.spy(helper_methods, "raise_exception_two_times")
     exp_out = 2
 
-    assert retry_on_exception(helper_methods.raise_exception_two_times, []) == exp_out
-    assert spy.call_count == 2  # noqa: PLR2004
+    assert (
+        retry_on_exception(helper_methods.raise_exception_two_times, [[0]]) == exp_out
+    )
+    assert spy.call_count == 2
     assert spy.spy_return == exp_out
 
 
@@ -114,6 +165,19 @@ def test_retries_on_exception(
     retries: int,
     exp_count: int,
 ) -> None:
+    """Ensure that the retry occurs only a specified number of times and not more.
+
+    :param mocker: pytest mock object
+    :type mocker: MockerFixture
+    :param helper_methods: HelperMethods class instance
+    :type helper_methods: HelperMethods
+    :param funct_name: function name to be called
+    :type funct_name: str
+    :param retries: retry count
+    :type retries: int
+    :param exp_count: expected count
+    :type exp_count: int
+    """
     spy = mocker.spy(helper_methods, funct_name)
 
     with pytest.raises(NotImplementedError):
