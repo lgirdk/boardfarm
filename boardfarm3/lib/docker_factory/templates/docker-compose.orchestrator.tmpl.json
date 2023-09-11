@@ -2,6 +2,9 @@
     "services": {
         "orchestrator": {
             "container_name": "orchestrator",
+            "environment": {
+                "LEGACY": "yes"
+            },
             "hostname": "orchestrator",
             "image": "10.64.38.13:5000/bf-network-orchestrator:alpine3.18-dind-ovs_2.17",
             "network_mode": "host",

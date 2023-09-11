@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 
 
+_DEVICE_MAP = {"EXT_VOIP": "softphone", "SIP": "sipcenter"}
+
+
 # pylint: disable=too-few-public-methods
 class DockerComposeGenerator:
     """Class to manage docker-compose.yml payload for docker factory v2."""
@@ -109,7 +112,7 @@ class DockerComposeGenerator:
         if not json_file_path.exists():
             return {}
         device_template = json.loads(json_file_path.read_text())
-        requested_devices = self._get_requested_device_count(device_name)
+        requested_devices = self._get_requested_device_count(device_name.upper())
         device_compose: dict[str, Any] = {}
         for device_count in range(requested_devices):
             base_device = deepcopy(device_template)
@@ -118,6 +121,14 @@ class DockerComposeGenerator:
                 device_name,
                 f"{device_name}{device_count+1}",
             )
+            # This is needed because the name in schema(ext_voip) differs from actual
+            # device name (softphone)
+            if device_name == "ext_voip":
+                base_device["services"][device_name] = self._replace(
+                    base_device["services"][device_name],
+                    f"{device_name}{device_count+1}",
+                    f"softphone{device_count+1}",
+                )
             if isinstance(base_device, dict):
                 base_device["services"][device_name]["ports"] = self._update_ports(
                     base_device["services"][device_name]["ports"],
@@ -153,7 +164,9 @@ class DockerComposeGenerator:
         )
         # We do not want the orchestrator depending on itself
         device_list.remove("orchestrator")
-        orchestrator_compose["services"]["orchestrator"]["depends_on"] = device_list
+        orchestrator_compose["services"]["orchestrator"]["depends_on"] = sorted(
+            device_list,
+        )
         return orchestrator_compose
 
     def _merge_dicts(self, *dicts: dict[str, Any]) -> dict[str, Any]:
@@ -178,17 +191,17 @@ class DockerComposeGenerator:
             if (
                 isinstance(config_value, dict)
                 and "device_type" not in config_value
-                and config_key != "board"
+                and config_key != "BOARD"
             ):
                 self._get_devices(config_value)
             if isinstance(config_value, list) and config_key not in (
-                "board",
+                "BOARD",
                 "device_options",
             ):
-                self._devices_list.append(config_key)
+                self._devices_list.append(config_key.lower())
             if isinstance(config_value, list) and config_key == "device_options":
                 self._get_devices(next((item for item in config_value), {}))
-            if config_key == "board" and isinstance(config_value, list):
+            if config_key == "BOARD" and isinstance(config_value, list):
                 self._get_devices(next((item for item in config_value), {}))
 
     def generate_docker_compose(self) -> dict[str, Any]:
@@ -198,7 +211,7 @@ class DockerComposeGenerator:
         :rtype: dict[str, Any]
         """
         base_compose = self._generate_base_compose()
-        for device in self._devices_list:
+        for device in sorted(self._devices_list):
             base_compose = self._merge_dicts(
                 base_compose,
                 self._generate_device_compose(device),

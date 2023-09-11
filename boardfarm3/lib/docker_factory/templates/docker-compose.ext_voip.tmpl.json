@@ -1,0 +1,16 @@
+{
+    "services": {
+        "ext_voip": {
+            "container_name": "ext_voip",
+            "environment": {
+                "LEGACY": "no"
+            },
+            "hostname": "ext_voip",
+            "image": "10.64.38.13:5000/debian_softphone:2022.13.0",
+            "ports": [
+                "4003:22"
+            ],
+            "privileged": true
+        }
+    }
+}

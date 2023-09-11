@@ -1,0 +1,16 @@
+{
+    "services": {
+        "sip": {
+            "container_name": "sipcenter",
+            "environment": {
+                "LEGACY": "no"
+            },
+            "hostname": "sipcenter",
+            "image": "10.64.38.13:5000/ubuntu_asterisk",
+            "ports": [
+                "4005:22"
+            ],
+            "privileged": true
+        }
+    }
+}

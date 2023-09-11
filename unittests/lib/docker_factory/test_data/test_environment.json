@@ -9,7 +9,7 @@
                     }
                 ],
                 "North Bound": {
-                    "acs": [
+                    "ACS": [
                         {
                             "device_options": [],
                             "device_type": "axiros_acs_soap",
@@ -21,28 +21,28 @@
                             "version": "to_be_added"
                         }
                     ],
-                    "aftr": [
+                    "AFTR": [
                         {
                             "device_options": [],
                             "device_type": "debian_aftr",
                             "version": "to_be_added"
                         }
                     ],
-                    "dhcp": [
+                    "DHCP": [
                         {
                             "device_options": [],
                             "device_type": "kea_provisioner",
                             "version": "to_be_added"
                         }
                     ],
-                    "dns": [
+                    "DNS": [
                         {
                             "device_options": [],
                             "device_type": "debian_dns",
                             "version": "to_be_added"
                         }
                     ],
-                    "ext_voip": [
+                    "EXT_VOIP": [
                         {
                             "device_options": [],
                             "device_type": "pjsip",
@@ -54,7 +54,14 @@
                             "version": "to_be_added"
                         }
                     ],
-                    "tftp": [
+                    "SIP": [
+                        {
+                            "device_options": [],
+                            "device_type": "asterisk",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "TFTP": [
                         {
                             "device_options": [],
                             "device_type": "debian_tftp",
@@ -66,14 +73,14 @@
                             "version": "to_be_added"
                         }
                     ],
-                    "time": [
+                    "TIME": [
                         {
                             "device_options": [],
                             "device_type": "debian_tod",
                             "version": "to_be_added"
                         }
                     ],
-                    "wan": [
+                    "WAN": [
                         {
                             "device_options": [],
                             "device_type": "debian_wan",
@@ -82,11 +89,11 @@
                     ]
                 },
                 "South Bound": {
-                    "board": [
+                    "BOARD": [
                         {
                             "South Bound": {
                                 "ethernet_clients": {
-                                    "lan": [
+                                    "LAN": [
                                         {
                                             "device_options": [],
                                             "device_type": "debian_lan",
@@ -98,7 +105,7 @@
                                             "version": "to_be_added"
                                         }
                                     ],
-                                    "tftp": [
+                                    "TFTP": [
                                         {
                                             "device_options": [],
                                             "device_type": "debian_tftp",
@@ -129,7 +136,7 @@
                                     "SKU": "Virgin Media",
                                     "console_available": true,
                                     "emta": {
-                                        "fxs": [
+                                        "FXS": [
                                             {
                                                 "device_options": [],
                                                 "device_type": "debian_fxs",
@@ -149,7 +156,7 @@
                         }
                     ]
                 },
-                "access_type": "DOCSIS"
+                "access_type": "PON"
             }
         }
     },

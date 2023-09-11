@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from json import load
+from json import loads
 from pathlib import Path
 
 import pytest
-import yaml
 
 from boardfarm3.lib.boardfarm_config import parse_boardfarm_config
 from boardfarm3.lib.docker_factory.docker_compose_generator import (
@@ -20,8 +19,7 @@ _TEST_DATA_DIR = Path(__file__).parent / "test_data"
 def fixture_template_manager() -> DockerComposeGenerator:
     ams_path = _TEST_DATA_DIR / "ams.json"
     environment_json_path = _TEST_DATA_DIR / "test_environment.json"
-    with ams_path.open(encoding="UTF-8") as source:
-        inventory_json = load(source)
+    inventory_json = loads(ams_path.read_text())
     boardfarm_config = parse_boardfarm_config(
         inventory_json["F5685LGE-1-1"],
         environment_json_path.as_posix(),
@@ -30,14 +28,20 @@ def fixture_template_manager() -> DockerComposeGenerator:
 
 
 def test_docker_compose_generator(template_manager: DockerComposeGenerator) -> None:
-    expected_compose_path = _TEST_DATA_DIR / "expected_compose.yml"
-    with expected_compose_path.open(encoding="UTF-8") as expected_compose_content:
-        expected_compose = yaml.safe_load(expected_compose_content)
-    assert template_manager.generate_docker_compose() == expected_compose
+    expected_compose_path = _TEST_DATA_DIR / "expected_compose.json"
+    expected_compose = loads(expected_compose_path.read_text())
+    assert dict(sorted(template_manager.generate_docker_compose().items())) == dict(
+        sorted(expected_compose.items()),
+    )
 
 
 @pytest.mark.parametrize(
-    ("data", "val_from", "val_to", "expected"),
+    (
+        "data",
+        "val_from",
+        "val_to",
+        "expected",
+    ),
     [
         ([1, 2, 3], 2, "a", [1, "a", 3]),
         ({"a": 1, "b": 2}, 2, "x", {"a": 1, "b": "x"}),
