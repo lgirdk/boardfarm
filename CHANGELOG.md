@@ -1,3 +1,16 @@
+## 2023.37.0 (2023-09-13)
+
+### Feat
+
+- **use_cases/snmp.py**: add Use Case to perform SNMP bulk get
+- **lib/SNMPv2.py**: implementation of SNMP bulk get method
+- **use_cases/networking.py**: add Param for the test case to pass destination port for initiating the ipv4 traffic
+- **use_cases/networking.py**: add Param for the test case to pass destination port for initiating the ipv6 traffic
+
+### Fix
+
+- **boardfarm/devices/axiros_acs.py**: fix xml parser error when non formatted, non printable or non ascii characters present
+
 ## 2023.36.0 (2023-09-04)
 
 ### Fix
