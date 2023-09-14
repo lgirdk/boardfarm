@@ -747,6 +747,7 @@ def initiate_v4_traffic(
     destination_port: Optional[int] = None,
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
+    destination_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
     """Initiate IPv4 only traffic from source device to destination device.
 
@@ -771,11 +772,17 @@ def initiate_v4_traffic(
     :param bind_receiver_ip: bind to the interface associated with the
         host address, defaults to None
     :type bind_receiver_ip: str, optional
+    :param destination_ip: IPv4 address which will be used for iperf traffic
+    :type destination_ip: str, optional
     :return: IPerf3TrafficGenerator data class that holds
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip = destination_device.get_interface_ipaddr(destination_device.iface_dut)
+    dest_ip = (
+        destination_device.get_interface_ipaddr(destination_device.iface_dut)
+        if destination_ip is None
+        else destination_ip
+    )
     destination_port = source_port if destination_port is None else destination_port
     dest_pid = destination_device.start_traffic_receiver(
         destination_port, ipv=4, bind_to_ip=bind_receiver_ip
@@ -804,6 +811,7 @@ def initiate_v6_traffic(
     destination_port: Optional[int] = None,
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
+    destination_ip: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
     """Initiate IPv6 only traffic from source device to destination device.
 
@@ -828,11 +836,17 @@ def initiate_v6_traffic(
     :param bind_receiver_ip: bind to the interface associated with the
         host address, defaults to None
     :type bind_receiver_ip: str, optional
+    :param destination_ip: IPv6 address which will be used for iperf traffic
+    :type destination_ip: str, optional
     :return: IPerf3TrafficGenerator data class that holds
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip6 = destination_device.get_interface_ip6addr(destination_device.iface_dut)
+    dest_ip6 = (
+        destination_device.get_interface_ip6addr(destination_device.iface_dut)
+        if destination_ip is None
+        else destination_ip
+    )
     destination_port = source_port if destination_port is None else destination_port
     dest_pid = destination_device.start_traffic_receiver(
         destination_port, ipv=6, bind_to_ip=bind_receiver_ip
