@@ -181,6 +181,12 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
     :rtype: List[Tuple[str]]
     """
     device = dev._obj()
+
+    # Sync the console before executing the tshark command
+    device.sudo_sendline("sync")
+    device.expect("sync", timeout=timeout)
+    device.expect(device.prompt, timeout=timeout)
+
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
         "-T fields -e frame.number -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst -e sip.from.user -e sip.contact.user "
