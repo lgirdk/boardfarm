@@ -335,3 +335,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_mtu_size(self, interface: str) -> int:
+        """Get the MTU size of the interface in bytes.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: size of the MTU in bytes
+        :rtype: int
+        """
+        raise NotImplementedError
