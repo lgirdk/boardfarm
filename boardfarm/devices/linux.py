@@ -7,6 +7,7 @@ import re
 from contextlib import contextmanager, suppress
 from typing import Any, Dict, Optional, Union
 
+import jc
 import jc.parsers.ping
 import pexpect
 
@@ -835,14 +836,12 @@ EOFEOFEOFEOF"""
             command_str += additional_args
 
         try:
-
             self.sudo_sendline(f"{command_str} &")
             self.expect_exact(f"tcpdump: listening on {interface}")
             process_id = re.search(r"(\[\d{1,10}\]\s(\d+))", self.before).group(2)
             yield process_id
 
         finally:
-
             # This should always be executed, might kill other tcpdumps[need to agree]
             if process_id:
                 self.sudo_sendline(f"kill {process_id}")
@@ -1135,6 +1134,22 @@ EOFEOFEOFEOF"""
 
         output = self.check_output("ps auxwwww|grep iperf3|grep -v grep")
         return str(pid) not in output if pid else "iperf3" not in output
+
+    def get_interface_mtu_size(self, interface: str) -> int:
+        """Return the interface MTU size in bytes.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: MTU size in bytes
+        :rtype: int
+        :raises ValueError: when ifconfig data is not available
+        """
+        if ifconfig_data := jc.parse(
+            "ifconfig",
+            self.check_output(f"ifconfig {interface}"),
+        ):
+            return ifconfig_data[0]["mtu"]  # type: ignore
+        raise ValueError(f"ifconfig {interface} is not available")
 
 
 class LinuxDevice(LinuxInterface, base.BaseDevice):
