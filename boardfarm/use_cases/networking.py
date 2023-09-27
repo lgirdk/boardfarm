@@ -652,6 +652,25 @@ def get_iptables_list(
     return device.firewall.get_iptables_list(opts, extra_opts)
 
 
+def get_iptables_policy(
+    device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
+    opts: str = "",
+    extra_opts: str = "-nvL --line-number",
+) -> dict[str, str]:
+    """Get firewall's iptables policy.
+
+    :param device: device class object
+    :type device: Union[DebianWAN, AxirosACS, BoardSWTemplate]
+    :param opts: options for iptables command
+    :type opts: str
+    :param extra_opts: extra options for iptables command, defaults to -nvL --line-number
+    :type extra_opts: str
+    :return: dict of iptable policy
+    :rtype: dict[str, str]
+    """
+    return device.firewall.get_iptables_policy(opts, extra_opts)
+
+
 def is_iptable_empty(
     device: Union[DebianWAN, AxirosACS, BoardSWTemplate],
     opts: str = "",
