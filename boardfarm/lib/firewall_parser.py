@@ -76,3 +76,19 @@ class iptable_parser:
                 self.table_rule[self.key] = rule_data
         assert self.table_rule, "Invalid table name or Table doesn't exist"
         return self.table_rule
+
+    def iptables_policy(self, ip_tables: str) -> dict[str, str]:
+        """Return the iptables policy.
+
+        :param ip_tables: output of iptables command
+        :type ip_tables: str
+        :return: dict of iptable policy
+        :rtype: dict[str, str]
+        """
+        policy_dict = {}
+        for policies in re.split(r"Chain", ip_tables):
+            if len(lines := policies.strip().split("\n")) > 1:
+                policy_key = lines[0].split()[0]
+                policy_value = re.search(r"\((.*?)\)", lines[0])[1]
+                policy_dict[policy_key] = policy_value
+        return policy_dict

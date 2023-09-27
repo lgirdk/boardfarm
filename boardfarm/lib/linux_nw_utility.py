@@ -134,6 +134,10 @@ class NwFirewall(NwFirewallStub):
         out = self.dev.check_output(f"iptables {opts} {extra_opts}")
         return iptable_parser().ip6tables(out)
 
+    def get_iptables_policy(self, opts="", extra_opts=""):
+        out = self.dev.check_output(f"iptables {opts} {extra_opts}")
+        return iptable_parser().iptables_policy(out)
+
     def is_iptable_empty(self, opts="", extra_opts=""):
         out = self.dev.check_output(f"iptables {opts} {extra_opts}")
         check_out = iptable_parser().ip6tables(out)
