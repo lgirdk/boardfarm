@@ -281,6 +281,24 @@ class IptablesFirewall:
             self._console.execute_command(f"ip6tables {opts} {extra_opts}"),
         )
 
+    def get_iptables_policy(
+        self,
+        opts: str = "",
+        extra_opts: str = "-nvL --line-number",
+    ) -> dict[str, str]:
+        """Return iptables policies as dictionary.
+
+        :param opts: command line arguments for iptables command
+        :type opts: str
+        :param extra_opts: options for iptables command, defaults to -nvL --line-number
+        :type extra_opts: str
+        :return: iptables policies dictionary
+        :rtype: dict[str, str]
+        """
+        return IptablesParser().iptables_policy(
+            self._console.execute_command(f"iptables {opts} {extra_opts}"),
+        )
+
     def is_ip6table_empty(self, opts: str = "", extra_opts: str = "") -> bool:
         """Return True if ip6tables is empty.
 
