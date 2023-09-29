@@ -1,3 +1,14 @@
+## 2023.39.0 (2023-09-29)
+
+### Feat
+
+- **use_cases/networking.py**: add param to decide on the iperf destination ip addr
+
+### Fix
+
+- **voice**: fix the console sync issue
+- **boardfarm/lib/booting.py**: fix digit map issue
+
 ## 2023.37.0 (2023-09-13)
 
 ### Feat
