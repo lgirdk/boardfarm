@@ -495,3 +495,21 @@ class SoftPhone(SIPPhoneTemplate):
 
     def disable_call_waiting_per_call(self, dtmf_code: str) -> None:
         self._dial_feature_code(dtmf_code)
+
+    def enable_unconditional_call_forwarding(self, dtmf_code: str, number: str) -> None:
+        """Enable unconditional call forwarding.
+
+        :param dtmf_code: Dual tone multi-frequency code
+        :type dtmf_code: str
+        :param number: number to forward the call
+        :type number: str
+        """
+        self._dial_feature_code(f"{dtmf_code}{number}#")
+
+    def disable_unconditional_call_forwarding(self, dtmf_code: str) -> None:
+        """Disable unconditional call forwarding.
+
+        :param dtmf_code: Dual tone multi-frequency code
+        :type dtmf_code: str
+        """
+        self._dial_feature_code(dtmf_code)
