@@ -78,6 +78,7 @@
     [project.entry-points."boardfarm"]
         core    = "boardfarm3.plugins.core"
         booting = "boardfarm3.plugins.setup_environment"
+        no_reservation = "boardfarm3.plugins.no_reservation"
 
 [project.urls]
     Source = "https://github.com/lgirdk/boardfarm"
