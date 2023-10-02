@@ -484,3 +484,23 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
         """
         self._dial(dtmf_code)
         self.on_hook()
+
+    def enable_unconditional_call_forwarding(self, dtmf_code: str, number: str) -> None:
+        """Enable unconditional call forwarding.
+
+        :param dtmf_code: Dual tone multi-frequency code
+        :type dtmf_code: str
+        :param number: number to forward the call
+        :type number: str
+        """
+        self._dial(f"{dtmf_code}{number}#")
+        self.on_hook()
+
+    def disable_unconditional_call_forwarding(self, dtmf_code: str) -> None:
+        """Disable unconditional call forwarding.
+
+        :param dtmf_code: Dual tone multi-frequency code
+        :type dtmf_code: str
+        """
+        self._dial(dtmf_code)
+        self.on_hook()
