@@ -588,3 +588,36 @@ def determine_sipserver_ip(voice_client: VoiceClient) -> str:
         if isinstance(ip_address(voice_client.ip), IPv4Address)
         else sip_server.gwv6
     )
+
+
+def enable_unconditional_call_forwarding(
+    who_forwards: VoiceClient, forward_to: VoiceClient
+) -> None:
+    """Enable unconditional call forwarding on a phone.
+
+    This thus forwards a call to another user
+
+    :param who_forwards: Agent that enables unconditional call forwarding
+    :type who_forwards: VoiceClient
+    :param forward_to: SIP Client to which agent forwards the call to
+    :type forward_to: VoiceClient
+    """
+    board = get_device_by_name("board")
+    who_forwards._obj().enable_unconditional_call_forwarding(
+        dtmf_code=board.sw.voice.dtmf_codes["unconditional_call_forwarding_enable"],
+        number=forward_to.number,
+    )
+
+
+def disable_unconditional_call_forwarding(
+    who_disables: VoiceClient,
+) -> None:
+    """Disable unconditional call forwarding on a phone.
+
+    :param who_disables: Agent that disables unconditional call forwarding
+    :type who_disables: VoiceClient
+    """
+    board = get_device_by_name("board")
+    who_disables._obj().disable_unconditional_call_forwarding(
+        board.sw.voice.dtmf_codes["unconditional_call_forwarding_disable"]
+    )
