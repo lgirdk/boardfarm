@@ -355,3 +355,27 @@ class WAN(ABC):
         :rtype: int
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def add_route(self, destination: str, gw_interface: str) -> None:
+        """Add a route to a destination via a specific gateway interface.
+
+        The method will internally calculate the exit interface's ip address
+        before adding the route.
+        The gw_interface must be an interface name that exists on the host.
+
+        :param destination: ip address of the destination
+        :type destination: str
+        :param gw_interface: name of the interface
+        :type gw_interface: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_route(self, destination: str) -> None:
+        """Delete a route to a destination.
+
+        :param destination: ip address of the destination
+        :type destination: str
+        """
+        raise NotImplementedError
