@@ -99,7 +99,7 @@
         ["disabled", "fg:#858585 italic"],
     ]
     tag_format = "$version"
-    version = "2022.36.1a118"
+    version = "2022.36.1a119"
     version_files = [
         "boardfarm3/__init__.py:version",
         "pyproject.toml:version",
@@ -122,7 +122,7 @@
     # Uncomment this if your project is hosted on GitHub:
     # github_url = "https://github.com/<user or organization>/<project>/"
     [tool.tbump.version]
-        current = "2022.36.1a118"
+        current = "2022.36.1a119"
 
         # Example of a semver regexp.
         # Make sure this matches current_version before
