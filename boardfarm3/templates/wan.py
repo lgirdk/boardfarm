@@ -406,3 +406,63 @@ class WAN(ABC):
         :type action: Literal["download", "upload"], optional
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def start_traffic_receiver(
+        self,
+        traffic_port: int,
+        bind_to_ip: str | None = None,
+        ip_version: int | None = None,
+    ) -> int | bool:
+        """Start the server on a linux device to generate traffic using iperf3.
+
+        :param traffic_port: server port to listen on
+        :type traffic_port: int
+        :param bind_to_ip: bind to the interface associated with
+            the address host, defaults to None
+        :type bind_to_ip: str, optional
+        :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
+        :type ip_version: int, optional
+        :return: the process id(pid) or False if pid could not be generated
+        :rtype: int | bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_traffic_sender(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+        self,
+        host: str,
+        traffic_port: int,
+        bandwidth: int | None = None,
+        bind_to_ip: str | None = None,
+        direction: str | None = None,
+        ip_version: int | None = None,
+        udp_protocol: bool = False,
+        time: int = 10,
+    ) -> int | bool:
+        """Start traffic on a linux client using iperf3.
+
+        :param host: a host to run in client mode
+        :type host: str
+        :param traffic_port: server port to connect to
+        :type traffic_port: int
+        :param bandwidth: bandwidth(mbps) at which the traffic
+            has to be generated, defaults to None
+        :type bandwidth: Optional[int], optional
+        :param bind_to_ip: bind to the interface associated with
+            the address host, defaults to None
+        :type bind_to_ip: Optional[str], optional
+        :param direction: `--reverse` to run in reverse mode
+            (server sends, client receives) or `--bidir` to run in
+            bidirectional mode, defaults to None
+        :type direction: Optional[str], optional
+        :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
+        :type ip_version: int, optional
+        :param udp_protocol: use UDP rather than TCP, defaults to False
+        :type udp_protocol: bool, optional
+        :param time: time in seconds to transmit for, defaults to 10
+        :type time: int, optional
+        :return: the process id(pid) or False if pid could not be generated
+        :rtype: int | bool
+        """
+        raise NotImplementedError

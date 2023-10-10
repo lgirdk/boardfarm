@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Literal, Optional, Union
 
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,duplicate-code
 
 
 GpvStruct = dict[str, Union[str, int, bool]]
