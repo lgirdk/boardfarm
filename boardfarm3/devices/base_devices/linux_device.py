@@ -799,3 +799,83 @@ class LinuxDevice(BoardfarmDevice):
     def stop_danteproxy(self) -> None:
         """Stop the Dante proxy."""
         self._console.execute_command("service danted stop")
+
+    def start_traffic_receiver(
+        self,
+        traffic_port: int,
+        bind_to_ip: str = None,
+        ip_version: int = None,
+    ) -> Union[int, bool]:
+        """Start the server on a linux device to generate traffic using iperf3.
+
+        :param traffic_port: server port to listen on
+        :type traffic_port: int
+        :param bind_to_ip: bind to the interface associated with
+            the address host, defaults to None
+        :type bind_to_ip: str, optional
+        :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
+        :type ip_version: int, optional
+        :return: the process id(pid) or False if pid could not be generated
+        :rtype: Union[int, bool]
+        """
+        self._console.execute_command(
+            f"iperf3{f' -{ip_version}' if ip_version else ''} -s -p {traffic_port}"
+            f"{f' -B {bind_to_ip}' if bind_to_ip else ''}  -D",
+        )
+        output = self._console.execute_command(
+            "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
+        )
+        if "iperf3" in output:
+            out = re.search(f".* -p {traffic_port}.*", output).group()
+            return int(out.split()[1])
+        return False
+
+    def start_traffic_sender(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+        self,
+        host: str,
+        traffic_port: int,
+        bandwidth: Optional[int] = None,
+        bind_to_ip: Optional[str] = None,
+        direction: Optional[str] = None,
+        ip_version: int = None,
+        udp_protocol: bool = False,
+        time: int = 10,
+    ) -> Union[int, bool]:
+        """Start traffic on a linux client using iperf3.
+
+        :param host: a host to run in client mode
+        :type host: str
+        :param traffic_port: server port to connect to
+        :type traffic_port: int
+        :param bandwidth: bandwidth(mbps) at which the traffic
+            has to be generated, defaults to None
+        :type bandwidth: Optional[int], optional
+        :param bind_to_ip: bind to the interface associated with
+            the address host, defaults to None
+        :type bind_to_ip: Optional[str], optional
+        :param direction: `--reverse` to run in reverse mode
+            (server sends, client receives) or `--bidir` to run in
+            bidirectional mode, defaults to None
+        :type direction: Optional[str], optional
+        :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
+        :type ip_version: int, optional
+        :param udp_protocol: use UDP rather than TCP, defaults to False
+        :type udp_protocol: bool, optional
+        :param time: time in seconds to transmit for, defaults to 10
+        :type time: int, optional
+        :return: the process id(pid) or False if pid could not be generated
+        :rtype: Union[int, bool]
+        """
+        self._console.execute_command(
+            f"iperf3{f' -{ip_version}' if ip_version else ''} -c {host} "
+            f"-p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}"
+            f" {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}"
+            f"{' -u' if udp_protocol else ''} 2>&1 > /dev/null &",
+        )
+        output = self._console.execute_command(
+            "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
+        )
+        if "iperf3" in output and "Exit 1" not in output:
+            out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
+            return int(out.split()[1])
+        return False
