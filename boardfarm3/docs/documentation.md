@@ -1,0 +1,23 @@
+## Table of Contents
+
+- Getting Started with Boardfarm
+    - Installation
+    - Running an interactive session with your lab environment
+    - Booting up a lab environment
+- Overview
+    - Architecture
+    - Hook Specification and Call Flow
+- Configuration
+    - Inventory
+    - Environment
+- Development
+    - Writing a Boardfarm plugin
+    - Writing a Connection class
+    - Writing a Device Class
+    - Server vs Board vs Additional Devices
+    - Registering a new Device
+    - Adding a new Hook in the core execution flow
+- Contributing
+    - Guideline
+    - Unit Tests
+    - Coding Style

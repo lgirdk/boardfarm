@@ -1,301 +1,106 @@
-Board Farm
-----------
+# Boardfarm
+<p align=center>
+    <img src="boardfarm3/docs/BoardFarm.png" width="350"/> <br>
+    <img alt="GitHub" src="https://img.shields.io/github/license/lgirdk/boardfarm">
+    <img alt="GitHub commit activity (branch)"
+    src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/boardfarm3">
+    <img alt="GitHub last commit (branch)"
+    src="https://img.shields.io/github/last-commit/lgirdk/boardfarm/boardfarm3">
+    <img alt="Python Version" src="https://img.shields.io/badge/python-3.11+-blue">
+    <a href="https://github.com/psf/black"><img alt="Code style: black"
+    src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+    <a href="https://github.com/astral-sh/ruff"><img alt="Code style: black"
+    src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+</p> <hr>
 
-Boardfarm is an open-source framework that was developed at Qualcomm to automate testing of OpenWrt routers and other devices.  When used with continuous integration servers, such as [Jenkins](https://jenkins-ci.org/), boardfarm tests new code commits and nightly builds by flashing software or ipk files onto devices and running tests.
+Boardfarm is an open-source IT automation framework purely written in Python (3.9+).
 
-Tests are located in individual files in the "tests" directory. Tests include networking tests (e.g. ping, iperf, netperf), functionality tests (e.g. restart firewall or daemons), wifi tests, ipv4 and ipv6 tests, stability tests, and more.
+Its primary focus revolves around systems configuration, infrastructure deployment,
+and orchestration of advanced IT tasks such as Subscriber Provisioning,
+Line Termination System bootups (LTS) or a CPE firmware flash via bootloader.
 
-The simplest tests consist of commands to type expected output. These tests use [Pexpect](https://pexpect.readthedocs.org/en/latest/) to connect to devices and type commands. Examples and explanations of tests are shown later in this document.
+It empowers its users with the ability to automate and comprehensively
+test their devices across a wide range of target environments.
 
-Test suites are located in `testsuites.cfg` and are simply lists of test names.  Results of running a test suite are stored in a nicely formated html file that can be emailed to interested parties or sent to a database.
+## Motivation
 
-Getting involved
---------------
-Have a question about BoardFarm? Want to know the best way to get involved? Found a bug? Here are the BoardFarm communication channels:
+Boardfarm was initially developed at Qualcomm to automate testing of OpenWrt
+routers and other embedded devices.
 
-* Mailing List at boardfarm@lists.prplfoundation.org (sign up at http://lists.prplfoundation.org/cgi-bin/mailman/listinfo/boardfarm). Use this for general discussion or questions.
-* IRC at #boardfarm on Freenode. Use this for quick answers if someone is available (Sometimes no one is there)
-* Issue tracker at https://github.com/qca/boardfarm/issues. Use this for clear feature requests or bug reports. It's okay to also initially discuss a feature request on the mailing lists
-* Pull requests at https://github.com/qca/boardfarm. When you want to submit a change to Boardfarm!
+<img src="boardfarm3/docs/images/basic_setup.png" width="600"/>
 
-Software Setup
---------------
+Over time, the framework evolved to support RDK-B derived boards and IoT devices,
+along with the essential OSS and back-office components necessary for simulating
+a Telecom Service Providers' environment.
 
-If you are a Linux user, and wish to run and/or develop tests, please clone this repository and then install needed libaries:
-```shell
-apt-get install python-pip curl python-tk libsnmp-dev snmp-mibs-downloader
-cd openwrt/
-pip install -r requirements.txt
-```
+<img src="boardfarm3/docs/images/advance_setup.png" width="600"/>
 
-The file `config.py` is the main configuration. For example, it sets the location of the file that describes the available hardware.
+The operation of a device or the configuration of a server can vary depending
+on the specific hardware variant or the infrastructure layout of the deploying
+Telecom Operator.
 
-### Compiling Qemu to simulate devices
+To address this variability, Boardfarm utilizes Pluggy to introduce a hook
+structure that enables its users to register customized code through plugins
+for each individual infrastructure component.
 
-[Qemu](https://www.qemu.org/) does full system simulation, and boardfarm can use that tool to run tests on simulated devices (e.g. a simulated OpenWrt router). If you want to use qemu, you will want a recent version (3.0 or higher). You may have to compile on your own system, and if so here's how:
+This structure also enforces a uniform API specification, allowing plugins to
+invoke their implementation at any of the predefined checkpoints within the
+Boardfarm's execution cycle, offering flexibility and extensibility.
 
-```sh
-sudo apt-get update
-sudo apt-get install build-essential zlib1g-dev pkg-config \
-    libglib2.0-dev binutils-dev libboost-all-dev autoconf \
-    libtool libssl-dev libpixman-1-dev libpython-dev python-pip \
-    python-capstone virtualenv wget
-wget https://download.qemu.org/qemu-4.0.0.tar.xz
-tar xvJf qemu-4.0.0.tar.xz
-cd qemu-4.0.0
-./configure
-make
-sudo make install
-```
+## Features
+- Modular Hook definitions enabling users to independently
+initiate the bootup/deployment process for each component within the infrastructure,
+offering granular control and flexibility.
+- Seamless integration with Pytest. Provides easy access to devices along with their
+pre-set operations through protocol-specific libraries.
+- A versatile connection manager that abstracts physical device connections,
+offering a unified set of APIs for RS232, SSH, Telnet, SNMP, and HTTP(s)
+communication with the infrastructure.
+- A library of device templates (Python ABCs) that can be inherited and customized
+for implementing hardware interactions without application or server specific constraints.
+- A plugin architecture that enables vendors and OEMs to perform testing and provisioning
+on their firmware builds/devices, whether in a predefined production or fully
+simulated test environment.
+- Integration with Docker/QEMU to simulate various test environments and devices.
 
-### Getting Docker for simulated devices
-
-Docker is also useful for creating simulated devices for running tests. To get the latest stable docker and set it up correctly:
-
-```sh
-sudo apt-get update
-sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-sudo apt-get update
-sudo apt-get install -y docker-ce
-# Add your user to the docker group so that you can run docker without sudo
-sudo usermod -aG docker $USER
-```
-
-Hardware Setup
---------------
-
-To setup your own remotely-accessible boards, see BOARD_FARM.md in the docs directory. A "Board Farm" makes devices available over the network and this software connects to available devices to run tests. When a user is using a device, no one else can access or modify it.
-
-Sample Commands
----------------
-
-List available boards:
-```shell
-./bft -i
-```
-
-List available tests:
-```shell
-./bft -l
-```
-
-Connect to any available board of a certain type:
-```shell
-./bft -b ap135
-```
-
-Run a test case on a specific board:
-```shell
-./bft -n board01 -e MyTest
-```
-
-Run a test on any available board:
-```shell
-./bft -b ap148 -e MyTest
-```
-
-Flash some kernel and rootfs images to an available board, and run a specific test:
-```shell
-./bft -b ap135 -k http://10.0.0.8/~john/openwrt-ar71xx-generic-ap135-kernel.bin -r http://10.0.0.8/~john/openwrt-ar71xx-generic-ap135-rootfs-squashfs.bin -e MyTest
-```
-
-Flash some meta image to an available board:
-```shell
-./bft -b ap148 http://10.0.0.8/~john/nand-ipq806x-single.img -x flash_only
-```
-
-See all available command-line options:
-```shell
-./bft -h
-```
-
-Example Test Case 1
--------------------
-
-The following test types a command on a device to check whether a component is installed or not. This test will pass if no exception is thrown.
-
-```python
-class AllJoynInstalled(rootfs_boot.RootFSBootTest):
-    '''AllJoyn package is installed.'''
-    def runTest(self):
-        board.sendline('opkg info alljoyn')
-        board.expect('Package: alljoyn', timeout=4)
-        board.expect('ok installed')
-        board.expect(prompt)
-```
-
-* `AllJoynInstalled` : A unique name for your test case.
-* `'''AllJoyn package is installed.'''` : A one sentence description of your test.
-* `sendline()` : types a command on a device.
-* `expect()` : string or regular expression to search for in the output from the device.  If no match is seen within 30 seconds, throw an exeption (the test case then fails).  Change search time with the `timeout` argument.
-* `prompt` : A regular expression that matches the prompt of openwrt and linux prompts.
-
-Example Test Case 2
--------------------
-
-"Regular Expressions" are a very powerful way of parsing and making sense of text output.  This example checks memory use on the device by using regular expressions and "capture groups".
-
-```python
-class MemoryUse(rootfs_boot.RootFSBootTest):
-    '''Checked memory use.'''
-    def runTest(self):
-        board.sendline('cat /proc/meminfo')
-        board.expect('MemTotal:\s+(\d+) kB', timeout=5)
-        mem_total = int(board.match.group(1))
-        board.expect('MemFree:\s+(\d+) kB')
-        mem_free = int(board.match.group(1))
-        board.expect(prompt)
-        mem_used = mem_total - mem_free
-        self.result_message = 'Used memory: %s MB. Free memory: %s MB.' % (mem_used/1024, mem_free/1024)
-```
-
-* `/proc/meminfo` : This is a file that contains information about memory use in linux. Each line contains a name, a value and a unit:
+## Installation
+Run the following command to directly install the package from the repo:
 
 ```bash
-root@OpenWrt:/# cat /proc/meminfo
-MemTotal:         126372 kB
-MemFree:           35720 kB
-Buffers:               0 kB
-Cached:            23056 kB
-SwapCached:            0 kB
-Active:            45164 kB
-Inactive:          10336 kB
-```
-* `'MemTotal:\s+(\d+) kB'` : This regular expression looks for the string `"MemTotal:"`, followed by one or more spaces, followed by one or more digits, followed by the string `" kB"`. The paretheses are special, because putting them around something, such as `(\d+)`, creates a capture group.  Every pair of paretheses in a regular expression is a new capture group.
-* `board.match.group(1)` : This returns the string within the first capture group. In this case, it is one or more digits, e.g. `"126372"`.
-
-Example Test Case 3
--------------------
-
-Other devices are availble for use. In the case of routers there is at least a device connected to both a LAN port and a WAN port. Commands can be sent do these devices by using `lan.sendline()` and `wan.sendline()`.
-
-```python
-class iPerfTest(rootfs_boot.RootFSBootTest):
-    '''iPerf from LAN to WAN'''
-    def runTest(self):
-        wan.sendline('iperf -s > /dev/null &')
-        wan.expect(prompt)
-        lan.sendline('iperf -t 50 -P 2 -c 192.168.0.1')
-        lan.expect('Client connecting to')
-        lan.expect(prompt, timeout=60)
-        wan.sendline('killall -9 iperf')
-        wan.expect(prompt)
-    def recover(self):
-        lan.sendcontrol('c')
+pip install git+https://github.com/lgirdk/boardfarm.git@boardfarm3
 ```
 
-* `wan.sendline('iperf -s > /dev/null &')` : This runs the iperf server command on the device connected to the WAN port.
-* `lan.sendline('iperf -t 50 -P 2 -c 192.168.0.1')` : This runs the iperf client command on the device connected to the LAN port.
-* `recover` : This function only runs if an uncaught exception is thrown within `runTest`.
-* `lan.sendcontrol('c')` : Type CTRL-C on the device connected to the LAN port. Since the iperf client command can fail or hang the command prompt, putting this in the `recover` fuction is a good safety measure to prevent hanging the prompt and interfering with tests that follow.
-
-Test Suites
------------
-
-A test suite is a list of test cases. Several are already defined in in the file `testsuites.cfg`. For example:
-
+## Usage
+```bash
+boardfarm -h
 ```
-[basic]
-RootFSBootTest
-OpenwrtVersion
-OpkgList
-KernelModules
-MemoryUse
-InterfacesShow
-LanDevPingRouter
-RouterPingWanDev
-LanDevPingWanDev
+This will display help for the framework. Here are all the switches it supports.
 ```
+usage: boardfarm [-h] --board-name BOARD_NAME --env-config ENV_CONFIG --inventory-config INVENTORY_CONFIG [--legacy] [--skip-boot] [--skip-contingency-checks] [--save-console-logs]
 
-Optionally, test suite may reference (using `@`) any other previously defined test suites to include all the test cases it contains. For example:
-```
-[basic-offline]
-RootFSBootTest
-OpenwrtVersion
-OpkgList
-KernelModules
-MemoryUse
-InterfacesShow
-
-[basic]
-@basic-offline
-LanDevPingRouter
-RouterPingWanDev
-LanDevPingWanDev
+options:
+  -h, --help            show this help message and exit
+  --board-name BOARD_NAME
+                        Board name
+  --env-config ENV_CONFIG
+                        Environment JSON config file path
+  --inventory-config INVENTORY_CONFIG
+                        Inventory JSON config file path
+  --legacy              allows for devices.<device> obj to be exposed (only for legacy use)
+  --skip-boot           Skips the booting process, all devices will be used as they are
+  --skip-contingency-checks
+                        Skip contingency checks while running tests
+  --save-console-logs   Save console logs to the disk
 ```
 
-To run a test suite on an any available board of type "ap148" simply type:
+## Documentation
+For full documentation, including installation, tutorials and architecture overview,
+please see <br>
+[Boardfarm Documentation](/boardfarm3/docs/documentation.md)
 
-```shell
-./bft --testsuite basic -b ap148
-```
+## Changelog
+Consult the [CHANGELOG](/CHANGELOG.md) page for fixes and enhancements of each version.
 
-Test Results
-------------
-
-A test can finish in one of three states: PASS, FAIL, or SKIP.
-
-If an uncaught exception is thrown (such as by `board.expect('something')`), then the test is marked as a FAIL - otherwise it is marked as a PASS.
-
-A result of SKIP is a special case. Tests can check for certain conditions - like check that a component is installed - and leave the test if those conditions are not met. An example:
-
-```python
-class SambaPerf(vfat_perf.VFatPerf):
-    def runTest(self):
-        try:
-            board.sendline('opkg list | grep samba')
-            board.expect('samba.*- .*\r\n')
-        except:
-            self.skipTest("Samba not installed.")
-```
-
-General Guidelines for Automated Tests
---------------------------------------
-
-The best automated tests share a few qualities:
-
-* They are short - Typically 5 to 50 lines of code.
-* They contain little logic - Tests should be less complicated than the things they are testing.
-* They are robust - Tests should be more stable than the things they are testing.
-* They are easy to read - Tests should follow the [PEP8 Style Guide](http://legacy.python.org/dev/peps/pep-0008/).
-
-The goal is to catch bugs in the software being tested. It is an annoying distraction when tests themselves crash. Keep your tests simple so that others can easily figure them out.
-
-Boardfarm overlays
------------------
-
-Recently support for having overlays in a separate directory (e.g. a separat
-git repository was added. This allows your own private tests, boards, and
-testsuites, templates that you want to keep separate for whatever reason.
-It's expected that if this is not private you can create a git repo and share
-your layer with others.
-
-The layout of the overlay will look exactly the same as the boardfarm repo:
-
-```
-my_overlay/
-├── devices
-│   ├── my_device.py
-├── html
-│   └── template_results.html
-├── tests
-│   ├── this.py
-│   ├── that.py
-│   └── foobar.py
-└── testsuites.cfg
-```
-
-Tests, devices, and testsuites in your overlay are added to the available
-tests, devices, testsuites. The email templates replace the ones from the main
-boardfarm repo
-
-To specify an over lay you simply need to the space separated overlays to the
-BFT_OVERLAY environment variable:
-
-export BFT_OVERLAY="../boardfarm-foo/ ../boardfarm-bar"
-
-Then after running bft you should have access to your new tests, device types, etc
-
-Good luck and thanks for reading!
+## License
+Distributed under the terms of the Clear BSD License, Boardfarm is free and
+open source software.
