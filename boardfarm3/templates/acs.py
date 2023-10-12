@@ -316,3 +316,12 @@ class ACS(ABC):
         :type cpe_id: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_file(self, filename: str) -> None:
+        """Delete the file from the device.
+
+        :param filename: name of the file with absolute path
+        :type filename: str
+        """
+        raise NotImplementedError
