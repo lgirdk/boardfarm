@@ -1,7 +1,7 @@
 """Boardfarm ACS device template."""
 
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 # pylint: disable=invalid-name
 
@@ -323,5 +323,23 @@ class ACS(ABC):
 
         :param filename: name of the file with absolute path
         :type filename: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def perform_scp(
+        self,
+        source: str,
+        destination: str,
+        action: Literal["download", "upload"] = "download",
+    ) -> None:
+        """Perform SCP from linux device.
+
+        :param source: source file path
+        :type source: str
+        :param destination: destination file path
+        :type destination: str
+        :param action: scp action(download/upload), defaults to "download"
+        :type action: Literal["download", "upload"], optional
         """
         raise NotImplementedError

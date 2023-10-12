@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
@@ -386,5 +386,23 @@ class WAN(ABC):
 
         :param filename: name of the file with absolute path
         :type filename: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def perform_scp(
+        self,
+        source: str,
+        destination: str,
+        action: Literal["download", "upload"] = "download",
+    ) -> None:
+        """Perform SCP from linux device.
+
+        :param source: source file path
+        :type source: str
+        :param destination: destination file path
+        :type destination: str
+        :param action: scp action(download/upload), defaults to "download"
+        :type action: Literal["download", "upload"], optional
         """
         raise NotImplementedError
