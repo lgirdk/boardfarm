@@ -916,3 +916,11 @@ class LinuxDevice(BoardfarmDevice):
         if self._console.expect_exact(["100%", pexpect.TIMEOUT], timeout=30):
             msg = f"Failed to scp from {source} to {destination}"
             raise SCPConnectionError(msg)
+
+    def delete_file(self, filename: str) -> None:
+        """Delete the file from the device.
+
+        :param filename: name of the file with absolute path
+        :type filename: str
+        """
+        self._console.execute_command(f"rm {filename}")
