@@ -879,3 +879,40 @@ class LinuxDevice(BoardfarmDevice):
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
             return int(out.split()[1])
         return False
+
+    def perform_scp(
+        self,
+        source: str,
+        destination: str,
+    ) -> None:
+        """Perform SCP from containers to local.
+
+        This method helps to copy logs of failed test cases from the device container
+        such as ACS, LAN, WAN and WLAN to the local.
+
+        :param source: source file name with absolute path
+        :type source: str
+        :param destination: destination file name with absolute path
+        :type destination: str
+        :raises SCPConnectionError:  when failed to scp file
+        """
+        # TODO: This implementation works with executors and need to be tested once the
+        # pipeline is in place
+        username, password, ip, port = (
+            self._username,
+            self._password,
+            self._ipaddr,
+            self._port,
+        )
+        command = (
+            "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+            f" -P {port} {username}@{ip}:{source} {destination}"
+        )
+        self._console.execute_command(command)
+        if self._console.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=10):
+            self._console.sendline("y")
+        if self._console.expect([pexpect.TIMEOUT, "assword:"], timeout=10):
+            self._console.sendline(password)
+        if self._console.expect_exact(["100%", pexpect.TIMEOUT], timeout=30):
+            msg = f"Failed to scp from {source} to {destination}"
+            raise SCPConnectionError(msg)
