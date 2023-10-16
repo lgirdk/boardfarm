@@ -1,3 +1,9 @@
+## 2023.42.0 (2023-10-16)
+
+### Feat
+
+- **devices/linux.py**: add method to return interface mtu size
+
 ## 2023.39.0 (2023-09-29)
 
 ### Feat
