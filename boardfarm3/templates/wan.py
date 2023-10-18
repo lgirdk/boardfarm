@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
@@ -377,5 +377,16 @@ class WAN(ABC):
 
         :param destination: ip address of the destination
         :type destination: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def toggle_interface(self, interface: str, action: Literal["up", "down"]) -> None:
+        """Toggle the interface based on the action passed.
+
+        :param interface: name of the interface
+        :type interface: str
+        :param action: up or down
+        :type action: Literal["up", "down"]
         """
         raise NotImplementedError
