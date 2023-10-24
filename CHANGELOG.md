@@ -1,3 +1,16 @@
+## 2023.43.0 (2023-10-24)
+
+### Feat
+
+- **use_cases/networking.py**: add Use Case to get the iptables policy
+- **devices/debian_fxs.py**: add method to perform unconditional call forwarding
+- **devices/softphone.py**: add method to perform unconditional call forwarding
+- **use_cases/voice.py**: add Use Case to enable/disable unconditional call forwarding
+
+### Fix
+
+- **lib/firewall_parser.py,-lib/linux_nw_utility.py**: fix to get the iptables policy
+
 ## 2023.42.0 (2023-10-16)
 
 ### Feat
