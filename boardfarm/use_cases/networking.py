@@ -1137,12 +1137,14 @@ def _nmap(
     max_retries: Optional[int] = None,
     min_rate: Optional[int] = None,
     opts: str = None,
-) -> dict:
-    iface = (
-        destination_device._obj.erouter_iface
-        if type(destination_device) == AnyCPE
-        else destination_device._obj.iface_dut
-    )
+    iface: Optional[str] = None,
+) -> dict[str, str]:
+    if iface is None:
+        iface = (
+            destination_device._obj.erouter_iface
+            if isinstance(destination_device, AnyCPE)
+            else destination_device._obj.iface_dut
+        )
     if ip_type not in ["ipv4", "ipv6"]:
         raise UseCaseFailure("Invalid ip type, should be either ipv4 or ipv6")
     ipaddr = (
@@ -1155,6 +1157,8 @@ def _nmap(
     port = f"-p {port}" if port else ""
     cmd = f"nmap {protocol or ''} {port} -Pn -r {opts or ''} {ipaddr} {retries} {rate} -oX -"
     xml = source_device.check_output(cmd)
+    xmlre = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    xml = xmlre.sub("", xml).strip()
     return xmltodict.parse(xml)
 
 
@@ -1164,6 +1168,7 @@ def create_udp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int,
+    interface: Optional[str] = None,
 ) -> dict[str, str]:
     """Create a UDP session from source to destination device on a port.
 
@@ -1179,10 +1184,20 @@ def create_udp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param interface: name of the interface
+    :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
-    return _nmap(source_device, destination_device, ip_type, port, "-sU", max_retries)
+    return _nmap(
+        source_device,
+        destination_device,
+        ip_type,
+        port,
+        "-sU",
+        max_retries,
+        iface=interface,
+    )
 
 
 def create_tcp_session(
@@ -1191,6 +1206,7 @@ def create_tcp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
+    interface: Optional[str] = None,
 ) -> dict[str, str]:
     """Create a TCP session from source to destination device on a port.
 
@@ -1206,10 +1222,20 @@ def create_tcp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param interface: name of the interface
+    :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
-    return _nmap(source_device, destination_device, ip_type, port, "-sT", max_retries)
+    return _nmap(
+        source_device,
+        destination_device,
+        ip_type,
+        port,
+        "-sT",
+        max_retries,
+        iface=interface,
+    )
 
 
 def create_tcp_udp_session(
@@ -1218,6 +1244,7 @@ def create_tcp_udp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
+    interface: Optional[str] = None,
 ) -> dict[str, str]:
     """Create both TCP and UDP session from source to destination device on a port.
 
@@ -1233,11 +1260,19 @@ def create_tcp_udp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param interface: name of the interface
+    :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
     return _nmap(
-        source_device, destination_device, ip_type, port, "-sU -sT", max_retries
+        source_device,
+        destination_device,
+        ip_type,
+        port,
+        "-sU -sT",
+        max_retries,
+        iface=interface,
     )
 
 
@@ -1248,6 +1283,7 @@ def perform_ip_flooding(
     port: Union[str, int],
     min_rate: int,
     max_retries: int = 4,
+    interface: Optional[str] = None,
 ) -> dict[str, str]:
     """Perform ip flooding via nmap network utility on source device.
 
@@ -1263,11 +1299,20 @@ def perform_ip_flooding(
     :type min_rate: int
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param interface: name of the interface
+    :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
     return _nmap(
-        source_device, destination_device, ip_type, port, "-sS", max_retries, min_rate
+        source_device,
+        destination_device,
+        ip_type,
+        port,
+        "-sS",
+        max_retries,
+        min_rate,
+        iface=interface,
     )
 
 
@@ -1275,6 +1320,7 @@ def perform_complete_scan(
     source_device: Union[DebianLAN, DebianWifi, DebianWAN],
     destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate],
     ip_type: str,
+    interface: Optional[str] = None,
 ) -> dict:
     """Perform Complete scan on destination via nmap network utility on source device.
 
@@ -1284,10 +1330,12 @@ def perform_complete_scan(
     :type destination_device: Union[DebianLAN, DebianWifi, DebianWAN, BoardTemplate]
     :param ip_type: type of ipaddress: "ipv4", "ipv6"
     :type ip_type: str
+    :param interface: name of the interface
+    :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
-    return _nmap(source_device, destination_device, ip_type, opts="-F")
+    return _nmap(source_device, destination_device, ip_type, opts="-F", iface=interface)
 
 
 def ping(
