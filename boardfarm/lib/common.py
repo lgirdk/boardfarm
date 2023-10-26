@@ -360,7 +360,8 @@ def firefox_webproxy_driver(ipport, config, default_delay=20):
     profile.update_preferences()
     opts = webdriver.FirefoxOptions()
     opts.headless = config.default_headless
-    driver = webdriver.Firefox(firefox_profile=profile, options=opts)
+    opts.profile = profile
+    driver = webdriver.Firefox(options=opts)
     x, y = config.get_display_backend_size()
     driver.set_window_size(x, y)
     driver.implicitly_wait(default_delay)
