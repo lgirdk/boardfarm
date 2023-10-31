@@ -285,7 +285,7 @@ class AFTR(base_profile.BaseProfile):
                         if self.aftr_local is not None
                         else self.aftr_url
                     )
-                    self.sendline(f"curl {self.aftr_url} -o /root/aftr.tbz")
+                    self.sendline(f"mgmt curl {self.aftr_url} -o /root/aftr.tbz")
                     self.expect(self.prompt, timeout=60)
                     self.sendline(
                         "tar -C /root -xvjf /root/aftr.tbz; mv /root/rt28354 /root/aftr"
