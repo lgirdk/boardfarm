@@ -53,7 +53,7 @@ def tcpdump_capture(
     :return: Console output of tcpdump sendline command/pid depends on the return_pid flag
     :rtype: string
     """
-    base = f"tcpdump -U -i {interface} -n -w {capture_file} "
+    base = f"tcpdump -Z root -C 2 -W 10  -U -i {interface} -n -w {capture_file} "
     run_background = " &"
     filter_str = " ".join([" ".join(i) for i in filters.items()]) if filters else ""
     filter_str += additional_filters
