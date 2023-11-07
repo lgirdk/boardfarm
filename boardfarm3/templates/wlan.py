@@ -433,3 +433,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: Union[int, bool]
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def set_link_state(self, interface: str, state: str) -> None:
+        """Set link state.
+
+        :param interface: name of the interface
+        :type interface: str
+        :param state: desired state up or down
+        :type state: str
+        """
+        raise NotImplementedError

@@ -85,8 +85,10 @@ class LAN(ABC):
     def set_link_state(self, interface: str, state: str) -> None:
         """Set link state.
 
-        :param interface: interface name
-        :param state: desired state
+        :param interface: name of the interface
+        :type interface: str
+        :param state: desired state up or down
+        :type state: str
         """
         raise NotImplementedError
 
