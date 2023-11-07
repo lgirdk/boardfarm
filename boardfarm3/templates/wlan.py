@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -344,16 +344,5 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type interface: str
         :return: size of the MTU in bytes
         :rtype: int
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def toggle_interface(self, interface: str, action: Literal["up", "down"]) -> None:
-        """Toggle the interface based on the action passed.
-
-        :param interface: name of the interface
-        :type interface: str
-        :param action: up or down
-        :type action: Literal["up", "down"]
         """
         raise NotImplementedError
