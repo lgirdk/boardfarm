@@ -5,7 +5,7 @@ from argparse import Namespace
 from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 import jc.parsers.ping
 import pexpect
@@ -879,13 +879,3 @@ class LinuxDevice(BoardfarmDevice):
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
             return int(out.split()[1])
         return False
-
-    def toggle_interface(self, interface: str, action: Literal["up", "down"]) -> None:
-        """Toggle the interface based on the action passed.
-
-        :param interface: name of the interface
-        :type interface: str
-        :param action: up or down
-        :type action: Literal["up", "down"]
-        """
-        self._console.execute_command(f"ifconfig {interface} {action}")
