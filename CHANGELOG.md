@@ -1,3 +1,11 @@
+## 2023.45.0 (2023-11-08)
+
+### Fix
+
+- download aftr via mgmt iface
+- **networking.py**: added interface param
+- **common**: update setting firefox profile
+
 ## 2023.43.0 (2023-10-24)
 
 ### Feat
