@@ -437,9 +437,9 @@ class OpenWrtRouter(linux.LinuxDevice):
         """Wait for overlay to finish mounting."""
         for _ in range(5):
             try:
-                board.sendline("mount")
-                board.expect_exact("overlayfs:/overlay on / type overlay", timeout=15)
-                board.expect(self.prompt)
+                self.sendline("mount")
+                self.expect_exact("overlayfs:/overlay on / type overlay", timeout=15)
+                self.expect(self.prompt)
                 break
             except Exception:
                 pass

@@ -82,7 +82,7 @@
             "mypy",
             "nox",
             "pre-commit",
-            "pylint==2.14.1",
+            "pylint==3.0.2",
             "types-termcolor",
         ]
         doc = ["sphinx"]
