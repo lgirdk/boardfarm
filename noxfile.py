@@ -2,7 +2,7 @@
 
 import nox
 
-_PYTHON_VERSIONS = ["3.9"]
+_PYTHON_VERSIONS = ["3.11"]
 
 # Fail nox session when run a program which
 # is not installed in its virtualenv
