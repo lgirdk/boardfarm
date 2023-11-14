@@ -359,7 +359,8 @@ def firefox_webproxy_driver(ipport, config, default_delay=20):
     profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "text/plain")
     profile.update_preferences()
     opts = webdriver.FirefoxOptions()
-    opts.headless = config.default_headless
+    if config.default_headless:
+        opts.add_argument("--headless")
     opts.profile = profile
     driver = webdriver.Firefox(options=opts)
     x, y = config.get_display_backend_size()
