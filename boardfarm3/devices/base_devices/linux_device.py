@@ -5,7 +5,7 @@ from argparse import Namespace
 from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import jc.parsers.ping
 import pexpect
@@ -880,10 +880,11 @@ class LinuxDevice(BoardfarmDevice):
             return int(out.split()[1])
         return False
 
-    def perform_scp(
+    def perform_scp(  # pylint: disable=W0613
         self,
         source: str,
         destination: str,
+        action: Literal["download", "upload"] = "download",  # noqa: ARG002
     ) -> None:
         """Perform SCP from containers to local.
 
@@ -894,6 +895,8 @@ class LinuxDevice(BoardfarmDevice):
         :type source: str
         :param destination: destination file name with absolute path
         :type destination: str
+        :param action: whether to up/download the file (currently unused)
+        :type action: Literal
         :raises SCPConnectionError:  when failed to scp file
         """
         # TODO: This implementation works with executors and need to be tested once the
