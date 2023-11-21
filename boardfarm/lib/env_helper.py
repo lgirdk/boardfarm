@@ -277,6 +277,13 @@ class EnvHelper:
                             count += 1
                         else:
                             for env in env_helper_list:
+                                if "SPV" in env:
+                                    test_list = test.get("SPV", [])
+                                    env_list = env.get("SPV", [])
+                                    if any(i in env_list for i in test_list):
+                                        env_helper_list.remove(env)
+                                        count += 1
+                                        break
                                 if test.items() <= env.items():
                                     env_helper_list.remove(env)
                                     count += 1
