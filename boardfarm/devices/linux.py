@@ -74,6 +74,19 @@ class LinuxInterface:
         logger.debug(f"ifconfig {interface} IPV4 {ipv4address}")
         return ipv4address
 
+    def get_interface_secondary_ipv4addr(self, interface: str) -> list[str]:
+        """Get the secondary IPv4 address of the given interface.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: secondary IPv4 address of interface
+        :rtype: list[str]
+        """
+        out = self.check_output(f"ifconfig {interface}")
+        if ip_addr := re.findall(r"\sinet addr:\s*([\d.]+)", out):
+            return ip_addr
+        raise ValueError(f"Failed to get secondary IPv4 address of {interface}")
+
     def get_interface_mask(self, interface):
         """Get ipv4 mask of interface."""
         self.sendline(f"\nifconfig {interface}")
