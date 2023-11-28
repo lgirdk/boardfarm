@@ -364,8 +364,10 @@ def get_traceroute_from_board(host_ip, version="", options="") -> str:
 
 
 def parse_icmp_trace(
-    device: Union[DebianLAN, DebianWAN, DebianWifi], fname: str
-) -> List[ICMPPacketData]:
+    device: Union[DebianLAN, DebianWAN, DebianWifi],
+    fname: str,
+    args: str = "-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type",
+) -> List[ICMPPacketData] | List[str]:
     """Read and Filter out the ICMP packets from the pcap file with fields.
 
     Source, Destinationa and Code of Query Type
@@ -374,35 +376,36 @@ def parse_icmp_trace(
     :type device: Union[DebianLAN, DebianWAN, DebianWifi]
     :param fname: Name of the captured pcap file
     :type fname: str
+    :param args: Arguments to be used for the filter
+    :type args: str, defaults to "-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type"
     :return: Sequence of ICMP packets filtered from captured pcap file
     :rtype: List[ICMPPacketData]
     """
     out = (
-        device.tshark_read_pcap(
-            fname, additional_args="-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type"
-        )
+        device.tshark_read_pcap(fname, args)
         .split("This could be dangerous.")[-1]
         .splitlines()[1:]
     )
     output: List[ICMPPacketData] = []
-    for line in out:
-        try:
-            (src, dst, query_code) = line.split("\t")
-        except ValueError:
-            raise UseCaseFailure("ICMP packets not found")
-
-        output.append(
-            ICMPPacketData(
-                IPAddresses(ip_address(src), None, None)
-                if type(ip_address(src)) == IPv4Address
-                else IPAddresses(None, ip_address(src), None),
-                IPAddresses(ip_address(dst), None, None)
-                if type(ip_address(dst)) == IPv4Address
-                else IPAddresses(None, ip_address(dst), None),
-                int(query_code),
+    if args == "-Y icmp -T fields -e ip.src -e ip.dst -e icmp.type":
+        for line in out:
+            try:
+                (src, dst, query_code) = line.split("\t")
+            except ValueError:
+                raise UseCaseFailure("ICMP packets not found")
+            output.append(
+                ICMPPacketData(
+                    IPAddresses(ip_address(src), None, None)
+                    if type(ip_address(src)) == IPv4Address
+                    else IPAddresses(None, ip_address(src), None),
+                    IPAddresses(ip_address(dst), None, None)
+                    if type(ip_address(dst)) == IPv4Address
+                    else IPAddresses(None, ip_address(dst), None),
+                    int(query_code),
+                )
             )
-        )
-    return output
+        return output
+    return out
 
 
 def is_icmp_packet_present(
