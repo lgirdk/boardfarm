@@ -259,18 +259,26 @@ class LinuxDevice(BoardfarmDevice):
                 msg,
             )
 
-    def download_file_from_uri(self, file_uri: str, destination_dir: str) -> str:
+    def download_file_from_uri(
+        self,
+        file_uri: str,
+        destination_dir: str,
+        internet_access_cmd: str = "",
+    ) -> str:
         """Download(wget) file from given URI.
 
         :param file_uri: file uri location
         :param destination_dir: destination directory
+        :param internet_access_cmd: cmd to access internet
         :returns: downloaded file name
         :raises ConfigurationFailure: when file download failed from given URI
         """
+        if not internet_access_cmd:
+            internet_access_cmd = self._internet_access_cmd
         file_name = file_uri.split("/")[-1]
         file_path = f"{destination_dir}/{file_name}"
         if " saved [" not in self._console.execute_command(
-            f"{self._internet_access_cmd} wget {file_uri!r} -O {file_path}",
+            f"{internet_access_cmd} wget {file_uri!r} -O {file_path}",
         ):
             msg = f"Failed to download file from {file_uri}"
             raise ConfigurationFailure(msg)
