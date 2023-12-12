@@ -1,0 +1,17 @@
+
+; <<>> DiG 9.16.1-Ubuntu <<>> www.google.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40408
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.google.com.                        IN      A
+
+;; ANSWER SECTION:
+www.google.com.         0       IN      A       172.217.168.196
+
+;; Query time: 10 msec
+;; SERVER: 172.30.96.1#53(172.30.96.1)
+;; WHEN: Fri Dec 08 11:16:34 CET 2023
+;; MSG SIZE  rcvd: 62
