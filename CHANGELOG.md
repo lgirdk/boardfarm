@@ -1,3 +1,17 @@
+## 2023.50.0 (2023-12-12)
+
+### Feat
+
+- make code base python3.11 compatible and fix pylint issues
+- **pyproject.toml**: lock selenium verison 4.15.0
+
+### Fix
+
+- **lib/env_helper.py**: fix env mismatch
+- **lib/linux_nw_utility.py,-use_cases/networking.py**: fix method
+- **boardfarm/lib/common.py**: run firefox as headless when specified
+- run tcpdump as root user
+
 ## 2023.45.0 (2023-11-08)
 
 ### Fix
