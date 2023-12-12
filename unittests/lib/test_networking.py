@@ -2,9 +2,11 @@
 
 from pathlib import Path
 
-from boardfarm3.lib.networking import _LinuxConsole, dns_lookup
+from boardfarm3.lib.networking import _LinuxConsole, dns_lookup, is_link_up
 
 _DNS_LOOKUP_REPLY = Path(__file__).parents[1] / "testdata/dns_lookup"
+
+_RG_IP_LINK_REPLY = Path(__file__).parents[1] / "testdata/rg_ip-link-show-erouter0"
 
 
 class MyLinuxConsole(_LinuxConsole):
@@ -38,3 +40,12 @@ def test_dns_lookup() -> None:
         domain_name="www.google.com",
     )
     assert "172.217.168.196" in reply[1]["answer"][0]["data"]
+
+
+def test_is_link_up() -> None:
+    """Test link is up."""
+    rg_link = is_link_up(
+        console=MyLinuxConsole(_RG_IP_LINK_REPLY.read_text()),
+        interface="erouter0",
+    )
+    assert rg_link is True
