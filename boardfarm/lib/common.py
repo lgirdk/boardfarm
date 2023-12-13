@@ -28,6 +28,7 @@ from termcolor import colored
 
 from boardfarm.dbclients import elasticlogger
 from boardfarm.dbclients.influx_wrapper import GenericWrapper
+from boardfarm.exceptions import PexpectErrorTimeout
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper, spawn_ssh_pexpect
 from boardfarm.lib.dhcpoption import configure_option125
 from boardfarm.lib.installers import (
@@ -2295,3 +2296,29 @@ def ip_pool_to_list(
         ip_list.append(start_ip)
         start_ip += 1
     return ip_list
+
+
+def install_app_via_wan(
+    applist: list, wan: bft_pexpect_helper, board_console: bft_pexpect_helper
+):
+    """Install all the application from the link via wan server."""
+
+    wan_eth_ip = wan.get_interface_ipaddr(wan.iface_dut)
+    wan_uri = f"http://{wan_eth_ip}/"
+    temp_dir = "/var/tmp/"
+    board_console.sendline(f"export PATH=$PATH:{temp_dir}")
+    board_console.expect_prompt()
+    for app_binary in applist:
+        app_name = app_binary.split("/")[-1]
+        target_loc = f"{temp_dir}{app_name}"
+        wan.download_from_server(url=app_binary, extra=f"-O /tftpboot/{app_name}")
+        board_console.sendline(f"wget {wan_uri}{app_name} -O {target_loc}")
+        resp = board_console.expect(["saved", pexpect.TIMEOUT], timeout=120)
+        if resp == 1:
+            raise PexpectErrorTimeout(
+                f"Unable to install the application {app_binary} from wan {wan_uri}"
+            )
+        board_console.sendline(f"chmod 777 {target_loc}")
+        board_console.expect_prompt()
+    msg = f"install applicaton successful :-  {applist}"
+    logger.info(msg)
