@@ -8,6 +8,7 @@ from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connections.ldap_authenticated_serial import LdapAuthenticatedSerial
 from boardfarm3.lib.connections.ser2net_connection import Ser2NetConnection
 from boardfarm3.lib.connections.ssh_connection import SSHConnection
+from boardfarm3.lib.connections.telnet import TelnetConnection
 
 
 def connection_factory(
@@ -27,11 +28,46 @@ def connection_factory(
         "ssh_connection": SSHConnection,
         "authenticated_ssh": SSHConnection,
         "ldap_authenticated_serial": LdapAuthenticatedSerial,
-        "ser2net": Ser2NetConnection,
+        "ser2net": _ser2net_param_parser,
+        "telnet": _telnet_param_parser,
     }
-    if connection_type not in connection_dispatcher:
-        msg = f"Unsupported connection type: {connection_type}"
-        raise EnvConfigError(msg)
-    if connection_type == "ssh_connection":
-        kwargs.pop("password")
-    return connection_dispatcher[connection_type](connection_name, **kwargs)
+    connection_obj = connection_dispatcher.get(connection_type)
+    if connection_obj is not None and callable(connection_obj):
+        if connection_type == "ssh_connection":
+            kwargs.pop("password")
+        return connection_obj(connection_name, **kwargs)
+    # Handle unsupported connection types
+    msg = f"Unsupported connection type: {connection_type}"
+    raise EnvConfigError(msg)
+
+
+def _telnet_param_parser(
+    connection_name: str,
+    **kwargs: Any,  # noqa: ANN401
+) -> TelnetConnection:
+    return TelnetConnection(
+        session_name=connection_name,
+        command="telnet",
+        save_console_logs=kwargs.pop("save_console_logs"),
+        args=[
+            kwargs["ip_addr"],
+            kwargs["port"],
+            kwargs["shell_prompt"],
+        ],
+    )
+
+
+def _ser2net_param_parser(
+    connection_name: str,
+    **kwargs: Any,  # noqa: ANN401
+) -> Ser2NetConnection:
+    return Ser2NetConnection(
+        connection_name,
+        "telnet",
+        kwargs.get("save_console_logs"),
+        [
+            kwargs["ip_addr"],
+            kwargs["port"],
+            kwargs["shell_prompt"],
+        ],
+    )

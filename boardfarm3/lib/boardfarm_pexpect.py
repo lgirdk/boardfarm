@@ -84,8 +84,8 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         :type args: list[str]
         """
         super().__init__(
-            command,
-            args=args,
+            command=command,
+            args=list(args),
             encoding="utf-8",
             dimensions=(24, 240),
             codec_errors="ignore",

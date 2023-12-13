@@ -1,18 +1,19 @@
 """ser2net connection module."""
+
 import pexpect
 
 from boardfarm3.exceptions import DeviceConnectionError
-from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+from boardfarm3.lib.connections.telnet import TelnetConnection
 
 # pylint: disable=duplicate-code
 
 
-class Ser2NetConnection(BoardfarmPexpect):
-    """Allow telnet session to be established the ser2net daemon.
+class Ser2NetConnection(TelnetConnection):
+    """Allow telnet session to be established with the ser2net daemon.
 
-    Requires the ser2net deamon to be running. Configuration to be stored in
+    Requires the ser2net daemon to be running. Configuration to be stored in
     /etc/ser2net.conf
-    Several devices can be connected to a host without the need of a terminal
+    Several devices can be connected to a host without the need for a terminal
     server. The following is a sample configuration for a single console:
 
     2001:telnet:0:/dev/ttyUSB0:115200 NONE 1STOPBIT 8DATABITS XONXOFF \
@@ -22,60 +23,32 @@ class Ser2NetConnection(BoardfarmPexpect):
     No authentication needed.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        name: str,
-        ip_addr: str,
-        port: str,
-        shell_prompt: str,
+        session_name: str,
+        command: str,
         save_console_logs: bool,
+        args: list[str],
     ) -> None:
-        """Initialize the class instance to open a pexpect session.
+        """Initialize the Ser2Net connection.
 
-        :param name: the session name
-        :type name: str
-        :param ip_addr: IP address (usually, but not always, "localhost")
-        :type ip_addr: str
-        :param port: the telnet port
-        :type port: str
-        :param shell_prompt: shell prompt to expect
-        :type shell_prompt: str
+        :param session_name: pexpect session name
+        :type session_name: str
+        :param command: command to start the pexpect session
+        :type command: str
         :param save_console_logs: save console logs to disk
         :type save_console_logs: bool
-        :raises DeviceConnectionError: on failure to connect
+        :param args: additional arguments to the command
+        :type args: list[str  |  list[str]]
+        :raises DeviceConnectionError: When failed to connect to device via telnet
         """
-        self._shell_prompt = shell_prompt
-        self._ip_addr = ip_addr
-        self._port = port
-        self._shell_prompt = shell_prompt
-        super().__init__(name, "telnet", save_console_logs, [ip_addr, port])
-        if self.expect([f"ser2net port {port}", pexpect.TIMEOUT], timeout=10):
-            msg = f"ser2net: Failed to run 'telnet {ip_addr} {port}'"
-            raise DeviceConnectionError(
-                msg,
-            )
-
-    def execute_command(self, command: str, timeout: int = 30) -> str:
-        """Execute a command in the SSH session.
-
-        :param command: command to be executed
-        :type command: str
-        :param timeout: timeout for command execute, defaults to 30
-        :type timeout: int
-        :return: command output
-        :rtype: str
-        """
-        self.sendline(command)
-        self.expect_exact(command)
-        self.expect(self._shell_prompt, timeout=timeout)
-        return self.get_last_output()
-
-    def close(self, force: bool = True) -> None:
-        """Close the connection.
-
-        :param force: True to send a SIGKILL, False for SIGINT/UP, default True
-        :type force: bool
-        """
-        self.sendcontrol("]")
-        self.sendline("q")
-        super().close(force=force)
+        self._ip_addr, self._port, self._shell_prompt = args[0], args[1], args.pop(2)
+        super().__init__(
+            session_name,
+            command,
+            save_console_logs,
+            args,
+        )
+        if self.expect([f"ser2net port {self._port}", pexpect.TIMEOUT], timeout=10):
+            msg = f"ser2net: Failed to run 'telnet {self._ip_addr} {self._port}'"
+            raise DeviceConnectionError(msg)
