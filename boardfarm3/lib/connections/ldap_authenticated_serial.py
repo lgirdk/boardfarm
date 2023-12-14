@@ -52,7 +52,7 @@ class LdapAuthenticatedSerial(SSHConnection):
             save_console_logs,
         )
 
-    def _login_to_server(self, password: str) -> None:
+    def login_to_server(self, password: str) -> None:
         """Login to serial server.
 
         :param password: LDAP password
@@ -63,6 +63,26 @@ class LdapAuthenticatedSerial(SSHConnection):
             msg = "Failed to connect to device via serial"
             raise DeviceConnectionError(msg)
         self.sendline(password)
-        if self.expect_exact(["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT]):
+        if self.expect_exact(
+            ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
+        ):
+            msg = "Failed to connect to device via serial"
+            raise DeviceConnectionError(msg)
+
+    async def login_to_server_async(self, password: str) -> None:
+        """Login to serial server.
+
+        :param password: LDAP password
+        :type password: str
+        :raises DeviceConnectionError: failed to connect to device via serial
+        """
+        if await self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT], async_=True):
+            msg = "Failed to connect to device via serial"
+            raise DeviceConnectionError(msg)
+        self.sendline(password)
+        if await self.expect_exact(
+            ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
+            async_=True,
+        ):
             msg = "Failed to connect to device via serial"
             raise DeviceConnectionError(msg)

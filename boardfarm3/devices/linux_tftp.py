@@ -57,6 +57,12 @@ class LinuxTFTP(LinuxDevice, TFTP):
         self._connect()
 
     @hookimpl
+    async def boardfarm_skip_boot_async(self) -> None:
+        """Boardfarm hook implementation to initialize TFTP device."""
+        _LOGGER.info("Booting %s(%s) device", self.device_name, self.device_type)
+        await self._connect_async()
+
+    @hookimpl
     def boardfarm_post_deploy_devices(self, device_manager: DeviceManager) -> None:
         """Boardfarm hook implementation to shutdown TFTP device.
 

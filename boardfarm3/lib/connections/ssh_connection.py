@@ -7,6 +7,8 @@ import pexpect
 from boardfarm3.exceptions import BoardfarmException, DeviceConnectionError
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
+_CONNECTION_ERROR_THRESHOLD = 2
+
 
 class SSHConnection(BoardfarmPexpect):
     """Connect to a device via SSH."""
@@ -53,16 +55,46 @@ class SSHConnection(BoardfarmPexpect):
             "-o IdentitiesOnly=yes",
         ]
         super().__init__(name, "ssh", save_console_logs, args)
-        self._login_to_server(self._password)
 
-    def _login_to_server(self, password: str) -> None:
+    async def login_to_server_async(self, password: str) -> None:
         """Login to SSH session.
 
         :param password: ssh password
         :raises DeviceConnectionError: connection failed to SSH server
         """
         if password is not None:
-            if self.expect(["password:", pexpect.EOF, pexpect.TIMEOUT]):
+            if await self.expect(
+                ["password:", pexpect.EOF, pexpect.TIMEOUT],
+                async_=True,
+            ):
+                msg = "Connection failed to SSH server"
+                raise DeviceConnectionError(msg)
+            self.sendline(password)
+        # no idea
+        if (
+            await self.expect(
+                [
+                    pexpect.EOF,
+                    pexpect.TIMEOUT,
+                    *self._shell_prompt,
+                ],
+                async_=True,
+            )
+            < _CONNECTION_ERROR_THRESHOLD
+        ):
+            msg = "Connection failed to SSH server"
+            raise DeviceConnectionError(msg)
+
+    def login_to_server(self, password: str) -> None:
+        """Login to SSH session.
+
+        :param password: ssh password
+        :raises DeviceConnectionError: connection failed to SSH server
+        """
+        if password is not None:
+            if self.expect(
+                ["password:", pexpect.EOF, pexpect.TIMEOUT],
+            ):
                 msg = "Connection failed to SSH server"
                 raise DeviceConnectionError(msg)
             self.sendline(password)
@@ -75,7 +107,7 @@ class SSHConnection(BoardfarmPexpect):
                     *self._shell_prompt,
                 ],
             )
-            < 2  # not clear why 2  # noqa: PLR2004
+            < _CONNECTION_ERROR_THRESHOLD
         ):
             msg = "Connection failed to SSH server"
             raise DeviceConnectionError(msg)
@@ -91,6 +123,19 @@ class SSHConnection(BoardfarmPexpect):
         self.expect_exact(command)
         self.expect(self.linesep)
         self.expect(self._shell_prompt, timeout=timeout)
+        return self.get_last_output()
+
+    async def execute_command_async(self, command: str, timeout: int = -1) -> str:
+        """Execute a command in the SSH session.
+
+        :param command: command to execute
+        :param timeout: timeout in seconds. defaults to -1
+        :returns: command output
+        """
+        self.sendline(command)
+        await self.expect_exact(command, async_=True)
+        await self.expect(self.linesep, async_=True)
+        await self.expect(self._shell_prompt, timeout=timeout, async_=True)
         return self.get_last_output()
 
     def check_output(self, cmd: str, timeout: int = 30) -> str:

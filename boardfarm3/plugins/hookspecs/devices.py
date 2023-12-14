@@ -83,6 +83,26 @@ def boardfarm_skip_boot(
 
 
 @hookspec
+async def boardfarm_skip_boot_async(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Skips the booting for the device connected.
+
+    This hook skip the booting process on those
+    devices that implement the boot_device hook
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
 def boardfarm_server_configure(
     config: BoardfarmConfig,
     cmdline_args: Namespace,

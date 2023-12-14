@@ -116,8 +116,28 @@ class LinuxDevice(BoardfarmDevice):
                 shell_prompt=self._shell_prompt,
                 save_console_logs=self._cmdline_args.save_console_logs,
             )
+            self._console.login_to_server(password=self._password)
             # This fixes the terminal prompt on long lines
             self._console.execute_command(
+                "stty columns 400; export TERM=xterm",
+            )
+
+    async def _connect_async(self) -> None:
+        """Establish connection to the device via SSH."""
+        if self._console is None:
+            self._console = connection_factory(
+                self._config.get("connection_type"),
+                f"{self.device_name}.console",
+                username=self._username,
+                password=self._password,
+                ip_addr=self._ipaddr,
+                port=self._port,
+                shell_prompt=self._shell_prompt,
+                save_console_logs=self._cmdline_args.save_console_logs,
+            )
+            await self._console.login_to_server_async(password=self._password)
+            # This fixes the terminal prompt on long lines
+            await self._console.execute_command_async(
                 "stty columns 400; export TERM=xterm",
             )
 

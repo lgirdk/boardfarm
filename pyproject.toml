@@ -34,7 +34,7 @@
         "jsonmerge",
         "netaddr",
         "pandas",
-        "pexpect",
+        "pexpect>=4.9",
         "pluggy>=1.0.0",
         "ptipython",
         "pysmi",
