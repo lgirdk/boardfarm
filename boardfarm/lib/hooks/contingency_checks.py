@@ -135,7 +135,7 @@ class CheckInterface:
         flags = []
         if env_helper.is_dhcpv4_enabled_on_lan():
             flags.append("ipv4")
-        if prov_mode != "ipv4":
+        if prov_mode != "ipv4" and prov_mode != "none":
             flags.append("ipv6")
 
         for dev in lan_devices:
