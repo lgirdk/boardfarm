@@ -22,6 +22,10 @@ _HTTP_RESPONSE_CONN_TIMED_OUT = (
     Path(__file__).parents[1] / "testdata/http_get_failed_conn_timed_out"
 )
 
+_HTTP_RESPONSE_CONN_REFUSED = (
+    Path(__file__).parents[1] / "testdata/http_get_failed_conn_refused"
+)
+
 
 class MyLinuxConsole(_LinuxConsole):
     """Implement protocol _LinuxConsole."""
@@ -84,6 +88,19 @@ def test_http_get_connection_timed_out() -> None:
     ):
         http_get(
             console=MyLinuxConsole(_HTTP_RESPONSE_CONN_TIMED_OUT.read_text()),
+            url="",
+            timeout=1,
+        )
+
+
+def test_http_get_connection_refused() -> None:
+    """Test exception thrown if connection refused in HTTP response."""
+    with pytest.raises(
+        UseCaseFailure,
+        match="Curl Failure due to the following reason Connection refused",
+    ):
+        http_get(
+            console=MyLinuxConsole(_HTTP_RESPONSE_CONN_REFUSED.read_text()),
             url="",
             timeout=1,
         )
