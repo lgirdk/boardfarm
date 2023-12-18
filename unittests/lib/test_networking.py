@@ -2,13 +2,25 @@
 
 from pathlib import Path
 
-from boardfarm3.lib.networking import _LinuxConsole, dns_lookup, http_get, is_link_up
+import pytest
+
+from boardfarm3.lib.networking import (
+    UseCaseFailure,
+    _LinuxConsole,
+    dns_lookup,
+    http_get,
+    is_link_up,
+)
 
 _DNS_LOOKUP_REPLY = Path(__file__).parents[1] / "testdata/dns_lookup"
 
 _RG_IP_LINK_REPLY = Path(__file__).parents[1] / "testdata/rg_ip-link-show-erouter0"
 
 _HTTP_RESPONSE = Path(__file__).parents[1] / "testdata/http_get"
+
+_HTTP_RESPONSE_CONN_TIMED_OUT = (
+    Path(__file__).parents[1] / "testdata/http_get_failed_conn_timed_out"
+)
 
 
 class MyLinuxConsole(_LinuxConsole):
@@ -62,3 +74,16 @@ def test_http_get_200_ok() -> None:
     )
     assert "Host: www.google.com" in http_response.response
     assert "200 OK" in http_response.response
+
+
+def test_http_get_connection_timed_out() -> None:
+    """Test exception thrown if connection timed out in HTTP response."""
+    with pytest.raises(
+        UseCaseFailure,
+        match="Curl Failure due to the following reason Connection timed out",
+    ):
+        http_get(
+            console=MyLinuxConsole(_HTTP_RESPONSE_CONN_TIMED_OUT.read_text()),
+            url="",
+            timeout=1,
+        )
