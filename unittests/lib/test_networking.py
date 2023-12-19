@@ -1,6 +1,7 @@
 """Unit tests for networking.py module."""
 
 from pathlib import Path
+from typing import Union
 
 import pytest
 
@@ -10,21 +11,20 @@ from boardfarm3.lib.networking import (
     dns_lookup,
     http_get,
     is_link_up,
+    start_tcpdump,
 )
 
-_DNS_LOOKUP_REPLY = Path(__file__).parents[1] / "testdata/dns_lookup"
+_TEST_DATA = Path(__file__).parents[1] / "testdata"
 
-_RG_IP_LINK_REPLY = Path(__file__).parents[1] / "testdata/rg_ip-link-show-erouter0"
+_DNS_LOOKUP_REPLY = _TEST_DATA / "dns_lookup"
 
-_HTTP_RESPONSE = Path(__file__).parents[1] / "testdata/http_get"
+_RG_IP_LINK_REPLY = _TEST_DATA / "rg_ip-link-show-erouter0"
 
-_HTTP_RESPONSE_CONN_TIMED_OUT = (
-    Path(__file__).parents[1] / "testdata/http_get_failed_conn_timed_out"
-)
+_HTTP_RESPONSE = _TEST_DATA / "http_get"
 
-_HTTP_RESPONSE_CONN_REFUSED = (
-    Path(__file__).parents[1] / "testdata/http_get_failed_conn_refused"
-)
+_HTTP_RESPONSE_CONN_TIMED_OUT = _TEST_DATA / "http_get_failed_conn_timed_out"
+
+_HTTP_RESPONSE_CONN_REFUSED = _TEST_DATA / "http_get_failed_conn_refused"
 
 
 class MyLinuxConsole(_LinuxConsole):
@@ -49,6 +49,41 @@ class MyLinuxConsole(_LinuxConsole):
         :rtype: str
         """
         return self.command_output
+
+    def expect_exact(
+        self,
+        pattern: Union[str, list[str]],  # noqa: ARG002, FA100, RUF100
+        timeout: int = -1,  # noqa: ARG002
+    ) -> int:
+        """Wait for given exact pattern(s) and return the match index.
+
+        :param pattern: expected pattern or pattern list
+        :type pattern: Union[str, List[str]]
+        :param timeout: timeout in seconds. Defaults to -1
+        :type timeout: int
+        :return: timeout
+        :rtype: int
+        """
+        return 1
+
+    def sendline(self, string: str) -> None:
+        """Send given string to the console.
+
+        :param string: string to send
+        """
+
+    def expect(
+        self,
+        pattern: Union[str, list[str]],
+        timeout: int = -1,
+    ) -> int:
+        """Wait for given regex pattern(s) and return the match index.
+
+        :param pattern: expected regex pattern or pattern list
+        :type pattern: Union[str, List[str]]
+        :param timeout: timeout in seconds. Defaults to -1
+        :type timeout: int
+        """
 
 
 def test_dns_lookup() -> None:
@@ -104,3 +139,11 @@ def test_http_get_connection_refused() -> None:
             url="",
             timeout=1,
         )
+
+
+def test_start_tcpdump_value_error() -> None:
+    """Test error thrown if tcpdump failed to begin pcap."""
+    interface = "eth99"
+    console = MyLinuxConsole("tcpdump: Invalid adapter index")
+    with pytest.raises(ValueError, match=f"Failed to start tcpdump on {interface}"):
+        start_tcpdump(console, interface, None, "")
