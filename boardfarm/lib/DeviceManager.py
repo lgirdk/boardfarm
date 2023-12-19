@@ -78,6 +78,8 @@ class device_type(Enum):
     olt = 36
     securingsam = 37
     samknows = 38
+    dns1 = 39
+    dns2 = 40
 
 
 class device_array_type(Enum):
@@ -195,7 +197,6 @@ class device_manager(UserList):
 
         wifi_clients = env_helper.wifi_clients()
         if wifi_clients:
-
             # Register all wifi clients in wifi manager
             for client in wifi_clients:
                 self.wlan_clients.register(client)

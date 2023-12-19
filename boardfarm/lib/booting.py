@@ -51,9 +51,13 @@ def pre_boot_wan_clients(config, env_helper, devices):
     # should we run configure for all the wan devices? or just wan?
     for x in devices:
         # if isinstance(x, DebianWAN): # does not work for mitm
-        if hasattr(x, "name") and "wan" in x.name:
-            logger.info(f"Configuring {x.name}")
-            x.configure(config=config)
+        if hasattr(x, "name"):
+            if "wan" in x.name:
+                logger.info(f"Configuring {x.name}")
+                x.configure(config=config)
+            if "dns" in x.name:
+                logger.info(f"Configuring {x.name}")
+                x.setup_dnsmasq(config=config)
     # if more than 1 tftp server should we start them all?
     # currently starting the 1 being used
     logger.info(f"Starting TFTP server on {tftp_device.name}")
