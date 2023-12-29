@@ -323,6 +323,10 @@ class IptablesFirewall:
         iptables_output = self._console.execute_command(
             f"iptables -C INPUT {option} {valid_ip} -j DROP",
         )
+        if "Bad rule" in iptables_output:
+            self._console.execute_command(
+                f"iptables -I INPUT 1 {option} {valid_ip} -j DROP",
+            )
         if re.search(rf"host\/network.*{valid_ip}.*not found", iptables_output):
             msg = (
                 "Firewall rule cannot be added as the ip address: "
@@ -330,10 +334,6 @@ class IptablesFirewall:
             )
             raise ValueError(
                 msg,
-            )
-        if "Bad rule" in iptables_output:
-            self._console.execute_command(
-                f"iptables -I INPUT 1 {option} {valid_ip} -j DROP",
             )
 
     def add_drop_rule_ip6tables(self, option: str, valid_ip: str) -> None:
@@ -348,6 +348,10 @@ class IptablesFirewall:
         ip6tables_output = self._console.execute_command(
             f"ip6tables -C INPUT {option} {valid_ip} -j DROP",
         )
+        if "Bad rule" in ip6tables_output:
+            self._console.execute_command(
+                f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP",
+            )
         if re.search(rf"host\/network.*{valid_ip}.*not found", ip6tables_output):
             msg = (
                 "Firewall rule cannot be added as the ip address: "
@@ -355,10 +359,6 @@ class IptablesFirewall:
             )
             raise ValueError(
                 msg,
-            )
-        if "Bad rule" in ip6tables_output:
-            self._console.execute_command(
-                f"ip6tables -I INPUT 1 {option} {valid_ip} -j DROP",
             )
 
     def del_drop_rule_iptables(self, option: str, valid_ip: str) -> None:

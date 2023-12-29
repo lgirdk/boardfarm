@@ -213,19 +213,19 @@ def _interactive_ptpython_shell(
 
 
 def _run_boardfarm_tests() -> None:
-    pytest_arguments = [
+    pytest_arguments: list[str] = [
         "--self-contained-html",
         f"--html=report-{int(time.time())}.html",
     ]
-    tests = Prompt.ask(
+    tests: str = Prompt.ask(
         "[magenta]Enter comma separated test paths or JIRA IDs",
     )
     jira_test_ids: list[str] = []
     for test in tests.split(","):
-        if re.match(r"^MVX_TST-\d+$", test.strip()):
+        if re.match(r"^MVX_TST-\d+$", test.strip()) is not None:
             jira_test_ids.append(f"test_{test}.py")
-            continue
-        pytest_arguments.append(test)
+        else:
+            pytest_arguments.append(test)
     pytest_arguments.extend(["-k", f"{' or '.join(jira_test_ids)}"])
     pexpect_logger = logging.getLogger("pexpect")
     with disable_logs(), disable_logs("pexpect"):

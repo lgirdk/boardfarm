@@ -32,16 +32,19 @@ class SNMPv2:
         self._mibs_compiler = mibs_compiler
 
     def _get_mib_oid(self, mib_name: str) -> str:
-        oid_regex = r"^([1-9][0-9]{0,6}|0)(\.([1-9][0-9]{0,6}|0)){3,30}$"
-        if re.match(oid_regex, mib_name):
-            oid = mib_name
-        else:
-            try:
-                oid = self._mibs_compiler.get_mib_oid(mib_name)
-            except ValueError as exception:
-                msg = f"MIB not available, Error: {exception}"
-                raise SNMPError(msg) from exception
-        return oid
+        oid_regex = r"^([1-9]\d{0,6}|0)(\.([1-9]\d{0,6}|0)){3,30}$"
+        return (
+            mib_name
+            if re.match(oid_regex, mib_name)
+            else self._get_oid_from_compiler(mib_name)
+        )
+
+    def _get_oid_from_compiler(self, mib_name: str) -> str:
+        try:
+            return self._mibs_compiler.get_mib_oid(mib_name)
+        except ValueError as exception:
+            err_msg = f"MIB not available, Error: {exception}"
+            raise SNMPError(err_msg) from exception
 
     def snmpget(  # noqa: PLR0913
         self,

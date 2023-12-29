@@ -31,10 +31,10 @@ class IptablesParser:
         for i in range(len(split_chain)):
             rule_data: list[dict] = []
             for rule in split_chain[i].splitlines():
-                rule_details = {}
+                rule_details: dict[str, str] = {}
                 if re.match(r"\s[A-Za-z]", rule):
                     key = rule.split(" ")[1]
-                elif rule[:1].isdigit():
+                if rule[:1].isdigit():
                     values = list(rule.split())
                     for cnt, val in enumerate(headers[1:], 1):
                         if val not in "opt":
@@ -63,12 +63,12 @@ class IptablesParser:
         table_rule: dict[str, list[dict]] = {}
         # pylint: disable=too-many-nested-blocks, consider-using-enumerate
         for i in range(len(split_chain)):
-            rule_data = []
+            rule_data: list[dict[str, str]] = []
             for rule in split_chain[i].splitlines():
-                rule_details = {}
-                if re.match(r"\s[A-Za-z]", rule):
+                rule_details: dict[str, str] = {}
+                if re.match(r"\s[A-Za-z]", rule) is not None:
                     key = rule.split(" ")[1]
-                elif rule[:1].isdigit():
+                elif rule[:1].isdigit() is not None:
                     values = list(rule.split())
                     for cnt, val in enumerate(header[1:], 1):
                         rule_details[val] = values[cnt]
