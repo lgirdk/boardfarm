@@ -61,6 +61,7 @@
             "nox",
             "pre-commit",
             "pylint",
+            "pylint-per-file-ignores",
             "types-ipaddress",
             "types-PyYAML",
             "types-requests",
