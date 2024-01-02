@@ -143,9 +143,6 @@ cython_debug/
 *.rej
 *.orig
 
-# VS Code
-.vscode/
-
 # Covers JetBrains IDE PyCharm specific template
 # GitHub Reference: https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 # JetBrains Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839

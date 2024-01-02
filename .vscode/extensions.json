@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.mypy-type-checker",
+        "ms-python.pylint",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "VisualStudioExptTeam.intellicode-api-usage-examples",
+        "charliermarsh.ruff",
+        "njpwerner.autodocstring",
+        "tamasfe.even-better-toml",
+        "DavidAnson.vscode-markdownlint",
+        "trond-snekvik.simple-rst",
+        "wayou.vscode-todo-highlight",
+        "vscode-icons-team.vscode-icons"
+    ],
+    "unwantedRecommendations": []
+}

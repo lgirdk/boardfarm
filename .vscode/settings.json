@@ -1,0 +1,26 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnType": true
+    },
+    "autoDocstring.docstringFormat": "sphinx",
+    "black-formatter.importStrategy": "fromEnvironment",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [
+        36,
+        78,
+        80,
+        88
+    ],
+    "editor.suggestSelection": "first",
+    "evenBetterToml.formatter.allowedBlankLines": 1,
+    "evenBetterToml.formatter.columnWidth": 80,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.testing.pytestEnabled": true,
+    "ruff.fixAll": false,
+    "ruff.importStrategy": "fromEnvironment",
+    "ruff.organizeImports": false,
+    "workbench.editor.enablePreview": false
+}
