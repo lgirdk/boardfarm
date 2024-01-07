@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import time
 from argparse import Namespace
 from sys import version_info
 
@@ -17,10 +18,9 @@ IS_TASKGROUP_AVAILABLE = version_info >= (3, 11)
 _LOGGER = logging.getLogger(__name__)
 
 
-def _is_async_supported(hook_name: str, device_manager: DeviceManager) -> bool:
+def _is_async_hook_supported(hook_name: str, device_manager: DeviceManager) -> bool:
     if not IS_TASKGROUP_AVAILABLE:
         return False
-
     # we can run asyncio if and only if all devices have both async and blocking
     # hook implementations
     async_hook_name = f"{hook_name}_async"
@@ -50,19 +50,66 @@ def _is_async_supported(hook_name: str, device_manager: DeviceManager) -> bool:
     return False
 
 
-async def _run_skip_boot(
+async def _run_hook_async(
+    hook_name: str,
     plugin_manager: PluginManager,
     config: BoardfarmConfig,
     cmdline_args: Namespace,
     device_manager: DeviceManager,
 ) -> None:
+    start_time = time.monotonic()
+    async_hook_name = f"{hook_name}_async"
     async with asyncio.TaskGroup() as tg:
-        for device in plugin_manager.hook.boardfarm_skip_boot_async(
+        for device in getattr(plugin_manager.hook, async_hook_name)(
             config=config,
             cmdline_args=cmdline_args,
             device_manager=device_manager,
         ):
             tg.create_task(device)
+    _LOGGER.debug("%s ran for %ss.", hook_name, time.monotonic() - start_time)
+
+
+def _run_hook_sync(
+    hook_name: str,
+    plugin_manager: PluginManager,
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    start_time = time.monotonic()
+    getattr(plugin_manager.hook, hook_name)(
+        config=config,
+        cmdline_args=cmdline_args,
+        device_manager=device_manager,
+    )
+    _LOGGER.debug("%s ran for %ss.", hook_name, time.monotonic() - start_time)
+
+
+def _run_hook(
+    hook_name: str,
+    plugin_manager: PluginManager,
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    if _is_async_hook_supported(hook_name=hook_name, device_manager=device_manager):
+        asyncio.run(
+            _run_hook_async(
+                hook_name=hook_name,
+                plugin_manager=plugin_manager,
+                config=config,
+                cmdline_args=cmdline_args,
+                device_manager=device_manager,
+            ),
+        )
+    else:
+        _run_hook_sync(
+            hook_name=hook_name,
+            plugin_manager=plugin_manager,
+            config=config,
+            cmdline_args=cmdline_args,
+            device_manager=device_manager,
+        )
 
 
 @hookimpl
@@ -86,60 +133,31 @@ def boardfarm_setup_env(
     :rtype: DeviceManager
     """
     if cmdline_args.skip_boot:
-        if _is_async_supported(
+        _run_hook(
             hook_name="boardfarm_skip_boot",
+            plugin_manager=plugin_manager,
+            config=config,
+            cmdline_args=cmdline_args,
             device_manager=device_manager,
-        ):
-            asyncio.run(
-                _run_skip_boot(
-                    plugin_manager=plugin_manager,
-                    config=config,
-                    cmdline_args=cmdline_args,
-                    device_manager=device_manager,
-                ),
-            )
-        else:
-            plugin_manager.hook.boardfarm_skip_boot(
-                config=config,
-                cmdline_args=cmdline_args,
-                device_manager=device_manager,
-            )
+        )
         return device_manager
-    plugin_manager.hook.validate_device_requirements(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
+    hooks = (
+        "validate_device_requirements",
+        "boardfarm_server_boot",
+        "boardfarm_server_configure",
+        "boardfarm_device_boot",
+        "boardfarm_device_configure",
+        "boardfarm_attached_device_boot",
+        "boardfarm_attached_device_configure",
     )
-    plugin_manager.hook.boardfarm_server_boot(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
-    plugin_manager.hook.boardfarm_server_configure(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
-    plugin_manager.hook.boardfarm_device_boot(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
-    plugin_manager.hook.boardfarm_device_configure(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
-    plugin_manager.hook.boardfarm_attached_device_boot(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
-    plugin_manager.hook.boardfarm_attached_device_configure(
-        config=config,
-        cmdline_args=cmdline_args,
-        device_manager=device_manager,
-    )
+    for hook in hooks:
+        _run_hook(
+            hook_name=hook,
+            plugin_manager=plugin_manager,
+            config=config,
+            cmdline_args=cmdline_args,
+            device_manager=device_manager,
+        )
     return device_manager
 
 
