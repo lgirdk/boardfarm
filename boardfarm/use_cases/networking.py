@@ -2,6 +2,7 @@
 import ipaddress
 import logging
 import re
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from ipaddress import IPv4Address, IPv6Address, ip_address
@@ -571,6 +572,7 @@ def dhcp_renew_ipv6_stateless_and_get_ipv6(
         host.set_link_state(host.iface_dut, "down")
         host.set_link_state(host.iface_dut, "up")
         host.renew_ipv6(host.iface_dut, stateless=True)
+        time.sleep(10)
         return host.get_interface_ip6addr(host.iface_dut)
     except (PexpectErrorTimeout, BftIfaceNoIpV6Addr) as e:
         raise UseCaseFailure(f"Unable to get the IPv6 address due to {e}")
