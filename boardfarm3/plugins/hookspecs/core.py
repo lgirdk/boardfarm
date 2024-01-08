@@ -110,7 +110,6 @@ def boardfarm_setup_env(
 
 @hookspec
 def boardfarm_post_setup_env(
-    config: BoardfarmConfig,
     cmdline_args: Namespace,
     device_manager: DeviceManager,
 ) -> None:
@@ -119,8 +118,6 @@ def boardfarm_post_setup_env(
     This hook is used to perform required operations after the board is deployed.
 
     # noqa: DAR202
-    :param config: boardfarm config
-    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param device_manager: device manager instance

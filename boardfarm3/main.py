@@ -71,7 +71,6 @@ def main() -> None:
             device_manager=device_manager,
         )
         plugin_manager.hook.boardfarm_post_setup_env(
-            config=config,
             cmdline_args=cmdline_args,
             device_manager=device_manager,
         )
