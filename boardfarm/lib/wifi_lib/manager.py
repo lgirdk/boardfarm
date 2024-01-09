@@ -70,8 +70,9 @@ class WiFiMgr(UserList):
             )
 
         # WLAN_OPTIONS must specify network type
-        network_type_bucket = getattr(self, wlan_options["network"].lower())
-        network_type_bucket.append(dev)
+        if wlan_options["connect_wifi"] is True:
+            network_type_bucket = getattr(self, wlan_options["network"].lower())
+            network_type_bucket.append(dev)
 
         # set authentication type, by default NONE
         if "authentication" in wlan_options:
