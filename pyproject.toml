@@ -35,7 +35,7 @@
         "debtcollector",
         "distro",
         "dlipower",
-        "easysnmp",
+        "easysnmp2",
         "elasticsearch<8,>=7",
         "Faker",
         "httpx",

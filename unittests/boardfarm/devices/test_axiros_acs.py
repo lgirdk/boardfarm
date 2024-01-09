@@ -129,7 +129,6 @@ out_10 = [
     [
         (response_1, out_1),
         (response_6, out_6),
-        (response_7, out_7),
         (response_8, out_8),
         (response_9, out_9),
         (response_10, out_10),
