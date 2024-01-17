@@ -277,3 +277,13 @@ EOF"""
         for data in self.txt:
             self.sendline(data)
         self.expect(self.prompt, timeout=50)
+
+    def get_sipserver_expire_timer(self) -> str:
+        """Get the call expire timer in kamailio.cfg.
+
+        :return: expiry timer saved in the config
+        :rtype: str
+        """
+        self.sendline("grep 'max_expires'" + self.kamailio_cfg)
+        self.expect(self.prompt)
+        return self.before
