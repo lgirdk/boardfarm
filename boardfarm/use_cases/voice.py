@@ -621,3 +621,15 @@ def disable_unconditional_call_forwarding(
     who_disables._obj().disable_unconditional_call_forwarding(
         board.sw.voice.dtmf_codes["unconditional_call_forwarding_disable"]
     )
+
+
+def get_sip_expiry_time(sip_proxy: VoiceServer) -> str:
+    """Get the call expiry timer from the config file.
+
+    :param sip_proxy: SIP Server
+    :type sip_proxy: VoiceServer
+    :return: expiry timer saved in the config
+    :rtype: str
+    :raises CodeError: if the sipserver is not installed
+    """
+    return sip_proxy.get_sipserver_expire_timer()
