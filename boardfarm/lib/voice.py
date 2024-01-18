@@ -1,4 +1,5 @@
 import datetime
+import time
 from typing import List, Tuple
 
 import pexpect
@@ -194,6 +195,10 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
     )
     device.sudo_sendline(cmd + fields)
     device.expect(device.prompt, timeout=timeout)
+    out = device.before
+    if "INVITE" not in out:
+        time.sleep(20)  # wait for console to have sip packets
+        device.expect(device.prompt, timeout=timeout)
     out = device.before.splitlines()
     for _i, o in enumerate(out):
         if "This could be dangerous." in o:
