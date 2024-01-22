@@ -31,6 +31,7 @@ from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
 
 
+# pylint: disable=too-many-lines
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
 class LinuxDevice(BoardfarmDevice):
     """Boardfarm Linux device."""
@@ -649,6 +650,14 @@ class LinuxDevice(BoardfarmDevice):
         self._console.sudo_sendline(f"dhclient -r {interface!s}")
         self._console.expect(self._shell_prompt)
 
+    async def release_dhcp_async(self, interface: str) -> None:
+        """Release ipv4 of the interface.
+
+        :param interface: release an ipv4 on this iface
+        """
+        self._console.sudo_sendline(f"dhclient -r {interface!s}")
+        await self._console.expect(self._shell_prompt, async_=True)
+
     def renew_dhcp(self, interface: str) -> None:
         """Renew ipv4 of the interface.
 
@@ -662,6 +671,23 @@ class LinuxDevice(BoardfarmDevice):
             self._console.sendcontrol("c")
             self._console.expect(self._shell_prompt)
 
+    async def renew_dhcp_async(self, interface: str) -> None:
+        """Renew ipv4 of the interface.
+
+        :param interface: renew an ipv4 on this iface
+        """
+        self._console.sudo_sendline(f"dhclient -v {interface!s}")
+        if (
+            await self._console.expect(
+                [pexpect.TIMEOUT, *self._shell_prompt],
+                timeout=30,
+                async_=True,
+            )
+            == 0
+        ):
+            self._console.sendcontrol("c")
+            self._console.expect(self._shell_prompt, async_=True)
+
     def release_ipv6(self, interface: str, stateless: bool = False) -> None:
         """Release ipv6 of the interface.
 
@@ -671,6 +697,16 @@ class LinuxDevice(BoardfarmDevice):
         mode = "-S" if stateless else "-6"
         self._console.sudo_sendline(f"dhclient {mode} -r {interface!s}")
         self._console.expect(self._shell_prompt)
+
+    async def release_ipv6_async(self, interface: str, stateless: bool = False) -> None:
+        """Release ipv6 of the interface.
+
+        :param interface: release an ipv6 on this iface
+        :param stateless: add -S to release command if True, -6 otherwise
+        """
+        mode = "-S" if stateless else "-6"
+        self._console.sudo_sendline(f"dhclient {mode} -r {interface!s}")
+        await self._console.expect(self._shell_prompt, async_=True)
 
     def renew_ipv6(self, interface: str, stateless: bool = False) -> None:
         """Renew ipv6 of the interface.
@@ -686,6 +722,25 @@ class LinuxDevice(BoardfarmDevice):
         ):
             self._console.sendcontrol("c")
             self._console.expect(self._shell_prompt)
+
+    async def renew_ipv6_async(self, interface: str, stateless: bool = False) -> None:
+        """Renew ipv6 of the interface.
+
+        :param interface: renew an ipv6 on this iface
+        :param stateless: add -S to release command if True, -6 otherwise
+        """
+        mode = "-S" if stateless else "-6"
+        self._console.sudo_sendline(f"dhclient {mode} -v {interface!s}")
+        if (
+            await self._console.expect(
+                [pexpect.TIMEOUT, *self._shell_prompt],
+                timeout=15,
+                async_=True,
+            )
+            == 0
+        ):
+            self._console.sendcontrol("c")
+            await self._console.expect(self._shell_prompt, async_=True)
 
     def start_http_service(self, port: str, ip_version: str) -> str:
         """Start HTTP service on given port number.
@@ -827,6 +882,10 @@ class LinuxDevice(BoardfarmDevice):
     def stop_danteproxy(self) -> None:
         """Stop the Dante proxy."""
         self._console.execute_command("service danted stop")
+
+    async def stop_danteproxy_async(self) -> None:
+        """Stop the Dante proxy."""
+        self._console.execute_command_async("service danted stop")
 
     def start_traffic_receiver(
         self,
