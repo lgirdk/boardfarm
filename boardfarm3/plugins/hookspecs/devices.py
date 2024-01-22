@@ -224,6 +224,25 @@ def boardfarm_attached_device_configure(
 
 
 @hookspec
+async def boardfarm_attached_device_configure_async(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Configure boardfarm attached device.
+
+    This hook should be used to configure a device, after having it booted,
+    which is attached to a device in the environment. E.g. LAN.
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
 def contingency_check(env_req: dict[str, Any], device_manager: DeviceManager) -> None:
     """Perform contingency check to make sure the device is working fine before use.
 
