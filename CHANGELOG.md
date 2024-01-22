@@ -1,3 +1,18 @@
+## 2024.04.0 (2024-01-22)
+
+### Feat
+
+- **lib/common.py**: add install logic
+- **devices/linux.py**: add method to get secondary IPv4 address
+- **dns**: add support for external DNS servers
+- **env_helper**: add support for latest schema
+
+### Fix
+
+- **wifi_lib/manager.py**: fix the WLAN_options
+- **contingency_checks.py**: add none check on mode
+- **use_cases/networking.py**: fix Use Case
+
 ## 2023.50.0 (2023-12-12)
 
 ### Feat
