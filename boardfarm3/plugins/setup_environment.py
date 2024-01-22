@@ -38,7 +38,6 @@ def _is_async_hook_supported(hook_name: str, device_manager: DeviceManager) -> b
     }
     if aio_set == bio_set:
         return True
-
     # inform the user about the devices that are missing the asyncio implementation
     for device in bio_set - aio_set:
         _LOGGER.warning(
@@ -85,7 +84,7 @@ def _run_hook_sync(
     _LOGGER.debug("%s ran for %ss.", hook_name, time.monotonic() - start_time)
 
 
-def _run_hook(
+async def _run_hook(
     hook_name: str,
     plugin_manager: PluginManager,
     config: BoardfarmConfig,
@@ -93,14 +92,12 @@ def _run_hook(
     device_manager: DeviceManager,
 ) -> None:
     if _is_async_hook_supported(hook_name=hook_name, device_manager=device_manager):
-        asyncio.run(
-            _run_hook_async(
-                hook_name=hook_name,
-                plugin_manager=plugin_manager,
-                config=config,
-                cmdline_args=cmdline_args,
-                device_manager=device_manager,
-            ),
+        await _run_hook_async(
+            hook_name=hook_name,
+            plugin_manager=plugin_manager,
+            config=config,
+            cmdline_args=cmdline_args,
+            device_manager=device_manager,
         )
     else:
         _run_hook_sync(
@@ -113,7 +110,7 @@ def _run_hook(
 
 
 @hookimpl
-def boardfarm_setup_env(
+async def boardfarm_setup_env(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
     plugin_manager: PluginManager,
@@ -133,7 +130,7 @@ def boardfarm_setup_env(
     :rtype: DeviceManager
     """
     if cmdline_args.skip_boot:
-        _run_hook(
+        await _run_hook(
             hook_name="boardfarm_skip_boot",
             plugin_manager=plugin_manager,
             config=config,
@@ -151,7 +148,7 @@ def boardfarm_setup_env(
         "boardfarm_attached_device_configure",
     )
     for hook in hooks:
-        _run_hook(
+        await _run_hook(
             hook_name=hook,
             plugin_manager=plugin_manager,
             config=config,

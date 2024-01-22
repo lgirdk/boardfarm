@@ -1,5 +1,6 @@
 """Boardfarm main module."""
 
+import asyncio
 import logging.config
 import sys
 from argparse import ArgumentParser
@@ -64,11 +65,13 @@ def main() -> None:
             cmdline_args=cmdline_args,
             plugin_manager=plugin_manager,
         )
-        plugin_manager.hook.boardfarm_setup_env(
-            config=config,
-            cmdline_args=cmdline_args,
-            plugin_manager=plugin_manager,
-            device_manager=device_manager,
+        asyncio.run(
+            plugin_manager.hook.boardfarm_setup_env(
+                config=config,
+                cmdline_args=cmdline_args,
+                plugin_manager=plugin_manager,
+                device_manager=device_manager,
+            ),
         )
         plugin_manager.hook.boardfarm_post_setup_env(
             cmdline_args=cmdline_args,
