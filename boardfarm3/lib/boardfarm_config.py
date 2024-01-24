@@ -136,19 +136,20 @@ def _merge_with_wifi_config(
     wifi_clients = sorted(wifi_clients, key=lambda x: x.get("band"))
     wifi_devices_copy = sorted(wifi_devices_copy, key=lambda x: x.get("band"))
     for wifi_client in wifi_clients:
+        found = None
         for wifi_device in wifi_devices_copy:
             if wifi_device.get("band") in {wifi_client.get("band"), "dual"}:
-                merged_wifi_devices.append(wifi_device | wifi_client)
-                wifi_devices_copy.remove(wifi_device)
+                merged_wifi_devices.append(wifi_device.copy() | wifi_client.copy())
+                found = wifi_device
                 break
         else:
             msg = (
                 f"Unable to find a wifi device for {wifi_client} "
                 "env config Wi-Fi client in inventory config"
             )
-            raise EnvConfigError(
-                msg,
-            )
+            raise EnvConfigError(msg)
+        if found:
+            wifi_devices_copy.remove(found)
     return merged_wifi_devices
 
 
