@@ -174,6 +174,22 @@ class LinuxDevice(BoardfarmDevice):
         output = self._console.execute_command(f"ifconfig {interface_name}")
         return re.findall(ip_regex, output)
 
+    async def _get_nw_interface_ip_address_async(
+        self,
+        interface_name: str,
+        is_ipv6: bool,
+    ) -> list[str]:
+        """Get network interface ip address.
+
+        :param interface_name: interface name
+        :param is_ipv6: is ipv6 address
+        :returns: IP address list
+        """
+        prefix = "inet6" if is_ipv6 else "inet"
+        ip_regex = prefix + r"\s(?:addr:)?\s*([^\s/]+)"
+        output = self._console.execute_command_async(f"ifconfig {interface_name}")
+        return re.findall(ip_regex, output)
+
     def _get_nw_interface_ipv4_address(self, network_interface: str) -> str:
         """Get IPv4 adddress of the given network interface.
 
@@ -183,6 +199,23 @@ class LinuxDevice(BoardfarmDevice):
         return (
             ips[0]
             if (ips := self._get_nw_interface_ip_address(network_interface, False))
+            else None
+        )
+
+    async def _get_nw_interface_ipv4_address_async(self, network_interface: str) -> str:
+        """Get IPv4 adddress of the given network interface.
+
+        :param network_interface: network interface name
+        :returns: IPv4 address of the given interface, None if not available
+        """
+        return (
+            ips[0]
+            if (
+                ips := await self._get_nw_interface_ip_address_async(
+                    network_interface,
+                    False,
+                )
+            )
             else None
         )
 
