@@ -189,10 +189,13 @@ def _read_sip_trace(dev: VoiceServer, fname: str, timeout: int) -> List[Tuple[st
 
     cmd = f"tshark -r {fname} -Y sip "
     fields = (
-        "-T fields -e frame.number -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst -e sip.from.user -e sip.contact.user "
-        "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info -e frame.time"
+        "export FIELDS='-T fields -e frame.number -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst -e sip.from.user -e sip.contact.user "
+        "-e sip.Request-Line -e sip.Status-Line -e sdp.media_attr -e sdp.connection_info -e frame.time'"
     )
-    device.sudo_sendline(cmd + fields)
+    device.sudo_sendline(fields)
+    device.expect(device.prompt, timeout=timeout)
+    device.sudo_sendline(cmd + " $FIELDS")
+    device.expect(cmd, timeout=timeout)
     device.expect(device.prompt, timeout=timeout)
     out = device.before.splitlines()
     for _i, o in enumerate(out):
