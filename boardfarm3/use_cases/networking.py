@@ -1,3 +1,5 @@
+# ruff: noqa
+
 """Common Networking use cases."""
 
 import logging

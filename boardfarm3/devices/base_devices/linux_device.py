@@ -1,5 +1,7 @@
 """Boardfarm Linux device module."""
 
+# pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 import re
@@ -36,7 +38,6 @@ if TYPE_CHECKING:
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
-# pylint: disable=too-many-lines
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
 class LinuxDevice(BoardfarmDevice):
     """Boardfarm Linux device."""
