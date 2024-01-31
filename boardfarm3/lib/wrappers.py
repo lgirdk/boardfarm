@@ -1,6 +1,5 @@
 """Boardfarm decorators module."""
 
-
 from typing import Any, TypeVar
 
 AnyClass = TypeVar("AnyClass")

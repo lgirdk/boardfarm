@@ -1,4 +1,5 @@
 """Boardfarm environment setup plugin."""
+
 from argparse import Namespace
 
 from pluggy import PluginManager

@@ -176,8 +176,10 @@ def get_static_ipaddress(
         )
     ):
         return str(
-            IPv4Interface(match).ip
-            if ip_version == "ipv4"
-            else IPv6Interface(match).ip,
+            (
+                IPv4Interface(match).ip
+                if ip_version == "ipv4"
+                else IPv6Interface(match).ip
+            ),
         )
     return None

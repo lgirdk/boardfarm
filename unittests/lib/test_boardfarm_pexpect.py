@@ -1,4 +1,5 @@
 """Unit tests for boardfarm pexpect module."""
+
 import logging
 from io import StringIO
 from pathlib import Path

@@ -1,4 +1,5 @@
 """Boardfarm core plugin."""
+
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
 from collections import ChainMap
 from collections.abc import Generator

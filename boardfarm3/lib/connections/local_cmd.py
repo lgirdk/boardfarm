@@ -1,6 +1,5 @@
 """Connect to a device with a local command."""
 
-
 from typing import Any
 
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect

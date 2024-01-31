@@ -1,6 +1,5 @@
 """Boardfarm exceptions for all plugins and modules used by framework."""
 
-
 from typing import Any
 
 

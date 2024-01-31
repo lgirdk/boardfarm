@@ -1,6 +1,5 @@
 """SNMP v2 module for SNMP communication."""  # pylint: disable=invalid-name
 
-
 import re
 from typing import Optional
 

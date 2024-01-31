@@ -265,9 +265,11 @@ def parse_boardfarm_config(  # pylint: disable=too-many-locals
     for device in other_devices:
         device_name = device.get("name")
         merged_devices_config.append(
-            jsonmerge.merge(device, environment_def[device_name])
-            if device_name in environment_def
-            else device,
+            (
+                jsonmerge.merge(device, environment_def[device_name])
+                if device_name in environment_def
+                else device
+            ),
         )
     merged_devices_config += _merge_with_lan_config(lan_devices, env_json_config)
     merged_devices_config += _merge_with_wifi_config(wifi_devices, env_json_config)

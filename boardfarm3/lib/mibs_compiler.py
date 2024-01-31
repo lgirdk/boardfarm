@@ -1,6 +1,5 @@
 """MIBs to JSON compiler module."""
 
-
 import json
 import logging
 from pathlib import Path

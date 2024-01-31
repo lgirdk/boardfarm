@@ -1,4 +1,5 @@
 """Unit tests for the utils module."""
+
 from __future__ import annotations
 
 import logging

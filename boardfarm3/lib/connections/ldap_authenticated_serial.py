@@ -1,6 +1,5 @@
 """SSH connection module."""
 
-
 from typing import Any
 
 import pexpect

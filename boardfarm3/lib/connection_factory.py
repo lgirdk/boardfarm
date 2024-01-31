@@ -1,6 +1,5 @@
 """Connection decider module."""
 
-
 from typing import Any
 
 from boardfarm3.exceptions import EnvConfigError
