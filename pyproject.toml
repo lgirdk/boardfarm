@@ -61,6 +61,7 @@ dev = [
     "pre-commit",
     "pylint",
     "pylint-per-file-ignores",
+    "ruff",
     "types-ipaddress",
     "types-PyYAML",
     "types-requests",
