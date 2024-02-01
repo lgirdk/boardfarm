@@ -1,3 +1,16 @@
+## 2024.05.0 (2024-02-01)
+
+### Feat
+
+- **use_cases/voice.py**: add get_sip_expiry_time usecase
+- **devices/kamailio.py**: add get_sipserver_expire_timer implementation
+
+### Fix
+
+- **lib/voice.py**: update logic for sip trace
+- **use_cases/networking.py**: add sleep
+- **lib/voice.py**: update logic for sip trace
+
 ## 2024.04.0 (2024-01-22)
 
 ### Feat
