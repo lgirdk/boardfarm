@@ -48,7 +48,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "black",
-    "commitizen>=2.20.0",
     "flake8",
     "flake8-bugbear",
     "flake8-builtins",
