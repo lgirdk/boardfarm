@@ -1,12 +1,13 @@
 """Boardfarm pexpect session module."""
 
+from __future__ import annotations
+
 import os
 import re
 from abc import ABCMeta, abstractmethod
 from logging import Formatter, Logger, getLogger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Union
 
 import pexpect
 
@@ -42,7 +43,7 @@ class _LogWrapper:
         self._logger = logger
         self._lastline = ""
 
-    def write(self, string: Union[str, bytes]) -> None:
+    def write(self, string: str | bytes) -> None:
         if isinstance(string, bytes):
             string = string.decode("utf-8", errors="ignore")
         string = self._lastline + string

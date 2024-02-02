@@ -25,7 +25,7 @@ def get_plugin_manager() -> PluginManager:
     :return: boardfarm plugin manager
     :rtype: PluginManager
     """
-    global _BOARDFARM_PLUGIN_MANAGER  # pylint: disable=global-statement  # noqa: PLW0603, E501
+    global _BOARDFARM_PLUGIN_MANAGER  # pylint: disable=global-statement  # noqa: PLW0603
     if _BOARDFARM_PLUGIN_MANAGER is not None:
         return _BOARDFARM_PLUGIN_MANAGER
     plugin_manager = PluginManager(PROJECT_NAME)

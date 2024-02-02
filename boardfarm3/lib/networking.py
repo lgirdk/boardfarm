@@ -1,9 +1,11 @@
 """Boardfarm networking module."""
 
+from __future__ import annotations
+
 import re
 from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Any, Literal, Optional, Protocol, Union
+from typing import Any, Literal, Protocol
 
 import pexpect
 from bs4 import BeautifulSoup
@@ -32,7 +34,7 @@ class _LinuxConsole(Protocol):
         :param string: string to send
         """
 
-    def expect(self, pattern: Union[str, list[str]], timeout: int = -1) -> int:
+    def expect(self, pattern: str | list[str], timeout: int = -1) -> int:
         """Wait for given regex pattern(s) and return the match index.
 
         :param pattern: expected regex pattern or pattern list
@@ -41,7 +43,7 @@ class _LinuxConsole(Protocol):
         :type timeout: int
         """
 
-    def expect_exact(self, pattern: Union[str, list[str]], timeout: int = -1) -> int:
+    def expect_exact(self, pattern: str | list[str], timeout: int = -1) -> int:
         """Wait for given exact pattern(s) and return the match index.
 
         :param pattern: expected pattern or pattern list
@@ -54,10 +56,10 @@ class _LinuxConsole(Protocol):
 def start_tcpdump(  # noqa: PLR0913
     console: _LinuxConsole,
     interface: str,
-    port: Optional[str],
+    port: str | None,
     output_file: str = "pkt_capture.pcap",
-    filters: Optional[dict] = None,
-    additional_filters: Optional[str] = "",
+    filters: dict | None = None,
+    additional_filters: str | None = "",
 ) -> str:
     """Start tcpdump capture on given interface.
 
@@ -146,7 +148,7 @@ def tcpdump_read(  # noqa: PLR0913
 def scp(  # pylint: disable=too-many-arguments  # noqa: PLR0913
     console: _LinuxConsole,
     host: str,
-    port: Union[int, str],
+    port: int | str,
     username: str,
     password: str,
     src_path: str,
@@ -443,11 +445,11 @@ class DNS:
         self,
         console: _LinuxConsole,
         device_name: str,
-        ipv4_address: str = None,
-        ipv6_address: str = None,
-        ipv4_aux_address: IPv4Address = None,
-        ipv6_aux_address: IPv6Address = None,
-        aux_url: str = None,
+        ipv4_address: str | None = None,
+        ipv6_address: str | None = None,
+        ipv4_aux_address: IPv4Address | None = None,
+        ipv6_aux_address: IPv6Address | None = None,
+        aux_url: str | None = None,
     ) -> None:
         """Initialize DNS.
 
@@ -481,15 +483,15 @@ class DNS:
 
     def _add_dns_addresses(
         self,
-        ipv4_address: Optional[str],
-        ipv6_address: Optional[str],
+        ipv4_address: str | None,
+        ipv6_address: str | None,
     ) -> None:
         if ipv4_address is not None:
             self.dnsv4[self.fqdn].append(ipv4_address)
         if ipv6_address is not None:
             self.dnsv6[self.fqdn].append(ipv6_address)
 
-    def _add_aux_dns_addresses(self, aux_url: Optional[str]) -> None:
+    def _add_aux_dns_addresses(self, aux_url: str | None) -> None:
         if self.auxv4 is not None:
             self.dnsv4[self.fqdn].append(self.auxv4)
             if aux_url is not None:

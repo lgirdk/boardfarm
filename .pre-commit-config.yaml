@@ -3,12 +3,12 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/commitizen-tools/commitizen
-      rev: v2.42.0
+      rev: v3.14.0
       hooks:
           - id: commitizen
             stages: [commit-msg]
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.4.0
+      rev: v4.5.0
       hooks:
           - id: check-ast
             stages: [commit]
@@ -43,7 +43,7 @@ repos:
             files: \.py$
             stages: [commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.4.2
+      rev: v1.5.4
       hooks:
           - id: remove-crlf
             stages: [commit]
@@ -56,7 +56,7 @@ repos:
             exclude: cm-cfg
             stages: [commit]
     - repo: https://github.com/myint/eradicate
-      rev: v2.1.0
+      rev: 2.3.0
       hooks:
           - id: eradicate
             name: eradicate
@@ -67,7 +67,7 @@ repos:
             args: [--in-place]
             stages: [commit]
     - repo: https://github.com/timothycrosley/isort
-      rev: 5.12.0
+      rev: 5.13.2
       hooks:
           - id: isort
             name: isort
@@ -78,22 +78,22 @@ repos:
             stages: [commit]
     - repo: https://github.com/astral-sh/ruff-pre-commit
       # Ruff version.
-      rev: v0.0.269
+      rev: v0.2.0
       hooks:
           - id: ruff
     - repo: https://github.com/asottile/pyupgrade
-      rev: v3.3.1
+      rev: v3.15.0
       hooks:
           - id: pyupgrade
-            args: [--py39-plus, --keep-runtime-typing]
+            args: [--py39-plus]
             stages: [commit]
     - repo: https://github.com/ikamensh/flynt/
-      rev: '0.77'
+      rev: 1.0.1
       hooks:
           - id: flynt
             stages: [commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.2.2
+      rev: 0.2.3
       hooks:
           - id: yamlfmt
             stages: [commit]
@@ -102,7 +102,7 @@ repos:
                   unittests/lib/docker_factory/.*\.yml$
                 )$
     - repo: https://github.com/adrienverge/yamllint.git
-      rev: v1.29.0
+      rev: v1.33.0
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
@@ -112,7 +112,7 @@ repos:
                   unittests/lib/docker_factory/.*\.yml$
                 )$
     - repo: https://github.com/psf/black
-      rev: 23.1.0
+      rev: 24.1.1
       hooks:
           - id: black
             description: 'Black: The uncompromising Python code formatter'

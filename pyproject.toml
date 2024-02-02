@@ -186,6 +186,7 @@ ignore = [
     "PT003",  # allow scope=function to be explicitly passed to fixtures
     "SIM114", # simplify if-elif by AND/OR combinations
     "TD",     # would conflict with TODO highligther
+    "FIX002",
 ]
 select = ["ALL"]
 

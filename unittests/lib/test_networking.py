@@ -1,7 +1,8 @@
 """Unit tests for networking.py module."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Union
 
 import pytest
 
@@ -52,7 +53,7 @@ class MyLinuxConsole(_LinuxConsole):
 
     def expect_exact(
         self,
-        pattern: Union[str, list[str]],  # noqa: ARG002, FA100, RUF100
+        pattern: str | list[str],  # noqa: ARG002, FA100, RUF100
         timeout: int = -1,  # noqa: ARG002
     ) -> int:
         """Wait for given exact pattern(s) and return the match index.
@@ -74,7 +75,7 @@ class MyLinuxConsole(_LinuxConsole):
 
     def expect(
         self,
-        pattern: Union[str, list[str]],
+        pattern: str | list[str],
         timeout: int = -1,
     ) -> int:
         """Wait for given regex pattern(s) and return the match index.

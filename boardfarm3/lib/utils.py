@@ -1,14 +1,18 @@
 """Boardfarm common utilities module."""
 
+from __future__ import annotations
+
 import logging
 import os
 import time
-from collections.abc import Generator
 from contextlib import contextmanager
 from ipaddress import IPv4Address, IPv4Interface, IPv6Interface
-from typing import Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 from netaddr import EUI, mac_unix_expanded
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,7 +80,7 @@ def retry(func_name: Callable, max_retry: int, *args: Any) -> Any:  # noqa: ANN4
 
 def retry_on_exception(
     method: Callable,
-    args: Union[list, tuple],
+    args: list | tuple,
     retries: int = 10,
     tout: int = 5,
 ) -> Any:  # noqa: ANN401
@@ -100,7 +104,9 @@ def retry_on_exception(
     for re_try in range(1, retries):
         try:
             return method(*args)
-        except Exception as exc:  # pylint: disable=broad-except  # noqa: BLE001
+        except (  # noqa: PERF203
+            Exception  # noqa: BLE001  # pylint: disable=broad-except
+        ) as exc:
             _LOGGER.debug("method failed %d time (%s)", re_try, exc)
             time.sleep(tout)
     return method(*args)
@@ -130,7 +136,7 @@ def get_value_from_dict(key: str, dictionary: dict) -> Any:  # noqa: ANN401
 
 
 @contextmanager
-def disable_logs(logger_name: Optional[str] = None) -> Generator:
+def disable_logs(logger_name: str | None = None) -> Generator:
     """Disable logs for the logger with given name.
 
     :param logger_name: logger name, defaults to None
@@ -152,7 +158,7 @@ def disable_logs(logger_name: Optional[str] = None) -> Generator:
 def get_static_ipaddress(
     config: dict[str, Any],
     ip_version: str = "ipv4",
-) -> Optional[str]:
+) -> str | None:
     """Return the static ip address of the device based on given ip version.
 
     :param config: device config

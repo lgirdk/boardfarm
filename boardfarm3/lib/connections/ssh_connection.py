@@ -1,5 +1,7 @@
 """SSH connection module."""
 
+from __future__ import annotations
+
 from typing import Any
 
 import pexpect
@@ -20,7 +22,7 @@ class SSHConnection(BoardfarmPexpect):
         username: str,
         shell_prompt: list[str],
         port: int = 22,
-        password: str = None,
+        password: str | None = None,
         save_console_logs: bool = False,
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:

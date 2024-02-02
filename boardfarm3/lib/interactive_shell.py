@@ -1,12 +1,13 @@
 """Boardfarm interactive shell module."""
 
+from __future__ import annotations
+
 import logging
 import re
 import sys
 import time
 from argparse import Namespace
-from collections.abc import Callable
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import jedi
 import pytest
@@ -14,20 +15,25 @@ from importlib_metadata import entry_points
 from ptpython.ipython import IPythonInput, embed
 from rich import print as rich_print
 from rich.box import HORIZONTALS
-from rich.console import JustifyMethod
 from rich.prompt import Prompt
 from rich.table import Table
 
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
-from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
-from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.lib.utils import disable_logs
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from rich.console import JustifyMethod
+
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.lib.device_manager import DeviceManager
 
 
 class OptionsTable:
     """Boardfarm interactive console options table."""
 
-    def __init__(self, title: Optional[str] = None) -> None:
+    def __init__(self, title: str | None = None) -> None:
         """Initialize the OptionsTable.
 
         :param title: title of the table, defaults to None
@@ -44,9 +50,9 @@ class OptionsTable:
     def add_column(
         self,
         name: str,
-        justify: Optional[JustifyMethod] = None,
-        style: Optional[str] = None,
-        width: Optional[int] = None,
+        justify: JustifyMethod | None = None,
+        style: str | None = None,
+        width: int | None = None,
     ) -> None:
         """Add a table column.
 
@@ -202,7 +208,7 @@ def _interactive_ptpython_shell(
     __int = jedi.Interpreter
 
     # pylint: disable=protected-access
-    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]  # noqa: SLF001, E501  # pylint: disable=line-too-long
+    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]  # noqa: SLF001  # pylint: disable=line-too-long
 
     if cmdline_args.legacy:
         devices = Namespace(**device_manager.get_devices_by_type(BoardfarmDevice))

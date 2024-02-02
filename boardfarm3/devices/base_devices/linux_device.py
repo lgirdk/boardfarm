@@ -1,11 +1,11 @@
 """Boardfarm Linux device module."""
 
+from __future__ import annotations
+
 import re
-from argparse import Namespace
-from collections.abc import Generator
 from contextlib import contextmanager, suppress
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
-from typing import Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 import jc.parsers.ping
 import pexpect
@@ -17,7 +17,6 @@ from boardfarm3.exceptions import (
     ConfigurationFailure,
     SCPConnectionError,
 )
-from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
 from boardfarm3.lib.networking import (
@@ -29,6 +28,12 @@ from boardfarm3.lib.networking import (
 )
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from collections.abc import Generator
+
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 
 # pylint: disable=too-many-lines
@@ -340,9 +345,9 @@ class LinuxDevice(BoardfarmDevice):
 
     def curl(
         self,
-        url: Union[str, IPv4Address],
+        url: str | IPv4Address,
         protocol: str,
-        port: Optional[Union[str, int]] = None,
+        port: str | int | None = None,
         options: str = "",
     ) -> bool:
         """Perform curl action to web service.
@@ -458,11 +463,11 @@ class LinuxDevice(BoardfarmDevice):
         self,
         ping_ip: str,
         ping_count: int = 4,
-        ping_interface: Optional[str] = None,
+        ping_interface: str | None = None,
         options: str = "",
         timeout: int = 50,
         json_output: bool = False,
-    ) -> Union[bool, dict[str, Any]]:
+    ) -> bool | dict[str, Any]:
         """Ping remote host.
 
         Return True if ping has 0% loss
@@ -504,11 +509,11 @@ class LinuxDevice(BoardfarmDevice):
 
     def traceroute(
         self,
-        host_ip: Union[str, IPv4Address, IPv6Address],
+        host_ip: str | IPv4Address | IPv6Address,
         version: str = "",
         options: str = "",
         timeout: int = 60,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get traceroute output.
 
         :param host_ip: destination ip
@@ -534,7 +539,7 @@ class LinuxDevice(BoardfarmDevice):
         self,
         fname: str,
         interface: str = "any",
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
     ) -> Generator[str, None, None]:
         """Capture packets from specified interface.
 
@@ -572,7 +577,7 @@ class LinuxDevice(BoardfarmDevice):
     def tcpdump_read_pcap(
         self,
         fname: str,
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
         timeout: int = 30,
         rm_pcap: bool = False,
     ) -> str:
@@ -614,7 +619,7 @@ class LinuxDevice(BoardfarmDevice):
     def tshark_read_pcap(
         self,
         fname: str,
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
         timeout: int = 30,
         rm_pcap: bool = False,
     ) -> str:
@@ -657,7 +662,7 @@ class LinuxDevice(BoardfarmDevice):
         self,
         command: str,
         fname: str,
-        additional_args: Optional[str],
+        additional_args: str | None,
         timeout: int,
     ) -> str:
         """Run command with given arguments and return the output.
@@ -835,11 +840,11 @@ class LinuxDevice(BoardfarmDevice):
         self,
         ipaddr: str,
         ip_type: str,
-        port: Optional[Union[str, int]] = None,
-        protocol: Optional[str] = None,
-        max_retries: Optional[int] = None,
-        min_rate: Optional[int] = None,
-        opts: Optional[str] = None,
+        port: str | int | None = None,
+        protocol: str | None = None,
+        max_retries: int | None = None,
+        min_rate: int | None = None,
+        opts: str | None = None,
     ) -> dict:
         """Perform nmap operation on linux device.
 
@@ -923,9 +928,9 @@ class LinuxDevice(BoardfarmDevice):
     def start_traffic_receiver(
         self,
         traffic_port: int,
-        bind_to_ip: str = None,
-        ip_version: int = None,
-    ) -> Union[int, bool]:
+        bind_to_ip: str | None = None,
+        ip_version: int | None = None,
+    ) -> int | bool:
         """Start the server on a linux device to generate traffic using iperf3.
 
         :param traffic_port: server port to listen on
@@ -954,13 +959,13 @@ class LinuxDevice(BoardfarmDevice):
         self,
         host: str,
         traffic_port: int,
-        bandwidth: Optional[int] = None,
-        bind_to_ip: Optional[str] = None,
-        direction: Optional[str] = None,
-        ip_version: int = None,
+        bandwidth: int | None = None,
+        bind_to_ip: str | None = None,
+        direction: str | None = None,
+        ip_version: int | None = None,
         udp_protocol: bool = False,
         time: int = 10,
-    ) -> Union[int, bool]:
+    ) -> int | bool:
         """Start traffic on a linux client using iperf3.
 
         :param host: a host to run in client mode

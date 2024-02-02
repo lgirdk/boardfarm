@@ -1,11 +1,15 @@
 """SNMP v2 module for SNMP communication."""  # pylint: disable=invalid-name
 
+from __future__ import annotations
+
 import re
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from boardfarm3.exceptions import SNMPError
-from boardfarm3.lib.mibs_compiler import MibsCompiler
-from boardfarm3.templates.wan import WAN
+
+if TYPE_CHECKING:
+    from boardfarm3.lib.mibs_compiler import MibsCompiler
+    from boardfarm3.templates.wan import WAN
 
 
 class SNMPv2:
@@ -180,7 +184,7 @@ class SNMPv2:
         self,
         oid: str,
         output: str,
-        value: Optional[str] = None,
+        value: str | None = None,
     ) -> tuple[str, str, str]:
         """Return the tuple with value, type of the value and snmp command output.
 
@@ -230,7 +234,7 @@ class SNMPv2:
     def snmpwalk(  # noqa: PLR0913
         self,
         mib_name: str,
-        index: int = None,
+        index: int | None = None,
         community: str = "private",
         retries: int = 3,
         timeout: int = 100,
@@ -279,7 +283,7 @@ class SNMPv2:
     def snmpbulkget(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         mib_name: str,
-        index: int = None,
+        index: int | None = None,
         community: str = "private",
         non_repeaters: int = 0,
         max_repetitions: int = 10,

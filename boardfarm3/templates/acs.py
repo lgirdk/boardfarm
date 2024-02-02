@@ -1,7 +1,9 @@
 """Boardfarm ACS device template."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Literal, Optional, Union
+from typing import Literal, Union
 
 # pylint: disable=invalid-name,duplicate-code
 
@@ -17,7 +19,7 @@ class ACS(ABC):
     """Boardfarm ACS device template."""
 
     @abstractmethod
-    def GPA(self, param: str, cpe_id: Optional[str] = None) -> list[dict]:
+    def GPA(self, param: str, cpe_id: str | None = None) -> list[dict]:
         """Execute GetParameterAttributes RPC call for the specified parameter.
 
         Example usage:
@@ -36,11 +38,11 @@ class ACS(ABC):
     @abstractmethod
     def SPA(  # noqa: PLR0913
         self,
-        param: Union[list[dict], dict],
+        param: list[dict] | dict,
         notification_param: bool = True,
         access_param: bool = False,
-        access_list: Optional[list] = None,
-        cpe_id: Optional[str] = None,
+        access_list: list | None = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute SetParameterAttributes RPC call for the specified parameter.
 
@@ -74,8 +76,8 @@ class ACS(ABC):
     def GPV(
         self,
         param: GpvInput,
-        timeout: Optional[int] = None,
-        cpe_id: Optional[str] = None,
+        timeout: int | None = None,
+        cpe_id: str | None = None,
     ) -> GpvResponse:
         """Execute GetParameterValues RPC call for the specified parameter(s).
 
@@ -104,8 +106,8 @@ class ACS(ABC):
     def SPV(
         self,
         param_value: SpvInput,
-        timeout: Optional[int] = None,
-        cpe_id: Optional[str] = None,
+        timeout: int | None = None,
+        cpe_id: str | None = None,
     ) -> int:
         """Execute SetParameterValues RPC call for the specified parameter.
 
@@ -126,7 +128,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def FactoryReset(self, cpe_id: Optional[str] = None) -> list[dict]:
+    def FactoryReset(self, cpe_id: str | None = None) -> list[dict]:
         """Execute FactoryReset RPC.
 
         Note: This method only informs if the FactoryReset request initiated or not.
@@ -140,7 +142,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def Reboot(self, CommandKey: str, cpe_id: Optional[str] = None) -> list[dict]:
+    def Reboot(self, CommandKey: str, cpe_id: str | None = None) -> list[dict]:
         """Execute Reboot RPC.
 
         :param CommandKey: reboot command key
@@ -157,7 +159,7 @@ class ACS(ABC):
         self,
         param: str,
         param_key: str = "",
-        cpe_id: Optional[str] = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute AddOjbect RPC call for the specified parameter.
 
@@ -177,7 +179,7 @@ class ACS(ABC):
         self,
         param: str,
         param_key: str = "",
-        cpe_id: Optional[str] = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute DeleteObject RPC call for the specified parameter.
 
@@ -197,8 +199,8 @@ class ACS(ABC):
         self,
         param: str,
         next_level: bool,
-        timeout: Optional[int] = None,
-        cpe_id: Optional[str] = None,
+        timeout: int | None = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute GetParameterNames RPC call for the specified parameter.
 
@@ -220,7 +222,7 @@ class ACS(ABC):
         self,
         CommandKey: str = "Test",
         DelaySeconds: int = 20,
-        cpe_id: Optional[str] = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute ScheduleInform RPC.
 
@@ -239,7 +241,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def GetRPCMethods(self, cpe_id: Optional[str] = None) -> list[dict]:
+    def GetRPCMethods(self, cpe_id: str | None = None) -> list[dict]:
         """Execute GetRPCMethods RPC.
 
         :param cpe_id: cpe identifier, defaults to None
@@ -262,7 +264,7 @@ class ACS(ABC):
         delayseconds: int = 10,
         successurl: str = "",
         failureurl: str = "",
-        cpe_id: Optional[str] = None,
+        cpe_id: str | None = None,
     ) -> list[dict]:
         """Execute Download RPC.
 
