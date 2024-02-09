@@ -284,10 +284,7 @@ def post_boot_env(config, env_helper, devices):
             {"1": devices.fxs1.own_number, "2": devices.fxs2.own_number},
             "1234",
             devices.sipcenter.dns.url,
-            {
-                "1": devices.softphone.own_number,
-                "2": devices.softphone2.own_number,
-            },
+            "xxxx",  # TODO: this should come from the env.json
         )
         for fxs in devices.get_device_array("FXS"):
             if devices.sipcenter.fxs_endpoint_transport == "ipv6":
