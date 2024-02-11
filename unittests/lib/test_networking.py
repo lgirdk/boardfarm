@@ -162,3 +162,15 @@ def test_tcpdump_pcap_read() -> None:
         rm_pcap=True,
     )
     assert "listening on eth0" in output
+
+
+def test_tcpdump_pcap_read_with_opts() -> None:
+    """Test if tcpdump pcap has been read with options provided."""
+    console = MyLinuxConsole(_TCPDUMP_OUTPUT.read_text())
+    output = tcpdump_read(
+        console=console,
+        capture_file=_TCPDUMP_OUTPUT.name,
+        opts="-qns 0",
+        rm_pcap=True,
+    )
+    assert "listening on eth0" in output
