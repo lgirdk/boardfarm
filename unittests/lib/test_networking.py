@@ -13,6 +13,7 @@ from boardfarm3.lib.networking import (
     http_get,
     is_link_up,
     start_tcpdump,
+    tcpdump_read,
 )
 
 _TEST_DATA = Path(__file__).parents[1] / "testdata"
@@ -26,6 +27,8 @@ _HTTP_RESPONSE = _TEST_DATA / "http_get"
 _HTTP_RESPONSE_CONN_TIMED_OUT = _TEST_DATA / "http_get_failed_conn_timed_out"
 
 _HTTP_RESPONSE_CONN_REFUSED = _TEST_DATA / "http_get_failed_conn_refused"
+
+_TCPDUMP_OUTPUT = _TEST_DATA / "tcpdump_output"
 
 
 class MyLinuxConsole(_LinuxConsole):
@@ -148,3 +151,14 @@ def test_start_tcpdump_value_error() -> None:
     console = MyLinuxConsole("tcpdump: Invalid adapter index")
     with pytest.raises(ValueError, match=f"Failed to start tcpdump on {interface}"):
         start_tcpdump(console, interface, None, "")
+
+
+def test_tcpdump_pcap_read() -> None:
+    """Test if tcpdump pcap has been read."""
+    console = MyLinuxConsole(_TCPDUMP_OUTPUT.read_text())
+    output = tcpdump_read(
+        console=console,
+        capture_file=_TCPDUMP_OUTPUT.name,
+        rm_pcap=True,
+    )
+    assert "listening on eth0" in output
