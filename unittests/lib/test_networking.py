@@ -202,3 +202,16 @@ def test_scp_conn_error_raises() -> None:
             src_path=src_path,
             dst_path=dst_path,
         )
+
+
+def test_traceroute_host_v4() -> None:
+    console = MyLinuxConsole
+    host_ip = "10.10.10.10"
+    version = ""
+    options = ""
+    output = console.execute_command(
+        console(host_ip),
+        f"traceroute{version} {options} {host_ip}",
+        timeout=90,
+    )
+    assert host_ip in output
