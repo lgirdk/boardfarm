@@ -215,3 +215,16 @@ def test_traceroute_host_v4() -> None:
         timeout=90,
     )
     assert host_ip in output
+
+
+def test_traceroute_host_v6() -> None:
+    console = MyLinuxConsole
+    host_ip = "aaaa::bbbb:cccc:dddd:eeee"
+    version = "6"
+    options = ""
+    output = console.execute_command(
+        console(host_ip),
+        f"traceroute{version} {options} {host_ip}",
+        timeout=90,
+    )
+    assert host_ip in output
