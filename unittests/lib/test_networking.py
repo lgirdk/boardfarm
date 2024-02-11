@@ -6,12 +6,14 @@ from pathlib import Path
 
 import pytest
 
+from boardfarm3.exceptions import SCPConnectionError
 from boardfarm3.lib.networking import (
     UseCaseFailure,
     _LinuxConsole,
     dns_lookup,
     http_get,
     is_link_up,
+    scp,
     start_tcpdump,
     tcpdump_read,
 )
@@ -29,6 +31,8 @@ _HTTP_RESPONSE_CONN_TIMED_OUT = _TEST_DATA / "http_get_failed_conn_timed_out"
 _HTTP_RESPONSE_CONN_REFUSED = _TEST_DATA / "http_get_failed_conn_refused"
 
 _TCPDUMP_OUTPUT = _TEST_DATA / "tcpdump_output"
+
+_SCP_CONNECTION_ERROR = _TEST_DATA / "scp_conn_error"
 
 
 class MyLinuxConsole(_LinuxConsole):
@@ -174,3 +178,27 @@ def test_tcpdump_pcap_read_with_opts() -> None:
         rm_pcap=True,
     )
     assert "listening on eth0" in output
+
+
+def test_scp_conn_error_raises() -> None:
+    """Test scp operations."""
+    username = "scp_test"
+    password = "scp_test"  # noqa: S105
+    port = "2222"
+    host = "10.10.10.10"
+    src_path = "10.10.10.10"
+    dst_path = "20.20.20.20"
+    console = MyLinuxConsole(_SCP_CONNECTION_ERROR.read_text())
+    with pytest.raises(
+        SCPConnectionError,
+        match=f"Failed to scp from {src_path} to {dst_path}",
+    ):
+        scp(
+            console=console,
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            src_path=src_path,
+            dst_path=dst_path,
+        )
