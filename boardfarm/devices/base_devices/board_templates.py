@@ -243,6 +243,15 @@ class BoardSWTemplate(metaclass=__MetaSignatureChecker):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_seconds_uptime(self) -> float:
+        """Returns the board up time in seconds.
+
+        :return: uptime in seconds
+        :rtype: float
+        """
+        raise NotImplementedError
+
 
 class BoardTemplate(metaclass=__MetaSignatureChecker):
     """This class shows a basic set of interfaces to be implemented for testing
