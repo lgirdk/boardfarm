@@ -1,3 +1,14 @@
+## 2024.07.0 (2024-02-15)
+
+### Feat
+
+- **base_devices/board_templates.py**: added template for sw class
+
+### Fix
+
+- **use_cases/networking.py**: update anycpe to boardtemplate
+- **lib/booting.py**: update extra configure voice param
+
 ## 2024.05.0 (2024-02-01)
 
 ### Feat
