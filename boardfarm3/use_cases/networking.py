@@ -2,14 +2,18 @@
 
 """Common Networking use cases."""
 
-import logging
-from collections.abc import Generator
-from contextlib import contextmanager
-from typing import Any, Optional, Union
+from __future__ import annotations
 
-from boardfarm3.lib.networking import HTTPResult
-from boardfarm3.templates.lan import LAN
-from boardfarm3.templates.wan import WAN
+import logging
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from boardfarm3.lib.networking import HTTPResult
+    from boardfarm3.templates.lan import LAN
+    from boardfarm3.templates.wan import WAN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,10 +22,10 @@ def ping(  # noqa: PLR0913
     device: LAN,
     ping_ip: str,
     ping_count: int = 4,
-    ping_interface: Optional[str] = None,
+    ping_interface: str | None = None,
     timeout: int = 50,
     json_output: bool = False,
-) -> Union[bool, dict[str, Any]]:
+) -> bool | dict[str, Any]:
     """Ping remote host ip.
 
     Return True if ping has 0% loss or parsed output in JSON if
@@ -54,9 +58,9 @@ def ping(  # noqa: PLR0913
 
 @contextmanager
 def start_http_server(
-    device: Union[LAN, WAN],
-    port: Union[int, str],
-    ip_version: Union[str, int],
+    device: LAN | WAN,
+    port: int | str,
+    ip_version: str | int,
 ) -> Generator:
     """Start http server on given client.
 
@@ -86,7 +90,7 @@ def start_http_server(
         device.stop_http_service(port)
 
 
-def http_get(device: Union[LAN, WAN], url: str, timeout: int = 20) -> HTTPResult:
+def http_get(device: LAN | WAN, url: str, timeout: int = 20) -> HTTPResult:
     """Check if the given HTTP server in WAN is running.
 
     This Use Case executes a curl command with a given timeout from the given
