@@ -1,4 +1,5 @@
 """DHCPv6 Use Cases library."""
+import re
 from dataclasses import dataclass
 from json import JSONDecoder
 from typing import Any, Dict, List, Optional, Union
@@ -154,6 +155,58 @@ class DHCPV6TraceData:
     dhcpv6_message_type: int
 
 
+def _update_trace_data(
+    output: List[DHCPV6TraceData], msg: dict[str, Any], element: dict
+) -> None:
+    output.append(
+        DHCPV6TraceData(
+            IPAddresses(None, element["_source"]["layers"]["ipv6"]["ipv6.src"], None),
+            IPAddresses(None, element["_source"]["layers"]["ipv6"]["ipv6.dst"], None),
+            msg,
+            int(element["_source"]["layers"]["dhcpv6"]["dhcpv6.msgtype"]),
+        )
+    )
+
+
+def _modify_format(
+    nested_dict: dict[str, Union[str, dict]], val_list: list[dict]
+) -> None:
+    """Modify the dict format.
+
+    .. code-block:: python
+
+        # modifies below format:
+
+        {
+            "dhcpv6.option.type_str": "Identity Association for Prefix Delegation",
+            "dhcpv6.option.type_str_tree": {
+                "dhcpv6.option.type": "25",
+                ...
+                }
+        }
+
+        to this format:
+
+        {
+            "Identity Association for Prefix Delegation": {
+                "dhcpv6.option.type": "25",
+                ...
+            }
+        }
+    """
+    nested_val_list = []
+    nested_key_list = []
+    for key, val in nested_dict.items():
+        if re.search(r"type_str(?:_\d+)?$", key):
+            nested_key_list.append(val)
+        elif re.search(r"type_str_tree(?:_\d+)?$", key):
+            nested_val_list.append(val)
+        else:
+            nested_key_list.append(key)
+            nested_val_list.append(val)
+    val_list.append(dict(zip(nested_key_list, nested_val_list)))
+
+
 def parse_dhcpv6_trace(
     on_which_device: Union[DebianLAN, DebianWAN, DebianISCProvisioner],
     fname: str,
@@ -181,22 +234,30 @@ def parse_dhcpv6_trace(
             timeout=timeout,
         )
         output: List[DHCPV6TraceData] = []
+        key_list = []
+        val_list = []
         data = "[" + out.split("[", 1)[-1].replace("\r\n", "")
         decoder = JSONDecoder(object_pairs_hook=_manage_duplicates)
         obj = decoder.decode(data)
         for element in obj:
-            output.append(
-                DHCPV6TraceData(
-                    IPAddresses(
-                        None, element["_source"]["layers"]["ipv6"]["ipv6.src"], None
-                    ),
-                    IPAddresses(
-                        None, element["_source"]["layers"]["ipv6"]["ipv6.dst"], None
-                    ),
-                    element["_source"]["layers"]["dhcpv6"],
-                    int(element["_source"]["layers"]["dhcpv6"]["dhcpv6.msgtype"]),
+            # condition for mv3 eth packets because the packets are not wrapped under Relay message
+            # the below logic updates the dhcp packet dict to have the consistent format across gateways
+            if "Relay Message" not in element["_source"]["layers"]["dhcpv6"].keys():
+                pkt_dict = element["_source"]["layers"]["dhcpv6"]
+                for pkt_key, pkt_value in pkt_dict.items():
+                    if re.search(r"type_str(?:_\d+)?$", pkt_key):
+                        key_list.append(pkt_value)
+                    elif re.search(r"type_str_tree(?:_\d+)?$", pkt_key):
+                        _modify_format(pkt_value, val_list)
+                    else:
+                        key_list.append(pkt_key)
+                        val_list.append(pkt_value)
+                dhcp_dict = dict(zip(key_list, val_list))
+                _update_trace_data(output, dhcp_dict, element)
+            else:
+                _update_trace_data(
+                    output, element["_source"]["layers"]["dhcpv6"], element
                 )
-            )
         return output
     except Exception as e:
         raise UseCaseFailure(f"Failed to parse DHCPV6 packets due to {e} ")
