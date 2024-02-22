@@ -38,14 +38,14 @@ def ping(  # noqa: PLR0913
     :param ping_count: number of concurrent pings, defaults to 4
     :type ping_count: int
     :param ping_interface: ping via interface, defaults to None
-    :type ping_interface: Optional[str]
+    :type ping_interface: str | None
     :param timeout: timeout, defaults to 50
     :type timeout: int
     :param json_output: True if ping output in dictionary format else False,
         defaults to False
     :type json_output: bool
     :return: bool or dict of ping output
-    :rtype: Union[bool, dict[str, Any]]
+    :rtype: bool | dict[str, Any]
     """
     return device.ping(
         ping_ip,
@@ -69,11 +69,11 @@ def start_http_server(
         - Start the HTTP server on the [] client
 
     :param device: device on which server will start
-    :type device: Union[LAN, WAN]
+    :type device: LAN | WAN
     :param port: port on which the server listen for incomming connections
-    :type port: Union[int, str]
+    :type port: int | str
     :param ip_version: ip version of server values can strictly be 4 or 6
-    :type ip_version: Union[str, int]
+    :type ip_version: str | int
     :raises ValueError: wrong ip_version value is given in api call
     :yield: PID of the http server process
     """
@@ -103,7 +103,7 @@ def http_get(device: LAN | WAN, url: str, timeout: int = 20) -> HTTPResult:
         - Try to connect to the HTTP server from [] client
 
     :param device: the device from where http response to get
-    :type device: Union[LAN, WAN]
+    :type device: LAN | WAN
     :param url: url to get the response
     :type url: str
     :param timeout: connection timeout for the curl command in seconds, default 20
