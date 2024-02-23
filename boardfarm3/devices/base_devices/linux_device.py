@@ -193,7 +193,7 @@ class LinuxDevice(BoardfarmDevice):
         """
         prefix = "inet6" if is_ipv6 else "inet"
         ip_regex = prefix + r"\s(?:addr:)?\s*([^\s/]+)"
-        output = self._console.execute_command_async(f"ifconfig {interface_name}")
+        output = await self._console.execute_command_async(f"ifconfig {interface_name}")
         return re.findall(ip_regex, output)
 
     def _get_nw_interface_ipv4_address(self, network_interface: str) -> str:
