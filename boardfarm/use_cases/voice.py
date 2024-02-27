@@ -4,6 +4,7 @@ Voice use cases library.
 This module deals with only SIP end points.
 All APIs are independent of board under test.
 """
+
 import logging
 from contextlib import contextmanager
 from ipaddress import IPv4Address, ip_address
@@ -623,13 +624,15 @@ def disable_unconditional_call_forwarding(
     )
 
 
-def get_sip_expiry_time(sip_proxy: VoiceServer) -> str:
+def get_sip_expiry_time(sip_proxy: VoiceServer) -> int:
     """Get the call expiry timer from the config file.
 
     :param sip_proxy: SIP Server
     :type sip_proxy: VoiceServer
     :return: expiry timer saved in the config
-    :rtype: str
+    :rtype: int
     :raises CodeError: if the sipserver is not installed
     """
-    return sip_proxy.get_sipserver_expire_timer()
+    if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
+        raise CodeError("Install the sipserver first")
+    return sip_proxy._obj().get_sipserver_expire_timer()
