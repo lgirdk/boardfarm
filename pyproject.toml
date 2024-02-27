@@ -47,7 +47,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black",
     "flake8",
     "flake8-bugbear",
     "flake8-builtins",
@@ -133,9 +132,6 @@ version_files = [
     "pyproject.toml:current",
 ]
 
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 disallow_untyped_defs = true
 ignore_missing_imports = true
@@ -219,7 +215,6 @@ exclude = [
     "venv",
 ]
 
-# Same as Black.
 line-length = 88
 
 # Allow unused variables when underscore-prefixed.
@@ -250,6 +245,10 @@ lint.unfixable = [
 [tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
 
 [tool.pylint.MASTER]
 load-plugins = ["pylint_per_file_ignores"]

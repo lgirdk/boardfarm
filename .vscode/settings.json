@@ -1,13 +1,13 @@
 {
     "[python]": {
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true
+            "source.fixAll": "explicit",
+            "source.organizeImports": "always"
         },
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true
     },
     "autoDocstring.docstringFormat": "sphinx",
-    "black-formatter.importStrategy": "fromEnvironment",
     "editor.rulers": [
         36,
         78,
@@ -17,14 +17,12 @@
     "editor.suggestSelection": "first",
     "evenBetterToml.formatter.allowedBlankLines": 1,
     "evenBetterToml.formatter.columnWidth": 80,
-    "isort.args": [
-        "--profile",
-        "black"
-    ],
+    "python.languageServer": "Pylance",
     "python.terminal.activateEnvInCurrentTerminal": true,
     "python.testing.pytestEnabled": true,
     "ruff.fixAll": false,
     "ruff.importStrategy": "fromEnvironment",
-    "ruff.organizeImports": false,
+    "ruff.lint.run": "onSave",
+    "ruff.organizeImports": true,
     "workbench.editor.enablePreview": false
 }

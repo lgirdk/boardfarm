@@ -16,8 +16,8 @@ def lint(session: nox.Session) -> None:
     # noqa: DAR101
     """
     session.install("--upgrade", ".[dev]")
-    session.run("black", ".", "--check")
-    session.run("isort", ".", "--check-only")
+    session.run("ruff", "format", "--check", ".")
+    session.run("ruff", "check", ".")
     session.run("flake8", ".")
     session.run("mypy", "boardfarm3")
 

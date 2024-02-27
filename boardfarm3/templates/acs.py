@@ -24,7 +24,7 @@ class ACS(ABC):
 
         Example usage:
 
-        >>> acs_server.GPA('Device.WiFi.SSID.1.SSID')
+        >>> acs_server.GPA("Device.WiFi.SSID.1.SSID")
 
         :param param: parameter to be used in get
         :type param: str
@@ -48,7 +48,7 @@ class ACS(ABC):
 
         Example usage:
 
-        >>> acs_server.SPA({'Device.WiFi.SSID.1.SSID':'1'}),
+        >>> (acs_server.SPA({"Device.WiFi.SSID.1.SSID": "1"}),)
 
         could be parameter list of dicts/dict containing param name and notifications
 
@@ -92,11 +92,13 @@ class ACS(ABC):
 
             .. code-block:: python
 
-                [ {
-                    'key':'Device.WiFi.AccessPoint.1.AC.1.Alias',
-                    'value':'mok_1',
-                    'type':'string'
-                } ]
+                [
+                    {
+                        "key": "Device.WiFi.AccessPoint.1.AC.1.Alias",
+                        "value": "mok_1",
+                        "type": "string",
+                    }
+                ]
 
         :rtype: GpvResponse
         """
@@ -115,7 +117,7 @@ class ACS(ABC):
             the value to be set. Example:
             .. code-block:: python
 
-                { 'Device.WiFi.AccessPoint.1.AC.1.Alias': 'mok_1' }
+                {"Device.WiFi.AccessPoint.1.AC.1.Alias": "mok_1"}
 
         :type param_value: SpvInput
         :param timeout: wait time for the RPC to complete, defaults to None
@@ -275,9 +277,12 @@ class ACS(ABC):
             .. code-block:: python
 
                 [
-                    "1 Firmware Upgrade Image", "2 Web Content",
-                    "3 Vendor Configuration File", "4 Tone File",
-                    "5 Ringer File", "6 Stored Firmware Image"
+                    "1 Firmware Upgrade Image",
+                    "2 Web Content",
+                    "3 Vendor Configuration File",
+                    "4 Tone File",
+                    "5 Ringer File",
+                    "6 Stored Firmware Image",
                 ]
 
         :type filetype: str
