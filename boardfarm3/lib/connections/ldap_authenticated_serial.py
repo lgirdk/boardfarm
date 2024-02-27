@@ -1,11 +1,15 @@
 """SSH connection module."""
 
+from __future__ import annotations
+
 from typing import Any
 
 import pexpect
 
 from boardfarm3.exceptions import DeviceConnectionError
 from boardfarm3.lib.connections.ssh_connection import SSHConnection
+
+_CONNECTION_FAILED_STR: str = "Failed to connect to device via serial"
 
 
 class LdapAuthenticatedSerial(SSHConnection):
@@ -52,37 +56,37 @@ class LdapAuthenticatedSerial(SSHConnection):
             save_console_logs,
         )
 
-    def login_to_server(self, password: str) -> None:
+    def login_to_server(self, password: str | None = None) -> None:
         """Login to serial server.
 
         :param password: LDAP password
         :type password: str
         :raises DeviceConnectionError: failed to connect to device via serial
         """
+        if password is None:
+            password = self._password
         if self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT]):
-            msg = "Failed to connect to device via serial"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
         self.sendline(password)
         if self.expect_exact(
             ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
         ):
-            msg = "Failed to connect to device via serial"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
 
-    async def login_to_server_async(self, password: str) -> None:
+    async def login_to_server_async(self, password: str | None = None) -> None:
         """Login to serial server.
 
         :param password: LDAP password
         :type password: str
         :raises DeviceConnectionError: failed to connect to device via serial
         """
+        if password is None:
+            password = self._password
         if await self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT], async_=True):
-            msg = "Failed to connect to device via serial"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
         self.sendline(password)
         if await self.expect_exact(
             ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
             async_=True,
         ):
-            msg = "Failed to connect to device via serial"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)

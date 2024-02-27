@@ -10,6 +10,7 @@ from boardfarm3.exceptions import BoardfarmException, DeviceConnectionError
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 _CONNECTION_ERROR_THRESHOLD = 2
+_CONNECTION_FAILED_STR: str = "Connection failed to SSH server"
 
 
 class SSHConnection(BoardfarmPexpect):
@@ -58,21 +59,20 @@ class SSHConnection(BoardfarmPexpect):
         ]
         super().__init__(name, "ssh", save_console_logs, args)
 
-    async def login_to_server_async(self, password: str) -> None:
+    async def login_to_server_async(self, password: str | None = None) -> None:
         """Login to SSH session.
 
         :param password: ssh password
         :raises DeviceConnectionError: connection failed to SSH server
         """
-        if password is not None:
-            if await self.expect(
-                ["password:", pexpect.EOF, pexpect.TIMEOUT],
-                async_=True,
-            ):
-                msg = "Connection failed to SSH server"
-                raise DeviceConnectionError(msg)
-            self.sendline(password)
-        # no idea
+        if password is None:
+            password = self._password
+        if await self.expect(
+            ["password:", pexpect.EOF, pexpect.TIMEOUT],
+            async_=True,
+        ):
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
+        self.sendline(password)
         if (
             await self.expect(
                 [
@@ -84,23 +84,21 @@ class SSHConnection(BoardfarmPexpect):
             )
             < _CONNECTION_ERROR_THRESHOLD
         ):
-            msg = "Connection failed to SSH server"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
 
-    def login_to_server(self, password: str) -> None:
+    def login_to_server(self, password: str | None = None) -> None:
         """Login to SSH session.
 
         :param password: ssh password
         :raises DeviceConnectionError: connection failed to SSH server
         """
-        if password is not None:
-            if self.expect(
-                ["password:", pexpect.EOF, pexpect.TIMEOUT],
-            ):
-                msg = "Connection failed to SSH server"
-                raise DeviceConnectionError(msg)
-            self.sendline(password)
-        # no idea
+        if password is None:
+            password = self._password
+        if self.expect(
+            ["password:", pexpect.EOF, pexpect.TIMEOUT],
+        ):
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
+        self.sendline(password)
         if (
             self.expect(
                 [
@@ -111,8 +109,7 @@ class SSHConnection(BoardfarmPexpect):
             )
             < _CONNECTION_ERROR_THRESHOLD
         ):
-            msg = "Connection failed to SSH server"
-            raise DeviceConnectionError(msg)
+            raise DeviceConnectionError(_CONNECTION_FAILED_STR)
 
     def execute_command(self, command: str, timeout: int = -1) -> str:
         """Execute a command in the SSH session.
@@ -161,7 +158,7 @@ class SSHConnection(BoardfarmPexpect):
             raise BoardfarmException(
                 msg,
             ) from e
-        return self.before.strip()
+        return str(self.before.strip())
 
     def sudo_sendline(self, cmd: str) -> None:
         """Add sudo in the sendline if username is root.
