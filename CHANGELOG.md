@@ -1,3 +1,9 @@
+## 2024.09.0 (2024-02-28)
+
+### Fix
+
+- **networking**: fix the HTTP parsing
+
 ## 2024.07.0 (2024-02-15)
 
 ### Feat
