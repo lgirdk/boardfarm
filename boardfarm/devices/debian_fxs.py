@@ -343,6 +343,7 @@ class DebianFXS(SIPPhoneTemplate, DebianBox):  # type: ignore
             # IF RESULT CODE OK is received dial tone was detected
             self.mta_readlines(search="OK")
             out = True
+        self.on_hook()
         return out is not None
 
     @Checks.is_phone_started
