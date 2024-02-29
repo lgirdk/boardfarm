@@ -572,7 +572,10 @@ def set_sip_expiry_time(sip_proxy: VoiceServer, to_what_time: int = 60) -> None:
     """
     if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
         raise CodeError("Install the sipserver first")
-    sip_proxy._obj().sipserver_set_expire_timer(to_timer=to_what_time)
+    from_what_time = sip_proxy._obj().get_sipserver_expire_timer()
+    sip_proxy._obj().sipserver_set_expire_timer(
+        from_timer=from_what_time, to_timer=to_what_time
+    )
 
 
 def determine_sipserver_ip(voice_client: VoiceClient) -> str:
