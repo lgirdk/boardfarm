@@ -77,7 +77,7 @@ class Ser2NetConnection(TelnetConnection):
         """
         super().login_to_server(password)
         if self.expect(
-            [f"ser2net port {self._port}", pexpect.TIMEOUT],
+            [f"ser2net port.*{self._port}", pexpect.TIMEOUT],
             timeout=10,
         ):
             msg = f"ser2net: Failed to run 'telnet {self._ip_addr} {self._port}'"
