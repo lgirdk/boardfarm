@@ -1,5 +1,7 @@
 """Telnet connection module."""
 
+from __future__ import annotations
+
 import pexpect
 
 from boardfarm3.exceptions import DeviceConnectionError
@@ -26,7 +28,6 @@ class TelnetConnection(BoardfarmPexpect):
         :type save_console_logs: bool
         :param args: additional arguments to the command
         :type args: list[str]
-        :raises DeviceConnectionError: When failed to connect to device via telnet
         """
         self._ip_addr, self._port, self._shell_prompt = args[0], args[1], args.pop(2)
         super().__init__(
@@ -35,6 +36,40 @@ class TelnetConnection(BoardfarmPexpect):
             save_console_logs=save_console_logs,
             args=args,
         )
+
+    async def login_to_server_async(self, password: str | None = None) -> None:
+        """Login to Telnet seerver using asyncio.
+
+        :param password: Telnet password (currently unused)
+        :raises DeviceConnectionError: connection failed to Telnet server
+        """
+        if password is not None:
+            msg = "Authenticated Telnet not supported."
+            raise DeviceConnectionError(msg)
+        if (
+            await self.expect(
+                [
+                    f"Connected to {self._ip_addr}",
+                    "Escape character is '^]'.",
+                    pexpect.TIMEOUT,
+                ],
+                timeout=10,
+                async_=True,
+            )
+            > 1
+        ):
+            msg = f"Failed to run 'telnet {self._ip_addr} {self._port}'"
+            raise DeviceConnectionError(msg)
+
+    def login_to_server(self, password: str | None = None) -> None:
+        """Login to Telnet server.
+
+        :param password: Telnet password
+        :raises DeviceConnectionError: connection failed to Telnet server
+        """
+        if password is not None:
+            msg = "Authenticated Telnet not supported."
+            raise DeviceConnectionError(msg)
         if self.expect(
             [
                 f"Connected to {self._ip_addr}",
@@ -49,7 +84,7 @@ class TelnetConnection(BoardfarmPexpect):
             )
 
     def execute_command(self, command: str, timeout: int = 30) -> str:
-        """Execute a command in the SSH session.
+        """Execute a command in the Telnet session.
 
         :param command: command to be executed
         :type command: str
@@ -61,6 +96,19 @@ class TelnetConnection(BoardfarmPexpect):
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self._shell_prompt, timeout=timeout)
+        return self.get_last_output()
+
+    async def execute_command_async(self, command: str, timeout: int = -1) -> str:
+        """Execute a command in the Telnet session.
+
+        :param command: command to execute
+        :param timeout: timeout in seconds. defaults to -1
+        :returns: command output
+        """
+        self.sendline(command)
+        await self.expect_exact(command, async_=True)
+        await self.expect(self.linesep, async_=True)
+        await self.expect(self._shell_prompt, timeout=timeout, async_=True)
         return self.get_last_output()
 
     def close(self, force: bool = True) -> None:

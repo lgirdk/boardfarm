@@ -1,5 +1,7 @@
 """ser2net connection module."""
 
+from __future__ import annotations
+
 import pexpect
 
 from boardfarm3.exceptions import DeviceConnectionError
@@ -40,15 +42,43 @@ class Ser2NetConnection(TelnetConnection):
         :type save_console_logs: bool
         :param args: additional arguments to the command
         :type args: list[str  |  list[str]]
-        :raises DeviceConnectionError: When failed to connect to device via telnet
         """
-        self._ip_addr, self._port, self._shell_prompt = args[0], args[1], args.pop(2)
+        self._ip_addr, self._port = args[0], args[1]
         super().__init__(
             session_name,
             command,
             save_console_logs,
             args,
         )
-        if self.expect([f"ser2net port {self._port}", pexpect.TIMEOUT], timeout=10):
+
+    async def login_to_server_async(self, password: str | None = None) -> None:
+        """Login to Ser2Net server using asyncio.
+
+        :param password: Telnet password
+        :raises DeviceConnectionError: connection failed to Telnet server
+        """
+        await super().login_to_server_async(password)
+        if (
+            await self.expect(
+                [f"ser2net port.*{self._port}", pexpect.TIMEOUT],
+                timeout=10,
+                async_=True,
+            )
+            == 1
+        ):
+            msg = f"ser2net: Failed to run 'telnet {self._ip_addr} {self._port}'"
+            raise DeviceConnectionError(msg)
+
+    def login_to_server(self, password: str | None = None) -> None:
+        """Login to Ser2Net server.
+
+        :param password: Telnet password
+        :raises DeviceConnectionError: connection failed to Telnet server
+        """
+        super().login_to_server(password)
+        if self.expect(
+            [f"ser2net port {self._port}", pexpect.TIMEOUT],
+            timeout=10,
+        ):
             msg = f"ser2net: Failed to run 'telnet {self._ip_addr} {self._port}'"
             raise DeviceConnectionError(msg)
