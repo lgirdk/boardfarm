@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from ipaddress import IPv4Address, IPv4Network
 
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast
 
 
@@ -105,6 +106,16 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
 
         :return: multicast component instance
         :rtype: Multicast
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def console(self) -> BoardfarmPexpect:
+        """Returns WLAN console.
+
+        :return: console
+        :rtype: BoardfarmPexpect
         """
         raise NotImplementedError
 

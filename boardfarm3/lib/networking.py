@@ -91,7 +91,7 @@ def start_tcpdump(  # noqa: PLR0913
     if console.expect_exact([f"tcpdump: listening on {interface}", pexpect.TIMEOUT]):
         msg = f"Failed to start tcpdump on {interface}"
         raise ValueError(msg)
-    return re.search(r"(\[\d{1,10}\]\s(\d{1,6}))", output)[2]
+    return re.search(r"(\[\d+\]\s(\d+))", output)[2]
 
 
 def stop_tcpdump(console: _LinuxConsole, process_id: str) -> None:
@@ -103,10 +103,13 @@ def stop_tcpdump(console: _LinuxConsole, process_id: str) -> None:
     :type process_id: str
     :raises ValueError: on failed to stop tcpdump process
     """
-    console.execute_command(f"kill {process_id}")
-    if console.expect_exact(["packets captured", pexpect.TIMEOUT]):
-        msg = f"Failed to stop tcpdump process with PID {process_id}"
-        raise ValueError(msg)
+    output = console.execute_command(f"kill {process_id}")
+    if "packets captured" not in output:
+        idx = console.expect_exact(["captured", pexpect.TIMEOUT])
+        if idx:
+            msg = f"Failed to stop tcpdump process with PID {process_id}"
+            raise ValueError(msg)
+    console.execute_command("sync")
 
 
 def tcpdump_read(  # noqa: PLR0913

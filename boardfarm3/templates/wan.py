@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
     from ipaddress import IPv4Address
 
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast
     from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
 
@@ -34,6 +35,16 @@ class WAN(ABC):
 
         :return: multicast component instance
         :rtype: Multicast
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def console(self) -> BoardfarmPexpect:
+        """Returns WAN console.
+
+        :return: console
+        :rtype: BoardfarmPexpect
         """
         raise NotImplementedError
 

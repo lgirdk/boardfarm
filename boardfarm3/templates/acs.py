@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Literal, Union
+from typing import TYPE_CHECKING, Literal, Union
+
+if TYPE_CHECKING:
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 # pylint: disable=invalid-name,duplicate-code
 
@@ -17,6 +20,16 @@ GpvResponse = list[GpvStruct]
 
 class ACS(ABC):
     """Boardfarm ACS device template."""
+
+    @property
+    @abstractmethod
+    def console(self) -> BoardfarmPexpect:
+        """Returns ACS console.
+
+        :return: console
+        :rtype: BoardfarmPexpect
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def GPA(self, param: str, cpe_id: str | None = None) -> list[dict]:
