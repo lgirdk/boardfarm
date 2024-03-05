@@ -171,3 +171,6 @@ cython_debug/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
+
+# Console-logs
+console-logs/
