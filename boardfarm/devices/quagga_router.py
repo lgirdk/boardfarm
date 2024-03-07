@@ -19,7 +19,7 @@ class QuaggaRouter(linux.LinuxDevice):
     name = "quagga_router"
     prompt = [r"[\w-]{2,18}\@.*:.*\#"]
     router_prompt = "Zebra>"
-    iface_dut = "cm"
+    iface_dut = "cpe"
     telnet_router_instance = "telnet localhost 2601"
     telnet_passwd = "Quagga"
 
