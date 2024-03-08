@@ -76,6 +76,7 @@ repos:
             language: python
             types: [python]
             stages: [commit]
+            args: [-m=3, --tc]
     - repo: https://github.com/astral-sh/ruff-pre-commit
       # Ruff version.
       rev: v0.2.2
