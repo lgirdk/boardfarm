@@ -32,6 +32,7 @@ def tcpdump_capture(
     capture_file="pkt_capture.pcap",
     filters=None,
     return_pid=False,
+    filecount=1,
     additional_filters="",
 ):
     """Capture network traffic using tcpdump.
@@ -52,8 +53,14 @@ def tcpdump_capture(
     :type return_pid: boolean
     :return: Console output of tcpdump sendline command/pid depends on the return_pid flag
     :rtype: string
+    :param filecount: Number of files to be created ,defaults to 1
+    :type filecount: number, Optional
+    :param additional_filters: Supply additional filters for the pcap,Defaults to empty
+    :type additional_filters: String, Optional
     """
-    base = f"tcpdump -Z root -C 2 -W 10  -U -i {interface} -n -w {capture_file} "
+    base = (
+        f"tcpdump -Z root -C 2 -W {filecount}  -U -i {interface} -n -w {capture_file} "
+    )
     run_background = " &"
     filter_str = " ".join([" ".join(i) for i in filters.items()]) if filters else ""
     filter_str += additional_filters
