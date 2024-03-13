@@ -184,6 +184,8 @@ lint.ignore = [
     "TD",     # would conflict with TODO highligther
     "FIX002", # we need to keep TODOs in the code
     "E501",   # line too long ignoring
+    "COM812", # The following rule may cause conflicts when used with the formatter
+    "ISC001", # The following rule may cause conflicts when used with the formatter
 ]
 lint.select = ["ALL"]
 

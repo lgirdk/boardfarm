@@ -66,17 +66,6 @@ repos:
             files: \.py$
             args: [--in-place]
             stages: [commit]
-    - repo: https://github.com/timothycrosley/isort
-      rev: 5.13.2
-      hooks:
-          - id: isort
-            name: isort
-            entry: isort
-            require_serial: true
-            language: python
-            types: [python]
-            stages: [commit]
-            args: [-m=3, --tc]
     - repo: https://github.com/astral-sh/ruff-pre-commit
       # Ruff version.
       rev: v0.2.2
@@ -113,13 +102,6 @@ repos:
                 (?x)^(
                   unittests/lib/docker_factory/.*\.yml$
                 )$
-    - repo: https://github.com/psf/black
-      rev: 24.2.0
-      hooks:
-          - id: black
-            description: 'Black: The uncompromising Python code formatter'
-            args: [--safe]
-            stages: [commit]
     - repo: https://github.com/akaihola/darglint2
       rev: v1.8.2
       hooks:
