@@ -1,3 +1,18 @@
+## 2024.11.0 (2024-03-14)
+
+### Feat
+
+- **use_cases/voice.py**: add stop_and_start_sip_server
+
+### Fix
+
+- **network_testing.py**: change tcpdump cmd flags
+- **quagga_router.py**: update interface
+- **use_cases/voice.py**: fix set_sip_expiry_time
+- **devices/debian_fxs.py**: fix detect_dialtone
+- **pyproject**: update easysnmp dependency
+- **boardfarm/use_cases/voice.py**: fix get_sip_expiry_time usecase
+
 ## 2024.09.0 (2024-02-28)
 
 ### Fix
