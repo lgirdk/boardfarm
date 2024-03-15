@@ -70,6 +70,10 @@ repos:
       # Ruff version.
       rev: v0.2.2
       hooks:
+          - id: ruff
+            # https://docs.astral.sh/ruff/formatter/#sorting-imports
+            args: [check, --select, I, --fix]
+            name: ruff-isort
           - id: ruff-format
           - id: ruff
     - repo: https://github.com/asottile/pyupgrade
