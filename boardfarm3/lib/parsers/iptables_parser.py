@@ -68,7 +68,7 @@ class IptablesParser:
                 rule_details: dict[str, str] = {}
                 if re.match(r"\s[A-Za-z]", rule) is not None:
                     key = rule.split(" ")[1]
-                elif rule[:1].isdigit() is not None:
+                elif rule[:1].isdigit():
                     values = list(rule.split())
                     for cnt, val in enumerate(header[1:], 1):
                         rule_details[val] = values[cnt]

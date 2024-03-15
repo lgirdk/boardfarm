@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal, Union
 
 if TYPE_CHECKING:
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.lib.networking import IptablesFirewall
 
 # pylint: disable=invalid-name,duplicate-code
 
@@ -361,5 +362,15 @@ class ACS(ABC):
         :type destination: str
         :param action: scp action(download/upload), defaults to "download"
         :type action: Literal["download", "upload"], optional
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def firewall(self) -> IptablesFirewall:
+        """Returns Firewall iptables instance.
+
+        :return: firewall iptables instance with console object
+        :rtype: IptablesFirewall
         """
         raise NotImplementedError

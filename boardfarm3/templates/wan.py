@@ -12,15 +12,17 @@ if TYPE_CHECKING:
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast
-    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall
+    from boardfarm3.lib.networking import (
+        HTTPResult,
+        IptablesFirewall,
+        NSLookup,
+    )
 
 # pylint: disable=duplicate-code,too-many-public-methods
 
 
 class WAN(ABC):
     """Boardfarm WAN device template."""
-
-    firewall: IptablesFirewall
 
     @property
     @abstractmethod
@@ -45,6 +47,26 @@ class WAN(ABC):
 
         :return: console
         :rtype: BoardfarmPexpect
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def firewall(self) -> IptablesFirewall:
+        """Returns Firewall iptables instance.
+
+        :return: firewall iptables instance with console object
+        :rtype: IptablesFirewall
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def nslookup(self) -> NSLookup:
+        """Returns NSLookup utility instance.
+
+        :return: nslookup utility instance with console object
+        :rtype: NSLookup
         """
         raise NotImplementedError
 

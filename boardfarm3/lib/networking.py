@@ -252,7 +252,7 @@ class IptablesFirewall:
         :return: iptables rules dictionary
         :rtype: Dict[str, List[Dict]]
         """
-        return IptablesParser().ip6tables(
+        return IptablesParser().iptables(
             self._console.execute_command(f"iptables {opts} {extra_opts}"),
         )
 
@@ -266,7 +266,7 @@ class IptablesFirewall:
         :return: True if iptables is empty, False otherwise
         :rtype: bool
         """
-        return any(self.get_iptables_list(opts, extra_opts).values())
+        return not any(self.get_iptables_list(opts, extra_opts).values())
 
     def get_ip6tables_list(
         self,
@@ -314,7 +314,7 @@ class IptablesFirewall:
         :return: True if ip6tables is empty, False otherwise
         :rtype: bool
         """
-        return any(self.get_ip6tables_list(opts, extra_opts).values())
+        return not any(self.get_ip6tables_list(opts, extra_opts).values())
 
     def add_drop_rule_iptables(self, option: str, valid_ip: str) -> None:
         """Add drop rule to iptables.
