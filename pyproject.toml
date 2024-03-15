@@ -190,7 +190,7 @@ lint.ignore = [
 lint.select = ["ALL"]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-lint.fixable = ["C4", "COM", "PIE", "PT", "RUF", "SIM", "UP"]
+lint.fixable = ["ALL"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
