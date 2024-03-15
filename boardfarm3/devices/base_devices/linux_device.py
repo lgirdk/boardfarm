@@ -23,7 +23,6 @@ from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
 from boardfarm3.lib.networking import (
     HTTPResult,
-    IptablesFirewall,
     dns_lookup,
     http_get,
     is_link_up,
@@ -56,7 +55,6 @@ class LinuxDevice(BoardfarmDevice):
         super().__init__(config, cmdline_args)
         self._console: BoardfarmPexpect = None
         self._shell_prompt = [DEFAULT_BASH_SHELL_PROMPT_PATTERN]
-        self.firewall = IptablesFirewall(self._console)
         self._static_route = ""
         if "options" in self._config:
             options = [x.strip() for x in self._config["options"].split(",")]
