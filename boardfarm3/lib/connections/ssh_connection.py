@@ -56,6 +56,7 @@ class SSHConnection(BoardfarmPexpect):
             "-o ServerAliveInterval=60",
             "-o ServerAliveCountMax=5",
             "-o IdentitiesOnly=yes",
+            "-o HostKeyAlgorithms=+ssh-rsa",
         ]
         super().__init__(name, "ssh", save_console_logs, args)
 
