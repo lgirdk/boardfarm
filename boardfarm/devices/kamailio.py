@@ -186,16 +186,14 @@ EOF"""
         self.expect(self.prompt)
         return self.before
 
-    def sipserver_set_expire_timer(self, from_timer=180, to_timer=60):
+    def sipserver_set_expire_timer(self, to_timer=60):
         """Modify the call expires timer in kamailio.cfg
 
-        :param from_timer: Expire timer value change from
-        :type from_timer: int 'default to 180'
-        :param to_timer: Expire timer value change to
+        :param to_timer: Expire timer value to be changed to this value
         :type to_timer: int 'default to 60'
         """
         self.sendline(
-            f"""sed -i -e 's|"max_expires", {from_timer}|"max_expires", {to_timer}|' """
+            rf"""sed -i -e 's|"max_expires", [[:digit:]]\+|"max_expires", {to_timer}|' """
             + self.kamailio_cfg
         )
         self.expect(self.prompt)

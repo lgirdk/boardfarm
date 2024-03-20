@@ -566,16 +566,13 @@ def set_sip_expiry_time(sip_proxy: VoiceServer, to_what_time: int = 60) -> None:
 
     :param sip_proxy: SIP Server
     :type sip_proxy: VoiceServer
-    :param to_what_time: New expiry time to be set. Defaults to 60., defaults to 60
+    :param to_what_time: New expiry time to be set. Defaults to 60
     :type to_what_time: int, optional
     :raises CodeError: if the sipserver is not installed
     """
     if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
         raise CodeError("Install the sipserver first")
-    from_what_time = sip_proxy._obj().get_sipserver_expire_timer()
-    sip_proxy._obj().sipserver_set_expire_timer(
-        from_timer=from_what_time, to_timer=to_what_time
-    )
+    sip_proxy._obj().sipserver_set_expire_timer(to_timer=to_what_time)
 
 
 def determine_sipserver_ip(voice_client: VoiceClient) -> str:
