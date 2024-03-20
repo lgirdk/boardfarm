@@ -54,7 +54,7 @@ dev = [
     "flake8-docstrings",
     "flake8-rst",
     "flake8-rst-docstrings",
-    "darglint",
+    "darglint2",
     "mypy>=1.3",
     "nox",
     "pre-commit",

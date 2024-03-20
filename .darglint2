@@ -1,3 +1,2 @@
 [darglint2]
-docstring_style=sphinx
-ignore=DAR103
+    docstring_style=sphinx
