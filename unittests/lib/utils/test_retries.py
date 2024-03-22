@@ -2,7 +2,6 @@
 
 # pylint: disable=missing-docstring
 
-
 from typing import Any
 
 import pytest
