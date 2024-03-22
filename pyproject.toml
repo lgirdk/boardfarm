@@ -172,25 +172,6 @@ src = "boardfarm3/__init__.py"
 src = "pyproject.toml"
 
 [tool.ruff]
-lint.ignore = [
-    "ANN101", # annotation of self object
-    "ANN204", # annotation of __init__()
-    "D203",
-    "D213",
-    "FBT",    # boolean trap, no clear solution
-    "N",      # naming convention, already covered by pylint
-    "PT003",  # allow scope=function to be explicitly passed to fixtures
-    "SIM114", # simplify if-elif by AND/OR combinations
-    "TD",     # would conflict with TODO highligther
-    "FIX002", # we need to keep TODOs in the code
-    "E501",   # line too long ignoring
-    "COM812", # The following rule may cause conflicts when used with the formatter
-    "ISC001", # The following rule may cause conflicts when used with the formatter
-]
-lint.select = ["ALL"]
-
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-lint.fixable = ["ALL"]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -221,9 +202,31 @@ line-length = 88
 
 target-version = "py39"
 
-lint.unfixable = [
-    "F401", # unused imports - we must know if we forgot something...
-]
+[tool.ruff.lint]
+    ignore = [
+        "ANN101", # annotation of self object
+        "ANN204", # annotation of __init__()
+        "D203",
+        "D213",
+        "FBT",    # boolean trap, no clear solution
+        "N",      # naming convention, already covered by pylint
+        "PT003",  # allow scope=function to be explicitly passed to fixtures
+        "SIM114", # simplify if-elif by AND/OR combinations
+        "TD",     # would conflict with TODO highligther
+        "FIX002", # we need to keep TODOs in the code
+        "E501",   # line too long ignoring
+        "COM812", # The following rule may cause conflicts when used with the formatter
+        "ISC001", # The following rule may cause conflicts when used with the formatter
+    ]
+    select = ["ALL"]
+
+    # Allow autofix for all enabled rules (when `--fix`) is provided.
+    fixable = ["ALL"]
+
+    unfixable = [
+        "F401", # unused imports - we must know if we forgot something...
+    ]
+
 [tool.ruff.lint.per-file-ignores]
 "boardfarm3/lib/parsers/*" = [
     "ALL", # parsers are to be rewritten with JC
