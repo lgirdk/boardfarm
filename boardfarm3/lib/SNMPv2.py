@@ -298,17 +298,17 @@ class SNMPv2:
         :param index: index used along with mib_name, defaults to None
         :type index: int, optional
         :param community: SNMP Community string, defaults to "private"
-        :type community: str, optional
+        :type community: str
         :param non_repeaters: value treated as get request, defaults to 0
-        :type non_repeaters: int, optional
+        :type non_repeaters: int
         :param max_repetitions: value treated as get next operation, defaults to 10
-        :type max_repetitions: int, optional
+        :type max_repetitions: int
         :param retries:  no.of time commands are executed on exception, defaults to 3
-        :type retries: int, optional
+        :type retries: int
         :param timeout: timeout in seconds, defaults to 100
-        :type timeout: int, optional
+        :type timeout: int
         :param extra_args: extra arguments to be passed in the command, defaults to ""
-        :type extra_args: str, optional
+        :type extra_args: str
         :raises SNMPError: when MIB is not available
         :return: output of snmpbulkget command
         :rtype: list[tuple[str, str, str]]

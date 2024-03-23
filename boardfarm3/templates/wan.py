@@ -459,9 +459,9 @@ class WAN(ABC):
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int, optional
         :param udp_protocol: use UDP rather than TCP, defaults to False
-        :type udp_protocol: bool, optional
+        :type udp_protocol: bool
         :param time: time in seconds to transmit for, defaults to 10
-        :type time: int, optional
+        :type time: int
         :return: the process id(pid) or False if pid could not be generated
         :rtype: int | bool
         """
