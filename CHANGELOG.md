@@ -1,3 +1,9 @@
+## 2024.13.0 (2024-03-27)
+
+### Fix
+
+- **devices/kamailio.py,-use_cases/voice.py**: remove redundant param
+
 ## 2024.11.0 (2024-03-14)
 
 ### Feat
