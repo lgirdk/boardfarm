@@ -10,6 +10,7 @@ from boardfarm3.exceptions import DeviceConnectionError
 from boardfarm3.lib.connections.ssh_connection import SSHConnection
 
 _CONNECTION_FAILED_STR: str = "Failed to connect to device via serial"
+_EOF_INDEX = 2
 
 
 class LdapAuthenticatedSerial(SSHConnection):
@@ -68,10 +69,23 @@ class LdapAuthenticatedSerial(SSHConnection):
         if self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT]):
             raise DeviceConnectionError(_CONNECTION_FAILED_STR)
         self.sendline(password)
-        if self.expect_exact(
-            ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
+
+        if (
+            self.expect_exact(
+                ["OpenGear Serial Server", pexpect.TIMEOUT, pexpect.EOF],
+                timeout=10,
+            )
+            == _EOF_INDEX
         ):
             raise DeviceConnectionError(_CONNECTION_FAILED_STR)
+        # In case of SSH communication over different geological WAN:
+        # The SSH channel does not start to display data post connection.
+        # Instead the user needs to enter some key to refresh. e.g. ENTER
+        # This is generally due to poor connection.
+        # Providing a few input below and flushing the buffer after 5 sec.
+        self.sendline()
+        self.sendline()
+        self.expect(pexpect.TIMEOUT, timeout=5)
 
     async def login_to_server_async(self, password: str | None = None) -> None:
         """Login to serial server.
@@ -85,8 +99,21 @@ class LdapAuthenticatedSerial(SSHConnection):
         if await self.expect(["Password:", pexpect.EOF, pexpect.TIMEOUT], async_=True):
             raise DeviceConnectionError(_CONNECTION_FAILED_STR)
         self.sendline(password)
-        if await self.expect_exact(
-            ["OpenGear Serial Server", pexpect.EOF, pexpect.TIMEOUT],
-            async_=True,
+
+        if (
+            await self.expect_exact(
+                ["OpenGear Serial Server", pexpect.TIMEOUT, pexpect.EOF],
+                timeout=10,
+                async_=True,
+            )
+            == _EOF_INDEX
         ):
             raise DeviceConnectionError(_CONNECTION_FAILED_STR)
+        # In case of SSH communication over different geological WAN:
+        # The SSH channel does not start to display data post connection.
+        # Instead the user needs to enter some key to refresh. e.g. ENTER
+        # This is generally due to poor connection.
+        # Providing a few input below and flushing the buffer after 5 sec.
+        self.sendline()
+        self.sendline()
+        await self.expect(pexpect.TIMEOUT, timeout=5, async_=True)

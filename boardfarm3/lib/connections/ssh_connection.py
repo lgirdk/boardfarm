@@ -54,7 +54,7 @@ class SSHConnection(BoardfarmPexpect):
             "-o StrictHostKeyChecking=no",
             "-o UserKnownHostsFile=/dev/null",
             "-o ServerAliveInterval=60",
-            "-o ServerAliveCountMax=5",
+            "-o ServerAliveCountMax=10",
             "-o IdentitiesOnly=yes",
             "-o HostKeyAlgorithms=+ssh-rsa",
         ]
