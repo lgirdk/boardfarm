@@ -123,6 +123,27 @@ def boardfarm_server_configure(
 
 
 @hookspec
+def boardfarm_server_configure_async(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Configure boardfarm server device leveraging the asyncio library.
+
+    This hook should be used to configure a device, after having it booted,
+    which is not dependent on other devices in the environment. E.g. WAN and CMTS
+    To be used for the asynchronous implementation.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
 def boardfarm_device_boot(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
