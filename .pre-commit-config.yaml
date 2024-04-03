@@ -104,13 +104,17 @@ repos:
             # https://docs.astral.sh/ruff/formatter/#sorting-imports
             args: [check, --select, I, --fix]
             name: ruff-isort
+            stages: [commit]
           - id: ruff-format
+            stages: [commit]
           - id: ruff
+            stages: [commit]
     - repo: https://github.com/akaihola/darglint2
       rev: v1.8.2
       hooks:
           - id: darglint2
             args: [boardfarm3]
+            stages: [commit]
     - repo: local
       hooks:
           - id: nox
