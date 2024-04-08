@@ -33,7 +33,7 @@ def get_pytest_name() -> str:
     :return: current test name
     """
     return (
-        (os.environ.get("PYTEST_CURRENT_TEST").split(" (setup)")[0])
+        (os.environ.get("PYTEST_CURRENT_TEST", "::interact").split(" (setup)")[0])
         .split("::")[1]
         .replace(" ", "_")
     )
