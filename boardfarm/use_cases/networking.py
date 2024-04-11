@@ -1,4 +1,5 @@
 """All APIs are independent of board under test."""
+
 import ipaddress
 import logging
 import re
@@ -403,12 +404,16 @@ def parse_icmp_trace(
                 raise UseCaseFailure("ICMP packets not found")
             output.append(
                 ICMPPacketData(
-                    IPAddresses(ip_address(src), None, None)
-                    if type(ip_address(src)) == IPv4Address
-                    else IPAddresses(None, ip_address(src), None),
-                    IPAddresses(ip_address(dst), None, None)
-                    if type(ip_address(dst)) == IPv4Address
-                    else IPAddresses(None, ip_address(dst), None),
+                    (
+                        IPAddresses(ip_address(src), None, None)
+                        if type(ip_address(src)) == IPv4Address
+                        else IPAddresses(None, ip_address(src), None)
+                    ),
+                    (
+                        IPAddresses(ip_address(dst), None, None)
+                        if type(ip_address(dst)) == IPv4Address
+                        else IPAddresses(None, ip_address(dst), None)
+                    ),
                     int(query_code),
                 )
             )
@@ -1169,6 +1174,7 @@ def _nmap(
     min_rate: Optional[int] = None,
     opts: str = None,
     iface: Optional[str] = None,
+    timeout: int = 30,
 ) -> dict[str, str]:
     if iface is None:
         iface = (
@@ -1183,11 +1189,11 @@ def _nmap(
         if ip_type == "ipv4"
         else f"-6 {destination_device.get_interface_ip6addr(iface)}"
     )
-    retries = f"-max-retries {max_retries}" if max_retries else ""
+    retries = f"-max-retries {max_retries}" if max_retries is not None else ""
     rate = f"-min-rate {min_rate}" if min_rate else ""
     port = f"-p {port}" if port else ""
     cmd = f"nmap {protocol or ''} {port} -Pn -r {opts or ''} {ipaddr} {retries} {rate} -oX -"
-    xml = source_device.check_output(cmd)
+    xml = source_device.check_output(cmd, timeout=timeout)
     xmlre = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     xml = xmlre.sub("", xml).strip()
     return xmltodict.parse(xml)
@@ -1199,7 +1205,9 @@ def create_udp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int,
+    min_rate: int = 0,
     interface: Optional[str] = None,
+    timeout: int = 30,
 ) -> dict[str, str]:
     """Create a UDP session from source to destination device on a port.
 
@@ -1215,9 +1223,13 @@ def create_udp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param min_rate: Send packets no slower than min_rate per second
+    :type min_rate: int
     :param interface: name of the interface
     :type interface: Optional[str], defaults to None
     :return: xml output of the nmap command in form of dictionary
+    :param timeout: max timeout for nmap command
+    :type timeout: int
     :rtype: dict[str,str]
     """
     return _nmap(
@@ -1227,7 +1239,9 @@ def create_udp_session(
         port,
         "-sU",
         max_retries,
+        min_rate=min_rate,
         iface=interface,
+        timeout=timeout,
     )
 
 
@@ -1237,7 +1251,9 @@ def create_tcp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
+    min_rate: int = 0,
     interface: Optional[str] = None,
+    timeout: int = 30,
 ) -> dict[str, str]:
     """Create a TCP session from source to destination device on a port.
 
@@ -1253,8 +1269,12 @@ def create_tcp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param min_rate: Send packets no slower than min_rate per second
+    :type min_rate: int
     :param interface: name of the interface
     :type interface: Optional[str], defaults to None
+    :param timeout: max timeout for nmap command
+    :type timeout: int
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
@@ -1265,7 +1285,9 @@ def create_tcp_session(
         port,
         "-sT",
         max_retries,
+        min_rate=min_rate,
         iface=interface,
+        timeout=timeout,
     )
 
 
@@ -1275,7 +1297,9 @@ def create_tcp_udp_session(
     ip_type: str,
     port: Union[str, int],
     max_retries: int = 4,
+    min_rate: int = 0,
     interface: Optional[str] = None,
+    timeout: int = 30,
 ) -> dict[str, str]:
     """Create both TCP and UDP session from source to destination device on a port.
 
@@ -1291,8 +1315,12 @@ def create_tcp_udp_session(
     :type port: Union[str, int]
     :param max_retries: maximum number retries for nmap
     :type max_retries: int, optional
+    :param min_rate: Send packets no slower than min_rate per second
+    :type min_rate: int
     :param interface: name of the interface
     :type interface: Optional[str], defaults to None
+    :param timeout: max timeout for nmap command
+    :type timeout: int
     :return: xml output of the nmap command in form of dictionary
     :rtype: dict[str,str]
     """
@@ -1303,7 +1331,9 @@ def create_tcp_udp_session(
         port,
         "-sU -sT",
         max_retries,
+        min_rate=min_rate,
         iface=interface,
+        timeout=timeout,
     )
 
 
