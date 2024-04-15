@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import re
 from contextlib import contextmanager, suppress
+from functools import cached_property
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -18,6 +19,7 @@ from boardfarm3.exceptions import (
     BoardfarmException,
     CodeError,
     ConfigurationFailure,
+    NotSupportedError,
     SCPConnectionError,
 )
 from boardfarm3.lib.connection_factory import connection_factory
@@ -105,6 +107,31 @@ class LinuxDevice(BoardfarmDevice):
         """
         return self._config.get("password", "bigfoot1")
 
+    @cached_property
+    def ipv4_addr(self) -> str:
+        """Return the IPv4 address on IFACE facing DUT.
+
+        :return: IPv4 address in string format.
+        :rtype: str
+        """
+        return self._get_nw_interface_ipv4_address(self.eth_interface)
+
+    @cached_property
+    def ipv6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
+        """
+        return self._get_nw_interface_ipv6_address(
+            self.eth_interface, address_type="global"
+        )
+
+    def clear_cache(self) -> None:
+        """To clear all the cached properties."""
+        self.__dict__.pop("ip_addr", None)
+        self.__dict__.pop("ip6_addr", None)
+
     def _connect(self) -> None:
         """Establish connection to the device via SSH."""
         if self._console is None:
@@ -169,7 +196,10 @@ class LinuxDevice(BoardfarmDevice):
         :param interface_name: interface name
         :param is_ipv6: is ipv6 address
         :returns: IP address list
+        :raises NotSupportedError: when property gets called and console obj isn't created
         """
+        if not self._console:
+            raise NotSupportedError
         prefix = "inet6" if is_ipv6 else "inet"
         ip_regex = prefix + r"\s(?:addr:)?\s*([^\s/]+)"
         output = self._console.execute_command(f"ifconfig {interface_name}")

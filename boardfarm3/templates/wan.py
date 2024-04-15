@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
@@ -63,6 +64,26 @@ class WAN(ABC):
 
         :return: nslookup utility instance with console object
         :rtype: NSLookup
+        """
+        raise NotImplementedError
+
+    @cached_property
+    @abstractmethod
+    def ipv4_addr(self) -> str:
+        """Return the IPv4 address on IFACE facing DUT.
+
+        :return: IPv4 address in string format.
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @cached_property
+    @abstractmethod
+    def ipv6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
         """
         raise NotImplementedError
 

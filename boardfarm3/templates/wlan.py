@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from functools import cached_property
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
@@ -502,5 +503,25 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :param count: num of packets to send in 1s interval
         :type count: int
         :raises CodeError: if send_mld_report command fails
+        """
+        raise NotImplementedError
+
+    @cached_property
+    @abstractmethod
+    def ipv4_addr(self) -> str:
+        """Return the IPv4 address on IFACE facing DUT.
+
+        :return: IPv4 address in string format.
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @cached_property
+    @abstractmethod
+    def ipv6_addr(self) -> str:
+        """Return the IPv6 address on IFACE facing DUT.
+
+        :return: IPv6 address in string format.
+        :rtype: str
         """
         raise NotImplementedError
