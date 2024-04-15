@@ -109,15 +109,18 @@ class LinuxTFTP(LinuxDevice, TFTP):
         :yield: The DUT connected interface with the static ip address applied
         :rtype: Generator[None, None, None]
         """
+        self._console.execute_command(f"ip a flush dev {self.eth_interface}")
         self._console.execute_command(
-            f"ip a add {static_address} dev {self.eth_interface}",
+            f"ip a add {static_address}/32 dev {self.eth_interface}",
         )
         self._console.execute_command(f"ip link set {self.eth_interface} up")
+        self._console.execute_command(
+            f"ip route add default via {static_address} dev {self.eth_interface}"
+        )
         self._console.execute_command("ip a")
         yield
-        self._console.execute_command(
-            f"ip a del {static_address} dev {self.eth_interface}",
-        )
+        self._console.execute_command("ip route del default")
+        self._console.execute_command(f"ip a flush dev {self.eth_interface}")
 
     def restart_lighttpd(self) -> None:
         """Restart lighttpd service."""
