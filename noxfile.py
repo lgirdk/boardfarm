@@ -40,3 +40,15 @@ def test(session: nox.Session) -> None:
     """
     session.install("--upgrade", ".[test]")
     session.run("pytest", "unittests")
+
+
+@nox.session(python=_PYTHON_VERSIONS)
+def boardfarm_help(session: nox.Session) -> None:
+    """Execute boardfarm --help.
+
+    This helps identifying integration issues with the plugins/devices.
+
+    # noqa: DAR101
+    """
+    session.install("--upgrade", "-e", ".")
+    session.run("boardfarm", "--help")
