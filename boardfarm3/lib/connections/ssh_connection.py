@@ -150,7 +150,7 @@ class SSHConnection(BoardfarmPexpect):
         self.expect_exact(cmd, timeout=timeout)
         try:
             self.expect(self._shell_prompt, timeout=timeout)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             self.sendcontrol("c")
             msg = (
                 f"Command did not complete within {timeout} seconds. "

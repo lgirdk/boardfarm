@@ -60,7 +60,7 @@ dev = [
     "pre-commit",
     "pylint",
     "pylint-per-file-ignores",
-    "ruff==v0.3.3",
+    "ruff==v0.4.2",
     "types-ipaddress",
     "types-PyYAML",
     "types-requests",
