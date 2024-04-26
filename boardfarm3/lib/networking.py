@@ -581,17 +581,23 @@ def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
     )
 
 
-def dns_lookup(console: _LinuxConsole, domain_name: str) -> list[dict[str, Any]]:
+def dns_lookup(
+    console: _LinuxConsole, domain_name: str, record_type: str
+) -> list[dict[str, Any]]:
     """Perform ``dig`` command in the devices to resolve DNS.
 
     :param console: console or device instance
     :type console: _LinuxConsole
     :param domain_name: domain name which needs lookup
     :type domain_name: str
+    :param record_type: AAAA for ipv6 else A
+    :type record_type: str
     :return: parsed dig command ouput
     :rtype: List[Dict[str, Any]]
     """
-    return dig.parse(console.execute_command(f"dig {domain_name}").split(";", 1)[-1])
+    return dig.parse(
+        console.execute_command(f"dig {record_type} {domain_name}").split(";", 1)[-1]
+    )
 
 
 def is_link_up(

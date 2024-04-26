@@ -99,6 +99,7 @@ def test_dns_lookup() -> None:
     reply = dns_lookup(
         console=MyLinuxConsole(_DNS_LOOKUP_REPLY.read_text()),
         domain_name="www.google.com",
+        record_type="A",
     )
     assert "172.217.168.196" in reply[1]["answer"][0]["data"]
 

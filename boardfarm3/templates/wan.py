@@ -242,11 +242,13 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def dns_lookup(self, domain_name: str) -> list[dict[str, Any]]:
+    def dns_lookup(self, domain_name: str, record_type: str) -> list[dict[str, Any]]:
         """Perform ``dig`` command in the devices to resolve DNS.
 
         :param domain_name: domain name which needs lookup
         :type domain_name: str
+        :param record_type: AAAA for ipv6 else A
+        :type record_type: str
         :return: parsed dig command ouput
         :rtype: List[Dict[str, Any]]
         """
