@@ -525,6 +525,9 @@ def resolve_dns(
     """
     record_type = "AAAA" if ipv6 else "A"
     dig_command_output = host.check_output(f"dig {record_type} {domain_name}")
+    dig_command_output = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])").sub(
+        "", dig_command_output
+    )
     result = jc.parsers.dig.parse(dig_command_output.split(";", 1)[-1])
     if result:
         return result
