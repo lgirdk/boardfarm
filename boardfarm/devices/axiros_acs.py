@@ -38,7 +38,7 @@ from boardfarm.exceptions import (
     TR069ResponseError,
 )
 from boardfarm.lib.bft_pexpect_helper import bft_pexpect_helper
-from boardfarm.lib.common import get_class_name_in_stack, scp_from
+from boardfarm.lib.common import get_class_name_in_stack, retry_on_exception, scp_from
 from boardfarm.lib.dns import DNS
 from boardfarm.lib.linux_nw_utility import NwFirewall
 from boardfarm.lib.network_testing import kill_process, tcpdump_capture
@@ -248,15 +248,7 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         target = self.ipaddr if self.port is None else self.ipaddr + ":" + self.port
         self.wsdl = "http://" + target + "/live/CPEManager/DMInterfaces/soap/getWSDL"
 
-        session = Session()
-        session.auth = HTTPBasicAuth(self.username, self.password)
-        self._certs = None
-        session.verify = self._get_certs(self.kwargs.get("certs"))
-        self.client = Client(
-            wsdl=self.wsdl,
-            transport=Transport(session=session, cache=InMemoryCache(timeout=3600 * 3)),
-            wsse=UsernameToken(self.username, self.password),
-        )
+        retry_on_exception(self._add_soap_client_to_axiros, (), tout=5, retries=25)
 
         # to spawn pexpect on cli
         self.session_connected = False
@@ -290,6 +282,17 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         if not self.dev_array:
             self.legacy_add = True
             self.dev_array = "acs_servers"
+
+    def _add_soap_client_to_axiros(self) -> None:
+        session = Session()
+        session.auth = HTTPBasicAuth(self.username, self.password)
+        self._certs = None
+        session.verify = self._get_certs(self.kwargs.get("certs"))
+        self.client = Client(
+            wsdl=self.wsdl,
+            transport=Transport(session=session, cache=InMemoryCache(timeout=3600 * 3)),
+            wsse=UsernameToken(self.username, self.password),
+        )
 
     def _get_certs(self, certs: Union[bool, str, None]) -> Union[bool, str]:
         if certs is None:
