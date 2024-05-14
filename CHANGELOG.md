@@ -1,3 +1,10 @@
+## 2024.20.0 (2024-05-14)
+
+### Fix
+
+- **use_cases/networking.py**: fixed resolve_dns use case
+- acs retry on wsdl schema
+
 ## 2024.17.0 (2024-04-26)
 
 ### Fix
