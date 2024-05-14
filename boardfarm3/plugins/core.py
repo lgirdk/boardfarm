@@ -1,5 +1,6 @@
 """Boardfarm core plugin."""
 
+import logging
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
 from collections import ChainMap
 from collections.abc import Generator
@@ -13,6 +14,8 @@ from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.plugins.hookspecs import devices as Devices
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _non_empty_str(arg: str) -> str:
@@ -86,6 +89,14 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
         action="store_true",
         help="Save console logs to the disk",
     )
+    argparser.add_argument(
+        "--ignore-devices",
+        default="",
+        help=(
+            "Ignore the given devices (names are comma separated)."
+            " Useful when a device is incommunicado"
+        ),
+    )
 
 
 @hookimpl
@@ -136,7 +147,11 @@ def boardfarm_register_devices(
     """
     device_manager = DeviceManager(plugin_manager)
     known_devices_list = ChainMap(*plugin_manager.hook.boardfarm_add_devices())
+    to_be_ignored = cmdline_args.ignore_devices.split(",")
     for device_config in config.get_devices_config():
+        if device_config.get("name") in to_be_ignored:
+            _LOGGER.warning("Ignoring '%s'", device_config.get("name"))
+            continue
         device_type = device_config.get("type")
         if device_type in known_devices_list:
             device_obj = known_devices_list.get(device_type)(
