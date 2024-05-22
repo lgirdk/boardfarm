@@ -697,3 +697,16 @@ class LAN(ABC):
         :raises CodeError: if send_mld_report command fails
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def netcat(self, host_ip: str, port: str, additional_args: str) -> None:
+        """Run netcat command to initiate brute force.
+
+        :param host_ip: host ip address
+        :type host_ip: str
+        :param port: port number of the host
+        :type port: str
+        :param additional_args: additional args to be provided with netcat command
+        :type additional_args: str
+        """
+        raise NotImplementedError
