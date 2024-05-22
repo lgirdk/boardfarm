@@ -39,7 +39,7 @@ class LAN(ABC):
     @property
     @abstractmethod
     def http_proxy(self) -> str:
-        """SOCKS5 dante proxy address, e.g http://{proxy_ip}:{proxy_port}/."""
+        """SOCKS5 Dante proxy address, e.g http://{proxy_ip}:{proxy_port}/."""
         raise NotImplementedError
 
     @property
@@ -77,7 +77,7 @@ class LAN(ABC):
     def nslookup(self) -> NSLookup:
         """Returns NSLookup utility instance.
 
-        :return: nslookup utility instance with console object
+        :return: NSLookup utility instance with console object
         :rtype: NSLookup
         """
         raise NotImplementedError
@@ -88,12 +88,15 @@ class LAN(ABC):
         wan_gw: str | IPv4Address | None = None,
         prep_iface: bool = False,
     ) -> str:
-        """Restart ipv4 dhclient to obtain IP.
+        """Restart IPv4 dhclient to obtain IP.
 
         :param wan_gw: WAN gateway IP
             to setup fixed route in case lan_fixed_route_to_wan option is provided
+        :type wan_gw: str | IPv4Address | None
         :param prep_iface: restart interface before dhclient request
+        :type prep_iface: bool
         :return: IPv4 after renewal
+        :rtype: str
         :raises pexpect.TimeoutException: in case of failure
         """
         raise NotImplementedError
@@ -104,12 +107,15 @@ class LAN(ABC):
         wan_gw: str | IPv4Address | None = None,
         prep_iface: bool = False,
     ) -> str:
-        """Restart ipv6 dhclient to obtain IP.
+        """Restart IPv6 dhclient to obtain IP.
 
         :param wan_gw: WAN gateway IP
             to setup fixed route in case lan_fixed_route_to_wan option is provided
+        :type wan_gw: str | IPv4Address | None
         :param prep_iface: restart interface before dhclient request
+        :type prep_iface: bool
         :return: IPv6 after renewal
+        :rtype: str
         :raises pexpect.TimeoutException: in case of failure
         """
         raise NotImplementedError
@@ -147,36 +153,44 @@ class LAN(ABC):
         """Get the interface MAC address.
 
         :param interface: interface name
+        :type interface: str
         :return: MAC address of the interface
+        :rtype: str
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_interface_ipv4addr(self, interface: str) -> str:
-        """Get ipv4 address of interface.
+        """Get IPv4 address of interface.
 
         :param interface: interface name
+        :type interface: str
         :return: IPv4 address of the interface
+        :rtype: str
         :raises BoardfarmException: in case IPv4 can not be found
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_interface_ipv6addr(self, interface: str) -> str:
-        """Get ipv6 address of the interface.
+        """Get IPv6 address of the interface.
 
         :param interface: interface name to get the link local
-        :return: Global ipv6 address of the interface
-        :raises BoardfarmException: in case ipv6 can not be found
+        :type interface: str
+        :return: Global IPv6 address of the interface
+        :rtype: str
+        :raises BoardfarmException: in case IPv6 can not be found
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_interface_link_local_ipv6addr(self, interface: str) -> str:
-        """Get ipv6 link local address of the interface.
+        """Get IPv6 link local address of the interface.
 
         :param interface: interface name
+        :type interface: str
         :return: Link local ipv6 address of the interface
+        :rtype: str
         :raises BoardfarmException: in case ipv6 can not be found
         """
         raise NotImplementedError
@@ -207,55 +221,69 @@ class LAN(ABC):
         Return True if ping has 0% loss
         or parsed output in JSON if json_output=True flag is provided.
 
-        :param ping_ip: ping ip
+        :param ping_ip: ping IP
+        :type ping_ip: str
         :param ping_count: number of ping, defaults to 4
+        :type ping_count: int
         :param ping_interface: ping via interface, defaults to None
+        :type ping_interface: str
         :param options: extra ping options, defaults to ""
+        :type options: str
         :param timeout: timeout, defaults to 50
+        :type timeout: int
         :param json_output: return ping output in dictionary format, defaults to False
+        :type json_output: bool
         :return: ping output
+        :rtype: bool | dict[str, Any]
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_default_gateway(self) -> IPv4Address:
-        """Get the default gateway from ip route output.
+        """Get the default gateway from IP route output.
 
         :return: IPv4 of the default gateway
+        :rtype: IPv4Address
         """
         raise NotImplementedError
 
     @abstractmethod
     def release_dhcp(self, interface: str) -> None:
-        """Release ipv4 of the specified interface.
+        """Release IPv4 of the specified interface.
 
         :param interface: interface name
+        :type interface: str
         """
         raise NotImplementedError
 
     @abstractmethod
     def renew_dhcp(self, interface: str) -> None:
-        """Renew ipv4 of the specified interface by restart of the ipv4 dhclient.
+        """Renew IPv4 of the specified interface by restart of the IPv4 dhclient.
 
         :param interface: interface name
+        :type interface: str
         """
         raise NotImplementedError
 
     @abstractmethod
     def release_ipv6(self, interface: str, stateless: bool = False) -> None:
-        """Release ipv6 of the specified interface.
+        """Release IPv6 of the specified interface.
 
         :param interface: interface name
+        :type interface: str
         :param stateless: run command with -S or -6 options. -6 by default
+        :type stateless: bool
         """
         raise NotImplementedError
 
     @abstractmethod
     def renew_ipv6(self, interface: str, stateless: bool = False) -> None:
-        """Renew ipv6 of the specified interface.
+        """Renew IPv6 of the specified interface.
 
         :param interface: interface name
+        :type interface: str
         :param stateless: run command with -S or -6 options. -6 by default
+        :type stateless: bool
         """
         raise NotImplementedError
 
@@ -272,8 +300,13 @@ class LAN(ABC):
         Packet capture using tcpdump utility at a specified interface.
 
         :param fname: name of the file where packet captures will be stored
+        :type fname: str
         :param interface: name of the interface, defaults to "any"
+        :type interface: str
         :param additional_args: argument arguments to tcpdump executable
+        :type additional_args: str
+        :return: tcpdump capture command console output
+        :rtype: Generator[str, None, None]
         :yield: process id of tcpdump process
         """
         raise NotImplementedError
@@ -289,10 +322,15 @@ class LAN(ABC):
         """Read packet captures from an existing file.
 
         :param fname: name of the file in which captures are saved
+        :type fname: str
         :param additional_args: additional arguments for tshark command
+        :type additional_args: str
         :param timeout: time out for tshark command to be executed, defaults to 30
+        :type timeout: int
         :param rm_pcap: If True remove the packet capture file after reading it
+        :type rm_pcap: bool
         :return: return tshark read command console output
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -306,11 +344,16 @@ class LAN(ABC):
     ) -> str | None:
         """Return output of traceroute command.
 
-        :param host_ip: destination ip
+        :param host_ip: destination IP address
+        :type host_ip: str | IPv4Address
         :param version: 4 or 6
+        :type version: str
         :param options: traceroute command options
+        :type options: str
         :param timeout: request timeout
+        :type timeout: int
         :return: traceroute command output
+        :rtype: str | None
         """
         raise NotImplementedError
 
@@ -322,12 +365,18 @@ class LAN(ABC):
         port: str | int | None = None,
         options: str = "",
     ) -> bool:
-        """Perform curl action to web service.
+        """Perform curl action to Web service.
 
-        :param url : web service address
-        :param protocol : Web Protocol (http or https)
+        :param url : Web service address
+        :type url : str
+        :param protocol : Web Protocol (HTTP or HTTPS)
+        :type protocol : str
         :param port : port number of server
+        :type port : str | int | None
         :param options : Additional curl options
+        :type options : str
+        :return: True if curl action is successful
+        :rtype: bool
         """
         raise NotImplementedError
 
@@ -336,28 +385,32 @@ class LAN(ABC):
         """Start HTTP service on given port number.
 
         :param port: port number
-        :param ip_version: ip version, 4 - IPv4, 6 - IPv6
-        :return: pid number of the http service
+        :type port: str
+        :param ip_version: IP version, 4 - IPv4, 6 - IPv6
+        :type ip_version: str
+        :return: PID number of the HTTP service
+        :rtype: str
         """
         raise NotImplementedError
 
     @abstractmethod
     def stop_http_service(self, port: str) -> None:
-        """Stop http service running on given port.
+        """Stop HTTP service running on given port.
 
         :param port: port number
+        :type port: str
         """
         raise NotImplementedError
 
     @abstractmethod
     def http_get(self, url: str, timeout: int) -> HTTPResult:
-        """Peform http get and return parsed result.
+        """Peform HTTP Get and return parsed result.
 
-        :param url: url to get the response
+        :param url: URL to get the response
         :type url: str
         :param timeout: connection timeout for the curl command in seconds
         :type timeout: int
-        :return: parsed http response
+        :return: parsed HTTP response
         :rtype: HTTPResult
         """
         raise NotImplementedError
@@ -368,10 +421,10 @@ class LAN(ABC):
 
         :param domain_name: domain name which needs lookup
         :type domain_name: str
-        :param record_type: AAAA for ipv6 else A
+        :param record_type: AAAA for IPv6 else A
         :type record_type: str
         :return: parsed dig command ouput
-        :rtype: List[Dict[str, Any]]
+        :rtype: List[dict[str, Any]]
         """
         raise NotImplementedError
 
@@ -382,11 +435,11 @@ class LAN(ABC):
         ip_address: IPv4Address,
         netmask: IPv4Address,
     ) -> None:
-        """Set given static ip for the LAN.
+        """Set given static IP for the LAN.
 
         :param interface: interface name
         :type interface: str
-        :param ip_address: static ip address
+        :param ip_address: static IP address
         :type ip_address: IPv4Address
         :param netmask: netmask
         :type netmask: IPv4Address
@@ -395,9 +448,9 @@ class LAN(ABC):
 
     @abstractmethod
     def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
-        """Set given ip address as default gateway address for given interface.
+        """Set given IP address as default gateway address for given interface.
 
-        :param ip_address: gateway ip address
+        :param ip_address: gateway IP address
         :type ip_address: IPv4Address
         :param interface: interface name
         :type interface: str
@@ -417,44 +470,44 @@ class LAN(ABC):
     ) -> dict:
         """Perform nmap operation on linux device.
 
-        :param ipaddr: ip address on which nmap is performed
+        :param ipaddr: IP address on which nmap is performed
         :type ipaddr: str
-        :param ip_type: type of ip eg: ipv4/ipv6
+        :param ip_type: type of IP eg: IPv4/IPv6
         :type ip_type: str
-        :param port: destination port on ip, defaults to None
-        :type port: Optional[Union[str, int]], optional
+        :param port: destination port on IP, defaults to None
+        :type port: str | int | None
         :param protocol: specific protocol to follow eg: tcp(-sT)/udp(-sU),
             defaults to None
-        :type protocol: Optional[str], optional
+        :type protocol: str | None
         :param max_retries: number of port scan probe retransmissions, defaults to None
-        :type max_retries: Optional[int], optional
-        :param min_rate: Send packets no slower than per second, defaults to None
-        :type min_rate: Optional[int], optional
+        :type max_retries: int | None
+        :param min_rate: send packets no slower than per second, defaults to None
+        :type min_rate: int | None
         :param opts: other options for a nmap command, defaults to None
-        :type opts: str, optional
-        :raises BoardfarmException: Raises exception if ip type is invalid
-        :return: response of nmap command in xml/dict format
+        :type opts: str | None
+        :raises BoardfarmException: if IP type is invalid
+        :return: response of nmap command in XML/dict format
         :rtype: dict
         """
         raise NotImplementedError
 
     @abstractmethod
     def enable_ipv6(self) -> None:
-        """Enable ipv6 on the connected client interface."""
+        """Enable IPv6 on the connected client interface."""
         raise NotImplementedError
 
     @abstractmethod
     def disable_ipv6(self) -> None:
-        """Disable ipv6 on the connected client interface."""
+        """Disable IPv6 on the connected client interface."""
         raise NotImplementedError
 
     @abstractmethod
     def create_upnp_rule(self, int_port: str, ext_port: str, protocol: str) -> str:
         """Create UPnP rule on the device.
 
-        :param int_port: internal port for upnp
+        :param int_port: internal port for UPnP
         :type int_port: str
-        :param ext_port: external port for upnp
+        :param ext_port: external port for UPnP
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
@@ -467,7 +520,7 @@ class LAN(ABC):
     def delete_upnp_rule(self, ext_port: str, protocol: str) -> str:
         """Delete UPnP rule on the device.
 
-        :param ext_port: external port for upnp
+        :param ext_port: external port for UPnP
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
@@ -510,7 +563,7 @@ class LAN(ABC):
         :param destination: destination file path
         :type destination: str
         :param action: scp action(download/upload), defaults to "download"
-        :type action: Literal["download", "upload"], optional
+        :type action: Literal["download", "upload"]
         """
         raise NotImplementedError
 
@@ -527,10 +580,10 @@ class LAN(ABC):
         :type traffic_port: int
         :param bind_to_ip: bind to the interface associated with
             the address host, defaults to None
-        :type bind_to_ip: str, optional
+        :type bind_to_ip: str | None
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
-        :type ip_version: int, optional
-        :return: the process id(pid) or False if pid could not be generated
+        :type ip_version: int | None
+        :return: the process ID(PID) or False if PID could not be generated
         :rtype: int | bool
         """
         raise NotImplementedError
@@ -555,21 +608,21 @@ class LAN(ABC):
         :type traffic_port: int
         :param bandwidth: bandwidth(mbps) at which the traffic
             has to be generated, defaults to None
-        :type bandwidth: Optional[int], optional
+        :type bandwidth: int | None
         :param bind_to_ip: bind to the interface associated with
             the address host, defaults to None
-        :type bind_to_ip: Optional[str], optional
+        :type bind_to_ip: str | None
         :param direction: `--reverse` to run in reverse mode
             (server sends, client receives) or `--bidir` to run in
             bidirectional mode, defaults to None
-        :type direction: Optional[str], optional
+        :type direction: str | None
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
-        :type ip_version: int, optional
+        :type ip_version: int | None
         :param udp_protocol: use UDP rather than TCP, defaults to False
         :type udp_protocol: bool
         :param time: time in seconds to transmit for, defaults to 10
         :type time: int
-        :return: the process id(pid) or False if pid could not be generated
+        :return: the process ID(PID) or False if PID could not be generated
         :rtype: int | bool
         """
         raise NotImplementedError
