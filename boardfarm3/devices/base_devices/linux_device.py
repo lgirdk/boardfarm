@@ -21,12 +21,7 @@ from boardfarm3.exceptions import (
 )
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
-from boardfarm3.lib.networking import (
-    HTTPResult,
-    dns_lookup,
-    http_get,
-    is_link_up,
-)
+from boardfarm3.lib.networking import HTTPResult, dns_lookup, http_get, is_link_up
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
 
@@ -1053,3 +1048,24 @@ class LinuxDevice(BoardfarmDevice):
         :type filename: str
         """
         self._console.execute_command(f"rm {filename}")
+
+    def get_date(self) -> str | None:
+        """Get the system date and time.
+
+        .. code-block:: python
+
+            # example output
+            donderdag, mei 23, 2024 14:23:39
+
+
+        :return: date
+        :rtype: str | None
+        """
+        cpe_date = self._console.execute_command("date '+%A, %B %d, %Y %T'")
+        date = re.search(
+            r"(\w+,\s\w+\s\d+,\s\d+\s(([0-1]?[0-9])|(2[0-3])):[0-5][0-9]:[0-5][0-9])",
+            cpe_date,
+        )
+        if date is not None:
+            return date.group(0)
+        return None

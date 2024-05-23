@@ -12,11 +12,7 @@ if TYPE_CHECKING:
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast
-    from boardfarm3.lib.networking import (
-        HTTPResult,
-        IptablesFirewall,
-        NSLookup,
-    )
+    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, NSLookup
 
 # pylint: disable=duplicate-code,too-many-public-methods
 
@@ -510,5 +506,20 @@ class WAN(ABC):
         :type interface: str
         :param state: desired state up or down
         :type state: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_date(self) -> str | None:
+        """Get the system date and time.
+
+        .. code-block:: python
+
+            # example output
+            donderdag, mei 23, 2024 14:23:39
+
+
+        :return: date
+        :rtype: str | None
         """
         raise NotImplementedError

@@ -455,3 +455,18 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type state: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_date(self) -> str | None:
+        """Get the system date and time.
+
+        .. code-block:: python
+
+            # example output
+            donderdag, mei 23, 2024 14:23:39
+
+
+        :return: date
+        :rtype: str | None
+        """
+        raise NotImplementedError
