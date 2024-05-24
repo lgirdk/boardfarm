@@ -1069,3 +1069,16 @@ class LinuxDevice(BoardfarmDevice):
         if date is not None:
             return date.group(0)
         return None
+
+    def set_date(self, opt: str, date_string: str) -> bool:
+        """Set the device's date and time.
+
+        :param date_string: value to be changed
+        :type date_string: str
+        :param opt: Option to set the date or time or day
+        :type opt: str
+        :return: True if set is successful
+        :rtype: bool
+        """
+        cmd_out = self._console.execute_command(f"date {opt} '{date_string}'")
+        return date_string in cmd_out and "invalid date" not in cmd_out

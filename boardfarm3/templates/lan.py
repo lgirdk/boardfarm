@@ -637,3 +637,16 @@ class LAN(ABC):
         :rtype: str | None
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def set_date(self, opt: str, date_string: str) -> bool:
+        """Set the device's date and time.
+
+        :param date_string: value to be changed
+        :type date_string: str
+        :param opt: Option to set the date or time or day
+        :type opt: str
+        :return: True if set is successful
+        :rtype: bool
+        """
+        raise NotImplementedError
