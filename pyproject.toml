@@ -57,6 +57,7 @@ dev = [
     "darglint2==v1.8.2",
     "mypy>=1.3",
     "nox",
+    "pandas-stubs",
     "pre-commit",
     "pylint",
     "pylint-per-file-ignores",

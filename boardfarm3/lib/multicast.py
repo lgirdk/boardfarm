@@ -9,7 +9,7 @@ from enum import Enum
 from io import StringIO
 from ipaddress import IPv6Address, ip_address
 from time import sleep
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, TypeAlias
 
 import pandas as pd
 
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from boardfarm3.templates.lan import LAN
     from boardfarm3.templates.wan import WAN
     from boardfarm3.templates.wlan import WLAN
+
+    IperfDevice: TypeAlias = WLAN | LAN | WAN
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,7 +38,6 @@ class IGMPGroupRecordType(Enum):
     BLOCK_OLD_SOURCES = 6
 
 
-IPerfDevice = Union["LAN", "WAN", "WLAN"]
 MulticastGroupRecord = list[tuple[list[str], str, IGMPGroupRecordType]]
 
 
@@ -44,7 +45,7 @@ MulticastGroupRecord = list[tuple[list[str], str, IGMPGroupRecordType]]
 class IPerfSession:
     """Store details of IPerf session."""
 
-    device: IPerfDevice
+    device: IperfDevice
     pid: str
     address: str
     port: int
@@ -55,7 +56,7 @@ class IPerfSession:
 class IPerfStream:
     """Store details of IPerf stream."""
 
-    device: IPerfDevice
+    device: IperfDevice
     pid: str
     address: str
     port: int
