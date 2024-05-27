@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ipaddress import IPv4Address, IPv4Network
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
-    from boardfarm3.lib.multicast import Multicast
+    from boardfarm3.lib.multicast import Multicast, MulticastGroupRecord
 
 
 class WLAN(ABC):  # pylint: disable=too-many-public-methods
@@ -481,5 +481,26 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type opt: str
         :return: True if set is successful
         :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_mldv2_report(
+        self, mcast_group_record: MulticastGroupRecord, count: int
+    ) -> None:
+        """Send an MLDv2 report with desired multicast record.
+
+        Multicast source and group must be IPv6 addresses.
+        Multicast sources need to be non-multicast addresses and
+        group address needs to be a multicast address.
+
+        Implementation relies on a custom send_mld_report
+        script based on scapy.
+
+        :param mcast_group_record: MLDv2 multicast group record
+        :type mcast_group_record: MulticastGroupRecord
+        :param count: num of packets to send in 1s interval
+        :type count: int
+        :raises CodeError: if send_mld_report command fails
         """
         raise NotImplementedError

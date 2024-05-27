@@ -15,19 +15,10 @@ import pandas as pd
 
 from boardfarm3.exceptions import MulticastError
 
-if TYPE_CHECKING:
-    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
-    from boardfarm3.templates.lan import LAN
-    from boardfarm3.templates.wan import WAN
-    from boardfarm3.templates.wlan import WLAN
-
-    IperfDevice: TypeAlias = WLAN | LAN | WAN
-
-
 _LOGGER = logging.getLogger(__name__)
 
 
-class IGMPGroupRecordType(Enum):
+class MulticastGroupRecordType(Enum):
     """IGMPv3 Record Types."""
 
     MODE_IS_INCLUDE = 1
@@ -38,7 +29,18 @@ class IGMPGroupRecordType(Enum):
     BLOCK_OLD_SOURCES = 6
 
 
-MulticastGroupRecord = list[tuple[list[str], str, IGMPGroupRecordType]]
+if TYPE_CHECKING:
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.templates.lan import LAN
+    from boardfarm3.templates.wan import WAN
+    from boardfarm3.templates.wlan import WLAN
+
+    IperfDevice: TypeAlias = WLAN | LAN | WAN
+    McastSource = str
+    McastGroup = str
+    MulticastGroupRecord = list[
+        tuple[list[McastSource], McastGroup, MulticastGroupRecordType]
+    ]
 
 
 @dataclass

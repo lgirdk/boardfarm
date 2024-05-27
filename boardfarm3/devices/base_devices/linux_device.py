@@ -16,6 +16,7 @@ import xmltodict
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
 from boardfarm3.exceptions import (
     BoardfarmException,
+    CodeError,
     ConfigurationFailure,
     SCPConnectionError,
 )
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.lib.multicast import MulticastGroupRecord
 
 
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
@@ -1082,3 +1084,41 @@ class LinuxDevice(BoardfarmDevice):
         """
         cmd_out = self._console.execute_command(f"date {opt} '{date_string}'")
         return date_string in cmd_out and "invalid date" not in cmd_out
+
+    def send_mldv2_report(
+        self, mcast_group_record: MulticastGroupRecord, count: int
+    ) -> None:
+        """Send an MLDv2 report with desired multicast record.
+
+        Multicast source and group must be IPv6 addresses.
+        Multicast sources need to be non-multicast addresses and
+        group address needs to be a multicast address.
+
+        Implementation relies on a custom send_mld_report
+        script based on scapy.
+
+        :param mcast_group_record: MLDv2 multicast group record
+        :type mcast_group_record: MulticastGroupRecord
+        :param count: num of packets to send in 1s interval
+        :type count: int
+        :raises CodeError: if send_mld_report command fails
+        """
+        command = f"send_mld_report -i {self.eth_interface} -c {count}"
+        out = self._send_multicast_report(command, mcast_group_record)
+        if f"Sent {count} packets" not in out:
+            msg = f"Failed to execute send_mld_report command:\n{out}"
+            raise CodeError(msg)
+
+    def _send_multicast_report(
+        self, command: str, mcast_group_record: MulticastGroupRecord
+    ) -> str:
+        args = ""
+        for sources, group, rtype in mcast_group_record:
+            src = ",".join(sources)
+            args += f'-mr "{src};{group};{rtype.value} "'
+
+        out = self._console.execute_command(f"{command} {args}")
+        if "Traceback" in out:
+            msg = f"Failed to send the report!!\n{out}"
+            raise CodeError(msg)
+        return out

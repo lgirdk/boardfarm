@@ -84,3 +84,11 @@ class WifiError(BoardfarmException):
 
 class MulticastError(BoardfarmException):
     """Raise this on any multicast related errors."""
+
+
+class CodeError(BoardfarmException):
+    """Raise this if an code assert fails.
+
+    This exception is only meant for custom assert
+    clause used inside libraries.
+    """
