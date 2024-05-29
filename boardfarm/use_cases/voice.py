@@ -635,7 +635,7 @@ def get_sip_expiry_time(sip_proxy: VoiceServer) -> int:
     """
     if sip_proxy._obj().sipserver_status() in ["Not installed", "Not Running"]:
         raise CodeError("Install the sipserver first")
-    return sip_proxy._obj().get_sipserver_expire_timer()
+    return sip_proxy._obj().sipserver_get_expire_timer()
 
 
 @contextmanager

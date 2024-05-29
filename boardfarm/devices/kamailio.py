@@ -279,7 +279,7 @@ EOF"""
             self.sendline(data)
         self.expect(self.prompt, timeout=50)
 
-    def get_sipserver_expire_timer(self) -> int:
+    def sipserver_get_expire_timer(self) -> int:
         """Get the call expire timer in kamailio.cfg.
 
         :return: expiry timer saved in the config or None if it is not found
