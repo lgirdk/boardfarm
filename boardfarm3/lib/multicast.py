@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from boardfarm3.templates.wlan import WLAN
 
     IperfDevice: TypeAlias = WLAN | LAN | WAN
+    IPerfDevice: TypeAlias = LAN | WAN | WLAN
     McastSource = str
     McastGroup = str
     MulticastGroupRecord = list[
