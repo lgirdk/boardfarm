@@ -276,15 +276,29 @@ def post_boot_env(config, env_helper, devices):
                         retry_on_exception(API_func, (param,), tout=60)
         else:
             raise BootFail(
-                "Factory reset has to performed for tr069 provisioning. Env json with factory reset true should be used."
+                "Factory reset has to performed for tr069 provisioning."
+                " Env json with factory reset true should be used."
             )
 
     if env_helper.voice_enabled():
+        dns_query_pref = env_helper.env["environment_def"]["voice"].get(
+            "dns_query_preference"
+        )
+        if dns_query_pref == "NAPTR":
+            raise NotImplementedError(
+                f"The dns query preference {dns_query_pref} is not implemented"
+            )
+
+        dut_transport_endpoint = {"ipv4": "IPv4", "ipv6": "IPv6"}.get(
+            devices.sipcenter.fxs_endpoint_transport
+        )
         devices.board.sw.voice.configure_voice(
             {"1": devices.fxs1.own_number, "2": devices.fxs2.own_number},
             "1234",
             devices.sipcenter.dns.url,
             "xxxx",  # TODO: this should come from the env.json
+            dns_query_pref,
+            dut_transport_endpoint,
         )
         for fxs in devices.get_device_array("FXS"):
             if devices.sipcenter.fxs_endpoint_transport == "ipv6":
