@@ -8,7 +8,7 @@ import re
 from contextlib import contextmanager, suppress
 from functools import cached_property
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import jc.parsers.ping
 import pexpect
@@ -300,24 +300,41 @@ class LinuxDevice(BoardfarmDevice):
             self._console.execute_command(f"ifconfig {interface}"),
         ).group(1)
 
+    def scp_device_file_to_local(self, local_path: str, source_path: str) -> None:
+        """Copy a local file from a server using SCP.
+
+        :param local_path: local file path
+        :param source_path: source path
+        """
+        source_path = f"{self._username}@{self._config.get('ipaddr')}:{source_path}"
+        self._scp_local_files(source=source_path, destination=local_path)
+
     def scp_local_file_to_device(self, local_path: str, destination_path: str) -> None:
         """Copy a local file to a server using SCP.
 
         :param local_path: local file path
         :param destination_path: destination path
-        :raises SCPConnectionError: when SCP command return non-zero exit code
         """
         destination_path = (
             f"{self._username}@{self._config.get('ipaddr')}:{destination_path}"
         )
+        self._scp_local_files(source=local_path, destination=destination_path)
+
+    def _scp_local_files(self, source: str, destination: str) -> None:
+        """Perform file copy on local console using SCP.
+
+        :param source: source file path
+        :param destination: destination file path
+        :raises SCPConnectionError: when SCP command return non-zero exit code
+        """
         args = [
             f"-P {self._config.get('port', '22')}",
             "-o StrictHostKeyChecking=no",
             "-o UserKnownHostsFile=/dev/null",
             "-o ServerAliveInterval=60",
             "-o ServerAliveCountMax=5",
-            local_path,
-            destination_path,
+            source,
+            destination,
         ]
         session = LocalCmd(
             f"{self.device_name}.scp",
@@ -331,7 +348,7 @@ class LinuxDevice(BoardfarmDevice):
             timeout=20,
         )
         if match_index in (2, 3):
-            msg = f"Failed to perform SCP from {local_path} to {destination_path}"
+            msg = f"Failed to perform SCP from {source} to {destination}"
             raise SCPConnectionError(
                 msg,
             )
@@ -339,7 +356,7 @@ class LinuxDevice(BoardfarmDevice):
             session.sendline(self._password)
         session.expect(pexpect.EOF, timeout=90)
         if session.wait() != 0:
-            msg = f"Failed to SCP file from {local_path} to {destination_path}"
+            msg = f"Failed to SCP file from {source} to {destination}"
             raise SCPConnectionError(
                 msg,
             )
@@ -1032,46 +1049,6 @@ class LinuxDevice(BoardfarmDevice):
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
             return int(out.split()[1])
         return False
-
-    def perform_scp(  # pylint: disable=W0613
-        self,
-        source: str,
-        destination: str,
-        action: Literal["download", "upload"] = "download",  # noqa: ARG002
-    ) -> None:
-        """Perform SCP from containers to local.
-
-        This method helps to copy logs of failed test cases from the device container
-        such as ACS, LAN, WAN and WLAN to the local.
-
-        :param source: source file name with absolute path
-        :type source: str
-        :param destination: destination file name with absolute path
-        :type destination: str
-        :param action: whether to up/download the file (currently unused)
-        :type action: Literal
-        :raises SCPConnectionError:  when failed to scp file
-        """
-        # TODO: This implementation works with executors and need to be tested once the
-        # pipeline is in place
-        username, password, ip, port = (
-            self._username,
-            self._password,
-            self._ipaddr,
-            self._port,
-        )
-        command = (
-            "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-            f" -P {port} {username}@{ip}:{source} {destination}"
-        )
-        self._console.execute_command(command)
-        if self._console.expect([pexpect.TIMEOUT, "continue connecting?"], timeout=10):
-            self._console.sendline("y")
-        if self._console.expect([pexpect.TIMEOUT, "assword:"], timeout=10):
-            self._console.sendline(password)
-        if self._console.expect_exact(["100%", pexpect.TIMEOUT], timeout=30):
-            msg = f"Failed to scp from {source} to {destination}"
-            raise SCPConnectionError(msg)
 
     def delete_file(self, filename: str) -> None:
         """Delete the file from the device.

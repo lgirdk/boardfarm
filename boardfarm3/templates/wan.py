@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterator
@@ -442,20 +442,11 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def perform_scp(
-        self,
-        source: str,
-        destination: str,
-        action: Literal["download", "upload"] = "download",
-    ) -> None:
-        """Perform SCP from linux device.
+    def scp_device_file_to_local(self, local_path: str, source_path: str) -> None:
+        """Copy a local file from a server using SCP.
 
-        :param source: source file path
-        :type source: str
-        :param destination: destination file path
-        :type destination: str
-        :param action: scp action(download/upload), defaults to "download"
-        :type action: Literal["download", "upload"], optional
+        :param local_path: local file path
+        :param source_path: source path
         """
         raise NotImplementedError
 
