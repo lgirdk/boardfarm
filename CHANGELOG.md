@@ -1,3 +1,9 @@
+## 2024.23.0 (2024-06-05)
+
+### Fix
+
+- **kamailio.py:use_cases/voice.py**: change get exp timmer name
+
 ## 2024.22.0 (2024-05-27)
 
 ### Refactor
