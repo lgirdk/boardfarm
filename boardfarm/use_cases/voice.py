@@ -484,7 +484,7 @@ def enable_call_forwarding_busy(
     board = get_device_by_name("board")
     who_forwards._obj().enable_call_forwarding_busy(
         dtmf_code=board.sw.voice.dtmf_codes["call_forwarding_busy_enable"],
-        number=forward_to._obj.number,
+        number=forward_to._obj().number,
     )
 
 
