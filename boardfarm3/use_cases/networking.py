@@ -90,8 +90,10 @@ def start_http_server(
         device.stop_http_service(port)
 
 
-def http_get(device: LAN | WAN, url: str, timeout: int = 20) -> HTTPResult:
-    """Check if the given HTTP server in WAN is running.
+def http_get(
+    device: LAN | WAN, url: str, timeout: int = 20, options: str = ""
+) -> HTTPResult:
+    """Check if the given HTTP server is running.
 
     This Use Case executes a curl command with a given timeout from the given
     client. The destination is specified by the url parameter
@@ -102,13 +104,15 @@ def http_get(device: LAN | WAN, url: str, timeout: int = 20) -> HTTPResult:
         - Verify that the HTTP server running on the client is accessible
         - Try to connect to the HTTP server from [] client
 
-    :param device: the device from where http response to get
+    :param device: the device from where HTTP response to get
     :type device: LAN | WAN
-    :param url: url to get the response
+    :param url: URL to get the response
     :type url: str
     :param timeout: connection timeout for the curl command in seconds, default 20
     :type timeout: int
-    :return: parsed http get response
+    :param options: additional options to pass to the curl command, defaults to ""
+    :type options: str
+    :return: parsed HTTP get response
     :rtype: HTTPResult
     """
-    return device.http_get(url, timeout)
+    return device.http_get(url, timeout, options)

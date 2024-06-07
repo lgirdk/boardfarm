@@ -564,7 +564,9 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
         return raw, code, beautified_text
 
 
-def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
+def http_get(
+    console: _LinuxConsole, url: str, timeout: int = 20, options: str = ""
+) -> HTTPResult:
     """Peform http get (via curl) and return parsed result.
 
     :param console: console or device instance
@@ -573,11 +575,13 @@ def http_get(console: _LinuxConsole, url: str, timeout: int = 20) -> HTTPResult:
     :type url: str
     :param timeout: connection timeout for the curl command in seconds
     :type timeout: int
+    :param options: additional curl command line options, defaults to ""
+    :type options: str
     :return: parsed http response
     :rtype: HTTPResult
     """
     return HTTPResult(
-        console.execute_command(f"curl -v --connect-timeout {timeout} {url}"),
+        console.execute_command(f"curl -v {options} --connect-timeout {timeout} {url}"),
     )
 
 

@@ -228,13 +228,15 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def http_get(self, url: str, timeout: int) -> HTTPResult:
+    def http_get(self, url: str, timeout: int, options: str) -> HTTPResult:
         """Peform http get and return parsed result.
 
         :param url: url to get the response
         :type url: str
         :param timeout: connection timeout for the curl command in seconds
         :type timeout: int
+        :param options: additional curl options
+        :type options: str
         :return: parsed http response
         :rtype: HTTPResult
         """

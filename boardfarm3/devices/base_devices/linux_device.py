@@ -857,17 +857,19 @@ class LinuxDevice(BoardfarmDevice):
                 msg,
             )
 
-    def http_get(self, url: str, timeout: int) -> HTTPResult:
+    def http_get(self, url: str, timeout: int, options: str) -> HTTPResult:
         """Peform http get (via curl) and return parsed result.
 
         :param url: url to get the response
         :type url: str
         :param timeout: connection timeout for the curl command in seconds
         :type timeout: int
+        :param options: additional options for the curl command
+        :type options: str
         :return: parsed http response
         :rtype: HTTPResult
         """
-        return http_get(self._console, url, timeout)
+        return http_get(self._console, url, timeout, options)
 
     def dns_lookup(self, domain_name: str, record_type: str) -> list[dict[str, Any]]:
         """Run ``dig`` command and return the parsed result.

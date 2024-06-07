@@ -420,13 +420,15 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def http_get(self, url: str, timeout: int) -> HTTPResult:
+    def http_get(self, url: str, timeout: int, options: str) -> HTTPResult:
         """Peform HTTP Get and return parsed result.
 
         :param url: URL to get the response
         :type url: str
         :param timeout: connection timeout for the curl command in seconds
         :type timeout: int
+        :param options: additional curl options
+        :type options: str
         :return: parsed HTTP response
         :rtype: HTTPResult
         """
