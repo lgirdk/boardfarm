@@ -1052,6 +1052,21 @@ class LinuxDevice(BoardfarmDevice):
             return int(out.split()[1])
         return False
 
+    def stop_traffic(self, pid: int | None = None) -> bool:
+        """Stop the iPerf3 process for a specific PID or killall.
+
+        :param pid: iPerf3 process ID for reciever or sender, defaults to None
+        :type pid: int | None = None
+        :return: True if process is stopped else False
+        :rtype: bool
+        """
+        if pid:
+            self._console.execute_command(f"kill -9 {pid}")
+        else:
+            self._console.execute_command("killall -9 iperf3")
+        output = self._console.execute_command("ps auxwwww|grep iperf3|grep -v grep")
+        return str(pid) not in output if pid else "iperf3" not in output
+
     def delete_file(self, filename: str) -> None:
         """Delete the file from the device.
 

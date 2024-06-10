@@ -438,6 +438,18 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
+    def stop_traffic(self, pid: int | None = None) -> bool:
+        """Stop the iPerf3 process for a specific PID or killall.
+
+        :param pid: process ID for a iPerf3 service either for reciever or sender,
+            defaults to None
+        :type pid: int | None
+        :return: True if process is stopped else False
+        :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def set_link_state(self, interface: str, state: str) -> None:
         """Set link state.
 
