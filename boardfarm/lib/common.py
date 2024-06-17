@@ -1058,7 +1058,9 @@ def snmp_mib_set(
             timeout=10,
         )
 
-    assert idx == 1, f"Setting the mib {mib_name}"
+    assert (
+        idx == 1  # pylint: disable=possibly-used-before-assignment
+    ), f"Setting the mib {mib_name}"
     snmp_out = device.match.group(1)
     device.expect(device.prompt)
     return snmp_out
@@ -2312,9 +2314,11 @@ def install_app_via_wan(
         app_name = app_binary.split("/")[-1]
         target_loc = f"{temp_dir}{app_name}"
         wan.download_from_server(url=app_binary, extra=f"-O /tftpboot/{app_name}")
-        board_console.sendline(f"wget {wan_uri}{app_name} -O {target_loc}")
-        resp = board_console.expect(["saved", pexpect.TIMEOUT], timeout=120)
-        if resp == 1:
+        board_console.sendline(f"curl -f -o {target_loc} {wan_uri}{app_name}")
+        resp = board_console.expect(
+            [r"curl:\s*\(\d+\)", pexpect.TIMEOUT, *board_console.prompt], timeout=120
+        )
+        if resp < 2:
             raise PexpectErrorTimeout(
                 f"Unable to install the application {app_binary} from wan {wan_uri}"
             )
