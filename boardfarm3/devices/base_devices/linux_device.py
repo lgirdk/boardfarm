@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from contextlib import contextmanager, suppress
 from functools import cached_property
@@ -34,6 +35,8 @@ if TYPE_CHECKING:
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import MulticastGroupRecord
+
+__LOGGER = logging.getLogger(__name__)
 
 
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
@@ -1146,3 +1149,57 @@ class LinuxDevice(BoardfarmDevice):
             msg = f"Failed to send the report!!\n{out}"
             raise CodeError(msg)
         return out
+
+    def set_static_ip(
+        self,
+        interface: str,
+        ip_address: IPv4Address,
+        netmask: IPv4Address,
+    ) -> None:
+        """Set given static ip for the LAN.
+
+        :param interface: interface name
+        :type interface: str
+        :param ip_address: static ip address
+        :type ip_address: IPv4Address
+        :param netmask: netmask
+        :type netmask: IPv4Address
+        :raises CodeError: When setting did not work
+        """
+        # TODO: use sudo shell if needed BOARDFARM-5105
+        self._console.execute_command(
+            f"ifconfig {interface} {ip_address} netmask {netmask} up"
+        )
+        ip = self.ipv4_addr
+        if ip != ip_address:
+            err_msg = f"Running IP: {ip=} is different than expected: {ip_address=}"
+            raise CodeError(err_msg)
+
+    def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
+        """Set given ip address as default gateway address for given interface.
+
+        :param ip_address: gateway ip address
+        :type ip_address: IPv4Address
+        :param interface: interface name
+        :type interface: str
+        :raises CodeError: when failing to remove the existing route
+        :raises CodeError: when the route is not correctly set
+        """
+        # TODO: use sudo shell if needed BOARDFARM-5105
+        self._console.execute_command("ip route del default")
+
+        out = self._console.execute_command("ip route show default")
+        if out[1:]:
+            msg = (
+                f"Failed to remove existing defualt route {out}, "
+                "unable to proceed with set default gatway command "
+            )
+            raise CodeError(msg)
+        self._console.execute_command(
+            f"route add default gw {ip_address} dev {interface}"
+        )
+        out = self._console.execute_command("ip route show default")
+        if str(ip_address) not in out.lower():
+            err_msg = f"Failed to add default route, ip route output: {out}"
+            raise CodeError(err_msg)
+        __LOGGER.debug("The route is configured successfully .")

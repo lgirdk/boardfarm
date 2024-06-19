@@ -562,3 +562,41 @@ class WAN(ABC):
         :rtype: bool
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def release_dhcp(self, interface: str) -> None:
+        """Release IPv4 of the specified interface.
+
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_static_ip(
+        self,
+        interface: str,
+        ip_address: IPv4Address,
+        netmask: IPv4Address,
+    ) -> None:
+        """Set given static IP for the LAN.
+
+        :param interface: interface name
+        :type interface: str
+        :param ip_address: static IP address
+        :type ip_address: IPv4Address
+        :param netmask: netmask
+        :type netmask: IPv4Address
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
+        """Set given IP address as default gateway address for given interface.
+
+        :param ip_address: gateway IP address
+        :type ip_address: IPv4Address
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError

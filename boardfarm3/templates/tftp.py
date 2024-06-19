@@ -38,7 +38,9 @@ class TFTP(ABC):
 
     @abstractmethod
     @contextmanager
-    def set_static_ip(self, static_address: IPv4Address) -> Generator[None, None, None]:
+    def set_tmp_static_ip(
+        self, static_address: IPv4Address
+    ) -> Generator[None, None, None]:
         """Temporarily set a static IPv4 on the DUT connected iface via the `ip` cmd.
 
         :param static_address: Static IPv4 address to be set
