@@ -1,3 +1,10 @@
+## 2024.25.0 (2024-06-20)
+
+### Fix
+
+- **lib/env_helper.py**: add the latest schema version
+- **boardfarm/lib/booting.py**: add transport and dns pref
+
 ## 2024.23.0 (2024-06-05)
 
 ### Fix
