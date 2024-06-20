@@ -604,7 +604,7 @@ def http_get(
 
 
 def dns_lookup(
-    console: _LinuxConsole, domain_name: str, record_type: str
+    console: _LinuxConsole, domain_name: str, record_type: str, opts: str = ""
 ) -> list[dict[str, Any]]:
     """Perform ``dig`` command in the devices to resolve DNS.
 
@@ -614,11 +614,15 @@ def dns_lookup(
     :type domain_name: str
     :param record_type: AAAA for ipv6 else A
     :type record_type: str
+    :param opts: options to be provided to dig command, defaults to ""
+    :type opts: str
     :return: parsed dig command ouput
     :rtype: List[Dict[str, Any]]
     """
     return dig.parse(
-        console.execute_command(f"dig {record_type} {domain_name}").split(";", 1)[-1]
+        console.execute_command(f"dig {opts} {record_type} {domain_name}").split(
+            ";", 1
+        )[-1]
     )
 
 

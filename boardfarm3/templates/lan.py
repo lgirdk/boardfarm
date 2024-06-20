@@ -435,13 +435,17 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def dns_lookup(self, domain_name: str, record_type: str) -> list[dict[str, Any]]:
+    def dns_lookup(
+        self, domain_name: str, record_type: str, opts: str = ""
+    ) -> list[dict[str, Any]]:
         """Perform ``dig`` command in the devices to resolve DNS.
 
         :param domain_name: domain name which needs lookup
         :type domain_name: str
         :param record_type: AAAA for IPv6 else A
         :type record_type: str
+        :param opts: options to be provided to dig command, defaults to ""
+        :type opts: str
         :return: parsed dig command ouput
         :rtype: List[dict[str, Any]]
         """

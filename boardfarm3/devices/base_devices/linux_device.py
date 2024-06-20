@@ -874,17 +874,21 @@ class LinuxDevice(BoardfarmDevice):
         """
         return http_get(self._console, url, timeout, options)
 
-    def dns_lookup(self, domain_name: str, record_type: str) -> list[dict[str, Any]]:
+    def dns_lookup(
+        self, domain_name: str, record_type: str, opts: str = ""
+    ) -> list[dict[str, Any]]:
         """Run ``dig`` command and return the parsed result.
 
         :param domain_name: domain name which needs lookup
         :type domain_name: str
         :param record_type: AAAA for ipv6 else A
         :type record_type: str
+        :param opts: options to be provided to dig command, defaults to ""
+        :type opts: str
         :return: parsed dig command output
         :rtype: List[Dict[str, Any]]
         """
-        return dns_lookup(self._console, domain_name, record_type)
+        return dns_lookup(self._console, domain_name, record_type, opts)
 
     def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
