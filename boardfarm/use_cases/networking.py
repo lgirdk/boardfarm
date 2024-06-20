@@ -510,7 +510,10 @@ def set_static_ip_from_rip_config(
 
 
 def resolve_dns(
-    host: Union[DebianLAN, DebianWAN, DebianWifi], domain_name: str, ipv6: bool = False
+    host: Union[DebianLAN, DebianWAN, DebianWifi],
+    domain_name: str,
+    ipv6: bool = False,
+    opts: str = "",
 ) -> List[Dict[str, Any]]:
     """Perform ``dig`` command in the devices to resolve DNS.
 
@@ -520,11 +523,13 @@ def resolve_dns(
     :type domain_name: str
     :param ipv6: flag to perform ipv4 or ipv6 lookup, defaults to False
     :type ipv6: bool, optional
+    :param opts: options to be provided to dig command, defaults to ""
+    :type opts: str
     :return: returns Dig output from jc parser
     :rtype: List[Dict[str, Any]]
     """
     record_type = "AAAA" if ipv6 else "A"
-    dig_command_output = host.check_output(f"dig {record_type} {domain_name}")
+    dig_command_output = host.check_output(f"dig {opts} {record_type} {domain_name}")
     dig_command_output = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])").sub(
         "", dig_command_output
     )
