@@ -8,13 +8,12 @@ from typing import TYPE_CHECKING
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
 
 if TYPE_CHECKING:
-    from boardfarm3_lgi_shared.lib.typing.dhcp import (
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.lib.custom_typing.dhcp import (
         DHCPServicePools,
         DHCPv4Options,
         DHCPv6Options,
     )
-
-    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.networking import IptablesFirewall
 
 
