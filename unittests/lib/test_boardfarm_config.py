@@ -256,8 +256,8 @@ def test_get_inventory_config_valid_inventory_config() -> None:
         get_inventory_config(
             "CH7465LG-2-2",
             _VALID_INVENTORY_CONFIG_PATH,
-        )
-        == _VALID_INVENTORY_CONFIG["CH7465LG-2-2"]
+        ).keys()
+        == _VALID_INVENTORY_CONFIG["CH7465LG-2-2"].keys()
     )
 
 

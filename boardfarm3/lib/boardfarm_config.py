@@ -3,6 +3,7 @@
 import json
 import logging
 from copy import deepcopy
+from functools import cached_property
 from pathlib import Path
 from typing import Any, cast
 
@@ -49,6 +50,22 @@ class BoardfarmConfig:
         :returns: inventory config response
         """
         return self._inventory_config
+
+    @cached_property
+    def resource_name(self) -> str:
+        """Resource name.
+
+        :returns: resource name of the board
+        """
+        conf = self.get_device_config("board")
+        return conf["resource_name"]
+
+    def get_board_station_number(self) -> int:
+        """Get station number of the board.
+
+        :returns: station number
+        """
+        return int(self.resource_name.split("-")[-1])
 
     def get_devices_config(self) -> list[dict]:
         """Get merged devices config.
@@ -223,9 +240,11 @@ def get_inventory_config(
             ].get("devices", [])
         else:
             msg = f"{inventory_config['location']!r} invalid location config"
-            raise EnvConfigError(
-                msg,
-            )
+            raise EnvConfigError(msg)
+    for device in inventory_config.get("devices", []):
+        if device["name"] == "board":
+            device["resource_name"] = resource_name
+            break
     return inventory_config
 
 
