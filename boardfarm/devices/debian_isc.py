@@ -106,6 +106,8 @@ class DebianISCProvisioner(debian_wan.DebianWAN):
             str(kwargs.pop("prov_gateway_v6", "2001:dead:beef:1::cafe"))
         )
 
+        self.pool_size = kwargs.pop("pool_size", 120)
+
         # we're storing a list of all /56 subnets possible from erouter_net_iface.
         # As per docsis, /56 must be the default pd length
         self.erouter_net_iface = ipaddress.IPv6Interface(
@@ -501,20 +503,26 @@ EOF"""
         to_send = to_send.replace("###CM_IP###", str(self.cm_network[0]))
         to_send = to_send.replace("###CM_NETMASK###", str(self.cm_network.netmask))
         to_send = to_send.replace("###CM_START_RANGE###", str(self.cm_network[5]))
-        to_send = to_send.replace("###CM_END_RANGE###", str(self.cm_network[120]))
+        to_send = to_send.replace(
+            "###CM_END_RANGE###", str(self.cm_network[self.pool_size + 5])
+        )
         to_send = to_send.replace("###CM_GATEWAY###", str(self.cm_gateway))
         to_send = to_send.replace("###CM_BROADCAST###", str(self.cm_network[-1]))
         to_send = to_send.replace("###DEFAULT_TFTP_SERVER###", str(self.prov_ip))
         to_send = to_send.replace("###MTA_IP###", str(self.mta_network[0]))
         to_send = to_send.replace("###MTA_NETMASK###", str(self.mta_network.netmask))
         to_send = to_send.replace("###MTA_START_RANGE###", str(self.mta_network[5]))
-        to_send = to_send.replace("###MTA_END_RANGE###", str(self.mta_network[120]))
+        to_send = to_send.replace(
+            "###MTA_END_RANGE###", str(self.mta_network[self.pool_size + 5])
+        )
         to_send = to_send.replace("###MTA_GATEWAY###", str(self.mta_gateway))
         to_send = to_send.replace("###MTA_BROADCAST###", str(self.mta_network[-1]))
         to_send = to_send.replace("###OPEN_IP###", str(self.open_network[0]))
         to_send = to_send.replace("###OPEN_NETMASK###", str(self.open_network.netmask))
         to_send = to_send.replace("###OPEN_START_RANGE###", str(self.open_network[5]))
-        to_send = to_send.replace("###OPEN_END_RANGE###", str(self.open_network[120]))
+        to_send = to_send.replace(
+            "###OPEN_END_RANGE###", str(self.open_network[self.pool_size + 5])
+        )
         to_send = to_send.replace("###OPEN_BROADCAST###", str(self.open_network[-1]))
         to_send = to_send.replace("###TIMEZONE###", str(self.timezone))
         to_send = to_send.replace("###WAN_IP###", str(self.prov_ip))
@@ -575,11 +583,14 @@ EOF"""
         )
         self.expect(self.prompt)
         self.sendline(
-            "mv /etc/dhcp/dhcpd.conf-"
+            "cat /etc/dhcp/dhcpd.conf-"
             + board_config.get_station()
-            + ".master /etc/dhcp/dhcpd.conf"
+            + ".master > /etc/dhcp/dhcpd.conf"
         )
         self.expect(self.prompt)
+        self.sendline(
+            "rm /etc/dhcp/dhcpd.conf-" + board_config.get_station() + ".master"
+        )
 
     def get_invalid_route(
         self, ip_pool_upper_bound: ipaddress.IPv4Network

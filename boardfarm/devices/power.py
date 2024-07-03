@@ -234,12 +234,14 @@ class PX2(PDUTemplate):
 
     def _connect(self):
         self.pcon = bft_pexpect_helper.spawn(f"telnet {self.ip_address}")
-        self.pcon.expect(r"Login for PX\d CLI")
+        self.pcon.expect(r"Login for PX.* CLI")
         self.pcon.expect("Username:")
         self.pcon.sendline(self.username)
         self.pcon.expect("Password:")
         self.pcon.sendline(self.password)
-        self.pcon.expect(r"Welcome to PX\d CLI!")
+        if self.pcon.expect(["y/n", pexpect.TIMEOUT], timeout=10) == 0:
+            self.pcon.sendline("y")
+        self.pcon.expect(r"Welcome to PX.* CLI!")
         self.pcon.expect(self.prompt)
 
     def reset(self):

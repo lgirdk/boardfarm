@@ -1,4 +1,5 @@
 """Authenticated connections to the terminal server."""
+
 import abc
 
 import pexpect
@@ -123,7 +124,7 @@ class AuthenticatedSshConnection(_AuthenticatedSerialConnection):
             self.device.setecho(False)
             self.device.sendline(self.password)
             self.device.setecho(True)
-            self.device.expect(["OpenGear Serial Server"])
+            self.device.expect(["OpenGear Serial Server", pexpect.TIMEOUT], timeout=10)
         except pexpect.EOF:
             raise Exception("Board is in use (connection refused).")
 

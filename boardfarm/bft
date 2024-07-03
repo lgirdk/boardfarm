@@ -250,8 +250,14 @@ def connect_to_devices(config):
         ldap_credentials = os.environ.get("LDAP_CREDENTIALS", None)
         if ldap_credentials is None:
             raise OSError("Missing LDAP_CREDENTIALS environment config")
-        ldap_username, _ = ldap_credentials.split(";")
-        lockable_resouces = LockableResources(jenkins_url, ldap_username, jenkins_token)
+
+        jenkins_username = os.environ.get("JENKINS_USERNAME")
+        if not jenkins_username:
+            jenkins_username, _ = ldap_credentials.split(";")
+
+        lockable_resouces = LockableResources(
+            jenkins_url, jenkins_username, jenkins_token
+        )
 
     connected_to_board = False
 
