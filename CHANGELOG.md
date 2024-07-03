@@ -1,3 +1,9 @@
+## 2024.27.0 (2024-07-03)
+
+### Fix
+
+- **boardfarm/lib/common.py**: change wget to curl
+
 ## 2024.25.0 (2024-06-20)
 
 ### Fix
