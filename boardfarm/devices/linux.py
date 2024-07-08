@@ -4,7 +4,9 @@ import ipaddress
 import logging
 import os
 import re
+import tempfile
 from contextlib import contextmanager, suppress
+from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import jc
@@ -12,6 +14,7 @@ import jc.parsers.ping
 import pexpect
 
 from boardfarm.exceptions import BftIfaceNoIpV6Addr, CodeError, PexpectErrorTimeout
+from boardfarm.lib.common import scp_from
 from boardfarm.lib.regexlib import (
     AllValidIpv6AddressesRegex,
     InterfaceIPv6_AddressRegex,
@@ -1057,7 +1060,7 @@ EOFEOFEOFEOF"""
         traffic_port: int,
         bind_to_ip: str = None,
         ipv: int = None,
-    ) -> Union[int, bool]:
+    ) -> tuple[int, str]:
         """uses iperf3 to start the server on a linux device to generate traffic in a network
 
         :param traffic_port: server port to listen on
@@ -1066,29 +1069,32 @@ EOFEOFEOFEOF"""
         :type bind_to_ip: str, optional
         :param ipv: 4 or 6 if it uses only IPv4 or IPv6, defaults to None
         :type ipv: int, optional
-        :return: either the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start server
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int, str]
         """
-        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -s -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}  -D"
+        file_path = tempfile.gettempdir()
+        log_file_path = f"{file_path}/iperf_server_logs.txt"
+        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -s -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} > {log_file_path} 2>&1 &"
         self.check_output(cmd)
         output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
         if "iperf3" in output:
             out = re.search(f".* -p {traffic_port}.*", output).group()
-            return int(out.split()[1])
-        else:
-            return False
+            return int(out.split()[1]), log_file_path
+        msg = "Unable to start iperf server"
+        raise CodeError(msg)
 
     def start_traffic_sender(
         self,
         host: str,
         traffic_port: int,
-        bandwidth: Optional[int] = None,
+        bandwidth: Optional[int] = 5,
         bind_to_ip: Optional[str] = None,
         direction: Optional[str] = None,
         ipv: Optional[int] = None,
         udp_protocol: bool = False,
         time: int = 10,
-    ) -> Union[int, bool]:
+    ) -> tuple[int, str]:
         """uses iperf3 to generate the traffic on a linux client in a network
 
         :param host: run in client mode, connecting to a host
@@ -1097,7 +1103,7 @@ EOFEOFEOFEOF"""
         :type traffic_port: int
         :param bind_to_ip: bind to the interface associated with the address host, defaults to None
         :type bind_to_ip: str, optional
-        :param bandwidth: bandwidth(mbps) at which the traffic has to be generated, defaults to None
+        :param bandwidth: bandwidth(mbps) at which the traffic has to be generated, defaults to 5
         :type bandwidth: int, optional
         :param direction: `--reverse` to run in reverse mode (server sends, client receives) and `--bidir` to run in bidirectional mode, defaults to None
         :type direction: str
@@ -1107,17 +1113,52 @@ EOFEOFEOFEOF"""
         :type udp_protocol: bool, optional
         :param time: time in seconds to transmit for, defaults to 10
         :type time: int, optional
-        :return: either the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start iperf client
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int, str]
         """
-        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -c {host} -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}{' -u' if udp_protocol else ''} 2>&1 > /dev/null &"
+        file_path = tempfile.gettempdir()
+        log_file_path = f"{file_path}/iperf_client_logs.txt"
+        cmd = f"iperf3{f' -{ipv}' if ipv else ''} -c {host} -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}{' -u' if udp_protocol else ''}  > {log_file_path}  2>&1 &"
         self.check_output(cmd)
         output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
         if "iperf3" in output and "Exit 1" not in output:
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
-            return int(out.split()[1])
-        else:
-            return False
+            return int(out.split()[1]), log_file_path
+        msg = "Unable to start iperf client"
+        raise CodeError(msg)
+
+    def _get_logs(self, log_file, server):
+        """get logs after copying file from server"""
+        scp_from(
+            log_file,
+            server.ipaddr,
+            server.username,
+            server.password,
+            server.port,
+            log_file,
+        )
+        return Path(log_file).read_text()
+
+    def get_iperf_logs(
+        self, client_log_file: str, server_log_file: str, server, client
+    ) -> dict:
+        """Checks the file output and returns server traffic flow.
+
+        :param client_log_file: iperf client log file path
+        :type client_log_file: str
+        :param server_log_file: iperf server log file path
+        :type server_log_file: str
+        :param server: device class object of iperf server
+        :type server: Union[DebianLAN, DebianWifi, DebianWAN]
+        :param client: device class object of iperf client
+        :type client: Union[DebianLAN, DebianWifi, DebianWAN]
+        :return: log output
+        :rtype: dict
+        """
+        server_log_output = self._get_logs(server_log_file, server)
+        client_log_output = self._get_logs(client_log_file, client)
+        return {"client_logs": client_log_output, "server_logs": server_log_output}
 
     def stop_traffic(self, pid: int = None) -> bool:
         """stops the iprf3 process for a specific pid or killall otherwise
