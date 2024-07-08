@@ -81,6 +81,8 @@ class IPerf3TrafficGenerator:
     sender_pid: int
     traffic_receiver: Union[DebianLAN, DebianWifi, DebianWAN]
     receiver_pid: int
+    server_log_file: str = ""
+    client_log_file: str = ""
 
 
 class HTTPResult:
@@ -795,10 +797,12 @@ def send_ipv6_traffic_from_wan_to_non_existing_endpoint(
         devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    source_pid = wan_device.start_traffic_sender(
+    source_pid, client_log_file = wan_device.start_traffic_sender(
         sink_ip_addr, traffic_port, ipv=6, udp_protocol=udp_protocol, time=time
     )
-    return IPerf3TrafficGenerator(wan_device, source_pid, None, None)
+    return IPerf3TrafficGenerator(
+        wan_device, source_pid, None, None, None, client_log_file
+    )
 
 
 def initiate_v4_traffic(
@@ -847,12 +851,14 @@ def initiate_v4_traffic(
         else destination_ip
     )
     destination_port = source_port if destination_port is None else destination_port
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         destination_port, ipv=4, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip,
         source_port,
         ipv=4,
@@ -861,7 +867,12 @@ def initiate_v4_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -911,12 +922,14 @@ def initiate_v6_traffic(
         else destination_ip
     )
     destination_port = source_port if destination_port is None else destination_port
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         destination_port, ipv=6, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip6,
         source_port,
         ipv=6,
@@ -925,7 +938,12 @@ def initiate_v6_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -964,12 +982,14 @@ def initiate_bidirectional_ipv4_traffic(
     :rtype: IPerf3TrafficGenerator
     """
     dest_ip = destination_device.get_interface_ipaddr(destination_device.iface_dut)
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         traffic_port, ipv=4, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip,
         traffic_port,
         ipv=4,
@@ -979,7 +999,12 @@ def initiate_bidirectional_ipv4_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -1018,12 +1043,14 @@ def initiate_bidirectional_ipv6_traffic(
     :rtype: IPerf3TrafficGenerator
     """
     dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip,
         traffic_port,
         ipv=6,
@@ -1033,7 +1060,12 @@ def initiate_bidirectional_ipv6_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -1072,12 +1104,14 @@ def initiate_downstream_ipv4_traffic(
     :rtype: IPerf3TrafficGenerator
     """
     dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip,
         traffic_port,
         ipv=6,
@@ -1087,7 +1121,12 @@ def initiate_downstream_ipv4_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -1126,12 +1165,14 @@ def initiate_downstream_ipv6_traffic(
     :rtype: IPerf3TrafficGenerator
     """
     dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid = destination_device.start_traffic_receiver(
+    dest_pid, server_log_file = destination_device.start_traffic_receiver(
         traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
     )
     if not dest_pid:
-        return IPerf3TrafficGenerator(None, None, destination_device, dest_pid)
-    source_pid = source_device.start_traffic_sender(
+        return IPerf3TrafficGenerator(
+            None, None, destination_device, dest_pid, None, None
+        )
+    source_pid, client_log_file = source_device.start_traffic_sender(
         dest_ip,
         traffic_port,
         ipv=6,
@@ -1141,7 +1182,12 @@ def initiate_downstream_ipv6_traffic(
         bind_to_ip=bind_sender_ip,
     )
     return IPerf3TrafficGenerator(
-        source_device, source_pid, destination_device, dest_pid
+        source_device,
+        source_pid,
+        destination_device,
+        dest_pid,
+        server_log_file,
+        client_log_file,
     )
 
 
@@ -1170,6 +1216,23 @@ def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
         raise UseCaseFailure(
             f"Either Sender(Client) or Receiver(Server) process cannot be killed: Sender-{sender} Receiver:{receiver}"
         )
+
+
+def get_logs(iperf_data: IPerf3TrafficGenerator) -> dict:
+    """Check logs and returns traffic flow.
+
+    :param iperf_data: IPerf3TrafficGenerator, holds sender and reciever info.
+    :type iperf_data: IPerf3TrafficGenerator.
+    :return: traffic logs of both server and client.
+    :rtype: dict
+    """
+    results = iperf_data.traffic_receiver.get_iperf_logs(
+        iperf_data.client_log_file,
+        iperf_data.server_log_file,
+        iperf_data.traffic_receiver,
+        iperf_data.traffic_sender,
+    )
+    return results
 
 
 def _nmap(
