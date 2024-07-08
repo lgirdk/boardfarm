@@ -383,7 +383,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         traffic_port: int,
         bind_to_ip: str | None = None,
         ip_version: int | None = None,
-    ) -> int | bool:
+    ) -> tuple[int, str]:
         """Start the server on a linux device to generate traffic using iperf3.
 
         :param traffic_port: server port to listen on
@@ -393,8 +393,9 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type bind_to_ip: str, optional
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int, optional
-        :return: the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start server
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int, str]
         """
         raise NotImplementedError
 
@@ -409,7 +410,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         ip_version: int | None = None,
         udp_protocol: bool = False,
         time: int = 10,
-    ) -> int | bool:
+    ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
         :param host: a host to run in client mode
@@ -432,8 +433,9 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type udp_protocol: bool
         :param time: time in seconds to transmit for, defaults to 10
         :type time: int
-        :return: the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start server
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int, str]
         """
         raise NotImplementedError
 
@@ -446,6 +448,17 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type pid: int | None
         :return: True if process is stopped else False
         :rtype: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_iperf_logs(self, log_file: str) -> str:
+        """Read the file output for traffic flow.
+
+        :param log_file: iperf log file path
+        :type log_file: str
+        :return: traffic flow logs
+        :rtype: str
         """
         raise NotImplementedError
 

@@ -6,9 +6,11 @@ from __future__ import annotations
 
 import logging
 import re
+import tempfile
 from contextlib import contextmanager, suppress
 from functools import cached_property
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import jc.parsers.ping
@@ -984,7 +986,7 @@ class LinuxDevice(BoardfarmDevice):
         traffic_port: int,
         bind_to_ip: str | None = None,
         ip_version: int | None = None,
-    ) -> int | bool:
+    ) -> tuple[int, str]:
         """Start the server on a linux device to generate traffic using iperf3.
 
         :param traffic_port: server port to listen on
@@ -994,32 +996,36 @@ class LinuxDevice(BoardfarmDevice):
         :type bind_to_ip: str, optional
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int, optional
-        :return: the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start server
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int , str]
         """
+        file_path = tempfile.gettempdir()
+        log_file_path = f"{file_path}/iperf_server_logs.txt"
         self._console.execute_command(
             f"iperf3{f' -{ip_version}' if ip_version else ''} -s -p {traffic_port}"
-            f"{f' -B {bind_to_ip}' if bind_to_ip else ''}  -D",
+            f"{f' -B {bind_to_ip}' if bind_to_ip else ''} > {log_file_path} 2>&1 &",
         )
         output = self._console.execute_command(
             "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
         )
         if "iperf3" in output:
             out = re.search(f".* -p {traffic_port}.*", output).group()
-            return int(out.split()[1])
-        return False
+            return int(out.split()[1]), log_file_path
+        msg = "Unable to start iperf server"
+        raise CodeError(msg)
 
     def start_traffic_sender(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
         host: str,
         traffic_port: int,
-        bandwidth: int | None = None,
+        bandwidth: int | None = 5,
         bind_to_ip: str | None = None,
         direction: str | None = None,
         ip_version: int | None = None,
         udp_protocol: bool = False,
         time: int = 10,
-    ) -> int | bool:
+    ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
         :param host: a host to run in client mode
@@ -1030,7 +1036,7 @@ class LinuxDevice(BoardfarmDevice):
             has to be generated, defaults to None
         :type bandwidth: Optional[int], optional
         :param bind_to_ip: bind to the interface associated with
-            the address host, defaults to None
+            the address host, defaults to 5
         :type bind_to_ip: Optional[str], optional
         :param direction: `--reverse` to run in reverse mode
             (server sends, client receives) or `--bidir` to run in
@@ -1042,22 +1048,40 @@ class LinuxDevice(BoardfarmDevice):
         :type udp_protocol: bool
         :param time: time in seconds to transmit for, defaults to 10
         :type time: int
-        :return: the process id(pid) or False if pid could not be generated
-        :rtype: Union[int, bool]
+        :raises CodeError: raises if unable to start server
+        :return: the process id(pid) and log file path
+        :rtype: tuple[int , str]
         """
+        file_path = tempfile.gettempdir()
+        log_file_path = f"{file_path}/iperf_client_logs.txt"
         self._console.execute_command(
             f"iperf3{f' -{ip_version}' if ip_version else ''} -c {host} "
             f"-p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}"
             f" {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}"
-            f"{' -u' if udp_protocol else ''} 2>&1 > /dev/null &",
+            f"{' -u' if udp_protocol else ''} > {log_file_path}  2>&1  &",
         )
         output = self._console.execute_command(
             "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
         )
         if "iperf3" in output and "Exit 1" not in output:
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
-            return int(out.split()[1])
-        return False
+            return int(out.split()[1]), log_file_path
+        msg = "Unable to start iperf client"
+        raise CodeError(msg)
+
+    def get_iperf_logs(self, log_file: str) -> str:
+        """Read the file output for traffic flow.
+
+        :param log_file: log file path
+        :type log_file: str
+        :return: traffic flow logs
+        :rtype: str
+        """
+        self.scp_device_file_to_local(
+            local_path=log_file,
+            source_path=log_file,
+        )
+        return Path(log_file).read_text(encoding="utf-8")
 
     def stop_traffic(self, pid: int | None = None) -> bool:
         """Stop the iPerf3 process for a specific PID or killall.
