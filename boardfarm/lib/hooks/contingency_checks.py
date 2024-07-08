@@ -175,9 +175,9 @@ class DNS:
         ipv6_address_aux = acs.get_interface_ip6addr(acs.aux_iface_dut)
         dns_env = nested_lookup("DNS", env_req["environment_def"])
         prov_mode = env_helper.get_prov_mode()
-        if nested_lookup("ACS_SERVER", dns_env):
-            acs_dns = dns_env[0]["ACS_SERVER"]
-
+        acs_dns = (
+            dns_env[0]["ACS_SERVER"] if nested_lookup("ACS_SERVER", dns_env) else {}
+        )
         if acs_dns:
             output = board.dns.nslookup("acs_server.boardfarm.com")
             ipv4 = nested_lookup("ipv4", acs_dns)
@@ -197,11 +197,23 @@ class DNS:
                 ]
 
             total_reachable = (
-                ipv4[0].get("reachable", 0) if (ipv4 and prov_mode == "ipv4") else 0
-            ) + (ipv6[0].get("reachable", 0) if (ipv6 and prov_mode == "ipv6") else 0)
+                ipv4[0].get("reachable", 0)
+                if (ipv4 and prov_mode in ("ipv4", "dual"))
+                else 0
+            ) + (
+                ipv6[0].get("reachable", 0)
+                if (ipv6 and prov_mode in ("ipv6", "dual"))
+                else 0
+            )
             total_unreachable = (
-                ipv4[0].get("unreachable", 0) if (ipv4 and prov_mode == "ipv4") else 0
-            ) + (ipv6[0].get("unreachable", 0) if (ipv6 and prov_mode == "ipv6") else 0)
+                ipv4[0].get("unreachable", 0)
+                if (ipv4 and prov_mode in ("ipv4", "dual"))
+                else 0
+            ) + (
+                ipv6[0].get("unreachable", 0)
+                if (ipv6 and prov_mode in ("ipv6", "dual"))
+                else 0
+            )
             if not board.domain_ip_reach_check(
                 total_reachable, total_unreachable, output
             ):
