@@ -1,12 +1,9 @@
-# ruff: noqa
+"""Network utilities module."""
 
-"""OneFW network utilities module."""
+from __future__ import annotations
 
-from typing import Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal
 
-from pandas import DataFrame
-
-from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.networking import (
     scp,
     start_tcpdump,
@@ -16,9 +13,14 @@ from boardfarm3.lib.networking import (
 )
 from boardfarm3.lib.parsers.netstat_parser import NetstatParser
 
+if TYPE_CHECKING:
+    from pandas import DataFrame
+
+    from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+
 
 class NetworkUtility:
-    """OneFW network utilities."""
+    """Network utilities."""
 
     def __init__(self, console: BoardfarmPexpect) -> None:
         """Initialize the network utility.
@@ -43,7 +45,7 @@ class NetworkUtility:
         )
 
     def start_tcpdump(
-        self, fname: str, interface: str, filters: Optional[dict] = None
+        self, fname: str, interface: str, filters: dict | None = None
     ) -> str:
         """Start tcpdump capture on given interface.
 
@@ -52,7 +54,8 @@ class NetworkUtility:
         :param interface: interface name to be captured
         :type interface: str
         :param filters: filters as key value pair(eg: {"-v": "", "-c": "4"})
-        :type filters: Optional[Dict]
+                        default to None
+        :type filters: dict | None
         :return: return the process id of the tcpdump capture
         :rtype: str
         """
@@ -66,7 +69,7 @@ class NetworkUtility:
         """
         stop_tcpdump(self._console, pid)
 
-    def read_tcpdump(
+    def read_tcpdump(  # noqa: PLR0913
         self,
         capture_file: str,
         protocol: str = "",
@@ -99,10 +102,10 @@ class NetworkUtility:
         )
 
     # pylint: disable-next=too-many-arguments,invalid-name
-    def scp(
+    def scp(  # noqa: PLR0913
         self,
         ip: str,
-        port: Union[int, str],
+        port: int | str,
         user: str,
         pwd: str,
         source_path: str,
@@ -114,7 +117,7 @@ class NetworkUtility:
         :param ip: ip address of the remote host
         :type ip: str
         :param port: port number of the remote host
-        :type port: Union[int, str]
+        :type port: int | str
         :param user: username of the host
         :type user: str
         :param pwd: password of the host

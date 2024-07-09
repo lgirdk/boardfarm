@@ -27,7 +27,13 @@ from boardfarm3.exceptions import (
 )
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
-from boardfarm3.lib.networking import HTTPResult, dns_lookup, http_get, is_link_up
+from boardfarm3.lib.network_utils import NetworkUtility
+from boardfarm3.lib.networking import (
+    HTTPResult,
+    dns_lookup,
+    http_get,
+    is_link_up,
+)
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
 
@@ -75,6 +81,7 @@ class LinuxDevice(BoardfarmDevice):
                     self.mgmt_dns = IPv4Address("8.8.8.8")
                 if opt == "dante":
                     self.dante = True
+        self._nw_utility: NetworkUtility = None
 
     def _parse_device_suboptions(self) -> dict[str, str]:
         """Parse the sub-options provided in device config.
@@ -1286,3 +1293,13 @@ class LinuxDevice(BoardfarmDevice):
         if self._console.execute_command("pgrep nping").splitlines():
             msg = "Unable to stop nping process"
             raise BoardfarmException(msg)
+
+    @property
+    def nw_utility(self) -> NetworkUtility:
+        """Returns Network utility instance.
+
+        :return: network utiluty instance with console object
+        :rtype: NetworkUtility
+        """
+        self._nw_utility = NetworkUtility(self._console)
+        return self._nw_utility

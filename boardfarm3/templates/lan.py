@@ -13,7 +13,12 @@ if TYPE_CHECKING:
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast, MulticastGroupRecord
-    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, NSLookup
+    from boardfarm3.lib.network_utils import NetworkUtility
+    from boardfarm3.lib.networking import (
+        HTTPResult,
+        IptablesFirewall,
+        NSLookup,
+    )
 
 # pylint: disable=too-many-public-methods,duplicate-code
 
@@ -76,6 +81,16 @@ class LAN(ABC):
 
         :return: NSLookup utility instance with console object
         :rtype: NSLookup
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def nw_utility(self) -> NetworkUtility:
+        """Returns Network utility instance.
+
+        :return: network utiluty instance with console object
+        :rtype: NetworkUtility
         """
         raise NotImplementedError
 

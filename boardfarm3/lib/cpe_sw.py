@@ -29,7 +29,7 @@ class CPESwLibraries(CPESW):
     """CPE SW common libraries."""
 
     def __init__(self, hardware: CPEHW) -> None:
-        """Initialise the OneFW CPE software.
+        """Initialise the CPE software.
 
         :param hardware: cpe hardware instance
         :type hardware: CPEHW
