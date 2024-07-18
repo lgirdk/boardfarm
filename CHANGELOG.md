@@ -1,3 +1,15 @@
+## 2024.29.0 (2024-07-18)
+
+### Fix
+
+- **pyproject.toml**: retsrict the pysnmp version
+- **linux.py:networking.py**: get server and client logs
+- **hooks/contingency_checks.py**: add dual in rechable check
+- **connect**: allow access to a AAA configured dev
+- **networking.py**: added additional argument
+- **boardfarm/use_cases/voice.py**: correct the voice client fun call
+- **use_cases/dhcpv6.py**: fixed dhcpv6 packet parsing for mv3 eth
+
 ## 2024.27.0 (2024-07-03)
 
 ### Fix
