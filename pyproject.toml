@@ -57,7 +57,7 @@
         "pymongo",
         "pyserial",
         "pysmi",
-        "pysnmp",
+        "pysnmp==4.4.12",
         "pytest",                                      # see tests folder
         "pyvirtualdisplay==2.2",
         "requests",
