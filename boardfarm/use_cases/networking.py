@@ -815,6 +815,7 @@ def initiate_v4_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
     destination_ip: Optional[str] = None,
+    direction: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
     """Initiate IPv4 only traffic from source device to destination device.
 
@@ -841,6 +842,8 @@ def initiate_v4_traffic(
     :type bind_receiver_ip: str, optional
     :param destination_ip: IPv4 address which will be used for iperf traffic
     :type destination_ip: str, optional
+    :param direction: `--reverse` to run in reverse mode (server sends, client receives) and `--bidir` to run in bidirectional mode, defaults to None
+        :type direction: str
     :return: IPerf3TrafficGenerator data class that holds
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
@@ -858,14 +861,27 @@ def initiate_v4_traffic(
         return IPerf3TrafficGenerator(
             None, None, destination_device, dest_pid, None, None
         )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip,
-        source_port,
-        ipv=4,
-        udp_protocol=udp_protocol,
-        time=time,
-        bind_to_ip=bind_sender_ip,
-    )
+    try:
+        source_pid, client_log_file = source_device.start_traffic_sender(
+            dest_ip,
+            source_port,
+            ipv=4,
+            udp_protocol=udp_protocol,
+            time=time,
+            bind_to_ip=bind_sender_ip,
+            direction=direction,
+        )
+    # handles scenario where server started but unable to start traffic sender(client)
+    # IPerf3TrafficGenerator is sent with empty pid for receiver, so that sender's process
+    # can be killed by test case.
+    except CodeError:
+        source_pid = None
+        client_log_file = ""
+        stop_traffic(
+            IPerf3TrafficGenerator(
+                source_device, source_pid, destination_device, dest_pid
+            )
+        )
     return IPerf3TrafficGenerator(
         source_device,
         source_pid,
@@ -886,6 +902,7 @@ def initiate_v6_traffic(
     bind_sender_ip: Optional[str] = None,
     bind_receiver_ip: Optional[str] = None,
     destination_ip: Optional[str] = None,
+    direction: Optional[str] = None,
 ) -> IPerf3TrafficGenerator:
     """Initiate IPv6 only traffic from source device to destination device.
 
@@ -912,6 +929,8 @@ def initiate_v6_traffic(
     :type bind_receiver_ip: str, optional
     :param destination_ip: IPv6 address which will be used for iperf traffic
     :type destination_ip: str, optional
+    :param direction: `--reverse` to run in reverse mode (server sends, client receives) and `--bidir` to run in bidirectional mode, defaults to None
+        :type direction: str
     :return: IPerf3TrafficGenerator data class that holds
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
@@ -929,14 +948,27 @@ def initiate_v6_traffic(
         return IPerf3TrafficGenerator(
             None, None, destination_device, dest_pid, None, None
         )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip6,
-        source_port,
-        ipv=6,
-        udp_protocol=udp_protocol,
-        time=time,
-        bind_to_ip=bind_sender_ip,
-    )
+    try:
+        source_pid, client_log_file = source_device.start_traffic_sender(
+            dest_ip6,
+            source_port,
+            ipv=6,
+            udp_protocol=udp_protocol,
+            time=time,
+            bind_to_ip=bind_sender_ip,
+            direction=direction,
+        )
+    # handles scenario where server started but unable to start traffic sender(client)
+    # IPerf3TrafficGenerator is sent with empty pid for receiver, so that sender's process
+    # can be killed by test case.
+    except CodeError:
+        source_pid = None
+        client_log_file = ""
+        stop_traffic(
+            IPerf3TrafficGenerator(
+                source_device, source_pid, destination_device, dest_pid
+            )
+        )
     return IPerf3TrafficGenerator(
         source_device,
         source_pid,
@@ -981,30 +1013,15 @@ def initiate_bidirectional_ipv4_traffic(
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip = destination_device.get_interface_ipaddr(destination_device.iface_dut)
-    dest_pid, server_log_file = destination_device.start_traffic_receiver(
-        traffic_port, ipv=4, bind_to_ip=bind_receiver_ip
-    )
-    if not dest_pid:
-        return IPerf3TrafficGenerator(
-            None, None, destination_device, dest_pid, None, None
-        )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip,
-        traffic_port,
-        ipv=4,
-        udp_protocol=udp_protocol,
+    initiate_v4_traffic(
+        source_device=source_device,
+        destination_device=destination_device,
+        source_port=traffic_port,
         time=time,
+        udp_protocol=udp_protocol,
+        bind_sender_ip=bind_sender_ip,
+        bind_receiver_ip=bind_receiver_ip,
         direction="--bidir",
-        bind_to_ip=bind_sender_ip,
-    )
-    return IPerf3TrafficGenerator(
-        source_device,
-        source_pid,
-        destination_device,
-        dest_pid,
-        server_log_file,
-        client_log_file,
     )
 
 
@@ -1042,30 +1059,15 @@ def initiate_bidirectional_ipv6_traffic(
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid, server_log_file = destination_device.start_traffic_receiver(
-        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
-    )
-    if not dest_pid:
-        return IPerf3TrafficGenerator(
-            None, None, destination_device, dest_pid, None, None
-        )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip,
-        traffic_port,
-        ipv=6,
-        udp_protocol=udp_protocol,
+    initiate_v6_traffic(
+        source_device=source_device,
+        destination_device=destination_device,
+        source_port=traffic_port,
         time=time,
+        udp_protocol=udp_protocol,
+        bind_sender_ip=bind_sender_ip,
+        bind_receiver_ip=bind_receiver_ip,
         direction="--bidir",
-        bind_to_ip=bind_sender_ip,
-    )
-    return IPerf3TrafficGenerator(
-        source_device,
-        source_pid,
-        destination_device,
-        dest_pid,
-        server_log_file,
-        client_log_file,
     )
 
 
@@ -1103,30 +1105,15 @@ def initiate_downstream_ipv4_traffic(
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid, server_log_file = destination_device.start_traffic_receiver(
-        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
-    )
-    if not dest_pid:
-        return IPerf3TrafficGenerator(
-            None, None, destination_device, dest_pid, None, None
-        )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip,
-        traffic_port,
-        ipv=6,
-        udp_protocol=udp_protocol,
+    initiate_v4_traffic(
+        source_device=source_device,
+        destination_device=destination_device,
+        source_port=traffic_port,
         time=time,
+        udp_protocol=udp_protocol,
+        bind_sender_ip=bind_sender_ip,
+        bind_receiver_ip=bind_receiver_ip,
         direction="--reverse",
-        bind_to_ip=bind_sender_ip,
-    )
-    return IPerf3TrafficGenerator(
-        source_device,
-        source_pid,
-        destination_device,
-        dest_pid,
-        server_log_file,
-        client_log_file,
     )
 
 
@@ -1164,30 +1151,15 @@ def initiate_downstream_ipv6_traffic(
         sender/receiver devices and their process ids
     :rtype: IPerf3TrafficGenerator
     """
-    dest_ip = destination_device.get_interface_ip6addr(destination_device.iface_dut)
-    dest_pid, server_log_file = destination_device.start_traffic_receiver(
-        traffic_port, ipv=6, bind_to_ip=bind_receiver_ip
-    )
-    if not dest_pid:
-        return IPerf3TrafficGenerator(
-            None, None, destination_device, dest_pid, None, None
-        )
-    source_pid, client_log_file = source_device.start_traffic_sender(
-        dest_ip,
-        traffic_port,
-        ipv=6,
-        udp_protocol=udp_protocol,
+    initiate_v6_traffic(
+        source_device=source_device,
+        destination_device=destination_device,
+        source_port=traffic_port,
         time=time,
+        udp_protocol=udp_protocol,
+        bind_sender_ip=bind_sender_ip,
+        bind_receiver_ip=bind_receiver_ip,
         direction="--reverse",
-        bind_to_ip=bind_sender_ip,
-    )
-    return IPerf3TrafficGenerator(
-        source_device,
-        source_pid,
-        destination_device,
-        dest_pid,
-        server_log_file,
-        client_log_file,
     )
 
 
@@ -1212,7 +1184,9 @@ def stop_traffic(iperf_generator: IPerf3TrafficGenerator) -> None:
         else None
     )
 
-    if not (sender and receiver):
+    if (iperf_generator.sender_pid and not sender) or (
+        iperf_generator.receiver_pid and not receiver
+    ):
         raise UseCaseFailure(
             f"Either Sender(Client) or Receiver(Server) process cannot be killed: Sender-{sender} Receiver:{receiver}"
         )
