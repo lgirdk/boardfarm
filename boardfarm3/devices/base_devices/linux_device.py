@@ -1253,3 +1253,35 @@ class LinuxDevice(BoardfarmDevice):
             err_msg = f"Failed to add default route, ip route output: {out}"
             raise CodeError(err_msg)
         __LOGGER.debug("The route is configured successfully .")
+
+    def start_nping(self, interface_ip: str) -> str:
+        """Perform nping.
+
+        :param interface_ip: interface ip addr
+        :type interface_ip: str
+        :return: process id
+        :rtype: str
+        :raises ValueError: if unable to start nping.
+        """
+        output = self._console.execute_command(
+            f"nping -udp -c2 -p 0-65535 {interface_ip} --rate 200 -g 80  &"
+        )
+        if output:
+            pid = re.search(r"(\[\d+\]\s(\d+))", output)[2]
+            process_status = self._console.execute_command(f"ps --pid {pid} -o stat=")
+            if process_status and process_status != "T":
+                return pid
+        msg = "Unable to start nping"
+        raise ValueError(msg)
+
+    def stop_nping(self, process_id: str) -> None:
+        """Stop nping process running in background.
+
+        :param process_id: process id of nping
+        :type process_id: str
+        :raises BoardfarmException: when unable to stop process
+        """
+        self._console.execute_command(f"kill -9 {process_id}")
+        if self._console.execute_command("pgrep nping").splitlines():
+            msg = "Unable to stop nping process"
+            raise BoardfarmException(msg)

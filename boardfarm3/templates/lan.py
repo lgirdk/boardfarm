@@ -727,3 +727,25 @@ class LAN(ABC):
         :type additional_args: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def start_nping(self, interface_ip: str) -> str:
+        """Perform nping.
+
+        :param interface_ip: interface ip addr
+        :type interface_ip: str
+        :return: process id
+        :rtype: str
+        :raises ValueError: if unable to start nping.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def stop_nping(self, process_id: str) -> None:
+        """Stop nping process running in background.
+
+        :param process_id: process id of nping
+        :type process_id: str
+        :raises BoardfarmException: when unable to stop process
+        """
+        raise NotImplementedError
