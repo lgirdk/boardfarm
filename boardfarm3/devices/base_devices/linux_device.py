@@ -76,6 +76,27 @@ class LinuxDevice(BoardfarmDevice):
                 if opt == "dante":
                     self.dante = True
 
+    def _parse_device_suboptions(self) -> dict[str, str]:
+        """Parse the sub-options provided in device config.
+
+        :return: parsed sub-options
+        :rtype: dict[str, str]
+        """
+        parsed_options: dict[str, str] = {}
+
+        if "options" not in self._config:
+            return parsed_options
+
+        options = [x.strip() for x in self._config["options"].split(",")]
+        for opt in options:
+            split = opt.strip().split(":", 1)
+            if len(split) == 1:
+                parsed_options[split[0]] = ""
+            else:
+                parsed_options[split[0].strip()] = split[1].strip()
+
+        return parsed_options
+
     @property
     def _ipaddr(self) -> str:
         """Management IP address of the device.
@@ -235,7 +256,7 @@ class LinuxDevice(BoardfarmDevice):
         return (
             ips[0]
             if (ips := self._get_nw_interface_ip_address(network_interface, False))
-            else None
+            else ""
         )
 
     async def _get_nw_interface_ipv4_address_async(self, network_interface: str) -> str:
@@ -252,7 +273,7 @@ class LinuxDevice(BoardfarmDevice):
                     False,
                 )
             )
-            else None
+            else ""
         )
 
     def _get_nw_interface_ipv6_address(
@@ -274,7 +295,7 @@ class LinuxDevice(BoardfarmDevice):
                 for ip_addr in ip_addresses
                 if getattr(IPv6Interface(ip_addr), f"is_{address_type}")
             ),
-            None,
+            "",
         )
 
     def get_eth_interface_ipv4_address(self) -> str:
