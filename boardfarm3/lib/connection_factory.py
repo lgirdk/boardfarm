@@ -5,6 +5,7 @@ from typing import Any
 from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.connections.ldap_authenticated_serial import LdapAuthenticatedSerial
+from boardfarm3.lib.connections.local_cmd import LocalCmd
 from boardfarm3.lib.connections.ser2net_connection import Ser2NetConnection
 from boardfarm3.lib.connections.ssh_connection import SSHConnection
 from boardfarm3.lib.connections.telnet import TelnetConnection
@@ -27,6 +28,7 @@ def connection_factory(
         "ssh_connection": SSHConnection,
         "authenticated_ssh": SSHConnection,
         "ldap_authenticated_serial": LdapAuthenticatedSerial,
+        "local_cmd": LocalCmd,
         "ser2net": _ser2net_param_parser,
         "telnet": _telnet_param_parser,
     }
