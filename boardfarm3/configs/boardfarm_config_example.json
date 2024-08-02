@@ -1,128 +1,72 @@
 {
-    "new_device": {
-        "board_type": "Unknown",
-        "conn_cmd": "cu -l /dev/ttyUSB1 -s 115200",
-        "connection_type": "local_serial",
+    "prplos-docker-1": {
         "devices": [
             {
-                "cleanup_cmd": "docker stop wan; docker rm wan; sudo ip link set dev enx00249b14dc6e down",
-                "cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
-                "color": "cyan",
-                "name": "wan",
-                "post_cmd": "ip link set enx00249b14dc6e name eth1",
-                "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
-                "pre_cmd_host": "docker build -t bft:node bft-node",
-                "type": "debian"
+                "conn_cmd": [
+                    "docker exec -it cpe ash"
+                ],
+                "connection_type": "local_cmd",
+                "gui_password": "admin",
+                "name": "board",
+                "type": "prplos_docker"
             },
             {
-                "cleanup_cmd": "docker stop lan; docker rm lan; sudo ip link set dev enxc05627904e8c down",
-                "cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
-                "color": "blue",
-                "name": "lan",
-                "post_cmd": "ip link set enxc05627904e8c name eth1",
-                "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
-                "pre_cmd_host": "docker build -t bft:node bft-node",
-                "type": "debian"
-            }
-        ],
-        "notes": "Unknown device with docker containers attached to WAN/LAN"
-    },
-    "qemux86-1": {
-        "board_type": "qemux86",
-        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=wan,ifname=${wan_iface} -device e1000,netdev=wan -netdev tap,id=lan,ifname=${lan_iface} -device e1000,netdev=lan",
-        "connection_type": "local_serial",
-        "devices": [
-            {
-                "cleanup_cmd": "docker stop wan-${uniq_id}; docker rm wan-${uniq_id}",
                 "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8001",
                 "ipaddr": "localhost",
                 "name": "wan",
-                "port": "5910",
-                "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub wan-${uniq_id} 5910 9910 ${wan_iface}",
-                "type": "debian"
+                "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.100/24, wan-static-ipv6:2001:dead:beef:2::100/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4001,
+                "type": "linux_wan"
             },
             {
-                "cleanup_cmd": "docker stop lan-${uniq_id}; docker rm lan-${uniq_id}",
                 "color": "blue",
-                "http_proxy": "localhost:9909",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8002",
                 "ipaddr": "localhost",
                 "name": "lan",
-                "port": "5909",
-                "pre_cmd_host": "source deploy-boardfarm-nodes.sh; create_container_stub lan-${uniq_id} 5909 9909 ${lan_iface}",
-                "type": "debian"
-            }
-        ],
-        "notes": "QEMU emulated devices"
-    },
-    "qemux86-openwrt-1": {
-        "board_type": "qemux86-openwrt",
-        "conn_cmd": "sudo qemu-system-i386 -m 256 -nographic --enable-kvm -netdev tap,id=lan,ifname=${lan_iface} -device e1000,netdev=lan -netdev tap,id=wan,ifname=${wan_iface} -device e1000,netdev=wan",
-        "connection_type": "local_serial",
-        "devices": [
-            {
-                "iface": "${wan_iface}",
-                "name": "wan-factory",
-                "targets": [
-                    {
-                        "color": "blue",
-                        "img": "bft:node",
-                        "name": "wan",
-                        "type": "debian_wan"
-                    }
-                ],
-                "type": "docker-factory"
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4002,
+                "type": "linux_lan"
             },
             {
-                "iface": "${lan_iface}",
-                "name": "lan-factory",
-                "targets": [
-                    {
-                        "color": "cyan",
-                        "http_proxy": "localhost:9909",
-                        "img": "bft:node",
-                        "name": "lan",
-                        "type": "debian_lan"
-                    },
-                    {
-                        "color": "cyan",
-                        "http_proxy": "localhost:9910",
-                        "img": "bft:node",
-                        "name": "lan2",
-                        "type": "debian_lan"
+                "acs_url": "http://172.25.1.40:7547",
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "provisioner",
+                "port": 4003,
+                "preferred_vlan": "untagged",
+                "router_ipaddr": "localhost;4000",
+                "time_server": "216.239.35.0",
+                "time_server6": "2001:4860:4802:0032::a",
+                "timezone": 0,
+                "type": "kea_dhcp",
+                "vlans": {
+                    "untagged": {
+                        "cpe_pd": "2001:dead:bed1::/56",
+                        "iface": "eth1",
+                        "ipv4": "10.1.1.0/24",
+                        "ipv6": "2001:dead:cafe:1::/64"
                     }
-                ],
-                "type": "docker-factory"
-            }
-        ],
-        "notes": "QEMU emulated devices"
-    },
-    "rpi3-1": {
-        "board_type": "rpi3",
-        "conn_cmd": "cu -l /dev/ttyUSB1 -s 115200",
-        "connection_type": "local_serial",
-        "devices": [
-            {
-                "cleanup_cmd": "docker stop wan; docker rm wan; sudo ip link set dev enx00249b14dc6e down",
-                "cmd": "docker run --name wan --privileged -it bft:node /bin/bash",
-                "color": "cyan",
-                "name": "wan",
-                "options": "tftpd-server",
-                "post_cmd": "ip link set enx00249b14dc6e name eth1",
-                "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' wan) dev enx00249b14dc6e",
-                "pre_cmd_host": "docker build -t bft:node bft-node",
-                "type": "debian"
+                }
             },
             {
-                "cleanup_cmd": "docker stop lan; docker rm lan; sudo ip link set dev enxc05627904e8c down",
-                "cmd": "docker run --name lan --privileged -it bft:node /bin/bash",
+                "acs_mib": "http://172.25.1.40:7547",
                 "color": "blue",
-                "name": "lan",
-                "post_cmd": "ip link set enxc05627904e8c name eth1",
-                "post_cmd_host": "sudo ip link set netns $(docker inspect --format '{{.State.Pid}}' lan) dev enxc05627904e8c",
-                "pre_cmd_host": "docker build -t bft:node bft-node",
-                "type": "debian"
+                "connection_type": "authenticated_ssh",
+                "http_password": "admin",
+                "http_port": 7557,
+                "http_username": "admin",
+                "ipaddr": "localhost",
+                "name": "genieacs",
+                "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
+                "password": "bigfoot1",
+                "port": 4503,
+                "type": "genie_acs",
+                "username": "root"
             }
-        ],
-        "notes": "Rpi3 device with docker containers attached to WAN/LAN"
+        ]
     }
 }

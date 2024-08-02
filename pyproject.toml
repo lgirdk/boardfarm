@@ -29,6 +29,7 @@ requires-python = ">=3.9"
 
 dependencies = [
     "beautifulsoup4",
+    "httpx",
     "importlib-metadata",
     "jc",
     "jsonmerge",
