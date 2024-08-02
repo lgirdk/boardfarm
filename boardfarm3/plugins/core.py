@@ -9,7 +9,13 @@ from pluggy import PluginManager
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm3.devices.genie_acs import GenieACS
+from boardfarm3.devices.kea_provisioner import KeaProvisioner
+from boardfarm3.devices.linux_lan import LinuxLAN
 from boardfarm3.devices.linux_tftp import LinuxTFTP
+from boardfarm3.devices.linux_wan import LinuxWAN
+from boardfarm3.devices.linux_wlan import LinuxWLAN
+from boardfarm3.devices.prplos_cpe import PrplDockerCPE
 from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.device_manager import DeviceManager
@@ -124,6 +130,12 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     """
     return {
         "debian_tftp": LinuxTFTP,
+        "linux_lan": LinuxLAN,
+        "linux_wan": LinuxWAN,
+        "linux_wlan": LinuxWLAN,
+        "genie_acs": GenieACS,
+        "prplos_docker": PrplDockerCPE,
+        "kea_dhcp": KeaProvisioner,
     }
 
 
