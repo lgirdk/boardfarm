@@ -184,6 +184,26 @@ def boardfarm_device_configure(
 
 
 @hookspec
+async def boardfarm_device_configure_async(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Configure boardfarm device.
+
+    This hook should be used to configure a device, after having it booted,
+    which is dependent on one or more servers in the environment. E.g. CPE.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
 def boardfarm_attached_device_boot(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
@@ -280,6 +300,27 @@ def contingency_check(env_req: dict[str, Any], device_manager: DeviceManager) ->
 
 @hookspec
 def validate_device_requirements(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Validate device requirements.
+
+    This hook is responsible to validate the requirements of a device before
+    deploying devices to the environment.
+    This allows us to fail the deployment early.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
+
+@hookspec
+async def validate_device_requirements_async(
     config: BoardfarmConfig,
     cmdline_args: Namespace,
     device_manager: DeviceManager,
