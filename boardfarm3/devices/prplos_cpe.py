@@ -281,14 +281,15 @@ class PrplOSSW(CPESwLibraries):
         :rtype: str
         """
         console = self._get_console("default_shell")
-        console.sendline("ubus-cli")
-        console.expect(" > ")
-        console.sendline("Device.ManagementServer.ConnectionRequestUsername?")
-        console.expect(" > ")
-        output = re.findall('"([^"]*)"', console.before).pop()
-        console.sendline("exit")
-        console.expect(r"/[a-zA-Z]* #")
-        return output
+        serial = re.findall(
+            '"([^"]*)"',
+            console.execute_command("grep SERIALNUMBER /etc/environment"),
+        ).pop()
+        oui = re.findall(
+            '"([^"]*)"',
+            console.execute_command("grep MANUFACTUREROUI /etc/environment"),
+        ).pop()
+        return f"{oui}-{serial}"
 
     @property
     def lan_gateway_ipv4(self) -> IPv4Address:
