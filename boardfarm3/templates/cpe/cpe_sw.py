@@ -68,6 +68,12 @@ class CPESW(ABC):
 
     @property
     @abstractmethod
+    def cpe_id(self) -> str:
+        """TR069 CPE ID."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def lan_gateway_ipv4(self) -> IPv4Address:
         """LAN Gateway IPv4 address."""
         raise NotImplementedError

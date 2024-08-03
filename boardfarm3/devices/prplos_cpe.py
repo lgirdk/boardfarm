@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+from functools import cached_property
 from time import sleep
 from typing import TYPE_CHECKING, Any
 
@@ -272,6 +273,23 @@ class PrplOSSW(CPESwLibraries):
         """
         return self._hw.config.get("gui_password", "admin")
 
+    @cached_property
+    def cpe_id(self) -> str:
+        """TR069 CPE ID.
+
+        :return: CPE ID
+        :rtype: str
+        """
+        console = self._get_console("default_shell")
+        console.sendline("ubus-cli")
+        console.expect(" > ")
+        console.sendline("Device.ManagementServer.ConnectionRequestUsername?")
+        console.expect(" > ")
+        output = re.findall('"([^"]*)"', console.before).pop()
+        console.sendline("exit")
+        console.expect(r"/[a-zA-Z]* #")
+        return output
+
     @property
     def lan_gateway_ipv4(self) -> IPv4Address:
         """LAN Gateway IPv4 address.
@@ -447,6 +465,7 @@ class PrplDockerCPE(CPE, BoardfarmDevice):
                 "acs_server.boardfarm.com:7545",
             )
             self.sw.configure_management_server(url=acs_url)
+        _LOGGER.info("TR069 CPE IP: %s", self.sw.cpe_id)
 
     @hookimpl
     def boardfarm_shutdown_device(self) -> None:
