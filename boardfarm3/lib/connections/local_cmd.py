@@ -11,6 +11,7 @@ from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 
 _CONNECTION_ERROR_THRESHOLD = 2
 _CONNECTION_FAILED_STR: str = "Connection failed with Local Command"
+_SHELL_PROMPT_UNAVAILABLE_STR = "Shell prompt is not available"
 
 
 class LocalCmd(BoardfarmPexpect):
@@ -21,7 +22,7 @@ class LocalCmd(BoardfarmPexpect):
         name: str,
         conn_command: str,
         save_console_logs: bool,
-        shell_prompt: list[str],
+        shell_prompt: list[str] | None = None,
         args: list[str] | None = None,
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
@@ -33,7 +34,7 @@ class LocalCmd(BoardfarmPexpect):
         :type conn_command: str
         :param save_console_logs: save console logs to disk
         :type save_console_logs: bool
-        :param shell_prompt: shell prompt pattern
+        :param shell_prompt: shell prompt pattern, defaults to None
         :type shell_prompt: list[str]
         :param args: arguments to the command, defaults to None
         :type args: list[str], optional
@@ -50,6 +51,7 @@ class LocalCmd(BoardfarmPexpect):
 
         :param password: ssh password
         :raises DeviceConnectionError: connection failed via local command
+        :raises ValueError: if shell prompt is unavailable
         """
         if password is not None:
             if self.expect(
@@ -57,6 +59,9 @@ class LocalCmd(BoardfarmPexpect):
             ):
                 raise DeviceConnectionError(_CONNECTION_FAILED_STR)
             self.sendline(password)
+        # TODO: temp fix for now. To be decided if shell prompt to be used.
+        if not self._shell_prompt:
+            raise ValueError(_SHELL_PROMPT_UNAVAILABLE_STR)
         if (
             self.expect(
                 [
@@ -79,6 +84,7 @@ class LocalCmd(BoardfarmPexpect):
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.linesep)
+        # TODO: is this needed? is the shell prompt of Local(Jenkins or any user)?
         self.expect(self._shell_prompt, timeout=timeout)
         return self.get_last_output()
 

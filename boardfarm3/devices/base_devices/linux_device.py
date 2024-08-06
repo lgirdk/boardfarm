@@ -367,6 +367,7 @@ class LinuxDevice(BoardfarmDevice):
             "scp",
             save_console_logs=False,
             args=args,
+            # TODO: why do we need to pass shell prompt?
             shell_prompt=self._shell_prompt,
         )
         session.setwinsize(24, 80)
