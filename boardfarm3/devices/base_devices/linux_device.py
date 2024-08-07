@@ -155,8 +155,8 @@ class LinuxDevice(BoardfarmDevice):
 
     def clear_cache(self) -> None:
         """To clear all the cached properties."""
-        self.__dict__.pop("ip_addr", None)
-        self.__dict__.pop("ip6_addr", None)
+        self.__dict__.pop("ipv4_addr", None)
+        self.__dict__.pop("ipv6_addr", None)
 
     def _connect(self) -> None:
         """Establish connection to the device via SSH."""
