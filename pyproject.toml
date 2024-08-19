@@ -46,6 +46,7 @@
         "mitmproxy==9.0.1",
         "nested_lookup",
         "netaddr",
+        "numpy<2.1.0",
         "ouimeaux",
         "pandas",
         "pexpect ; platform_system != 'Windows'",
