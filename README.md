@@ -94,8 +94,8 @@ options:
 ```
 
 ## Documentation
-For full documentation, including installation, tutorials and architecture overview,
-please see <br>
+For full documentation, including installation, tutorials and architecture overview and how
+to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see <br>
 [Boardfarm Documentation](/boardfarm3/docs/documentation.md)
 
 ## Changelog
