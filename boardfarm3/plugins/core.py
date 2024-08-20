@@ -10,6 +10,7 @@ from pluggy import PluginManager
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.devices.genie_acs import GenieACS
+from boardfarm3.devices.kamailio import SIPcenterKamailio5
 from boardfarm3.devices.kea_provisioner import KeaProvisioner
 from boardfarm3.devices.linux_lan import LinuxLAN
 from boardfarm3.devices.linux_tftp import LinuxTFTP
@@ -136,6 +137,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "genie_acs": GenieACS,
         "prplos_docker": PrplDockerCPE,
         "kea_dhcp": KeaProvisioner,
+        "kamailio": SIPcenterKamailio5,
     }
 
 
