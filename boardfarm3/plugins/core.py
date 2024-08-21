@@ -16,6 +16,7 @@ from boardfarm3.devices.linux_lan import LinuxLAN
 from boardfarm3.devices.linux_tftp import LinuxTFTP
 from boardfarm3.devices.linux_wan import LinuxWAN
 from boardfarm3.devices.linux_wlan import LinuxWLAN
+from boardfarm3.devices.pjsip_phone import PJSIPPhone
 from boardfarm3.devices.prplos_cpe import PrplDockerCPE
 from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
@@ -138,6 +139,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "prplos_docker": PrplDockerCPE,
         "kea_dhcp": KeaProvisioner,
         "kamailio": SIPcenterKamailio5,
+        "pjsip_phone": PJSIPPhone,
     }
 
 

@@ -16,7 +16,7 @@
                 "http_proxy": "localhost:8001",
                 "ipaddr": "localhost",
                 "name": "wan",
-                "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.100/24, wan-static-ipv6:2001:dead:beef:2::100/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.2/24, wan-static-ipv6:2001:dead:beef:2::2/64, static-route:0.0.0.0/0-172.25.1.1, dante",
                 "port": 4001,
                 "type": "linux_wan"
             },
@@ -29,6 +29,41 @@
                 "options": "mgmt_dns: 8.8.8.8, dante",
                 "port": 4002,
                 "type": "linux_lan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "lan_phone",
+                "number": "1000",
+                "options": "lan-ip-dhcp",
+                "port": 4006,
+                "type": "pjsip_phone"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "sipcenter",
+                "numbers": [
+                    "1000",
+                    "2000"
+                ],
+                "options": "wan-static-ip:172.25.1.5, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::5, static-route:0.0.0.0/0-172.25.1.1",
+                "password": "bigfoot1",
+                "port": 4005,
+                "type": "kamailio",
+                "username": "root"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "wan_phone",
+                "number": "2000",
+                "options": "wan-static-ip:172.25.1.3/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::3/64, static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4007,
+                "type": "pjsip_phone"
             },
             {
                 "acs_url": "http://172.25.1.40:7547",
