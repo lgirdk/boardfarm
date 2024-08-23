@@ -100,7 +100,12 @@ class HTTPResult:
         # Todo: Wget parsing has to be added
 
         def parse_response(response: str = response):
-            if "Connection refused" in response or "Connection timed out" in response:
+            failed_str = [
+                "Connection refused",
+                "Connection timed out",
+                "Failed to connect to",
+            ]
+            if any(resp in response for resp in failed_str):
                 raise UseCaseFailure(
                     f"Curl Failure due to the following reason {response}"
                 )
