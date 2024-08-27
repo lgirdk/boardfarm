@@ -1237,6 +1237,16 @@ class LinuxDevice(BoardfarmDevice):
             err_msg = f"Running IP: {ip=} is different than expected: {ip_address=}"
             raise CodeError(err_msg)
 
+    def del_default_route(self, interface: str | None = None) -> None:
+        """Remove the default gateway.
+
+        :param interface: interface name, default to None
+        :type interface: str | None
+        """
+        # TODO: use sudo shell if needed BOARDFARM-5105
+        interface = f"dev {interface}" if interface else ""
+        self._console.execute_command(f"ip route del default {interface}")
+
     def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
         """Set given ip address as default gateway address for given interface.
 

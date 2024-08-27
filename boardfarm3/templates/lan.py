@@ -485,6 +485,15 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def del_default_route(self, interface: str | None = None) -> None:
+        """Remove the default gateway.
+
+        :param interface: interface name, default to None
+        :type interface: str | None
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def set_default_gw(self, ip_address: IPv4Address, interface: str) -> None:
         """Set given IP address as default gateway address for given interface.
 
