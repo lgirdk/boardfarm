@@ -1290,6 +1290,9 @@ class LinuxDevice(BoardfarmDevice):
         :raises BoardfarmException: when unable to stop process
         """
         self._console.execute_command(f"kill -9 {process_id}")
+        # sometimes the otuput from kill command goes to next line
+        # after we perform pgrep, so a sync is required
+        self._console.execute_command("sync")
         if self._console.execute_command("pgrep nping").splitlines():
             msg = "Unable to stop nping process"
             raise BoardfarmException(msg)
