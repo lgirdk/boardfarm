@@ -1262,17 +1262,23 @@ class LinuxDevice(BoardfarmDevice):
             raise CodeError(err_msg)
         __LOGGER.debug("The route is configured successfully .")
 
-    def start_nping(self, interface_ip: str) -> str:
+    def start_nping(self, interface_ip: str, ipv6_flag: bool, extra_args: str) -> str:
         """Perform nping.
 
         :param interface_ip: interface ip addr
         :type interface_ip: str
+        :param ipv6_flag: flag if ipv6 addr to be used
+        :type ipv6_flag: bool
+        :param extra_args: any extra arguments
+        :type extra_args: str
         :return: process id
         :rtype: str
         :raises ValueError: if unable to start nping.
         """
+        ipv6_option = "-6" if ipv6_flag else ""
         output = self._console.execute_command(
-            f"nping -udp -c2 -p 0-65535 {interface_ip} --rate 200 -g 80  &"
+            f"nping -udp -c2 -p 0-65535 {ipv6_option} {interface_ip}"
+            f" --rate 200 -g 80 {extra_args} &"
         )
         if output:
             pid = re.search(r"(\[\d+\]\s(\d+))", output)[2]

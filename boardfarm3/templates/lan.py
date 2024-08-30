@@ -744,11 +744,15 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def start_nping(self, interface_ip: str) -> str:
+    def start_nping(self, interface_ip: str, ipv6_flag: bool, extra_args: str) -> str:
         """Perform nping.
 
         :param interface_ip: interface ip addr
         :type interface_ip: str
+        :param ipv6_flag: flag if ipv6 addr to be used
+        :type ipv6_flag: bool
+        :param extra_args: any extra arguments
+        :type extra_args: str
         :return: process id
         :rtype: str
         :raises ValueError: if unable to start nping.
