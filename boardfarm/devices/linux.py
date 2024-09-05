@@ -1078,6 +1078,8 @@ EOFEOFEOFEOF"""
         cmd = f"iperf3{f' -{ipv}' if ipv else ''} -s -p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''} > {log_file_path} 2>&1 &"
         self.check_output(cmd)
         output = self.check_output("sleep 2; ps auxwwww|grep iperf3|grep -v grep")
+        # to get rid of escape chars and any buffer data
+        output = re.sub(r"(\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])\r)", "", output)
         if "iperf3" in output and "Exit 1" not in output:
             out = re.search(f".* -p {traffic_port}.*", output).group()
             return int(out.split()[1]), log_file_path
