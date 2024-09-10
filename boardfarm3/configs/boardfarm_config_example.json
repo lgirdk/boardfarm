@@ -52,7 +52,7 @@
                 "options": "wan-static-ip:172.25.1.5, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::5, static-route:0.0.0.0/0-172.25.1.1",
                 "password": "bigfoot1",
                 "port": 4005,
-                "type": "kamailio",
+                "type": "sipcenter_kamailio",
                 "username": "root"
             },
             {

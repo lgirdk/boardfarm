@@ -138,7 +138,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "genie_acs": GenieACS,
         "prplos_docker": PrplDockerCPE,
         "kea_dhcp": KeaProvisioner,
-        "kamailio": SIPcenterKamailio5,
+        "sipcenter_kamailio": SIPcenterKamailio5,
         "pjsip_phone": PJSIPPhone,
     }
 
