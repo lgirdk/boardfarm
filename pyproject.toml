@@ -53,6 +53,7 @@
         "pexpect >=999; platform_system == 'Windows'", # Win does not support spawn()
         "pluggy>=1.0.0",
         "psutil",
+        "pyasn1==0.6.0",
         "pycountry",
         "pycryptodome",
         "pymongo",
