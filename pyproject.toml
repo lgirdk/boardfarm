@@ -41,6 +41,7 @@ dependencies = [
     "pysmi",
     "pytest",
     "PyYAML",
+    "pyasn1==0.6.0",
     "requests",
     "rich",
     "xmltodict",
