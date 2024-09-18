@@ -140,6 +140,24 @@ class NetworkUtility:
             action=action,
         )
 
+    def tftp(self, tftp_server_ip: str, source_file: str, timeout: int = 60) -> None:
+        """Transfer file via tftp.
+
+        :param tftp_server_ip : tftp server ip
+        :type tftp_server_ip : str
+        :param source_file : source file name on device
+        :type source_file : str
+        :param timeout : timeout for the tftp
+        :type timeout : int
+        :raises FileNotFoundError: Unable to find the source file
+        """
+        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip}"
+        output = self._console.execute_command(tftp_cmd, timeout=timeout)
+
+        if "can't open" in output or "No such file or directory" in output:
+            msg = f"Unable to perform tftp {output}"
+            raise FileNotFoundError(msg)
+
     def traceroute_host(
         self, host_ip: str, version: str = "", options: str = ""
     ) -> str:
