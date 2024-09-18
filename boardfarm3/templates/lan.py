@@ -744,7 +744,16 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def start_nping(self, interface_ip: str, ipv6_flag: bool, extra_args: str) -> str:
+    def start_nping(  # pylint: disable=too-many-arguments # noqa: PLR0913
+        self,
+        interface_ip: str,
+        ipv6_flag: bool,
+        extra_args: str,
+        port_range: str,
+        hit_count: str,
+        rate: str,
+        mode: str,
+    ) -> str:
         """Perform nping.
 
         :param interface_ip: interface ip addr
@@ -753,6 +762,14 @@ class LAN(ABC):
         :type ipv6_flag: bool
         :param extra_args: any extra arguments
         :type extra_args: str
+        :param port_range: target port range
+        :type port_range: str
+        :param hit_count: the number of times to target each host
+        :type hit_count: str
+        :param rate: num of packets per second to send
+        :type rate: str
+        :param mode: probe mode. tcp/udp/icmp etc protocol
+        :type mode: str
         :return: process id
         :rtype: str
         :raises ValueError: if unable to start nping.

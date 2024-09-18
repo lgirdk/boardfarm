@@ -11,6 +11,7 @@ from contextlib import contextmanager, suppress
 from functools import cached_property
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
 from pathlib import Path
+from time import sleep
 from typing import TYPE_CHECKING, Any
 
 import jc.parsers.ping
@@ -1262,7 +1263,16 @@ class LinuxDevice(BoardfarmDevice):
             raise CodeError(err_msg)
         __LOGGER.debug("The route is configured successfully .")
 
-    def start_nping(self, interface_ip: str, ipv6_flag: bool, extra_args: str) -> str:
+    def start_nping(  # pylint: disable=too-many-arguments # noqa: PLR0913
+        self,
+        interface_ip: str,
+        ipv6_flag: bool,
+        extra_args: str,
+        port_range: str,
+        hit_count: str,
+        rate: str,
+        mode: str,
+    ) -> str:
         """Perform nping.
 
         :param interface_ip: interface ip addr
@@ -1271,14 +1281,22 @@ class LinuxDevice(BoardfarmDevice):
         :type ipv6_flag: bool
         :param extra_args: any extra arguments
         :type extra_args: str
+        :param port_range: target port range
+        :type port_range: str
+        :param hit_count: the number of times to target each host
+        :type hit_count: str
+        :param rate: num of packets per second to send
+        :type rate: str
+        :param mode: probe mode. tcp/udp/icmp etc protocol
+        :type mode: str
         :return: process id
         :rtype: str
         :raises ValueError: if unable to start nping.
         """
         ipv6_option = "-6" if ipv6_flag else ""
         output = self._console.execute_command(
-            f"nping -udp -c2 -p 0-65535 {ipv6_option} {interface_ip}"
-            f" --rate 200 -g 80 {extra_args} &"
+            f"nping -{mode} -c {hit_count} -p {port_range} {ipv6_option} {interface_ip}"
+            f" --rate {rate} -g 80 {extra_args} &"
         )
         if output:
             pid = re.search(r"(\[\d+\]\s(\d+))", output)[2]
@@ -1295,10 +1313,18 @@ class LinuxDevice(BoardfarmDevice):
         :type process_id: str
         :raises BoardfarmException: when unable to stop process
         """
-        self._console.execute_command(f"kill -9 {process_id}")
-        # sometimes the otuput from kill command goes to next line
-        # after we perform pgrep, so a sync is required
-        self._console.execute_command("sync")
+        for _ in range(3600):
+            if self._console.execute_command(f"ps --pid {process_id} -o stat=") != "":
+                sleep(10)
+                continue
+            break
+        else:
+            __LOGGER.debug(
+                "The nping process didn't complete in given time,"
+                " killing it to avoid having it in hung state"
+            )
+            self._console.execute_command(f"kill -9 {process_id}")
+            self._console.execute_command("sync")
         if self._console.execute_command("pgrep nping").splitlines():
             msg = "Unable to stop nping process"
             raise BoardfarmException(msg)
