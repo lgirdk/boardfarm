@@ -138,10 +138,13 @@ class WAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def execute_snmp_command(self, snmp_command: str) -> str:
+    def execute_snmp_command(self, snmp_command: str, timeout: int = 30) -> str:
         """Execute SNMP command.
 
         :param snmp_command: snmp command
+        :type snmp_command: str
+        :param timeout: pexpect timeout for the command in seconds, defaults to 30
+        :type timeout: int
         :returns: given snmp command output
         """
         raise NotImplementedError
@@ -303,6 +306,7 @@ class WAN(ABC):
         max_retries: int | None = None,
         min_rate: int | None = None,
         opts: str | None = None,
+        timeout: int = 30,
     ) -> dict:
         """Perform nmap operation on linux device.
 
@@ -321,6 +325,8 @@ class WAN(ABC):
         :type min_rate: Optional[int], optional
         :param opts: other options for a nmap command, defaults to None
         :type opts: str, optional
+        :param timeout: pexpect timeout for the command in seconds, defaults to 30
+        :type timeout: int
         :raises BoardfarmException: Raises exception if ip type is invalid
         :return: response of nmap command in xml/dict format
         :rtype: dict

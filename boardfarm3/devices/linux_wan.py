@@ -355,11 +355,13 @@ class LinuxWAN(LinuxDevice, WAN):  # pylint: disable=R0902
         )
         return filename
 
-    def execute_snmp_command(self, snmp_command: str) -> str:
+    def execute_snmp_command(self, snmp_command: str, timeout: int = 30) -> str:
         """Execute snmp command.
 
         :param snmp_command: snmp command
         :type snmp_command: str
+        :param timeout: pexpect timeout for the command in seconds, defaults to 30
+        :type timeout: int
         :returns: snmp command output
         :rtype: str
         :raises ValueError: when snmp command is invalid
@@ -369,7 +371,7 @@ class LinuxWAN(LinuxDevice, WAN):  # pylint: disable=R0902
         if not snmp_command.startswith("snmp"):
             msg = f"{snmp_command!r} is not a SNMP command"
             raise ValueError(msg)
-        return self._console.execute_command(snmp_command)
+        return self._console.execute_command(snmp_command, timeout=timeout)
 
     def is_connect_to_board_via_reverse_ssh_successful(
         self,

@@ -932,6 +932,7 @@ class LinuxDevice(BoardfarmDevice):
         max_retries: int | None = None,
         min_rate: int | None = None,
         opts: str | None = None,
+        timeout: int = 30,
     ) -> dict:
         """Perform nmap operation on linux device.
 
@@ -950,6 +951,8 @@ class LinuxDevice(BoardfarmDevice):
         :type min_rate: Optional[int], optional
         :param opts: other options for a nmap command, defaults to None
         :type opts: Optional[str], optional
+        :param timeout: pexpect timeout for the command in seconds, defaults to 30
+        :type timeout: int
         :raises BoardfarmException: Raises exception if ip type is invalid
         :return: response of nmap command in xml/dict format
         :rtype: dict
@@ -964,7 +967,7 @@ class LinuxDevice(BoardfarmDevice):
             f"nmap {protocol or ''} {port} -Pn -r {opts or ''}"
             f" {ipaddr} {retries} {rate} -oX -"
         )
-        return xmltodict.parse(self._console.execute_command(cmd))
+        return xmltodict.parse(self._console.execute_command(cmd, timeout))
 
     def start_danteproxy(self) -> None:
         """Start the dante server for socks5 proxy connections.

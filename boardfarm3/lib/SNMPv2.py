@@ -49,7 +49,7 @@ class SNMPv2:
             err_msg = f"MIB not available, Error: {exception}"
             raise SNMPError(err_msg) from exception
 
-    def snmpget(  # noqa: PLR0913
+    def snmpget(  # noqa: PLR0913 # pylint: disable=too-many-arguments
         self,
         mib_name: str,
         index: int = 0,
@@ -57,6 +57,7 @@ class SNMPv2:
         extra_args: str = "",
         timeout: int = 10,
         retries: int = 3,
+        cmd_timeout: int = 30,
     ) -> tuple[str, str, str]:
         """Perform an snmpget with given arguments.
 
@@ -73,6 +74,8 @@ class SNMPv2:
         :type timeout: int
         :param retries: the no. of time the commands are executed on exception/timeout
         :type retries: int
+        :param cmd_timeout: timeout to wait for command to give otuput
+        :type cmd_timeout: int
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
@@ -84,6 +87,7 @@ class SNMPv2:
             timeout,
             retries,
             extra_args=extra_args,
+            cmd_timeout=cmd_timeout,
         )
         return self._parse_snmp_output(oid, output)
 
@@ -97,6 +101,7 @@ class SNMPv2:
         extra_args: str = "",
         timeout: int = 10,
         retries: int = 3,
+        cmd_timeout: int = 30,
     ) -> tuple[str, str, str]:
         """Perform an snmpset with given arguments.
 
@@ -121,6 +126,8 @@ class SNMPv2:
         :type timeout: int
         :param retries: the no. of time the commands are executed on exception/timeout
         :type retries: int
+        :param cmd_timeout: timeout to wait for command to give otuput
+        :type cmd_timeout: int
         :return: value, value type and complete output
         :rtype: Tuple[str, str, str]
         """
@@ -139,6 +146,7 @@ class SNMPv2:
             retries,
             set_value=set_value,
             extra_args=extra_args,
+            cmd_timeout=cmd_timeout,
         )
         return self._parse_snmp_output(oid, output, value)
 
@@ -151,6 +159,7 @@ class SNMPv2:
         retries: int,
         set_value: str = "",
         extra_args: str = "",
+        cmd_timeout: int = 30,
     ) -> str:
         cmd = self._create_snmp_cmd(
             action,
@@ -161,7 +170,7 @@ class SNMPv2:
             set_value,
             extra_args,
         )
-        return self._device.execute_snmp_command(cmd)
+        return self._device.execute_snmp_command(cmd, timeout=cmd_timeout)
 
     def _create_snmp_cmd(  # pylint: disable=too-many-arguments  # noqa: PLR0913
         self,
@@ -231,7 +240,7 @@ class SNMPv2:
             walk_key_value_dict[m[0]] = [m[2].replace('"', ""), m[1]]
         return walk_key_value_dict, output
 
-    def snmpwalk(  # noqa: PLR0913
+    def snmpwalk(  # noqa: PLR0913 # pylint: disable=too-many-arguments
         self,
         mib_name: str,
         index: int | None = None,
@@ -239,6 +248,7 @@ class SNMPv2:
         retries: int = 3,
         timeout: int = 100,
         extra_args: str = "",
+        cmd_timeout: int = 30,
     ) -> tuple[dict[str, list[str]], str]:
         """Perform an snmpwalk with given arguments.
 
@@ -255,6 +265,8 @@ class SNMPv2:
         :type timeout: int
         :param extra_args: Any extra arguments to be passed in the command
         :type extra_args: str
+        :param cmd_timeout: timeout to wait for command to give otuput
+        :type cmd_timeout: int
         :return: dictionary of mib_oid as key and list(value, type) as value
                             and complete output
         :rtype: Tuple[Dict[str, List[str]], str]
@@ -277,6 +289,7 @@ class SNMPv2:
             timeout,
             retries,
             extra_args=extra_args,
+            cmd_timeout=cmd_timeout,
         )
         return self._parse_snmpwalk_output(oid, output)
 
@@ -290,6 +303,7 @@ class SNMPv2:
         retries: int = 3,
         timeout: int = 100,
         extra_args: str = "",
+        cmd_timeout: int = 30,
     ) -> list[tuple[str, str, str]]:
         """Perform SNMP bulkget on the device with given arguments.
 
@@ -309,6 +323,8 @@ class SNMPv2:
         :type timeout: int
         :param extra_args: extra arguments to be passed in the command, defaults to ""
         :type extra_args: str
+        :param cmd_timeout: timeout to wait for command to give otuput
+        :type cmd_timeout: int
         :raises SNMPError: when MIB is not available
         :return: output of snmpbulkget command
         :rtype: list[tuple[str, str, str]]
@@ -330,7 +346,9 @@ class SNMPv2:
             else f"snmpbulkget -v2c -Cn{non_repeaters} -Cr{max_repetitions}"
             f" -c {community} -t {timeout} -r {retries} {self._target_ip} {oid}"
         )
-        return self._parse_snmpbulk_output(self._device.execute_snmp_command(cmd))
+        return self._parse_snmpbulk_output(
+            self._device.execute_snmp_command(cmd, timeout=cmd_timeout)
+        )
 
     def _parse_snmpbulk_output(self, output: str) -> list[tuple[str, str, str]]:
         """Return the tuple with snmp output, data type and the value.
