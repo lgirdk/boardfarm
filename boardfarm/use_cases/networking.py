@@ -2,6 +2,7 @@
 
 import ipaddress
 import logging
+import os
 import re
 import time
 from contextlib import contextmanager
@@ -359,6 +360,52 @@ def perform_scp_action_on_board(
         dst,
         action=action,
     )
+
+
+def perform_tftp_transfer_on_board(
+    path_on_board: str,
+    path_on_tftpserver: str,
+    tftp_server_name: str,
+    ipv6: bool = False,
+    timeout: int = 60,
+) -> None:
+    """Transfer file onto tftp server.
+
+    .. hint:: This Use Case helps to copy files from board to tftp servre
+
+        - can be used after a tcpdump on board
+
+    :param path_on_board: Path on the board
+    :type path_on_board: str
+    :param path_on_tftpserver: Path on the tftp server
+    :type path_on_tftpserver: str
+    :param tftp_server_name: name of the tftp server
+    :type tftp_server_name: str
+    :param ipv6: if scp should be done via ipv4 or ipv6, defaults to ipv4
+    :type ipv6: bool
+    :param timeout: timeout for the usecase
+    :type timeout: int
+    """
+    board = get_device_by_name("board")
+    host = get_device_by_name(tftp_server_name)
+    ip = (
+        host.get_interface_ipaddr(host.iface_dut)
+        if not ipv6
+        else f"[{host.get_interface_ip6addr(host.iface_dut)}]"
+    )
+    board.nw_utility.tftp(ip, path_on_board, timeout=timeout)
+    # move file to given tftp location and perform check of transfer
+    _, filename = os.path.split(path_on_board)
+    file_location_on_server = f"/srv/tftp/tmp/{filename}"
+    mv_command = f"mv {file_location_on_server} {path_on_tftpserver}"
+    host.sendline(mv_command)
+    host.expect_exact(mv_command)
+    host.expect(host.linesep)
+    host.expect(host.prompt, timeout=timeout)
+    output = host.before.strip()
+    if "No such file or directory" in output:
+        msg = f"file not found {output}"
+        raise UseCaseFailure(msg)
 
 
 def get_traceroute_from_board(host_ip, version="", options="") -> str:

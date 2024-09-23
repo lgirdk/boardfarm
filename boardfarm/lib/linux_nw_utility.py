@@ -110,6 +110,25 @@ class DeviceNwUtility(NwUtilityStub):
             action=action,
         )
 
+    def tftp(self, tftp_server_ip: str, source_file: str, timeout: int = 60):
+        """Allows you to put the required file onto the tftp server
+
+        :param tftp_server_ip : tftp server ip
+        :type tftp_server_ip : string
+        :param source_file : source file name on device
+        :type source_file : string
+        """
+        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip}"
+        self.dev.sendline(tftp_cmd)
+        self.dev.expect_exact(tftp_cmd)
+        self.dev.expect(self.dev.linesep)
+        self.dev.expect(self.dev.prompt, timeout=timeout)
+        output = self.dev.before.strip()
+
+        if "can't open" in output or "No such file or directory" in output:
+            msg = f"Unable to perform tftp {output}"
+            raise FileNotFoundError(msg)
+
     def traceroute_host(
         self, host_ip: str, version: str = "", options: str = ""
     ) -> str:
