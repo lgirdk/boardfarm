@@ -332,3 +332,21 @@ class SIPServer(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_file(self, filename: str) -> None:
+        """Delete the file from the device.
+
+        :param filename: name of the file with absolute path
+        :type filename: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def scp_device_file_to_local(self, local_path: str, source_path: str) -> None:
+        """Copy a local file from a server using SCP.
+
+        :param local_path: local file path
+        :param source_path: source path
+        """
+        raise NotImplementedError
