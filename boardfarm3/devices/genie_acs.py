@@ -137,6 +137,14 @@ class GenieACS(LinuxDevice, ACS):
             msg = "ACS service check Failed."
             raise ContingencyCheckError(msg)
 
+    @property
+    def url(self) -> str:
+        """Returns acs url used.
+
+        :raises NotImplementedError: missing implementation
+        """
+        raise NotImplementedError
+
     def GPA(self, param: str, cpe_id: str | None = None) -> list[dict]:
         """Execute GetParameterAttributes RPC call for the specified parameter.
 

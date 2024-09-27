@@ -33,6 +33,16 @@ class ACS(ABC):
         """
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def url(self) -> str:
+        """Returns the acs url used.
+
+        :return: acs url component instance
+        :rtype: str
+        """
+        raise NotImplementedError
+
     @abstractmethod
     def GPA(self, param: str, cpe_id: str | None = None) -> list[dict]:
         """Execute GetParameterAttributes RPC call for the specified parameter.
