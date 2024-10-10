@@ -7,7 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -542,5 +542,37 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
 
         :return: IPv6 address in string format.
         :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def ping(  # noqa: PLR0913
+        self,
+        ping_ip: str,
+        ping_count: int = 4,
+        ping_interface: str | None = None,
+        options: str = "",
+        timeout: int = 50,
+        json_output: bool = False,
+    ) -> bool | dict[str, Any]:
+        """Ping remote host.
+
+        Return True if ping has 0% loss
+        or parsed output in JSON if json_output=True flag is provided.
+
+        :param ping_ip: ping IP
+        :type ping_ip: str
+        :param ping_count: number of ping, defaults to 4
+        :type ping_count: int
+        :param ping_interface: ping via interface, defaults to None
+        :type ping_interface: str
+        :param options: extra ping options, defaults to ""
+        :type options: str
+        :param timeout: timeout, defaults to 50
+        :type timeout: int
+        :param json_output: return ping output in dictionary format, defaults to False
+        :type json_output: bool
+        :return: ping output
+        :rtype: bool | dict[str, Any]
         """
         raise NotImplementedError

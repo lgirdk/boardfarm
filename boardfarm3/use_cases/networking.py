@@ -14,12 +14,13 @@ if TYPE_CHECKING:
     from boardfarm3.lib.networking import HTTPResult
     from boardfarm3.templates.lan import LAN
     from boardfarm3.templates.wan import WAN
+    from boardfarm3.templates.wlan import WLAN
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def ping(  # noqa: PLR0913
-    device: LAN,
+    device: LAN | WLAN | WAN,
     ping_ip: str,
     ping_count: int = 4,
     ping_interface: str | None = None,
