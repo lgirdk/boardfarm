@@ -1,3 +1,12 @@
+## 2024.41.0 (2024-10-10)
+
+### Fix
+
+- **networking.py:linux_nw_utility.py**: add send file via tftp
+- **networking.py**: updated condition
+- **linux.py**: remove buffer data
+- **env_helper.py**: add 2.44 version
+
 ## 2024.39.0 (2024-09-26)
 
 ## 2024.37.0 (2024-09-12)
