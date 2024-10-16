@@ -186,8 +186,7 @@ def post_boot_board(config, env_helper, devices):
 
 
 def post_boot_wan_clients(config, env_helper, devices):
-    if env_helper.get_prov_mode() == "ipv6":
-        devices.aftr.configure_aftr(devices.wan, devices.board)
+    pass
 
 
 def post_boot_lan_clients(config, env_helper, devices):
