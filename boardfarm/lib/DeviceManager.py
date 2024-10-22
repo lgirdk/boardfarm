@@ -80,6 +80,7 @@ class device_type(Enum):
     samknows = 38
     dns1 = 39
     dns2 = 40
+    aftr = 41
 
 
 class device_array_type(Enum):
