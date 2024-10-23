@@ -1,3 +1,9 @@
+## 2024.43.0 (2024-10-23)
+
+### Feat
+
+- **boardfarm/**: aftr device class impl
+
 ## 2024.41.0 (2024-10-10)
 
 ### Fix
