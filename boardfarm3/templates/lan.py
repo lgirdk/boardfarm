@@ -797,3 +797,30 @@ class LAN(ABC):
         :raises BoardfarmException: when unable to stop process
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def perform_flood_operation(  # noqa: PLR0913
+        self,
+        protocol: str,
+        target: str,
+        packet_count: str,
+        extra_args: str | None = None,
+        pkt_interval: str = "",
+    ) -> str:
+        """Validate SYN, UDP and ICMP flood operation.
+
+        :param protocol: mode, for ex 'S': syn-flood '1': ping-flood (icmp) '2': udp
+        :type protocol: str
+        :param target: target IP addr
+        :type target: str
+        :param packet_count: number of packets to be transmitted.
+        :type packet_count: str
+        :param extra_args: extra arguments to be passed, defaults to None
+        :type extra_args: str
+        :param pkt_interval: wait for X microseconds before sending next packet uX,
+            defaults to "", uX for X microseconds, for example -i u1000
+        :type pkt_interval: str
+        :return: command output
+        :rtype: str
+        """
+        raise NotImplementedError
