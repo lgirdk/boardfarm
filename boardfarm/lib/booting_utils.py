@@ -13,7 +13,6 @@ def check_and_connect_to_wifi(devices, wifi_client_data: dict) -> None:
     :param devices: device manager
     :param wifi_client_data: wifi client config dict from envvironment definition
     """
-
     wifi = devices.board.wifi
     # Get desired wlan details from env definition
     band = wifi_client_data.get("band")
@@ -64,6 +63,39 @@ def check_and_connect_to_wifi(devices, wifi_client_data: dict) -> None:
             f"Unable to get {band} GHz {network} network connection details. Skipping"
         )
         return
+
+    # TODO: Some of our Wi-Fi cards don't work with DFS channels due to country
+    # limitations, so this hack is done to manually select channel by disabling
+    # channel optimization so that respective SSIDs can be scanned
+    if band == "5":
+        adminStatus = devices.board.dmcli.GPV(
+            "Device.X_LGI-COM_SON.SONAdminStatus"
+        ).rval
+        if adminStatus == "true":
+            devices.board.dmcli.SPV(
+                "Device.X_LGI-COM_SON.SONAdminStatus", "false", "bool"
+            )
+        devices.board.dmcli.SPV(
+            "Device.WiFi.Radio.2.AutoChannelEnable", "false", "bool"
+        )
+        devices.board.dmcli.SPV(
+            "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", "bool"
+        )
+        time.sleep(5)
+        devices.board.dmcli.SPV("Device.WiFi.Radio.2.Channel ", "36", "uint")
+        devices.board.dmcli.SPV(
+            "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", "bool"
+        )
+
+    # check if guest interface is enabled , if not enable it
+    if network == "guest":
+        value = devices.board.dmcli.GPV("Device.WiFi.SSID.8.Enable").rval
+        if value == "false":
+            devices.board.dmcli.SPV("Device.WiFi.SSID.8.Enable", "true", "bool")
+            time.sleep(5)
+            devices.board.dmcli.SPV(
+                "Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting", "true", "bool"
+            )
 
     # Connect appropriate client to the network
     if wifi_client_data.get("connect_wifi"):
