@@ -127,12 +127,15 @@ def boardfarm_post_setup_env(
 
 @hookspec
 def boardfarm_release_devices(
+    config: BoardfarmConfig,
     cmdline_args: Namespace,
     plugin_manager: PluginManager,
     deployment_status: dict[str, Any],
 ) -> None:
     """Release reserved devices after use.
 
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance

@@ -62,7 +62,7 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     argparser.add_argument(
         "--board-name",
         type=_non_empty_str,
-        required=True,
+        required=False,
         help="Board name",
     )
     argparser.add_argument(
@@ -74,7 +74,7 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     argparser.add_argument(
         "--inventory-config",
         type=_non_empty_str,
-        required=True,
+        required=False,
         help="Inventory JSON config file path",
     )
     argparser.add_argument(

@@ -83,6 +83,7 @@ def main() -> None:
         raise
     finally:
         plugin_manager.hook.boardfarm_release_devices(
+            config=config,
             cmdline_args=cmdline_args,
             plugin_manager=plugin_manager,
             deployment_status=deployment_status,
