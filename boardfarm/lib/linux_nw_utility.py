@@ -110,15 +110,22 @@ class DeviceNwUtility(NwUtilityStub):
             action=action,
         )
 
-    def tftp(self, tftp_server_ip: str, source_file: str, timeout: int = 60):
+    def tftp(
+        self, tftp_server_ip: str, source_file: str, dest_file: str, timeout: int = 60
+    ):
         """Allows you to put the required file onto the tftp server
 
         :param tftp_server_ip : tftp server ip
         :type tftp_server_ip : string
         :param source_file : source file name on device
         :type source_file : string
+        :param dest_file : dest_file file name on device
+        :type dest_file : str
+        :param timeout : timeout for the tftp
+        :type timeout : int
+        :raises FileNotFoundError: Unable to find the source file
         """
-        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip}"
+        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip} -r {dest_file}"
         self.dev.sendline(tftp_cmd)
         self.dev.expect_exact(tftp_cmd)
         self.dev.expect(self.dev.linesep)

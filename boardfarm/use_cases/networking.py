@@ -386,23 +386,29 @@ def perform_tftp_transfer_on_board(
     :param timeout: timeout for the usecase
     :type timeout: int
     """
+
+    def execute_cmd(host, cmd):
+        host.sendline(cmd)
+        host.expect_exact(cmd)
+        host.expect(host.linesep)
+        host.expect(host.prompt, timeout=timeout)
+        return host.before.strip()
+
     board = get_device_by_name("board")
     host = get_device_by_name(tftp_server_name)
+    serv_tftp_folder = "/tftpboot"
     ip = (
         host.get_interface_ipaddr(host.iface_dut)
         if not ipv6
         else f"[{host.get_interface_ip6addr(host.iface_dut)}]"
     )
-    board.nw_utility.tftp(ip, path_on_board, timeout=timeout)
-    # move file to given tftp location and perform check of transfer
     _, filename = os.path.split(path_on_board)
-    file_location_on_server = f"/srv/tftp/tmp/{filename}"
+    file_location_on_server = f"{serv_tftp_folder}/{filename}"
+    execute_cmd(host, f"chmod 777 {serv_tftp_folder}")
+    board.nw_utility.tftp(ip, path_on_board, filename, timeout=timeout)
+    # move file to given tftp location and perform check of transfer
     mv_command = f"mv {file_location_on_server} {path_on_tftpserver}"
-    host.sendline(mv_command)
-    host.expect_exact(mv_command)
-    host.expect(host.linesep)
-    host.expect(host.prompt, timeout=timeout)
-    output = host.before.strip()
+    output = execute_cmd(host, mv_command)
     if "No such file or directory" in output:
         msg = f"file not found {output}"
         raise UseCaseFailure(msg)
