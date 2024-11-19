@@ -140,18 +140,22 @@ class NetworkUtility:
             action=action,
         )
 
-    def tftp(self, tftp_server_ip: str, source_file: str, timeout: int = 60) -> None:
+    def tftp(
+        self, tftp_server_ip: str, source_file: str, dest_file: str, timeout: int = 60
+    ) -> None:
         """Transfer file via tftp.
 
         :param tftp_server_ip : tftp server ip
         :type tftp_server_ip : str
         :param source_file : source file name on device
         :type source_file : str
+        :param dest_file : dest_file file name on device
+        :type dest_file : str
         :param timeout : timeout for the tftp
         :type timeout : int
         :raises FileNotFoundError: Unable to find the source file
         """
-        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip}"
+        tftp_cmd = f"tftp -pl {source_file} {tftp_server_ip} -r {dest_file}"
         output = self._console.execute_command(tftp_cmd, timeout=timeout)
 
         if "can't open" in output or "No such file or directory" in output:
