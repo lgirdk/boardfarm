@@ -132,14 +132,14 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     """
     return {
         "debian_tftp": LinuxTFTP,
-        "linux_lan": LinuxLAN,
-        "linux_wan": LinuxWAN,
-        "linux_wlan": LinuxWLAN,
-        "genie_acs": GenieACS,
-        "prplos_docker": PrplDockerCPE,
-        "kea_dhcp": KeaProvisioner,
-        "sipcenter_kamailio": SIPcenterKamailio5,
-        "pjsip_phone": PJSIPPhone,
+        "bf_lan": LinuxLAN,
+        "bf_wan": LinuxWAN,
+        "bf_wlan": LinuxWLAN,
+        "bf_acs": GenieACS,
+        "bf_cpe": PrplDockerCPE,
+        "bf_dhcp": KeaProvisioner,
+        "bf_kamailio": SIPcenterKamailio5,
+        "bf_phone": PJSIPPhone,
     }
 
 

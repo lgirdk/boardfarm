@@ -8,7 +8,7 @@
                 "connection_type": "local_cmd",
                 "gui_password": "admin",
                 "name": "board",
-                "type": "prplos_docker"
+                "type": "bf_cpe"
             },
             {
                 "color": "cyan",
@@ -18,7 +18,7 @@
                 "name": "wan",
                 "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.2/24, wan-static-ipv6:2001:dead:beef:2::2/64, static-route:0.0.0.0/0-172.25.1.1, dante",
                 "port": 4001,
-                "type": "linux_wan"
+                "type": "bf_wan"
             },
             {
                 "color": "blue",
@@ -28,7 +28,7 @@
                 "name": "lan",
                 "options": "mgmt_dns: 8.8.8.8, dante",
                 "port": 4002,
-                "type": "linux_lan"
+                "type": "bf_lan"
             },
             {
                 "color": "blue",
@@ -38,7 +38,7 @@
                 "number": "1000",
                 "options": "lan-ip-dhcp",
                 "port": 4006,
-                "type": "pjsip_phone"
+                "type": "bf_phone"
             },
             {
                 "color": "green",
@@ -52,7 +52,7 @@
                 "options": "wan-static-ip:172.25.1.5, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::5, static-route:0.0.0.0/0-172.25.1.1",
                 "password": "bigfoot1",
                 "port": 4005,
-                "type": "sipcenter_kamailio",
+                "type": "bf_sipcenter",
                 "username": "root"
             },
             {
@@ -63,7 +63,7 @@
                 "number": "2000",
                 "options": "wan-static-ip:172.25.1.3/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::3/64, static-route:0.0.0.0/0-172.25.1.1",
                 "port": 4007,
-                "type": "pjsip_phone"
+                "type": "bf_phone"
             },
             {
                 "acs_url": "http://172.25.1.40:7547",
@@ -77,7 +77,7 @@
                 "time_server": "216.239.35.0",
                 "time_server6": "2001:4860:4802:0032::a",
                 "timezone": 0,
-                "type": "kea_dhcp",
+                "type": "bf_dhcp",
                 "vlans": {
                     "untagged": {
                         "cpe_pd": "2001:dead:bed1::/56",
@@ -99,7 +99,7 @@
                 "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
                 "password": "bigfoot1",
                 "port": 4503,
-                "type": "genie_acs",
+                "type": "bf_acs",
                 "username": "root"
             }
         ]
