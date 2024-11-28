@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Linux based DSLite server using ISC AFTR."""
+
 import ipaddress
 import os
 import re
@@ -29,16 +30,22 @@ class AFTR(debian.DebianBox):
         ] + self.ipv6_acl_cfg
         self.update_aftr_conf(wan, self.ipv6_acl)
         self.update_aftr_script(wan)
-        ipv6_addr = wan.get_interface_ip6addr(wan.iface_dut)
         hosts_data = wan.check_output("cat /etc/dnsmasq.hosts")
-        if "aftr.boardfarm.com" not in hosts_data:
-            wan.sendline(f"echo {ipv6_addr} aftr.boardfarm.com >> /etc/dnsmasq.hosts")
+
+        # Assumption: if AFTR endpoint IP exists, it means AFTR entry exists
+        if str(self.ipv6_ep.ip) not in hosts_data:
+            hosts_data = [
+                line.strip() for line in hosts_data.splitlines() if "aftr" not in line
+            ]
+            hosts_data.append(f"{self.ipv6_ep.ip}  aftr.boardfarm.com")
+            wan.sendline("cat > /etc/dnsmasq.hosts << EOF")
+            for line in hosts_data:
+                wan.sendline(line)
+            wan.sendline("EOF")
             wan.expect(wan.prompt)
-            wan.sendline("service dnsmasq stop")
-            wan.expect(wan.prompt)
-            wan.sendline("service dnsmasq start")
-            wan.expect(wan.prompt)
-            wan.sendline("sync")
+            wan.check_output("service dnsmasq stop")
+            wan.check_output("service dnsmasq start")
+            wan.check_output("sync")
             # disable / enable to update endpoint address
             board.dmcli.SPV("Device.DSLite.Enable", "false", "bool")
             time.sleep(20)
