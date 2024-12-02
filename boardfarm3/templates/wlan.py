@@ -576,3 +576,43 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: bool | dict[str, Any]
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def release_dhcp(self, interface: str) -> None:
+        """Release IPv4 of the specified interface.
+
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def renew_dhcp(self, interface: str) -> None:
+        """Renew IPv4 of the specified interface by restart of the IPv4 dhclient.
+
+        :param interface: interface name
+        :type interface: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def release_ipv6(self, interface: str, stateless: bool = False) -> None:
+        """Release IPv6 of the specified interface.
+
+        :param interface: interface name
+        :type interface: str
+        :param stateless: run command with -S or -6 options. -6 by default
+        :type stateless: bool
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def renew_ipv6(self, interface: str, stateless: bool = False) -> None:
+        """Renew IPv6 of the specified interface.
+
+        :param interface: interface name
+        :type interface: str
+        :param stateless: run command with -S or -6 options. -6 by default
+        :type stateless: bool
+        """
+        raise NotImplementedError
