@@ -1,3 +1,18 @@
+## 2024.49.0 (2024-12-04)
+
+### BREAKING CHANGE
+
+- BOARDFARM-5485
+
+### Feat
+
+- **env_helper.py**: add latest version 2.45 of env schema
+- **boardfarm/**: aftr device class impl
+
+### Fix
+
+- **isc_aftr**: update DNS entry
+
 ## 2024.45.0 (2024-11-06)
 
 ## 2024.43.0 (2024-10-23)
