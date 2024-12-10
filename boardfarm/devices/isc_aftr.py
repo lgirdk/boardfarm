@@ -7,6 +7,8 @@ import re
 import sys
 import time
 
+import pexpect
+
 from boardfarm.devices.platform import debian
 
 
@@ -30,6 +32,12 @@ class AFTR(debian.DebianBox):
         ] + self.ipv6_acl_cfg
         self.update_aftr_conf(wan, self.ipv6_acl)
         self.update_aftr_script(wan)
+        # restarting the process as routes get deleted as part of cleanup of wan device
+        wan.check_output("chmod +x /root/aftr/aftr-script")
+        wan.check_output("killall aftr")
+        wan.check_output(
+            "/root/aftr/aftr -c /root/aftr/aftr.conf -s /root/aftr/aftr-script"
+        )
         hosts_data = wan.check_output("cat /etc/dnsmasq.hosts")
 
         # Assumption: if AFTR endpoint IP exists, it means AFTR entry exists
@@ -79,16 +87,23 @@ class AFTR(debian.DebianBox):
         res = res.split("\n")[1:]
         res = "\n".join(res)
         if ipv6_ep_net not in res:
-            updated_script = res.replace(
-                "ip -6 route add", f"ip -6 route add {ipv6_ep_net} dev tun0"
+            updated_script = (
+                res.replace(
+                    "ip -6 route add", f"ip -6 route add {ipv6_ep_net} dev tun0"
+                )
+                .replace(
+                    "PUBLIC=`ip addr show dev eth1 | grep -w inet | "
+                    'awk "{print $2}" | awk -F/ "{print $1}"`',
+                    r"PUBLIC=\`ip addr show dev eth1 | "
+                    r"grep -w inet | awk '{print $2}' | awk -F/ '{print $1}'\`",
+                )
+                .replace("$", r"\$")
             )
             updated_script = re.sub(
                 r"(\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]))", "", updated_script
             )
             to_send = f"cat > /root/aftr/aftr-script << EOF\n{updated_script}\nEOF"
             wan.sendline(to_send)
-            wan.expect(self.prompt)
-            wan.sendline("chmod +x /root/aftr/aftr-script")
             wan.expect(self.prompt)
 
 
