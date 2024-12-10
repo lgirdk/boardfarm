@@ -641,3 +641,26 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: bool
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def tshark_read_pcap(
+        self,
+        fname: str,
+        additional_args: str | None = None,
+        timeout: int = 30,
+        rm_pcap: bool = False,
+    ) -> str:
+        """Read packet captures from an existing file.
+
+        :param fname: name of the file in which captures are saved
+        :type fname: str
+        :param additional_args: additional arguments for tshark command
+        :type additional_args: str
+        :param timeout: time out for tshark command to be executed, defaults to 30
+        :type timeout: int
+        :param rm_pcap: If True remove the packet capture file after reading it
+        :type rm_pcap: bool
+        :return: return tshark read command console output
+        :rtype: str
+        """
+        raise NotImplementedError
