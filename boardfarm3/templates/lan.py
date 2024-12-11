@@ -552,7 +552,13 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def create_upnp_rule(self, int_port: str, ext_port: str, protocol: str) -> str:
+    def create_upnp_rule(
+        self,
+        int_port: str,
+        ext_port: str,
+        protocol: str,
+        url: str,
+    ) -> str:
         """Create UPnP rule on the device.
 
         :param int_port: internal port for UPnP
@@ -561,6 +567,8 @@ class LAN(ABC):
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
+        :param url: url to be used
+        :type url: str
         :return: output of upnpc add port command
         :rtype: str
         """

@@ -870,7 +870,13 @@ class LinuxLAN(LinuxDevice, LAN):
             f"sysctl net.ipv6.conf.{self.iface_dut}.disable_ipv6=1",
         )
 
-    def create_upnp_rule(self, int_port: str, ext_port: str, protocol: str) -> str:
+    def create_upnp_rule(
+        self,
+        int_port: str,
+        ext_port: str,
+        protocol: str,
+        url: str,
+    ) -> str:
         """Create UPnP rule on the device.
 
         :param int_port: internal port for upnp
@@ -879,12 +885,14 @@ class LinuxLAN(LinuxDevice, LAN):
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
+        :param url: url to be used
+        :type url: str
         :return: output of upnpc add port command
         :rtype: str
         """
         ip_addr = self.get_interface_ipv4addr(self.iface_dut)
         return self._console.execute_command(
-            f"upnpc -a {ip_addr} {int_port} {ext_port} {protocol}",
+            f"upnpc -u {url} -m {self.iface_dut} -a {ip_addr} {int_port} {ext_port} {protocol}",
         )
 
     def _add_multicast_to_linux_lan(self) -> None:
