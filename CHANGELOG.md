@@ -1,3 +1,13 @@
+## 2024.51.0 (2024-12-18)
+
+### Fix
+
+- **lib/env_helper.py**: add the schema version
+- **linux.py**: remove buffer data
+- **linux_nw_utility.py:networking.py**: add tftpboot as the folder location
+- **pyproject.toml**: change selenium install version
+- **booting_utils.py**: fix to enable WiFi 5GHz guest settings
+
 ## 2024.49.0 (2024-12-04)
 
 ### BREAKING CHANGE
