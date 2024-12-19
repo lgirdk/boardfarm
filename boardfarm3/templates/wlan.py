@@ -616,3 +616,28 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type stateless: bool
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def enable_monitor_mode(self) -> None:
+        """Enable monitor mode on WLAN interface.
+
+        Set the type to monitor
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def disable_monitor_mode(self) -> None:
+        """Disable monitor mode on WLAN interface.
+
+        Set the type to managed
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_monitor_mode_enabled(self) -> bool:
+        """Check if monitor mode is enabled on WLAN interface.
+
+        :return: Status of monitor mode
+        :rtype: bool
+        """
+        raise NotImplementedError

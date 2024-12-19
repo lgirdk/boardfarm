@@ -445,6 +445,35 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             return ifconfig_data[0]["mtu"]  # type: ignore
         raise ValueError(f"ifconfig {interface} is not available")
 
+    def enable_monitor_mode(self) -> None:
+        """Enable monitor mode on WLAN interface.
+
+        Set the type to monitor
+        """
+        self.disable_wifi()
+        self._console.execute_command(f"iw dev {self.iface_dut} set type monitor")
+        self.enable_wifi()
+
+    def disable_monitor_mode(self) -> None:
+        """Disable monitor mode on WLAN interface.
+
+        Set the type to managed
+        """
+        self.disable_wifi()
+        self._console.execute_command(f"iw dev {self.iface_dut} set type managed")
+        self.enable_wifi()
+
+    def is_monitor_mode_enabled(self) -> bool:
+        """Check if monitor mode is enabled on WLAN interface.
+
+        :return: Status of monitor mode
+        :rtype: bool
+        """
+        output = self._console.execute_command(f"iw dev {self.iface_dut} info")
+        if "type monitor" in output:
+            return True
+        return False
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device
