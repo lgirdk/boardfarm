@@ -1,3 +1,9 @@
+## 2025.01.0 (2025-01-02)
+
+### Fix
+
+- **isc_aftr.py**: restarting aftr process
+
 ## 2024.51.0 (2024-12-18)
 
 ### Fix
