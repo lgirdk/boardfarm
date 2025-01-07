@@ -24,7 +24,7 @@ class SSHConnection(BoardfarmPexpect):
         shell_prompt: list[str],
         port: int = 22,
         password: str | None = None,
-        save_console_logs: bool = False,
+        save_console_logs: str = "",
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize SSH connection.
@@ -41,8 +41,8 @@ class SSHConnection(BoardfarmPexpect):
         :type port: int
         :param password: password, defaults to None
         :type password: str
-        :param save_console_logs: save console logs, defaults to False
-        :type save_console_logs: bool
+        :param save_console_logs: save console logs, defaults to ""
+        :type save_console_logs: str
         :param kwargs: other keyword arguments
         """
         self._shell_prompt = shell_prompt

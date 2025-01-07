@@ -30,7 +30,7 @@ def test_start_interactive_session(mocker: MockerFixture) -> None:
     boardfarm_pexpect = BoardfarmPexpect(
         "session",
         "pwd",
-        save_console_logs=False,
+        save_console_logs="",
         args=["", ""],
     )
     interact_mock = mocker.patch.object(
@@ -51,7 +51,9 @@ def test_boardfarm_pexpect_with_save_console_logs(mocker: MockerFixture) -> None
     :type mocker: MockerFixture
     """
     mocker.patch.multiple(BoardfarmPexpect, __abstractmethods__=set())
-    bfp = BoardfarmPexpect("session", "pwd", save_console_logs=True, args=["", ""])
+    bfp = BoardfarmPexpect(
+        "session", "pwd", save_console_logs="./console-logs/", args=["", ""]
+    )
     logger = logging.getLogger("pexpect.session")
     assert len(logger.handlers) > 0
     assert Path.is_file(_SESSION_CONSOLE_LOG_SAVE_FILE)
@@ -70,7 +72,7 @@ def test_boardfarm_pexpect_without_save_console_logs(
     bfp = BoardfarmPexpect(
         "session_no_save",
         "pwd",
-        save_console_logs=False,
+        save_console_logs="",
         args=["", ""],
     )
     logger = logging.getLogger("pexpect.session_no_save")
@@ -86,7 +88,7 @@ def test_get_last_output(mocker: MockerFixture) -> None:
     :type mocker: MockerFixture
     """
     mocker.patch.multiple(BoardfarmPexpect, __abstractmethods__=set())
-    bfp = BoardfarmPexpect("session", "pwd", save_console_logs=False, args=["", ""])
+    bfp = BoardfarmPexpect("session", "pwd", save_console_logs="", args=["", ""])
     mocker.patch.object(bfp, "before", "/boardfarm3_new_repo/boardfarm   ")
     assert bfp.get_last_output() == "/boardfarm3_new_repo/boardfarm"
 

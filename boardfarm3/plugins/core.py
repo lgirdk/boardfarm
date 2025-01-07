@@ -94,8 +94,8 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
     )
     argparser.add_argument(
         "--save-console-logs",
-        action="store_true",
-        help="Save console logs to the disk",
+        default="",  # does not save the logs by default
+        help="Save the console logs at the give location",
     )
     argparser.add_argument(
         "--ignore-devices",

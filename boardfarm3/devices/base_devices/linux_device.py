@@ -373,7 +373,7 @@ class LinuxDevice(BoardfarmDevice):
         session = LocalCmd(
             f"{self.device_name}.scp",
             "scp",
-            save_console_logs=False,
+            save_console_logs="",
             args=args,
             # TODO: why do we need to pass shell prompt?
             shell_prompt=self._shell_prompt,

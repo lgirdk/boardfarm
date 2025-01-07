@@ -70,7 +70,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         self,
         session_name: str,
         command: str,
-        save_console_logs: bool,
+        save_console_logs: str,
         args: list[str],
     ) -> None:
         """Initialize boardfarm pexpect.
@@ -80,7 +80,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         :param command: command to start pexpect session
         :type command: str
         :param save_console_logs: save console logs to the disk
-        :type save_console_logs: bool
+        :type save_console_logs: str
         :param args: additional arguments to the command
         :type args: list[str]
         """
@@ -95,10 +95,10 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         )
         self._configure_logging(session_name, save_console_logs)
 
-    def _configure_logging(self, session_name: str, save_console_logs: bool) -> None:
+    def _configure_logging(self, session_name: str, save_console_logs: str) -> None:
         logger = getLogger(f"pexpect.{session_name}")
-        if save_console_logs is True:
-            logs_directory = Path("console-logs")
+        if bool(save_console_logs):
+            logs_directory = Path(save_console_logs)
             logs_directory.mkdir(parents=True, exist_ok=True)
             handler = RotatingFileHandler(
                 logs_directory / f"{session_name.replace('.', '_')}.txt",

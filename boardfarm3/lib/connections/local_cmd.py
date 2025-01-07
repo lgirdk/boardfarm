@@ -21,7 +21,7 @@ class LocalCmd(BoardfarmPexpect):
         self,  # pylint: disable=unused-argument
         name: str,
         conn_command: str,
-        save_console_logs: bool,
+        save_console_logs: str,
         shell_prompt: list[str] | None = None,
         args: list[str] | None = None,
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
@@ -33,7 +33,7 @@ class LocalCmd(BoardfarmPexpect):
         :param conn_command: command to start the session
         :type conn_command: str
         :param save_console_logs: save console logs to disk
-        :type save_console_logs: bool
+        :type save_console_logs: str
         :param shell_prompt: shell prompt pattern, defaults to None
         :type shell_prompt: list[str]
         :param args: arguments to the command, defaults to None

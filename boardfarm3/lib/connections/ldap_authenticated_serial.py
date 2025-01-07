@@ -23,7 +23,7 @@ class LdapAuthenticatedSerial(SSHConnection):
         ldap_credentials: str,
         shell_prompt: list[str],
         port: int = 22,
-        save_console_logs: bool = False,
+        save_console_logs: str = "",
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize ldap authenticated serial connection.
@@ -38,8 +38,8 @@ class LdapAuthenticatedSerial(SSHConnection):
         :type shell_prompt: list[str]
         :param port: port number, defaults to 22
         :type port: int
-        :param save_console_logs: save console logs to disk, defaults to False
-        :type save_console_logs: bool
+        :param save_console_logs: save console logs to disk, defaults to ""
+        :type save_console_logs: str
         :param kwargs: other keyword arguments
         :raises ValueError: invalid LDAP credentials
         """

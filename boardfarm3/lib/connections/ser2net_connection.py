@@ -29,7 +29,7 @@ class Ser2NetConnection(TelnetConnection):
         self,
         session_name: str,
         command: str,
-        save_console_logs: bool,
+        save_console_logs: str,
         args: list[str],
     ) -> None:
         """Initialize the Ser2Net connection.
@@ -39,7 +39,7 @@ class Ser2NetConnection(TelnetConnection):
         :param command: command to start the pexpect session
         :type command: str
         :param save_console_logs: save console logs to disk
-        :type save_console_logs: bool
+        :type save_console_logs: str
         :param args: additional arguments to the command
         :type args: list[str  |  list[str]]
         """

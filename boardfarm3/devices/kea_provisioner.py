@@ -308,7 +308,7 @@ class KeaProvisioner(Provisioner):
         session = LocalCmd(
             f"{self.device_name}.scp",
             "scp",
-            save_console_logs=False,
+            save_console_logs="",
             args=args,
             shell_prompt=self._shell_prompt,
         )
