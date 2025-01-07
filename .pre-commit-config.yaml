@@ -11,50 +11,50 @@ repos:
       rev: v4.6.0
       hooks:
           - id: check-ast
-            stages: [commit]
+            stages: [pre-commit]
           - id: end-of-file-fixer
-            stages: [commit]
+            stages: [pre-commit]
           - id: mixed-line-ending
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-toml
-            stages: [commit]
+            stages: [pre-commit]
           - id: trailing-whitespace
             exclude: cm-cfg
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-docstring-first
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-yaml
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-json
-            stages: [commit]
+            stages: [pre-commit]
           - id: pretty-format-json
             args: [--autofix, --indent=4]
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-added-large-files
-            stages: [commit]
+            stages: [pre-commit]
           - id: requirements-txt-fixer
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-merge-conflict
-            stages: [commit]
+            stages: [pre-commit]
           - id: debug-statements
-            stages: [commit]
+            stages: [pre-commit]
           - id: check-executables-have-shebangs
             language: python
             files: \.py$
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/Lucas-C/pre-commit-hooks
       rev: v1.5.5
       hooks:
           - id: remove-crlf
-            stages: [commit]
+            stages: [pre-commit]
           - id: remove-tabs
             exclude: cm-cfg
-            stages: [commit]
+            stages: [pre-commit]
           - id: forbid-crlf
-            stages: [commit]
+            stages: [pre-commit]
           - id: forbid-tabs
             exclude: cm-cfg
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/myint/eradicate
       rev: 2.3.0
       hooks:
@@ -65,23 +65,23 @@ repos:
             language: python
             files: \.py$
             args: [--in-place]
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/asottile/pyupgrade
       rev: v3.15.2
       hooks:
           - id: pyupgrade
             args: [--py39-plus]
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/ikamensh/flynt/
       rev: 1.0.1
       hooks:
           - id: flynt
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.2.3
       hooks:
           - id: yamlfmt
-            stages: [commit]
+            stages: [pre-commit]
             exclude: |
                 (?x)^(
                   unittests/lib/docker_factory/.*\.yml$
@@ -91,7 +91,7 @@ repos:
       hooks:
           - id: yamllint
             args: [--format, parsable, --strict]
-            stages: [commit]
+            stages: [pre-commit]
             exclude: |
                 (?x)^(
                   unittests/lib/docker_factory/.*\.yml$
@@ -104,23 +104,23 @@ repos:
             # https://docs.astral.sh/ruff/formatter/#sorting-imports
             args: [check, --select, I, --fix]
             name: ruff-isort
-            stages: [commit]
+            stages: [pre-commit]
           - id: ruff-format
-            stages: [commit]
+            stages: [pre-commit]
           - id: ruff
-            stages: [commit]
+            stages: [pre-commit]
     - repo: https://github.com/akaihola/darglint2
       rev: v1.8.2
       hooks:
           - id: darglint2
             args: [boardfarm3]
-            stages: [commit]
+            stages: [pre-commit]
     - repo: local
       hooks:
           - id: nox
             name: nox
             entry: nox
             language: system
-            stages: [push]
+            stages: [pre-push]
             pass_filenames: false
             types: [python]
