@@ -1,15 +1,19 @@
 """Boardfarm device manager."""
 
-from typing import Any, TypeVar
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, TypeVar
 from unittest import mock
 
-from pluggy import PluginManager
-
-from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.exceptions import DeviceNotFound, NotSupportedError
 
+if TYPE_CHECKING:
+    from pluggy import PluginManager
+
+    from boardfarm3.devices.base_devices import BoardfarmDevice
+
 T = TypeVar("T")  # pylint: disable=invalid-name
-_DEVICE_MANAGER_INSTANCE = None
+_DEVICE_MANAGER_INSTANCE: DeviceManager | None = None
 
 
 def _get_attribute_with_ignore_exception(self: Any, __name: str) -> Any:  # noqa: ANN401
