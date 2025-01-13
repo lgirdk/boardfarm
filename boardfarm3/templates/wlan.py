@@ -413,6 +413,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         ip_version: int | None = None,
         udp_protocol: bool = False,
         time: int = 10,
+        client_port: int | None = None,
     ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
@@ -436,6 +437,8 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type udp_protocol: bool
         :param time: time in seconds to transmit for, defaults to 10
         :type time: int
+        :param client_port: client port from where the traffic is getting started
+        :type client_port: int | None
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int, str]
