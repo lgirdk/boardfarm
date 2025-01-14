@@ -547,7 +547,8 @@ EOF"""
 
         # insert tftp server, TODO: how to clean up?
         board_config["extra_provisioning"]["cm"]["next-server"] = tftp_server
-        board_config["extra_provisioning"]["mta"]["next-server"] = tftp_server
+        if board_config["extra_provisioning"].get("mta"):
+            board_config["extra_provisioning"]["mta"]["next-server"] = tftp_server
 
         # there is probably a better way to construct this file...
         for dev, cfg_sec in board_config["extra_provisioning"].items():
@@ -642,7 +643,7 @@ EOF"""
             board_config["extra_provisioning_v6"] = {}
 
         tftp_server = self.tftp_device.tftp_server_ip_int()
-        if "voice" in str(board_config.get("feature")):
+        if "voice" in str(board_config.get("feature")) and self.dev.board.mta_cfg.txt:
             sip_server = [
                 re.search(
                     "wan-static-ip:" + "(" + ValidIpv4AddressRegex + ")", i["options"]
