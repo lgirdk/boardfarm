@@ -1,3 +1,9 @@
+## 2025.03.0 (2025-01-15)
+
+### Fix
+
+- **debian_isc.py**: support sku with no voice support
+
 ## 2025.01.0 (2025-01-02)
 
 ### Fix
