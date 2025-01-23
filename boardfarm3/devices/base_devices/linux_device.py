@@ -1,6 +1,7 @@
 """Boardfarm Linux device module."""
 
 # pylint: disable=too-many-lines
+# pylint: disable=too-many-nested-blocks
 
 from __future__ import annotations
 
@@ -104,6 +105,50 @@ class LinuxDevice(BoardfarmDevice):
                 parsed_options[split[0].strip()] = split[1].strip()
 
         return parsed_options
+
+    async def _setup_static_routes_async(self) -> None:
+        """Set up static routes for the device.
+
+        :raises ValueError: if the syntax is incorrect in inventory
+        """
+        options = self._parse_device_suboptions()
+        for option, opt_val in options.items():
+            if option == "static-route":
+                for route_entry in opt_val.split(";"):
+                    try:
+                        destination, gateway = map(str.strip, route_entry.split("-"))
+                        await self._console.execute_command_async(
+                            f"ip route del {destination}"
+                        )
+                        await self._console.execute_command_async(
+                            f"ip route add {destination} via {gateway}"
+                        )
+                    except pexpect.TIMEOUT:  # noqa: PERF203
+                        __LOGGER.exception("Failed to set up route %s", route_entry)
+                    except TypeError as exc:
+                        msg = f"Validate the syntax of static-route for {opt_val}."
+                        raise ValueError(msg) from exc
+
+    def _setup_static_routes(self) -> None:
+        """Set up static routes for the device.
+
+        :raises ValueError: if the syntax is incorrect in inventory
+        """
+        options = self._parse_device_suboptions()
+        for option, opt_val in options.items():
+            if option == "static-route":
+                for route_entry in opt_val.split(";"):
+                    try:
+                        destination, gateway = map(str.strip, route_entry.split("-"))
+                        self._console.execute_command(f"ip route del {destination}")
+                        self._console.execute_command(
+                            f"ip route add {destination} via {gateway}"
+                        )
+                    except pexpect.TIMEOUT:  # noqa: PERF203
+                        __LOGGER.exception("Failed to set up route %s", route_entry)
+                    except TypeError as exc:
+                        msg = f"Validate the syntax of static-route for {opt_val}."
+                        raise ValueError(msg) from exc
 
     @property
     def _ipaddr(self) -> str:
