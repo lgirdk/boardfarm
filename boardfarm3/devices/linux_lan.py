@@ -145,6 +145,7 @@ class LinuxLAN(LinuxDevice, LAN):
         :param config: contains both environment and inventory config
         :type config: BoardfarmConfig
         """
+        self._setup_static_routes()
         mode = config.get_prov_mode()
         call = {
             "ipv4": self.start_ipv4_lan_client,
@@ -164,6 +165,7 @@ class LinuxLAN(LinuxDevice, LAN):
         :param config: boardfarm config
         :type config: BoardfarmConfig
         """
+        await self._setup_static_routes_async()
         mode = config.get_prov_mode()
         call = {
             "ipv4": self.start_ipv4_lan_client_async,

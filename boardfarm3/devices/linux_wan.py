@@ -58,13 +58,11 @@ class LinuxWAN(LinuxDevice, WAN):  # pylint: disable=R0902
         self._firewall: IptablesFirewall = None
         self._nslookup: NSLookup = None
 
-    def _setup_wan(self, device_manager: DeviceManager) -> None:  # noqa: C901, PLR0912  pylint: disable=R0912  # BOARDFARM-4957
+    def _setup_wan(self, device_manager: DeviceManager) -> None:  # noqa: C901 # BOARDFARM-4957
         options = self._parse_device_suboptions()
         for opt, opt_val in options.items():
             if opt == "internet-access-on-mgmt":
                 self._internet_access_cmd = "mgmt"
-            elif opt == "wan-static-route":
-                self._static_route = opt_val.replace("-", " via ")
             elif opt == "wan-dhcp-client":
                 self._wan_dhcp = True
             elif opt == "dante":
@@ -104,10 +102,7 @@ class LinuxWAN(LinuxDevice, WAN):  # pylint: disable=R0902
             elif opt == "dns-server":
                 self._configure_dns(device_manager)
 
-        if self._static_route:
-            for route in self._static_route.split(";"):
-                self._console.execute_command(f"ip route del {route.split('via')[0]}")
-                self._console.execute_command(f"ip route add {route}")
+        self._setup_static_routes()
 
     def _configure_dns(self, device_manager: DeviceManager) -> None:
         dns_hosts = []

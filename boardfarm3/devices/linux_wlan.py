@@ -90,6 +90,7 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             bssid=bssid,
             security_mode=self.authentication,
         )
+        self._setup_static_routes()
 
     @property
     def band(self) -> str:

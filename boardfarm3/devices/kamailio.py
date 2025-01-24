@@ -92,6 +92,7 @@ class SIPcenterKamailio5(LinuxDevice, SIPServerTemplate):
         correctly during docker server boot. Other user/tester control parameters
         have been managed here to ensure clean working setup for the user.
         """
+        self._setup_static_routes()
         existing_users = self.get_all_users()
         # remove all existing users
         for number in existing_users:

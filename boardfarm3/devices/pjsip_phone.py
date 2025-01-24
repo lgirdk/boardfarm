@@ -146,6 +146,7 @@ class PJSIPPhone(LinuxDevice, SIPPhoneTemplate):
             self._console.execute_command(
                 f"ip -4 addr add {ipv4_interface} dev {self._iface_dut}"
             )
+        self._setup_static_routes()
 
     async def _setup_async(self) -> None:
         # TODO: we need to facotrise the following code as it is common for
@@ -181,6 +182,7 @@ class PJSIPPhone(LinuxDevice, SIPPhoneTemplate):
             await self._console.execute_command_async(
                 f"ip -4 addr add {ipv4_interface} dev {self._iface_dut}"
             )
+        await self._setup_static_routes_async()
 
     @hookimpl
     def boardfarm_attached_device_boot(self) -> None:
@@ -261,7 +263,7 @@ class PJSIPPhone(LinuxDevice, SIPPhoneTemplate):
                 )
                 return
 
-        self.phone_config(
+        await self.phone_config_async(
             ipv6_flag,
             device_manager.get_device_by_type(
                 SIPServer,  # type: ignore[type-abstract]
