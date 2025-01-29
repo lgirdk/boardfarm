@@ -1,3 +1,9 @@
+## 2025.05.0 (2025-01-29)
+
+### Feat
+
+- **deploy-boardfarm-nodes**: add docker env
+
 ## 2025.03.0 (2025-01-15)
 
 ### Fix
