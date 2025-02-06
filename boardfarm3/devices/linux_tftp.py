@@ -116,6 +116,7 @@ class LinuxTFTP(LinuxDevice, TFTP):
             f"ip a add {static_address}/32 dev {self.eth_interface}",
         )
         self._console.execute_command(f"ip link set {self.eth_interface} up")
+        self._console.execute_command("ip route del default")
         self._console.execute_command(
             f"ip route add default via {static_address} dev {self.eth_interface}"
         )
