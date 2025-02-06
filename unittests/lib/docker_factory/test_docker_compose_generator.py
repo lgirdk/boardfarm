@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from boardfarm3.lib.boardfarm_config import parse_boardfarm_config
+from boardfarm3.lib.boardfarm_config import get_json, parse_boardfarm_config
 from boardfarm3.lib.docker_factory.docker_compose_generator import (
     DockerComposeGenerator,
 )
@@ -22,7 +22,7 @@ def fixture_template_manager() -> DockerComposeGenerator:
     inventory_json = loads(ams_path.read_text())
     boardfarm_config = parse_boardfarm_config(
         inventory_json["F5685LGE-1-1"],
-        environment_json_path.as_posix(),
+        get_json(environment_json_path.as_posix()),
     )
     return DockerComposeGenerator(boardfarm_config)
 

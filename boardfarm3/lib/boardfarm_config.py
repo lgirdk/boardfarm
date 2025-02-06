@@ -248,22 +248,21 @@ def get_inventory_config(
     return inventory_config
 
 
-def parse_boardfarm_config(  # pylint: disable=too-many-locals
+def parse_boardfarm_config(
     inventory_config: dict[str, Any],
-    env_json_path: str,
+    env_json_config: dict[str, Any],
 ) -> BoardfarmConfig:
     """Get environment config from given json files.
 
     :param inventory_config: inventory config
     :type inventory_config: dict[str, Any]
-    :param env_json_path: environment json file path
-    :type env_json_path: str
+    :param env_json_config: environment config
+    :type env_json_config: dict[str, Any]
     :return: boardfarm config instance
     :rtype: BoardfarmConfig
     """
     # disable jsonmerge debug logs
     logging.getLogger("jsonmerge").setLevel(logging.WARNING)
-    env_json_config = get_json(env_json_path)
     wifi_devices = [
         device
         for device in inventory_config["devices"]

@@ -10,7 +10,7 @@ from pluggy import PluginManager
 
 from boardfarm3 import PROJECT_NAME
 from boardfarm3.configs import LOGGING_CONFIG
-from boardfarm3.lib.boardfarm_config import parse_boardfarm_config
+from boardfarm3.lib.boardfarm_config import get_json
 from boardfarm3.plugins.hookspecs import core
 
 # pylint: disable=no-member  # plugin_manager.hook.* calls are dynamic
@@ -57,7 +57,13 @@ def main() -> None:
         cmdline_args=cmdline_args,
         plugin_manager=plugin_manager,
     )
-    config = parse_boardfarm_config(inventory_config, cmdline_args.env_config)
+    env_json_config = get_json(cmdline_args.env_config)
+
+    config = plugin_manager.hook.boardfarm_parse_config(
+        cmdline_args=cmdline_args,
+        inventory_config=inventory_config,
+        env_config=env_json_config,
+    )
     deployment_status: dict[str, Any] = {}
     try:
         device_manager = plugin_manager.hook.boardfarm_register_devices(

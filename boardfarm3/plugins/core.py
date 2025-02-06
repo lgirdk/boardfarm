@@ -4,6 +4,7 @@ import logging
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
 from collections import ChainMap
 from collections.abc import Generator
+from typing import Any
 
 from pluggy import PluginManager
 
@@ -19,7 +20,7 @@ from boardfarm3.devices.linux_wlan import LinuxWLAN
 from boardfarm3.devices.pjsip_phone import PJSIPPhone
 from boardfarm3.devices.prplos_cpe import PrplDockerCPE
 from boardfarm3.exceptions import EnvConfigError
-from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
 from boardfarm3.lib.device_manager import DeviceManager
 from boardfarm3.plugins.hookspecs import devices as Devices
 
@@ -122,6 +123,29 @@ def boardfarm_cmdline_parse(
     :rtype: Namespace
     """
     return argparser.parse_args(args=cmdline_args)
+
+
+@hookimpl
+def boardfarm_parse_config(
+    # pylint: disable=W0613
+    cmdline_args: Namespace,  # noqa: ARG001
+    inventory_config: dict[str, Any],
+    env_config: dict[str, Any],
+) -> BoardfarmConfig:
+    """Parse the configs.
+
+    This hook allows for the modification (if needed) of the configuration files.
+
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param inventory_config: inventory json
+    :type inventory_config: dict[str, Any]
+    :param env_config: environment json
+    :type env_config: dict[str, Any]
+    :return: the boardfarmm config
+    :rtype: BoardfarmConfig
+    """
+    return parse_boardfarm_config(inventory_config, env_config)
 
 
 @hookimpl

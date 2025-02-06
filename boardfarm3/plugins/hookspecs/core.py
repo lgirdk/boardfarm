@@ -32,6 +32,30 @@ def boardfarm_add_cmdline_args(argparser: ArgumentParser) -> None:
 
 
 @hookspec(firstresult=True)
+def boardfarm_parse_config(
+    cmdline_args: Namespace,
+    inventory_config: dict[str, Any],
+    env_config: dict[str, Any],
+) -> BoardfarmConfig:
+    """Parse the config.
+
+    This hook allows for the modification (if needed) of the configuration files,
+    like inventory and environment, by using cmd line overrides.
+
+    # noqa: DAR202
+
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param inventory_config: inventory json
+    :type inventory_config: dict[str, Any]
+    :param env_config: environment json
+    :type env_config: dict[str, Any]
+    :return: a BoardfarmConfig object
+    :rtype: BoardfarmConfig
+    """
+
+
+@hookspec(firstresult=True)
 def boardfarm_cmdline_parse(
     argparser: ArgumentParser,
     cmdline_args: list[str],

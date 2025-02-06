@@ -289,7 +289,7 @@ def test_parse_boardfarm_config_valid_inventory_env_configs() -> None:
     """Ensure that the parsing of device configuration is successful when valid inventory and environment configurations are provided."""
     bf_config = parse_boardfarm_config(
         inventory_config=_VALID_INVENTORY_CONFIG["CH7465LG-2-2"],
-        env_json_path=_VALID_ENV_CONFIG_PATH,
+        env_json_config=get_json(_VALID_ENV_CONFIG_PATH),
     )
     assert bf_config.env_config == _VALID_ENV_CONFIG
     assert bf_config._merged_devices_config == _MERGED_DEVICE_CONFIG
@@ -301,7 +301,7 @@ def test_parse_boardfarm_config_env_inventory_requirement_missmatch() -> None:
     with pytest.raises(EnvConfigError):
         parse_boardfarm_config(
             inventory_config=_INVALID_INVENTORY_CONFIG["XXXX"],
-            env_json_path=_VALID_ENV_CONFIG_PATH,
+            env_json_config=get_json(_VALID_ENV_CONFIG_PATH),
         )
 
 
@@ -310,7 +310,7 @@ def test_parse_boardfarm_config_no_sufficient_lan_clients() -> None:
     with pytest.raises(EnvConfigError):
         parse_boardfarm_config(
             inventory_config=_INVALID_INVENTORY_CONFIG["XXXX"],
-            env_json_path=str(_TEST_DATA_PATH / "env_conf_single_lan.json"),
+            env_json_config=get_json(str(_TEST_DATA_PATH / "env_conf_single_lan.json")),
         )
 
 
@@ -318,7 +318,7 @@ def test_parse_boardfarm_config_no_lan_clients() -> None:
     """Ensure that the parsing of device configuration is successful when both an inventory configuration and an environment configuration are provided, and neither of them specifies LAN clients."""
     bf_config = parse_boardfarm_config(
         inventory_config=_INVALID_INVENTORY_CONFIG["XXXX"],
-        env_json_path=str(_TEST_DATA_PATH / "env_conf_no_lans.json"),
+        env_json_config=get_json(str(_TEST_DATA_PATH / "env_conf_no_lans.json")),
     )
     assert bf_config._merged_devices_config[0]["lan_clients"] is None
 
@@ -327,7 +327,7 @@ def test_parse_boardfarm_config_wifi_clients_available() -> None:
     """Ensure that the parsing of device configuration is successful when both an inventory configuration and an environment configuration are provided with wi-fi clients."""
     bf_config = parse_boardfarm_config(
         inventory_config=_VALID_INVENTORY_CONFIG["CH7465LG-2-2"],
-        env_json_path=_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH,
+        env_json_config=get_json(_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH),
     )
     assert (
         bf_config._merged_devices_config[0]["wifi_clients"]
@@ -343,7 +343,7 @@ def test_parse_boardfarm_config_requested_wifi_clients_not_available() -> None:
     ):
         parse_boardfarm_config(
             inventory_config=_INVALID_INVENTORY_CONFIG["XXXX"],
-            env_json_path=_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH,
+            env_json_config=get_json(_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH),
         )
 
 
@@ -363,7 +363,7 @@ def test_parse_boardfarm_config_wifi_device_not_found_for_band_env_wifi_client()
     ):
         parse_boardfarm_config(
             inventory_config=inventory_config_copy["CH7465LG-2-2"],
-            env_json_path=_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH,
+            env_json_config=get_json(_ENV_CONFIG_WITH_WIFI_CLIENTS_PATH),
         )
 
 
@@ -371,7 +371,7 @@ def test_parse_boardfarm_config_wan_clients_available() -> None:
     """Ensure that the parsing of device configuration is successful when both an inventory configuration and an environment configuration are provided with WAN clients."""
     bf_config = parse_boardfarm_config(
         inventory_config=_VALID_INVENTORY_CONFIG["CH7465LG-2-2"],
-        env_json_path=_VALID_ENV_CONFIG_PATH,
+        env_json_config=get_json(_VALID_ENV_CONFIG_PATH),
     )
     assert (
         bf_config._merged_devices_config[0]["wan_clients"]
