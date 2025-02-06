@@ -577,7 +577,10 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
 
         beautified_text = ""
         if raw:
-            beautified_text = BeautifulSoup(raw, "html.parser").prettify()
+            beautified_text = BeautifulSoup(
+                raw,  # type: ignore [assignment]
+                "html.parser",
+            ).prettify()
 
         return raw, code, beautified_text
 
