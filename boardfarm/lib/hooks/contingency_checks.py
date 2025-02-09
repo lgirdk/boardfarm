@@ -138,10 +138,32 @@ class CheckInterface:
         if prov_mode != "ipv4" and prov_mode != "none":
             flags.append("ipv6")
 
+        contains_exact_values = nested_lookup("contains_exact", env_req)
+        expected_lan_failures = 0
+        if contains_exact_values:
+            for value in contains_exact_values:
+                if "MaxCPE" in value:
+                    max_cpe = int(value.split()[1]) - 1
+                    if len(lan_devices) > max_cpe:
+                        expected_lan_failures = len(lan_devices) - max_cpe
+                    break
+
+        actual_failed = 0
         for dev in lan_devices:
             dev.configure_docker_iface()
-            call_lan_clients(dev, flags, prep_iface=True)
+            try:
+                call_lan_clients(dev, flags, prep_iface=True)
+            except Exception as e:
+                actual_failed += 1
+                logger.info(e)
             dev.configure_proxy_pkgs()
+
+        if actual_failed != expected_lan_failures:
+            msg = (
+                "CC failed during lan check :- expected lan "
+                f"failures {expected_lan_failures} but failed {actual_failed}"
+            )
+            raise Exception(msg)
 
         def _setup_as_wan_gateway():
             ipv4 = wan.get_interface_ipaddr(wan.iface_dut)
