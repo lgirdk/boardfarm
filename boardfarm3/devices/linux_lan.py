@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 _LOGGER = logging.getLogger(__name__)
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, too-many-lines
 
 
 class LinuxLAN(LinuxDevice, LAN):
@@ -957,6 +957,42 @@ class LinuxLAN(LinuxDevice, LAN):
         :rtype: str
         """
         return self.hostname()
+
+    def _update_file_entry(self, hosts_data: list) -> None:
+        self._console.sendline("cat > /etc/hosts << EOF")
+        for line in hosts_data:
+            self._console.sendline(line)
+        self._console.sendline("EOF")
+        self._console.expect(self._shell_prompt)
+
+    def add_hosts_entry(self, ip: str, host_name: str) -> None:
+        """Add entry in hosts file.
+
+        :param ip: host ip addr
+        :type ip: str
+        :param host_name: host name to be added
+        :type host_name: str
+        """
+        hosts = self._console.execute_command("cat /etc/hosts")
+        hosts_data = hosts.splitlines()
+        hosts_data.append(f"{ip}    {host_name}")
+        self._update_file_entry(hosts_data=hosts_data)
+
+    def delete_hosts_entry(self, host_name: str, ip: str) -> None:
+        """Delete entry in hosts file.
+
+        :param host_name: host name to be deleted
+        :type host_name: str
+        :param ip: host ip addr
+        :type ip: str
+        """
+        hosts = self._console.execute_command("cat /etc/hosts")
+        hosts_data = [
+            line
+            for line in hosts.splitlines()
+            if f"{host_name}{ip}" not in line.replace(" ", "")
+        ]
+        self._update_file_entry(hosts_data=hosts_data)
 
 
 if __name__ == "__main__":

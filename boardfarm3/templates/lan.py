@@ -855,3 +855,25 @@ class LAN(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def add_hosts_entry(self, ip: str, host_name: str) -> None:
+        """Add entry in hosts file.
+
+        :param ip: host ip addr
+        :type ip: str
+        :param host_name: host name to be added
+        :type host_name: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_hosts_entry(self, host_name: str, ip: str) -> None:
+        """Delete entry in hosts file.
+
+        :param host_name: host name to be deleted
+        :type host_name: str
+        :param ip: host ip addr
+        :type ip: str
+        """
+        raise NotImplementedError
