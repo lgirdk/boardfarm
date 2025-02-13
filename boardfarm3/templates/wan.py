@@ -83,6 +83,12 @@ class WAN(ABC):
         """
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def http_proxy(self) -> str:
+        """SOCKS5 Dante proxy address, e.g http://{proxy_ip}:{proxy_port}/."""
+        raise NotImplementedError
+
     @cached_property
     @abstractmethod
     def ipv4_addr(self) -> str:
