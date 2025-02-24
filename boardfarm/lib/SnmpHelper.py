@@ -306,6 +306,10 @@ def snmp_v2(
             "print(result.__class__.__name__)",
         ]
 
+        device.sendline("pip install pyasn1==0.6.0")
+        device.expect_prompt()
+        device.sendline("pip install pysnmp==5.1.0")
+        device.expect_prompt()
         device.sendline("cat > snmp.py << EOF\n%s\nEOF" % "\n".join(py_steps))
         for e in py_steps:
             device.expect_exact(e[-40:])
@@ -322,7 +326,8 @@ def snmp_v2(
                 None,
             )
         else:
-            result = [i.strip() for i in device.before.split("\n") if i.strip() != ""]
+            clean_string = re.sub(r"\x1b\[.*?[@-~]", "", device.before)
+            result = [i.strip() for i in clean_string.split("\n") if i.strip() != ""]
             data = result[0] == "True", "\n".join(result[1:-1]), result[-1]
         device.sendline("rm snmp.py")
         device.expect_prompt()
@@ -370,7 +375,6 @@ def get_mib_oid(mib_name):
 ##############################################################################################
 
 if __name__ == "__main__":
-
     import sys
 
     class SnmpMibsUnitTest:
@@ -559,7 +563,7 @@ def snmp_asyncore_walk(
     if read_cmd == "walk_verify":
         device.sendline("tail snmp_output.txt")
         if 0 == device.expect(
-            ["No more variables left in this" " MIB View", pexpect.TIMEOUT]
+            ["No more variables left in this MIB View", pexpect.TIMEOUT]
         ):
             device.expect_prompt()
             output = True
