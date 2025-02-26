@@ -575,13 +575,15 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def delete_upnp_rule(self, ext_port: str, protocol: str) -> str:
+    def delete_upnp_rule(self, ext_port: str, protocol: str, url: str) -> str:
         """Delete UPnP rule on the device.
 
         :param ext_port: external port for UPnP
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
+        :param url: url to be used
+        :type url: str
         :return: output of upnpc delete port command
         :rtype: str
         """
