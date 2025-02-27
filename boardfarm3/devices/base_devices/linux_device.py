@@ -1069,6 +1069,7 @@ class LinuxDevice(BoardfarmDevice):
         traffic_port: int,
         bind_to_ip: str | None = None,
         ip_version: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start the server on a linux device to generate traffic using iperf3.
 
@@ -1079,26 +1080,38 @@ class LinuxDevice(BoardfarmDevice):
         :type bind_to_ip: str, optional
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int, optional
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2 as iperf3 does not support
+            udp only flag for server
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int , str]
         """
         file_path = tempfile.gettempdir()
         log_file_path = f"{file_path}/iperf_server_logs.txt"
-        self._console.execute_command(
-            f"iperf3{f' -{ip_version}' if ip_version else ''} -s -p {traffic_port}"
-            f"{f' -B {bind_to_ip}' if bind_to_ip else ''} > {log_file_path} 2>&1 &",
-        )
+        if udp_only:
+            version = ""
+            self._console.execute_command(
+                f"iperf -s -p {traffic_port}"
+                f"{f' -B {bind_to_ip}' if bind_to_ip else ''} -u > {log_file_path} 2>&1 &",
+            )
+        else:
+            version = "3"
+            self._console.execute_command(
+                f"iperf3{f' -{ip_version}' if ip_version else ''} -s -p {traffic_port}"
+                f"{f' -B {bind_to_ip}' if bind_to_ip else ''} > {log_file_path} 2>&1 &",
+            )
         output = self._console.execute_command(
-            "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
+            f"sleep 2; ps auxwwww|grep iperf{version}|grep -v grep",
         )
-        if "iperf3" in output and "Exit 1" not in output:
+        if f"iperf{version}" in output and "Exit 1" not in output:
             out = re.search(f".* -p {traffic_port}.*", output).group()
             return int(out.split()[1]), log_file_path
         msg = "Unable to start iperf server"
         raise CodeError(msg)
 
-    def start_traffic_sender(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+    def start_traffic_sender(  # pylint: disable=too-many-arguments , too-many-locals # noqa: PLR0913
         self,
         host: str,
         traffic_port: int,
@@ -1109,6 +1122,7 @@ class LinuxDevice(BoardfarmDevice):
         udp_protocol: bool = False,
         time: int = 10,
         client_port: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
@@ -1134,23 +1148,36 @@ class LinuxDevice(BoardfarmDevice):
         :type time: int
         :param client_port: client port from where the traffic is getting started
         :type client_port: int | None
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int , str]
         """
         file_path = tempfile.gettempdir()
         log_file_path = f"{file_path}/iperf_client_logs.txt"
-        self._console.execute_command(
-            f"iperf3{f' -{ip_version}' if ip_version else ''} -c {host} "
-            f"-p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}"
-            f" {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}"
-            f" {f' --cport {client_port}' if client_port else ''}"
-            f"{' -u' if udp_protocol else ''} > {log_file_path}  2>&1  &",
-        )
+        if udp_only:
+            version = ""
+            self._console.execute_command(
+                f"iperf -c {host} "
+                f"-p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}"
+                f" {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}"
+                f" -u > {log_file_path}  2>&1  &",
+            )
+        else:
+            version = "3"
+            self._console.execute_command(
+                f"iperf3{f' -{ip_version}' if ip_version else ''} -c {host} "
+                f"-p {traffic_port}{f' -B {bind_to_ip}' if bind_to_ip else ''}"
+                f" {f' -b {bandwidth}m' if bandwidth else ''} -t {time} {direction or ''}"
+                f" {f' --cport {client_port}' if client_port else ''}"
+                f"{' -u' if udp_protocol else ''} > {log_file_path}  2>&1  &",
+            )
         output = self._console.execute_command(
-            "sleep 2; ps auxwwww|grep iperf3|grep -v grep",
+            f"sleep 2; ps auxwwww|grep iperf{version}|grep -v grep",
         )
-        if "iperf3" in output and "Exit 1" not in output:
+        if f"iperf{version}" in output and "Exit 1" not in output:
             out = re.search(f".* -c {host} -p {traffic_port}.*", output).group()
             return int(out.split()[1]), log_file_path
         msg = "Unable to start iperf client"
@@ -1178,12 +1205,13 @@ class LinuxDevice(BoardfarmDevice):
         :return: True if process is stopped else False
         :rtype: bool
         """
+        iperf = "iperf" if self._console.execute_command("pgrep iperf") else "iperf3"
         if pid:
             self._console.execute_command(f"kill -9 {pid}")
         else:
-            self._console.execute_command("killall -9 iperf3")
-        output = self._console.execute_command("ps auxwwww|grep iperf3|grep -v grep")
-        return str(pid) not in output if pid else "iperf3" not in output
+            self._console.execute_command(f"killall -9 {iperf}")
+        output = self._console.execute_command(f"ps auxwwww|grep {iperf}|grep -v grep")
+        return str(pid) not in output if pid else f"{iperf}" not in output
 
     def delete_file(self, filename: str) -> None:
         """Delete the file from the device.

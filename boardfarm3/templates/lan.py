@@ -624,6 +624,7 @@ class LAN(ABC):
         traffic_port: int,
         bind_to_ip: str | None = None,
         ip_version: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start the server on a linux device to generate traffic using iperf3.
 
@@ -634,6 +635,10 @@ class LAN(ABC):
         :type bind_to_ip: str | None
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int | None
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2 as iperf3 does not support
+            udp only flag for server
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int, str]
@@ -652,6 +657,7 @@ class LAN(ABC):
         udp_protocol: bool = False,
         time: int = 10,
         client_port: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
@@ -677,6 +683,9 @@ class LAN(ABC):
         :type time: int
         :param client_port: client port from where the traffic is getting started
         :type client_port: int | None
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int, str]

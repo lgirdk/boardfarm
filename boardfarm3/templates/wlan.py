@@ -386,6 +386,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         traffic_port: int,
         bind_to_ip: str | None = None,
         ip_version: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start the server on a linux device to generate traffic using iperf3.
 
@@ -396,6 +397,9 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type bind_to_ip: str, optional
         :param ip_version: 4 or 6 as it uses only IPv4 or IPv6, defaults to None
         :type ip_version: int, optional
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int, str]
@@ -414,6 +418,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         udp_protocol: bool = False,
         time: int = 10,
         client_port: int | None = None,
+        udp_only: bool | None = None,
     ) -> tuple[int, str]:
         """Start traffic on a linux client using iperf3.
 
@@ -439,6 +444,9 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :type time: int
         :param client_port: client port from where the traffic is getting started
         :type client_port: int | None
+        :param udp_only: to be used if protocol is UDP only,
+            backward compatibility with iperf version 2
+        :type udp_only: bool, optional
         :raises CodeError: raises if unable to start server
         :return: the process id(pid) and log file path
         :rtype: tuple[int, str]
