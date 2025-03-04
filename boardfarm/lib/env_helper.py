@@ -365,6 +365,27 @@ class EnvHelper:
                     "load_image"
                 ]
         except (KeyError, AttributeError):
+            return self.get_update_image_uri(mirror=mirror)
+
+    def get_update_image_uri(self, mirror=True):
+        """Get the image update uri.
+
+        returns the desired image to be updated for this to run against concatenated with the
+        site mirror for software upgrade/downgrade test
+        """
+        try:
+            if mirror:
+                return (
+                    self.mirror
+                    + self.env["environment_def"]["board"]["software_update"][
+                        "image_uri"
+                    ]
+                )
+            else:
+                return self.env["environment_def"]["board"]["software_update"][
+                    "image_uri"
+                ]
+        except (KeyError, AttributeError):
             raise BftEnvExcKeyError
 
     def get_update_image_version(self):
@@ -396,6 +417,27 @@ class EnvHelper:
             else:
                 return self.env["environment_def"]["board"]["software_alternative"][
                     "load_image"
+                ]
+        except (KeyError, AttributeError):
+            return self.get_alternative_image_uri(mirror=mirror)
+
+    def get_alternative_image_uri(self, mirror=True):
+        """Get the alternative image uri.
+
+        returns the alternative image to be updated for this to run against concatenated with the
+        site mirror for software upgrade/downgrade test
+        """
+        try:
+            if mirror:
+                return (
+                    self.mirror
+                    + self.env["environment_def"]["board"]["software_alternative"][
+                        "image_uri"
+                    ]
+                )
+            else:
+                return self.env["environment_def"]["board"]["software_alternative"][
+                    "image_uri"
                 ]
         except (KeyError, AttributeError):
             raise BftEnvExcKeyError
