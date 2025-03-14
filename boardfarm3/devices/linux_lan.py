@@ -222,10 +222,9 @@ class LinuxLAN(LinuxDevice, LAN):
         :return: default gateway ipv4 address
         :rtype: IPv4Address
         """
-        self._console.sendline("ip route list 0/0 | awk '{print $3}'")
-        self._console.expect(self._shell_prompt)
+        out = self._console.execute_command("ip route list 0/0 | awk '{print $3}'")
         try:
-            return IPv4Address(str(self._console.before.strip()))
+            return IPv4Address(out.strip())
         except AddressValueError:
             # Should we just raise an exception instead?
             _LOGGER.warning(
