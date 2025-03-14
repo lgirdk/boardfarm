@@ -1435,3 +1435,11 @@ class LinuxDevice(BoardfarmDevice):
         """
         self._nw_utility = NetworkUtility(self._console)
         return self._nw_utility
+
+    def hostname(self) -> str:
+        """Get the hostname of the device.
+
+        :return: hostname of the device
+        :rtype: str
+        """
+        return self._console.execute_command("echo $HOSTNAME")

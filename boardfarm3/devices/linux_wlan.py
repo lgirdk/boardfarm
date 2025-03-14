@@ -475,6 +475,14 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             return True
         return False
 
+    def get_hostname(self) -> str:
+        """Get the hostname of the device.
+
+        :return: hostname of the device
+        :rtype: str
+        """
+        return self.hostname()
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device

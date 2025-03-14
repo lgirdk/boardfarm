@@ -950,6 +950,14 @@ class LinuxLAN(LinuxDevice, LAN):
         msg = f"ifconfig {interface} is not available"
         raise ValueError(msg)
 
+    def get_hostname(self) -> str:
+        """Get the hostname of the device.
+
+        :return: hostname of the device
+        :rtype: str
+        """
+        return self.hostname()
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device

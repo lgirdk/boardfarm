@@ -675,3 +675,12 @@ class WAN(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_hostname(self) -> str:
+        """Get the hostname of the device.
+
+        :return: hostname of the device
+        :rtype: str
+        """
+        raise NotImplementedError
