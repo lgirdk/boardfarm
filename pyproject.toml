@@ -46,6 +46,7 @@ dependencies = [
     "rich",
     "xmltodict",
     "debtcollector",
+    "setuptools>=78.1.0",
 ]
 
 [project.optional-dependencies]
