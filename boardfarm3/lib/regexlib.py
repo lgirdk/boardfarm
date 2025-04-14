@@ -1,7 +1,6 @@
 """Useful regexes library."""
 
 # pylint: skip-file
-# flake8: noqa
 # Copyright (c) 2018
 #
 # All rights reserved.

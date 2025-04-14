@@ -61,7 +61,7 @@ class ACS(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def SPA(  # noqa: PLR0913
+    def SPA(
         self,
         param: list[dict] | dict,
         notification_param: bool = True,

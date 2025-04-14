@@ -37,7 +37,7 @@ _INVALID_INVENTORY_CONFIG = get_json(
 )
 
 _MERGED_DEVICE_CONFIG = cast(
-    list[dict[Any, Any]],
+    "list[dict[Any, Any]]",
     get_json(
         str(_TEST_DATA_PATH / "merged_device_config.json"),
     ),

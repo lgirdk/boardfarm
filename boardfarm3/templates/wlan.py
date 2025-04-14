@@ -307,7 +307,7 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         fname: str,
         interface: str = "any",
         additional_args: str | None = None,
-    ) -> Generator[str, None, None]:
+    ) -> Generator[str]:
         """Capture packets from specified interface.
 
         Packet capture using tcpdump utility at a specified interface.

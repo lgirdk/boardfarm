@@ -1,5 +1,3 @@
-# ruff: noqa
-
 """Common Networking use cases."""
 
 from __future__ import annotations

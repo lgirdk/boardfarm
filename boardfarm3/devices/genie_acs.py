@@ -160,7 +160,7 @@ class GenieACS(LinuxDevice, ACS):
         """
         raise NotImplementedError
 
-    def SPA(  # noqa: PLR0913
+    def SPA(
         self,
         param: list[dict] | dict,
         notification_param: bool = True,
@@ -220,7 +220,7 @@ class GenieACS(LinuxDevice, ACS):
             if "_value" in key:
                 result.append(
                     f"{key.strip('._value')}, {value}, "
-                    f"{flattened_dict[key.replace('_value','_type')]}",
+                    f"{flattened_dict[key.replace('_value', '_type')]}",
                 )
         return ", ".join(result)
 

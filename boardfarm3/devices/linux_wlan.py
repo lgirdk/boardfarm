@@ -1,4 +1,4 @@
-# ruff: noqa
+# ruff: noqa: SIM103,EM102,TRY003,PGH003,PLW2901,PLR0913,TC001,EM101,TRY300
 
 """Boardfarm WLAN device module."""
 

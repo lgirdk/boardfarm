@@ -664,7 +664,7 @@ class LinuxDevice(BoardfarmDevice):
         fname: str,
         interface: str = "any",
         additional_args: str | None = None,
-    ) -> Generator[str, None, None]:
+    ) -> Generator[str]:
         """Capture packets from specified interface.
 
         Packet capture using tcpdump utility at a specified interface.
@@ -1391,7 +1391,7 @@ class LinuxDevice(BoardfarmDevice):
             msg = "Unable to stop nping process"
             raise BoardfarmException(msg)
 
-    def perform_flood_operation(  # noqa: PLR0913
+    def perform_flood_operation(
         self,
         protocol: str,
         target: str,

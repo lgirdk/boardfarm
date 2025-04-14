@@ -119,24 +119,24 @@ class DockerComposeGenerator:
             base_device = self._replace(
                 base_device,
                 device_name,
-                f"{device_name}{device_count+1}",
+                f"{device_name}{device_count + 1}",
             )
             # This is needed because the name in schema(ext_voip) differs from actual
             # device name (softphone)
             if device_name == "ext_voip":
                 base_device["services"][device_name] = self._replace(
                     base_device["services"][device_name],
-                    f"{device_name}{device_count+1}",
-                    f"softphone{device_count+1}",
+                    f"{device_name}{device_count + 1}",
+                    f"softphone{device_count + 1}",
                 )
             if isinstance(base_device, dict):
                 base_device["services"][device_name]["ports"] = self._update_ports(
                     base_device["services"][device_name]["ports"],
                     device_count,
                 )
-                base_device["services"][f"{device_name}{device_count+1}"] = base_device[
-                    "services"
-                ].pop(device_name)
+                base_device["services"][f"{device_name}{device_count + 1}"] = (
+                    base_device["services"].pop(device_name)
+                )
                 device_compose = jsonmerge.merge(device_compose, base_device)
         return device_compose
 

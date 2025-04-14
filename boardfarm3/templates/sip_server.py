@@ -1,4 +1,4 @@
-# ruff: noqa
+# ruff: noqa: FA100
 
 """SIPServer Template module."""
 

@@ -69,7 +69,7 @@ class NetworkUtility:
         """
         stop_tcpdump(self._console, pid)
 
-    def read_tcpdump(  # noqa: PLR0913
+    def read_tcpdump(
         self,
         capture_file: str,
         protocol: str = "",

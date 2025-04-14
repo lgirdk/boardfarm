@@ -10,7 +10,6 @@ import pexpect
 from jc import parse
 
 from boardfarm3.exceptions import BoardfarmException
-from boardfarm3.lib.custom_typing.jc import ParsedPSOutput
 from boardfarm3.lib.network_utils import NetworkUtility
 from boardfarm3.lib.networking import IptablesFirewall, is_link_up
 from boardfarm3.templates.cpe.cpe_sw import CPESW
@@ -21,6 +20,7 @@ if TYPE_CHECKING:
     from jc.jc_types import JSONDictType
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
+    from boardfarm3.lib.custom_typing.jc import ParsedPSOutput
     from boardfarm3.templates.cpe.cpe_hw import CPEHW
 
 
@@ -355,7 +355,7 @@ class CPESwLibraries(CPESW):
         :rtype: Iterable[ParsedPSOutput]
         """
         return cast(
-            tuple[ParsedPSOutput],
+            "tuple[ParsedPSOutput]",
             parse(
                 "ps",
                 self._get_console("default_shell").execute_command(f"ps {ps_options}"),

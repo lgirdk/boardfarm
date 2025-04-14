@@ -205,7 +205,7 @@ def get_json(resource_name: str) -> dict[str, Any]:
         json_dict = requests.get(resource_name, timeout=30).text
     else:
         json_dict = Path(resource_name).read_text(encoding="utf-8")
-    return cast(dict[str, Any], json.loads(json_dict))
+    return cast("dict[str, Any]", json.loads(json_dict))
 
 
 def get_inventory_config(

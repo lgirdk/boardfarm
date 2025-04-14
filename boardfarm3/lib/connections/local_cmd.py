@@ -17,7 +17,7 @@ _SHELL_PROMPT_UNAVAILABLE_STR = "Shell prompt is not available"
 class LocalCmd(BoardfarmPexpect):
     """Connect to a device with a local command."""
 
-    def __init__(  # pylint: disable=too-many-arguments # noqa: PLR0913
+    def __init__(  # pylint: disable=too-many-arguments
         self,  # pylint: disable=unused-argument
         name: str,
         conn_command: str,

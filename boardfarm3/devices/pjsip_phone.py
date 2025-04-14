@@ -1,4 +1,4 @@
-# ruff: noqa
+# ruff: noqa: EM102,TRY003,D401,EM101,RUF005,SIM102,PGH003,FA100,TRY300,RUF100
 
 """PJSIPPhone device module."""
 
@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 import pexpect
 from pexpect import TIMEOUT
+
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices.linux_device import LinuxDevice
 from boardfarm3.exceptions import NotSupportedError, VoiceError
