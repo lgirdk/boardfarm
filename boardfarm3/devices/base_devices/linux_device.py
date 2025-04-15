@@ -932,11 +932,15 @@ class LinuxDevice(BoardfarmDevice):
         self._console.execute_command(
             ps_cmd + " | awk -F ' ' '{print $2}' | xargs kill -9 ",
         )
-        if self._console.execute_command(ps_cmd).splitlines():
-            msg = f"Failed to kill webfsd process running on port {port}"
-            raise BoardfarmException(
-                msg,
-            )
+        for _ in range(4):
+            if self._console.execute_command(ps_cmd).splitlines():
+                sleep(4)
+                continue
+            return
+        msg = f"Failed to kill webfsd process running on port {port}"
+        raise BoardfarmException(
+            msg,
+        )
 
     def http_get(self, url: str, timeout: int, options: str) -> HTTPResult:
         """Peform http get (via curl) and return parsed result.
