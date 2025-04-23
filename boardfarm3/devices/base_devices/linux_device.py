@@ -375,7 +375,7 @@ class LinuxDevice(BoardfarmDevice):
         :rtype: str
         """
         return re.search(
-            r"Mask:\s+(\S+)",
+            r"(?:net)?[Mm]ask\s+(\S+)",
             self._console.execute_command(f"ifconfig {interface}"),
         ).group(1)
 
