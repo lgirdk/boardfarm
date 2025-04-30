@@ -1,6 +1,9 @@
 """Connect and run module."""
 
+from time import sleep
 from typing import Callable, ParamSpec, Protocol, TypeVar, runtime_checkable
+
+from boardfarm3.exceptions import DeviceConnectionError
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -33,6 +36,7 @@ def connect_and_run(func: Callable[P, T]) -> Callable[P, T]:
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
         instance = args[0]
         exc_to_raise = None
+        conn_exception = None
         if not isinstance(instance, RuntimeConnectable):
             msg = (
                 f"Provided instance {instance} do not ,"
@@ -41,7 +45,16 @@ def connect_and_run(func: Callable[P, T]) -> Callable[P, T]:
             raise TypeError(msg)
 
         if not instance.is_console_connected():
-            instance.connect_console()
+            # Adding a retry
+            for _ in range(3):
+                try:
+                    instance.connect_console()
+                    break
+                except DeviceConnectionError as exc:
+                    conn_exception = exc
+                    sleep(5)
+            else:
+                raise conn_exception
 
         try:
             output = func(*args, **kwargs)
