@@ -553,7 +553,7 @@ class PJSIPPhone(LinuxDevice, SIPPhoneTemplate):
         )
 
     def is_incall_dialing(self) -> bool:
-        """Added for compatibility with FXS phones.
+        """Add compatibility with FXS phones.
 
         :return: if the incall is connected
         :rtype: bool
