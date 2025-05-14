@@ -52,7 +52,7 @@ def connect_and_run(func: Callable[P, T]) -> Callable[P, T]:
                     break
                 except DeviceConnectionError as exc:
                     conn_exception = exc
-                    sleep(5)
+                    sleep(15)
             else:
                 raise conn_exception
 
