@@ -994,6 +994,10 @@ class LinuxLAN(LinuxDevice, LAN):
         ]
         self._update_file_entry(hosts_data=hosts_data)
 
+    def flush_arp_cache(self) -> None:
+        """Flushes arp cache entries."""
+        self._console.execute_command("ip neigh flush all")
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device

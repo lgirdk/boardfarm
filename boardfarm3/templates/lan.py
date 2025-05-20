@@ -877,3 +877,8 @@ class LAN(ABC):
         :type ip: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def flush_arp_cache(self) -> None:
+        """Flushes arp cache entries."""
+        raise NotImplementedError
