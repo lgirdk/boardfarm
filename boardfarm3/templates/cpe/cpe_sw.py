@@ -370,3 +370,34 @@ class CPESW(ABC):
         :rtype: bool
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def finalize_boot(self) -> bool:
+        """Validate board settings post boot.
+
+        :return: True on successful validation
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def aftr_iface(self) -> str:
+        """AFTR interface name."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_mtu_size(self, interface: str) -> int:
+        """Get the MTU size of the interface in bytes.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: size of the MTU in bytes
+        :rtype: int
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def tr69_cpe_id(self) -> str:
+        """TR-69 CPE Identifier."""
+        raise NotImplementedError

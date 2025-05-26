@@ -8,6 +8,8 @@ from functools import cached_property
 from time import sleep
 from typing import TYPE_CHECKING, Any
 
+import jc
+
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
 from boardfarm3.exceptions import DeviceBootFailure, NotSupportedError
@@ -189,7 +191,7 @@ class PrplOSx86HW(CPEHW):
             raise DeviceBootFailure(msg)
 
 
-class PrplOSSW(CPESwLibraries):
+class PrplOSSW(CPESwLibraries):  # pylint: disable=R0904
     """PrplOS software component device class."""
 
     _hw: PrplOSx86HW
@@ -292,6 +294,15 @@ class PrplOSSW(CPESwLibraries):
         return f"{oui}-{serial}"
 
     @property
+    def tr69_cpe_id(self) -> str:
+        """TR-69 CPE Identifier.
+
+        :return: TR069 CPE ID
+        :rtype: str
+        """
+        return self.cpe_id
+
+    @property
     def lan_gateway_ipv4(self) -> IPv4Address:
         """LAN Gateway IPv4 address.
 
@@ -385,6 +396,38 @@ class PrplOSSW(CPESwLibraries):
         console.expect(" > ")
         console.sendline("exit")
         console.expect(r"/[a-zA-Z]* #")
+
+    def finalize_boot(self) -> bool:
+        """Validate board settings post boot.
+
+        :raises NotImplementedError: device does not have a finalize stage
+        """
+        raise NotImplementedError
+
+    @property
+    def aftr_iface(self) -> str:
+        """AFTR interface name.
+
+        :raises NotImplementedError: device does not have an AFTR IFACE
+        """
+        raise NotImplementedError
+
+    def get_interface_mtu_size(self, interface: str) -> int:
+        """Get the MTU size of the interface in bytes.
+
+        :param interface: name of the interface
+        :type interface: str
+        :return: size of the MTU in bytes
+        :rtype: int
+        :raises ValueError: when ifconfig data is not available
+        """
+        if ifconfig_data := jc.parse(
+            "ifconfig",
+            self._get_console("default_shell").execute_command(f"ifconfig {interface}"),
+        ):
+            return ifconfig_data[0]["mtu"]  # type: ignore[index]
+        msg = f"ifconfig {interface} is not available"
+        raise ValueError(msg)
 
 
 class PrplDockerCPE(CPE, BoardfarmDevice):
