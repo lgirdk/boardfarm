@@ -46,7 +46,7 @@ def connect_and_run(func: Callable[P, T]) -> Callable[P, T]:
 
         if not instance.is_console_connected():
             # Adding a retry
-            for _ in range(3):
+            for _ in range(10):
                 try:
                     instance.connect_console()
                     break
