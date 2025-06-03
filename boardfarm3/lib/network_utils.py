@@ -177,3 +177,11 @@ class NetworkUtility:
         :rtype: str
         """
         return traceroute_host(self._console, host_ip, version=version, options=options)
+
+    def gen_uuid(self) -> str:
+        """Generate unique identifier.
+
+        :return: uuid
+        :rtype: str
+        """
+        return self._console.execute_command("uuidgen")
