@@ -124,8 +124,12 @@ class DockerComposeGenerator:
             # This is needed because the name in schema(ext_voip) differs from actual
             # device name (softphone)
             if device_name == "ext_voip":
-                base_device["services"][device_name] = self._replace(
-                    base_device["services"][device_name],
+                base_device["services"][  # type: ignore[call-overload, index]
+                    device_name
+                ] = self._replace(
+                    base_device["services"][  # type: ignore[call-overload, index]
+                        device_name  # type: ignore[call-overload, index]
+                    ],
                     f"{device_name}{device_count + 1}",
                     f"softphone{device_count + 1}",
                 )
