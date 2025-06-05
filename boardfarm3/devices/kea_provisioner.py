@@ -571,9 +571,7 @@ class KeaProvisioner(Provisioner):
         )
 
         # Fetch ENV details for provisioning CPE
-        # FIXME: BOARDFARM-4939 "options" should be replaced with  # noqa: FIX001
-        # "dhcp_options" in ENV SCHEMA 3.2
-        dhcp_options = self._config.get("options", {})
+        dhcp_options = self._config.get("dhcp_options", {})
 
         # FIXME: BOARDFARM-4940 DHCP options specified before # noqa: FIX001
         # ENV SCHEMA 3.2 do not differentiate according to service VLAN they
