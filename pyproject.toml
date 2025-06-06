@@ -46,6 +46,8 @@ dependencies = [
     "rich",
     "xmltodict",
     "debtcollector",
+    "scikit-image",  # image comparison
+    "opencv-python", # image comparison
 ]
 
 [project.optional-dependencies]
@@ -208,7 +210,6 @@ target-version = "py39"
 
 [tool.ruff.lint]
     ignore = [
-        "ANN101", # annotation of self object
         "ANN204", # annotation of __init__()
         "D203",
         "D213",
