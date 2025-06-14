@@ -998,6 +998,24 @@ class LinuxLAN(LinuxDevice, LAN):
         """Flushes arp cache entries."""
         self._console.execute_command("ip neigh flush all")
 
+    def get_arp_table(self) -> str:
+        """Fetch ARP table output.
+
+        :return: output of arp command
+        :rtype: str
+        """
+        return self._console.execute_command("arp -n")
+
+    def delete_arp_table_entry(self, ip: str, intf: str) -> None:
+        """Delete ARP table entry.
+
+        :param ip: ip of the host entry to be deleted
+        :type ip: str
+        :param intf: interface for which the entry needs to be deleted
+        :type intf: str
+        """
+        self._console.execute_command(f"ip neigh del {ip} dev {intf}")
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device

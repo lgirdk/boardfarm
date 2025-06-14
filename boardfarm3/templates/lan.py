@@ -882,3 +882,23 @@ class LAN(ABC):
     def flush_arp_cache(self) -> None:
         """Flushes arp cache entries."""
         raise NotImplementedError
+
+    @abstractmethod
+    def get_arp_table(self) -> str:
+        """Fetch ARP table output.
+
+        :return: output of arp command
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_arp_table_entry(self, ip: str, intf: str) -> None:
+        """Delete ARP table output.
+
+        :param ip: ip of the host entry to be deleted
+        :type ip: str
+        :param intf: interface for which the entry needs to be deleted
+        :type intf: str
+        """
+        raise NotImplementedError
