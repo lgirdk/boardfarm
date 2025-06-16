@@ -3,7 +3,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/commitizen-tools/commitizen
-      rev: v4.8.2
+      rev: v4.8.3
       hooks:
           - id: commitizen
             stages: [commit-msg]
