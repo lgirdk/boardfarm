@@ -20,7 +20,7 @@ exclude =
     venv
 max-complexity = 10
 max-line-length = 88
-extend-ignore = DAR, E203, E501
+extend-ignore = DAR, E203, E501, W503
 rst-roles =
     class,
     func,

@@ -22,7 +22,6 @@
     "python.testing.pytestEnabled": true,
     "ruff.fixAll": false,
     "ruff.importStrategy": "fromEnvironment",
-    "ruff.lint.run": "onSave",
     "ruff.organizeImports": true,
     "workbench.editor.enablePreview": false
 }
