@@ -64,6 +64,18 @@ isolate_management() {
     docker exec $cname ip rule add from $docker_nw table mgmt
     docker exec $cname ip rule add to $docker_nw table mgmt
 
+    if docker exec $cname sysctl -n net.ipv6.conf.${docker_dev}.disable_ipv6 | grep -q '^0$'; then
+        docker_dev_ip6=$(docker exec $cname ip -6 addr show $docker_dev | grep 'inet6' | grep 'global' | awk '{print $2}' | cut -d/ -f1)
+        docker_gw_ip6=$(docker exec $cname ip -6 route show default | grep -oP 'via \K[^ ]+')
+        docker_nw6=$(docker exec $cname ip -6 route show | grep -oP '^\S+/\d+' | grep -v 'fe80::' | head -n1)
+
+        docker exec $cname ip -6 route add default via $docker_gw_ip6 table mgmt
+        docker exec $cname ip -6 rule add from $docker_dev_ip6 table mgmt
+        docker exec $cname ip -6 rule add to $docker_dev_ip6 table mgmt
+        docker exec $cname ip -6 rule add from $docker_nw6 table mgmt
+        docker exec $cname ip -6 rule add to $docker_nw6 table mgmt
+    fi
+
     docker cp $cname:root/.bashrc bashrc_$cname
     echo "alias mgmt='BIND_ADDR=$docker_dev_ip LD_PRELOAD=/usr/lib/bind.so '" >> bashrc_$cname
     docker cp bashrc_$cname $cname:root/.bashrc; rm bashrc_$cname
