@@ -1,7 +1,8 @@
 {
     "environment_def": {
         "board": {
-            "eRouter_Provisioning_mode": "ipv4"
+            "eRouter_Provisioning_mode": "ipv4",
+            "model": "prplOS"
         }
     }
 }

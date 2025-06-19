@@ -44,6 +44,7 @@ dependencies = [
     "pyasn1==0.6.0",
     "requests",
     "rich",
+    "selenium<4.15.0",
     "xmltodict",
     "debtcollector",
     "scikit-image",  # image comparison

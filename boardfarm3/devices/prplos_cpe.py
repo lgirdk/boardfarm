@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import re
 from functools import cached_property
+from ipaddress import AddressValueError, IPv4Address
 from time import sleep
 from typing import TYPE_CHECKING, Any
 
@@ -21,7 +22,6 @@ from boardfarm3.templates.provisioner import Provisioner
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from ipaddress import IPv4Address
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.device_manager import DeviceManager
@@ -306,9 +306,19 @@ class PrplOSSW(CPESwLibraries):  # pylint: disable=R0904
     def lan_gateway_ipv4(self) -> IPv4Address:
         """LAN Gateway IPv4 address.
 
-        :raises NotImplementedError: implementation pending
+        :return: the ip (if present) 255.255.255.255 otherwise
+        :rtype: IPv4Address
         """
-        raise NotImplementedError
+        console = self._get_console("default_shell")
+        try:
+            return IPv4Address(
+                console.execute_command(
+                    "ifconfig br-lan|grep 'inet addr:' | tr ':' ' '| awk '{print $3}'"
+                )
+            )
+
+        except AddressValueError:
+            return IPv4Address("255.255.255.255")
 
     def is_production(self) -> bool:
         """Is production software.
