@@ -1,0 +1,176 @@
+---
+services:
+    router:
+        container_name: router
+        ports:
+            - 4000:22
+        environment:
+            - ENABLE_NAT_ON=eth0
+            - FRR_AUTO_CONF=yes
+            - TRIPLE_PLAY=no
+            - CPE_DATA_IFACE=cpe
+            - CPE_DATA_BUNDLE=10.1.1.1/24,2001:dead:cafe:1::1/64
+            - DHCP_RELAY=eth1,172.25.1.20,2001:dead:beef:2::20
+        image: ghcr.io/ketantewari/raikou/router:v1
+        privileged: true
+        hostname: router
+
+    cpe:
+        container_name: cpe
+        restart: always
+        image: ghcr.io/ketantewari/raikou/cpe:v1
+        ports:
+            - 4004:22
+        privileged: true
+        network_mode: none
+        command: [/bin/ash, -c, sleep 30 && /sbin/init]
+
+    sipcenter:
+        container_name: sipcenter
+        image: ghcr.io/ketantewari/raikou/sipcenter:v1
+        ports:
+            - 4005:22
+        environment:
+            - KAM_LISTEN_IPv4=172.25.1.5
+            - KAM_LISTEN_IPv6=2001:dead:beef:2::5
+            - KAM_LISTEN_ALIAS=sipcenter.boardfarm.com
+            - LEGACY=no
+        privileged: true
+        hostname: sipcenter
+
+    lan-phone:
+        container_name: lan-phone
+        image: ghcr.io/ketantewari/raikou/sipphone:v1
+        ports:
+            - 4006:22
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: lan-phone
+
+    wan-phone:
+        container_name: wan-phone
+        image: ghcr.io/ketantewari/raikou/sipphone:v1
+        ports:
+            - 4007:22
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: wan-phone
+
+    wan:
+        container_name: wan
+        image: ghcr.io/ketantewari/raikou/wan:v1
+        ports:
+            - 4001:22
+            - 8001:8080
+        environment:
+            - DNS_UPSTREAM=172.30.180.2
+            - LEGACY=no
+        privileged: true
+        hostname: wan
+
+    lan:
+        container_name: lan
+        image: ghcr.io/ketantewari/raikou/lan:v1
+        ports:
+            - 4002:22
+            - 8002:8080
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: lan
+
+    dhcp:
+        container_name: dhcp
+        image: ghcr.io/ketantewari/raikou/dhcp:v1
+        ports:
+            - 4003:22
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: dhcp
+        volumes:
+            - ./config/kea-dhcp4.conf:/etc/kea/kea-dhcp4.conf
+            - ./config/kea-dhcp6.conf:/etc/kea/kea-dhcp6.conf
+
+    mongo:
+        image: mongo:4.4
+        restart: always
+        privileged: true
+        container_name: mongo
+        hostname: mongo
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=bigfoot1
+            - MONGO_DATA_DIR=/data/db
+            - MONGO_LOG_DIR=/var/log/mongodb
+        volumes:
+            - data_db:/data/db
+            - data_configdb:/data/configdb
+        ports:
+            - 27017:27017
+
+    acs:
+        depends_on:
+            - mongo
+        image: ghcr.io/ketantewari/raikou/acs:v1
+        restart: always
+        container_name: acs
+        hostname: acs
+        environment:
+            - LEGACY=no
+            - GENIEACS_UI_JWT_SECRET=bigfoot1
+            - GENIEACS_CWMP_ACCESS_LOG_FILE=/var/log/genieacs/genieacs-cwmp-access.log
+            - GENIEACS_NBI_ACCESS_LOG_FILE=/var/log/genieacs/genieacs-nbi-access.log
+            - GENIEACS_FS_ACCESS_LOG_FILE=/var/log/genieacs/genieacs-fs-access.log
+            - GENIEACS_UI_ACCESS_LOG_FILE=/var/log/genieacs/genieacs-ui-access.log
+            - GENIEACS_DEBUG_FILE=/var/log/genieacs/genieacs-debug.yaml
+            - GENIEACS_EXT_DIR=/opt/genieacs/ext
+            - GENIEACS_MONGODB_CONNECTION_URL=mongodb://admin:bigfoot1@mongo:27017
+        privileged: true
+        ports:
+            - 4503:22
+            - 7547:7547
+            - 7557:7557
+            - 7567:7567
+            - 3000:3000
+        volumes:
+            - opt_volume:/opt
+
+    raikou-net:
+        container_name: orchestrator
+        image: ghcr.io/ketantewari/raikou/orchestrator:v1
+        volumes:
+            - /lib/modules:/lib/modules
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./config.json:/root/config.json
+        privileged: true
+        environment:
+            - USE_LINUX_BRIDGE=false
+        pid: host
+        network_mode: host
+        hostname: orchestrator
+        depends_on:
+            - router
+            - wan
+            - lan
+            - dhcp
+            - acs
+            - cpe
+            - sipcenter
+            - lan-phone
+            - wan-phone
+
+volumes:
+    data_db:
+    data_configdb:
+    opt_volume:
+
+
+networks:
+    default:
+        ipam:
+            config:
+                - subnet: 192.168.56.0/24
+                  gateway: 192.168.56.1
