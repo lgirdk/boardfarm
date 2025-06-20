@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+# ruff: noqa: RUF100
 # pylint: disable=no-member
 # flake8: noqa: RST219, RST305
 
