@@ -15,8 +15,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 
-from boardfarm3.lib.gui.gui_helper import element_is_present_by_css, save_screenshot
-from boardfarm3.lib.gui.pages.login import LoginPage  # pylint: disable=C0415
+from boardfarm3.lib.gui.gui_helper import (
+    element_is_present_by_css,
+    save_screenshot,
+)
+from boardfarm3.lib.gui.prplos.pages.login import LoginPage  # pylint: disable=C0415
 
 if TYPE_CHECKING:
     from ipaddress import IPv4Address

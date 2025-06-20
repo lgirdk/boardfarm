@@ -1,4 +1,4 @@
-"""PrplOS GUI LCM Page."""
+"""PrplOS GUI WiFi Page."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from selenium.common.exceptions import NoSuchElementException
 
-from boardfarm3.lib.gui.pages.page_helper import get_element_by_css
-from boardfarm3.lib.gui.pages.prplos_base_pom import PrplOSBasePOM
+from boardfarm3.lib.gui.prplos.pages.page_helper import get_element_by_css
+from boardfarm3.lib.gui.prplos.pages.prplos_base_pom import PrplOSBasePOM
 
 if TYPE_CHECKING:
     from ipaddress import IPv4Address
@@ -17,12 +17,12 @@ if TYPE_CHECKING:
     from selenium.webdriver.support.events import EventFiringWebDriver
 
 
-_SUBMENU_CSS = "#ember9"
+_SUBMENU_CSS = "#ember8"
 _HEADER_CSS = ".content > h2:nth-child(1)"
 
 
-class LCMPage(PrplOSBasePOM):
-    """Page Object for LCM page."""
+class WiFiPage(PrplOSBasePOM):
+    """Page Object for WiFi page."""
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class LCMPage(PrplOSBasePOM):
         gw_ip: str | IPv4Address,
         fluent_wait: int = 20,
     ) -> None:
-        """Initialize LCMPage POM.
+        """Initialize WiFiPage POM.
 
         :param driver: webdriver instance
         :type driver: WebDriver | EventFiringWebDriver
@@ -41,7 +41,7 @@ class LCMPage(PrplOSBasePOM):
         """
         super().__init__(driver, gw_ip, fluent_wait)
         try:
-            if self.networking_lcm_header.is_displayed():
+            if self.networking_wifi_header.is_displayed():
                 return  # Do not click open sub-menu if it is already open
         except NoSuchElementException:
             pass
@@ -56,20 +56,20 @@ class LCMPage(PrplOSBasePOM):
         :return: True if home page is loaded
         :rtype: bool
         """
-        return self.networking_lcm_header.is_displayed() and driver.execute_script(
+        return self.networking_wifi_header.is_displayed() and driver.execute_script(
             "return document.readyState == 'complete'"
         )
 
     @property
-    def networking_lcm_header(self) -> WebElement:
-        """The LCM header element.
+    def networking_wifi_header(self) -> WebElement:
+        """The WiFi header element.
 
         :return: the web element
         :rtype: WebElement
         :raises NoSuchElementException: if not found
         """
         element = get_element_by_css(self, _HEADER_CSS)
-        if element.text == "LCM":
+        if element.text == "WiFi":
             return element
-        msg = f"networking_lcm_header: {_HEADER_CSS}"
+        msg = f"networking_wifi_header: {_HEADER_CSS}"
         raise NoSuchElementException(msg)

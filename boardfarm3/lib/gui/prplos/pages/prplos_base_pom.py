@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from selenium.common.exceptions import TimeoutException
 
-from boardfarm3.lib.gui.pages.page_helper import (
+from boardfarm3.lib.gui.prplos.pages.page_helper import (
     get_element_by_css,
     initialize,
     wait_until_loaded,

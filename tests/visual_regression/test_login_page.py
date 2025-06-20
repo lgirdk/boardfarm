@@ -5,7 +5,7 @@ from typing import Any, Callable
 import pytest
 from selenium.webdriver.firefox.webdriver import WebDriver
 
-from boardfarm3.lib.gui.pages.login import LoginPage
+from boardfarm3.lib.gui.prplos.pages.login import LoginPage
 
 
 @pytest.mark.env_req({"environment_def": {"board": {"model": "prplOS"}}})

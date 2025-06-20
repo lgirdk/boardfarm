@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from boardfarm3.lib.gui.pages.page_helper import get_element_by_css
-from boardfarm3.lib.gui.pages.prplos_base_pom import PrplOSBasePOM
+from boardfarm3.lib.gui.prplos.pages.page_helper import get_element_by_css
+from boardfarm3.lib.gui.prplos.pages.prplos_base_pom import PrplOSBasePOM
 
 if TYPE_CHECKING:
     from ipaddress import IPv4Address

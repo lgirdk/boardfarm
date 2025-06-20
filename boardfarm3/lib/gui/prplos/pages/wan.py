@@ -1,4 +1,4 @@
-"""PrplOS GUI WiFi Page."""
+"""PrplOS GUI WAN Page."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from selenium.common.exceptions import NoSuchElementException
 
-from boardfarm3.lib.gui.pages.page_helper import get_element_by_css
-from boardfarm3.lib.gui.pages.prplos_base_pom import PrplOSBasePOM
+from boardfarm3.lib.gui.prplos.pages.page_helper import get_element_by_css
+from boardfarm3.lib.gui.prplos.pages.prplos_base_pom import PrplOSBasePOM
 
 if TYPE_CHECKING:
     from ipaddress import IPv4Address
@@ -17,12 +17,12 @@ if TYPE_CHECKING:
     from selenium.webdriver.support.events import EventFiringWebDriver
 
 
-_SUBMENU_CSS = "#ember8"
+_SUBMENU_CSS = "#ember6"
 _HEADER_CSS = ".content > h2:nth-child(1)"
 
 
-class WiFiPage(PrplOSBasePOM):
-    """Page Object for WiFi page."""
+class WANPage(PrplOSBasePOM):
+    """Page Object for WAN page."""
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class WiFiPage(PrplOSBasePOM):
         gw_ip: str | IPv4Address,
         fluent_wait: int = 20,
     ) -> None:
-        """Initialize WiFiPage POM.
+        """Initialize WANPage POM.
 
         :param driver: webdriver instance
         :type driver: WebDriver | EventFiringWebDriver
@@ -41,7 +41,7 @@ class WiFiPage(PrplOSBasePOM):
         """
         super().__init__(driver, gw_ip, fluent_wait)
         try:
-            if self.networking_wifi_header.is_displayed():
+            if self.networking_wan_header.is_displayed():
                 return  # Do not click open sub-menu if it is already open
         except NoSuchElementException:
             pass
@@ -53,23 +53,23 @@ class WiFiPage(PrplOSBasePOM):
 
         :param driver: webdriver instance
         :type driver: WebDriver | EventFiringWebDriver
-        :return: True if home page is loaded
+        :return: True if home page is loaded, Otherwise False
         :rtype: bool
         """
-        return self.networking_wifi_header.is_displayed() and driver.execute_script(
+        return self.networking_wan_header.is_displayed() and driver.execute_script(
             "return document.readyState == 'complete'"
         )
 
     @property
-    def networking_wifi_header(self) -> WebElement:
-        """The WiFi header element.
+    def networking_wan_header(self) -> WebElement:
+        """The WAN header element.
 
         :return: the web element
         :rtype: WebElement
-        :raises NoSuchElementException: if not found
+        :raises NoSuchElementException: if the correct header is not found
         """
         element = get_element_by_css(self, _HEADER_CSS)
-        if element.text == "WiFi":
+        if element.text == "WAN":
             return element
-        msg = f"networking_wifi_header: {_HEADER_CSS}"
+        msg = f"networking_wan_header: {_HEADER_CSS}"
         raise NoSuchElementException(msg)
