@@ -13,9 +13,14 @@ import jc
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
-from boardfarm3.exceptions import DeviceBootFailure, NotSupportedError
+from boardfarm3.exceptions import (
+    ConfigurationFailure,
+    DeviceBootFailure,
+    NotSupportedError,
+)
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.cpe_sw import CPESwLibraries
+from boardfarm3.lib.utils import retry
 from boardfarm3.templates.acs import ACS
 from boardfarm3.templates.cpe import CPE, CPEHW
 from boardfarm3.templates.provisioner import Provisioner
@@ -520,6 +525,33 @@ class PrplDockerCPE(CPE, BoardfarmDevice):
             )
             self.sw.configure_management_server(url=acs_url)
         _LOGGER.info("TR069 CPE IP: %s", self.sw.cpe_id)
+
+    def _is_http_gui_running(self) -> bool:
+        return bool(
+            self.hw.get_console("console").execute_command(
+                f"netstat -nlp |grep {self.sw.lan_gateway_ipv4}:80",
+            )
+        )
+
+    @hookimpl
+    def boardfarm_device_configure(self) -> None:
+        """Configure boardfarm device.
+
+        :raises ConfigurationFailure: if the http service cannot be run
+        """
+        if retry(self._is_http_gui_running, 5):
+            return
+        self.hw.get_console("console").execute_command(
+            "/etc/init.d/tr181-httpaccess stop",
+        )
+        sleep(5)
+        self.hw.get_console("console").execute_command(
+            "/etc/init.d/tr181-httpaccess start"
+        )
+        if retry(self._is_http_gui_running, 5):
+            return
+        msg = "Failed to start the GUI http daemon"
+        raise ConfigurationFailure(msg)
 
     @hookimpl
     def boardfarm_shutdown_device(self) -> None:
