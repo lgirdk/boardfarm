@@ -10,7 +10,7 @@ BUILDDIR=build
 
 # Put it first so that "make" without argument is like "make help".
 help:
-    @$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 .PHONY: help Makefile
 
@@ -19,4 +19,4 @@ help:
 # -W: turn warnings into errors; --keep-going: list all of them
 # -E do not use cache
 %: Makefile
-    @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" -W --keep-going -E $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" -W --keep-going -E $(SPHINXOPTS) $(O)

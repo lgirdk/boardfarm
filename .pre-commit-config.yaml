@@ -48,12 +48,12 @@ repos:
           - id: remove-crlf
             stages: [pre-commit]
           - id: remove-tabs
-            exclude: cm-cfg
+            exclude: cm-cfg|docs/Makefile
             stages: [pre-commit]
           - id: forbid-crlf
             stages: [pre-commit]
           - id: forbid-tabs
-            exclude: cm-cfg
+            exclude: cm-cfg|docs/Makefile
             stages: [pre-commit]
     - repo: https://github.com/myint/eradicate
       rev: 3.0.0
