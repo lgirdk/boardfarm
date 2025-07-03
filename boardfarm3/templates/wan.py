@@ -692,3 +692,25 @@ class WAN(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_process_id(self, process_name: str) -> list[str] | None:
+        """Return the process id to the device.
+
+        :param process_name: name of the process
+        :type process_name: str
+        :return: process id if the process exist, else None
+        :rtype: list[str] | None
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def kill_process(self, pid: int, signal: int) -> None:
+        """Kill the running process based on the process id.
+
+        :param pid: process id
+        :type pid: int
+        :type signal: signal number to terminate the process
+        :type signal: int
+        """
+        raise NotImplementedError
