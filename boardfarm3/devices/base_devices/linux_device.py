@@ -1473,3 +1473,28 @@ class LinuxDevice(BoardfarmDevice):
         :rtype: str
         """
         return self._console.execute_command("echo $HOSTNAME")
+
+    def get_process_id(self, process_name: str) -> list[str] | None:
+        """Return the process id to the device.
+
+        :param process_name: name of the process
+        :type process_name: str
+        :return: process id if the process exist, else None
+        :rtype: list[str] | None
+        """
+        pid_output = self._console.execute_command(f"pidof {process_name}").strip()
+        return pid_output.split(" ") if pid_output else None
+
+    def kill_process(self, pid: int, signal: int) -> None:
+        """Terminate the running process based on the process id.
+
+        :param pid: process id
+        :type pid: int
+        :type signal: signal number to terminate the process
+        :type signal: int
+        :raises ValueError: if unable to kill the process
+        """
+        self._console.execute_command(f"kill -{signal} {pid}")
+        if str(pid) in self._console.execute_command(f"ps -p {pid}"):
+            msg = f"Unable to kill process {pid}"
+            raise ValueError(msg)
