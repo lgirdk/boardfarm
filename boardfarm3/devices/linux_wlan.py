@@ -16,6 +16,7 @@ import pexpect
 from boardfarm3 import hookimpl
 from boardfarm3.devices.base_devices import LinuxDevice
 from boardfarm3.exceptions import WifiError
+from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
 from boardfarm3.lib.multicast import Multicast
 from boardfarm3.templates.cpe import CPE
@@ -72,16 +73,24 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
 
     @hookimpl
     def boardfarm_attached_device_configure(
-        self, device_manager: DeviceManager
+        self, device_manager: DeviceManager, config: BoardfarmConfig
     ) -> None:
         """Configure boardfarm attached device.
 
         :param device_manager: device manager
         :type device_manager: DeviceManager
+        :param config: contains both environment and inventory config
+        :type config: BoardfarmConfig
         """
         wifi = device_manager.get_device_by_type(
             CPE  # type: ignore[type-abstract]
         ).sw.wifi
+        if not all([self.band, self.network, self.protocol, self.authentication]):
+            _LOGGER.error(
+                "Unable to get all client details from environment config"
+                "Please check that band, network, protocol and authentication keys are present"
+            )
+            return
         ssid, bssid, passphrase = wifi.enable_wifi(self.network, self.band)
         # Connect appropriate client to the network
         self.wifi_client_connect(
@@ -91,6 +100,11 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             security_mode=self.authentication,
         )
         self._setup_static_routes()
+        if config.get_prov_mode() in ["ipv4"]:
+            self.start_ipv4_wlan_client()
+        else:
+            self.start_ipv4_wlan_client()
+            self.start_ipv6_wlan_client()
 
     @property
     def band(self) -> str:
@@ -215,14 +229,16 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
         """DHCP release of the wifi interface."""
         self.release_dhcp(self.iface_dut)
 
-    def dhcp_renew_wlan_iface(self) -> bool:
-        """DHCP renew of the wifi interface.
+    def start_ipv4_wlan_client(self) -> bool:
+        """Restart ipv4 dhclient to obtain an IP.
 
         :return: True if renew is success else False
         :rtype: bool
         """
         # Remove static ip if any
         self._console.execute_command(f"ifconfig {self.iface_dut} 0.0.0.0")
+        # remove default route
+        self._console.execute_command("ip route flush default")
         # Clean IP lease if any
         self._console.execute_command(f"dhclient -r {self.iface_dut}")
         # Kill dhcp client
@@ -235,6 +251,16 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             self._console.expect(self._shell_prompt)
             self._console.execute_command("killall dhclient")
             return False
+
+    def start_ipv6_wlan_client(self) -> None:
+        """Restart ipv6 dhclient to obtain IP."""
+        # flush default ipv6 route
+        self._console.execute_command("ip -6 route flush default")
+
+        self._console.execute_command(f"dhclient -6 -r {self.iface_dut}")
+        self._console.execute_command(f"dhclient -6 -v {self.iface_dut}")
+        self.disable_ipv6()
+        self.enable_ipv6()
 
     def set_wlan_scan_channel(self, channel: str) -> None:
         """Change wifi client scan channel.
@@ -410,7 +436,7 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
         verify_connect = self.is_wlan_connected()
         if not verify_connect:
             raise WifiError(f"Wlan client failed to connect to {ssid_name} network")
-        self.dhcp_renew_wlan_iface()
+        self.start_ipv4_wlan_client()
 
     def enable_ipv6(self) -> None:
         """Enable ipv6 on the connected client interface."""

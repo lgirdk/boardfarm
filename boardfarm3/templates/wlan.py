@@ -151,12 +151,17 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
-    def dhcp_renew_wlan_iface(self) -> bool:
-        """DHCP renew of the wifi interface.
+    def start_ipv4_wlan_client(self) -> bool:
+        """Restart ipv4 dhclient to obtain an IP.
 
         :return: True if renew is success else False
         :rtype: bool
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_ipv6_wlan_client(self) -> None:
+        """Restart ipv6 dhclient to obtain IP."""
         raise NotImplementedError
 
     @abstractmethod
