@@ -604,7 +604,7 @@ class EnvHelper:
         :rtype: dict
         """
         try:
-            return self.env["environment_def"]["provisioner"]["options"]
+            return self.env["environment_def"]["provisioner"]["dhcp_options"]
         except (KeyError, AttributeError):
             return dict()
 
@@ -683,7 +683,7 @@ class EnvHelper:
         return (
             self.env.get("environment_def", {})
             .get("provisioner", {})
-            .get("options", {})
+            .get("dhcp_options", {})
         )
 
     def is_route_gateway_valid(self) -> bool:
