@@ -8,6 +8,7 @@ import tempfile
 import time
 import warnings
 import xml.dom.minidom
+from contextlib import suppress
 from datetime import datetime
 from typing import Optional, Union
 from xml.etree import ElementTree
@@ -372,9 +373,10 @@ class AxirosACS(Intercept, base_acs.BaseACS, AcsTemplate):
         def to_dateTime(v):
             if re.search(r"^1\s", v):
                 v = v.zfill(len(v) + 3)
-            v = datetime.strptime(v, "%Y %m %d %H %M %S.0").strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            )
+            with suppress(ValueError):
+                v = datetime.strptime(v, "%Y %m %d %H %M %S.0").strftime(
+                    "%Y-%m-%dT%H:%M:%S"
+                )
             return v
 
         conv_table = {
