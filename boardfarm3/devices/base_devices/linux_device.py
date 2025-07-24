@@ -1425,7 +1425,7 @@ class LinuxDevice(BoardfarmDevice):
             msg = "Unable to stop nping process"
             raise BoardfarmException(msg)
 
-    def perform_flood_operation(
+    def hping_flood(
         self,
         protocol: str,
         target: str,

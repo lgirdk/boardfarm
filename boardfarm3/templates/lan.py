@@ -821,7 +821,7 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def perform_flood_operation(
+    def hping_flood(
         self,
         protocol: str,
         target: str,
