@@ -44,6 +44,8 @@ dependencies = [
     "pyasn1==0.6.0",
     "requests",
     "rich",
+    "kafka-python-ng",
+    "termcolor",
     "selenium<4.15.0",
     "xmltodict",
     "debtcollector",
