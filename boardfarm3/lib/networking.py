@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Any, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 import pexpect
 from bs4 import BeautifulSoup
@@ -14,6 +14,13 @@ from jc.parsers import dig
 from boardfarm3.exceptions import SCPConnectionError, UseCaseFailure
 from boardfarm3.lib.parsers.iptables_parser import IptablesParser
 from boardfarm3.lib.parsers.nslookup_parser import NslookupParser
+from boardfarm3.templates.cpe import CPE
+
+if TYPE_CHECKING:
+    from boardfarm3.templates.cpe import CPESW
+    from boardfarm3.templates.lan import LAN
+    from boardfarm3.templates.wan import WAN
+    from boardfarm3.templates.wlan import WLAN
 
 
 class _LinuxConsole(Protocol):
@@ -644,3 +651,57 @@ def is_link_up(
     :rtype: bool
     """
     return pattern in console.execute_command(f"ip link show {interface}")
+
+
+def nmap(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+    source_device: LAN | WLAN | WAN,
+    destination_device: LAN | WLAN | WAN | CPE,
+    ip_type: str,
+    port: str | int | None = None,
+    protocol: str | None = None,
+    max_retries: int | None = None,
+    min_rate: int | None = None,
+    opts: str | None = None,
+    timeout: int = 30,
+) -> dict[str, str]:
+    """Run an nmap scan from source to destination device.
+
+    :param source_device: device initiating the scan
+    :type source_device: LAN | WLAN | WAN
+    :param destination_device: device to be scanned
+    :type destination_device: LAN | WLAN | WAN | CPE
+    :param ip_type: IP version to use in scan, must be "ipv4" or "ipv6"
+    :type ip_type: str
+    :param port: port or port range to scan, optional
+    :type port: str | int | None
+    :param protocol: protocol to scan (e.g., tcp, udp), optional
+    :type protocol: str | None
+    :param max_retries: maximum number of retransmissions, optional
+    :type max_retries: int | None
+    :param min_rate: minimum number of packets per second to send, optional
+    :type min_rate: int | None
+    :param opts: additional nmap command-line options, optional
+    :type opts: str | None
+    :param timeout: timeout value for the scan (in seconds), defaults to 30
+    :type timeout: int
+    :return: parsed nmap scan result as a dictionary
+    :rtype: dict[str, str]
+    """
+    iface: str = (
+        destination_device.sw.erouter_iface
+        if isinstance(destination_device, CPE)
+        else destination_device.iface_dut
+    )
+    dest_device: LAN | WLAN | WAN | CPESW = (
+        destination_device.sw
+        if isinstance(destination_device, CPE)
+        else destination_device
+    )
+    ipaddr: str = (
+        dest_device.get_interface_ipv4addr(iface)
+        if ip_type == "ipv4"
+        else f"-6 {dest_device.get_interface_ipv6addr(iface)}"
+    )
+    return source_device.nmap(
+        ipaddr, ip_type, port, protocol, max_retries, min_rate, opts, timeout=timeout
+    )

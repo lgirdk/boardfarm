@@ -6,7 +6,9 @@ import binascii
 import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
+from ipaddress import IPv4Address, IPv6Address
 from json import JSONDecodeError, JSONDecoder
+from time import sleep
 from typing import TYPE_CHECKING, Any
 
 from boardfarm3.exceptions import UseCaseFailure
@@ -18,6 +20,7 @@ if TYPE_CHECKING:
     from boardfarm3.templates.line_termination import LTS
     from boardfarm3.templates.provisioner import Provisioner
     from boardfarm3.templates.wan import WAN
+    from boardfarm3.templates.wlan import WLAN
 
 RecursiveDict = dict[str, Any]
 
@@ -564,3 +567,63 @@ def get_all_dhcpv6_options(packet: DHCPV6TraceData) -> DHCPV6Options:
     else:
         out = dict(packet.dhcpv6_packet.items())
     return DHCPV6Options(out)
+
+
+def dhcp_renew_ipv4(host: LAN | WLAN) -> IPv4Address:
+    """Release and renew IPv4 in the device and return IPv4.
+
+    .. hint:: This Use Case implements statements from the test suite such as:
+
+        - Trigger DHCP DISCOVER for the LAN Client IPv4 acquisition
+        - Verify the IP acquisition on LAN devices
+        - Check if the LAN Client connected to CPE obtains both IPv4 and IPv6 address
+
+    :param host: host where the IP has to be renewed
+    :type host: LAN | WLAN
+    :return: IPv4 address of the device
+    :rtype: IPv4Address
+    """
+    host.release_dhcp(host.iface_dut)
+    host.renew_dhcp(host.iface_dut)
+    return IPv4Address(host.get_interface_ipv4addr(host.iface_dut))
+
+
+def dhcp_renew_stateful_ipv6(host: LAN | WLAN) -> IPv6Address:
+    """Release and renew stateful IPv6 in the device and return IPv6.
+
+    .. hint:: This Use Case implements statements from the test suite such as:
+
+        - Initiate the IPv6 acquisition from LAN Ethernet client
+        - Initiate the IPv6 process from LAN Ethernet client
+        - Release and renew IPv6 address on LAN client
+
+    :param host: host where the IP has to be renewed
+    :type host: LAN | WLAN
+    :return: IPv6 address of the device
+    :rtype: IPv6Address
+    """
+    host.release_ipv6(host.iface_dut)
+    host.renew_ipv6(host.iface_dut)
+    return IPv6Address(host.get_interface_ipv6addr(host.iface_dut))
+
+
+def dhcp_renew_stateless_ipv6(host: LAN | WLAN) -> IPv6Address:
+    """Release and renew stateless IPv6 in the device and return IPv6.
+
+    .. hint:: This Use Case implements statements from the test suite such as:
+
+        - Initiate the IPv6 stateless acquisition from LAN Ethernet client
+        - Initiate the IPv6 stateless  process from LAN Ethernet client
+        - Release and renew stateless IPv6 address on LAN client
+
+    :param host: host where the IP has to be renewed
+    :type host: LAN | WLAN
+    :return: IPv6 address of the device
+    :rtype: IPv6Address
+    """
+    host.release_ipv6(host.iface_dut, stateless=True)
+    host.set_link_state(host.iface_dut, "down")
+    host.set_link_state(host.iface_dut, "up")
+    host.renew_ipv6(host.iface_dut, stateless=True)
+    sleep(10)
+    return IPv6Address(host.get_interface_ipv6addr(host.iface_dut))

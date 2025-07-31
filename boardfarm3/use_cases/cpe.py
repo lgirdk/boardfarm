@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import os
+from contextlib import contextmanager
 from string import Template
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
+
+from boardfarm3.exceptions import UseCaseFailure
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from boardfarm3.templates.cpe import CPE
     from boardfarm3.templates.lan import LAN
+    from boardfarm3.templates.wan import WAN
 
 
 _TOO_MANY_NTPS = 1
@@ -232,3 +239,157 @@ def board_reset_via_console(board: CPE) -> None:
     """
     board.sw.reset(method="sw")
     board.sw.wait_for_boot()
+
+
+@contextmanager
+def tcpdump(
+    fname: str,
+    interface: str,
+    board: CPE,
+    filters: dict | None = None,
+) -> Generator[str]:
+    """Contextmanager to perform tcpdump on the board.
+
+    Start ``tcpdump`` on the board console and kill it outside its scope
+
+    :param fname: the filename or the complete path of the resource
+    :type fname: str
+    :param interface: interface name on which the tcp traffic will listen to
+    :type interface: str
+    :param board: CPE device instance
+    :type board: CPE
+    :param filters: filters as key value pair(eg: {"-v": "", "-c": "4"})
+    :type filters: dict | None
+    :yield: yields the process id of the tcp capture started
+    :rtype: Generator[str, None, None]
+    """
+    pid: str = ""
+    try:
+        pid = board.sw.nw_utility.start_tcpdump(fname, interface, filters=filters)
+        yield pid
+    finally:
+        board.sw.nw_utility.stop_tcpdump(pid)
+
+
+def read_tcpdump(
+    fname: str,
+    board: CPE,
+    protocol: str = "",
+    opts: str = "",
+    rm_pcap: bool = True,
+) -> str:
+    """Read the tcpdump packets and delete the capture file afterwards.
+
+    :param fname: filename or the complete path of the pcap file
+    :type fname: str
+    :param board: CPE device instance
+    :type board: CPE
+    :param protocol: protocol to filter, defaults to ""
+    :type protocol: str
+    :param opts: defaults to ""
+    :type opts: str
+    :param rm_pcap: defaults to True
+    :type rm_pcap: bool
+    :return: output of tcpdump read command
+    :rtype: str
+    """
+    return board.sw.nw_utility.read_tcpdump(
+        fname,
+        protocol=protocol,
+        opts=opts,
+        rm_pcap=rm_pcap,
+    )
+
+
+def transfer_file_via_scp(  # pylint: disable=protected-access  # noqa: PLR0913
+    source_dev: CPE,
+    source_file: str,
+    dest_file: str,
+    dest_host: LAN | WAN,
+    action: Literal["download", "upload"],
+    port: int | str = 22,
+    ipv6: bool = False,
+) -> None:
+    """Copy files and directories between the board and the remote host.
+
+    Copy is made over SSH.
+
+    :param source_dev: CPE device instance
+    :type source_dev: CPE
+    :param source_file: path on the board
+    :type source_file: str
+    :param dest_file: path on the remote host
+    :type dest_file: str
+    :param dest_host: the remote host instance
+    :type dest_host: LAN | WAN
+    :param port: host port
+    :type port: int | str
+    :param action: scp action to perform i.e upload, download
+    :type action: Literal["download", "upload"]
+    :param port: host port, defaults to 22
+    :type port: str
+    :param ipv6: whether scp should be done to IPv4 or IPv6, defaults to IPv4
+    :type ipv6: bool
+    """
+    (src, dst) = (
+        (source_file, dest_file) if action == "upload" else (dest_file, source_file)
+    )
+    # TODO: private members should not be used, BOARDFARM-5040
+    username = dest_host._username  # type: ignore[union-attr]  # noqa: SLF001
+    password = dest_host._password  # type: ignore[union-attr]  # noqa: SLF001
+    ip_addr = (
+        dest_host.get_interface_ipv6addr(dest_host.iface_dut)
+        if ipv6
+        else dest_host.get_interface_ipv4addr(dest_host.iface_dut)
+    )
+    source_dev.sw.nw_utility.scp(ip_addr, port, username, password, src, dst, action)
+
+
+def upload_file_to_tftp(  # pylint: disable=too-many-arguments  # noqa: PLR0913
+    source_dev: CPE,
+    source_file: str,
+    tftp_server: LAN | WAN,
+    path_on_tftpserver: str,
+    ipv6: bool = False,
+    timeout: int = 60,
+) -> None:
+    """Transfer file onto tftp server.
+
+    .. hint:: This Use Case helps to copy files from board to tftp servre
+
+        - can be used after a tcpdump on board
+
+    :param source_dev: CPE device instance
+    :type source_dev: CPE
+    :param source_file: Path on the board
+    :type source_file: str
+    :param tftp_server: the remote tftp server instance
+    :type tftp_server: LAN | WAN
+    :param path_on_tftpserver: Path on the tftp server
+    :type path_on_tftpserver: str
+    :param ipv6: if scp should be done to ipv4 or ipv6, defaults to ipv4
+    :type ipv6: bool
+    :param timeout: timeout value for the usecase
+    :type timeout: int
+    :raises UseCaseFailure: when file not found
+    """
+    serv_tftp_folder = "/tftpboot"
+    server_ip_addr = (
+        tftp_server.get_interface_ipv6addr(tftp_server.iface_dut)
+        if ipv6
+        else tftp_server.get_interface_ipv4addr(tftp_server.iface_dut)
+    )
+    _, filename = os.path.split(source_file)
+    file_location_on_server = f"{serv_tftp_folder}/{filename}"
+    tftp_server.console.execute_command(
+        f"chmod 777 {serv_tftp_folder}", timeout=timeout
+    )
+    source_dev.sw.nw_utility.tftp(
+        server_ip_addr, source_file, filename, timeout=timeout
+    )
+    # move file to given tftp location and perform check of transfer
+    mv_command = f"mv {file_location_on_server} {path_on_tftpserver}"
+    output = tftp_server.console.execute_command(mv_command, timeout=timeout)
+    if "No such file or directory" in output:
+        msg = f"file not found {output}"
+        raise UseCaseFailure(msg)

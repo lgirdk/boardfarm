@@ -188,14 +188,14 @@ class CPESwLibraries(CPESW):
     def is_link_up(
         self,
         interface: str,
-        pattern: str | None = "BROADCAST,MULTICAST,UP",
+        pattern: str = "BROADCAST,MULTICAST,UP",
     ) -> bool:
         """Check given interface is up or not.
 
         :param interface: interface name, defaults to "BROADCAST,MULTICAST,UP"
         :type interface: str
         :param pattern: interface state
-        :type pattern: str | None
+        :type pattern: str
         :return: True if the link is up
         :rtype: bool
         """
