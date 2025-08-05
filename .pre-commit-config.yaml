@@ -73,7 +73,7 @@ repos:
             args: [--py39-plus]
             stages: [pre-commit]
     - repo: https://github.com/ikamensh/flynt/
-      rev: 1.0.6
+      rev: 1.0.3
       hooks:
           - id: flynt
             stages: [pre-commit]
