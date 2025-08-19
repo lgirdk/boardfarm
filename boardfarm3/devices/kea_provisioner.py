@@ -29,6 +29,8 @@ from boardfarm3.exceptions import (
 from boardfarm3.lib.connection_factory import connection_factory
 from boardfarm3.lib.connections.local_cmd import LocalCmd
 from boardfarm3.lib.networking import IptablesFirewall
+from boardfarm3.lib.networking import start_tcpdump as start_tcp_dump
+from boardfarm3.lib.networking import stop_tcpdump as stop_tcp_dump
 from boardfarm3.lib.shell_prompt import KEA_PROVISIONER_SHELL_PROMPT
 from boardfarm3.templates.provisioner import Provisioner
 from boardfarm3.templates.wan import WAN
@@ -251,6 +253,47 @@ class KeaProvisioner(Provisioner):
                 self._shell_prompt  # type:ignore[attr-defined] # pylint: disable=maybe-no-member
             )
         return output
+
+    # pylint: disable=R0801
+    def start_tcpdump(
+        self,
+        interface: str,
+        port: str | None,
+        output_file: str = "pkt_capture.pcap",
+        filters: dict | None = None,
+        additional_filters: str | None = "",
+    ) -> str:
+        """Start tcpdump capture on given interface.
+
+        :param interface: inteface name where packets to be captured
+        :type interface: str
+        :param port: port number, can be a range of ports(eg: 443 or 433-443)
+        :type port: str
+        :param output_file: pcap file name, Defaults: pkt_capture.pcap
+        :type output_file: str
+        :param filters: filters as key value pair(eg: {"-v": "", "-c": "4"})
+        :type filters: Optional[Dict]
+        :param additional_filters: additional filters
+        :type additional_filters: Optional[str]
+        :return: console ouput and tcpdump process id
+        :rtype: str
+        """
+        return start_tcp_dump(
+            console=self._console,
+            interface=interface,
+            output_file=output_file,
+            filters=filters,
+            port=port,
+            additional_filters=additional_filters,
+        )
+
+    def stop_tcpdump(self, process_id: str) -> None:
+        """Stop tcpdump capture.
+
+        :param process_id: tcpdump process id
+        :type process_id: str
+        """
+        stop_tcp_dump(self._console, process_id=process_id)
 
     def _run_command_with_args(  # pylint: disable=duplicate-code
         self,

@@ -14,11 +14,7 @@ if TYPE_CHECKING:
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import Multicast, MulticastGroupRecord
     from boardfarm3.lib.network_utils import NetworkUtility
-    from boardfarm3.lib.networking import (
-        HTTPResult,
-        IptablesFirewall,
-        NSLookup,
-    )
+    from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, NSLookup
 
 # pylint: disable=too-many-public-methods,duplicate-code
 
@@ -881,6 +877,42 @@ class LAN(ABC):
     @abstractmethod
     def flush_arp_cache(self) -> None:
         """Flushes arp cache entries."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_tcpdump(
+        self,
+        interface: str,
+        port: str | None,
+        output_file: str = "pkt_capture.pcap",
+        filters: dict | None = None,
+        additional_filters: str | None = "",
+    ) -> str:
+        """Start tcpdump capture on given interface.
+
+        :param interface: inteface name where packets to be captured
+        :type interface: str
+        :param port: port number, can be a range of ports(eg: 443 or 433-443)
+        :type port: str
+        :param output_file: pcap file name, Defaults: pkt_capture.pcap
+        :type output_file: str
+        :param filters: filters as key value pair(eg: {"-v": "", "-c": "4"})
+        :type filters: Optional[Dict]
+        :param additional_filters: additional filters
+        :type additional_filters: Optional[str]
+        :raises ValueError: on failed to start tcpdump
+        :return: console ouput and tcpdump process id
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def stop_tcpdump(self, process_id: str) -> None:
+        """Stop tcpdump capture.
+
+        :param process_id: tcpdump process id
+        :type process_id: str
+        """
         raise NotImplementedError
 
     @abstractmethod
