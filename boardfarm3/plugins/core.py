@@ -9,6 +9,7 @@ from typing import Any
 from pluggy import PluginManager
 
 from boardfarm3 import hookimpl
+from boardfarm3.devices.axiros_acs import AxirosACS
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.devices.genie_acs import GenieACS
 from boardfarm3.devices.kamailio import SIPcenterKamailio5
@@ -166,6 +167,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "bf_kamailio": SIPcenterKamailio5,
         "bf_phone": PJSIPPhone,
         "bf_rpi4rdkb": RPiRDKBCPE,
+        "axiros_acs": AxirosACS,
     }
 
 
