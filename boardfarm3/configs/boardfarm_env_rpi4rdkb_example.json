@@ -1,0 +1,13 @@
+{
+    "environment_def": {
+        "board": {
+            "eRouter_Provisioning_mode": "ipv4",
+            "lan_clients": [
+                {},
+                {}
+            ],
+            "model": "bf_rpi4rdkb"
+        },
+        "tr-069": {}
+    }
+}

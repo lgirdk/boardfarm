@@ -10,6 +10,7 @@ import pexpect
 from jc import parse
 
 from boardfarm3.exceptions import BoardfarmException
+from boardfarm3.lib.dmcli import DMCLIAPI
 from boardfarm3.lib.network_utils import NetworkUtility
 from boardfarm3.lib.networking import IptablesFirewall, is_link_up
 from boardfarm3.templates.cpe.cpe_sw import CPESW
@@ -37,6 +38,7 @@ class CPESwLibraries(CPESW):
         self._hw = hardware
         self._nw_utility = NetworkUtility(self._get_console("networking"))
         self._firewall = IptablesFirewall(self._get_console("networking"))
+        self._dmcli = DMCLIAPI(hardware.get_console("console"))
 
     @property
     def _console(self) -> BoardfarmPexpect:
@@ -73,6 +75,15 @@ class CPESwLibraries(CPESW):
         :rtype: IptablesFirewall
         """
         return self._firewall
+
+    @property
+    def dmcli(self) -> DMCLIAPI:
+        """Dmcli instance running in CPE Software.
+
+        :return: the object instance
+        :rtype: DMCLIAPI
+        """
+        return self._dmcli
 
     def get_seconds_uptime(self) -> float:
         """Return uptime in seconds.

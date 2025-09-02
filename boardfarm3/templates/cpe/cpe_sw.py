@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from jc.jc_types import JSONDictType
 
     from boardfarm3.lib.custom_typing.jc import ParsedPSOutput
+    from boardfarm3.lib.dmcli import DMCLIAPI
     from boardfarm3.lib.hal.cpe_wifi import WiFiHal
     from boardfarm3.lib.network_utils import NetworkUtility
     from boardfarm3.lib.networking import IptablesFirewall
@@ -25,6 +26,12 @@ class CPESW(ABC):
     @abstractmethod
     def wifi(self) -> WiFiHal:
         """Wifi instance CPE Software."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def dmcli(self) -> DMCLIAPI:
+        """Dmcli instance running in CPE Software (if any)."""
         raise NotImplementedError
 
     @property
