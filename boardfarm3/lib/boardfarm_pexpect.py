@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 from logging import Formatter, Logger, getLogger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import Any
 
 import pexpect
 
@@ -72,6 +73,7 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         command: str,
         save_console_logs: str,
         args: list[str],
+        **kwargs: dict[str, Any],
     ) -> None:
         """Initialize boardfarm pexpect.
 
@@ -83,15 +85,17 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         :type save_console_logs: str
         :param args: additional arguments to the command
         :type args: list[str]
+        :param kwargs: may contains the 'env' for pexpect, optional
+        :type kwargs: dict[str, Any]
         """
+        kwargs.setdefault("env", {"PATH": os.getenv("PATH"), "TERM": "dumb"})
         super().__init__(
             command=command,
             args=list(args),
             encoding="utf-8",
             dimensions=(24, 240),
             codec_errors="ignore",
-            # TODO: Investigate the issue of double prompt in freepbx
-            env={"PATH": os.getenv("PATH"), "TERM": "dumb"},
+            env=kwargs.get("env"),
         )
         self._configure_logging(session_name, save_console_logs)
 
