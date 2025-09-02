@@ -1,0 +1,84 @@
+{
+    "rpi4-rdkb-1": {
+        "devices": [
+            {
+                "conn_cmd": [
+                    "picocom -b 115200 /dev/ttyUSB0"
+                ],
+                "connection_type": "serial",
+                "gui_password": "admin",
+                "mac": "dc:a6:32:25:8f:e0",
+                "name": "board",
+                "powerport": "netio://192.168.0.45:81; 1",
+                "type": "bf_rpi4rdkb"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8001",
+                "ipaddr": "localhost",
+                "name": "wan",
+                "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.2/24, wan-static-ipv6:2001:dead:beef:2::2/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4001,
+                "type": "bf_wan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8002",
+                "ipaddr": "localhost",
+                "name": "lan",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4002,
+                "type": "bf_lan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8003",
+                "ipaddr": "localhost",
+                "name": "lan2",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4003,
+                "type": "bf_lan"
+            },
+            {
+                "acs_url": "http://172.25.1.40:9675",
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "provisioner",
+                "port": 4004,
+                "preferred_vlan": "untagged",
+                "router_ipaddr": "localhost;4000",
+                "time_server": "216.239.35.0",
+                "time_server6": "2001:4860:4802:0032::a",
+                "timezone": 0,
+                "type": "bf_dhcp",
+                "vlans": {
+                    "untagged": {
+                        "cpe_pd": "2001:dead:bed1::/56",
+                        "iface": "eth1",
+                        "ipv4": "10.1.1.0/24",
+                        "ipv6": "2001:dead:cafe:1::/64"
+                    }
+                }
+            },
+            {
+                "acs_mib": "http://172.25.1.40:9675",
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_password": "bigfoot1",
+                "http_port": 9676,
+                "http_username": "admin",
+                "ipaddr": "192.168.0.237",
+                "name": "acs",
+                "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
+                "password": "bigfoot1",
+                "port": 4503,
+                "type": "axiros_acs_rest",
+                "username": "root"
+            }
+        ]
+    }
+}
