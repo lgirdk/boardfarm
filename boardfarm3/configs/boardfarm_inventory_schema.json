@@ -1,0 +1,483 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "acs_rest": {
+            "additionalProperties": true,
+            "description": "ACS REST server definitions. Accepts a few commonly used variants from examples.",
+            "oneOf": [
+                {
+                    "description": "HTTP-connectable ACS: requires at least an HTTP endpoint or ACS URL.",
+                    "required": [
+                        "http_endpoint"
+                    ]
+                },
+                {
+                    "description": "ACS with acs_mib / acs_url reference.",
+                    "required": [
+                        "acs_mib"
+                    ]
+                },
+                {
+                    "description": "Fallback: local ipaddr + port present.",
+                    "required": [
+                        "ipaddr",
+                        "port"
+                    ]
+                }
+            ],
+            "properties": {
+                "acs_mib": {
+                    "description": "ACS MIB URL (example: 'http://acs_server.boardfarm.com:9675')",
+                    "type": "string"
+                },
+                "acs_url": {
+                    "description": "Alternate ACS URL field",
+                    "type": "string"
+                },
+                "acs_url6": {
+                    "type": "string"
+                },
+                "connection_type": {
+                    "type": "string"
+                },
+                "http_endpoint": {
+                    "description": "host:port or URL used as HTTP endpoint (example: '10.64.38.17:9676' or '10.71.10.22:10020')",
+                    "type": "string"
+                },
+                "http_endpoint_uri": {
+                    "description": "full HTTP URI if used",
+                    "type": "string"
+                },
+                "http_password": {
+                    "type": "string"
+                },
+                "http_port": {
+                    "type": "integer"
+                },
+                "http_username": {
+                    "type": "string"
+                },
+                "ipaddr": {
+                    "type": "string"
+                },
+                "max_users": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "port": {
+                    "description": "service port used for SSH/connection when applicable",
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ],
+            "type": "object"
+        },
+        "board": {
+            "additionalProperties": true,
+            "properties": {
+                "cm_mac": {
+                    "type": "string"
+                },
+                "conn_cmd": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "connection_type": {
+                    "type": "string"
+                },
+                "hardware_version": {
+                    "type": "string"
+                },
+                "mac": {
+                    "type": "string"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "mirror": {
+                    "format": "uri",
+                    "type": "string"
+                },
+                "name": {
+                    "const": "board",
+                    "type": "string"
+                },
+                "powerport": {
+                    "type": "string"
+                },
+                "samknows_agent_id": {
+                    "type": "string"
+                },
+                "samknows_periodic_test_interval": {
+                    "type": "integer"
+                },
+                "samknows_threshold": {
+                    "type": "integer"
+                },
+                "serial": {
+                    "type": "string"
+                },
+                "sku": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "connection_type",
+                "conn_cmd"
+            ],
+            "type": "object"
+        },
+        "deviceGroup": {
+            "additionalProperties": true,
+            "description": "Board entry (top-level key is the board id).",
+            "properties": {
+                "devices": {
+                    "items": {
+                        "$ref": "#/definitions/deviceUnion"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "labels": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "location": {
+                    "description": "Optional: name of a location defined under top-level `locations`.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "devices"
+            ],
+            "type": "object"
+        },
+        "deviceUnion": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/board"
+                },
+                {
+                    "$ref": "#/definitions/provisioner"
+                },
+                {
+                    "$ref": "#/definitions/network_endpoint"
+                },
+                {
+                    "$ref": "#/definitions/odh"
+                },
+                {
+                    "$ref": "#/definitions/acs_rest"
+                },
+                {
+                    "$ref": "#/definitions/generic_device"
+                }
+            ]
+        },
+        "generic_device": {
+            "additionalProperties": true,
+            "properties": {
+                "connection_type": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ],
+            "type": "object"
+        },
+        "location": {
+            "additionalProperties": true,
+            "properties": {
+                "devices": {
+                    "items": {
+                        "$ref": "#/definitions/deviceUnion"
+                    },
+                    "type": "array"
+                },
+                "labels": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "devices"
+            ],
+            "type": "object"
+        },
+        "locationMap": {
+            "additionalProperties": {
+                "$ref": "#/definitions/location"
+            },
+            "description": "Map of location-key -> location object. Keys are location identifiers.",
+            "type": "object"
+        },
+        "network_endpoint": {
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "bf_wan",
+                                    "bf_wlan",
+                                    "bf_lan",
+                                    "bf_tftp",
+                                    "bf_kamailio",
+                                    "bf_phone"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "ipaddr": {
+                                "type": "string"
+                            },
+                            "port": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "bf_kamailio"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "numbers": {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "numbers"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "bf_phone"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "number": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "number"
+                        ]
+                    }
+                }
+            ],
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "connection_type": {
+                    "type": "string"
+                },
+                "fxs_port": {
+                    "type": "string"
+                },
+                "http_port": {
+                    "type": "integer"
+                },
+                "http_proxy": {
+                    "type": "string"
+                },
+                "ipaddr": {
+                    "type": "string"
+                },
+                "ipv6_ACL": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "ipv6_ep": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "numbers": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "options": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "usb_port": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "connection_type"
+            ],
+            "type": "object"
+        },
+        "odh": {
+            "additionalProperties": true,
+            "properties": {
+                "bootstrap_server": {
+                    "type": "string"
+                },
+                "connection_type": {
+                    "type": "string"
+                },
+                "name": {
+                    "const": "odh",
+                    "type": "string"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "type"
+            ],
+            "type": "object"
+        },
+        "provisioner": {
+            "additionalProperties": true,
+            "properties": {
+                "ipaddr": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "prov_gateway": {
+                    "type": "string"
+                },
+                "prov_gateway_v6": {
+                    "type": "string"
+                },
+                "prov_ip": {
+                    "type": "string"
+                },
+                "prov_ipv6": {
+                    "type": "string"
+                },
+                "prov_network": {
+                    "type": "string"
+                },
+                "time_server": {
+                    "type": "string"
+                },
+                "time_server6": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "integer"
+                        }
+                    ]
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vlans": {
+                    "additionalProperties": true,
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "ipaddr",
+                "prov_ip"
+            ],
+            "type": "object"
+        }
+    },
+    "patternProperties": {
+        "^(?!locations$).+$": {
+            "$ref": "#/definitions/deviceGroup"
+        }
+    },
+    "properties": {
+        "locations": {
+            "$ref": "#/definitions/locationMap",
+            "description": "Optional: a map of shared location definitions used by boards."
+        }
+    },
+    "title": "Inventory \u2014 locations (optional) + multiple boards",
+    "type": "object"
+}

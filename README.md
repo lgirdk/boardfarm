@@ -1,6 +1,7 @@
 # Boardfarm
+
 <p align=center>
-    <img src="boardfarm3/docs/BoardFarm.png" width="350"/> <br>
+    <img src="docs/images/BoardFarm.png" width="350"/> <br>
     <img alt="GitHub" src="https://img.shields.io/github/license/lgirdk/boardfarm">
     <img alt="GitHub commit activity (branch)"
     src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/boardfarm3">
@@ -13,7 +14,7 @@
     src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
 </p> <hr>
 
-Boardfarm is an open-source IT automation framework purely written in Python (3.9+).
+Boardfarm is an open-source IT automation framework purely written in Python (3.11+).
 
 Its primary focus revolves around systems configuration, infrastructure deployment,
 and orchestration of advanced IT tasks such as Subscriber Provisioning,
@@ -27,13 +28,13 @@ test their devices across a wide range of target environments.
 Boardfarm was initially developed at Qualcomm to automate testing of OpenWrt
 routers and other embedded devices.
 
-<img src="boardfarm3/docs/images/basic_setup.png" width="600"/>
+<img src="docs/images/basic_setup.png" width="600"/>
 
 Over time, the framework evolved to support RDK-B derived boards and IoT devices,
 along with the essential OSS and back-office components necessary for simulating
 a Telecom Service Providers' environment.
 
-<img src="boardfarm3/docs/images/advance_setup.png" width="600"/>
+<img src="docs/images/advance_setup.png" width="600"/>
 
 The operation of a device or the configuration of a server can vary depending
 on the specific hardware variant or the infrastructure layout of the deploying
@@ -48,6 +49,7 @@ invoke their implementation at any of the predefined checkpoints within the
 Boardfarm's execution cycle, offering flexibility and extensibility.
 
 ## Features
+
 - Modular Hook definitions enabling users to independently
 initiate the bootup/deployment process for each component within the infrastructure,
 offering granular control and flexibility.
@@ -64,6 +66,7 @@ simulated test environment.
 - Integration with Docker/QEMU to simulate various test environments and devices.
 
 ## Installation
+
 Run the following command to directly install the package from the repo:
 
 ```bash
@@ -71,11 +74,14 @@ pip install git+https://github.com/lgirdk/boardfarm.git@boardfarm3
 ```
 
 ## Usage
+
 ```bash
 boardfarm -h
 ```
+
 This will display help for the framework. Here are all the switches it supports.
-```
+
+```text
 usage: boardfarm [-h] --board-name BOARD_NAME --env-config ENV_CONFIG --inventory-config INVENTORY_CONFIG [--legacy] [--skip-boot] [--skip-contingency-checks] [--save-console-logs]
 
 options:
@@ -94,13 +100,31 @@ options:
 ```
 
 ## Documentation
+
 For full documentation, including installation, tutorials and architecture overview and how
-to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see <br>
-[Boardfarm Documentation](/boardfarm3/docs/documentation.md)
+to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see the following.
+
+## Table of Contents
+
+- [Getting Started](/docs/getting_started.md)
+  - [Installation](/docs/getting_started.md#installation)
+  - [Running an interactive session](/docs/getting_started.md#running-an-interactive-session)
+  - [Booting up a lab environment](/docs/getting_started.md#booting-up-a-lab-environment)
+- [Overview](/docs/architecture.md#overview)
+  - [Architecture](/docs/architecture.md#architecture)
+  - [Hook Specification and Pluggy](/docs/architecture.md#hooks-specification-and-pluggy)
+- [Development (How-to-Guide)](/docs/development.md)
+  - [Writing a Boardfarm plugin](/docs/development.md#writing-a-boardfarm-plugin)
+  - [Writing a Connection class](/docs/development.md#writing-a-connection-class)
+  - [Writing a Device class](/docs/development.md#writing-a-device-class)
+  - [Writing a Use Case](/docs/development.md#writing-a-use-case)
+- [API Reference](/docs/README.md)
 
 ## Changelog
+
 Consult the [CHANGELOG](/CHANGELOG.md) page for fixes and enhancements of each version.
 
 ## License
+
 Distributed under the terms of the Clear BSD License, Boardfarm is free and
 open source software.

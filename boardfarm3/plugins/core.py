@@ -155,7 +155,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     :returns: devices dictionary
     """
     return {
-        "debian_tftp": LinuxTFTP,
+        "bf_tftp": LinuxTFTP,
         "bf_lan": LinuxLAN,
         "bf_wan": LinuxWAN,
         "bf_wlan": LinuxWLAN,

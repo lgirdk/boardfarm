@@ -32,6 +32,7 @@ repos:
             stages: [pre-commit]
           - id: check-added-large-files
             stages: [pre-commit]
+            args: [--maxkb=25600]
           - id: requirements-txt-fixer
             stages: [pre-commit]
           - id: check-merge-conflict
