@@ -82,7 +82,7 @@
                 "name": "lan",
                 "options": "mgmt_dns: 8.8.8.8, dante",
                 "port": 5001,
-                "type": "debian_lan"
+                "type": "bf_lan"
             },
             {
                 "color": "yellow",
@@ -92,7 +92,7 @@
                 "name": "lan2",
                 "options": "mgmt_dns: 8.8.8.8, dante",
                 "port": 5002,
-                "type": "debian_lan"
+                "type": "bf_lan"
             },
             {
                 "color": "blue",
@@ -140,7 +140,7 @@
                 "name": "wlan1",
                 "options": "mgmt_dns:172.30.180.2, dante",
                 "port": "5501",
-                "type": "debian_wifi"
+                "type": "bf_wlan"
             },
             {
                 "band": "dual",
@@ -150,7 +150,7 @@
                 "name": "wlan2",
                 "options": "mgmt_dns:172.30.180.2, dante",
                 "port": "5502",
-                "type": "debian_wifi"
+                "type": "bf_wlan"
             },
             {
                 "band": "dual",
@@ -160,7 +160,7 @@
                 "name": "wlan3",
                 "options": "mgmt_dns:172.30.180.2, dante",
                 "port": "5503",
-                "type": "debian_wifi"
+                "type": "bf_wlan"
             }
         ],
         "location": "ams-cmts5-md1"

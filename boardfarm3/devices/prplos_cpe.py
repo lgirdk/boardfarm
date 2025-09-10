@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=duplicate-code
 class PrplOSx86HW(CPEHW):
     """PrplOS x86 hardware device class."""
 

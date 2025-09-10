@@ -140,7 +140,7 @@
         "name": "lan",
         "options": "mgmt_dns: 8.8.8.8, dante",
         "port": 5001,
-        "type": "debian_lan"
+        "type": "bf_lan"
     },
     {
         "color": "yellow",
@@ -150,6 +150,6 @@
         "name": "lan2",
         "options": "mgmt_dns: 8.8.8.8, dante",
         "port": 5002,
-        "type": "debian_lan"
+        "type": "bf_lan"
     }
 ]
