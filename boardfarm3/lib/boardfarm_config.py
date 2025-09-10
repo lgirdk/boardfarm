@@ -264,10 +264,14 @@ def parse_boardfarm_config(
     # disable jsonmerge debug logs
     logging.getLogger("jsonmerge").setLevel(logging.WARNING)
     wifi_devices = [
-        device for device in inventory_config["devices"] if device["type"] == "bf_wlan"
+        device
+        for device in inventory_config["devices"]
+        if device["type"] in ["bf_wlan", "debian_wifi"]
     ]
     lan_devices = [
-        device for device in inventory_config["devices"] if device["type"] == "bf_lan"
+        device
+        for device in inventory_config["devices"]
+        if device["type"] in ["bf_lan", "debian_lan"]
     ]
     other_devices = [
         device
