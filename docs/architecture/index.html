@@ -1,0 +1,1013 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../getting_started/">
+      
+      
+        <link rel="next" href="../development/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
+    
+    
+      
+        <title>Architecure - Boardfarm Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Boardfarm Docs" class="md-header__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Boardfarm Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecure
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Boardfarm Docs" class="md-nav__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Boardfarm Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Architecure
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecure
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-vendorteam-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      The vendor/team challenge
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-this-is-achieved" class="md-nav__link">
+    <span class="md-ellipsis">
+      How this is achieved
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Components
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#templates-abcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Templates (ABCs)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devices-concrete-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Devices (Concrete implementations)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why use cases?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hooks-specification-and-pluggy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hooks Specification and Pluggy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hooks Specification and Pluggy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hook-categories-and-where-they-belong" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hook categories and where they belong
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Device categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution order
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimal-checklist-for-architecture-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Minimal checklist for architecture readers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-order-comprehensive-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution Order (Comprehensive View)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developer Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CHANGELOG
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-vendorteam-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      The vendor/team challenge
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-this-is-achieved" class="md-nav__link">
+    <span class="md-ellipsis">
+      How this is achieved
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Components
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#templates-abcs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Templates (ABCs)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devices-concrete-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Devices (Concrete implementations)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why use cases?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hooks-specification-and-pluggy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hooks Specification and Pluggy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hooks Specification and Pluggy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hook-categories-and-where-they-belong" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hook categories and where they belong
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Device categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution order
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minimal-checklist-for-architecture-readers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Minimal checklist for architecture readers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-order-comprehensive-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execution Order (Comprehensive View)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="overview">Overview</h1>
+<ul>
+<li><a href="./#introduction">Introduction</a></li>
+<li><a href="./#the-vendorteam-challenge">The vendor/team challenge</a></li>
+<li><a href="./#architecture">Architecuture</a></li>
+<li><a href="./#core-components">Core Components</a><ul>
+<li><a href="./#templates-abcs">Templates</a></li>
+<li><a href="./#devices-concrete-implementations">Devices</a></li>
+<li><a href="./#use-cases">Use Cases</a></li>
+<li><a href="./#summary">Summary</a></li>
+</ul>
+</li>
+<li><a href="./#hooks-specification-and-pluggy">Hooks Specification and Pluggy</a></li>
+<li><a href="./#hook-categories-and-where-they-belong">Hook Categories</a></li>
+<li><a href="./#execution-order">Execution Order</a></li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>End-to-end (E2E) solutions for CPE, access and back-office stacks are inherently complex:</p>
+<ul>
+<li>they depend on <strong>many different components</strong> (CPE, ACS, DHCP, SIP, OSS/BSS, emulators, etc.),</li>
+<li>span <strong>multiple layers of integration</strong>,</li>
+<li>involve <strong>multi-vendor delivery</strong>, and</li>
+<li>evolve at <strong>varying development cadences</strong> with <strong>many transitive dependencies</strong>.</li>
+</ul>
+<p>At every integration level, each incremental change must be validated against <strong>multiple, evolving target deployment environments</strong>:</p>
+<ul>
+<li>different customers run different topologies and component versions,</li>
+<li>each environment changes over time, and</li>
+<li>late discovery or poor reproducibility of environment differences drives up cost and delays.</li>
+</ul>
+<h2 id="the-vendorteam-challenge">The vendor/team challenge</h2>
+<p>Vendors and engineering teams must simultaneously:</p>
+<ul>
+<li>deliver new functionality,</li>
+<li>design, build, integrate and validate features, and</li>
+<li>avoid regressions — which requires large amounts of regression testing.</li>
+</ul>
+<p>To be effective, development and validation must happen <strong>against the relevant environments</strong>: using the particular versions and configurations of the neighbouring components that exist in a real E2E deployment.</p>
+<h2 id="architecture">Architecture</h2>
+<p>Boardfarm’s architecture is designed to address these realities by emphasizing:</p>
+<p><img alt="boardfarm architecture" src="../images/architecture.svg" /></p>
+<ul>
+<li><strong>Top-down (inward) dependencies only</strong> — stable, inner layers define contracts; outer layers implement them.</li>
+<li><strong>Non-restrictive API standardization</strong> — provide clear, compact templates (ABCs) so use cases and tests stay vendor-agnostic.</li>
+<li><strong>Maximized portability</strong> — make each layer easy to reuse across customers and testbeds.</li>
+<li><strong>Extensibility via plugins</strong> — add new device classes, transports or behaviors as plugins rather than changing the core.</li>
+</ul>
+<h3 id="how-this-is-achieved">How this is achieved</h3>
+<ul>
+<li><strong>Templates (ABCs)</strong> define stable device APIs that use cases and hooks rely on.</li>
+<li><strong>Concrete device classes</strong> implement those templates for vendors, emulators or transports.</li>
+<li><strong>Pluggy (plugin manager + hooks)</strong> orchestrates multi-phase provisioning and lifecycle events across the infrastructure (boot, configure, attach, etc.).</li>
+<li><strong>Use Cases</strong> protocol-specific, test-facing operations; the API tests and the interactive shell use.</li>
+</ul>
+<p>Together, these principles make Boardfarm a portable, testable framework that helps teams develop, validate and debug E2E functionality against representative, reproducible environments while minimizing the cost of integrating multi-vendor stacks.</p>
+<h2 id="core-components">Core Components</h2>
+<h3 id="templates-abcs">Templates (ABCs)</h3>
+<p><strong>What they are</strong>: Python Abstract Base Classes that describe the minimal set of methods a device must offer for Boardfarm use cases to work.</p>
+<p><strong>Why they matter</strong>: Use cases and hooks import these Templates, <strong><em>not concrete device classes</em></strong>. That guarantees portability: a test calls the template API, not vendor-specific code.</p>
+<p><strong>Example sketch:</strong></p>
+<pre><code class="language-python">from abc import ABC, abstractmethod
+
+GpvInput = Union[str, list[str]]
+GpvStruct = dict[str, Union[str, int, bool]]
+GpvResponse = list[GpvStruct]
+
+class ACS(ABC):
+    &quot;&quot;&quot;Boardfarm ACS device template.&quot;&quot;&quot;
+
+    @abstractmethod
+    def GPV(
+        self,
+        param: GpvInput,
+        timeout: int | None = None,
+        cpe_id: str | None = None,
+    ) -&gt; GpvResponse:
+        ...
+
+    ... # rest of the API definition
+</code></pre>
+<p><strong>Guidelines</strong>:</p>
+<ul>
+<li>Keep signatures high-level and stable.</li>
+<li>Add capabilities via optional mixins or new ABCs rather than changing existing method signatures.</li>
+<li>Document expected return types and exceptions.</li>
+</ul>
+<h3 id="devices-concrete-implementations">Devices (Concrete implementations)</h3>
+<p><strong>What they are</strong>: Classes that implement a Template (ABC). They translate Template methods into transport-specific actions (SSH, serial, HTTP, local command, docker exec, QEMU socket, etc.).</p>
+<blockquote>
+<p><strong>Important</strong>: Device classes may also implement device hooks (<code>hookspecs</code>) to participate in the boot/provision lifecycle — but those hook implementations should only call the templated APIs and perform device-specific I/O. Avoid exposing these vendor-specific private APIs to use cases.</p>
+</blockquote>
+<p><strong>Example:</strong></p>
+<pre><code class="language-python">from boardfarm3.templates.acs import ACS, GpvInput, GpvResponse
+
+class GenieACS(ACS):
+
+    def GPV(
+        self,
+        param: GpvInput,
+        timeout: int | None = None,
+        cpe_id: str | None = None,
+    ) -&gt; GpvResponse:
+        &quot;&quot;&quot;Send GetParamaterValues command via ACS server.&quot;&quot;&quot;
+        quoted_id = quote('{&quot;_id&quot;:&quot;' + cpe_id + '&quot;}', safe=&quot;&quot;)
+        self._request_post(
+            endpoint=&quot;/devices/&quot; + quote(cpe_id) + &quot;/tasks&quot;,
+            data=self._build_input_structs_gpv(param),
+            conn_request=True,
+            timeout=timeout,
+        )
+        response_data = self._request_get(
+            &quot;/devices&quot;  # noqa: ISC003
+            + &quot;?query=&quot;
+            + quoted_id
+            + &quot;&amp;projection=&quot;
+            + self._build_input_structs(param),
+            timeout=timeout,
+        )
+        return GpvResponse(self._convert_response(response_data))
+
+    ... # rest of the implementation
+
+</code></pre>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>Devices are only meant to drive I/O and vendor-specific quirks.</li>
+<li>Do not implement business logic in devices — they will always be implemented in use cases.</li>
+</ul>
+<h3 id="use-cases">Use Cases</h3>
+<p><strong>What they are</strong>: The library of testable, protocol-specific operations.</p>
+<h4 id="why-use-cases">Why use cases?</h4>
+<ul>
+<li>Tests call use cases (e.g., GPV, flash_firmware) rather than device methods directly.</li>
+<li>Use cases hide which concrete device handles the operation — the Template contract ensures compatibility.</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><code class="language-python">&quot;&quot;&quot;TR-069 Use cases.&quot;&quot;&quot;
+
+from __future__ import annotations
+
+if TYPE_CHECKING:
+    from boardfarm3.templates.acs import ACS
+    from boardfarm3.templates.cpe import CPE
+
+def get_parameter_values(
+    params: str | list[str],
+    acs: ACS,
+    board: CPE,
+) -&gt; list[dict[str, Any]]:
+    &quot;&quot;&quot;Perform TR-069 RPC call GetParameterValues.&quot;&quot;&quot;
+
+    return acs.GPV(params, cpe_id=board.sw.tr69_cpe_id)
+</code></pre>
+<p><strong>Example usage (in IPython or pytest)</strong>:</p>
+<pre><code class="language-python">from boardfarm3.use_cases.tr069 import get_parameter_values
+from boardfarm3.templates.acs import ACS
+from boardfarm3.templates.cpe import CPE
+
+from boardfarm3.lib.device_manager import DeviceManager
+
+value = get_parameter_value(
+    'Device.DeviceInfo.Manufacturer',
+    device_manager.get_device_by_type(ACS),
+    device_manager.get_device_by_type(CPE),
+    )
+</code></pre>
+<h2 id="summary">Summary</h2>
+<ul>
+<li><strong>Stable contract (Template/ABC)</strong> — The ACS template (an ABC) declares the <code>GPV</code>(...) -&gt; <code>GpvResponse</code> API and the expected input/output types.</li>
+<li><strong>Dependency inversion</strong> — Use cases (<code>get_parameter_values</code>) accept an ACS instance (the interface) rather than a concrete class.</li>
+<li><strong>Pluggable device implementations</strong> — Concrete classes like <code>GenieACS</code> implement the ACS ABC and provide transport/vendor-specific logic.</li>
+<li><strong>Runtime selection via DeviceManager</strong> — Tests call <code>device_manager.get_device_by_type(ACS)</code> to obtain any registered ACS device. The test code doesn’t change when you swap GenieACS for AxirosACS (or a simulator).</li>
+<li><strong>Easy mocking &amp; CI-friendly</strong> — You can inject fakes or mocks that implement the ACS interface for fast, deterministic unit tests and CI runs without hardware.</li>
+</ul>
+<p><strong>Result:</strong> tests written against the ACS template are vendor-agnostic — you can run the same test suite against real hardware, vendor servers, or simulated ACS backends without changing test code.</p>
+<h2 id="hooks-specification-and-pluggy">Hooks Specification and Pluggy</h2>
+<p>Boardfarm uses <strong>Pluggy</strong> as the central plugin manager. Pluggy provides the extension points (<code>@hookspecs</code>) that let different repositories register device classes, extend runner behaviour, and participate in the multi-phase environment boot/provision lifecycle. The design principle is simple:</p>
+<ul>
+<li><strong>Framework (core) concerns</strong> are exposed as <code>core hooks</code> — used to customize runner behavior (CLI args, config parsing, device reservation, environment setup, device registration, release and shutdown).</li>
+<li><strong>Device concerns</strong> are expressed as <code>device hooks</code> — implemented by concrete device classes (plugins) to perform boot, configuration, validation and shutdown for that device.</li>
+<li>The runner invokes core hooks to orchestrate the run; core hooks in turn cause the runner to call device hooks for each device in the configured order.</li>
+</ul>
+<h3 id="hook-categories-and-where-they-belong">Hook categories and where they belong</h3>
+<p><strong>Core hooks (framework-level)</strong> — implemented by runner or plugin authors.
+These orchestrate the overall lifecycle of a run:</p>
+<ul>
+<li><code>boardfarm_add_cmdline_args(argparser)</code> — add CLI flags.</li>
+<li><code>boardfarm_parse_config(...) -&gt; BoardfarmConfig</code> <em>(firstresult)</em> — produce/override the merged run config.</li>
+<li><code>boardfarm_reserve_devices(...) -&gt; inventory</code> <em>(firstresult)</em> — reserve lab hardware before deployment.</li>
+<li><code>boardfarm_setup_env(...) -&gt; DeviceManager</code> <em>(firstresult)</em> — deploy devices and build the <code>DeviceManager</code>.</li>
+<li><code>boardfarm_register_devices(...) -&gt; DeviceManager</code> <em>(firstresult)</em> &amp; <code>boardfarm_add_devices()</code> — register device classes (map inventory <code>"type"</code> → class).</li>
+<li><code>boardfarm_release_devices(...)</code> &amp; <code>boardfarm_shutdown_device()</code> — release reserved devices and perform framework cleanup.</li>
+</ul>
+<hr />
+<p><strong>Device hooks (device-level)</strong> — implemented by device authors (usually as <code>@hookimpl</code> instance methods on concrete device classes).
+These drive device-specific behavior within the lifecycle:</p>
+<ul>
+<li><code>boardfarm_skip_boot</code> — initialize/attach to device without provisioning.</li>
+<li><code>boardfarm_server_boot</code> / <code>boardfarm_device_boot</code> / <code>boardfarm_attached_device_boot</code> — boot device categories in sequence.</li>
+<li><code>boardfarm_server_configure</code> / <code>boardfarm_device_configure</code> / <code>boardfarm_attached_device_configure</code> — apply environment-driven configuration.</li>
+<li><code>contingency_check(env_req, device_manager)</code> — per-test health check used by pytest integration.</li>
+<li><code>*_async</code> variants — available where concurrency helps speed up provisioning.</li>
+</ul>
+<h3 id="device-categories">Device categories</h3>
+<p>A Boardfarm device should be one of:</p>
+<ol>
+<li><strong>server</strong> — infrastructure services (ACS, DHCP, SIP, etc.).</li>
+<li><strong>device</strong> — main DUTs/CPEs that depend on infrastructure.</li>
+<li><strong>attached device</strong> — clients attached to devices (LAN clients, phones, etc.).</li>
+</ol>
+<p>Each category participates in different lifecycle phases and must implement hooks appropriate to that category.</p>
+<hr />
+<h3 id="execution-order">Execution order</h3>
+<p>When boot is enabled, Boardfarm executes device hooks in this order (each name is an actual <code>@hookspec</code>):</p>
+<pre><code class="language-markdown">boardfarm_server_boot
+↓
+boardfarm_server_configure
+↓
+boardfarm_device_boot
+↓
+boardfarm_device_configure
+↓
+boardfarm_attached_device_boot
+↓
+boardfarm_attached_device_configure
+</code></pre>
+<h3 id="minimal-checklist-for-architecture-readers">Minimal checklist for architecture readers</h3>
+<ul>
+<li><strong>Core hooks</strong> extend and orchestrate the runner; <strong>device hooks</strong> implement per-device behavior.</li>
+<li><strong>Use cases</strong> depend on <strong>Templates (ABCs)</strong> only — device implementations plug in behind the Templates via hooks.</li>
+<li>The <strong>runner</strong> uses core hooks to build the environment and then calls device hooks in the documented order.</li>
+<li>See the dedicated <strong>“How to implement”</strong> page for step-by-step examples (device skeletons, core hook examples, tests and best practices).</li>
+</ul>
+<h3 id="execution-order-comprehensive-view">Execution Order (Comprehensive View)</h3>
+<p>The following diagram explains in brief the execution lifecycle of the boardfarm runner:
+<img alt="Hook Flow architecture in detail." src="../images/boardfarm_revised_hook_flow.svg" /></p>
+<hr />
+<p>Click here to go back to main <a href="../../#documentation">README</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+  </body>
+</html>

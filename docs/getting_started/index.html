@@ -1,0 +1,915 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
+    
+    
+      
+        <title>Getting Started - Boardfarm Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#getting-started-with-boardfarm" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Boardfarm Docs" class="md-header__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Boardfarm Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting Started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Boardfarm Docs" class="md-nav__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Boardfarm Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-latest-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Latest Release
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-development-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Development Build
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-an-interactive-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running an interactive session
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running an interactive session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. No hardware testbed? Try a virtual environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-understanding-inventory-and-environment-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Understanding Inventory and Environment files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-an-interact-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      Start an interact session
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#booting-up-a-lab-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Booting up a lab environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Booting up a lab environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootprovisioning-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot/Provisioning Hooks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tldr" class="md-nav__link">
+    <span class="md-ellipsis">
+      TLDR
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecure
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developer Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CHANGELOG/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CHANGELOG
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-latest-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Latest Release
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-development-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Development Build
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-an-interactive-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running an interactive session
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running an interactive session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. No hardware testbed? Try a virtual environment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-understanding-inventory-and-environment-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Understanding Inventory and Environment files
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-an-interact-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      Start an interact session
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#booting-up-a-lab-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Booting up a lab environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Booting up a lab environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootprovisioning-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Boot/Provisioning Hooks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tldr" class="md-nav__link">
+    <span class="md-ellipsis">
+      TLDR
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="getting-started-with-boardfarm">Getting Started with Boardfarm</h1>
+<ul>
+<li><a href="./#installation">Installation</a></li>
+<li><a href="./#running-an-interactive-session">Running an interactive session</a></li>
+<li><a href="./#booting-up-a-lab-environment">Booting up a lab environment</a></li>
+<li><a href="./#tldr">TLDR</a></li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Depending on your distribution you need some dependencies. On Debian these usually are:</p>
+<pre><code class="language-bash">sudo apt install -y automake libtool libsnmp-dev bison make gcc flex git libglib2.0-dev libfl-dev python3.13-venv
+</code></pre>
+<p>It is recommended to install boardfarm in a virtualenv:</p>
+<pre><code class="language-bash">python3.13 -m venv --prompt bf-venv venv
+source venv/bin/activate
+pip install --upgrade pip wheel
+</code></pre>
+<h3 id="install-latest-release">Install Latest Release</h3>
+<pre><code class="language-bash">(bf-venv)$ pip install boardfarm
+</code></pre>
+<h3 id="install-development-build">Install Development Build</h3>
+<p>Start by cloning the repository and installing boardfarm:</p>
+<pre><code class="language-bash">(bf-venv)$ git clone https://github.com/lgirdk/boardfarm
+(bf-venv)$ cd boardfarm &amp;&amp; pip install -e .[doc,dev,test]
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> For certain boardfarm plugin packages like <code>boardfarm[docsis]</code>, additional tools need to be installed as prerequisite.
+e.g. <a href="https://github.com/rlaager/docsis">DOCSIS bootfile encoder tool</a></p>
+</blockquote>
+<h2 id="running-an-interactive-session">Running an interactive session</h2>
+<p><strong><em>Interact</em></strong> is a key feature in boardfarm that connects to every device currently deployed in a testbed and exposes a menu-driven CLI to interact with any of those devices. Every console interaction can be preserved in per-device log files.</p>
+<p>Boardfarm also provides an interactive <strong>IPython</strong> console that enables a user to execute commands on their devices via their corresponding Python APIs.</p>
+<h3 id="prerequisites">Prerequisites</h3>
+<h4 id="1-no-hardware-testbed-try-a-virtual-environment">1. No hardware testbed? Try a virtual environment</h4>
+<p>In case you don’t have access to a physical testbed, we have a Docker Compose script that spins up a virtual CPE (PrplOS) with a back-office.
+This lets you explore interact sessions and device APIs locally on your workstation.</p>
+<p>More details can be found in the <a href="https://github.com/lgirdk/raikou-net.git">raikou-net</a> project if you’re interested in a more complete and in depth virtualized setup.
+To quickly deploy a local environment, run:</p>
+<pre><code class="language-bash"># Assuming boardfarm repo is already cloned
+
+cd resources/deploy/prplos
+docker compose up -f docker-compose.yaml -d
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> If you want to explore more examples, see <code>/examples/double_hop</code> directory in <a href="https://github.com/lgirdk/raikou-net.git">raikou-net</a></p>
+</blockquote>
+<h4 id="2-understanding-inventory-and-environment-files">2. Understanding Inventory and Environment files</h4>
+<p>Boardfarm needs <strong>two configuration files</strong> to know what to deploy and how to interact with it:</p>
+<ol>
+<li>
+<p><strong>Inventory file</strong> (<code>inventory.json</code>)</p>
+<ul>
+<li>Describes the <em>devices</em> in your testbed and how Boardfarm connects to them.</li>
+<li>Each device entry specifies:<ul>
+<li><strong>connection type</strong> (serial, ssh, docker exec, etc.)</li>
+<li><strong>login credentials / ports / proxies</strong></li>
+<li><strong>role/type</strong> (CPE, WAN, LAN, ACS, DHCP, SIP server, phones, etc.)</li>
+<li><strong>options</strong> that customize network behavior (e.g., static IPs, DHCP off/on, DNS, VLAN).</li>
+</ul>
+</li>
+<li>Think of it as a <strong>map of your deployed infrastructure</strong> and the “doorways” Boardfarm can use to reach each device.</li>
+</ul>
+<p><strong>Example</strong> (excerpt taken from <code>boardfarm3/configs/boardfarm_config_example.json</code>):</p>
+</li>
+</ol>
+<pre><code class="language-json">{
+    &quot;prplos-docker-1&quot;: {
+    &quot;devices&quot;: [
+        {
+        &quot;conn_cmd&quot;: [&quot;docker exec -it cpe ash&quot;],
+        &quot;connection_type&quot;: &quot;local_cmd&quot;,
+        &quot;name&quot;: &quot;board&quot;,
+        &quot;type&quot;: &quot;bf_cpe&quot;,
+        &quot;gui_password&quot;: &quot;admin&quot;
+        },
+        {
+        &quot;connection_type&quot;: &quot;authenticated_ssh&quot;,
+        &quot;ipaddr&quot;: &quot;localhost&quot;,
+        &quot;port&quot;: 4001,
+        &quot;name&quot;: &quot;wan&quot;,
+        &quot;type&quot;: &quot;bf_wan&quot;,
+        &quot;options&quot;: &quot;wan-no-dhcp-server, dns-server, wan-static-ip:172.25.1.2/24&quot;
+        }
+        // ... more devices like lan, acs, phones, provisioner, etc.
+    ]
+    }
+}
+</code></pre>
+<pre><code>In this setup, the board is reached through a local Docker exec command, while WAN, LAN, ACS, and phones are accessed via SSH on different forwarded ports.
+
+Please see [Inventory Schema](https://github.com/lgirdk/boardfarm/blob/boardfarm3/boardfarm3/configs/boardfarm_inventory_schema.json) for a list of all possible options that can be configured for a device in an Inventory file.
+</code></pre>
+<ol>
+<li>
+<p><strong>Environment file</strong> (<code>env.json</code>)</p>
+<ul>
+<li>Tells Boardfarm <strong>how to provision the testbed</strong> once devices are connected.</li>
+<li>Defines higher-level <strong>testbed behavior and requirements</strong>, such as:<ul>
+<li>Which firmware to flash on the board/CPE</li>
+<li>How DHCP should behave (options, VLANs, DNS)</li>
+<li>Whether to create multiple LAN/WLAN containers</li>
+<li>How subscriber configurations look if an LTS (Line Termination System) is present</li>
+<li>Other provisioning knobs (IPv4/IPv6 mode, model identifiers, etc.)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Example (simple):</strong></p>
+</li>
+</ol>
+<pre><code class="language-json">{
+    &quot;environment_def&quot;: {
+    &quot;board&quot;: {
+        &quot;eRouter_Provisioning_mode&quot;: &quot;ipv4&quot;,
+        &quot;model&quot;: &quot;prplOS&quot;
+    }
+    }
+}
+</code></pre>
+<ol>
+<li>
+<p><strong>How they work together?</strong></p>
+<p>Inventory = “what’s there”
+- A catalog of devices, connection methods, roles.</p>
+<p>Environment = “what to do with it”
+- Provisioning rules, firmware flashing, DHCP setup, network topology.</p>
+<p>This tells Boardfarm:</p>
+<p>Connect to all devices listed in the inventory.
+Provision and configure them according to the environment definition.
+Expose them via the interact session (menu + IPython).</p>
+</li>
+</ol>
+<h3 id="start-an-interact-session">Start an interact session</h3>
+<p>Now that we have our <strong>environment</strong> and <strong>inventory</strong> files, we can start an interactive session with Boardfarm.</p>
+<pre><code class="language-bash">boardfarm --board-name  prplos-docker-1 \
+    --env-config ./boardfarm3/configs/boardfarm_env_example.json \
+    --inventory-config ./boardfarm3/configs/boardfarm_config_example.json \
+    --skip-boot --legacy
+</code></pre>
+<blockquote>
+<p>(Optional) --save-console-logs enabled to persist console logs to disk.</p>
+</blockquote>
+<p>This will bring up the Boardfarm Interactive Shell, where all deployed devices are listed and ready for interaction.
+<img alt="Interact Demo" src="../images/interact.gif" /></p>
+<p>When you see this menu:</p>
+<pre><code class="language-scss">                BOARDFARM INTERACTIVE SHELL
+ ─────────────────────────────────────────────────────────
+  Choice   Description                           Consoles
+ ─────────────────────────────────────────────────────────
+    1      board (bf_cpe)                           1
+ ─────────────────────────────────────────────────────────
+    2      genieacs (bf_acs)                        1
+ ─────────────────────────────────────────────────────────
+    3      lan (bf_lan)                             1
+ ─────────────────────────────────────────────────────────
+    4      lan_phone (bf_phone)                     1
+ ─────────────────────────────────────────────────────────
+    5      provisioner (bf_dhcp)                    1
+ ─────────────────────────────────────────────────────────
+    6      sipcenter (bf_kamailio)                  1
+ ─────────────────────────────────────────────────────────
+    7      wan (bf_wan)                             1
+ ─────────────────────────────────────────────────────────
+    8      wan_phone (bf_phone)                     1
+ ─────────────────────────────────────────────────────────
+    p      python interactive shell (ptpython)
+ ─────────────────────────────────────────────────────────
+    q      exit
+ ─────────────────────────────────────────────────────────
+Enter your choice: [1/2/3/4/5/6/7/8/p/q]:
+</code></pre>
+<p>You have two main options:</p>
+<ul>
+<li>
+<p>Device console access → enter the number (1–8) beside a device to drop directly into its console session.</p>
+</li>
+<li>
+<p>Python interactive shell → enter <code>p</code> to open an IPython-like interface (ptpython) where you can import devices and call their Python APIs to run commands or tests programmatically.</p>
+</li>
+</ul>
+<p>This makes it easy to switch between manual console exploration and Python-based automation in the same session.</p>
+<h2 id="booting-up-a-lab-environment">Booting up a lab environment</h2>
+<p>In the previous example, we started Boardfarm with the <code>--skip-boot</code> option to quickly attach to already running devices.
+If we <strong>remove the <code>--skip-boot</code> option</strong>, Boardfarm will not just connect to devices — it will also <strong>provision them based on the environment file</strong> you provided.</p>
+<p>Behind the scenes, Boardfarm uses <a href="https://pluggy.readthedocs.io/">Pluggy</a> (the same plugin system used by pytest).
+This means that devices participate in different <strong>lifecycle phases</strong> by implementing specific plugin hooks.</p>
+<h3 id="bootprovisioning-hooks">Boot/Provisioning Hooks</h3>
+<p>When boot is not skipped, Boardfarm’s plugin manager executes the following hooks in order:</p>
+<pre><code class="language-markdown">boardfarm_server_boot
+↓
+boardfarm_server_configure
+↓
+boardfarm_device_boot
+↓
+boardfarm_device_configure
+↓
+boardfarm_attached_device_boot
+↓
+boardfarm_attached_device_configure
+</code></pre>
+<p>Each of the above is an actual <code>@hookspec</code> that a device class can implement.
+If a registered device provides an implementation, it will participate in that phase of booting/provisioning.</p>
+<ul>
+<li><strong>Server hooks</strong> (<code>boardfarm_server_*</code>) → for back office infrastructure or virtualized service containers (e.g., DHCP, DNS, WAN, ACS, SIP servers).</li>
+<li><strong>Device hooks</strong> (<code>boardfarm_device_*</code>) → for the main CPE/board a.k.a DUT.</li>
+<li><strong>Attached device hooks</strong> (<code>boardfarm_attached_device_*</code>) → for LAN/WLAN clients, phones, or other peripherals that can only be provisioned once the main board is up.</li>
+</ul>
+<p>This layered boot sequence ensures that back-office infrastructure services are available before devices boot, and devices are provisioned before attached clients are configured.</p>
+<p>Please have a look at the boardfarm hooks section for more details.</p>
+<h2 id="tldr">TLDR</h2>
+<pre><code class="language-bash">git clone -b boardfarm3 https://github.com/lgirdk/boardfarm.git
+cd boardfarm
+
+cd resources/deploy/prplos
+docker-compose up -f docker-compose.yaml -d
+docker ps # make sure the containers are up and running
+
+cd - # go back to the boardfarm repo root dir
+
+python3.13 -m venv --prompt bf-venv venv # will work on 3.11 as well
+source venv/bin/activate
+
+pip install -U pip wheel
+pip install -e .[dev,test,doc]
+
+boardfarm --board-name  prplos-docker-1 \
+          --env-config ./boardfarm3/configs/boardfarm_env_example.json \
+          --inventory-config ./boardfarm3/configs/boardfarm_config_example.json \
+          --save-console-logs ./logs
+</code></pre>
+<hr />
+<p>Click here to go back to main <a href="../../#documentation">README</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+  </body>
+</html>

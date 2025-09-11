@@ -1,0 +1,1383 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../docs/development/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
+    
+    
+      
+        <title>CHANGELOG - Boardfarm Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#2022110-2022-03-16" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Boardfarm Docs" class="md-header__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Boardfarm Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHANGELOG
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Boardfarm Docs" class="md-nav__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Boardfarm Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecure
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developer Docs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    CHANGELOG
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    CHANGELOG
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#2022110-2022-03-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.11.0 (2022-03-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.11.0 (2022-03-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022090-2022-03-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.09.0 (2022-03-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.09.0 (2022-03-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022070-2022-02-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.07.0 (2022-02-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.07.0 (2022-02-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#refactor_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022050-2022-02-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.05.0 (2022-02-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.05.0 (2022-02-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022030-2022-01-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.03.0 (2022-01-20)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.03.0 (2022-01-20)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022010-2022-01-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.01.0 (2022-01-05)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.01.0 (2022-01-05)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021510-2021-12-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.51.0 (2021-12-22)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.51.0 (2021-12-22)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021490-2021-12-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.49.0 (2021-12-09)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.49.0 (2021-12-09)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021470-2021-11-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.47.0 (2021-11-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.47.0 (2021-11-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021460-2021-11-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.46.0 (2021-11-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.46.0 (2021-11-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#2022110-2022-03-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.11.0 (2022-03-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.11.0 (2022-03-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022090-2022-03-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.09.0 (2022-03-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.09.0 (2022-03-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022070-2022-02-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.07.0 (2022-02-16)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.07.0 (2022-02-16)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#refactor_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022050-2022-02-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.05.0 (2022-02-02)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.05.0 (2022-02-02)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022030-2022-01-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.03.0 (2022-01-20)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.03.0 (2022-01-20)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2022010-2022-01-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      2022.01.0 (2022-01-05)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2022.01.0 (2022-01-05)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-change_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      BREAKING CHANGE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021510-2021-12-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.51.0 (2021-12-22)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.51.0 (2021-12-22)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feat_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021490-2021-12-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.49.0 (2021-12-09)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.49.0 (2021-12-09)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021470-2021-11-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.47.0 (2021-11-24)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.47.0 (2021-11-24)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2021460-2021-11-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      2021.46.0 (2021-11-18)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2021.46.0 (2021-11-18)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#feat_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Feat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactor_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Refactor
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+  <h1>CHANGELOG</h1>
+
+<h2 id="2022110-2022-03-16">2022.11.0 (2022-03-16)</h2>
+<h3 id="feat">Feat</h3>
+<ul>
+<li><strong>devices:board_templates.py,mib_template.py,linux.py</strong>: add mib template to support vendor specific mib configurations for software download</li>
+<li><strong>networking.py</strong>: add dns_resolve  uc</li>
+<li><strong>device_getters.py</strong>: add provisioner getter</li>
+<li><strong>voice.py</strong>: remove sleep from disconnect_the_call</li>
+<li>traffic_gen return TrafficGeneratorResults</li>
+</ul>
+<h3 id="fix">Fix</h3>
+<ul>
+<li><strong>linux.py</strong>: change regular expression to get process id</li>
+<li><strong>quagga_router.py</strong>: update ip route method to fetch route from quagga instance</li>
+</ul>
+<h3 id="refactor">Refactor</h3>
+<ul>
+<li><strong>debian_lan.py</strong>: validate ipv6 address is obtained and throw exception</li>
+</ul>
+<h2 id="2022090-2022-03-02">2022.09.0 (2022-03-02)</h2>
+<h3 id="feat_1">Feat</h3>
+<ul>
+<li><strong>debian_isc.py</strong>: add support for invalid dhcp gateway</li>
+<li>add get_load_avg to sw template</li>
+<li><strong>debian</strong>: fetch DNS entry from inventory json and update in dnsmasq.conf</li>
+<li><strong>linux.py</strong>: add graceful error handling</li>
+<li><strong>linux</strong>: add support for ping using json cli</li>
+<li>add 2.19 env version</li>
+<li><strong>boardfarm:use_cases:networking.py</strong>: write a use case to parse ICMP responses and compare</li>
+</ul>
+<h3 id="fix_1">Fix</h3>
+<ul>
+<li><strong>voice.py</strong>: reduce sleep time in makecall</li>
+<li><strong>quagga_router.py</strong>: update atexit call and docstrings</li>
+</ul>
+<h3 id="breaking-change">BREAKING CHANGE</h3>
+<ul>
+<li>Do not merge until all the executors have been updated!
+BOARDFARM-1698</li>
+<li>BOARDFARM-1500</li>
+</ul>
+<h2 id="2022070-2022-02-16">2022.07.0 (2022-02-16)</h2>
+<h3 id="refactor_1">Refactor</h3>
+<ul>
+<li><strong>pyproject.toml</strong>: freeze selenium dependency to 4.1.0</li>
+</ul>
+<h3 id="feat_2">Feat</h3>
+<ul>
+<li><strong>quagga_router.py</strong>: add quagga router device class</li>
+<li><strong>linux.py</strong>: add support for tcpdump capture,read[tcpdump,tshark]</li>
+<li><strong>traffic_generator.py</strong>: formalise traffic generator template</li>
+<li><strong>debian_lan</strong>: add iw and wpasupplicant packages in image</li>
+</ul>
+<h3 id="fix_2">Fix</h3>
+<ul>
+<li><strong>pyproject.toml</strong>: freeze pyvirtualdisplay package version to 2.2</li>
+<li><strong>pyproject.toml</strong>: pin elasticsearch to stay compliant with api</li>
+<li>increase cli size</li>
+</ul>
+<h2 id="2022050-2022-02-02">2022.05.0 (2022-02-02)</h2>
+<h3 id="feat_3">Feat</h3>
+<ul>
+<li><strong>devices:softphone.py,debian_fxs.py</strong>: implement enable_call_waiting and enable_call_forwarding_busy use cases for softphone</li>
+<li><strong>getters.py</strong>: add getters for lan and wan clients</li>
+</ul>
+<h3 id="fix_3">Fix</h3>
+<ul>
+<li><strong>lib:voice.py</strong>: fix _parse_rtp_trace usecase to check for rtp packets associated to a SIP setup-frame</li>
+<li><strong>debian_wan</strong>: replace google.com with wan.boardfarm.com for v4 and v6</li>
+<li><strong>debian_fxs</strong>: update debian:stable-slim with debian:buster-slim</li>
+<li><strong>connection_decider</strong>: use strict match for connection type</li>
+<li><strong>pyproject.toml</strong>: pin dependency for selenium version 3.141.0</li>
+<li><strong>devices:debian_lan.py</strong>: set icmp_echo_ignore_broadcasts to false on lan devices</li>
+<li><strong>boardfarm:lib:voice</strong>: fix _parse_rtp_trace when start and end indexes are same</li>
+</ul>
+<h2 id="2022030-2022-01-20">2022.03.0 (2022-01-20)</h2>
+<h3 id="feat_4">Feat</h3>
+<ul>
+<li><strong>devices:softphone.py</strong>: implement the unimplemented usecases for softphone</li>
+<li>add connect to DUT via ssh</li>
+<li><strong>device-manager</strong>: register wifi devices</li>
+</ul>
+<h3 id="fix_4">Fix</h3>
+<ul>
+<li><strong>devices:softphone.py</strong>: fix softphone pjsip config to disable TCP transport</li>
+<li><strong>networking.py</strong>: add link_local_ipv6 to IPAddresses dataclass</li>
+<li><strong>devices:linux.py</strong>: fix get_interface_ipaddr to handle AttributeError and throw PexpectTimeoutError</li>
+<li><strong>devices:debian_isc.py</strong>: fix for port number of acs url in vendor specific dhcp configuration</li>
+<li><strong>debian</strong>: updated pkgs that can be installed</li>
+<li>fixes to run with debian:buster-slim image</li>
+<li><strong>debian</strong>: fix pexpect xterm env set</li>
+<li><strong>installers</strong>: minor fix on apt_install</li>
+</ul>
+<h3 id="breaking-change_1">BREAKING CHANGE</h3>
+<ul>
+<li>BOARDFARM-1456</li>
+</ul>
+<h2 id="2022010-2022-01-05">2022.01.0 (2022-01-05)</h2>
+<h3 id="feat_5">Feat</h3>
+<ul>
+<li>get image use image_uri</li>
+<li><strong>multicast</strong>: add multicast usecases</li>
+<li><strong>quagga</strong>: add mrouted daemon</li>
+</ul>
+<h3 id="breaking-change_2">BREAKING CHANGE</h3>
+<ul>
+<li>If using Docsis devices the latest Docsis change must be picked.</li>
+</ul>
+<h3 id="fix_5">Fix</h3>
+<ul>
+<li><strong>boardfarm:resources:configs:kamailio.cfg</strong>: update kamailio.cfg to configure timeout of 25sec</li>
+<li><strong>boardfarm:devices:debian_isc.py</strong>: fix acs url in vendor specific dhcpoptions to use http as prefix</li>
+<li><strong>boardfarm:use_cases:voice.py</strong>: handle exception for hangup in shutdown_phone usecase</li>
+</ul>
+<h2 id="2021510-2021-12-22">2021.51.0 (2021-12-22)</h2>
+<h3 id="fix_6">Fix</h3>
+<ul>
+<li><strong>devices:linux.py</strong>: add fix to fetch erouter0/lan ipv6 on linux console when output is delayed/untidy after command execution</li>
+<li>do not use get_pytest_name yet</li>
+<li>fix test name fetching in acs intercept</li>
+<li><strong>devices:debian_lan.py</strong>: handle timeout error when tshark read is too long for failed lan renewal</li>
+</ul>
+<h3 id="feat_6">Feat</h3>
+<ul>
+<li><strong>quagga-pim</strong>: add IGMP multicast routing for interface</li>
+<li>enable/disable acs pcap capture</li>
+<li>improved name discovery</li>
+</ul>
+<h2 id="2021490-2021-12-09">2021.49.0 (2021-12-09)</h2>
+<h3 id="feat_7">Feat</h3>
+<ul>
+<li><strong>use_cases:voice.py</strong>: add place_call_offhook use case for voice</li>
+<li><strong>networking.py</strong>: Add IPAddresses data class for erouter use case at common location</li>
+<li><strong>use_cases:voice.py</strong>: add off hook use case for voice</li>
+</ul>
+<h3 id="fix_7">Fix</h3>
+<ul>
+<li><strong>lib:dhcpoption.py</strong>: fix ManufacturerOUI under DHCP Option 125 on LAN side</li>
+<li><strong>pylint</strong>: Add pylint config and fix pylint issues.</li>
+</ul>
+<h2 id="2021470-2021-11-24">2021.47.0 (2021-11-24)</h2>
+<h3 id="fix_8">Fix</h3>
+<ul>
+<li><strong>lib:voice.py</strong>: add 1 second delay to verify RTP packets and handle few exceptions</li>
+</ul>
+<h2 id="2021460-2021-11-18">2021.46.0 (2021-11-18)</h2>
+<h3 id="feat_8">Feat</h3>
+<ul>
+<li><strong>pyproject.toml</strong>: Add commitizen-specific config. Prune tbump config.</li>
+<li><strong>pyproject.toml</strong>: Add tbump config and bump version manually.</li>
+<li><strong>boardfarm/bft</strong>: Add option to skip resource reservation status check on Jenkins</li>
+<li><strong>linux.py</strong>: Add hostname property for all linux devices.</li>
+<li>remove zephyr dead code</li>
+<li><strong>devices:debian_fxs.py,softphone.py</strong>: fix and implement sip abstract methods</li>
+<li><strong>use_cases:networking.py</strong>: add use_cases to be used by TCs to avoid direct access to board consoles</li>
+<li><strong>lib:linux_nw_utility.py,linux_console_utility.py</strong>: add network and dut console utilities</li>
+<li><strong>bft,lockableresources</strong>: Use Jenknins Lockable Resources in Boardfarm to manage modems</li>
+<li><strong>quagga</strong>: dockerfile for quagga router</li>
+<li><strong>installers.py</strong>: add method get_interface_private_ip6addr</li>
+<li><strong>networking.py-wifi.py-wifi_template.py</strong>: add wifi usecases</li>
+<li><strong>acs</strong>: show console interactions</li>
+<li><strong>voice</strong>: add voice conference use cases</li>
+<li><strong>devices-base_devices-board_template</strong>: add FXO as voice</li>
+<li><strong>devices:-base_devices:-fxo_template</strong>: add new template class to be used by MTA template</li>
+<li><strong>use_cases/snmp.py</strong>: Add basic generic snmp use cases (wrappers around SNMPv2).</li>
+<li><strong>platform/debian</strong>: lighttpd and tftpd use the same directory</li>
+<li>Add generic scp command implementation to linux device.</li>
+</ul>
+<h3 id="fix_9">Fix</h3>
+<ul>
+<li><strong>resources:configs:kamailio.cfg</strong>: configure kamailio to send "181 Call is Being Forwarded" packet on call forward busy</li>
+<li><strong>debian_fxs</strong>: remove reply with code implementation</li>
+<li><strong>devices:softphone.py</strong>: hardening of the phone_config and phone_start of softphone device to fix issues</li>
+<li><strong>lib,use_cases:voice.py</strong>: add new use cases for sipserver/voice rtp, remove the legacy ones and add support for media attribute, connection info check</li>
+<li><strong>devices:debian_fxs,devices:kamailio</strong>: harden the implementations of fxs and sip server devices</li>
+<li><strong>devices:debian_isc.py</strong>: provide a different acs url from config file both for v4 and v6 when dhcp vendor options are configured</li>
+<li><strong>common.py</strong>: split send_to_influx further into validate_influx_connection</li>
+<li>change gui resolution to 1920x1080</li>
+<li><strong>influx_db_helper.py</strong>: add timeout parameter to influx db connection request</li>
+<li><strong>lockableresources.py</strong>: Fix wifi enclosure device selection based on board type</li>
+<li><strong>lib:installers.py</strong>: add recovery solution when acs server console is hung during apt install</li>
+<li><strong>devices/serialphone.py</strong>: modify the wrapper function exit_python_on_exception</li>
+<li><strong>use_cases</strong>: fix docstrings to make sphinx happy</li>
+<li><strong>kamailio.cfg</strong>: modify configurations to use nonce value only once for authentication</li>
+<li><strong>quagga</strong>: add natting on router</li>
+<li><strong>lib/common.py</strong>: remove unused self argument from configure_ovpn. Return bool success value</li>
+<li><strong>installers.py</strong>: add fix for openvpn ipv6 server connection</li>
+<li><strong>implement-voice-conference-APIs</strong>: derive implementation for Voice conference call signatures</li>
+<li><strong>devices-base_devices-sip_template</strong>: update signatures</li>
+<li><strong>env_helper.py</strong>: handle scenarios with list of dictionaries and list of strings in env request validation</li>
+<li><strong>installers.py</strong>: add print statements instead of debug for lan client IRC scripts</li>
+<li>fix pylint errors</li>
+<li>Do not restart interface twice during CC. Flush tcpdump buffer before kill</li>
+</ul>
+<h3 id="refactor_2">Refactor</h3>
+<ul>
+<li><strong>linux.py</strong>: return dhcp renew output</li>
+<li><strong>axiros_acs</strong>: fix the interface name</li>
+<li><strong>axiros_acs</strong>: add acs aux iface name</li>
+<li>change lib to docsis_lib globally</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+  </body>
+</html>
