@@ -576,7 +576,11 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
         if "Connection refused" in response or "Connection timed out" in response:
             msg = f"Curl Failure due to the following reason {response}"
             raise UseCaseFailure(msg)
-        raw_search_output = re.findall(r"\<(\!DOC|head).*\>", response, re.DOTALL)
+        raw_search_output = re.findall(
+            r"\<[\!DOC|head][\S\n ].+body\>",
+            response,
+            re.DOTALL,
+        )
         raw = raw_search_output[0] if raw_search_output else ""
 
         code_search_output = re.findall(r"< HTTP\/.*\s(\d+)", response)
