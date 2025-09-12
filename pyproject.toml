@@ -79,6 +79,8 @@ dev = [
 ]
 doc = ["sphinx", "mkdocs", "mkdocs-material"]
 test = ["pytest-cov", "pytest-mock", "pytest-randomly"]
+docsis = ["boardfarm3-docsis>=1.0.0"]
+pytest = ["pytest-boardfarm3>=1.0.0"]
 
 [project.scripts]
 boardfarm = "boardfarm3.main:main"

@@ -73,6 +73,22 @@ Run the following command to directly install the package from the repo:
 pip install git+https://github.com/lgirdk/boardfarm.git@boardfarm3
 ```
 
+Run the following command to install from PyPI:
+
+```bash
+pip install boardfarm3
+```
+
+### Plugin
+
+If you also want to install Boardfarm’s plugins for
+DOCSIS ([`boardfarm3-docsis`](https://github.com/lgirdk/boardfarm-docsis)) and Pytest ([`pytest-boardfarm3`](https://github.com/lgirdk/pytest-boardfarm)),
+you can install them together using extras:
+
+```bash
+pip install "boardfarm3[docsis, pytest]"
+```
+
 ## Usage
 
 ```bash
