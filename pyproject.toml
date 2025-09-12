@@ -19,12 +19,14 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 dynamic = ['version', 'description']
 license = { file = "LICENSE" }
 name = "boardfarm3"
-readme = "README.md"
+readme = "docs/index.md"
 requires-python = ">=3.9"
 
 dependencies = [
@@ -75,7 +77,7 @@ dev = [
     "types-PyYAML",
     "types-requests",
 ]
-doc = ["sphinx"]
+doc = ["sphinx", "mkdocs", "mkdocs-material"]
 test = ["pytest-cov", "pytest-mock", "pytest-randomly"]
 
 [project.scripts]
@@ -88,6 +90,7 @@ no_reservation = "boardfarm3.plugins.no_reservation"
 
 [project.urls]
 Source = "https://github.com/lgirdk/boardfarm"
+Documentation = "https://ketantewari.github.io/boardfarm/"
 
 [tool.commitizen]
 bump_message = "Bump version to $new_version"

@@ -1,17 +1,5 @@
 # Overview
 
-- [Introduction](/docs/architecture.md#introduction)
-  - [The vendor/team challenge](/docs//architecture.md#the-vendorteam-challenge)
-- [Architecuture](/docs//architecture.md#architecture)
-  - [Core Components](/docs/architecture.md#core-components)
-    - [Templates](/docs/architecture.md#templates-abcs)
-    - [Devices](/docs/architecture.md#devices-concrete-implementations)
-    - [Use Cases](/docs/architecture.md#use-cases)
-    - [Summary](/docs/architecture.md#summary)
-- [Hooks Specification and Pluggy](/docs/architecture.md#hooks-specification-and-pluggy)
-  - [Hook Categories](/docs/architecture.md#hook-categories--where-they-belong)
-  - [Execution Order](/docs/architecture.md#execution-order)
-
 ## Introduction
 
 End-to-end (E2E) solutions for CPE, access and back-office stacks are inherently complex:
@@ -41,7 +29,7 @@ To be effective, development and validation must happen **against the relevant e
 
 Boardfarm’s architecture is designed to address these realities by emphasizing:
 
-![boardfarm architecture](/docs/images/architecture.svg)
+![boardfarm architecture](https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/architecture.svg)
 
 - **Top-down (inward) dependencies only** — stable, inner layers define contracts; outer layers implement them.
 - **Non-restrictive API standardization** — provide clear, compact templates (ABCs) so use cases and tests stay vendor-agnostic.
@@ -268,8 +256,4 @@ boardfarm_attached_device_configure
 ### Execution Order (Comprehensive View)
 
 The following diagram explains in brief the execution lifecycle of the boardfarm runner:
-![Hook Flow architecture in detail.](/docs/images/boardfarm_revised_hook_flow.svg)
-
----
-
-Click here to go back to main [README](/README.md#documentation)
+![Hook Flow architecture in detail.](https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/boardfarm_revised_hook_flow.svg)

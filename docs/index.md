@@ -104,25 +104,11 @@ options:
 For full documentation, including installation, tutorials and architecture overview and how
 to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see the following.
 
-## Table of Contents
-
-- [Getting Started](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md)
-  - [Installation](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#installation)
-  - [Running an interactive session](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#running-an-interactive-session)
-  - [Booting up a lab environment](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#booting-up-a-lab-environment)
-- [Overview](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#overview)
-  - [Architecture](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#architecture)
-  - [Hook Specification and Pluggy](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#hooks-specification-and-pluggy)
-- [Development (How-to-Guide)](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md)
-  - [Writing a Boardfarm plugin](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-boardfarm-plugin)
-  - [Writing a Connection class](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-connection-class)
-  - [Writing a Device class](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-device-class)
-  - [Writing a Use Case](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-use-case)
-- [API Reference](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/README.md)
+[**Boardfarm Read the Docs**](https://ketantewari.github.io/boardfarm)
 
 ## Changelog
 
-Consult the [CHANGELOG](https://github.com/lgirdk/boardfarm/blob/boardfarm3/CHANGELOG.md) page for fixes and enhancements of each version.
+Consult the [CHANGELOG](changelog.md) page for fixes and enhancements of each version.
 
 ## License
 

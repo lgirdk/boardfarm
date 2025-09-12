@@ -1,10 +1,5 @@
 # Development (How-to-Guide)
 
-- [Writing a Boardfarm plugin](/docs/development.md#writing-a-boardfarm-plugin)
-- [Writing a Connection class](/docs/development.md#writing-a-connection-class)
-- [Writing a Device class](/docs/development.md#writing-a-device-class)
-- [Writing a Use Case](/docs/development.md#writing-a-use-case)
-
 ## Writing a Boardfarm plugin
 
 A Boardfarm plugin project typically follows the convention `boardfarm_<plugin_name>` and contains a small, focused set of packages that implement devices, plugin registration, templates, use cases and shared libraries.
@@ -337,8 +332,3 @@ def test_provision_device(device_manager):
 
 > **Tip — use-cases are business logic, name them by protocol/behavior, not by device type.**
 > In networking, prefer protocol- or feature-oriented names for use case modules (for example `use_cases/tr069.py` for ACS/TR-069 operations) rather than `use_cases/acs_device.py`. Templates abstract device types — use case names should reflect the business operation (e.g. `tr069`, `dhcp_provision`, `firmware_flash`) so they remain meaningful across different implementations.
-
-
----
-
-Click here to go back to main [README](/README.md#documentation)
