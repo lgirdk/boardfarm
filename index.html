@@ -294,6 +294,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -479,6 +494,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -593,6 +623,15 @@ simulated test environment.</li>
 <h2 id="installation">Installation</h2>
 <p>Run the following command to directly install the package from the repo:</p>
 <pre><code class="language-bash">pip install git+https://github.com/lgirdk/boardfarm.git@boardfarm3
+</code></pre>
+<p>Run the following command to install from PyPI:</p>
+<pre><code class="language-bash">pip install boardfarm3
+</code></pre>
+<h3 id="plugin">Plugin</h3>
+<p>If you also want to install Boardfarm’s plugins for
+DOCSIS (<a href="https://github.com/lgirdk/boardfarm-docsis"><code>boardfarm3-docsis</code></a>) and Pytest (<a href="https://github.com/lgirdk/pytest-boardfarm"><code>pytest-boardfarm3</code></a>),
+you can install them together using extras:</p>
+<pre><code class="language-bash">pip install &quot;boardfarm3[docsis, pytest]&quot;
 </code></pre>
 <h2 id="usage">Usage</h2>
 <pre><code class="language-bash">boardfarm -h
