@@ -1,0 +1,1243 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../changelog/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.19">
+    
+    
+      
+        <title>Developer Docs - Boardfarm Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#development-how-to-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Boardfarm Docs" class="md-header__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Boardfarm Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developer Docs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/lgirdk/boardfarm/tree/boardfarm3" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Boardfarm Docs" class="md-nav__button md-logo" aria-label="Boardfarm Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Boardfarm Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/lgirdk/boardfarm/tree/boardfarm3" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecure
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Developer Docs
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Developer Docs
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-boardfarm-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Boardfarm plugin
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Boardfarm plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directory-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory roles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyprojecttoml-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      pyproject.toml (entry-point)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-your-plugin-discoverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making your plugin discoverable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-device-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Device class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Device class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#minimal-plugin-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Minimal plugin example
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Minimal plugin example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pluginregistrationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      plugin/registration.py
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#templatesdevicepy-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      templates/device.py (Skeleton)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devicesdevice_apy-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      devices/device_a.py (Skeleton)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inventory-example-for-devicea" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inventory example for DeviceA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-connection-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Connection class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Connection class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-layer-transport-vs-device-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection layer (transport vs device logic)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connection layer (transport vs device logic)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-devices-use-it-typical-flow-_connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      How devices use it — typical flow (_connect)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How devices use it — typical flow (_connect)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compact-example-_connect-method-for-device-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compact example (_connect method for device A)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes / tips
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Use Case
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Use Case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interactive-shell-ipython" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interactive Shell (IPython)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pytest-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pytest Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-notes-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design notes &amp; best practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CHANGELOG
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-boardfarm-plugin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Boardfarm plugin
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Boardfarm plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directory-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Directory roles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pyprojecttoml-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      pyproject.toml (entry-point)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-your-plugin-discoverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making your plugin discoverable
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-device-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Device class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Device class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#minimal-plugin-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Minimal plugin example
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Minimal plugin example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pluginregistrationpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      plugin/registration.py
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#templatesdevicepy-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      templates/device.py (Skeleton)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#devicesdevice_apy-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      devices/device_a.py (Skeleton)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inventory-example-for-devicea" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inventory example for DeviceA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Runtime behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-connection-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Connection class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Connection class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-layer-transport-vs-device-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection layer (transport vs device logic)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connection layer (transport vs device logic)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benefits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-devices-use-it-typical-flow-_connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      How devices use it — typical flow (_connect)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How devices use it — typical flow (_connect)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#compact-example-_connect-method-for-device-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      Compact example (_connect method for device A)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes / tips
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-a-use-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Writing a Use Case
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing a Use Case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Usage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#interactive-shell-ipython" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interactive Shell (IPython)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pytest-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pytest Example
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#design-notes-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design notes &amp; best practices
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="development-how-to-guide">Development (How-to-Guide)</h1>
+<h2 id="writing-a-boardfarm-plugin">Writing a Boardfarm plugin</h2>
+<p>A Boardfarm plugin project typically follows the convention <code>boardfarm_&lt;plugin_name&gt;</code> and contains a small, focused set of packages that implement devices, plugin registration, templates, use cases and shared libraries.</p>
+<blockquote>
+<p><strong>Note:</strong> below I use DeviceA as a generic device implementation name. Replace DeviceA and <plugin_name> with your concrete names.</p>
+</blockquote>
+<pre><code class="language-bash">boardfarm_&lt;plugin_name&gt;/
+├── devices/             # concrete device implementations (classes)
+│   ├── __init__.py
+│   └── device_a.py
+├── plugins/             # modules that register to the plugin manager (hookimpl)
+│   ├── __init__.py
+│   └── registration.py
+├── templates/           # optional: extra Template ABCs (vendor/plugin-specific)
+│   ├── __init__.py
+│   └── custom_template.py
+├── use_cases/           # optional: plugin-level use cases
+│   ├── __init__.py
+│   └── provisioning.py
+├── lib/                 # helper libraries reused by devices / use cases
+│   ├── __init__.py
+│   └── helpers.py
+├── pyproject.toml
+└── README.md
+</code></pre>
+<h3 id="directory-roles">Directory roles</h3>
+<ul>
+<li><code>devices/</code> — Concrete implementations of templates (e.g. <code>DeviceA</code>). These classes will be instantiated by Boardfarm (via <code>DeviceManager</code>) when inventory entries reference your <code>type</code>.</li>
+<li><code>plugins/</code> — Module(s) that export <code>@hookimpl</code> functions such as <code>boardfarm_add_devices()</code>, <code>boardfarm_add_cmdline_args()</code>, <code>boardfarm_setup_env()</code>, etc. These make your package discoverable to Boardfarm and Pluggy.</li>
+<li><code>templates/</code> — <em>(optional)</em> Plugin-specific additional ABCs or mixins. Prefer extending the main boardfarm repo templates where possible.</li>
+<li><code>use_cases/</code> — <em>(optional)</em> Higher-level plugin logic composed from template methods (for internal tests or helper scripts).</li>
+<li><code>lib/</code> — Shared utilities used by your device drivers (parsers, networking helpers, common retry wrappers, …).</li>
+<li><code>pyproject.toml</code> — Project metadata and entry-points so Boardfarm can discover the plugin.</li>
+</ul>
+<hr />
+<h3 id="pyprojecttoml-entry-point">pyproject.toml (entry-point)</h3>
+<p>Boardfarm discovers plugins by loading setuptools/PEP-621 entry-points in the <code>boardfarm</code> group.</p>
+<p>Here's an example <code>pyproject.toml</code> (replace <code>&lt;plugin_name&gt;</code> with your package name — example below uses <code>boardfarm_plugin_a</code>):</p>
+<pre><code class="language-toml">[project]
+name = &quot;boardfarm_plugin_a&quot;
+version = &quot;0.0.1&quot;
+description = &quot;Boardfarm plugin with Device A&quot;
+readme = &quot;README.md&quot;
+requires-python = &quot;&gt;=3.11&quot;
+authors = [
+  { name = &quot;Ketone&quot;, email = &quot;devs@ketone.example&quot; }
+]
+
+[project.entry-points.&quot;boardfarm&quot;]
+# the importable module path that contains your @hookimpl functions
+boardfarm_plugin = &quot;boardfarm_plugin_a.plugins.registration&quot;
+</code></pre>
+<p><strong>Template (Generic)</strong>:</p>
+<pre><code class="language-toml">[project]
+name = &quot;boardfarm_&lt;plugin_name&gt;&quot;
+...
+[project.entry-points.&quot;boardfarm&quot;]
+boardfarm_plugin = &quot;boardfarm_&lt;plugin_name&gt;.plugins.registration&quot;
+
+</code></pre>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li><code>boardfarm_plugin</code> is an arbitrary key — Boardfarm will load the value (plugin module) in the <code>boardfarm</code> entry-point group.</li>
+<li>Ensure your package name and entry-point module are importable when the package is installed.</li>
+</ul>
+</blockquote>
+<h3 id="making-your-plugin-discoverable">Making your plugin discoverable</h3>
+<p>From your project root, install the package (use editable option during development):</p>
+<pre><code class="language-bash">pip install -e .
+</code></pre>
+<p>This registers the <code>boardfarm</code> entry-point for your package in the current environment so <code>plugin_manager.load_setuptools_entrypoints("boardfarm")</code> can find it. This way the runner registers the @hookimpl functions with the Pluggy PluginManager.</p>
+<p>After loading:</p>
+<ul>
+<li>Boardfarm may call your core hooks (e.g., <code>boardfarm_add_cmdline_args</code>) during runner setup.</li>
+<li>The runner uses <code>boardfarm_add_devices()</code> mapping to know which concrete classes correspond to inventory "type" values.</li>
+</ul>
+<h2 id="writing-a-device-class">Writing a Device class</h2>
+<h3 id="minimal-plugin-example">Minimal plugin example</h3>
+<p>Create <code>plugins/registration.py</code> and implement <code>@hookimpl</code> functions. Keep core hooks module-level and device hooks as <code>@hookimpl</code> instance methods inside device classes in <code>devices/</code>.</p>
+<h4 id="pluginregistrationpy"><code>plugin/registration.py</code></h4>
+<pre><code class="language-python"># plugins/registration.py
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import BoardfarmDevice
+from boardfarm_&lt;plugin_name&gt;.devices.device_a import DeviceA  # replace with your package
+
+@hookimpl
+def boardfarm_add_devices() -&gt; dict[str, type[BoardfarmDevice]]:
+    &quot;&quot;&quot;Register the concrete device types this package provides.&quot;&quot;&quot;
+    return {
+        &quot;device_a&quot;: DeviceA,
+    }
+
+@hookimpl
+def boardfarm_add_cmdline_args(argparser):
+    argparser.add_argument(&quot;--devicea-debug&quot;, action=&quot;store_true&quot;, help=&quot;Enable DeviceA plugin debug&quot;)
+
+</code></pre>
+<h4 id="templatesdevicepy-skeleton"><code>templates/device.py</code> (Skeleton)</h4>
+<pre><code class="language-python"># templates/device.py
+from abc import ABC, abstractmethod
+
+class DevA(ABC):
+    &quot;&quot;&quot;Minimal template for DeviceA-style devices.
+
+    Implementations must provide `method_x`. Use cases and tests should
+    depend on this ABC, not concrete classes.
+    &quot;&quot;&quot;
+
+    @abstractmethod
+    def method_x(self, payload=None, timeout=None):
+        &quot;&quot;&quot;Perform method_x on the device.
+
+        :param payload: optional input data
+        :param timeout: optional timeout in seconds
+        :return: result (implementation-specific)
+        &quot;&quot;&quot;
+        raise NotImplementedError
+
+</code></pre>
+<h4 id="devicesdevice_apy-skeleton"><code>devices/device_a.py</code> (Skeleton)</h4>
+<pre><code class="language-python"># devices/device_a.py
+from boardfarm3 import hookimpl
+from boardfarm3.devices.base_devices import LinuxDevice
+from boardfarm_plugin_a.templates.device import DevA
+
+class DeviceA(LinuxDevice, DevA):
+    def __init__(self, config, cmdline_args):
+        super().__init__(config, cmdline_args)
+        # initialization...
+
+    def method_x(self, payload=None, timeout=None):
+        &quot;&quot;&quot;Concrete implementation of the template method.&quot;&quot;&quot;
+        # do device interaction (SSH/HTTP/console/etc.)
+        return {&quot;status&quot;: &quot;ok&quot;, &quot;payload&quot;: payload}
+
+    @hookimpl
+    def boardfarm_server_boot(self):
+        self._connect()
+        # any init steps
+
+    @hookimpl
+    def contingency_check(self, env_req, device_manager=None):
+        # raise ContingencyCheckError on failure, or return None on success
+        pass
+</code></pre>
+<p><strong>Why instance methods for device hooks?</strong></p>
+<p>Device hooks often require access to device instance state (console, HTTP client, config). Decorating instance methods with @hookimpl allows the runner to call the method on the instantiated device object.</p>
+<h4 id="inventory-example-for-devicea">Inventory example for <code>DeviceA</code></h4>
+<p>Boardfarm looks up the <code>type</code> value from the inventory and instantiates the registered class (e.g. <code>DeviceA</code>) for that entry.
+The root-level key in this example is <code>plugin-a-board1</code> and it contains a <code>devices</code> list.</p>
+<pre><code class="language-json">{
+  &quot;plugin-a-board1&quot;: {
+    &quot;devices&quot;: [
+      {
+        &quot;name&quot;: &quot;devicea-1&quot;,
+        &quot;type&quot;: &quot;device_a&quot;,
+        &quot;connection_type&quot;: &quot;authenticated_ssh&quot;,
+        &quot;ipaddr&quot;: &quot;192.168.1.10&quot;,
+        &quot;port&quot;: 22,
+        &quot;username&quot;: &quot;root&quot;,
+        &quot;password&quot;: &quot;changeme&quot;,
+        &quot;options&quot;: &quot;some-option,other-flag&quot;,
+        &quot;color&quot;: &quot;blue&quot;
+      }
+    ]
+  }
+}
+</code></pre>
+<h4 id="runtime-behavior">Runtime behavior</h4>
+<ul>
+<li>At setup the runner passes the device entry (the full dict) into the device constructor: <code>DeviceA(config_for_entry, cmdline_args)</code>.</li>
+<li>Device implementations should read required fields from their <code>config</code> (e.g. <code>self._config.get("ipaddr")</code>) and raise a clear error if required keys are missing.</li>
+<li>If your driver needs additional inventory keys (serial, product_class, oui, vlans, etc.), document them in your plugin README and validate them in <code>validate_device_requirements</code> or during device instantiation.</li>
+</ul>
+<h2 id="writing-a-connection-class">Writing a Connection class</h2>
+<h3 id="connection-layer-transport-vs-device-logic">Connection layer (transport vs device logic)</h3>
+<p>Boardfarm separates <strong>transport</strong> (how you talk to a device) from <strong>device logic</strong> (what you do with the device). The connection layer (classes like <code>SSHConnection</code>, <code>TelnetConnection</code>, <code>LocalCmd</code>, etc.) implements a small, consistent console API (based on <code>BoardfarmPexpect</code>) that device implementations use to execute commands, read output, and perform interactive tasks.</p>
+<p>The <code>connection_factory(...)</code> centralizes creating the right connection object based on the inventory <code>connection_type</code> and parameters. Devices call the factory, get back a <code>BoardfarmPexpect</code>-derived object, and use its methods (<code>sendline</code>, <code>expect</code>, <code>execute_command</code>, <code>get_last_output</code>, async variants, etc.) — the device code does not need to know whether the transport is SSH, serial, telnet or a <code>docker exec</code>-style local command.</p>
+<h4 id="benefits">Benefits</h4>
+<ul>
+<li><strong>Transport abstraction</strong> — device code is written once; the transport can change without touching use-cases or device implementations.</li>
+<li><strong>Consistent API</strong> — devices always call the same methods (sync/async) on the returned connection object.</li>
+<li><strong>Centralized error handling &amp; logging</strong> — connection classes raise framework errors (<code>DeviceConnectionError</code>, <code>BoardfarmException</code>, <code>EnvConfigError</code>) and handle console-log saving in one place.</li>
+<li><strong>Easier testing &amp; mocking</strong> — swap real connections for fakes/mocks implementing the same API.</li>
+<li><strong>Extensibility</strong> — add new transports by implementing a connection class and registering it in <code>connection_factory</code>.</li>
+<li><strong>Async support</strong> — many connection classes provide both sync and async methods (<code>login_to_server_async</code>, <code>execute_command_async</code>) for scalable parallel provisioning.</li>
+</ul>
+<hr />
+<h3 id="how-devices-use-it-typical-flow-_connect">How devices use it — typical flow (<code>_connect</code>)</h3>
+<p>A device usually implements a <code>_connect()</code> helper that:</p>
+<ol>
+<li>Calls <code>connection_factory(...)</code> with <code>connection_type</code> and connection params from the <code>inventory</code> JSON entry.</li>
+<li>Calls <code>login_to_server(...)</code> (or <code>login_to_server_async(...)</code>) to complete authentication.</li>
+<li>Normalizes the terminal (for example <code>stty columns 400; export TERM=xterm</code>) to make command output parsing stable.</li>
+</ol>
+<h4 id="compact-example-_connect-method-for-device-a">Compact example (<code>_connect</code> method for device A)</h4>
+<pre><code class="language-python">def _connect(self) -&gt; None:
+    &quot;&quot;&quot;Establish connection to the device via SSH (or other transport).&quot;&quot;&quot;
+    if self._console is None:
+        # create the right connection object based on inventory
+        self._console = connection_factory(
+            self._config.get(&quot;connection_type&quot;), # check INV JSON
+            f&quot;{self.device_name}.console&quot;,
+            ... # remaining args
+        )
+
+        # perform authentication (sync or async variant)
+        self._console.login_to_server(password=self._password)
+
+        # stabilize terminal for predictable parsing
+        self._console.execute_command(&quot;stty columns 400; export TERM=xterm&quot;)
+</code></pre>
+<h4 id="notes-tips">Notes / tips</h4>
+<ul>
+<li><strong>Use <code>connection_factory</code></strong> rather than creating transport objects directly — it keeps device code portable and consistent.</li>
+<li><strong>Prefer high-level helpers</strong> like <code>execute_command()</code> unless you need fine-grained <code>expect()</code> control. High-level helpers handle prompt/timeout edge cases for you.</li>
+<li><strong>Validate required inventory fields</strong> (<code>ipaddr</code>, <code>port</code>, <code>username</code>, etc.) during device construction or in <code>validate_device_requirements</code> so failures are detected early.</li>
+<li><strong>Use async methods for concurrency</strong>: if your device supports asyncio and you implement <code>*_async</code> hooks, call <code>login_to_server_async()</code> and <code>execute_command_async()</code> to avoid blocking other provisioning tasks.</li>
+</ul>
+<h2 id="writing-a-use-case">Writing a Use Case</h2>
+<p>This short how-to shows a small <strong>use case</strong> that provisions a <code>DeviceA</code>-style device by calling the templated API <code>method_x</code>. The use case depends only on the <strong>template (ABC)</strong> — <code>DevA</code> — not on any concrete implementation. This keeps tests and scripts vendor-agnostic.</p>
+<p><strong>File:</strong> <code>use_cases/provisioning.py</code></p>
+<pre><code class="language-python"># use_cases/provisioning.py
+from __future__ import annotations
+from typing import Any
+
+# import the template/ABC, not a concrete class
+from boardfarm_plugin_a.templates.device import DevA
+
+
+def provision_device(
+    device: DevA,
+    config: dict[str, Any] | None = None,
+    timeout: int | None = None,
+) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Provision a DeviceA-style device.&quot;&quot;&quot;
+    payload = config or {&quot;action&quot;: &quot;default_provision&quot;}
+
+    # call the templated API
+    # concrete DeviceA (or any other implementation)
+    # will perform the actual transport/IO
+    result = device.method_x(payload=payload, timeout=timeout)
+
+    # basic validation of result (example)
+    if not isinstance(result, dict) or result.get(&quot;status&quot;) != &quot;ok&quot;:
+        raise RuntimeError(f&quot;Provisioning failed: {result}&quot;)
+
+    return result
+</code></pre>
+<h3 id="example-usage">Example Usage</h3>
+<h4 id="interactive-shell-ipython">Interactive Shell (IPython)</h4>
+<pre><code class="language-Python">from boardfarm_plugin_a.templates.device import DevA
+from boardfarm3.lib.device_manager import DeviceManager
+from boardfarm_plugin_a.use_cases.provisioning import provision_device
+
+# device_manager is provided by the runner / interact session
+device: DevA = device_manager.get_device_by_type(DevA)
+result = provision_device(device, config={&quot;action&quot;: &quot;apply_profile&quot;, &quot;profile&quot;: &quot;A1&quot;})
+print(result)
+
+</code></pre>
+<h4 id="pytest-example">Pytest Example</h4>
+<pre><code class="language-Python">def test_provision_device(device_manager):
+    device = device_manager.get_device_by_type(DevA)
+    res = provision_device(device, {&quot;action&quot;: &quot;apply_profile&quot;, &quot;profile&quot;: &quot;CI&quot;}, timeout=60)
+    assert res[&quot;status&quot;] == &quot;ok&quot;
+
+</code></pre>
+<h3 id="design-notes-best-practices">Design notes &amp; best practices</h3>
+<ul>
+<li><strong>Type hints use the template (ABC)</strong> — <code>DevA</code> — so the use case is independent of concrete drivers.</li>
+<li><strong>Keep use cases small and focused</strong> — orchestration and business logic belong here; transport and vendor quirks remain in device implementations.</li>
+<li><strong>Propagate errors</strong> so tests/runner can handle retries or fail fast. Optionally use retry helpers (e.g. <code>retry_on_exception</code>) for transient operations.</li>
+<li><strong>Return a stable structure</strong> (e.g. <code>{"status": "ok", "data": {...}}</code>) so callers can assert on consistent fields across vendors.</li>
+<li><strong>Document expected payload keys</strong> for <code>config</code> in the plugin README so integrators know which fields a concrete <code>DeviceA</code> expects.</li>
+</ul>
+<blockquote>
+<p><strong>Tip — use-cases are business logic, name them by protocol/behavior, not by device type.</strong>
+In networking, prefer protocol- or feature-oriented names for use case modules (for example <code>use_cases/tr069.py</code> for ACS/TR-069 operations) rather than <code>use_cases/acs_device.py</code>. Templates abstract device types — use case names should reflect the business operation (e.g. <code>tr069</code>, <code>dhcp_provision</code>, <code>firmware_flash</code>) so they remain meaningful across different implementations.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.expand", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+    
+  </body>
+</html>
