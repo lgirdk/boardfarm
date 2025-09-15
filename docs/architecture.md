@@ -29,7 +29,7 @@ To be effective, development and validation must happen **against the relevant e
 
 Boardfarm’s architecture is designed to address these realities by emphasizing:
 
-![boardfarm architecture](https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/architecture.svg)
+![boardfarm architecture](https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/architecture.svg)
 
 - **Top-down (inward) dependencies only** — stable, inner layers define contracts; outer layers implement them.
 - **Non-restrictive API standardization** — provide clear, compact templates (ABCs) so use cases and tests stay vendor-agnostic.
@@ -256,4 +256,4 @@ boardfarm_attached_device_configure
 ### Execution Order (Comprehensive View)
 
 The following diagram explains in brief the execution lifecycle of the boardfarm runner:
-![Hook Flow architecture in detail.](https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/boardfarm_revised_hook_flow.svg)
+![Hook Flow architecture in detail.](https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/boardfarm_revised_hook_flow.svg)

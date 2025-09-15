@@ -101,7 +101,7 @@ Boardfarm needs **two configuration files** to know what to deploy and how to in
 
     In this setup, the board is reached through a local Docker exec command, while WAN, LAN, ACS, and phones are accessed via SSH on different forwarded ports.
 
-    Please see [Inventory Schema](https://github.com/lgirdk/boardfarm/blob/boardfarm3/boardfarm3/configs/boardfarm_inventory_schema.json) for a list of all possible options that can be configured for a device in an Inventory file.
+    Please see [Inventory Schema](https://github.com/lgirdk/boardfarm/blob/master/boardfarm3/configs/boardfarm_inventory_schema.json) for a list of all possible options that can be configured for a device in an Inventory file.
 
 2. **Environment file** (`env.json`)
     - Tells Boardfarm **how to provision the testbed** once devices are connected.
@@ -153,7 +153,7 @@ boardfarm --board-name  prplos-docker-1 \
 > (Optional) --save-console-logs enabled to persist console logs to disk.
 
 This will bring up the Boardfarm Interactive Shell, where all deployed devices are listed and ready for interaction.
-![Interact Demo](https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/interact.gif)
+![Interact Demo](https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/interact.gif)
 
 When you see this menu:
 
