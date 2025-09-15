@@ -233,7 +233,7 @@ Please have a look at the boardfarm hooks section for more details.
 ## TLDR
 
 ```bash
-git clone -b boardfarm3 https://github.com/lgirdk/boardfarm.git
+git clone https://github.com/lgirdk/boardfarm.git
 cd boardfarm
 
 cd resources/deploy/prplos
@@ -247,6 +247,7 @@ source venv/bin/activate
 
 pip install -U pip wheel
 pip install -e .[dev,test,doc]
+# or pip install boardfarm3[pytest]
 
 boardfarm --board-name  prplos-docker-1 \
           --env-config ./boardfarm3/configs/boardfarm_env_example.json \
