@@ -1,0 +1,107 @@
+{
+    "prplos-docker-1": {
+        "devices": [
+            {
+                "conn_cmd": [
+                    "docker exec -it cpe ash"
+                ],
+                "connection_type": "local_cmd",
+                "gui_password": "admin",
+                "name": "board",
+                "type": "bf_cpe"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8001",
+                "ipaddr": "localhost",
+                "name": "wan",
+                "options": "wan-no-dhcp-server, tftpd-server, dns-server, mgmt_dns: 8.8.8.8, wan-static-ip:172.25.1.2/24, wan-static-ipv6:2001:dead:beef:2::2/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4001,
+                "type": "bf_wan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8002",
+                "ipaddr": "localhost",
+                "name": "lan",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4002,
+                "type": "bf_lan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "lan_phone",
+                "number": "1000",
+                "options": "lan-ip-dhcp",
+                "port": 4006,
+                "type": "bf_phone"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "sipcenter",
+                "numbers": [
+                    "1000",
+                    "2000"
+                ],
+                "options": "wan-static-ip:172.25.1.5, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::5, static-route:0.0.0.0/0-172.25.1.1",
+                "password": "bigfoot1",
+                "port": 4005,
+                "type": "bf_kamailio",
+                "username": "root"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "wan_phone",
+                "number": "2000",
+                "options": "wan-static-ip:172.25.1.3/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::3/64, static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4007,
+                "type": "bf_phone"
+            },
+            {
+                "acs_url": "http://172.25.1.40:7547",
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "localhost",
+                "name": "provisioner",
+                "port": 4003,
+                "preferred_vlan": "untagged",
+                "router_ipaddr": "localhost;4000",
+                "time_server": "216.239.35.0",
+                "time_server6": "2001:4860:4802:0032::a",
+                "timezone": 0,
+                "type": "bf_dhcp",
+                "vlans": {
+                    "untagged": {
+                        "cpe_pd": "2001:dead:bed1::/56",
+                        "iface": "eth1",
+                        "ipv4": "10.1.1.0/24",
+                        "ipv6": "2001:dead:cafe:1::/64"
+                    }
+                }
+            },
+            {
+                "acs_mib": "http://172.25.1.40:7547",
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_password": "admin",
+                "http_port": 7557,
+                "http_username": "admin",
+                "ipaddr": "localhost",
+                "name": "genieacs",
+                "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
+                "password": "bigfoot1",
+                "port": 4503,
+                "type": "bf_acs",
+                "username": "root"
+            }
+        ]
+    }
+}

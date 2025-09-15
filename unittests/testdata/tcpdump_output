@@ -1,0 +1,41 @@
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+15:16:59.276297 IP (tos 0x0, ttl 64, id 60232, offset 0, flags [DF], proto UDP (17), length 60)
+    192.168.127.2.60545 > 192.168.127.1.53: [udp sum ok] 19181+ A? www.google.com. (32)
+15:16:59.276324 IP (tos 0x0, ttl 64, id 60233, offset 0, flags [DF], proto UDP (17), length 60)
+    192.168.127.2.60545 > 192.168.127.1.53: [udp sum ok] 32238+ AAAA? www.google.com. (32)
+15:16:59.276836 IP (tos 0x0, ttl 64, id 21721, offset 0, flags [none], proto UDP (17), length 60)
+    192.168.127.1.53 > 192.168.127.2.60545: [udp sum ok] 32238 q: AAAA? www.google.com. 0/0/0 (32)
+15:16:59.277260 IP (tos 0x0, ttl 64, id 21722, offset 0, flags [none], proto UDP (17), length 90)
+    192.168.127.1.53 > 192.168.127.2.60545: [udp sum ok] 19181 q: A? www.google.com. 1/0/0 www.google.com. A 172.217.168.196 (62)
+15:16:59.277542 IP (tos 0x0, ttl 64, id 58658, offset 0, flags [DF], proto ICMP (1), length 84)
+    192.168.127.2 > 172.217.168.196: ICMP echo request, id 2, seq 1, length 64
+15:16:59.277806 IP (tos 0x0, ttl 64, id 58658, offset 0, flags [DF], proto ICMP (1), length 84)
+    172.217.168.196 > 192.168.127.2: ICMP echo reply, id 2, seq 1, length 64
+15:16:59.277873 IP (tos 0x0, ttl 64, id 30065, offset 0, flags [DF], proto UDP (17), length 74)
+    192.168.127.2.60655 > 192.168.127.1.53: [udp sum ok] 49061+ PTR? 196.168.217.172.in-addr.arpa. (46)
+15:16:59.278156 IP (tos 0x0, ttl 64, id 21723, offset 0, flags [none], proto UDP (17), length 74)
+    192.168.127.1.53 > 192.168.127.2.60655: [udp sum ok] 49061 q: PTR? 196.168.217.172.in-addr.arpa. 0/0/0 (46)
+15:17:00.312195 IP (tos 0x0, ttl 64, id 58733, offset 0, flags [DF], proto ICMP (1), length 84)
+    192.168.127.2 > 172.217.168.196: ICMP echo request, id 2, seq 2, length 64
+15:17:00.313089 IP (tos 0x0, ttl 64, id 58733, offset 0, flags [DF], proto ICMP (1), length 84)
+    172.217.168.196 > 192.168.127.2: ICMP echo reply, id 2, seq 2, length 64
+15:17:00.313348 IP (tos 0x0, ttl 64, id 63960, offset 0, flags [DF], proto UDP (17), length 74)
+    192.168.127.2.59038 > 192.168.127.1.53: [udp sum ok] 54023+ PTR? 196.168.217.172.in-addr.arpa. (46)
+15:17:00.314126 IP (tos 0x0, ttl 64, id 21724, offset 0, flags [none], proto UDP (17), length 74)
+    192.168.127.1.53 > 192.168.127.2.59038: [udp sum ok] 54023 q: PTR? 196.168.217.172.in-addr.arpa. 0/0/0 (46)
+15:17:01.313577 IP (tos 0x0, ttl 64, id 58753, offset 0, flags [DF], proto ICMP (1), length 84)
+    192.168.127.2 > 172.217.168.196: ICMP echo request, id 2, seq 3, length 64
+15:17:01.314817 IP (tos 0x0, ttl 64, id 58753, offset 0, flags [DF], proto ICMP (1), length 84)
+    172.217.168.196 > 192.168.127.2: ICMP echo reply, id 2, seq 3, length 64
+15:17:01.314996 IP (tos 0x0, ttl 64, id 957, offset 0, flags [DF], proto UDP (17), length 74)
+    192.168.127.2.41399 > 192.168.127.1.53: [udp sum ok] 39269+ PTR? 196.168.217.172.in-addr.arpa. (46)
+15:17:01.315730 IP (tos 0x0, ttl 64, id 21725, offset 0, flags [none], proto UDP (17), length 74)
+    192.168.127.1.53 > 192.168.127.2.41399: [udp sum ok] 39269 q: PTR? 196.168.217.172.in-addr.arpa. 0/0/0 (46)
+15:17:02.315399 IP (tos 0x0, ttl 64, id 58853, offset 0, flags [DF], proto ICMP (1), length 84)
+    192.168.127.2 > 172.217.168.196: ICMP echo request, id 2, seq 4, length 64
+15:17:02.317957 IP (tos 0x0, ttl 64, id 58853, offset 0, flags [DF], proto ICMP (1), length 84)
+    172.217.168.196 > 192.168.127.2: ICMP echo reply, id 2, seq 4, length 64
+15:17:02.318703 IP (tos 0x0, ttl 64, id 44280, offset 0, flags [DF], proto UDP (17), length 74)
+    192.168.127.2.53059 > 192.168.127.1.53: [udp sum ok] 6265+ PTR? 196.168.217.172.in-addr.arpa. (46)
+15:17:02.321295 IP (tos 0x0, ttl 64, id 21726, offset 0, flags [none], proto UDP (17), length 74)
+    192.168.127.1.53 > 192.168.127.2.53059: [udp sum ok] 6265 q: PTR? 196.168.217.172.in-addr.arpa. 0/0/0 (46)

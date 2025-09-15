@@ -1,0 +1,235 @@
+@startuml Boardfarm Current Flow
+hide empty description
+
+
+[*] --> Main : start boardfarm
+Main --> PluginManager : init
+Main --> ArgParser : init
+
+state CLIEnd <<end>>
+state "CLI Parsing Stage" as CLI {
+    state "entry" as entry_cli_stage <<entrypoint>>
+    state "exit" as exit_cli_stage <<exitpoint>>
+
+    state AddCLIArgsHook #D8F3FA
+    state ParseCLIArgsHook #D8F3FA ##[bold]green
+    note left of ParseCLIArgsHook
+        Replace arg **bfconfig_file** with **inventory_file**
+        Add arg **deployment_type**
+
+        **deployment_type** can be **static**/**dynamic**/**discover**
+    end note
+
+    PluginManager --> entry_cli_stage
+    ArgParser --> entry_cli_stage : passed to
+    AddCLIArgsHook --> ParseCLIArgsHook
+
+}
+ParseCLIArgsHook -right-> CLIEnd : if incorrect CLI\nargs are provided
+exit_cli_stage -left-> BoardfarmConfigure
+
+
+state ReserveEnd <<end>>
+state "Reserve Device Stage" as Reservation{
+    state reservechoice <<choice>>
+    state "entry" as entry_reservation_stage <<entrypoint>>
+    state "exit" as exit_reservation_stage <<exitpoint>>
+    state BoardfarmConfigure #D8F3FA
+    state ReserveDeviceHook #D8F3FA
+
+
+    BoardfarmConfigure -down-> entry_reservation_stage
+
+    ReserveDeviceHook --> reservechoice
+    reservechoice --> LockableResource : lockable-resource != None
+    reservechoice --> CLIArgs : lockable-resource == None
+}
+reservechoice -up-> ReserveEnd : if both are empty
+
+
+state deploy_choice <<choice>>
+exit_reservation_stage -[#green]-> deploy_choice
+deploy_choice -[#green]-> ParseInventory : <color:green>if deployment_type == static</color>
+
+state "Env Deployment Stage" as DeployEnv ##[bold]green {
+    state "entry" as entry_deploy_stage <<entrypoint>>
+    state "exit" as exit_deploy_stage <<exitpoint>>
+    state deploy_choice_1 <<choice>>
+
+    state DeployEnvHook #D8F3FA
+
+    deploy_choice -[#green]-> entry_deploy_stage : <color:green>if deployment_type in [dynamic, discover]</color>
+    DeployEnvHook -right-> ParsePartialInv : calls
+    note right of ParsePartialInv
+        Parsing partial INV.json will not be a
+        separate hook spec of core.
+        The plugin for docker factory shall handle
+        the parsing internally by implementing the
+        boardfarm_deploy_env_hook
+    end note
+
+    note right of deploy_choice_1
+        if deployment_type is discover it means
+        that we want to regenerate the final INV.JSON
+        based on the partial INV JSON provided earlier.
+    end note
+
+    ParsePartialInv --> deploy_choice_1
+    deploy_choice_1 --> DeployEnvDevices : if deployment_type == dynamic
+    deploy_choice_1 --> GenerateDeployedInv: if deployment_type == discover
+    DeployEnvDevices --> GenerateDeployedInv
+
+
+}
+
+state ParseEnd <<end>>
+exit_deploy_stage --> ParseInventory
+ParseInventory -left-> ParseEnd : <color:green>if deployment_type was static, and</color>\n<color:green>inventory_file was partial</color>
+
+
+
+state "Env Setup Stage" as EnvSetup{
+    state "entry" as entry_env_stage <<entrypoint>>
+    state "exit" as exit_env_stage <<exitpoint>>
+
+    ParseInventory --> entry_env_stage: passes FinalInv.JSON for to booting stage.
+
+    state skip_choice <<choice>>
+
+
+    state RegisterHook #D8F3FA ##[bold]green
+    state AddDeviceHook #D8F3FA ##[bold]green
+    state SetupEnvHook #D8F3FA ##[bold]green
+    state SkipBootHook #FEC772 ##[bold]green
+
+    note left of RegisterHook
+        Moved this up.
+        Since registering devices is a core activity.
+        And should happen first before intiating booting.
+    end note
+
+    note left of SetupEnvHook
+            Renamed it to SetupEnvHook
+            It does not deploy but calls all booting hooks.
+    end note
+
+    RegisterHook -right-> AddDeviceHook
+    RegisterHook --> SetupEnvHook : passes device_manager
+    SetupEnvHook --> skip_choice
+    skip_choice -right-> SkipBootHook : if skip_boot == True
+
+    State "Booting stage" as Booting ##[bold]green {
+
+
+        state ValidateDeviceHook #FEC772 ##[bold]green
+        state ServerBootHook #FEC772
+        state ServerConfigureHook #FEC772
+        state DeviceBootHook #FEC772
+        state DeviceConfigureHook #FEC772
+        state AddnDeviceBootHook #FEC772
+        state AddnDeviceConfigureHook #FEC772
+
+        state "entry" as entry_boot_stage <<entrypoint>>
+        state "exit" as exit_boot_stage <<exitpoint>>
+
+
+
+        ValidateDeviceHook --> ServerBootHook
+        ServerBootHook -right[#green]-> SetupServer : internal call
+        ServerBootHook -[#green]-> ServerConfigureHook
+        ServerConfigureHook -[#green]-> DeviceBootHook
+
+        DeviceBootHook -right[#green]-> BootCPE : internal call
+        DeviceBootHook -[#green]-> DeviceConfigureHook
+        DeviceConfigureHook -[#green]-> AddnDeviceBootHook
+
+        AddnDeviceBootHook -right[#green]-> BootAddnDevice : internal call
+        AddnDeviceBootHook -[#green]-> AddnDeviceConfigureHook
+
+    }
+
+    skip_choice -down-> entry_boot_stage : if skip_boot == False
+
+
+
+    note top of Booting
+            The Booting stage must be a simple call to all booting
+            hook implementations implemented by devices.
+    end note
+
+    note bottom of PostEnvSetupHook
+            Renamed now to PostEnvSetupHook
+    end note
+
+    exit_boot_stage --> PostEnvSetupHook : on success
+    ' PostEnvSetupHook -left-> exit_env_stage
+    state PostEnvSetupHook #D8F3FA
+
+}
+
+
+state choice_output <<choice>>
+
+exit_env_stage --> choice_output : returns booting status
+
+choice_output --> Execution : if booting succeeded or\n skip_boot
+
+state "Release Env Stage" as ReleaseEnv {
+    state "entry" as entry_release_stage <<entrypoint>>
+    state "exit" as exit_release_stage <<exitpoint>>
+
+    state DeviceShutdownHook #D8F3FA
+    state ReleaseDeviceHook #D8F3FA
+
+
+    Execution --> entry_release_stage : on completion
+    ReleaseDeviceHook --> DeviceShutdownHook : calls
+    note right of DeviceShutdownHook
+            If we have a device shutdown hook.
+            Shouldn't we have a device powerup hook?
+    end note
+}
+
+choice_output --> entry_release_stage : if booting failed
+exit_release_stage --> [*] : successful\nexit
+
+
+PluginManager: init all BF plugins\nReads BF entry-points
+AddCLIArgsHook : boardfarm_add_cmdline_args()
+ParseCLIArgsHook : boardfarm_cmdline_parse()
+ReserveDeviceHook : boardfarm_reserve_devices()
+LockableResource : return board ID
+BoardfarmConfigure: boardfarm_configure()\nTBD, adds hook stages to the core
+CLIArgs : pick board-name from CLI
+ParseInventory : parse_boardfarm_config()\nParses INV.json for devices
+SetupEnvHook : boardfarm_setup_env()\nCalling all device booting hooks
+PostEnvSetupHook : boardfarm_post_deploy_devices()\nDisconnect disposable services
+RegisterHook : boardfarm_register_devices()\nShould be a Core hook not device hook
+AddDeviceHook : boardfarm_add_devices()\nShould be a core hook not device hook
+ValidateDeviceHook : validate_device_requirements()\nValidate against INV.json
+ServerBootHook : boardfarm_server_boot()\nBoot servers
+ServerConfigureHook : boardfarm_server_configure()\nConfigure servers
+DeviceBootHook : boardfarm_device_boot()\nBoot CPE
+DeviceConfigureHook : boardfarm_device_configure()\nConfigure CPE
+AddnDeviceBootHook : boardfarm_attached_device_boot()\nBoot Extras
+AddnDeviceConfigureHook : boardfarm_attached_device_configure()\nConfigure Extras
+ReleaseDeviceHook: boardfarm_release_devices()\nRelease all devices
+DeviceShutdownHook: boardfarm_shutdown_device()\nShutdown connections
+DeployEnvHook : boardfarm_deploy_env()\nParses the INV and ENV to deploy\ncontainers
+DeployEnvDevices : boardfarm_deploy_env_devices()\nInteracts with docker factory
+GenerateDeployedInv : boardfarm_generate_inventory()\nshould provide the final INV.json
+SkipBootHook : boardfarm_skip_boot()\nIn case there are activities\nneeded to be performed before handling out the device
+Execution : Can be tests or interact session.
+
+
+
+legend right
+    **Color Coding for Hooks**
+
+    | **Color** | **Hook Type** |
+    | <#D8F3FA> | Core Hooks |
+    | <#FEC772> | Device Hooks |
+    |           | Boardfarm internal calls |
+endlegend
+
+@enduml

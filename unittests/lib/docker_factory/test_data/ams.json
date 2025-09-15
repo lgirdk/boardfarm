@@ -1,0 +1,120 @@
+{
+    "F5685LGE-1-1": {
+        "devices": [
+            {
+                "conn_cmd": [
+                    "ssh 10.71.10.31 -p 3001"
+                ],
+                "connection_type": "ldap_authenticated_serial",
+                "gui_password": "",
+                "mac": "e4:c0:e2:45:26:ea",
+                "manufacturer": "SAGEMCOM",
+                "mirror": "http://10.64.36.100/",
+                "name": "board",
+                "powerport": "px2://10.71.10.53; 24",
+                "sku": "Ziggo",
+                "type": "F5685LGE"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.71.10.101:10101",
+                "ipaddr": "10.71.10.101",
+                "name": "wan",
+                "options": "tftpd-server, wan-static-ip:172.25.1.2/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::2/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4002,
+                "type": "debian_wan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.71.10.101:8001",
+                "ipaddr": "10.71.10.101",
+                "name": "lan",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 5001,
+                "type": "debian_lan"
+            },
+            {
+                "color": "magenta",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.71.10.101:8002",
+                "ipaddr": "10.71.10.101",
+                "name": "lan2",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 5002,
+                "type": "debian_lan"
+            },
+            {
+                "cm_gateway": "10.1.1.1",
+                "cm_gateway_v6": "2001:dead:cafe:1::1/64",
+                "cm_network": "10.1.1.0/24",
+                "cm_network_v6_end": "2001:dead:cafe:1::c:100",
+                "cm_network_v6_start": "2001:dead:cafe:1::c:10",
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "dhcp_snooping": true,
+                "dhcp_snooping_target": "10.71.10.101; 2002",
+                "erouter_fixed_ip_start": "2001:dead:cafe:1::ef:1/64",
+                "erouter_net": "2001:deaf:beef::/49",
+                "ipaddr": "10.71.10.101",
+                "max_users": 9999,
+                "mta_gateway": "10.1.3.1",
+                "mta_network": "10.1.3.0/24",
+                "name": "provisioner",
+                "open_gateway": "10.1.2.1",
+                "open_gateway_v6": "2001:dead:cafe:1::1/64",
+                "open_network": "10.1.2.0/24",
+                "open_network_v6_end": "2001:dead:cafe:1::e:100",
+                "open_network_v6_start": "2001:dead:cafe:1::e:10",
+                "options": "wan-static-ip:172.25.1.20/24, wan-static-ipv6:2001:dead:beef:2::20/64 , static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4020,
+                "prov_gateway": "172.25.1.1",
+                "prov_gateway_v6": "2001:dead:beef:2::1",
+                "prov_ip": "172.25.1.20",
+                "prov_ipv6": "2001:dead:beef:2::20/64",
+                "prov_network": "172.25.1.0/24",
+                "sip_fqdn": "09:53:49:50:43:45:4e:54:45:52:09:42:4f:41:52:44:46:41:52:4d:03:43:4F:4D:00",
+                "syslog_server": "172.25.1.24",
+                "time_server": "172.25.1.24",
+                "time_server6": "2001:dead:beef:2::24",
+                "timezone": "UTC +0",
+                "type": "debian-isc-provisioner"
+            },
+            {
+                "acs_mib": "http://acs_server.boardfarm.com:9675",
+                "aux_ip": "wan-static-ip:172.25.2.40, wan-static-ipv6:2001:dead:beef:3::40/64",
+                "aux_url": "acs.boardfarm.com",
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_password": "bigfoot1",
+                "http_port": 9676,
+                "http_username": "admin",
+                "ipaddr": "10.71.10.101",
+                "max_users": 9999,
+                "name": "acs_server",
+                "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
+                "password": "bigfoot1",
+                "port": 4501,
+                "type": "axiros_acs_soap",
+                "username": "root"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "10.71.10.101",
+                "name": "cdn",
+                "port": 4002,
+                "type": "cdn"
+            },
+            {
+                "bootstrap_server": "conn.odh.itc.upclabs.com",
+                "color": "red",
+                "connection_type": "authenticated_ssh",
+                "name": "odh",
+                "topic": "itclab_in_various_test_tst_modem_v1",
+                "type": "odh"
+            }
+        ]
+    }
+}

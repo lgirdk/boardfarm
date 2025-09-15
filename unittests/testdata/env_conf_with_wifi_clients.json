@@ -1,0 +1,48 @@
+{
+    "environment_def": {
+        "CMTS": {
+            "model": "CC8800",
+            "type": "topvision"
+        },
+        "board": {
+            "GUI_Language": "nl",
+            "SKU": "Ziggo",
+            "boot_file": "Main",
+            "country": "NL",
+            "eRouter_Provisioning_mode": "dual",
+            "emta": {
+                "boot_file_mta": "Main "
+            },
+            "lan_clients": [],
+            "model": "CH7465LG",
+            "software": {
+                "factory_reset": "true",
+                "flash_strategy": "all",
+                "image_uri": "/CH7465LG/ofw/weeklies/2022-06/30/ofw-mv1cbn-r13-20220701044232.img"
+            },
+            "wifi_clients": [
+                {
+                    "authentication": "WPA-PSK",
+                    "band": "5",
+                    "network": "private",
+                    "protocol": "802.11ac"
+                },
+                {
+                    "authentication": "WPA-PSK",
+                    "band": "2.4",
+                    "network": "private",
+                    "protocol": "802.11n"
+                },
+                {
+                    "authentication": "WPA-PSK",
+                    "band": "5",
+                    "network": "guest",
+                    "protocol": "802.11ac"
+                }
+            ]
+        },
+        "tr-069": {},
+        "voice": {}
+    },
+    "version": "2.23"
+}

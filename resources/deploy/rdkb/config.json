@@ -1,0 +1,86 @@
+{
+    "bridge": {
+        "cpe-rtr": {
+            "parents": [
+                {
+                    "iface": "<your specific interface (e.g. eno1 on intel nuc)>"
+                }
+            ]
+        },
+        "lan1-to-cpe": {
+            "parents": [
+                {
+                    "iface": "<your specific interface/usb port (e.g. usb:2-1)>"
+                }
+            ]
+        },
+        "lan2-to-cpe": {
+            "parents": [
+                {
+                    "iface": "<your specific interface/usb port (e.g. usb:2-2)>"
+                }
+            ]
+        },
+        "rtr-uplink": {},
+        "rtr-wan": {}
+    },
+    "container": {
+        "acs": [
+            {
+                "bridge": "rtr-wan",
+                "gateway": "172.25.1.1",
+                "gateway6": "2001:dead:beef:2::1",
+                "iface": "eth1",
+                "ip6address": "2001:dead:beef:2::40/64",
+                "ipaddress": "172.25.1.40/24"
+            }
+        ],
+        "dhcp": [
+            {
+                "bridge": "cpe-rtr",
+                "gateway": "10.1.1.1",
+                "gateway6": "2001:dead:cafe:1::1",
+                "iface": "eth1",
+                "ip6address": "2001:dead:cafe:1::20/64",
+                "ipaddress": "10.1.1.20/24"
+            }
+        ],
+        "lan": [
+            {
+                "bridge": "lan1-to-cpe",
+                "iface": "eth1"
+            }
+        ],
+        "lan2": [
+            {
+                "bridge": "lan2-to-cpe",
+                "iface": "eth1"
+            }
+        ],
+        "router": [
+            {
+                "bridge": "cpe-rtr",
+                "iface": "cpe"
+            },
+            {
+                "bridge": "rtr-wan",
+                "iface": "eth1"
+            },
+            {
+                "bridge": "rtr-uplink",
+                "iface": "aux0"
+            }
+        ],
+        "wan": [
+            {
+                "bridge": "rtr-wan",
+                "gateway": "172.25.1.1",
+                "gateway6": "2001:dead:beef:2::1",
+                "iface": "eth1",
+                "ip6address": "2001:dead:beef:2::2/64",
+                "ipaddress": "172.25.1.2/24"
+            }
+        ]
+    },
+    "vlan_translations": []
+}

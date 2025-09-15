@@ -1,0 +1,25 @@
+{
+    "environment_def": {
+        "CMTS": {
+            "model": "CC8800",
+            "type": "topvision"
+        },
+        "board": {
+            "GUI_Language": "nl",
+            "boot_file": "Main",
+            "country": "NL",
+            "emta": {
+                "boot_file_mta": "Main "
+            },
+            "lan_clients": null,
+            "software": {
+                "factory_reset": "true",
+                "flash_strategy": "all",
+                "image_uri": "/CH7465LG/ofw/weeklies/2022-06/30/ofw-mv1cbn-r13-20220701044232.img"
+            }
+        },
+        "tr-069": {},
+        "voice": {}
+    },
+    "version": "2.23"
+}

@@ -1,0 +1,20 @@
+{
+    "services": {
+        "orchestrator": {
+            "container_name": "orchestrator",
+            "environment": {
+                "LEGACY": "yes"
+            },
+            "hostname": "orchestrator",
+            "image": "10.64.38.13:5000/bf-network-orchestrator:alpine3.18-dind-ovs_2.17",
+            "network_mode": "host",
+            "pid": "host",
+            "privileged": true,
+            "volumes": [
+                "/lib/modules:/lib/modules",
+                "/var/run/docker.sock:/var/run/docker.sock",
+                "$NW_CONFIG:/root/config.json"
+            ]
+        }
+    }
+}

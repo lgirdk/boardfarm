@@ -1,0 +1,17 @@
+{
+    "services": {
+        "lan": {
+            "container_name": "lan",
+            "environment": {
+                "LEGACY": "no"
+            },
+            "hostname": "lan",
+            "image": "10.64.38.13:5000/bf-lan:bullseye-3.11.1-container_utils_1.1.1",
+            "ports": [
+                "5001:22",
+                "8001:8080"
+            ],
+            "privileged": true
+        }
+    }
+}

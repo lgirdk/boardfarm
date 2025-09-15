@@ -1,0 +1,273 @@
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]
+
+[project]
+authors = [
+    { name = "Various", email = "t&iconnectivityboardfarm@libertyglobal.com" },
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: BSD License",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Acceptance",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Software Development :: Embedded Systems",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dynamic = ['version', 'description']
+license = { file = "LICENSE" }
+name = "boardfarm3"
+readme = "docs/index.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "beautifulsoup4",
+    "httpx",
+    "importlib-metadata",
+    "jc",
+    "jsonmerge",
+    "netaddr",
+    "pandas",
+    "pexpect>=4.9",
+    "pluggy>=1.0.0",
+    "ptipython",
+    "pysmi",
+    "pytest",
+    "PyYAML",
+    "pyasn1==0.6.0",
+    "pysnmp-lextudio>=6,<6.1.2",
+    "requests",
+    "rich",
+    "kafka-python-ng",
+    "termcolor",
+    "selenium<4.15.0",
+    "xmltodict",
+    "debtcollector",
+    "scikit-image",  # image comparison
+    "opencv-python", # image comparison
+]
+
+[project.optional-dependencies]
+dev = [
+    "flake8",
+    "flake8-bugbear",
+    "flake8-builtins",
+    "flake8-comprehensions",
+    "flake8-docstrings",
+    "flake8-rst",
+    "flake8-rst-docstrings",
+    "darglint2==v1.8.2",
+    "mypy>=1.3",
+    "nox",
+    "pandas-stubs",
+    "pre-commit",
+    "pylint",
+    "pylint-per-file-ignores",
+    "ruff==v0.11.5",
+    "types-ipaddress",
+    "types-PyYAML",
+    "types-requests",
+]
+doc = ["sphinx", "mkdocs", "mkdocs-material"]
+test = ["pytest-cov", "pytest-mock", "pytest-randomly"]
+docsis = ["boardfarm3-docsis>=1.0.0"]
+pytest = ["pytest-boardfarm3>=1.0.0"]
+
+[project.scripts]
+boardfarm = "boardfarm3.main:main"
+
+[project.entry-points."boardfarm"]
+core = "boardfarm3.plugins.core"
+booting = "boardfarm3.plugins.setup_environment"
+no_reservation = "boardfarm3.plugins.no_reservation"
+
+[project.urls]
+Source = "https://github.com/lgirdk/boardfarm"
+Documentation = "https://ketantewari.github.io/boardfarm/"
+
+[tool.commitizen]
+bump_message = "Bump version to $new_version"
+name = "cz_conventional_commits"
+style = [
+    [
+        "qmark",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "question",
+        "bold",
+    ],
+    [
+        "answer",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "pointer",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "highlighted",
+        "fg:#ff9d00 bold",
+    ],
+    [
+        "selected",
+        "fg:#cc5454",
+    ],
+    [
+        "separator",
+        "fg:#cc5454",
+    ],
+    [
+        "instruction",
+        "",
+    ],
+    [
+        "text",
+        "",
+    ],
+    [
+        "disabled",
+        "fg:#858585 italic",
+    ],
+]
+tag_format = "$version"
+version = "2025.8.12a15"
+version_files = [
+    "boardfarm3/__init__.py:version",
+    "pyproject.toml:version",
+    "pyproject.toml:current",
+]
+
+[tool.mypy]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+no_strict_optional = true
+pretty = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unreachable = true
+
+[tool.tbump]
+# Uncomment this if your project is hosted on GitHub:
+# github_url = "https://github.com/<user or organization>/<project>/"
+[tool.tbump.version]
+current = "2025.8.12a15"
+
+# Example of a semver regexp.
+# Make sure this matches current_version before
+# using tbump
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "{new_version}"
+
+# For each file to patch, there is a [[tool.tbump.file]] config
+# section containing the path of the file, relative to the
+# pyproject.toml location.
+[[tool.tbump.file]]
+src = "boardfarm3/__init__.py"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+
+[tool.ruff]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+line-length = 88
+
+target-version = "py39"
+
+[tool.ruff.lint]
+    ignore = [
+        "ANN204", # annotation of __init__()
+        "D203",
+        "D213",
+        "FBT",    # boolean trap, no clear solution
+        "N",      # naming convention, already covered by pylint
+        "PT003",  # allow scope=function to be explicitly passed to fixtures
+        "SIM114", # simplify if-elif by AND/OR combinations
+        "TD",     # would conflict with TODO highligther
+        "FIX002", # we need to keep TODOs in the code
+        "E501",   # line too long ignoring
+        "COM812", # The following rule may cause conflicts when used with the formatter
+        "ISC001", # The following rule may cause conflicts when used with the formatter
+    ]
+    select = ["ALL"]
+
+    # Allow autofix for all enabled rules (when `--fix`) is provided.
+    fixable = ["ALL"]
+
+    unfixable = [
+        "F401", # unused imports - we must know if we forgot something...
+    ]
+
+[tool.ruff.lint.per-file-ignores]
+"boardfarm3/lib/parsers/*" = [
+    "ALL", # parsers are to be rewritten with JC
+]
+"boardfarm3/plugins/hookspecs/*" = [
+    "ARG001", # hook specs never use any argument
+]
+"unittests/*" = [
+    "INP001",  # pytest works this way
+    "S101",    # we do use assert in unit test written for pytest
+    "D103",    # doc-strings are not mandatory for unittests
+    "SLF001",  # we do access private members for validation in unittests
+    "E501",    # line too long errors are ignored for unittests
+    "ANN401",  # dynamically typed expressions (typing.Any) are used in arguments
+    "PLR2004", # Magic value used in comparison
+]
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
+
+[tool.pylint.MASTER]
+load-plugins = ["pylint_per_file_ignores"]
+
+[tool.pylint-per-file-ignores]
+"/unittests/" = "R0903,C0116,C0103,W0613"

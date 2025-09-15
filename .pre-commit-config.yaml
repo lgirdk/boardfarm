@@ -1,0 +1,127 @@
+---
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+    - repo: https://github.com/commitizen-tools/commitizen
+      rev: v4.9.0
+      hooks:
+          - id: commitizen
+            stages: [commit-msg]
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v6.0.0
+      hooks:
+          - id: check-ast
+            stages: [pre-commit]
+          - id: end-of-file-fixer
+            stages: [pre-commit]
+          - id: mixed-line-ending
+            stages: [pre-commit]
+          - id: check-toml
+            stages: [pre-commit]
+          - id: trailing-whitespace
+            exclude: cm-cfg
+            stages: [pre-commit]
+          - id: check-docstring-first
+            stages: [pre-commit]
+          - id: check-yaml
+            stages: [pre-commit]
+          - id: check-json
+            stages: [pre-commit]
+          - id: pretty-format-json
+            args: [--autofix, --indent=4]
+            stages: [pre-commit]
+          - id: check-added-large-files
+            stages: [pre-commit]
+            args: [--maxkb=25600]
+          - id: requirements-txt-fixer
+            stages: [pre-commit]
+          - id: check-merge-conflict
+            stages: [pre-commit]
+          - id: debug-statements
+            stages: [pre-commit]
+          - id: check-executables-have-shebangs
+            language: python
+            files: \.py$
+            stages: [pre-commit]
+    - repo: https://github.com/Lucas-C/pre-commit-hooks
+      rev: v1.5.5
+      hooks:
+          - id: remove-crlf
+            stages: [pre-commit]
+          - id: remove-tabs
+            exclude: cm-cfg|docs/Makefile
+            stages: [pre-commit]
+          - id: forbid-crlf
+            stages: [pre-commit]
+          - id: forbid-tabs
+            exclude: cm-cfg|docs/Makefile
+            stages: [pre-commit]
+    - repo: https://github.com/myint/eradicate
+      rev: 3.0.0
+      hooks:
+          - id: eradicate
+            name: eradicate
+            description: Apply eradicate
+            entry: eradicate
+            language: python
+            files: \.py$
+            args: [--in-place]
+            stages: [pre-commit]
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v3.20.0
+      hooks:
+          - id: pyupgrade
+            args: [--py39-plus]
+            stages: [pre-commit]
+    - repo: https://github.com/ikamensh/flynt/
+      rev: 1.0.6
+      hooks:
+          - id: flynt
+            stages: [pre-commit]
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.2.3
+      hooks:
+          - id: yamlfmt
+            stages: [pre-commit]
+            exclude: |
+                (?x)^(
+                  unittests/lib/docker_factory/.*\.yml$
+                )$
+    - repo: https://github.com/adrienverge/yamllint.git
+      rev: v1.37.1
+      hooks:
+          - id: yamllint
+            args: [--format, parsable, --strict]
+            stages: [pre-commit]
+            exclude: |
+                (?x)^(
+                  unittests/lib/docker_factory/.*\.yml$
+                )$
+    - repo: https://github.com/astral-sh/ruff-pre-commit
+      # Ruff version.
+      rev: v0.13.0
+      hooks:
+          - id: ruff
+            # https://docs.astral.sh/ruff/formatter/#sorting-imports
+            args: [check, --select, I, --fix]
+            name: ruff-isort
+            stages: [pre-commit]
+          - id: ruff-format
+            stages: [pre-commit]
+          - id: ruff
+            stages: [pre-commit]
+    - repo: https://github.com/akaihola/darglint2
+      rev: v1.8.2
+      hooks:
+          - id: darglint2
+            args: [boardfarm3]
+            stages: [pre-commit]
+    - repo: local
+      hooks:
+          - id: nox
+            name: nox
+            entry: nox
+            language: system
+            stages: [pre-push]
+            pass_filenames: false
+            types: [python]

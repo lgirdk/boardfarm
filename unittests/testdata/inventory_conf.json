@@ -1,0 +1,171 @@
+{
+    "CH7465LG-2-2": {
+        "devices": [
+            {
+                "cm_mac": "68:02:b8:47:fc:94",
+                "conn_cmd": [
+                    "ssh 10.64.38.32 -p 3003",
+                    "ssh 10.64.38.32 -p 3004"
+                ],
+                "connection_type": "ldap_authenticated_serial",
+                "feature": [
+                    "voice"
+                ],
+                "hardware_version": "5.02",
+                "manufacturer": "COMPAL",
+                "mirror": "http://10.64.36.100/",
+                "name": "board",
+                "powerport": "px2://10.64.36.33; 23",
+                "sku": "UPC",
+                "type": "CH7465LG"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.64.38.18:10102",
+                "ipaddr": "10.64.38.18",
+                "name": "wan",
+                "options": "tftpd-server, mgmt_dns: 10.64.36.53, wan-static-ip:172.25.1.102/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::102/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4102,
+                "type": "debian_wan"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "10.64.38.18",
+                "name": "sipcenter",
+                "numbers": [
+                    "1000",
+                    "2000",
+                    "3000",
+                    "4000"
+                ],
+                "options": "wan-static-ip:172.25.1.142/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::142/64, static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4302,
+                "type": "kamailio"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "10.64.38.18",
+                "name": "softphone",
+                "number": "3000",
+                "options": "wan-static-ip:172.25.1.122/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::122/64, static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4202,
+                "type": "pjsip"
+            },
+            {
+                "color": "green",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "10.64.38.18",
+                "name": "softphone2",
+                "number": "4000",
+                "options": "wan-static-ip:172.25.1.162/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::162/64, static-route:0.0.0.0/0-172.25.1.1",
+                "port": 4252,
+                "type": "pjsip"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.64.37.134:8001",
+                "ipaddr": "10.64.37.134",
+                "name": "tftp",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 5001,
+                "type": "debian_tftp"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.64.37.134:8001",
+                "ipaddr": "10.64.37.134",
+                "name": "lan",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 5001,
+                "type": "bf_lan"
+            },
+            {
+                "color": "yellow",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.64.37.134:8002",
+                "ipaddr": "10.64.37.134",
+                "name": "lan2",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 5002,
+                "type": "bf_lan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "fxs_port": "1",
+                "ipaddr": "10.64.37.134",
+                "name": "fxs1",
+                "number": "1000",
+                "port": 6001,
+                "type": "debian_fxs",
+                "usb_port": "1-4"
+            },
+            {
+                "color": "yellow",
+                "connection_type": "authenticated_ssh",
+                "fxs_port": "2",
+                "ipaddr": "10.64.37.134",
+                "name": "fxs2",
+                "number": "2000",
+                "port": 6002,
+                "type": "debian_fxs",
+                "usb_port": "1-5"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "ipaddr": "10.64.38.18",
+                "name": "cdn",
+                "port": 4102,
+                "type": "cdn"
+            },
+            {
+                "bootstrap_server": "conn.odh.itc.upclabs.com",
+                "color": "red",
+                "connection_type": "authenticated_ssh",
+                "name": "odh",
+                "topic": "itclab_in_various_test_tst_modem_v1",
+                "type": "odh"
+            },
+            {
+                "band": "dual",
+                "color": "magenta",
+                "http_proxy": "10.64.40.11:8501",
+                "ipaddr": "10.64.40.11",
+                "name": "wlan1",
+                "options": "mgmt_dns:172.30.180.2, dante",
+                "port": "5501",
+                "type": "bf_wlan"
+            },
+            {
+                "band": "dual",
+                "color": "magenta",
+                "http_proxy": "10.64.40.11:8502",
+                "ipaddr": "10.64.40.11",
+                "name": "wlan2",
+                "options": "mgmt_dns:172.30.180.2, dante",
+                "port": "5502",
+                "type": "bf_wlan"
+            },
+            {
+                "band": "dual",
+                "color": "magenta",
+                "http_proxy": "10.64.40.11:8503",
+                "ipaddr": "10.64.40.11",
+                "name": "wlan3",
+                "options": "mgmt_dns:172.30.180.2, dante",
+                "port": "5503",
+                "type": "bf_wlan"
+            }
+        ],
+        "location": "ams-cmts5-md1"
+    },
+    "locations": {
+        "ams-cmts5-md1": {}
+    }
+}

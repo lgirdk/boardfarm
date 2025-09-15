@@ -1,0 +1,35 @@
+{
+    "XXXX": {
+        "devices": [
+            {
+                "cm_mac": "68:02:b8:47:fc:94",
+                "conn_cmd": [
+                    "ssh 10.64.38.32 -p 3003",
+                    "ssh 10.64.38.32 -p 3004"
+                ],
+                "connection_type": "ldap_authenticated_serial",
+                "feature": [
+                    "voice"
+                ],
+                "hardware_version": "5.02",
+                "manufacturer": "COMPAL",
+                "mirror": "http://10.64.36.100/",
+                "name": "board",
+                "powerport": "px2://10.64.36.33; 23",
+                "sku": "UPC",
+                "type": "CH7465LG"
+            },
+            {
+                "color": "cyan",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "10.64.38.18:10102",
+                "ipaddr": "10.64.38.18",
+                "name": "wan",
+                "options": "tftpd-server, mgmt_dns: 10.64.36.53, wan-static-ip:172.25.1.102/24, wan-no-dhcp-server, wan-static-ipv6:2001:dead:beef:2::102/64, static-route:0.0.0.0/0-172.25.1.1, dante",
+                "port": 4102,
+                "type": "debian_wan"
+            }
+        ],
+        "location": "ams-cmts5-md1"
+    }
+}

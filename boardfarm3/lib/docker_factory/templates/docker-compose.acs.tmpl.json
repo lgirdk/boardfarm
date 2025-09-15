@@ -1,0 +1,19 @@
+{
+    "services": {
+        "acs": {
+            "container_name": "acs",
+            "environment": {
+                "LEGACY": "no"
+            },
+            "hostname": "acs",
+            "image": "10.64.38.13:5000/bft:acs2-axiros",
+            "ports": [
+                "4501:22",
+                "10501:80",
+                "9676:9676",
+                "9676:9676/udp"
+            ],
+            "privileged": true
+        }
+    }
+}

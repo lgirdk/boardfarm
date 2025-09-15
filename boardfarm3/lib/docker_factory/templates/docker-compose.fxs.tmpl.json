@@ -1,0 +1,14 @@
+{
+    "services": {
+        "fxs": {
+            "command": "/usr/sbin/sshd -D",
+            "container_name": "fxs",
+            "hostname": "fxs",
+            "image": "10.64.38.13:5000/debian_fxs:2022.29.0",
+            "ports": [
+                "6001:22"
+            ],
+            "privileged": true
+        }
+    }
+}

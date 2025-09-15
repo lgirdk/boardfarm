@@ -1,0 +1,164 @@
+{
+    "environment_def": {
+        "Edge Router": {
+            "Access Network": {
+                "L2-LTS": [
+                    {
+                        "device_options": [],
+                        "device_type": "mini_cmts"
+                    }
+                ],
+                "North Bound": {
+                    "ACS": [
+                        {
+                            "device_options": [],
+                            "device_type": "axiros_acs_soap",
+                            "version": "to_be_added"
+                        },
+                        {
+                            "device_options": [],
+                            "device_type": "axiros_acs_soap",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "AFTR": [
+                        {
+                            "device_options": [],
+                            "device_type": "debian_aftr",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "DHCP": [
+                        {
+                            "device_options": [],
+                            "device_type": "kea_provisioner",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "DNS": [
+                        {
+                            "device_options": [],
+                            "device_type": "debian_dns",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "EXT_VOIP": [
+                        {
+                            "device_options": [],
+                            "device_type": "pjsip",
+                            "version": "to_be_added"
+                        },
+                        {
+                            "device_options": [],
+                            "device_type": "pjsip",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "SIP": [
+                        {
+                            "device_options": [],
+                            "device_type": "asterisk",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "TFTP": [
+                        {
+                            "device_options": [],
+                            "device_type": "debian_tftp",
+                            "version": "to_be_added"
+                        },
+                        {
+                            "device_options": [],
+                            "device_type": "debian_tftp",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "TIME": [
+                        {
+                            "device_options": [],
+                            "device_type": "debian_tod",
+                            "version": "to_be_added"
+                        }
+                    ],
+                    "WAN": [
+                        {
+                            "device_options": [],
+                            "device_type": "debian_wan",
+                            "version": "to_be_added"
+                        }
+                    ]
+                },
+                "South Bound": {
+                    "BOARD": [
+                        {
+                            "South Bound": {
+                                "ethernet_clients": {
+                                    "LAN": [
+                                        {
+                                            "device_options": [],
+                                            "device_type": "debian_lan",
+                                            "version": "to_be_added"
+                                        },
+                                        {
+                                            "device_options": [],
+                                            "device_type": "debian_lan",
+                                            "version": "to_be_added"
+                                        }
+                                    ],
+                                    "TFTP": [
+                                        {
+                                            "device_options": [],
+                                            "device_type": "debian_tftp",
+                                            "version": "to_be_added"
+                                        },
+                                        {
+                                            "device_options": [],
+                                            "device_type": "debian_tftp",
+                                            "version": "to_be_added"
+                                        }
+                                    ]
+                                },
+                                "wifi_clients": [
+                                    {
+                                        "device_options": [],
+                                        "device_type": "debian_wifi",
+                                        "version": "to_be_added"
+                                    },
+                                    {
+                                        "device_options": [],
+                                        "device_type": "debian_wifi",
+                                        "version": "to_be_added"
+                                    }
+                                ]
+                            },
+                            "device_options": [
+                                {
+                                    "SKU": "Virgin Media",
+                                    "console_available": true,
+                                    "emta": {
+                                        "FXS": [
+                                            {
+                                                "device_options": [],
+                                                "device_type": "debian_fxs",
+                                                "version": "to_be_added"
+                                            },
+                                            {
+                                                "device_options": [],
+                                                "device_type": "debian_fxs",
+                                                "version": "to_be_added"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ],
+                            "device_type": "F5685LGE",
+                            "version": "to_be_added"
+                        }
+                    ]
+                },
+                "access_type": "PON"
+            }
+        }
+    },
+    "version": "3.2"
+}
