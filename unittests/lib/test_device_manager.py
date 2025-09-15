@@ -1,5 +1,7 @@
 """Unit tests for the Boardfarm device manager module."""
 
+import re
+
 import pytest
 from pluggy import PluginManager
 from pytest_mock import MockerFixture
@@ -35,7 +37,9 @@ def test_device_manager_singleton(device_manager: DeviceManager) -> None:
     :type device_manager: DeviceManager
     """
     assert device_manager
-    with pytest.raises(ValueError, match="DeviceManager is already initialized."):
+    with pytest.raises(
+        ValueError, match=re.escape("DeviceManager is already initialized.")
+    ):
         DeviceManager(get_plugin_manager())
 
 

@@ -134,7 +134,9 @@ def test_get_board_sku_value_not_available_in_env_conf() -> None:
         _SINGLE_LAN_ENV_CONFIG,
         _VALID_INVENTORY_CONFIG,
     )
-    with pytest.raises(EnvConfigError, match="Board SKU is not found in env config."):
+    with pytest.raises(
+        EnvConfigError, match=re.escape("Board SKU is not found in env config.")
+    ):
         bf_config.get_board_sku()
 
 
@@ -157,7 +159,7 @@ def test_get_board_model_value_not_available_in_env_conf() -> None:
     )
     with pytest.raises(
         EnvConfigError,
-        match="Unable to find board.model entry in env config.",
+        match=re.escape("Unable to find board.model entry in env config."),
     ):
         bf_config.get_board_model()
 
@@ -181,7 +183,9 @@ def test_get_prov_mode_value_not_available_in_env_conf() -> None:
     )
     with pytest.raises(
         EnvConfigError,
-        match="Unable to find eRouter_Provisioning_mode entry in env config.",
+        match=re.escape(
+            "Unable to find eRouter_Provisioning_mode entry in env config."
+        ),
     ):
         bf_config.get_prov_mode()
 
