@@ -1,6 +1,0 @@
-FROM debian_ssh_server
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3=3.7.3-1 \
-    python3-serial=3.4-4 \
-    && rm -rf /var/lib/apt/lists/*
