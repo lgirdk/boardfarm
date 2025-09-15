@@ -1,12 +1,12 @@
 # Boardfarm
 
 <p align=center>
-    <img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/BoardFarm.png" width="350"/> <br>
+    <img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/BoardFarm.png" width="350"/> <br>
     <img alt="GitHub" src="https://img.shields.io/github/license/lgirdk/boardfarm">
     <img alt="GitHub commit activity (branch)"
-    src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/boardfarm3">
+    src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/master">
     <img alt="GitHub last commit (branch)"
-    src="https://img.shields.io/github/last-commit/lgirdk/boardfarm/boardfarm3">
+    src="https://img.shields.io/github/last-commit/lgirdk/boardfarm/master">
     <img alt="Python Version" src="https://img.shields.io/badge/python-3.11+-blue">
     <a href="https://github.com/psf/black"><img alt="Code style: black"
     src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
@@ -28,13 +28,13 @@ test their devices across a wide range of target environments.
 Boardfarm was initially developed at Qualcomm to automate testing of OpenWrt
 routers and other embedded devices.
 
-<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/basic_setup.png" width="600"/>
+<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/basic_setup.png" width="600"/>
 
 Over time, the framework evolved to support RDK-B derived boards and IoT devices,
 along with the essential OSS and back-office components necessary for simulating
 a Telecom Service Providers' environment.
 
-<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/advance_setup.png" width="600"/>
+<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/advance_setup.png" width="600"/>
 
 The operation of a device or the configuration of a server can vary depending
 on the specific hardware variant or the infrastructure layout of the deploying
@@ -122,23 +122,36 @@ to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see the followin
 
 ## Table of Contents
 
-- [Getting Started](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md)
-  - [Installation](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#installation)
-  - [Running an interactive session](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#running-an-interactive-session)
-  - [Booting up a lab environment](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/getting_started.md#booting-up-a-lab-environment)
-- [Overview](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#overview)
-  - [Architecture](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#architecture)
-  - [Hook Specification and Pluggy](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/architecture.md#hooks-specification-and-pluggy)
-- [Development (How-to-Guide)](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md)
-  - [Writing a Boardfarm plugin](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-boardfarm-plugin)
-  - [Writing a Connection class](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-connection-class)
-  - [Writing a Device class](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-device-class)
-  - [Writing a Use Case](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/development.md#writing-a-use-case)
-- [API Reference](https://github.com/lgirdk/boardfarm/blob/boardfarm3/docs/README.md)
+- [Getting Started](https://github.com/lgirdk/boardfarm/blob/master/docs/getting_started.md)
+  - [Installation](https://github.com/lgirdk/boardfarm/blob/master/docs/getting_started.md#installation)
+  - [Running an interactive session](https://github.com/lgirdk/boardfarm/blob/master/docs/getting_started.md#running-an-interactive-session)
+  - [Booting up a lab environment](https://github.com/lgirdk/boardfarm/blob/master/docs/getting_started.md#booting-up-a-lab-environment)
+- [Overview](https://github.com/lgirdk/boardfarm/blob/master/docs/architecture.md#overview)
+  - [Architecture](https://github.com/lgirdk/boardfarm/blob/master/docs/architecture.md#architecture)
+  - [Hook Specification and Pluggy](https://github.com/lgirdk/boardfarm/blob/master/docs/architecture.md#hooks-specification-and-pluggy)
+- [Development (How-to-Guide)](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md)
+  - [Writing a Boardfarm plugin](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md#writing-a-boardfarm-plugin)
+  - [Writing a Connection class](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md#writing-a-connection-class)
+  - [Writing a Device class](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md#writing-a-device-class)
+  - [Writing a Use Case](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md#writing-a-use-case)
+- [API Reference](https://github.com/lgirdk/boardfarm/blob/master/docs/README.md)
 
 ## Changelog
 
-Consult the [CHANGELOG](https://github.com/lgirdk/boardfarm/blob/boardfarm3/CHANGELOG.md) page for fixes and enhancements of each version.
+Consult the [CHANGELOG](https://github.com/lgirdk/boardfarm/blob/master/CHANGELOG.md) page for fixes and enhancements of each version.
+
+## Contributing
+
+By making a contribution to this project, I certify that:
+
+1. The contribution was created in whole or in part by me and I have the right to submit it under the open source license indicated in the file; or
+2. The contribution is based upon previous work that, to the best of my knowledge, is covered under an appropriate open source license and I have the right under that license to submit that work with modifications, whether created in whole or in part by me, under the same open source license (unless I am permitted to submit under a different license), as indicated in the file; or
+3. The contribution was provided directly to me by some other person who certified (a), (b) or (c) and I have not modified it.
+4. I understand and agree that this project and the contribution are public and that a record of the contribution (including all personal information I submit with it, including my sign-off) is maintained indefinitely and may be redistributed consistent with this project or the open source license(s) involved.
+
+### Using this Process
+
+In short, you need to include a "Signed-off-by" tag in every patch. "Signed-off-by" is a developer's certification that he or she has the right to submit the patch for inclusion into the project. It is an agreement to the Developer's Certificate of Origin (above). Code without a proper signoff cannot be merged into the mainline.
 
 ## License
 

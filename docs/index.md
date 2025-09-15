@@ -1,12 +1,12 @@
 # Boardfarm
 
 <p align=center>
-    <img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/BoardFarm.png" width="350"/> <br>
+    <img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/BoardFarm.png" width="350"/> <br>
     <img alt="GitHub" src="https://img.shields.io/github/license/lgirdk/boardfarm">
     <img alt="GitHub commit activity (branch)"
-    src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/boardfarm3">
+    src="https://img.shields.io/github/commit-activity/t/lgirdk/boardfarm/master">
     <img alt="GitHub last commit (branch)"
-    src="https://img.shields.io/github/last-commit/lgirdk/boardfarm/boardfarm3">
+    src="https://img.shields.io/github/last-commit/lgirdk/boardfarm/master">
     <img alt="Python Version" src="https://img.shields.io/badge/python-3.11+-blue">
     <a href="https://github.com/psf/black"><img alt="Code style: black"
     src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
@@ -28,13 +28,13 @@ test their devices across a wide range of target environments.
 Boardfarm was initially developed at Qualcomm to automate testing of OpenWrt
 routers and other embedded devices.
 
-<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/basic_setup.png" width="600"/>
+<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/basic_setup.png" width="600"/>
 
 Over time, the framework evolved to support RDK-B derived boards and IoT devices,
 along with the essential OSS and back-office components necessary for simulating
 a Telecom Service Providers' environment.
 
-<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/boardfarm3/docs/images/advance_setup.png" width="600"/>
+<img src="https://raw.githubusercontent.com/lgirdk/boardfarm/master/docs/images/advance_setup.png" width="600"/>
 
 The operation of a device or the configuration of a server can vary depending
 on the specific hardware variant or the infrastructure layout of the deploying
@@ -120,7 +120,7 @@ options:
 For full documentation, including installation, tutorials and architecture overview and how
 to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see the following.
 
-[**Boardfarm Read the Docs**](https://ketantewari.github.io/boardfarm)
+[**Boardfarm Read the Docs**](https://ketantewari.github.io/boardfarm/getting_started/)
 
 ## Changelog
 
