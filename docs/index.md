@@ -70,7 +70,7 @@ simulated test environment.
 Run the following command to directly install the package from the repo:
 
 ```bash
-pip install git+https://github.com/lgirdk/boardfarm.git@boardfarm3
+pip install git+https://github.com/lgirdk/boardfarm.git
 ```
 
 Run the following command to install from PyPI:
