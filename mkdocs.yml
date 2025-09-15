@@ -1,6 +1,6 @@
 ---
 site_name: Boardfarm Docs
-repo_url: https://github.com/lgirdk/boardfarm/tree/boardfarm3
+repo_url: https://github.com/lgirdk/boardfarm
 
 theme:
     name: material
