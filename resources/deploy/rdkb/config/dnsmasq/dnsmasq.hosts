@@ -1,0 +1,8 @@
+172.25.1.2              wan.boardfarm.com
+172.25.1.2              wan_ipv4.boardfarm.com
+2001:dead:beef:2::2     wan.boardfarm.com
+2001:dead:beef:2::2     wan_ipv6.boardfarm.com
+172.25.1.40             acs.boardfarm.com
+172.25.1.40             acs_ipv4.boardfarm.com
+2001:dead:beef:2::40    acs.boardfarm.com
+2001:dead:beef:2::40    acs_ipv6.boardfarm.com

@@ -1,0 +1,107 @@
+---
+services:
+    router:
+        container_name: router
+        ports:
+            - 4000:22
+        environment:
+            - ENABLE_NAT_ON=eth0
+            - FRR_AUTO_CONF=yes
+            - TRIPLE_PLAY=no
+            - CPE_DATA_IFACE=cpe
+            - CPE_DATA_BUNDLE=10.1.1.1/24,2001:dead:cafe:1::1/64
+            - DHCP_RELAY=eth1,172.25.1.20,2001:dead:beef:2::20
+        image: ghcr.io/ketantewari/raikou/router:v1
+        privileged: true
+        hostname: router
+
+    wan:
+        container_name: wan
+        image: ghcr.io/ketantewari/raikou/wan:v1
+        ports:
+            - 4001:22
+            - 8001:8080
+        environment:
+            - DNS_UPSTREAM=172.30.180.2
+            - LEGACY=no
+        volumes:
+            - ./config/dnsmasq/dnsmasq.hosts:/etc/dnsmasq.hosts
+        privileged: true
+        hostname: wan
+
+    lan:
+        container_name: lan
+        image: ghcr.io/ketantewari/raikou/lan:v1
+        ports:
+            - 4002:22
+            - 8002:8080
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: lan
+
+    lan2:
+        container_name: lan2
+        image: ghcr.io/ketantewari/raikou/lan:v1
+        ports:
+            - 4003:22
+            - 8003:8080
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: lan2
+
+
+    dhcp:
+        container_name: dhcp
+        image: ghcr.io/ketantewari/raikou/dhcp:v1
+        ports:
+            - 4004:22
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: dhcp
+        volumes:
+            - ./config/kea-dhcp/kea-dhcp4.conf:/etc/kea/kea-dhcp4.conf
+            - ./config/kea-dhcp/kea-dhcp6.conf:/etc/kea/kea-dhcp6.conf
+
+    acs:
+        container_name: acs
+        image: 10.64.38.13:5000/bft:acs2-axiros
+        ports:
+            - 4503:22
+            - 10501:80
+            - 9676:9676
+            - 9676:9676/udp
+        environment:
+            - LEGACY=no
+        privileged: true
+        hostname: acs
+
+    raikou-net:
+        container_name: orchestrator
+        image: ghcr.io/ketantewari/raikou/orchestrator:v1
+        volumes:
+            - /lib/modules:/lib/modules
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./config.json:/root/config.json
+        privileged: true
+        environment:
+            - USE_LINUX_BRIDGE=false
+        pid: host
+        network_mode: host
+        hostname: orchestrator
+        depends_on:
+            - router
+            - wan
+            - lan
+            - lan2
+            - dhcp
+            - acs
+
+networks:
+    default:
+        ipam:
+            config:
+                - subnet: 192.168.56.0/24
+                  gateway: 192.168.56.1
