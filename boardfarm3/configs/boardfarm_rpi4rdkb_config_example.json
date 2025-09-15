@@ -23,27 +23,7 @@
                 "type": "bf_wan"
             },
             {
-                "color": "blue",
-                "connection_type": "authenticated_ssh",
-                "http_proxy": "localhost:8002",
-                "ipaddr": "localhost",
-                "name": "lan",
-                "options": "mgmt_dns: 8.8.8.8, dante",
-                "port": 4002,
-                "type": "bf_lan"
-            },
-            {
-                "color": "blue",
-                "connection_type": "authenticated_ssh",
-                "http_proxy": "localhost:8003",
-                "ipaddr": "localhost",
-                "name": "lan2",
-                "options": "mgmt_dns: 8.8.8.8, dante",
-                "port": 4003,
-                "type": "bf_lan"
-            },
-            {
-                "acs_url": "http://172.25.1.40:9675",
+                "acs_url": "http://acs_server.boardfarm.com:9675",
                 "color": "green",
                 "connection_type": "authenticated_ssh",
                 "ipaddr": "localhost",
@@ -65,18 +45,39 @@
                 }
             },
             {
-                "acs_mib": "http://172.25.1.40:9675",
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8002",
+                "ipaddr": "localhost",
+                "name": "lan",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4002,
+                "type": "bf_lan"
+            },
+            {
+                "color": "blue",
+                "connection_type": "authenticated_ssh",
+                "http_proxy": "localhost:8003",
+                "ipaddr": "localhost",
+                "name": "lan2",
+                "options": "mgmt_dns: 8.8.8.8, dante",
+                "port": 4003,
+                "type": "bf_lan"
+            },
+            {
+                "acs_mib": "http://acs_server.boardfarm.com:9675",
                 "color": "blue",
                 "connection_type": "authenticated_ssh",
                 "http_password": "bigfoot1",
                 "http_port": 9676,
                 "http_username": "admin",
-                "ipaddr": "192.168.0.237",
-                "name": "acs",
+                "ipaddr": "localhost",
+                "max_users": 9999,
+                "name": "acs_server",
                 "options": "wan-static-ip:172.25.1.40, wan-static-ipv6:2001:dead:beef:2::40/64",
                 "password": "bigfoot1",
                 "port": 4503,
-                "type": "axiros_acs_rest",
+                "type": "axiros_acs",
                 "username": "root"
             }
         ]
