@@ -17,6 +17,6 @@ plugins:
 nav:
     - Home: index.md
     - Getting Started: getting_started.md
-    - Architecure: architecture.md
+    - Architecture: architecture.md
     - Developer Docs: development.md
     - CHANGELOG: changelog.md
