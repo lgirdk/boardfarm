@@ -68,7 +68,7 @@ class VCPE_HW(CPEHW):
         :rtype: str
         """
         if self._console:
-            output = self._console.execute_command("grep HWMACADDRESS /etc/environment")
+            output = self._console.execute_command("getpp show WAN_MAC_ADDRESS")
             return re.findall('"([^"]*)"', output).pop()
 
         return self._config.get("mac")
@@ -81,7 +81,7 @@ class VCPE_HW(CPEHW):
         :rtype: str
         """
         if self._console:
-            output = self._console.execute_command("grep SERIALNUMBER /etc/environment")
+            output = self._console.execute_command("getpp show SERIAL_NUMBER")
             return re.findall('"([^"]*)"', output).pop()
 
         return self._config.get("serial")
@@ -125,7 +125,6 @@ class VCPE_HW(CPEHW):
             save_console_logs=self._cmdline_args.save_console_logs,
             shell_prompt=self._shell_prompt,
         )
-        #self._console.login_to_server()
 
     def get_console(self, console_name: str) -> BoardfarmPexpect:
         """Return console instance with the given name.
@@ -226,7 +225,7 @@ class VCPE_SW(CPESwLibraries):  # pylint: disable=R0904
         :return: version
         :rtype: str
         """
-        return self._console.execute_command("cat /etc/build.prplos.version")  # FIXME: 
+        return self._console.execute_command("cat /etc/version")
 
     @property
     def erouter_iface(self) -> str:
@@ -291,7 +290,7 @@ class VCPE_SW(CPESwLibraries):  # pylint: disable=R0904
         console = self._get_console("default_shell")
         serial = console.execute_command("getpp show SERIAL_NUMBER", timeout=3)
         oui = "38A659"
-        prod_class = console.execute_command("getpp show C_PRODUCT_ID",timeout=3)
+        prod_class = console.execute_command("getpp show C_PRODUCT_ID", timeout=3)
         return f"{oui}-{prod_class}-{serial}"
 
     @property

@@ -42,7 +42,7 @@ Boardfarm also provides an interactive **IPython** console that enables a user t
 
 ### Prerequisites
 
-#### 1. No hardware testbed? Try a virtual environment
+#### No hardware testbed? Try a virtual environment
 
 In case you don’t have access to a physical testbed, we have a Docker Compose script that spins up a virtual CPE (PrplOS) with a back-office.
 This lets you explore interact sessions and device APIs locally on your workstation.
@@ -59,85 +59,89 @@ docker compose up -f docker-compose.yaml -d
 
 > **Note:** If you want to explore more examples, see `/examples/double_hop` directory in [raikou-net](https://github.com/lgirdk/raikou-net.git)
 
-#### 2. Understanding Inventory and Environment files
+### Understanding Inventory and Environment files
 
 Boardfarm needs **two configuration files** to know what to deploy and how to interact with it:
 
-1. **Inventory file** (`inventory.json`)
-    - Describes the *devices* in your testbed and how Boardfarm connects to them.
-    - Each device entry specifies:
-        - **connection type** (serial, ssh, docker exec, etc.)
-        - **login credentials / ports / proxies**
-        - **role/type** (CPE, WAN, LAN, ACS, DHCP, SIP server, phones, etc.)
-        - **options** that customize network behavior (e.g., static IPs, DHCP off/on, DNS, VLAN).
-    - Think of it as a **map of your deployed infrastructure** and the “doorways” Boardfarm can use to reach each device.
+#### **Inventory file** (`inventory.json`)
 
-    **Example (excerpt taken from `boardfarm3/configs/boardfarm_config_example.json`):**
+- Describes the *devices* in your testbed and how Boardfarm connects to them.
+- Each device entry specifies:
+  - **connection type** (serial, ssh, docker exec, etc.)
+  - **login credentials / ports / proxies**
+  - **role/type** (CPE, WAN, LAN, ACS, DHCP, SIP server, phones, etc.)
+  - **options** that customize network behavior (e.g., static IPs, DHCP off/on, DNS, VLAN).
+- Think of it as a **map of your deployed infrastructure** and the “doorways” Boardfarm can use to reach each device.
 
-    ```json
-    {
-        "prplos-docker-1": {
-        "devices": [
-            {
-            "conn_cmd": ["docker exec -it cpe ash"],
-            "connection_type": "local_cmd",
-            "name": "board",
-            "type": "bf_cpe",
-            "gui_password": "admin"
-            },
-            {
-            "connection_type": "authenticated_ssh",
-            "ipaddr": "localhost",
-            "port": 4001,
-            "name": "wan",
-            "type": "bf_wan",
-            "options": "wan-no-dhcp-server, dns-server, wan-static-ip:172.25.1.2/24"
-            }
-            // ... more devices like lan, acs, phones, provisioner, etc.
-        ]
-        }
-    }
-    ```
+**Example (excerpt taken from `boardfarm3/configs/boardfarm_config_example.json`):**
 
-    In this setup, the board is reached through a local Docker exec command, while WAN, LAN, ACS, and phones are accessed via SSH on different forwarded ports.
+```json
+{
+   "prplos-docker-1": {
+   "devices": [
+      {
+      "conn_cmd": ["docker exec -it cpe ash"],
+      "connection_type": "local_cmd",
+      "name": "board",
+      "type": "bf_cpe",
+      "gui_password": "admin"
+      },
+      {
+      "connection_type": "authenticated_ssh",
+      "ipaddr": "localhost",
+      "port": 4001,
+      "name": "wan",
+      "type": "bf_wan",
+      "options": "wan-no-dhcp-server, dns-server, wan-static-ip:172.25.1.2/24"
+      }
+      // ... more devices like lan, acs, phones, provisioner, etc.
+   ]
+   }
+}
+```
 
-    Please see [Inventory Schema](https://github.com/lgirdk/boardfarm/blob/master/boardfarm3/configs/boardfarm_inventory_schema.json) for a list of all possible options that can be configured for a device in an Inventory file.
+In this setup, the board is reached through a local Docker exec command, while WAN, LAN, ACS, and phones are accessed via SSH on different forwarded ports.
 
-2. **Environment file** (`env.json`)
-    - Tells Boardfarm **how to provision the testbed** once devices are connected.
-    - Defines higher-level **testbed behavior and requirements**, such as:
-        - Which firmware to flash on the board/CPE
-        - How DHCP should behave (options, VLANs, DNS)
-        - Whether to create multiple LAN/WLAN containers
-        - How subscriber configurations look if an LTS (Line Termination System) is present
-        - Other provisioning knobs (IPv4/IPv6 mode, model identifiers, etc.)
+Please see [Inventory Schema](https://github.com/lgirdk/boardfarm/blob/master/boardfarm3/configs/boardfarm_inventory_schema.json) for a list of all possible options that can be configured for a device in an Inventory file.
 
-    **Example (simple):**
+#### **Environment file** (`env.json`)
 
-    ```json
-    {
-        "environment_def": {
-        "board": {
-            "eRouter_Provisioning_mode": "ipv4",
-            "model": "prplOS"
-        }
-        }
-    }
-    ```
+- Tells Boardfarm **how to provision the testbed** once devices are connected.
+- Defines higher-level **testbed behavior and requirements**, such as:
+  - Which firmware to flash on the board/CPE
+  - How DHCP should behave (options, VLANs, DNS)
+  - Whether to create multiple LAN/WLAN containers
+  - How subscriber configurations look if an LTS (Line Termination System) is present
+  - Other provisioning knobs (IPv4/IPv6 mode, model identifiers, etc.)
 
-3. **How they work together?**
+**Example (simple):**
 
-    Inventory = “what’s there”
-    - A catalog of devices, connection methods, roles.
+```json
+{
+   "environment_def": {
+   "board": {
+      "eRouter_Provisioning_mode": "ipv4",
+      "model": "prplOS"
+      }
+   }
+}
+```
 
-    Environment = “what to do with it”
-    - Provisioning rules, firmware flashing, DHCP setup, network topology.
+#### **How they work together?**
 
-    This tells Boardfarm:
+Inventory = “what’s there”
 
-    Connect to all devices listed in the inventory.
-    Provision and configure them according to the environment definition.
-    Expose them via the interact session (menu + IPython).
+- A catalog of devices, connection methods, roles.
+
+Environment = “what to do with it”
+
+- Provisioning rules, firmware flashing, DHCP setup, network topology.
+
+This tells Boardfarm:
+
+Connect to all devices listed in the inventory.
+Provision and configure them according to the environment definition.
+Expose them via the interact session (menu + IPython).
 
 ### Start an interact session
 
