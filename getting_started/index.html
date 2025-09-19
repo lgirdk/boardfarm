@@ -26,6 +26,9 @@
     
       <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
       
 
 
@@ -45,6 +48,8 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="../css/custom.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -55,7 +60,14 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -106,6 +118,32 @@
         </div>
       </div>
     </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="lime"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
     
     
       <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
@@ -347,18 +385,51 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
+  <a href="#no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      1. No hardware testbed? Try a virtual environment
+      No hardware testbed? Try a virtual environment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-inventory-and-environment-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Inventory and Environment files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding Inventory and Environment files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inventory-file-inventoryjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inventory file (inventory.json)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-understanding-inventory-and-environment-files" class="md-nav__link">
+  <a href="#environment-file-envjson" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Understanding Inventory and Environment files
+      Environment file (env.json)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-they-work-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      How they work together?
     </span>
   </a>
   
@@ -490,6 +561,150 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Templates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/use_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Use Cases
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/libs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Lib
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -570,18 +785,51 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
+  <a href="#no-hardware-testbed-try-a-virtual-environment" class="md-nav__link">
     <span class="md-ellipsis">
-      1. No hardware testbed? Try a virtual environment
+      No hardware testbed? Try a virtual environment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-inventory-and-environment-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding Inventory and Environment files
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Understanding Inventory and Environment files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inventory-file-inventoryjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inventory file (inventory.json)
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-understanding-inventory-and-environment-files" class="md-nav__link">
+  <a href="#environment-file-envjson" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Understanding Inventory and Environment files
+      Environment file (env.json)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-they-work-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      How they work together?
     </span>
   </a>
   
@@ -684,7 +932,7 @@ e.g. <a href="https://github.com/rlaager/docsis">DOCSIS bootfile encoder tool</a
 <p><strong><em>Interact</em></strong> is a key feature in boardfarm that connects to every device currently deployed in a testbed and exposes a menu-driven CLI to interact with any of those devices. Every console interaction can be preserved in per-device log files.</p>
 <p>Boardfarm also provides an interactive <strong>IPython</strong> console that enables a user to execute commands on their devices via their corresponding Python APIs.</p>
 <h3 id="prerequisites">Prerequisites</h3>
-<h4 id="1-no-hardware-testbed-try-a-virtual-environment">1. No hardware testbed? Try a virtual environment</h4>
+<h4 id="no-hardware-testbed-try-a-virtual-environment">No hardware testbed? Try a virtual environment</h4>
 <p>In case you don’t have access to a physical testbed, we have a Docker Compose script that spins up a virtual CPE (PrplOS) with a back-office.
 This lets you explore interact sessions and device APIs locally on your workstation.</p>
 <p>More details can be found in the <a href="https://github.com/lgirdk/raikou-net.git">raikou-net</a> project if you’re interested in a more complete and in depth virtualized setup.
@@ -697,85 +945,77 @@ docker compose up -f docker-compose.yaml -d
 <blockquote>
 <p><strong>Note:</strong> If you want to explore more examples, see <code>/examples/double_hop</code> directory in <a href="https://github.com/lgirdk/raikou-net.git">raikou-net</a></p>
 </blockquote>
-<h4 id="2-understanding-inventory-and-environment-files">2. Understanding Inventory and Environment files</h4>
+<h3 id="understanding-inventory-and-environment-files">Understanding Inventory and Environment files</h3>
 <p>Boardfarm needs <strong>two configuration files</strong> to know what to deploy and how to interact with it:</p>
-<ol>
-<li>
-<p><strong>Inventory file</strong> (<code>inventory.json</code>)</p>
+<h4 id="inventory-file-inventoryjson"><strong>Inventory file</strong> (<code>inventory.json</code>)</h4>
 <ul>
 <li>Describes the <em>devices</em> in your testbed and how Boardfarm connects to them.</li>
-<li>Each device entry specifies:<ul>
+<li>Each device entry specifies:</li>
 <li><strong>connection type</strong> (serial, ssh, docker exec, etc.)</li>
 <li><strong>login credentials / ports / proxies</strong></li>
 <li><strong>role/type</strong> (CPE, WAN, LAN, ACS, DHCP, SIP server, phones, etc.)</li>
 <li><strong>options</strong> that customize network behavior (e.g., static IPs, DHCP off/on, DNS, VLAN).</li>
-</ul>
-</li>
 <li>Think of it as a <strong>map of your deployed infrastructure</strong> and the “doorways” Boardfarm can use to reach each device.</li>
 </ul>
 <p><strong>Example (excerpt taken from <code>boardfarm3/configs/boardfarm_config_example.json</code>):</strong></p>
-<p><code>json
-{
-    "prplos-docker-1": {
-    "devices": [
-        {
-        "conn_cmd": ["docker exec -it cpe ash"],
-        "connection_type": "local_cmd",
-        "name": "board",
-        "type": "bf_cpe",
-        "gui_password": "admin"
-        },
-        {
-        "connection_type": "authenticated_ssh",
-        "ipaddr": "localhost",
-        "port": 4001,
-        "name": "wan",
-        "type": "bf_wan",
-        "options": "wan-no-dhcp-server, dns-server, wan-static-ip:172.25.1.2/24"
-        }
-        // ... more devices like lan, acs, phones, provisioner, etc.
-    ]
-    }
-}</code></p>
+<pre><code class="language-json">{
+   &quot;prplos-docker-1&quot;: {
+   &quot;devices&quot;: [
+      {
+      &quot;conn_cmd&quot;: [&quot;docker exec -it cpe ash&quot;],
+      &quot;connection_type&quot;: &quot;local_cmd&quot;,
+      &quot;name&quot;: &quot;board&quot;,
+      &quot;type&quot;: &quot;bf_cpe&quot;,
+      &quot;gui_password&quot;: &quot;admin&quot;
+      },
+      {
+      &quot;connection_type&quot;: &quot;authenticated_ssh&quot;,
+      &quot;ipaddr&quot;: &quot;localhost&quot;,
+      &quot;port&quot;: 4001,
+      &quot;name&quot;: &quot;wan&quot;,
+      &quot;type&quot;: &quot;bf_wan&quot;,
+      &quot;options&quot;: &quot;wan-no-dhcp-server, dns-server, wan-static-ip:172.25.1.2/24&quot;
+      }
+      // ... more devices like lan, acs, phones, provisioner, etc.
+   ]
+   }
+}
+</code></pre>
 <p>In this setup, the board is reached through a local Docker exec command, while WAN, LAN, ACS, and phones are accessed via SSH on different forwarded ports.</p>
 <p>Please see <a href="https://github.com/lgirdk/boardfarm/blob/master/boardfarm3/configs/boardfarm_inventory_schema.json">Inventory Schema</a> for a list of all possible options that can be configured for a device in an Inventory file.</p>
-</li>
-<li>
-<p><strong>Environment file</strong> (<code>env.json</code>)</p>
+<h4 id="environment-file-envjson"><strong>Environment file</strong> (<code>env.json</code>)</h4>
 <ul>
 <li>Tells Boardfarm <strong>how to provision the testbed</strong> once devices are connected.</li>
-<li>Defines higher-level <strong>testbed behavior and requirements</strong>, such as:<ul>
+<li>Defines higher-level <strong>testbed behavior and requirements</strong>, such as:</li>
 <li>Which firmware to flash on the board/CPE</li>
 <li>How DHCP should behave (options, VLANs, DNS)</li>
 <li>Whether to create multiple LAN/WLAN containers</li>
 <li>How subscriber configurations look if an LTS (Line Termination System) is present</li>
 <li>Other provisioning knobs (IPv4/IPv6 mode, model identifiers, etc.)</li>
 </ul>
-</li>
-</ul>
 <p><strong>Example (simple):</strong></p>
-<p><code>json
-{
-    "environment_def": {
-    "board": {
-        "eRouter_Provisioning_mode": "ipv4",
-        "model": "prplOS"
-    }
-    }
-}</code></p>
-</li>
-<li>
-<p><strong>How they work together?</strong></p>
-<p>Inventory = “what’s there”
-- A catalog of devices, connection methods, roles.</p>
-<p>Environment = “what to do with it”
-- Provisioning rules, firmware flashing, DHCP setup, network topology.</p>
+<pre><code class="language-json">{
+   &quot;environment_def&quot;: {
+   &quot;board&quot;: {
+      &quot;eRouter_Provisioning_mode&quot;: &quot;ipv4&quot;,
+      &quot;model&quot;: &quot;prplOS&quot;
+      }
+   }
+}
+</code></pre>
+<h4 id="how-they-work-together"><strong>How they work together?</strong></h4>
+<p>Inventory = “what’s there”</p>
+<ul>
+<li>A catalog of devices, connection methods, roles.</li>
+</ul>
+<p>Environment = “what to do with it”</p>
+<ul>
+<li>Provisioning rules, firmware flashing, DHCP setup, network topology.</li>
+</ul>
 <p>This tells Boardfarm:</p>
 <p>Connect to all devices listed in the inventory.
 Provision and configure them according to the environment definition.
 Expose them via the interact session (menu + IPython).</p>
-</li>
-</ol>
 <h3 id="start-an-interact-session">Start an interact session</h3>
 <p>Now that we have our <strong>environment</strong> and <strong>inventory</strong> files, we can start an interactive session with Boardfarm.</p>
 <pre><code class="language-bash">boardfarm --board-name  prplos-docker-1 \
