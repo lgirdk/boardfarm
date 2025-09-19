@@ -1,0 +1,5 @@
+/* Style function/method/class names in bold italics */
+.doc .doc-object-name {
+  font-weight: bold;
+  font-style: italic;
+}
