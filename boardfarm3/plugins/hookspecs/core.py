@@ -42,8 +42,6 @@ def boardfarm_parse_config(
     This hook allows for the modification (if needed) of the configuration files,
     like inventory and environment, by using cmd line overrides.
 
-    # noqa: DAR202
-
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param inventory_config: inventory json
@@ -61,8 +59,6 @@ def boardfarm_cmdline_parse(
     cmdline_args: list[str],
 ) -> Namespace:
     """Parse command line arguments.
-
-    # noqa: DAR202
 
     :param argparser: argument parser
     :type argparser: ArgumentParser
@@ -97,7 +93,6 @@ def boardfarm_reserve_devices(
 
     This hook is used to reserve devices before deployment.
 
-    # noqa: DAR202
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param plugin_manager: plugin manager instance
@@ -118,7 +113,6 @@ def boardfarm_setup_env(
 
     This hook is used to deploy boardfarm devices.
 
-    # noqa: DAR202
     :param config: boardfarm config
     :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
@@ -141,7 +135,6 @@ def boardfarm_post_setup_env(
 
     This hook is used to perform required operations after the board is deployed.
 
-    # noqa: DAR202
     :param cmdline_args: command line arguments
     :type cmdline_args: Namespace
     :param device_manager: device manager instance
@@ -180,7 +173,6 @@ def boardfarm_register_devices(
     This hook is responsible to register devices to the device manager after
     initialization based on the given inventory and environment config.
 
-    # noqa: DAR202
     :param config: boardfarm config instance
     :type config: BoardfarmConfig
     :param cmdline_args: command line arguments
@@ -201,7 +193,6 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
     Each repo with a boardfarm device should implement this hook to add each
     devices to the list of known devices.
 
-    # noqa: DAR202
     :return: dictionary with device name and class
     :rtype: dict[str, type[BoardfarmDevice]]
     """
