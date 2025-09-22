@@ -61,6 +61,25 @@ def boardfarm_server_boot(
     :type device_manager: DeviceManager
     """
 
+@hookspec
+async def boardfarm_server_boot_async(
+    config: BoardfarmConfig,
+    cmdline_args: Namespace,
+    device_manager: DeviceManager,
+) -> None:
+    """Boot boardfarm server device.
+
+    This hook should be used to boot a device which is not dependent on other
+    devices in the environment. E.g. WAN and CMTS.
+
+    :param config: boardfarm config instance
+    :type config: BoardfarmConfig
+    :param cmdline_args: command line arguments
+    :type cmdline_args: Namespace
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
+    """
+
 
 @hookspec
 def boardfarm_skip_boot(
