@@ -61,6 +61,7 @@ def boardfarm_server_boot(
     :type device_manager: DeviceManager
     """
 
+
 @hookspec
 async def boardfarm_server_boot_async(
     config: BoardfarmConfig,
