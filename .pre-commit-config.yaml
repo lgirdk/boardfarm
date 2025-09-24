@@ -104,10 +104,11 @@ repos:
       hooks:
           - id: ruff
             # https://docs.astral.sh/ruff/formatter/#sorting-imports
-            args: [check, --select, I, --fix]
+            args: [check, --select, I, --fix, --diff]
             name: ruff-isort
             stages: [pre-commit]
           - id: ruff-format
+            args: [--diff]
             stages: [pre-commit]
           - id: ruff
             stages: [pre-commit]
