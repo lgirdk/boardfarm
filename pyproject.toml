@@ -70,7 +70,7 @@ dev = [
     "nox",
     "pandas-stubs",
     "pre-commit",
-    "pylint",
+    "pylint>=3.3.8",
     "pylint-per-file-ignores",
     "ruff==v0.11.5",
     "types-ipaddress",
