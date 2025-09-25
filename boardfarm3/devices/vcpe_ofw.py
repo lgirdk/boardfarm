@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # pylint: disable=duplicate-code
-class VCPE_HW(CPEHW):
+class VCPE_HW(CPEHW):  # pylint: disable=C0103
     """The hardware device class."""
 
     def __init__(self, config: dict[str, Any], cmdline_args: Namespace) -> None:
@@ -196,7 +196,7 @@ class VCPE_HW(CPEHW):
             raise DeviceBootFailure(msg)
 
 
-class VCPE_SW(CPESwLibraries):  # pylint: disable=R0904
+class VCPE_SW(CPESwLibraries):  # pylint: disable=R0904,C0103
     """Software component device class."""
 
     _hw: VCPE_HW
@@ -440,7 +440,7 @@ class VCPE_SW(CPESwLibraries):  # pylint: disable=R0904
         raise ValueError(msg)
 
 
-class VCPE_LXC(CPE, BoardfarmDevice):
+class VCPE_LXC(CPE, BoardfarmDevice):  # pylint: disable=C0103
     """Device class for an LXC container."""
 
     def __init__(self, config: dict[str, Any], cmdline_args: Namespace) -> None:
