@@ -1,0 +1,91 @@
+---
+name: CI
+on:
+    push:
+        branches:
+            - master
+            - boardfarm3
+    pull_request:
+        branches:
+            - master
+            - boardfarm3
+
+env:
+    DOCKER_COMPOSE_FILE: resources/deploy/prplos/docker-compose.yaml
+
+concurrency:
+    group: global-workflow-group
+    cancel-in-progress: false
+
+
+# FYI: the actrc file maybe located as ~/.config/act/actrc
+
+jobs:
+    validation_job:
+        timeout-minutes: 10
+        name: Validation job (linting+nox)
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ['3.11', '3.12', '3.13']
+        steps:
+            - name: Checkout the repo
+              uses: actions/checkout@v2
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Display Python version
+              run: python -c "import sys; print(sys.version)"
+
+            - name: Install boardfarm
+              run: python -m pip install --root-user-action ignore -e .[dev,doc,test]
+
+            - name: Run pre-commit
+              run: pre-commit run --all-files
+
+            - name: Run nox on the specific python version (overrides noxfile contents)
+              run: nox --force-pythons ${{ matrix.python-version }}
+
+    boardfarm_job:
+        timeout-minutes: 10
+        needs: validation_job
+        name: Run a boardfarm boot against the PrlpOS setup
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ['3.12'] # TODO: how to run more in parallel?
+        steps:
+            - name: Checkout the repo
+              uses: actions/checkout@v2
+
+            - name: Display Python version
+              run: python -c "import sys; print(sys.version)"
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Install boardfarm
+              run: python -m pip install --root-user-action ignore -e .[dev]
+
+            - name: Start containers
+              run: docker compose -f "$DOCKER_COMPOSE_FILE" up -d --build
+
+            - name: Run boot with boardfarm
+              run: >
+                  echo "Let the containers settle (dhcp and cpe take time to come up)";
+                  sleep 60;
+                  echo "Run boardfarm";
+                  echo q | boardfarm --board-name  prplos-docker-1 \
+                    --env-config ./boardfarm3/configs/boardfarm_env_example.json \
+                    --inventory-config ./boardfarm3/configs/boardfarm_config_example.json \
+                    --legacy
+
+            - name: Stop containers
+              if: always()
+              run: docker compose -f "$DOCKER_COMPOSE_FILE" down
+        # TODO: remove the virt interfaces, if possible when the ovs shutsdown.
