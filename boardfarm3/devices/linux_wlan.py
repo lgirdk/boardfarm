@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import re
 from argparse import Namespace
-from ipaddress import IPv4Interface, IPv4Network
+from ipaddress import AddressValueError, IPv4Address, IPv4Interface, IPv4Network
 from typing import TYPE_CHECKING
 
 import jc
@@ -23,8 +23,6 @@ from boardfarm3.templates.cpe import CPE
 from boardfarm3.templates.wlan import WLAN
 
 if TYPE_CHECKING:
-    from ipaddress import IPv4Address
-
     from boardfarm3.lib.device_manager import DeviceManager
 
 
@@ -549,6 +547,23 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
         return self._console.execute_command(
             f"upnpc -u {url} -m {self.iface_dut} -d {ext_port} {protocol}"
         )
+
+    def get_default_gateway(self) -> IPv4Address:
+        """Get default gateway from ip route output.
+
+        :return: default gateway ipv4 address
+        :rtype: IPv4Address
+        """
+        out = self._console.execute_command("ip route list 0/0 | awk '{print $3}'")
+        try:
+            return IPv4Address(out.strip())
+        except AddressValueError:
+            # Should we just raise an exception instead?
+            _LOGGER.warning(
+                "Unable to resolve lan client gateway IP. "
+                "Using default Ziggo address now. (192.168.178.1)",
+            )
+            return IPv4Address("192.168.178.1")
 
 
 if __name__ == "__main__":

@@ -785,3 +785,12 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_default_gateway(self) -> IPv4Address:
+        """Get the default gateway from IP route output.
+
+        :return: IPv4 of the default gateway
+        :rtype: IPv4Address
+        """
+        raise NotImplementedError
