@@ -51,12 +51,16 @@ def tcpdump(
     :yield: process id
     :rtype: Generator[str, None, None]
     """
-    with dev.tcpdump_capture(
-        fname=fname,
-        interface=dev.iface_dut,
-        additional_args=f"-s0 {filters}",
-    ) as pid:
+    try:
+        pid = dev.start_tcpdump(
+            interface=dev.iface_dut,
+            port=None,
+            output_file=fname,
+            additional_filters=f"-s0 {filters}",
+        )
         yield pid
+    finally:
+        dev.stop_tcpdump(process_id=pid)
 
 
 def call_a_phone(caller: VoiceClient, callee: VoiceClient) -> None:

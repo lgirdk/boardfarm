@@ -1,11 +1,9 @@
-# ruff: noqa: FA100
-
 """SIPServer Template module."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from collections.abc import Generator
-from contextlib import contextmanager
-from typing import Literal, Optional
+from typing import Literal
 
 from debtcollector import moves
 
@@ -46,7 +44,7 @@ class SIPServer(ABC):
         raise NotImplementedError
 
     @property
-    def ipv4_addr(self) -> Optional[str]:
+    def ipv4_addr(self) -> str | None:
         """Return the server IP v4 address.
 
         :raises NotImplementedError: not implemented yet
@@ -54,7 +52,7 @@ class SIPServer(ABC):
         raise NotImplementedError
 
     @property
-    def ipv6_addr(self) -> Optional[str]:
+    def ipv6_addr(self) -> str | None:
         """Return the server IP v6 address.
 
         :raises NotImplementedError: not implemented yet
@@ -62,7 +60,7 @@ class SIPServer(ABC):
         raise NotImplementedError
 
     @property
-    def fqdn(self) -> Optional[str]:
+    def fqdn(self) -> str | None:
         """Return the sipserver fqdn.
 
         :raises NotImplementedError: not implemented yet
@@ -155,7 +153,7 @@ class SIPServer(ABC):
     def add_user(
         self,
         user: str,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> None:
         """Add user to the directory.
 
@@ -170,7 +168,7 @@ class SIPServer(ABC):
     def sipserver_user_add(
         self,
         user: str,
-        password: Optional[str] = None,
+        password: str | None = None,
     ) -> None:
         """Add user to the directory.
 
@@ -203,7 +201,7 @@ class SIPServer(ABC):
         return self.remove_endpoint(endpoint=endpoint)
 
     @abstractmethod
-    def allocate_number(self, number: Optional[str] = None) -> str:
+    def allocate_number(self, number: str | None = None) -> str:
         """Allocate a number from the sipserver number list.
 
         :param number: the phone number, defaults to None
@@ -214,7 +212,7 @@ class SIPServer(ABC):
         raise NotImplementedError
 
     @moves.moved_method("ipv4_addr")
-    def get_interface_ipaddr(self) -> Optional[str]:
+    def get_interface_ipaddr(self) -> str | None:
         """Return the IPv4 address of the DUT connected interface.
 
         This method is deprecated in favour of reading the `ipv4_addr` property.
@@ -224,34 +222,11 @@ class SIPServer(ABC):
         """
         return self.ipv4_addr
 
-    @contextmanager
-    @abstractmethod
-    def tcpdump_capture(
-        self,
-        fname: str,
-        interface: str = "any",
-        additional_args: Optional[str] = None,
-    ) -> Generator[str, None, None]:
-        """Capture packets from specified interface.
-
-        Packet capture using tcpdump utility at a specified interface.
-
-        :param fname: name of the file where packet captures will be stored
-        :type fname: str
-        :param interface: name of the interface, defaults to "any"
-        :type interface: str
-        :param additional_args: arguments to tcpdump command, defaults to None
-        :type additional_args: Optional[str]
-        :return: process id of tcpdump process
-        :rtype: Generator[str, None, None]
-        """
-        raise NotImplementedError
-
     @abstractmethod
     def tshark_read_pcap(
         self,
         fname: str,
-        additional_args: Optional[str] = None,
+        additional_args: str | None = None,
         timeout: int = 30,
         rm_pcap: bool = False,
     ) -> str:
@@ -348,5 +323,41 @@ class SIPServer(ABC):
 
         :param local_path: local file path
         :param source_path: source path
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def start_tcpdump(
+        self,
+        interface: str,
+        port: str | None,
+        output_file: str = "pkt_capture.pcap",
+        filters: dict | None = None,
+        additional_filters: str | None = "",
+    ) -> str:
+        """Start tcpdump capture on given interface.
+
+        :param interface: inteface name where packets to be captured
+        :type interface: str
+        :param port: port number, can be a range of ports(eg: 443 or 433-443)
+        :type port: str
+        :param output_file: pcap file name, Defaults: pkt_capture.pcap
+        :type output_file: str
+        :param filters: filters as key value pair(eg: {"-v": "", "-c": "4"})
+        :type filters: Optional[Dict]
+        :param additional_filters: additional filters
+        :type additional_filters: Optional[str]
+        :raises ValueError: on failed to start tcpdump
+        :return: console ouput and tcpdump process id
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def stop_tcpdump(self, process_id: str) -> None:
+        """Stop tcpdump capture.
+
+        :param process_id: tcpdump process id
+        :type process_id: str
         """
         raise NotImplementedError
