@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Iterator
+    from collections.abc import Iterator
     from ipaddress import IPv4Address
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
@@ -332,25 +331,6 @@ class WAN(ABC):
         :raises BoardfarmException: Raises exception if ip type is invalid
         :return: response of nmap command in xml/dict format
         :rtype: dict
-        """
-        raise NotImplementedError
-
-    @contextmanager
-    @abstractmethod
-    def tcpdump_capture(
-        self,
-        fname: str,
-        interface: str = "any",
-        additional_args: str | None = None,
-    ) -> Generator[str]:
-        """Capture packets from specified interface.
-
-        Packet capture using tcpdump utility at a specified interface.
-
-        :param fname: name of the file where packet captures will be stored
-        :param interface: name of the interface, defaults to "any"
-        :param additional_args: argument arguments to tcpdump executable
-        :yield: process id of tcpdump process
         """
         raise NotImplementedError
 

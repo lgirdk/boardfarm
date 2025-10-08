@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
     from ipaddress import IPv4Address
 
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
@@ -312,30 +310,6 @@ class LAN(ABC):
         :type interface: str
         :param stateless: run command with -S or -6 options. -6 by default
         :type stateless: bool
-        """
-        raise NotImplementedError
-
-    @contextmanager
-    @abstractmethod
-    def tcpdump_capture(
-        self,
-        fname: str,
-        interface: str = "any",
-        additional_args: str | None = None,
-    ) -> Generator[str]:
-        """Capture packets from specified interface.
-
-        Packet capture using tcpdump utility at a specified interface.
-
-        :param fname: name of the file where packet captures will be stored
-        :type fname: str
-        :param interface: name of the interface, defaults to "any"
-        :type interface: str
-        :param additional_args: argument arguments to tcpdump executable
-        :type additional_args: str
-        :return: tcpdump capture command console output
-        :rtype: Generator[str, None, None]
-        :yield: process id of tcpdump process
         """
         raise NotImplementedError
 

@@ -82,10 +82,18 @@ def tcpdump(
     :param filters: additional filters for capture, defaults to "ip multicast"
     :type filters: str | None
     :yield: process ID
-    :rtype: Generator[str, None, None]
+    :rtype: Generator[str]
     """
-    with dev.tcpdump_capture(fname, dev.iface_dut, filters) as pid:
+    try:
+        pid = dev.start_tcpdump(
+            interface=dev.iface_dut,
+            port=None,
+            output_file=fname,
+            additional_filters=filters,
+        )
         yield pid
+    finally:
+        dev.stop_tcpdump(process_id=pid)
 
 
 def parse_mcast_trace(
