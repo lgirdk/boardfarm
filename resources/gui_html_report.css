@@ -105,7 +105,7 @@ span.xpassed,
  * 2. Extra
  *------------------*/
 .logwrapper {
-  max-height: 230px;
+  max-height: 315px;
   overflow-y: scroll;
   background-color: #e6e6e6;
 }
@@ -151,10 +151,10 @@ span.xpassed,
 div.media {
   border: 1px solid #e6e6e6;
   float: right;
-  height: 50%;
+  height: 35%;
   margin: 0 5px;
   overflow: hidden;
-  width: 50%;
+  width: 35%;
 }
 
 .media-container {
