@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-_RESOURCES = "boardfarm/resources/visual_regression/"
+_RESOURCES = f"{Path(__file__).parent}/resources/"
 
 
 class TestDetails:
