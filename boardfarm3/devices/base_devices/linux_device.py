@@ -453,15 +453,20 @@ class LinuxDevice(BoardfarmDevice):
         :returns: downloaded file name
         :raises ConfigurationFailure: when file download failed from given URI
         """
-        if not internet_access_cmd:
-            internet_access_cmd = self._internet_access_cmd
         file_name = file_uri.split("/")[-1]
-        file_path = f"{destination_dir}/{file_name}"
-        if " saved [" not in self._console.execute_command(
-            f"{internet_access_cmd} wget {file_uri!r} -O {file_path}",
-        ):
-            msg = f"Failed to download file from {file_uri}"
-            raise ConfigurationFailure(msg)
+        if file_uri.startswith("file:///"):
+            self.scp_local_file_to_device(
+                file_uri.replace("file://", ""), destination_dir
+            )
+        else:
+            if not internet_access_cmd:
+                internet_access_cmd = self._internet_access_cmd
+            file_path = f"{destination_dir}/{file_name}"
+            if " saved [" not in self._console.execute_command(
+                f"{internet_access_cmd} wget {file_uri!r} -O {file_path}",
+            ):
+                msg = f"Failed to download file from {file_uri}"
+                raise ConfigurationFailure(msg)
         return file_name
 
     def curl(
