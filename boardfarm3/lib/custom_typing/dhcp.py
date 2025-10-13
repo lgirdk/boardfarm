@@ -2,12 +2,12 @@
 
 from typing import Literal, TypedDict
 
-DHCPSubOption = TypedDict(
+DHCPSubOption = TypedDict(  # pylint: disable=C0103
     "DHCPSubOption",
     {"data": str, "name": str, "sub-option-code": int},
 )
 
-DHCPVendorOptions = TypedDict(
+DHCPVendorOptions = TypedDict(  # pylint: disable=C0103
     "DHCPVendorOptions",
     {"sub-options": list[DHCPSubOption], "vendor-id": int},
 )
@@ -27,7 +27,7 @@ DHCPVendorOptions = TypedDict(
 
 DHCPServicePools = Literal["mng", "voice", "data", "all"]
 
-DHCPv4Options = TypedDict(
+DHCPv4Options = TypedDict(  # pylint: disable=C0103
     "DHCPv4Options",
     {
         "dns-server": str,
@@ -51,7 +51,7 @@ DHCPv4Options = TypedDict(
 #     - NTP (option 56)
 #     - VIVSO (option 17)
 
-DHCPv6Options = TypedDict(
+DHCPv6Options = TypedDict(  # pylint: disable=C0103
     "DHCPv6Options",
     {
         "dns-server": str,

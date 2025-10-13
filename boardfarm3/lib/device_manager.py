@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from boardfarm3.devices.base_devices import BoardfarmDevice
 
 T = TypeVar("T")  # pylint: disable=invalid-name
-_DEVICE_MANAGER_INSTANCE: DeviceManager | None = None
+_DEVICE_MANAGER_INSTANCE: DeviceManager | None = None  # pylint: disable=C0103
 
 
 def _get_attribute_with_ignore_exception(self: Any, __name: str) -> Any:  # noqa: ANN401

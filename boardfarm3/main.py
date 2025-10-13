@@ -16,7 +16,7 @@ from boardfarm3.plugins.hookspecs import core
 # pylint: disable=no-member  # plugin_manager.hook.* calls are dynamic
 
 
-_BOARDFARM_PLUGIN_MANAGER: PluginManager = None
+_BOARDFARM_PLUGIN_MANAGER: PluginManager = None  # pylint: disable=C0103
 
 
 def get_plugin_manager() -> PluginManager:
