@@ -39,6 +39,9 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=R0801
+
+
 class RPiRDKBHW(CPEHW):
     """RPiRDKB Arm hardware device class."""
 
