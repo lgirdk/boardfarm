@@ -140,7 +140,7 @@ style = [
     ],
 ]
 tag_format = "$version"
-version = "2025.10.23a0"
+version = "2025.10.27"
 version_files = [
     "boardfarm3/__init__.py:version",
     "pyproject.toml:version",
@@ -160,7 +160,7 @@ warn_unreachable = true
 # Uncomment this if your project is hosted on GitHub:
 # github_url = "https://github.com/<user or organization>/<project>/"
 [tool.tbump.version]
-current = "2025.10.23a0"
+current = "2025.10.27"
 
 # Example of a semver regexp.
 # Make sure this matches current_version before
