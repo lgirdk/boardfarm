@@ -114,11 +114,11 @@ class LinuxWAN(LinuxDevice, WAN):  # pylint: disable=R0902
             if ip4_addr:
                 ip = IPv4Interface(ip4_addr).ip
                 dns_hosts.append(f"{ip}    {name}.boardfarm.com")
-                dns_hosts.append(f"{ip}    {name}_ipv4.boardfarm.com")
+                dns_hosts.append(f"{ip}    {name}-ipv4.boardfarm.com")
             if ip6_addr:
                 ip6 = IPv6Interface(ip6_addr).ip
                 dns_hosts.append(f"{ip6}    {name}.boardfarm.com")
-                dns_hosts.append(f"{ip6}    {name}_ipv6.boardfarm.com")
+                dns_hosts.append(f"{ip6}    {name}-ipv6.boardfarm.com")
         if dns_hosts:
             self._console.sendline("cat > /etc/dnsmasq.hosts << EOF")
             self._console.sendline("\n".join(dns_hosts))
