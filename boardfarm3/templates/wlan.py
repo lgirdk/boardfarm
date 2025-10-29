@@ -794,3 +794,14 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: IPv4Address
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def execute_time_sync(self, time_server: str) -> str:
+        """Execute time sync operation using ntpdate-debian.
+
+        :param time_server: ip of the time server
+        :type time_server: str
+        :return: output of ntpdate-debian <server> command
+        :rtype: str
+        """
+        raise NotImplementedError
