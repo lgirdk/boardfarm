@@ -565,6 +565,16 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
             )
             return IPv4Address("192.168.178.1")
 
+    def execute_time_sync(self, time_server: str) -> str:
+        """Execute time sync operation using ntpdate-debian.
+
+        :param time_server: ip of the time server
+        :type time_server: str
+        :return: output of ntpdate-debian <server> command
+        :rtype: str
+        """
+        return self._console.execute_command(f"ntpdate-debian {time_server}")
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device
