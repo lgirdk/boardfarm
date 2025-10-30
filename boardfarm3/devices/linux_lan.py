@@ -1016,6 +1016,25 @@ class LinuxLAN(LinuxDevice, LAN):
         """
         self._console.execute_command(f"ip neigh del {ip} dev {intf}")
 
+    def add_vlan_interface(self, vlan_id: str) -> None:
+        """Add a VLAN interface.
+
+        :param vlan_id: vlan id to be added
+        :type vlan_id: str
+        """
+        iface = f"{self.iface_dut}.{vlan_id}"
+        cmd = f"ip link add link {self.iface_dut} name {iface} type vlan id {vlan_id}"
+        self._console.execute_command(cmd)
+        self._console.execute_command(f"ip link set up {iface}")
+
+    def delete_vlan_interface(self, vlan_id: str) -> None:
+        """Delete the vlan interfaces.
+
+        :param vlan_id: VLAN ID
+        :type vlan_id: str
+        """
+        self._console.execute_command(f"ip link del {self.iface_dut}.{vlan_id}")
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device

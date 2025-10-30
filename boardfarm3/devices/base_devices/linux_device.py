@@ -1315,9 +1315,22 @@ class LinuxDevice(BoardfarmDevice):
         self._console.execute_command(
             f"ifconfig {interface} {ip_address} netmask {netmask} up"
         )
-        ip = self.ipv4_addr
+        ip = self.get_interface_ipv4addr(interface)
         if ip != ip_address:
             err_msg = f"Running IP: {ip=} is different than expected: {ip_address=}"
+            raise CodeError(err_msg)
+
+    def remove_static_ip(self, interface: str) -> None:
+        """Remove the static IP assigned to the interface.
+
+        :param interface: name of the interface
+        :type interface: str
+        :raises CodeError: If IP removal did not succeed
+        """
+        self._console.execute_command(f"ip addr flush dev {interface}")
+        ip = self.get_interface_ipv4addr(interface)
+        if ip:
+            err_msg = f"IP removal failed: running IP is still {ip}"
             raise CodeError(err_msg)
 
     def del_default_route(self, interface: str | None = None) -> None:
