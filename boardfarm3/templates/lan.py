@@ -956,3 +956,21 @@ class LAN(ABC):
         :type signal: int
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def add_vlan_interface(self, vlan_id: str) -> None:
+        """Add VLAN interface.
+
+        :param vlan_id: vlan id to be set
+        :type vlan_id: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_vlan_interface(self, vlan_id: str) -> None:
+        """Delete the vlan interfaces.
+
+        :param vlan_id: VLAN ID
+        :type vlan_id: str
+        """
+        raise NotImplementedError
