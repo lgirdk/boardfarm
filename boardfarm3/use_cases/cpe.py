@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from boardfarm3.templates.cpe import CPE
     from boardfarm3.templates.lan import LAN
     from boardfarm3.templates.wan import WAN
+    from boardfarm3.templates.wlan import WLAN
 
 
 _TOO_MANY_NTPS = 1
@@ -52,8 +53,13 @@ def get_memory_usage(board: CPE) -> dict[str, int]:
     return board.sw.get_memory_utilization()
 
 
-def create_upnp_rule(
-    device: LAN, int_port: str, ext_port: str, protocol: str, url: str | None = None
+def create_upnp_rule(  # noqa: PLR0913
+    device: LAN | WLAN,
+    int_port: str,
+    ext_port: str,
+    protocol: str,
+    extra_args: str,
+    url: str | None = None,
 ) -> str:
     """Create UPnP rule on the device.
 
@@ -61,33 +67,40 @@ def create_upnp_rule(
 
         - Create UPnP rule through cli.
 
-    :param device: LAN device instance
-    :type device: LAN
+    :param device: LAN or WLAN device instance
+    :type device: LAN or WLAN
     :param int_port: internal port for UPnP
     :type int_port: str
     :param ext_port: external port for UPnP
     :type ext_port: str
     :param protocol: protocol to be used
     :type protocol: str
+    :param extra_args: additional arguments to be passed to the upnp command
+    :type extra_args: str
     :param url: url to be used
     :type url: str | None
     :return: output of UPnP add port command
     :rtype: str
     """
+    ip_addr = device.get_interface_ipv4addr(device.iface_dut)
     if url is None:
         url = _UPNP_URL.safe_substitute(IP=device.get_default_gateway())
-    return device.create_upnp_rule(int_port, ext_port, protocol, url)
+    return device.create_upnp_rule(
+        device.iface_dut, ip_addr, int_port, ext_port, protocol, extra_args, url
+    )
 
 
-def delete_upnp_rule(device: LAN, ext_port: str, protocol: str, url: str | None) -> str:
+def delete_upnp_rule(
+    device: LAN | WLAN, ext_port: str, protocol: str, url: str | None
+) -> str:
     """Delete UPnP rule on the device.
 
     .. hint:: This Use Case implements statements from the test suite such as:
 
         - Delete UPnP rule through cli.
 
-    :param device: LAN device instance
-    :type device: LAN
+    :param device: LAN or WLAN device instance
+    :type device: LAN or WLAN
     :param ext_port: external port for UPnP
     :type ext_port: str
     :param protocol: protocol to be used
@@ -99,7 +112,7 @@ def delete_upnp_rule(device: LAN, ext_port: str, protocol: str, url: str | None)
     """
     if url is None:
         url = _UPNP_URL.safe_substitute(IP=device.get_default_gateway())
-    return device.delete_upnp_rule(ext_port, protocol, url)
+    return device.delete_upnp_rule(device.iface_dut, ext_port, protocol, url)
 
 
 def is_ntp_synchronized(board: CPE) -> bool:
