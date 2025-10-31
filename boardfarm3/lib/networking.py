@@ -139,15 +139,14 @@ def tcpdump_read(  # noqa: PLR0913
     :type opts: str
     :param timeout: timeout in seconds for reading pcap
     :type timeout: int
-    :param rm_pcap: romove pcap file afterwards
+    :param rm_pcap: remove pcap file afterwards
     :type rm_pcap: bool
     :return: tcpdump output
     :rtype: str
     """
-    if opts:
-        protocol = f"{protocol} and {opts}"
+    extra_opts = " and ".join([x for x in (protocol, opts) if x])
     tcpdump_output = console.execute_command(
-        f"tcpdump -n -r {capture_file} {protocol}",
+        f"tcpdump -n -r {capture_file} {extra_opts}",
         timeout=timeout,
     )
     if rm_pcap:
