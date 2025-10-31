@@ -871,53 +871,12 @@ class LinuxLAN(LinuxDevice, LAN):
             f"sysctl net.ipv6.conf.{self.iface_dut}.disable_ipv6=1",
         )
 
-    def create_upnp_rule(
-        self,
-        int_port: str,
-        ext_port: str,
-        protocol: str,
-        url: str,
-    ) -> str:
-        """Create UPnP rule on the device.
-
-        :param int_port: internal port for upnp
-        :type int_port: str
-        :param ext_port: external port for upnp
-        :type ext_port: str
-        :param protocol: protocol to be used
-        :type protocol: str
-        :param url: url to be used
-        :type url: str
-        :return: output of upnpc add port command
-        :rtype: str
-        """
-        ip_addr = self.get_interface_ipv4addr(self.iface_dut)
-        return self._console.execute_command(
-            f"upnpc -u {url} -m {self.iface_dut} -a {ip_addr} {int_port} {ext_port} {protocol}",
-        )
-
     def _add_multicast_to_linux_lan(self) -> None:
         self._multicast = Multicast(
             self.device_name,
             self.iface_dut,
             self._console,
             self._shell_prompt,
-        )
-
-    def delete_upnp_rule(self, ext_port: str, protocol: str, url: str) -> str:
-        """Delete UPnP rule on the device.
-
-        :param ext_port: external port for upnp
-        :type ext_port: str
-        :param protocol: protocol to be used
-        :type protocol: str
-        :param url: url to be used
-        :type url: str
-        :return: output of upnpc delete port command
-        :rtype: str
-        """
-        return self._console.execute_command(
-            f"upnpc -u {url} -m {self.iface_dut} -d {ext_port} {protocol}"
         )
 
     def netcat(self, host_ip: str, port: str, additional_args: str) -> None:

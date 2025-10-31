@@ -750,21 +750,30 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
-    def create_upnp_rule(
+    def create_upnp_rule(  # noqa: PLR0913
         self,
+        interface: str,
+        ipaddr: str,
         int_port: str,
         ext_port: str,
         protocol: str,
+        extra_args: str,
         url: str,
     ) -> str:
         """Create UPnP rule on the device.
 
+        :param interface: interface on which the upnp rule run
+        :type interface: str
+        :param ipaddr: ip address of the interface on which upnp will run
+        :type ipaddr: str
         :param int_port: internal port for upnp
         :type int_port: str
         :param ext_port: external port for upnp
         :type ext_port: str
         :param protocol: protocol to be used
         :type protocol: str
+        :param extra_args: additional arguments to be passed to the upnp command
+        :type extra_args: str
         :param url: url to be used
         :type url: str
         :return: output of upnpc add port command
@@ -773,9 +782,13 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
-    def delete_upnp_rule(self, ext_port: str, protocol: str, url: str) -> str:
+    def delete_upnp_rule(
+        self, interface: str, ext_port: str, protocol: str, url: str
+    ) -> str:
         """Delete UPnP rule on the device.
 
+        :param interface: interface on which the upnp rule run
+        :type interface: str
         :param ext_port: external port for upnp
         :type ext_port: str
         :param protocol: protocol to be used

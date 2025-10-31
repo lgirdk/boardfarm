@@ -507,47 +507,6 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
         """
         return self.hostname()
 
-    def create_upnp_rule(
-        self,
-        int_port: str,
-        ext_port: str,
-        protocol: str,
-        url: str,
-    ) -> str:
-        """Create UPnP rule on the device.
-
-        :param int_port: internal port for upnp
-        :type int_port: str
-        :param ext_port: external port for upnp
-        :type ext_port: str
-        :param protocol: protocol to be used
-        :type protocol: str
-        :param url: url to be used
-        :type url: str
-        :return: output of upnpc add port command
-        :rtype: str
-        """
-        ip_addr = self.get_interface_ipv4addr(self.iface_dut)
-        return self._console.execute_command(
-            f"upnpc -u {url} -m {self.iface_dut} -a {ip_addr} {int_port} {ext_port} {protocol}",
-        )
-
-    def delete_upnp_rule(self, ext_port: str, protocol: str, url: str) -> str:
-        """Delete UPnP rule on the device.
-
-        :param ext_port: external port for upnp
-        :type ext_port: str
-        :param protocol: protocol to be used
-        :type protocol: str
-        :param url: url to be used
-        :type url: str
-        :return: output of upnpc delete port command
-        :rtype: str
-        """
-        return self._console.execute_command(
-            f"upnpc -u {url} -m {self.iface_dut} -d {ext_port} {protocol}"
-        )
-
     def get_default_gateway(self) -> IPv4Address:
         """Get default gateway from ip route output.
 
