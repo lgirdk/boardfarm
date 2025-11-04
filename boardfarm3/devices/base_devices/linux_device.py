@@ -1491,12 +1491,12 @@ class LinuxDevice(BoardfarmDevice):
         :return: command output
         :rtype: str
         """
+        cmd = f"hping3 -c {packet_count} -{protocol} {target} "
         if pkt_interval:
-            pkt_interval = f"-i {pkt_interval}"
-        return self._console.execute_command(
-            f"sudo hping3 {pkt_interval} -c {packet_count} -{protocol} {target} "
-            f"{extra_args}"
-        )
+            cmd = f"{cmd} -i {pkt_interval}"
+        if extra_args:
+            cmd = f"{cmd} {extra_args}"
+        return self._console.execute_command(cmd)
 
     @property
     def nw_utility(self) -> NetworkUtility:
