@@ -8,6 +8,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
 
+from boardfarm3.exceptions import UseCaseFailure
 from boardfarm3.lib.device_manager import get_device_manager
 from boardfarm3.templates.wlan import WLAN
 
@@ -271,3 +272,58 @@ def enable_and_disable_monitor_mode(device: WLAN) -> Generator[None, Any, None]:
         yield
     finally:
         device.disable_monitor_mode()
+
+
+def trigger_radar_event(
+    network: str,
+    cpe: CPE,
+) -> None:
+    """Trigger radar event from DUT console.
+
+    .. hint:: This Use Case implements statements from the test suite such as:
+
+        - DUT detects radar event in the current channel in use ...
+        - command : wl -i wl1 radar 2 ...
+
+    :param cpe: The board instance
+    :type cpe: CPE
+    :param network: network type of the client E.g: private, guest, community
+    :type network: str
+    :raises UseCaseFailure: failed to trigger radar event from the CPE console
+    """
+    out = cpe.sw.wifi.trigger_radar_event(network)
+    if "wl: Bad Channel" in out:
+        msg = f"Failed to trigger radar event for {network} network"
+        raise UseCaseFailure(msg)
+    if "wl: Bad Argument" in out:
+        msg = "Incorrect parameter passed to the wl command"
+        raise UseCaseFailure(msg)
+
+
+def get_wireless_interface_status(
+    network: str,
+    band: str,
+    cpe: CPE,
+) -> str:
+    """Get the interface status of the wireless interface on the DUT.
+
+    .. hint:: This Use Case implements statements from the test suite such as:
+
+        - Check the status of wireless interface ...
+        - command : wl -i wl1 status ...
+
+    :param cpe: The board instance
+    :type cpe: CPE
+    :param network: network type of the client E.g: private, guest, community
+    :type network: str
+    :param band: Wi-Fi band of the client
+    :type band: str
+    :raises UseCaseFailure: failed to get the interface status from the CPE console
+    :return: output of the wl command from the DUT console
+    :rtype: str
+    """
+    out = cpe.sw.wifi.get_interface_status(network, band)
+    if "wl: wl driver adapter not found" in out:
+        msg = "Failed to get the wireless interface status from the CPE console"
+        raise UseCaseFailure(msg)
+    return out

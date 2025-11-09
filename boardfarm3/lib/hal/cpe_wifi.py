@@ -80,3 +80,27 @@ class WiFiHal(ABC):
         :rtype: tuple[str, str, str]
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def trigger_radar_event(self, network: str) -> str | None:
+        """Trigger radar event from the DUT console.
+
+        :param network: network type(private/guest/community)
+        :type network: str
+        :return: output of the wl command - empty if succeeded
+        :rtype: str | None
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_status(self, network: str, band: str) -> str:
+        """Fetch the interface status of the specific wireless interface.
+
+        :param network: network type(private/guest/community)
+        :type network: str
+        :param band: wifi band(5/2.4 GHz)
+        :type band: str
+        :return: output of the wl command on the specific interface
+        :rtype: str
+        """
+        raise NotImplementedError
