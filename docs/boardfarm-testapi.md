@@ -100,27 +100,28 @@ The CPE (Customer Premises Equipment) device represents the router/gateway devic
 - `verify_cpe_is_booting()`: Verify CPE is booting
 - `configure_management_server(url, username, password)`: Configure management server URL
 - `is_online()`: Check if CPE is online
-- `get_seconds_uptime()`: Return uptime in seconds
+- `get_seconds_uptime()`: Return uptime in seconds (float)
 - `get_interface_ipv4addr(interface: str)`: Return interface IPv4 address
 - `get_interface_ipv6addr(interface: str)`: Return interface IPv6 address
 - `get_interface_link_local_ipv6_addr(interface: str)`: Return link local IPv6 address
+- `get_interface_ipv4_netmask(interface: str)`: Return IPv4 netmask
 - `is_link_up(interface: str, pattern: str)`: Return link status
 - `get_interface_mac_addr(interface: str)`: Return interface MAC address
 - `is_tr069_connected()`: Check if TR-69 agent is connected
-- `get_load_avg()`: Return current load average
-- `get_memory_utilization()`: Return current memory utilization
+- `get_load_avg()`: Return current load average (float)
+- `get_memory_utilization()`: Return current memory utilization (dict)
 - `enable_logs(component: str, flag: str)`: Enable logs for given component
 - `get_board_logs(timeout: int)`: Return board console logs
-- `read_event_logs()`: Return event logs from logread command
-- `get_running_processes(ps_options: str)`: Return currently running processes
-- `get_ntp_sync_status()`: Get NTP synchronization status
+- `read_event_logs()`: Return event logs from logread command (parsed JSON)
+- `get_running_processes(ps_options: str | None)`: Return currently running processes (parsed ps output)
+- `get_ntp_sync_status()`: Get NTP synchronization status (raises NotImplementedError)
 - `kill_process_immediately(pid: int)`: Kill process by PID
-- `get_boottime_log()`: Return boot time log
-- `get_tr069_log()`: Return TR-069 log
+- `get_boottime_log()`: Return boot time log (raises NotImplementedError)
+- `get_tr069_log()`: Return TR-069 log (raises NotImplementedError)
 - `get_file_content(fname: str, timeout: int)`: Get file content
 - `add_info_to_file(to_add: str, fname: str)`: Add data to file
-- `get_date()`: Get system date and time
-- `set_date(date_string: str)`: Set device date and time
+- `get_date()`: Get system date and time (returns str | None)
+- `set_date(date_string: str)`: Set device date and time (returns bool)
 - `finalize_boot()`: Validate board settings post boot
 - `get_interface_mtu_size(interface: str)`: Get MTU size of interface
 
@@ -156,14 +157,22 @@ The LAN device represents a client device connected to the LAN side of the CPE.
 ### LAN Methods
 
 #### DHCP Client Management
-- `start_ipv4_lan_client(wan_gw, prep_iface)`: Restart IPv4 dhclient to obtain IP
-- `start_ipv6_lan_client(wan_gw, prep_iface)`: Restart IPv6 dhclient to obtain IP
+- `start_ipv4_lan_client(wan_gw, prep_iface)`: Restart IPv4 dhclient to obtain IP (returns str)
+- `start_ipv4_lan_client_async(wan_gw, prep_iface)`: Restart IPv4 dhclient to obtain IP (async, returns str)
+- `start_ipv6_lan_client(wan_gw, prep_iface)`: Restart IPv6 dhclient to obtain IP (returns str)
+- `start_ipv6_lan_client_async(wan_gw, prep_iface)`: Restart IPv6 dhclient to obtain IP (async, returns str)
 - `release_dhcp(interface: str)`: Release IPv4 of interface
+- `release_dhcp_async(interface: str)`: Release IPv4 of interface (async)
 - `renew_dhcp(interface: str)`: Renew IPv4 of interface
+- `renew_dhcp_async(interface: str)`: Renew IPv4 of interface (async)
 - `release_ipv6(interface: str, stateless: bool)`: Release IPv6 of interface
+- `release_ipv6_async(interface: str, stateless: bool)`: Release IPv6 of interface (async)
 - `renew_ipv6(interface: str, stateless: bool)`: Renew IPv6 of interface
+- `renew_ipv6_async(interface: str, stateless: bool)`: Renew IPv6 of interface (async)
 - `configure_dhclient_option60(enable: bool)`: Configure DHCP option 60
+- `configure_dhclient_option60_async(enable: bool)`: Configure DHCP option 60 (async)
 - `configure_dhclient_option61(enable: bool)`: Configure DHCP option 61
+- `configure_dhclient_option61_async(enable: bool)`: Configure DHCP option 61 (async)
 - `configure_dhclient_option125(enable: bool)`: Configure DHCP option 125
 - `configure_dhcpv6_option17(enable: bool)`: Configure DHCPv6 option 17
 
@@ -176,7 +185,8 @@ The LAN device represents a client device connected to the LAN side of the CPE.
 - `get_interface_mtu_size(interface: str)`: Get MTU size of interface
 - `set_link_state(interface: str, state: str)`: Set interface state (up/down)
 - `is_link_up(interface: str, pattern: str)`: Check if link is up
-- `check_dut_iface()`: Check that DUT interface exists and has carrier
+- `check_dut_iface()`: Check that DUT interface exists and has carrier (returns str)
+- `check_dut_iface_async()`: Check that DUT interface exists and has carrier (async, returns str)
 
 #### Network Testing
 - `ping(ping_ip, ping_count, ping_interface, options, timeout, json_output)`: Ping remote host
@@ -187,22 +197,22 @@ The LAN device represents a client device connected to the LAN side of the CPE.
 - `nmap(ipaddr, ip_type, port, protocol, max_retries, min_rate, opts, timeout)`: Perform nmap operation
 
 #### Packet Capture
-- `tcpdump_capture(fname, interface, additional_args)`: Capture packets (context manager)
-- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump capture
+- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump capture (returns process ID string)
 - `stop_tcpdump(process_id)`: Stop tcpdump capture
 - `tcpdump_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read packet captures from file
 - `tshark_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read packet captures using tshark
 
 #### Traffic Generation
-- `start_traffic_receiver(traffic_port, bind_to_ip, ip_version, udp_only)`: Start iperf3 server
-- `start_traffic_sender(host, traffic_port, bandwidth, bind_to_ip, direction, ip_version, udp_protocol, time, client_port, udp_only)`: Start iperf3 client
-- `stop_traffic(pid)`: Stop iPerf3 process
-- `get_iperf_logs(log_file)`: Read traffic flow logs
+- `start_traffic_receiver(traffic_port, bind_to_ip, ip_version, udp_only)`: Start iperf3 server (returns tuple[int, str] - pid and log file path)
+- `start_traffic_sender(host, traffic_port, bandwidth, bind_to_ip, direction, ip_version, udp_protocol, time, client_port, udp_only)`: Start iperf3 client (returns tuple[int, str] - pid and log file path)
+- `stop_traffic(pid)`: Stop iPerf3 process (pid optional, returns bool)
+- `get_iperf_logs(log_file)`: Read traffic flow logs (returns str)
 
 #### Routing
-- `get_default_gateway()`: Get default gateway from IP route output
+- `get_default_gateway()`: Get default gateway from IP route output (returns IPv4Address)
 - `set_static_ip(interface, ip_address, netmask)`: Set static IP for LAN
-- `del_default_route(interface)`: Remove default gateway
+- `remove_static_ip(interface)`: Remove static IP from interface
+- `del_default_route(interface)`: Remove default gateway (interface optional)
 - `set_default_gw(ip_address, interface)`: Set default gateway address
 
 #### UPnP
@@ -215,22 +225,24 @@ The LAN device represents a client device connected to the LAN side of the CPE.
 - `disable_ipv6()`: Disable IPv6 on connected client interface
 
 #### System Operations
-- `get_date()`: Get system date and time
-- `set_date(opt, date_string)`: Set device date and time
-- `get_hostname()`: Get hostname of device
+- `get_date()`: Get system date and time (returns str | None)
+- `set_date(opt, date_string)`: Set device date and time (returns bool)
+- `get_hostname()`: Get hostname of device (returns str)
 - `add_hosts_entry(ip, host_name)`: Add entry in hosts file
 - `delete_hosts_entry(host_name, ip)`: Delete entry in hosts file
 - `flush_arp_cache()`: Flush ARP cache entries
-- `get_arp_table()`: Fetch ARP table output
+- `get_arp_table()`: Fetch ARP table output (returns str)
 - `delete_arp_table_entry(ip, intf)`: Delete ARP table entry
-- `get_process_id(process_name)`: Return process ID
+- `get_process_id(process_name)`: Return process ID (returns list[str] | None)
 - `kill_process(pid, signal)`: Kill running process
 - `delete_file(filename)`: Delete file from device
 - `scp_device_file_to_local(local_path, source_path)`: Copy file from server using SCP
 - `scp_local_file_to_device(local_path, destination_path)`: Copy local file to server using SCP
+- `add_vlan_interface(vlan_id)`: Add VLAN interface
+- `delete_vlan_interface(vlan_id)`: Delete VLAN interface
 
 #### HTTP Services
-- `start_http_service(port, ip_version)`: Start HTTP service on given port
+- `start_http_service(port, ip_version)`: Start HTTP service on given port (returns process ID string)
 - `stop_http_service(port)`: Stop HTTP service running on given port
 
 #### Network Attacks
@@ -295,16 +307,19 @@ The WAN device represents the network infrastructure on the WAN side of the CPE.
 #### Common Network Operations
 All methods from `LinuxDevice` are available, including:
 - `ping()`, `traceroute()`, `curl()`, `http_get()`, `dns_lookup()`, `nmap()`
-- `tcpdump_capture()`, `start_tcpdump()`, `stop_tcpdump()`, `tshark_read_pcap()`
+- `start_tcpdump()`, `stop_tcpdump()`, `tcpdump_read_pcap()`, `tshark_read_pcap()`
 - `start_traffic_receiver()`, `start_traffic_sender()`, `stop_traffic()`, `get_iperf_logs()`
 - `get_interface_ipv4addr()`, `get_interface_ipv6addr()`, `get_interface_macaddr()`
 - `get_interface_mask()`, `get_interface_mtu_size()`, `set_link_state()`, `is_link_up()`
 - `start_http_service()`, `stop_http_service()`
 - `get_date()`, `set_date()`, `get_hostname()`
-- `release_dhcp()`, `set_static_ip()`, `set_default_gw()`
+- `release_dhcp()`, `release_dhcp_async()`, `renew_dhcp()`, `renew_dhcp_async()`
+- `release_ipv6()`, `release_ipv6_async()`, `renew_ipv6()`, `renew_ipv6_async()`
+- `set_static_ip()`, `remove_static_ip()`, `set_default_gw()`, `del_default_route()`
 - `hping_flood()`, `start_nping()`, `stop_nping()`
-- `delete_file()`, `scp_device_file_to_local()`
-- `get_process_id()`, `kill_process()`
+- `delete_file()`, `scp_device_file_to_local()`, `scp_local_file_to_device()`
+- `download_file_from_uri()`, `get_process_id()`, `kill_process()`
+- `start_danteproxy()`, `stop_danteproxy()`, `stop_danteproxy_async()`
 
 ### Hook Implementations
 
@@ -360,7 +375,7 @@ The WLAN device represents a wireless client device connected to the CPE's WiFi 
 
 #### DHCP Client
 - `dhcp_release_wlan_iface()`: DHCP release of WiFi interface
-- `start_ipv4_wlan_client()`: Restart IPv4 dhclient to obtain IP
+- `start_ipv4_wlan_client()`: Restart IPv4 dhclient to obtain IP (returns bool)
 - `start_ipv6_wlan_client()`: Restart IPv6 dhclient to obtain IP
 
 #### IPv6 Management
@@ -374,6 +389,11 @@ All methods from `LinuxDevice` are available, including:
 - `get_interface_mtu_size()`, `set_link_state()`, `is_link_up()`
 - `create_upnp_rule()`, `delete_upnp_rule()`
 - `get_default_gateway()`, `get_hostname()`
+- `start_tcpdump()`, `stop_tcpdump()`, `tcpdump_read_pcap()`, `tshark_read_pcap()`
+- `start_traffic_receiver()`, `start_traffic_sender()`, `stop_traffic()`, `get_iperf_logs()`
+- `release_dhcp()`, `renew_dhcp()`, `release_ipv6()`, `renew_ipv6()`
+- `set_static_ip()`, `remove_static_ip()`, `set_default_gw()`, `del_default_route()`
+- `delete_file()`, `scp_device_file_to_local()`, `scp_local_file_to_device()`
 
 ### Hook Implementations
 
@@ -394,34 +414,34 @@ The ACS (Auto Configuration Server) device manages TR-069/TR-181 operations for 
 
 ### ACS Properties
 
-- `url` (str): ACS URL used (raises NotImplementedError)
-
-### ACS Methods
-
-#### TR-069 RPC Operations
-- `GPV(param, timeout, cpe_id)`: Send GetParameterValues command via ACS server
-- `SPV(param_value, timeout, cpe_id)`: Execute SetParameterValues RPC call
-- `GPA(param, cpe_id)`: Execute GetParameterAttributes RPC call
-- `SPA(param, notification_param, access_param, access_list, cpe_id)`: Execute SetParameterAttributes RPC call
-- `GPN(param, next_level, timeout, cpe_id)`: Execute GetParameterNames RPC call
-- `AddObject(param, param_key, cpe_id)`: Execute AddObject RPC call
-- `DelObject(param, param_key, cpe_id)`: Execute DeleteObject RPC call
-
-#### Device Management
-- `Reboot(CommandKey, cpe_id)`: Execute Reboot RPC
-- `FactoryReset(cpe_id)`: Execute FactoryReset RPC
-- `ScheduleInform(CommandKey, DelaySeconds, cpe_id)`: Execute ScheduleInform RPC
-- `GetRPCMethods(cpe_id)`: Execute GetRPCMethods RPC
-- `Download(url, filetype, targetfilename, filesize, username, password, commandkey, delayseconds, successurl, failureurl, cpe_id)`: Execute Download RPC
-
-#### Provisioning
-- `provision_cpe_via_tr069(tr069provision_api_list, cpe_id)`: Provision CPE with TR-069 parameters
+- `url` (str): ACS URL used (property, raises NotImplementedError)
+- `console`: Returns ACS console (property, raises NotSupportedError)
+- `firewall`: Returns Firewall instance (property, raises NotSupportedError)
 
 #### Common Operations
 - `delete_file(filename)`: Delete file from device (raises NotImplementedError)
 - `scp_device_file_to_local(local_path, source_path)`: Copy file from server (raises NotImplementedError)
-- `console`: Returns ACS console (raises NotSupportedError)
-- `firewall`: Returns Firewall instance (raises NotSupportedError)
+
+### ACS Methods
+
+#### TR-069 RPC Operations
+- `GPV(param, timeout, cpe_id)`: Send GetParameterValues command via ACS server (returns list[dict])
+- `SPV(param_value, timeout, cpe_id)`: Execute SetParameterValues RPC call (returns list[dict])
+- `GPA(param, cpe_id)`: Execute GetParameterAttributes RPC call (returns list[dict])
+- `SPA(param, notification_param, access_param, access_list, cpe_id)`: Execute SetParameterAttributes RPC call (returns list[dict])
+- `GPN(param, next_level, timeout, cpe_id)`: Execute GetParameterNames RPC call (returns list[dict])
+- `AddObject(param, param_key, cpe_id)`: Execute AddObject RPC call (returns list[dict])
+- `DelObject(param, param_key, cpe_id)`: Execute DeleteObject RPC call (returns list[dict])
+
+#### Device Management
+- `Reboot(CommandKey, cpe_id)`: Execute Reboot RPC (returns list[dict])
+- `FactoryReset(cpe_id)`: Execute FactoryReset RPC (returns list[dict])
+- `ScheduleInform(CommandKey, DelaySeconds, cpe_id)`: Execute ScheduleInform RPC (returns list[dict])
+- `GetRPCMethods(cpe_id)`: Execute GetRPCMethods RPC (returns list[dict])
+- `Download(url, filetype, targetfilename, filesize, username, password, commandkey, delayseconds, successurl, failureurl, cpe_id)`: Execute Download RPC (raises NotImplementedError)
+
+#### Provisioning
+- `provision_cpe_via_tr069(tr069provision_api_list, cpe_id)`: Provision CPE with TR-069 parameters
 
 ### Hook Implementations
 
@@ -442,10 +462,10 @@ The Provisioner device provides DHCP services for CPE provisioning.
 ### Provisioner Properties
 
 - `iface_dut` (str): Name of interface connected to DUT
-- `console` (BoardfarmPexpect): Provisioner console
-- `firewall` (IptablesFirewall): Firewall component instance
-- `_supported_vsio_options` (list): List of VSIO supported suboptions
-- `_supported_vivso_options` (dict): Vendor ID and VIVSO sub-options
+- `console` (BoardfarmPexpect): Provisioner console (property)
+- `firewall` (IptablesFirewall): Firewall component instance (property)
+- `_supported_vsio_options` (list): List of VSIO supported suboptions (private property)
+- `_supported_vivso_options` (dict): Vendor ID and VIVSO sub-options (private property)
 
 ### Provisioner Methods
 
@@ -453,8 +473,8 @@ The Provisioner device provides DHCP services for CPE provisioning.
 - `provision_cpe(cpe_mac, dhcpv4_options, dhcpv6_options)`: Configure KEA provisioner with CPE values
 
 #### Packet Capture
-- `tshark_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read packet captures from file
-- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump capture
+- `tshark_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read packet captures from file (returns str)
+- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump capture (returns process ID string)
 - `stop_tcpdump(process_id)`: Stop tcpdump capture
 
 #### File Operations
@@ -550,35 +570,39 @@ Base class for Linux-based devices, extends `BoardfarmDevice`.
 - `http_get(url, timeout, options)`: Perform HTTP GET
 - `dns_lookup(domain_name, record_type, opts)`: Run dig command
 - `nmap(ipaddr, ip_type, port, protocol, max_retries, min_rate, opts, timeout)`: Perform nmap
-- `tcpdump_capture(fname, interface, additional_args)`: Capture packets (context manager)
-- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump
+- `start_tcpdump(interface, port, output_file, filters, additional_filters)`: Start tcpdump (returns process ID string)
 - `stop_tcpdump(process_id)`: Stop tcpdump
 - `tcpdump_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read pcap file
 - `tshark_read_pcap(fname, additional_args, timeout, rm_pcap)`: Read pcap using tshark
 - `release_dhcp(interface)`: Release IPv4 of interface
+- `release_dhcp_async(interface)`: Release IPv4 of interface (async)
 - `renew_dhcp(interface)`: Renew IPv4 of interface
+- `renew_dhcp_async(interface)`: Renew IPv4 of interface (async)
 - `release_ipv6(interface, stateless)`: Release IPv6 of interface
+- `release_ipv6_async(interface, stateless)`: Release IPv6 of interface (async)
 - `renew_ipv6(interface, stateless)`: Renew IPv6 of interface
+- `renew_ipv6_async(interface, stateless)`: Renew IPv6 of interface (async)
 - `start_traffic_receiver(traffic_port, bind_to_ip, ip_version, udp_only)`: Start iperf3 server
 - `start_traffic_sender(host, traffic_port, bandwidth, bind_to_ip, direction, ip_version, udp_protocol, time, client_port, udp_only)`: Start iperf3 client
 - `stop_traffic(pid)`: Stop iPerf3 process
 - `get_iperf_logs(log_file)`: Read iperf logs
 - `delete_file(filename)`: Delete file from device
-- `get_date()`: Get system date and time
-- `set_date(opt, date_string)`: Set device date and time
+- `get_date()`: Get system date and time (returns str | None)
+- `set_date(opt, date_string)`: Set device date and time (returns bool)
 - `send_mldv2_report(mcast_group_record, count)`: Send MLDv2 report
 - `set_static_ip(interface, ip_address, netmask)`: Set static IP
-- `del_default_route(interface)`: Remove default gateway
+- `remove_static_ip(interface)`: Remove static IP from interface
+- `del_default_route(interface)`: Remove default gateway (interface optional)
 - `set_default_gw(ip_address, interface)`: Set default gateway
 - `start_nping(interface_ip, ipv6_flag, extra_args, port_range, hit_count, rate, mode)`: Perform nping
 - `stop_nping(process_id)`: Stop nping
 - `hping_flood(protocol, target, packet_count, extra_args, pkt_interval)`: Validate flood operation
-- `hostname()`: Get hostname of device
-- `get_process_id(process_name)`: Return process ID
+- `hostname()`: Get hostname of device (returns str)
+- `get_process_id(process_name)`: Return process ID (returns list[str] | None)
 - `kill_process(pid, signal)`: Terminate process
 - `scp_device_file_to_local(local_path, source_path)`: Copy file from server using SCP
 - `scp_local_file_to_device(local_path, destination_path)`: Copy local file to server using SCP
-- `download_file_from_uri(file_uri, destination_dir, internet_access_cmd)`: Download file from URI
+- `download_file_from_uri(file_uri, destination_dir, internet_access_cmd)`: Download file from URI (returns filename string)
 - `start_danteproxy()`: Start Dante server for SOCKS5 proxy
 - `stop_danteproxy()`: Stop Dante proxy
 - `stop_danteproxy_async()`: Stop Dante proxy (async)
@@ -590,4 +614,3 @@ Base class for Linux-based devices, extends `BoardfarmDevice`.
 - Device-specific options can be configured via the `options` field in the device configuration
 - Hook implementations allow devices to participate in Boardfarm's boot and configuration lifecycle
 - Contingency checks can be performed to verify device readiness before test execution
-
