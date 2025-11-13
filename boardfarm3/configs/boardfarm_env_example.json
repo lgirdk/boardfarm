@@ -2,8 +2,10 @@
     "environment_def": {
         "board": {
             "eRouter_Provisioning_mode": "ipv4",
-            "model": "prplOS",
-            "lan_clients": [{}]
+            "lan_clients": [
+                {}
+            ],
+            "model": "prplOS"
         }
     }
 }
