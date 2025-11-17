@@ -142,7 +142,7 @@ class Provisioner(ABC, BoardfarmDevice):
         raise NotImplementedError
 
     @abstractmethod
-    def start_tcpdump(
+    def start_tcpdump(  # pylint:disable=R0801
         self,
         interface: str,
         port: str | None,
@@ -169,7 +169,7 @@ class Provisioner(ABC, BoardfarmDevice):
         raise NotImplementedError
 
     @abstractmethod
-    def stop_tcpdump(self, process_id: str) -> None:
+    def stop_tcpdump(self, process_id: str) -> None:  # pylint:disable=R0801
         """Stop tcpdump capture.
 
         :param process_id: tcpdump process id
