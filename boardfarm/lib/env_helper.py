@@ -88,6 +88,7 @@ class EnvHelper:
             "2.48",
             "2.49",
             "2.50",
+            "2.51",
         ], "Unknown environment version!"
         self.env = env
         self.mirror = ""
