@@ -998,3 +998,12 @@ class LAN(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_resolv_conf(self) -> str:
+        """Get resolv conf details.
+
+        :return: resolv conf info
+        :rtype: str
+        """
+        raise NotImplementedError

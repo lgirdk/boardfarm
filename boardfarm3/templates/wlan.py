@@ -834,3 +834,12 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: HTTPResult
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_resolv_conf(self) -> str:
+        """Get resolv conf details.
+
+        :return: resolv conf info
+        :rtype: str
+        """
+        raise NotImplementedError
