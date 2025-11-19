@@ -1565,3 +1565,18 @@ class LinuxDevice(BoardfarmDevice):
         return self._console.execute_command(
             f"upnpc -u {url} -m {interface} -d {ext_port} {protocol}"
         )
+
+    def get_resolv_conf(self) -> str:
+        """Get resolv conf details.
+
+        :return: resolv conf info
+        :rtype: str
+        """
+        resolv_conf = self._console.execute_command("cat /etc/resolv.conf")
+        return "\n".join(
+            [
+                namserver_entries
+                for namserver_entries in resolv_conf.split("\n")
+                if "nameserver" in namserver_entries
+            ]
+        )
