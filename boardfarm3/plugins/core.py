@@ -216,13 +216,16 @@ def boardfarm_register_devices(
 @hookimpl(hookwrapper=True)
 def boardfarm_release_devices(
     plugin_manager: PluginManager,
+    device_manager: DeviceManager,
 ) -> Generator[None, None, None]:
     """Shutdown all the devices before releasing them.
 
     :param plugin_manager: plugin manager instance
     :type plugin_manager: PluginManager
+    :param device_manager: device manager with all registered devices
+    :type device_manager: DeviceManager
     :yield: None
     :rtype: Generator[None,None,None]
     """
-    plugin_manager.hook.boardfarm_shutdown_device()
+    plugin_manager.hook.boardfarm_shutdown_device(device_manager=device_manager)
     yield

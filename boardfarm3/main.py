@@ -93,6 +93,7 @@ def main() -> None:
             cmdline_args=cmdline_args,
             plugin_manager=plugin_manager,
             deployment_status=deployment_status,
+            device_manager=device_manager,
         )
 
 
