@@ -573,7 +573,8 @@ class HTTPResult:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _parse_response(response: str) -> tuple[str, str, str]:
-        if "Connection refused" in response or "Connection timed out" in response:
+        errors = ["Connection refused", "Connection timed out", "Failed to connect"]
+        if any(err in response for err in errors):
             msg = f"Curl Failure due to the following reason {response}"
             raise UseCaseFailure(msg)
         raw_search_output = re.findall(
