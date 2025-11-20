@@ -148,6 +148,7 @@ def boardfarm_release_devices(
     cmdline_args: Namespace,
     plugin_manager: PluginManager,
     deployment_status: dict[str, Any],
+    device_manager: DeviceManager,
 ) -> None:
     """Release reserved devices after use.
 
@@ -159,6 +160,8 @@ def boardfarm_release_devices(
     :type plugin_manager: PluginManager
     :param deployment_status: deployment status data
     :type deployment_status: Dict[str, Any]
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     """
 
 
@@ -199,10 +202,13 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
 
 
 @hookspec
-def boardfarm_shutdown_device() -> None:
+def boardfarm_shutdown_device(device_manager: DeviceManager) -> None:
     """Shutdown boardfarm device after use.
 
     This hook should be used by a device to perform a clean shutdown of a device
     after releasing all the resources (e.g. close all of the open ssh connections)
     before the shutdown of the framework.
+
+    :param device_manager: device manager instance
+    :type device_manager: DeviceManager
     """
