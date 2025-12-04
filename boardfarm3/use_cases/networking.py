@@ -120,7 +120,7 @@ def start_http_server(
 
 
 def http_get(  # noqa: PLR0913
-    device: LAN | WAN,
+    device: LAN | WAN | WLAN,
     url: str,
     timeout: int = 20,
     no_proxy: bool = False,
@@ -139,7 +139,7 @@ def http_get(  # noqa: PLR0913
         - Try to connect to the HTTP server from [] client
 
     :param device: the device from where HTTP response to get
-    :type device: LAN | WAN
+    :type device: LAN | WAN | WLAN
     :param url: URL to get the response
     :type url: str
     :param timeout: connection timeout for the curl command in seconds, default 20

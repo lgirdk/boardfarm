@@ -330,10 +330,10 @@ def configure_dhcp_option125(client: LAN | WAN) -> None:
             f"00:00:0D:E9:{total_len}:01:06:44:38:42:36:42:37:02:"
             f"{len_02}:{code_02}:03:06:42:46:43:4c:41:4e"
         )
-        client.execute_command("cat >> /etc/dhcp/dhclient.conf << EOF")
-        client.execute_command(f"send option-125 = {option_125};")
-        client.execute_command("")
-        client.execute_command("EOF")
+        client.console.execute_command("cat >> /etc/dhcp/dhclient.conf << EOF")
+        client.console.execute_command(f"send option-125 = {option_125};")
+        client.console.execute_command("")
+        client.console.execute_command("EOF")
 
 
 def remove_dhcp_option125(client: LAN | WAN) -> None:
