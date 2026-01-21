@@ -103,6 +103,7 @@ class LinuxWLAN(LinuxDevice, WLAN):  # pylint: disable=too-many-public-methods
         else:
             self.start_ipv4_wlan_client()
             self.start_ipv6_wlan_client()
+        self.start_danteproxy("wlan")
 
     @property
     def band(self) -> str:

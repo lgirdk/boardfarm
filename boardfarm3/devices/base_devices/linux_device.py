@@ -12,7 +12,7 @@ from functools import cached_property
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address, IPv6Interface
 from pathlib import Path
 from time import sleep
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import jc.parsers.ping
 import pexpect
@@ -49,6 +49,7 @@ class LinuxDevice(BoardfarmDevice):
     """Boardfarm Linux device."""
 
     eth_interface = "eth1"
+    wlan_interface = "wlan1"
     _internet_access_cmd = ""
 
     def __init__(self, config: dict, cmdline_args: Namespace) -> None:
@@ -1018,9 +1019,11 @@ class LinuxDevice(BoardfarmDevice):
         )
         return xmltodict.parse(self._console.execute_command(cmd, timeout))
 
-    def start_danteproxy(self) -> None:
+    def start_danteproxy(self, iface: Literal["eth", "wlan"] = "eth") -> None:
         """Start the dante server for socks5 proxy connections.
 
+        :param iface: interface to be used in config, defaults to "eth"
+        :type iface: Literal["eth","wlan"], optional
         :raises BoardfarmException: if dante is not in the device options
         """
         if not self.dante:
@@ -1031,11 +1034,12 @@ class LinuxDevice(BoardfarmDevice):
             raise BoardfarmException(
                 msg,
             )
+        interface = self.eth_interface if iface == "eth" else self.wlan_interface
         to_send = [
             "cat > /etc/danted.conf <<EOF",
             "logoutput: stderr",
             "internal: 0.0.0.0 port = 8080",
-            f"external: {self.eth_interface}",
+            f"external: {interface}",
             "clientmethod: none",
             "socksmethod: username none #rfc931",
             "user.privileged: root",
