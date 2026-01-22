@@ -1106,7 +1106,7 @@ class LinuxDevice(BoardfarmDevice):
 
     async def stop_danteproxy_async(self) -> None:
         """Stop the Dante proxy."""
-        self._console.execute_command_async("service danted stop")
+        await self._console.execute_command_async("service danted stop")
 
     def start_traffic_receiver(
         self,
