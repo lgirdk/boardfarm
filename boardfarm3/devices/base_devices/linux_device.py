@@ -1320,7 +1320,7 @@ class LinuxDevice(BoardfarmDevice):
             f"ifconfig {interface} {ip_address} netmask {netmask} up"
         )
         ip = self.get_interface_ipv4addr(interface)
-        if ip != ip_address:
+        if ip != str(ip_address):
             err_msg = f"Running IP: {ip=} is different than expected: {ip_address=}"
             raise CodeError(err_msg)
 

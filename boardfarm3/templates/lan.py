@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from boardfarm3.lib.network_utils import NetworkUtility
     from boardfarm3.lib.networking import HTTPResult, IptablesFirewall, NSLookup
 
-# pylint: disable=too-many-public-methods,duplicate-code
+# pylint: disable=too-many-public-methods,duplicate-code, too-many-lines
 
 
 class LAN(ABC):
@@ -945,11 +945,13 @@ class LAN(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def add_vlan_interface(self, vlan_id: str) -> None:
+    def add_vlan_interface(self, vlan_id: str) -> str:
         """Add VLAN interface.
 
         :param vlan_id: vlan id to be set
         :type vlan_id: str
+        :return:  name of the vlan interface which is added
+        :rtype: str
         """
         raise NotImplementedError
 
@@ -979,5 +981,14 @@ class LAN(ABC):
 
         :return: resolv conf info
         :rtype: str
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_static_ip(self, interface: str) -> None:
+        """Remove the static IP assigned to the interface.
+
+        :param interface: name of the interface
+        :type interface: str
         """
         raise NotImplementedError
