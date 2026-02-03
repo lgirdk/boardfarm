@@ -975,16 +975,19 @@ class LinuxLAN(LinuxDevice, LAN):
         """
         self._console.execute_command(f"ip neigh del {ip} dev {intf}")
 
-    def add_vlan_interface(self, vlan_id: str) -> None:
+    def add_vlan_interface(self, vlan_id: str) -> str:
         """Add a VLAN interface.
 
         :param vlan_id: vlan id to be added
         :type vlan_id: str
+        :return:  name of the vlan interface which is added
+        :rtype: str
         """
         iface = f"{self.iface_dut}.{vlan_id}"
         cmd = f"ip link add link {self.iface_dut} name {iface} type vlan id {vlan_id}"
         self._console.execute_command(cmd)
         self._console.execute_command(f"ip link set up {iface}")
+        return iface
 
     def delete_vlan_interface(self, vlan_id: str) -> None:
         """Delete the vlan interfaces.
