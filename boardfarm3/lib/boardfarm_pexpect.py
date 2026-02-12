@@ -121,6 +121,14 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
         """
         return self.before.strip()
 
+    def get_next_output(self) -> str:
+        """Get next output from the buffer.
+
+        :returns: output from the buffer stored in the after
+        :rtype: str
+        """
+        return self.after.strip()
+
     @abstractmethod
     def execute_command(self, command: str, timeout: int = -1) -> str:
         """Execute a command in the pexpect session.
