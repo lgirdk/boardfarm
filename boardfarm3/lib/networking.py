@@ -59,6 +59,9 @@ class _LinuxConsole(Protocol):
         :type timeout: int
         """
 
+    def get_next_output(self) -> str:
+        """Get next output from the buffer."""
+
 
 def start_tcpdump(  # noqa: PLR0913
     console: _LinuxConsole,
@@ -112,10 +115,12 @@ def stop_tcpdump(console: _LinuxConsole, process_id: str) -> None:
     """
     output = console.execute_command(f"kill {process_id}")
     if "packets captured" not in output:
-        idx = console.expect_exact(["captured", pexpect.TIMEOUT])
-        if idx:
-            msg = f"Failed to stop tcpdump process with PID {process_id}"
-            raise ValueError(msg)
+        output += " " + console.get_next_output()
+        if "packets captured" not in output:
+            idx = console.expect_exact(["captured", pexpect.TIMEOUT])
+            if idx:
+                msg = f"Failed to stop tcpdump process with PID {process_id}"
+                raise ValueError(msg)
     console.execute_command("sync")
 
 
