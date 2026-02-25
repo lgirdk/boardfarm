@@ -992,3 +992,14 @@ class LAN(ABC):
         :type interface: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_stats(self, iface: str) -> str:
+        """Return the interafce's RX and TX stats.
+
+        :param iface: name of the interface
+        :type iface: str
+        :return: RX and TX stats
+        :rtype: str
+        """
+        raise NotImplementedError

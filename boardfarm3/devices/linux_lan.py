@@ -1007,6 +1007,16 @@ class LinuxLAN(LinuxDevice, LAN):
         """
         return self._console.execute_command(f"ntpdate-debian {time_server}")
 
+    def get_interface_stats(self, iface: str) -> str:
+        """Return the interafce's RX and TX stats.
+
+        :param iface: name of the interface
+        :type iface: str
+        :return: RX and TX stats
+        :rtype: str
+        """
+        return self._console.execute_command(f"ip -s link show {iface}")
+
 
 if __name__ == "__main__":
     # stubbed instantation of the device
