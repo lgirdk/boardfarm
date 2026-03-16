@@ -461,14 +461,14 @@ class LinuxDevice(BoardfarmDevice):
             if not internet_access_cmd:
                 internet_access_cmd = self._internet_access_cmd
             file_path = f"{destination_dir}/{file_name}"
-            output = self._console.execute_command(
-                f"{internet_access_cmd} wget {file_uri!r} -O {file_path}",
+            cmd = (
+                f"{internet_access_cmd} wget {file_uri!r} -O {file_path}"
+                " --tries=5 --timeout=30 --waitretry=5"
             )
+            output = self._console.execute_command(command=cmd, timeout=180)
             if " saved [" not in output:
-                output += " " + self._console.get_next_output()
-                if " saved [" not in output:
-                    msg = f"Failed to download file from {file_uri}"
-                    raise ConfigurationFailure(msg)
+                msg = f"Failed to download file from {file_uri}"
+                raise ConfigurationFailure(msg)
         return file_name
 
     def curl(
