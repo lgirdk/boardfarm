@@ -246,7 +246,7 @@ class ACS:
             return bool(
                 retry_on_exception(
                     acs_server.GPV,
-                    ("Device.DeviceInfo.SoftwareVersion",),
+                    ("Device.DeviceInfo.SoftwareVersion", 60, board._cpeid),
                     retries=10,
                     tout=30,
                 )
