@@ -1820,9 +1820,10 @@ def check_prompts(device_list):
     :type device: List
     """
     for dev in device_list:
-        assert "FOO" in dev.check_output(
-            'echo "FOO"'
-        ), f"Failed to validate prompt for device: {dev.name}"
+        if hasattr(dev, "check_output"):
+            assert "FOO" in dev.check_output(
+                'echo "FOO"'
+            ), f"Failed to validate prompt for device: {dev.name}"
     return True
 
 
