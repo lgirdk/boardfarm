@@ -306,9 +306,9 @@ def snmp_v2(
             "print(result.__class__.__name__)",
         ]
 
-        device.sendline("pip install pyasn1==0.6.0")
+        device.sendline("pip install pyasn1")
         device.expect_prompt()
-        device.sendline("pip install pysnmp==5.1.0")
+        device.sendline("pip install pysnmp")
         device.expect_prompt()
         device.sendline("cat > snmp.py << EOF\n%s\nEOF" % "\n".join(py_steps))
         for e in py_steps:
