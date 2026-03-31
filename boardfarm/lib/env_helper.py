@@ -251,6 +251,7 @@ class EnvHelper:
             "TG2492LG": "mv1",
             "F5685LGE": "mv3",
             "F5685LGB": "mv3",
+            "F3897LG": "mv2.7",
         }.get(board_model, "unknown")
 
     def env_check(self, test_environment):
