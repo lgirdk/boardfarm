@@ -29,6 +29,7 @@ class Provisioner(ABC, BoardfarmDevice):
         cpe_mac: str,
         dhcpv4_options: dict[DHCPServicePools, DHCPv4Options],
         dhcpv6_options: dict[DHCPServicePools, DHCPv6Options],
+        **kwargs: dict,
     ) -> None:
         """Provision the CPE.
 
@@ -68,6 +69,8 @@ class Provisioner(ABC, BoardfarmDevice):
         :type dhcpv4_options: dict[DHCPServicePools, DHCPv4Options]
         :param dhcpv6_options: DHCPv6 Options with ACS, NTP, DNS details
         :type dhcpv6_options: dict[DHCPServicePools, DHCPv6Options]
+        :param kwargs: extra args to be used if any
+        :type kwargs: dict
 
         """
         raise NotImplementedError
