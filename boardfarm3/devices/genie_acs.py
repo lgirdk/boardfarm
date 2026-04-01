@@ -145,7 +145,7 @@ class GenieACS(LinuxDevice, ACS):
         """
         raise NotImplementedError
 
-    def GPA(self, param: str, cpe_id: str | None = None) -> list[dict]:
+    def GPA(self, param: str | list[str], cpe_id: str | None = None) -> list[dict]:
         """Execute GetParameterAttributes RPC call for the specified parameter.
 
         Example usage:
@@ -153,7 +153,7 @@ class GenieACS(LinuxDevice, ACS):
         >>> acs_server.GPA("Device.WiFi.SSID.1.SSID")
 
         :param param: parameter to be used in get
-        :type param: str
+        :type param: str | list[str]
         :param cpe_id: cpe identifier, defaults to None
         :type cpe_id: str | None
         :raises NotImplementedError: missing implementation
