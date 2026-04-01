@@ -263,7 +263,7 @@ class AxirosACS(LinuxDevice, ACS):
 
     def GPA(
         self,
-        param: str,
+        param: str | list[str],
         cpe_id: str | None = None,
     ) -> list[dict]:
         """Get parameter attribute of the parameter specified.
@@ -273,22 +273,27 @@ class AxirosACS(LinuxDevice, ACS):
         >>> acs_server.GPA("Device.WiFi.SSID.1.SSID")
 
         :param param: parameter to be used in get
-        :type param: str
+        :type param: str | list[str]
         :param cpe_id: cpe identifier, defaults to None
         :type cpe_id: str|None
         :return: dictionary with keys Name, AccessList, Notification indicating the GPA
         :rtype: list[dict]
+        :raises ValueError: if the key is not present or not in the list format
         """
         cmd_opt = self._common_setup(cpe_id=cpe_id, timeout=300)
         url = urljoin(self._base_url, "GetParameterAttributes")
-        # TODO: make the template accept a list as param
+        param_list = list(param) if isinstance(param, list) else [param]
         json = {
             "CPEIdentifier": {"cpeid": cpe_id},
             "CommandOptions": cmd_opt,
-            "Parameters": [param],
+            "Parameters": param_list,
         }
         json_res = self._post(url=url, json_payload=json, timeout=cmd_opt["Lifetime"])
-        return json_res["details"][0]["value"]
+        details = json_res.get("details", [])
+        if not isinstance(details, list) or not details:
+            msg = f"Invalid or empty details in response {details}"
+            raise ValueError(msg)
+        return [{"name": res.get("key"), **res.get("value", {})} for res in details]
 
     def SPA(  # pylint: disable=too-many-arguments
         self,
