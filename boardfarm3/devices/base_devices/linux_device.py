@@ -32,6 +32,7 @@ from boardfarm3.lib.network_utils import NetworkUtility
 from boardfarm3.lib.networking import HTTPResult, dns_lookup, http_get, is_link_up
 from boardfarm3.lib.networking import start_tcpdump as start_dump
 from boardfarm3.lib.networking import stop_tcpdump as stop_dump
+from boardfarm3.lib.networking import tcpdump_read as read_dump
 from boardfarm3.lib.regexlib import AllValidIpv6AddressesRegex, LinuxMacFormat
 from boardfarm3.lib.shell_prompt import DEFAULT_BASH_SHELL_PROMPT_PATTERN
 
@@ -743,6 +744,38 @@ class LinuxDevice(BoardfarmDevice):
         :type process_id: str
         """
         stop_dump(self._console, process_id=process_id)
+
+    def read_tcpdump(  # pylint: disable=R0917
+        self,
+        capture_file: str,
+        protocol: str = "",
+        opts: str = "",
+        timeout: int = 30,
+        rm_pcap: bool = True,
+    ) -> str:
+        """Read the given tcpdump and delete the file afterwards.
+
+        :param capture_file: pcap file path
+        :type capture_file: str
+        :param protocol: protocol to the filter
+        :type protocol: str
+        :param opts: command line options for reading pcap
+        :type opts: str
+        :param timeout: timeout in seconds for reading pcap
+        :type timeout: int
+        :param rm_pcap: remove pcap file afterwards
+        :type rm_pcap: bool
+        :return: tcpdump output
+        :rtype: str
+        """
+        return read_dump(
+            console=self._console,
+            capture_file=capture_file,
+            protocol=protocol,
+            opts=opts,
+            timeout=timeout,
+            rm_pcap=rm_pcap,
+        )
 
     def tshark_read_pcap(
         self,
