@@ -40,7 +40,7 @@ dependencies = [
     "pexpect>=4.9",
     "pluggy>=1.0.0",
     "ptipython",
-    "pysmi",
+    "pysmi==1.6.3",
     "pytest",
     "PyYAML",
     "pyasn1==0.6.0",
