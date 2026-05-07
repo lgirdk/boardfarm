@@ -20,6 +20,9 @@ class NslookupParser:
         """
         dns_dict_obj: dict[str, Any] = {}
         val = response.replace("\t\t", " ").replace("\t", " ")
+        pattern = re.compile(
+            r"\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}\b"
+        )
         # pylint: disable-next=too-many-nested-blocks
         for i in val.split("\r\n\r\n"):
             if "Server" in i:
@@ -29,7 +32,7 @@ class NslookupParser:
                         break
                 dns_dict_obj["dns_server"] = matches
             elif "Name" in i:
-                dns_dict_obj["domain_name"] = re.search(r"(?:[\da-z\._]+)\.(\w+)", i)[0]
+                dns_dict_obj["domain_name"] = pattern.search(i)[0]
                 ips: list[str] = []
                 for value in [
                     ValidIpv4AddressRegex,
@@ -38,7 +41,7 @@ class NslookupParser:
                     ips.extend(matches[0] for matches in re.finditer(value, i))
                 dns_dict_obj["domain_ip_addr"] = ips
             elif "AAAA" in i:
-                dns_dict_obj["domain_name"] = re.search(r"(?:[\da-z\.-]+)\.(\w+)", i)[0]
+                dns_dict_obj["domain_name"] = pattern.search(i)[0]
                 dns_dict_obj["domain_ipv6_addr"] = re.findall(
                     AllValidIpv6AddressesRegex,
                     i,
