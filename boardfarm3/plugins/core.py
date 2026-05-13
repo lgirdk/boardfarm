@@ -10,6 +10,7 @@ from pluggy import PluginManager
 
 from boardfarm3 import hookimpl
 from boardfarm3.devices.axiros_acs import AxirosACS
+from boardfarm3.devices.bananapirdkb_cpe import BananaPiRDKBCPE
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.devices.genie_acs import GenieACS
 from boardfarm3.devices.kamailio import SIPcenterKamailio5
@@ -168,6 +169,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "bf_kamailio": SIPcenterKamailio5,
         "bf_phone": PJSIPPhone,
         "bf_rpi4rdkb": RPiRDKBCPE,
+        "bf_bananaPirdkb": BananaPiRDKBCPE,
         "axiros_acs": AxirosACS,
         "vcpe": VCPE_LXC,
     }
