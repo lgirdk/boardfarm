@@ -65,6 +65,7 @@ class LinuxDevice(BoardfarmDevice):
         self._console: BoardfarmPexpect = None
         self._shell_prompt = [DEFAULT_BASH_SHELL_PROMPT_PATTERN]
         self._static_route = ""
+        self.dante = False
         if "options" in self._config:
             options = [x.strip() for x in self._config["options"].split(",")]
             for opt in options:
@@ -1067,9 +1068,8 @@ class LinuxDevice(BoardfarmDevice):
                 f"Cannot start dante on {self.device_name}, "
                 "it is not configured in the device options."
             )
-            raise BoardfarmException(
-                msg,
-            )
+            _LOGGER.warning(msg)
+            return
         interface = self.eth_interface if iface == "eth" else self.wlan_interface
         to_send = [
             "cat > /etc/danted.conf <<EOF",
