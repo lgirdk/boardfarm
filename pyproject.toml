@@ -53,6 +53,7 @@ dependencies = [
     "xmltodict",
     "debtcollector",
     "scikit-image",  # image comparison
+    "scipy==1.17.1",  # scikit-image has internal open-ended lower bound and scipy 1.18.0rc1 seems to have some compatibility issue
     "opencv-python", # image comparison
 ]
 
