@@ -52,8 +52,8 @@ dependencies = [
     "selenium<4.15.0",
     "xmltodict",
     "debtcollector",
-    "scikit-image",  # image comparison
-    "scipy==1.17.1",  # scikit-image has internal open-ended lower bound and scipy 1.18.0rc1 seems to have some compatibility issue
+    "scikit-image==0.25.2",  # image comparison
+    "scipy>=1.16.1,<=1.17.1",  # scikit-image has internal open-ended lower bound and scipy 1.18.0rc1 seems to have some compatibility issue
     "opencv-python", # image comparison
 ]
 
