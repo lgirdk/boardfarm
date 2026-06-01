@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.multicast import MulticastGroupRecord
 
-__LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 # pylint: disable-next=too-many-instance-attributes,too-many-public-methods
@@ -123,7 +123,7 @@ class LinuxDevice(BoardfarmDevice):
                             f"ip route add {destination} via {gateway}"
                         )
                     except pexpect.TIMEOUT:  # noqa: PERF203
-                        __LOGGER.exception("Failed to set up route %s", route_entry)
+                        _LOGGER.exception("Failed to set up route %s", route_entry)
                     except TypeError as exc:
                         msg = f"Validate the syntax of static-route for {opt_val}."
                         raise ValueError(msg) from exc
@@ -144,7 +144,7 @@ class LinuxDevice(BoardfarmDevice):
                             f"ip route add {destination} via {gateway}"
                         )
                     except pexpect.TIMEOUT:  # noqa: PERF203
-                        __LOGGER.exception("Failed to set up route %s", route_entry)
+                        _LOGGER.exception("Failed to set up route %s", route_entry)
                     except TypeError as exc:
                         msg = f"Validate the syntax of static-route for {opt_val}."
                         raise ValueError(msg) from exc
@@ -1452,7 +1452,7 @@ class LinuxDevice(BoardfarmDevice):
         if str(ip_address) not in out.lower():
             err_msg = f"Failed to add default route, ip route output: {out}"
             raise CodeError(err_msg)
-        __LOGGER.debug("The route is configured successfully .")
+        _LOGGER.debug("The route is configured successfully .")
 
     def start_nping(  # pylint: disable=too-many-arguments # noqa: PLR0913
         self,
@@ -1510,7 +1510,7 @@ class LinuxDevice(BoardfarmDevice):
                 continue
             break
         else:
-            __LOGGER.debug(
+            _LOGGER.debug(
                 "The nping process didn't complete in given time,"
                 " killing it to avoid having it in hung state"
             )
