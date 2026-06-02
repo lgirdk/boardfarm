@@ -87,26 +87,43 @@ class BoardfarmConfig:
         msg = f"{device_name} - Unknown device name"
         raise EnvConfigError(msg)
 
+    def _get_dut_def(self) -> dict[str, Any]:
+        """Return the DUT's environment definition.
+
+        The DUT is defined under ``environment_def.board`` for CPE racks; for NTU
+        fleets it is defined under ``environment_def.ntu`` instead. ``board`` takes
+        precedence when both are present.
+
+        :return: the DUT environment definition
+        :raises EnvConfigError: when neither a board nor an ntu definition exists
+        """
+        environment_def = self.env_config.get("environment_def", {})
+        dut = environment_def.get("board") or environment_def.get("ntu")
+        if not isinstance(dut, dict):
+            msg = "No 'board' or 'ntu' definition found in env config."
+            raise EnvConfigError(msg)
+        return dut
+
     def get_board_sku(self) -> str:
-        """Return the env config ["environment_def"]["board"]["SKU"] value.
+        """Return the DUT's SKU (``environment_def`` board/ntu ``SKU``).
 
         :return: SKU value
         :raises EnvConfigError: when given sku is unknown
         """
         try:
-            return self.env_config["environment_def"]["board"]["SKU"]
+            return self._get_dut_def()["SKU"]
         except (KeyError, AttributeError) as e:
             msg = "Board SKU is not found in env config."
             raise EnvConfigError(msg) from e
 
     def get_board_model(self) -> str:
-        """Return the env config ["environment_def"]["board"]["model"].
+        """Return the DUT's model (``environment_def`` board/ntu ``model``).
 
         :return: Board model
         :raises EnvConfigError: when given model is unknown
         """
         try:
-            return self.env_config["environment_def"]["board"]["model"]
+            return self._get_dut_def()["model"]
         except (KeyError, AttributeError) as e:
             msg = "Unable to find board.model entry in env config."
             raise EnvConfigError(
@@ -120,9 +137,7 @@ class BoardfarmConfig:
         :raises EnvConfigError: when given sku is unknown
         """
         try:
-            return self.env_config["environment_def"]["board"][
-                "eRouter_Provisioning_mode"
-            ]
+            return self._get_dut_def()["eRouter_Provisioning_mode"]
         except (KeyError, AttributeError) as e:
             msg = "Unable to find eRouter_Provisioning_mode entry in env config."
             raise EnvConfigError(
