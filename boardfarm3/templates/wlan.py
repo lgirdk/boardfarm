@@ -848,3 +848,15 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_interface_link_local_ipv6addr(self, interface: str) -> str:
+        """Get IPv6 link local address of the interface.
+
+        :param interface: interface name
+        :type interface: str
+        :return: Link local ipv6 address of the interface
+        :rtype: str
+        :raises BoardfarmException: in case ipv6 can not be found
+        """
+        raise NotImplementedError
