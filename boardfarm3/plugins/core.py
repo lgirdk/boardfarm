@@ -22,7 +22,6 @@ from boardfarm3.devices.linux_wlan import LinuxWLAN
 from boardfarm3.devices.pjsip_phone import PJSIPPhone
 from boardfarm3.devices.prplos_cpe import PrplDockerCPE
 from boardfarm3.devices.rpirdkb_cpe import RPiRDKBCPE
-from boardfarm3.devices.vcpe_ofw import VCPE_LXC
 from boardfarm3.exceptions import EnvConfigError
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig, parse_boardfarm_config
 from boardfarm3.lib.device_manager import DeviceManager
@@ -171,7 +170,6 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "bf_rpi4rdkb": RPiRDKBCPE,
         "bf_bananaPirdkb": BananaPiRDKBCPE,
         "axiros_acs": AxirosACS,
-        "vcpe": VCPE_LXC,
     }
 
 
