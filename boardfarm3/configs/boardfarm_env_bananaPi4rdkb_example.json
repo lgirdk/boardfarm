@@ -1,7 +1,7 @@
 {
     "environment_def": {
         "board": {
-            "eRouter_Provisioning_mode": "ipv6",
+            "eRouter_Provisioning_mode": "ipv4",
             "model": "bf_bananaPirdkb",
             "lan_clients": [{}]
         }
