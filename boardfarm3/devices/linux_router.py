@@ -24,16 +24,6 @@ class LinuxRouter(LinuxDevice, CoreRouter):
     frr service status is verified to confirm the routing daemon is active.
     """
 
-    def __init__(self, config: dict, cmdline_args: Namespace) -> None:
-        """Initialize LinuxRouter device.
-
-        :param config: device configuration
-        :type config: dict
-        :param cmdline_args: command line arguments
-        :type cmdline_args: Namespace
-        """
-        super().__init__(config, cmdline_args)
-
     @property
     def iface_dut(self) -> str:
         """Name of the router interface that faces the DUT.
@@ -64,15 +54,10 @@ class LinuxRouter(LinuxDevice, CoreRouter):
 
         :raises ConfigurationFailure: if the frr service is not running
         """
-        _LOGGER.info(
-            "Configuring %s(%s) device", self.device_name, self.device_type
-        )
+        _LOGGER.info("Configuring %s(%s) device", self.device_name, self.device_type)
         output = self._console.execute_command("service frr status")
         if "running" not in output or "FAILED" in output:
-            msg = (
-                f"{self.device_name}: frr service is not running. "
-                f"Output: {output!r}"
-            )
+            msg = f"{self.device_name}: frr service is not running. Output: {output!r}"
             raise ConfigurationFailure(msg)
         _LOGGER.info("%s: frr service is active", self.device_name)
 
