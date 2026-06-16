@@ -574,6 +574,38 @@ class WLAN(ABC):  # pylint: disable=too-many-public-methods
         raise NotImplementedError
 
     @abstractmethod
+    def arping(  # noqa: PLR0913
+        self,
+        ping_ip: str,
+        ping_count: int = 4,
+        ping_interface: str | None = None,
+        options: str = "",
+        timeout: int = 50,
+        json_output: bool = False,
+    ) -> bool | dict[str, Any]:
+        """ARP ping remote host.
+
+        Return True if arping has 0% unanswered
+        or parsed output in JSON if json_output=True flag is provided.
+
+        :param ping_ip: ping IP
+        :type ping_ip: str
+        :param ping_count: number of arping, defaults to 4
+        :type ping_count: int
+        :param ping_interface: arping via interface, defaults to None
+        :type ping_interface: str
+        :param options: extra arping options, defaults to ""
+        :type options: str
+        :param timeout: timeout, defaults to 50
+        :type timeout: int
+        :param json_output: return arping output in dictionary format, defaults to False
+        :type json_output: bool
+        :return: arping output
+        :rtype: bool | dict[str, Any]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def release_dhcp(self, interface: str) -> None:
         """Release IPv4 of the specified interface.
 

@@ -637,6 +637,49 @@ class LinuxDevice(BoardfarmDevice):
         )
         return bool(match)
 
+    def arping(  # noqa: PLR0913
+        self,
+        ping_ip: str,
+        ping_count: int = 4,
+        ping_interface: str | None = None,
+        options: str = "",
+        timeout: int = 50,
+        json_output: bool = False,
+    ) -> bool | dict[str, Any]:
+        """ARP ping remote host.
+
+        Return True if arping has 0% unanswered
+        or parsed output in JSON if json_output=True flag is provided.
+
+        :param ping_ip: ping ip
+        :param ping_count: number of arping, defaults to 4
+        :param ping_interface: arping via interface, defaults to None
+        :param options: extra arping options, defaults to ""
+        :param timeout: timeout, defaults to 50
+        :param json_output: return arping output in dictionary format, defaults to False
+        :return: arping output as bool or dict
+        """
+        cmd = f"arping -c {ping_count} {ping_ip}"
+
+        if ping_interface:
+            cmd += f" -I {ping_interface}"
+
+        cmd += f" {options}"
+        self._console.sendline(cmd)
+        self._console.expect(self._shell_prompt, timeout=timeout)
+
+        if json_output:
+            return jc.parsers.ping.parse(self._console.before)
+
+        match = re.search(
+            (
+                f"{ping_count} packets transmitted, {ping_count} "
+                r"packets received,\s+0% unanswered"
+            ),
+            self._console.before,
+        )
+        return bool(match)
+
     def traceroute(
         self,
         host_ip: str | IPv4Address | IPv6Address,
