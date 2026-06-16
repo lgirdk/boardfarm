@@ -81,7 +81,7 @@ class BananaPiRDKBHW(RPiRDKBHW):
         Because the console session runs over SSH (``lxc console``), the
         connection terminates when the container restarts.  The resulting EOF
         is swallowed, the dead connection is closed, and the SSH session is
-        re-established by retrying :meth:`connect_to_consoles` until the
+        re-established by retrying :meth:connect_to_consoles until the
         login prompt reappears (up to 120 s).
 
         :raises DeviceBootFailure: if the console-reboot path is taken and
@@ -110,7 +110,7 @@ class BananaPiRDKBHW(RPiRDKBHW):
             with contextlib.suppress(pexpect.EOF, pexpect.TIMEOUT):
                 self.connect_to_consoles(device_name)
                 return
-            self.disconnect_from_consoles()
+            self.disconnect_from_consoles()  # type: ignore[unreachable]
             time.sleep(5)
         msg = f"{device_name}: container did not come back up within 120 s after reboot"
         raise DeviceBootFailure(msg)
@@ -183,7 +183,7 @@ class BananaPiRDKBCPE(RPiRDKBCPE, BoardfarmDevice):
         :return: object holding software component details.
         :rtype: BananaPiRDKBSW
         """
-        return self._sw
+        return self._sw  # type: ignore[return-value]
 
     def _prep_device(self, device_manager: DeviceManager) -> None:
         """Configure the management server after a reboot.
@@ -195,8 +195,10 @@ class BananaPiRDKBCPE(RPiRDKBCPE, BoardfarmDevice):
         :param device_manager: device manager
         :type device_manager: DeviceManager
         """
-        acs = next(iter(device_manager.get_devices_by_type(ACS).values()))
-        router = next(iter(device_manager.get_devices_by_type(CoreRouter).values()))
+        # pylint: disable=line-too-long
+        acs = next(iter(device_manager.get_devices_by_type(ACS).values()))  # type: ignore[type-abstract]
+        router = next(iter(device_manager.get_devices_by_type(CoreRouter).values()))  # type: ignore[type-abstract]
+        # pylint: enable=line-too-long
         console = self._hw.get_console("console")
 
         ipv4_hop = router.get_interface_ipv4addr(router.iface_dut)
@@ -214,7 +216,7 @@ class BananaPiRDKBCPE(RPiRDKBCPE, BoardfarmDevice):
         )
         self._sw.dmcli.SPV(
             param="Device.ManagementServer.URL",
-            value=acs.config["acs_mib"],
+            value=acs.config["acs_mib"],  # type: ignore[attr-defined]
         )
         self._sw.dmcli.SPV(
             param="Device.ManagementServer.PeriodicInformInterval",
