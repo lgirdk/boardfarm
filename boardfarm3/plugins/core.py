@@ -17,6 +17,7 @@ from boardfarm3.devices.kamailio import SIPcenterKamailio5
 from boardfarm3.devices.kea_provisioner import KeaProvisioner
 from boardfarm3.devices.linux_lan import LinuxLAN
 from boardfarm3.devices.linux_tftp import LinuxTFTP
+from boardfarm3.devices.linux_router import LinuxRouter
 from boardfarm3.devices.linux_wan import LinuxWAN
 from boardfarm3.devices.linux_wlan import LinuxWLAN
 from boardfarm3.devices.pjsip_phone import PJSIPPhone
@@ -170,6 +171,7 @@ def boardfarm_add_devices() -> dict[str, type[BoardfarmDevice]]:
         "bf_rpi4rdkb": RPiRDKBCPE,
         "bf_bananaPirdkb": BananaPiRDKBCPE,
         "axiros_acs": AxirosACS,
+        "bf_router": LinuxRouter,
     }
 
 

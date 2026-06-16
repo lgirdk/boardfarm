@@ -20,6 +20,16 @@ class CoreRouter(ABC):
 
     @property
     @abstractmethod
+    def iface_dut(self) -> str:
+        """Name of the router interface that faces the DUT.
+
+        :return: interface name
+        :rtype: str
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def console(self) -> BoardfarmPexpect:
         """Returns WAN console.
 
