@@ -88,6 +88,13 @@ class OptionsTable:
         self._table.add_row(*column_data)
         self._actions[column_data[0]] = (function, args, kwargs)
 
+    def _get_device_choice_and_name(self) -> dict[str, str]:
+        return {
+            choice: console[1][0].device_name
+            for choice, console in self._actions.items()
+            if choice.isdigit()
+        }
+
     def show_table(self, exit_option: str, exit_option_description: str) -> None:
         """Show table and perform actions based on user input.
 
@@ -98,15 +105,25 @@ class OptionsTable:
         """
         self._table.add_row(exit_option, exit_option_description)
         rich_print(self._table)
+        device_names = list(self._get_device_choice_and_name().values())
         while (
             option := Prompt.ask(
-                "Enter your choice:",
-                choices=[*list(self._actions.keys()), exit_option],
+                "Enter your choice or the device name to interact with:",
+                choices=[*list(self._actions.keys()), *device_names, exit_option],
             )
         ) != exit_option:
-            self._actions[option][0](
-                *self._actions[option][1],
-                **self._actions[option][2],
+            if option.isdigit() or (option.isalpha() and len(option) == 1):
+                action_key = option
+            else:
+                action_key = next(
+                    filter(
+                        lambda x: self._get_device_choice_and_name()[x] == option,
+                        self._get_device_choice_and_name(),
+                    )
+                )
+
+            self._actions[action_key][0](
+                *self._actions[action_key][1], **self._actions[action_key][2]
             )
             rich_print(self._table)
 
@@ -173,7 +190,8 @@ def _get_device_console_options(
             (
                 (
                     str(index),
-                    f"{device.device_name} ({device.device_type})",
+                    f"{device.device_type}",
+                    f"{device.device_name}",
                     str(len(device.get_interactive_consoles())),
                 ),
                 _start_interactive_console,
@@ -271,7 +289,8 @@ def get_interactive_console_options(
     """
     table = OptionsTable("BOARDFARM INTERACTIVE SHELL")
     table.add_column("Choice", justify="center", style="cyan")
-    table.add_column("Description", style="magenta")
+    table.add_column("Description", justify="center", style="magenta")
+    table.add_column("Device Name", justify="center")
     table.add_column("Consoles", justify="center")
     for option in _get_device_console_options(device_manager):
         table.add_option(*option)
