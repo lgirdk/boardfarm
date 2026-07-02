@@ -55,7 +55,7 @@ dependencies = [
     "numpy==2.4.6",
     "scikit-image==0.25.2",  # image comparison
     "scipy>=1.16.1,<=1.17.1",  # scikit-image has internal open-ended lower bound and scipy 1.18.0rc1 seems to have some compatibility issue
-    "opencv-python", # image comparison
+    "opencv-python<5.0", # image comparison — 5.x has no manylinux wheels
 ]
 
 [project.optional-dependencies]
