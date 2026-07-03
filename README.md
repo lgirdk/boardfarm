@@ -136,6 +136,35 @@ to run a prplOS demo with  a CPE, ACS, lan, wan devices, please see the followin
   - [Writing a Use Case](https://github.com/lgirdk/boardfarm/blob/master/docs/development.md#writing-a-use-case)
 - [API Reference](https://github.com/lgirdk/boardfarm/blob/master/docs/README.md)
 
+## Claude Code Plugin (`boardfarm-dev`)
+
+This repo ships a [Claude Code](https://claude.ai/code) plugin that acts as a
+cookie-cutter for boardfarm contributors. It guides you through scaffolding new
+components — templates (ABCs), device classes, connection drivers, and use-case
+functions — and produces ready-to-fill stub files.
+
+### Plugin installation
+
+From the boardfarm repo root, register the plugin as a local marketplace and
+install it (one-time setup):
+
+```bash
+claude plugin marketplace add .claude/plugins/boardfarm-dev
+claude plugin install boardfarm-dev@boardfarm-dev
+```
+
+Restart Claude Code after installation for the skills to become available.
+
+### Plugin usage
+
+| Command | What it does |
+| --- | --- |
+| `/boardfarm-dev` | Interactive menu — pick what you want to build |
+| `/boardfarm-dev:new-template` | Scaffold a new Template (ABC) in `boardfarm3/templates/` |
+| `/boardfarm-dev:new-device` | Scaffold a new device class in `boardfarm3/devices/` |
+| `/boardfarm-dev:new-connection` | Scaffold a new connection driver in `boardfarm3/lib/connections/` |
+| `/boardfarm-dev:new-use-case` | Scaffold new use-case function(s) in `boardfarm3/use_cases/` |
+
 ## Changelog
 
 Consult the [CHANGELOG](https://github.com/lgirdk/boardfarm/blob/master/CHANGELOG.md) page for fixes and enhancements of each version.
