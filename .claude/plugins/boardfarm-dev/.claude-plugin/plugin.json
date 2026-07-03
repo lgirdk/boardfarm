@@ -1,0 +1,10 @@
+{
+  "name": "boardfarm-dev",
+  "description": "Cookie-cutter skill for boardfarm contributors — scaffolds templates, devices, connections, and use-cases.",
+  "version": "0.1.0",
+  "author": {
+    "name": "boardfarm contributors"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["boardfarm", "cookiecutter", "scaffolding", "plugin"]
+}
