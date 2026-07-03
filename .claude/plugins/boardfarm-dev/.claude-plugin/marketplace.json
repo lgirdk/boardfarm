@@ -1,0 +1,18 @@
+{
+  "name": "boardfarm-dev",
+  "description": "Local marketplace for the boardfarm-dev developer plugin",
+  "owner": {
+    "name": "boardfarm contributors"
+  },
+  "plugins": [
+    {
+      "name": "boardfarm-dev",
+      "description": "Cookie-cutter skill for boardfarm contributors — scaffolds templates, devices, connections, and use-cases.",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "boardfarm contributors"
+      }
+    }
+  ]
+}
