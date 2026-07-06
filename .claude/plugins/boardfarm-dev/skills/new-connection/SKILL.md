@@ -36,10 +36,42 @@ Build a list of existing connection type keys so you can avoid collisions.
 
 ## Phase 2 — Interview (one question at a time)
 
+**Before Q1:** check whether
+`.claude/plugins/boardfarm-dev/.cache/interview-defaults.json` exists and has
+a `"new-connection"` entry:
+
+```bash
+python -c "
+import json, os
+path = '.claude/plugins/boardfarm-dev/.cache/interview-defaults.json'
+if os.path.exists(path):
+    with open(path) as f:
+        data = json.load(f)
+    print(json.dumps(data.get('new-connection', {}), indent=2))
+else:
+    print('{}')
+"
+```
+
+If it returns a non-empty object, remember the `transport` value as a
+suggested default for Q1 below — annotate the matching option with "(used
+last time)". The developer still answers the question; this never skips it.
+
 **Q1:** What transport protocol does this connection use?
 
 ```
 [1] SSH (new variant or auth mechanism)
+[2] Serial / ser2net
+[3] Telnet
+[4] HTTP/REST (non-pexpect — note: HTTP connections don't subclass BoardfarmPexpect)
+[5] Other — describe it
+```
+
+If the cache lookup returned a `transport` value, annotate the matching
+option, e.g. if the cached value is `ssh`:
+
+```
+[1] SSH (new variant or auth mechanism) (used last time)
 [2] Serial / ser2net
 [3] Telnet
 [4] HTTP/REST (non-pexpect — note: HTTP connections don't subclass BoardfarmPexpect)
@@ -224,6 +256,32 @@ def test_<module_name>_registered_in_factory() -> None:
         )
     assert isinstance(conn, <ClassName>)
 ```
+
+### Save interview defaults
+
+After the developer confirms "yes" at Q7 and all artefacts above are
+written, persist the transport choice for next time:
+
+```bash
+python -c "
+import json, os
+path = '.claude/plugins/boardfarm-dev/.cache/interview-defaults.json'
+os.makedirs(os.path.dirname(path), exist_ok=True)
+data = {}
+if os.path.exists(path):
+    with open(path) as f:
+        data = json.load(f)
+data['new-connection'] = {
+    'transport': '<chosen_transport>',
+}
+with open(path, 'w') as f:
+    json.dump(data, f, indent=2)
+"
+```
+
+Substitute `<chosen_transport>` with the developer's Q1 answer (e.g. `ssh`,
+`serial`, `telnet`). Free-text answers (class name, factory key, extra
+params) are never cached.
 
 ### Completion checklist
 
