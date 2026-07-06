@@ -28,6 +28,17 @@ attached_device_boot → attached_device_configure`
 
 Run these commands to build menus from the live repo state before interviewing.
 
+**Plugin-aware discovery:** boardfarm is a plugin host — installed packages
+beyond core `boardfarm3` (e.g. `boardfarm3-docsis`) can contribute their own
+templates, devices, and use-cases via the `boardfarm` entry-point group.
+Before running the core-only greps below, invoke
+`/boardfarm-dev:scan-plugins` (or read
+`.claude/plugins/boardfarm-dev/skills/scan-plugins/SKILL.md` and follow it
+inline) to discover installed plugins. Merge its three unified lists
+(templates, devices, use-cases — each tagged with `source_package`) with the
+core-only results below before building any menu. This ensures menus and
+duplicate-detection checks reflect the live environment, not just core.
+
 ### Available templates
 
 ```bash
