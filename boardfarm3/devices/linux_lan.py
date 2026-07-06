@@ -517,7 +517,7 @@ class LinuxLAN(LinuxDevice, LAN):
             )
 
         self.__kill_dhclient(False)
-
+        self.console.execute_command("rm /var/lib/dhcp/dhclient6.leases")
         self._console.execute_command(
             f"sysctl net.ipv6.conf.{self.iface_dut}.disable_ipv6=1",
         )
@@ -529,6 +529,9 @@ class LinuxLAN(LinuxDevice, LAN):
         )
         self._console.execute_command(
             f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0",
+        )
+        self._console.execute_command(
+            f"sysctl -w net.ipv6.conf.{self.iface_dut}.autoconf=0",
         )
 
         # check if board is providing an RA, if yes use that detail to perform DHCPv6
@@ -548,6 +551,9 @@ class LinuxLAN(LinuxDevice, LAN):
                 # Condition for Stateless DHCPv6,
                 # this should update DNS details via DHCP and IP via SLAAC
                 if not m_bit and o_bit:
+                    self._console.execute_command(
+                        f"sysctl -w net.ipv6.conf.{self.iface_dut}.autoconf=1"
+                    )
                     self.renew_ipv6(self.iface_dut, stateless=True)
                 elif m_bit and o_bit:
                     self.renew_ipv6(self.iface_dut)
@@ -588,7 +594,7 @@ class LinuxLAN(LinuxDevice, LAN):
             )
 
         await self.__kill_dhclient_async(False)
-
+        await self._console.execute_command_async("rm /var/lib/dhcp/dhclient6.leases")
         await self._console.execute_command_async(
             f"sysctl net.ipv6.conf.{self.iface_dut}.disable_ipv6=1",
         )
@@ -600,6 +606,9 @@ class LinuxLAN(LinuxDevice, LAN):
         )
         await self._console.execute_command_async(
             f"sysctl -w net.ipv6.conf.{self.iface_dut}.accept_dad=0",
+        )
+        await self._console.execute_command_async(
+            f"sysctl -w net.ipv6.conf.{self.iface_dut}.autoconf=0",
         )
 
         # check if board is providing an RA, if yes use that detail to perform DHCPv6
@@ -619,6 +628,9 @@ class LinuxLAN(LinuxDevice, LAN):
                 # Condition for Stateless DHCPv6,
                 # this should update DNS details via DHCP and IP via SLAAC
                 if not m_bit and o_bit:
+                    await self._console.execute_command_async(
+                        f"sysctl -w net.ipv6.conf.{self.iface_dut}.autoconf=1"
+                    )
                     await self.renew_ipv6_async(self.iface_dut, stateless=True)
                 elif m_bit and o_bit:
                     await self.renew_ipv6_async(self.iface_dut)
