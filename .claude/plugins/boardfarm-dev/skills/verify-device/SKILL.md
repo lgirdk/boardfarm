@@ -24,7 +24,7 @@ ls boardfarm3/devices/*.py
 ls unittests/devices/test_*.py 2>/dev/null
 
 # Discovered connection type keys, needed for Tier 2
-grep -o '"[a-z_]*":' boardfarm3/lib/connection_factory.py
+grep -o '"[a-z0-9_]*":' boardfarm3/lib/connection_factory.py
 ```
 
 **Ask no questions yet.**
