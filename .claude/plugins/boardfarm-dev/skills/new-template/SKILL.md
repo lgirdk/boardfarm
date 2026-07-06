@@ -14,9 +14,10 @@ You scaffold a new boardfarm Template (ABC) in `boardfarm3/templates/`.
 **First:** read `skills/shared/boardfarm-context.md` from the plugin directory
 (`.claude/plugins/boardfarm-dev/skills/shared/boardfarm-context.md` relative to
 repo root). Internalize all naming conventions and layer discipline rules before
-proceeding.
+proceeding. This step invokes `/boardfarm-dev:scan-plugins` per the
+"Plugin-aware discovery" note — do not skip it.
 
-**Then run these commands** to understand what already exists:
+**Then run these commands** to understand what already exists in core:
 
 ```bash
 # List existing template files
@@ -30,8 +31,12 @@ for f in boardfarm3/templates/*.py; do
 done
 ```
 
-Build an internal list of existing template class names so you can:
-- Warn if the developer tries to duplicate one
+Merge these core results with `scan-plugins`' template list to build one
+**unified template list**, each entry tagged `source_package` (`core` or the
+plugin's distribution name). Use this unified list — not just core — so you
+can:
+- Warn if the developer tries to duplicate a template that exists in core
+  **or in any installed plugin**
 - Show a representative example when explaining structure
 
 **Ask no questions yet.**
@@ -50,7 +55,31 @@ Show the existing list (from discovery) and ask:
 **Q2:** What is the Python class name for this template?
 
 Suggest a name following the naming convention (PascalCase, noun, e.g. `MyServer`).
-Confirm with the developer.
+
+**Duplicate check (structural):** before confirming, check the developer's
+proposed name against the unified template list from Phase 1:
+
+1. **Exact match** — the name already exists verbatim in the unified list
+   (in core or a plugin). This is a hard flag.
+2. **Normalized match** — strip common suffixes (`Device`, `Template`,
+   `Base`) from both the proposed name and every unified-list name,
+   lowercase both, and compare. A match here (e.g. proposed `CpeDevice`
+   normalizes to `cpe`, matching existing `CPE`) is a soft flag.
+
+If either check fires, show the existing template and its source:
+
+> "`<ExistingName>` already exists in `<source_package>` at `<file_path>`.
+> Do you want to:
+> [1] Open/edit that file instead of creating a new template
+> [2] Extend it via a mixin
+> [3] Proceed anyway — `<ProposedName>` is genuinely distinct from `<ExistingName>`"
+
+If the developer picks [3], continue the interview with the proposed name.
+If [1] or [2], stop this skill and tell the developer to edit
+`<file_path>` directly (or come back once they've decided how to extend it).
+
+If neither check fires, confirm the name with the developer and continue
+silently — no extra noise.
 
 **Q3:** What abstract methods must this template define?
 
