@@ -47,6 +47,30 @@ classes. **Ask no questions yet.**
 
 ## Phase 2 — Interview (one question at a time)
 
+**Before Q1:** check whether
+`.claude/plugins/boardfarm-dev/.cache/interview-defaults.json` exists and has
+a `"new-device"` entry:
+
+```bash
+python -c "
+import json, os
+path = '.claude/plugins/boardfarm-dev/.cache/interview-defaults.json'
+if os.path.exists(path):
+    with open(path) as f:
+        data = json.load(f)
+    print(json.dumps(data.get('new-device', {}), indent=2))
+else:
+    print('{}')
+"
+```
+
+If it returns a non-empty object, remember these values as suggested
+defaults for Q3 (`base_class`), Q4 (`connection_type`), and Q5
+(`hook_category`) below — weave each into its question as "(used last
+time)" next to the matching option. The developer still answers every
+question; this never skips a question or silently reuses a value without
+the developer seeing and confirming it.
+
 **Q1:** What is the Python class name? (PascalCase, vendor or transport prefix +
 category, e.g. `AxirosACS`, `KeaProvisioner`, `LinuxWAN`)
 
@@ -62,10 +86,21 @@ Remind them: if the template doesn't exist yet, run `/boardfarm-dev:new-template
 [2] BoardfarmDevice — device has no shell (REST API, HTTP only, etc.)
 ```
 
+If the cache lookup above returned a `base_class` value, annotate the
+matching option with "(used last time)", e.g. if the cached value is
+`LinuxDevice`:
+
+```
+[1] LinuxDevice (used last time) — device has a Linux shell (SSH / serial / telnet access)
+[2] BoardfarmDevice — device has no shell (REST API, HTTP only, etc.)
+```
+
 **Q4:** Which connection type does it use?
 
 Show the discovered connection type key list. Also accept "none" if the device
-uses only HTTP (e.g. a REST-only ACS).
+uses only HTTP (e.g. a REST-only ACS). If the cache lookup returned a
+`connection_type` value, annotate the matching key in the list with "(used
+last time)".
 
 **Q5:** Which hook category?
 
@@ -74,6 +109,9 @@ uses only HTTP (e.g. a REST-only ACS).
 [2] device         — the DUT under test (e.g., CPE)
 [3] attached device — client devices (e.g., LAN, WLAN clients, phones)
 ```
+
+If the cache lookup returned a `hook_category` value, annotate the matching
+option with "(used last time)".
 
 **Q6:** What inventory JSON keys does this device require?
 
@@ -298,6 +336,34 @@ def test_<module_name>_init_with_valid_config() -> None:
 # in pyproject.toml at the repo root:
 <entry_point_key> = "boardfarm3.devices.<module_name>"
 ```
+
+### Save interview defaults
+
+After the developer confirms "yes" at Q8 and all artefacts above are
+written, persist the stable answers for next time:
+
+```bash
+python -c "
+import json, os
+path = '.claude/plugins/boardfarm-dev/.cache/interview-defaults.json'
+os.makedirs(os.path.dirname(path), exist_ok=True)
+data = {}
+if os.path.exists(path):
+    with open(path) as f:
+        data = json.load(f)
+data['new-device'] = {
+    'base_class': '<chosen_base_class>',
+    'connection_type': '<chosen_connection_type_key>',
+    'hook_category': '<chosen_hook_category>',
+}
+with open(path, 'w') as f:
+    json.dump(data, f, indent=2)
+"
+```
+
+Substitute `<chosen_base_class>`, `<chosen_connection_type_key>`, and
+`<chosen_hook_category>` with the developer's actual Q3/Q4/Q5 answers.
+Free-text answers (class name, inventory keys) are never cached.
 
 ### Completion checklist
 
