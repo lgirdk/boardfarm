@@ -1104,7 +1104,6 @@ class LinuxDevice(BoardfarmDevice):
 
         :param iface: interface to be used in config, defaults to "eth"
         :type iface: Literal["eth","wlan"], optional
-        :raises BoardfarmException: if dante is not in the device options
         """
         if not self.dante:
             msg = (
