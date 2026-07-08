@@ -477,6 +477,20 @@ class RPiRDKBSW(CPESwLibraries):  # pylint: disable=R0904
         msg = f"ifconfig {interface} is not available"
         raise ValueError(msg)
 
+    def dns_entry(self, device_name: str, mode: str | None = None) -> str:
+        """Get the dns entry for given device and mode.
+
+        It creates the dns entry name already present in dnsmasq hosts
+        file present on DNS server
+
+        :param device_name: wan/acs/sipcenter etc.
+        :type device_name: str
+        :param mode: prov mode, ipv4/ipv6
+        :type mode: str
+        :raises NotImplementedError: Deice does not support dns entry
+        """
+        raise NotImplementedError
+
 
 class RPiRDKBCPE(CPE, BoardfarmDevice):
     """RPiRDKB device class for an RPi4 RDKB device ."""

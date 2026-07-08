@@ -408,3 +408,19 @@ class CPESW(ABC):
     def tr69_cpe_id(self) -> str:
         """TR-69 CPE Identifier."""
         raise NotImplementedError
+
+    @abstractmethod
+    def dns_entry(self, device_name: str, mode: str | None = None) -> str:
+        """Get the dns entry for given device and mode.
+
+        It creates the dns entry name already present in dnsmasq hosts
+        file present on DNS server
+
+        :param device_name: wan/acs/sipcenter etc.
+        :type device_name: str
+        :param mode: prov mode, ipv4/ipv6
+        :type mode: str
+        :return: dns entries based on mode
+        :rtype: str
+        """
+        raise NotImplementedError
