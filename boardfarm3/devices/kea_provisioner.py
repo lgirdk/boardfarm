@@ -37,6 +37,8 @@ from boardfarm3.templates.provisioner import Provisioner
 from boardfarm3.templates.wan import WAN
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from boardfarm3.lib.boardfarm_pexpect import BoardfarmPexpect
     from boardfarm3.lib.custom_typing.dhcp import (
         DHCPServicePools,
@@ -750,6 +752,21 @@ class KeaProvisioner(Provisioner):
         if re.match(r"INFO/keactrl: Starting.*-dhcp6.*kea-dhcp6\.conf", out) is None:
             msg = f"Failed to start IPv6 KEA provisioner: {out}"
             raise DeviceBootFailure(msg)
+
+    def get_cnr_log_url(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[str] | None:
+        """Return download URLs for CNR DHCP log files from NFS.
+
+        :param start_date: UTC start of the log window
+        :type start_date: datetime | None
+        :param end_date: UTC end of the log window
+        :type end_date: datetime | None
+        :raises NotImplementedError: CNR log URLs are not supported by KeaProvisioner
+        """
+        raise NotImplementedError
 
     def get_interactive_consoles(self) -> dict[str, BoardfarmPexpect]:
         """Get interactive consoles of the device.
