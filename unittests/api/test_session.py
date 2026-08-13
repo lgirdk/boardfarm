@@ -42,6 +42,12 @@ class FakeRuntime:
     def resolve(self, payload: dict[str, Any]) -> object:  # noqa: ARG002
         """Record the call and optionally fail.
 
+        The configured error is an exception instance, so darglint2 cannot
+        infer its type from ``raise self.resolve_error``.
+
+        # noqa: DAR401
+        # noqa: DAR402
+
         :param payload: opaque payload
         :type payload: dict[str, Any]
         :raises Exception: when configured to fail
@@ -66,6 +72,12 @@ class FakeRuntime:
 
     def boot_blocking(self) -> None:
         """Record the call and optionally fail.
+
+        The configured error is an exception instance, so darglint2 cannot
+        infer its type from ``raise self.boot_error``.
+
+        # noqa: DAR401
+        # noqa: DAR402
 
         :raises Exception: when configured to fail
         """

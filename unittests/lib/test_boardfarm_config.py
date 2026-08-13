@@ -418,8 +418,12 @@ def test_select_inventory_location_without_locations_raises() -> None:
         select_inventory(full, "board-1")
 
 
-def test_get_inventory_config_delegates_to_select_inventory(tmp_path) -> None:  # noqa: ANN001
-    """Loading from a path must produce the same result as selecting from a dict."""
+def test_get_inventory_config_delegates_to_select_inventory(tmp_path: Path) -> None:
+    """Loading from a path must produce the same result as selecting from a dict.
+
+    :param tmp_path: temporary directory to write the inventory json into
+    :type tmp_path: Path
+    """
     path = tmp_path / "inventory.json"
     path.write_text(
         json.dumps({"board-1": {"devices": [{"name": "board", "type": "bf_cpe"}]}}),
