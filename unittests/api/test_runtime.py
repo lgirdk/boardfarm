@@ -1,8 +1,10 @@
 """Unit tests for the boardfarm API runtime context."""
 
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
+from pytest_mock import MockerFixture
 
 from boardfarm3.api.runtime import RuntimeContext, RuntimeOptions
 from boardfarm3.exceptions import EnvConfigError
@@ -89,3 +91,28 @@ def test_ignore_devices_skips_named_devices(native_payload: dict[str, Any]) -> N
     registered = {name for name, _ in context.plugin_manager.list_name_plugin()}
     assert "lan" not in registered
     assert "wan" in registered
+
+
+@pytest.mark.asyncio
+async def test_boot_does_not_call_post_setup_env(
+    mocker: MockerFixture,
+) -> None:
+    """boot() must not invoke boardfarm_post_setup_env — that hook is CLI-only.
+
+    :param mocker: pytest-mock fixture
+    :type mocker: MockerFixture
+    """
+    context = RuntimeContext(RuntimeOptions(board_name="prplos-docker-1"))
+    context.config = object()
+    context.device_manager = object()
+    mocker.patch.object(
+        context.plugin_manager.hook,
+        "boardfarm_setup_env",
+        new=AsyncMock(return_value=None),
+    )
+    post_spy = mocker.patch.object(
+        context.plugin_manager.hook,
+        "boardfarm_post_setup_env",
+    )
+    await context.boot()
+    post_spy.assert_not_called()

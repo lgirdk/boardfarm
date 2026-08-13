@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from boardfarm3.api.console import ConsoleCapture, EventBuffer
 from boardfarm3.api.errors import console_tail_from, error_envelope
-from boardfarm3.api.execution import ExecutionQueue
+from boardfarm3.api.execution import ExecutionQueue, Job
 from boardfarm3.api.runtime import RuntimeContext
 
 if TYPE_CHECKING:
@@ -62,6 +62,7 @@ class Session:
         self.created_at = time.time()
         self.last_activity = self.created_at
         self.error: dict[str, Any] | None = None
+        self._boot_job: Job | None = None
 
     def touch(self) -> None:
         """Record activity, so idle reaping can be added later."""
@@ -105,7 +106,10 @@ class Session:
             raise RuntimeError(msg)
         self.state = SessionState.BOOTING
         self.touch()
-        job = await self.queue.submit(self.runtime.boot_blocking, mode="async")
+        self._boot_job = await self.queue.submit(
+            self.runtime.boot_blocking, mode="async"
+        )
+        job = self._boot_job
         while job.state.value in ("queued", "running"):  # noqa: ASYNC110
             await asyncio.sleep(0.05)
         if job.error is not None:
@@ -159,4 +163,5 @@ class Session:
             "created_at": self.created_at,
             "last_activity": self.last_activity,
             "error": self.error,
+            "boot_job_id": self._boot_job.id if self._boot_job is not None else None,
         }

@@ -143,10 +143,6 @@ class RuntimeContext:
             plugin_manager=self.plugin_manager,
             device_manager=self.device_manager,
         )
-        self.plugin_manager.hook.boardfarm_post_setup_env(
-            cmdline_args=self.cmdline_args,
-            device_manager=self.device_manager,
-        )
 
     def release(self, deployment_status: dict[str, Any]) -> None:
         """Release all devices, shutting their connections down cleanly.

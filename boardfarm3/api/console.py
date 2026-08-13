@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 from collections import deque
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -123,6 +124,15 @@ class EventBuffer:
         next_cursor = selected[-1].seq + 1 if truncated else self._next_seq
         return selected, next_cursor
 
+    @property
+    def next_seq(self) -> int:
+        """Sequence number the next appended event will carry.
+
+        :return: next sequence number
+        :rtype: int
+        """
+        return self._next_seq
+
     async def subscribe(self) -> AsyncIterator[ConsoleEvent]:
         """Yield events as they arrive, for SSE streaming.
 
@@ -134,6 +144,23 @@ class EventBuffer:
         try:
             while True:
                 yield await queue.get()
+        finally:
+            self._subscribers.remove(queue)
+
+    @asynccontextmanager
+    async def subscription(self) -> AsyncIterator[asyncio.Queue[ConsoleEvent]]:
+        """Register a live subscriber and yield its queue.
+
+        Registers before yielding so the caller can drain historical events
+        without missing any that arrive during the drain.
+
+        :yield: queue that receives every event appended after this call
+        :rtype: asyncio.Queue[ConsoleEvent]
+        """
+        queue: asyncio.Queue[ConsoleEvent] = asyncio.Queue()
+        self._subscribers.append(queue)
+        try:
+            yield queue
         finally:
             self._subscribers.remove(queue)
 

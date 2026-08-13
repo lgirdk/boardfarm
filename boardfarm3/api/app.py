@@ -210,12 +210,32 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         return {"events": [event.__dict__ for event in events], "cursor": next_cursor}
 
     @app.get("/console/stream")
-    async def console_stream(device: str | None = None) -> StreamingResponse:
+    async def console_stream(
+        request: Request,
+        device: str | None = None,
+        cursor: int = 0,
+    ) -> StreamingResponse:
         async def events() -> AsyncIterator[str]:
-            async for event in session().buffer.subscribe():
-                if device is not None and event.device != device:
-                    continue
-                yield f"data: {json.dumps(event.__dict__)}\n\n"
+            buf = session().buffer
+            async with buf.subscription() as queue:
+                # Snapshot the head before reading history so events that
+                # arrive between subscription and read are yielded exactly
+                # once — from the live queue, not duplicated from history.
+                live_from = buf.next_seq
+                past, _ = buf.read(cursor=cursor, limit=50_000, device=device)
+                for event in past:
+                    if event.seq < live_from:
+                        yield f"data: {json.dumps(event.__dict__)}\n\n"
+                while True:
+                    if await request.is_disconnected():
+                        break
+                    try:
+                        event = await asyncio.wait_for(queue.get(), timeout=1.0)
+                    except asyncio.TimeoutError:
+                        continue
+                    if device is not None and event.device != device:
+                        continue
+                    yield f"data: {json.dumps(event.__dict__)}\n\n"
 
         return StreamingResponse(events(), media_type="text/event-stream")
 
