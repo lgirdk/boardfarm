@@ -22,27 +22,27 @@ def _info(board: str, sid: str) -> AgentInfo:
 
 
 @pytest.mark.asyncio
-async def test_acquire_fresh_board_returns_true():
+async def test_acquire_fresh_board_returns_true() -> None:
     lease = BoardLease()
     assert await lease.acquire("board-1", "s-aaa") is True
 
 
 @pytest.mark.asyncio
-async def test_acquire_held_board_returns_false():
+async def test_acquire_held_board_returns_false() -> None:
     lease = BoardLease()
     await lease.acquire("board-1", "s-aaa")
     assert await lease.acquire("board-1", "s-bbb") is False
 
 
 @pytest.mark.asyncio
-async def test_held_by_returns_session_id():
+async def test_held_by_returns_session_id() -> None:
     lease = BoardLease()
     await lease.acquire("board-1", "s-aaa")
     assert lease.held_by("board-1") == "s-aaa"
 
 
 @pytest.mark.asyncio
-async def test_release_allows_reacquire():
+async def test_release_allows_reacquire() -> None:
     lease = BoardLease()
     await lease.acquire("board-1", "s-aaa")
     await lease.release("s-aaa")
@@ -50,13 +50,13 @@ async def test_release_allows_reacquire():
 
 
 @pytest.mark.asyncio
-async def test_release_unknown_session_is_noop():
+async def test_release_unknown_session_is_noop() -> None:
     lease = BoardLease()
     await lease.release("s-nonexistent")  # must not raise
 
 
 @pytest.mark.asyncio
-async def test_rebuild_from_populates_leases():
+async def test_rebuild_from_populates_leases() -> None:
     lease = BoardLease()
     sessions = [_info("board-1", "s-aaa"), _info("board-2", "s-bbb")]
     await lease.rebuild_from(sessions)

@@ -9,7 +9,7 @@ from boardfarm3_control.models import AgentInfo
 
 
 @pytest.mark.asyncio
-async def test_fake_launcher_start_returns_agent_info():
+async def test_fake_launcher_start_returns_agent_info() -> None:
     launcher = FakeLauncher()
     info = await launcher.start("s-abc", "board-1", "agent:latest", "prplos")
     assert info.session_id == "s-abc"
@@ -20,7 +20,7 @@ async def test_fake_launcher_start_returns_agent_info():
 
 
 @pytest.mark.asyncio
-async def test_fake_launcher_stop_removes_session():
+async def test_fake_launcher_stop_removes_session() -> None:
     launcher = FakeLauncher()
     await launcher.start("s-abc", "board-1", "agent:latest", "prplos")
     await launcher.stop("s-abc")
@@ -29,13 +29,13 @@ async def test_fake_launcher_stop_removes_session():
 
 
 @pytest.mark.asyncio
-async def test_fake_launcher_stop_unknown_session_is_noop():
+async def test_fake_launcher_stop_unknown_session_is_noop() -> None:
     launcher = FakeLauncher()
     await launcher.stop("s-nonexistent")  # must not raise
 
 
 @pytest.mark.asyncio
-async def test_fake_launcher_list_sessions_returns_all():
+async def test_fake_launcher_list_sessions_returns_all() -> None:
     launcher = FakeLauncher()
     await launcher.start("s-aaa", "board-1", "agent:latest", "prplos")
     await launcher.start("s-bbb", "board-2", "agent:latest", "prplos")
@@ -45,7 +45,7 @@ async def test_fake_launcher_list_sessions_returns_all():
 
 
 @pytest.mark.asyncio
-async def test_fake_launcher_ports_are_unique():
+async def test_fake_launcher_ports_are_unique() -> None:
     launcher = FakeLauncher()
     a = await launcher.start("s-aaa", "board-1", "img", "p")
     b = await launcher.start("s-bbb", "board-2", "img", "p")
