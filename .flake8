@@ -34,3 +34,4 @@ docstring_style=sphinx
 
 per-file-ignores =
     unittests/*:D103, E501
+    boardfarm3/api/execution.py:A003
