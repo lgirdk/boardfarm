@@ -18,11 +18,14 @@ from boardfarm3_control.models import (
     SessionListResponse,
     SessionResponse,
 )
+from boardfarm3_control.openapi import load_plugin_routers, register_plugin_routes
 from boardfarm3_control.proxy import proxy_request
 from boardfarm3_control.registry import SessionRegistry
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+
+    from fastapi import APIRouter
 
     from boardfarm3_control.launcher import Launcher
     from boardfarm3_control.models import AgentInfo
@@ -41,6 +44,7 @@ def _new_session_id() -> str:
 def create_app(  # noqa: C901, PLR0915
     launcher: Launcher,
     profiles: dict[str, str],
+    extra_routers: list[APIRouter] | None = None,
 ) -> FastAPI:
     """Build the control plane application.
 
@@ -48,6 +52,8 @@ def create_app(  # noqa: C901, PLR0915
     :type launcher: Launcher
     :param profiles: mapping of profile name to Docker image
     :type profiles: dict[str, str]
+    :param extra_routers: additional plugin routers to include (used in tests)
+    :type extra_routers: list[APIRouter] | None
     :return: FastAPI application
     :rtype: FastAPI
     """
@@ -62,6 +68,11 @@ def create_app(  # noqa: C901, PLR0915
         yield
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
+
+    plugin_routers = load_plugin_routers()
+    if extra_routers:
+        plugin_routers.extend(extra_routers)
+    register_plugin_routes(app, plugin_routers, registry)
 
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
     async def create_session(body: SessionCreate) -> SessionResponse:  # noqa: C901, PLR0915
