@@ -193,6 +193,27 @@ def test_post_sessions_boot_transport_failure_releases_resources() -> None:
     assert resp2.status_code == 202
 
 
+@respx.mock
+def test_post_sessions_boot_rejected_releases_resources() -> None:
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(503, json={}))
+    launcher = FakeLauncher()
+    client = _make_client(launcher)
+    resp = client.post(
+        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+    )
+    assert resp.status_code == 502
+    # Board is released — same board can be acquired again immediately
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    resp2 = client.post(
+        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+    )
+    assert resp2.status_code == 202
+
+
 def test_delete_unknown_session_returns_404() -> None:
     client = _make_client()
     resp = client.delete("/sessions/s-unknown")

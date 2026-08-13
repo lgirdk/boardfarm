@@ -115,7 +115,7 @@ def create_app(  # noqa: C901, PLR0915
                     if resp.status_code == int(HTTPStatus.OK):
                         healthy = True
                         break
-                except httpx.ConnectError:
+                except httpx.TransportError:
                     pass
                 await asyncio.sleep(_HEALTH_INTERVAL)
 
@@ -161,8 +161,14 @@ def create_app(  # noqa: C901, PLR0915
                 status_code=int(HTTPStatus.SERVICE_UNAVAILABLE),
                 detail="agent boot failed",
             ) from exc
-        if boot.status_code == int(HTTPStatus.ACCEPTED):
-            boot_job_id = boot.json().get("boot_job_id")
+        if boot.status_code != int(HTTPStatus.ACCEPTED):
+            await launcher.stop(session_id)
+            await lease.release(session_id)
+            raise HTTPException(
+                status_code=int(HTTPStatus.BAD_GATEWAY),
+                detail=f"agent boot rejected: {boot.status_code}",
+            )
+        boot_job_id = boot.json().get("boot_job_id")
 
         registry.add(info)
         registry.touch(session_id)
