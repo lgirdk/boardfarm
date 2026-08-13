@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import json
 import logging
 import tarfile
 import time
@@ -468,6 +469,18 @@ def test_console_archive_returns_tar_of_saved_logs(
 # mechanism a real disconnect triggers.
 
 
+class _FakeRequest:
+    """Stub that reports the client as always connected."""
+
+    async def is_disconnected(self) -> bool:
+        """Report not disconnected.
+
+        :return: False always
+        :rtype: bool
+        """
+        return False
+
+
 @pytest.mark.asyncio
 async def test_console_stream_cleans_up_subscriber_on_disconnect(
     monkeypatch: pytest.MonkeyPatch,
@@ -489,7 +502,7 @@ async def test_console_stream_cleans_up_subscriber_on_disconnect(
             for candidate in application.routes
             if getattr(candidate, "path", None) == "/console/stream"
         )
-        response = await route.endpoint(device=None)
+        response = await route.endpoint(request=_FakeRequest(), device=None)
         driver = asyncio.ensure_future(response.body_iterator.__anext__())
         await asyncio.sleep(0.05)
         assert len(application.state.session.buffer._subscribers) == 1
@@ -497,3 +510,39 @@ async def test_console_stream_cleans_up_subscriber_on_disconnect(
         with pytest.raises(asyncio.CancelledError):
             await driver
         assert len(application.state.session.buffer._subscribers) == 0
+
+
+@pytest.mark.asyncio
+async def test_console_stream_replays_history_from_cursor(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Events buffered before the stream opens are replayed when cursor is given.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    async with application.router.lifespan_context(application):
+        buf = application.state.session.buffer
+        buf.append(stream="framework", device=None, job_id=None, line="line-A")
+        buf.append(stream="framework", device=None, job_id=None, line="line-B")
+
+        route = next(
+            candidate
+            for candidate in application.routes
+            if getattr(candidate, "path", None) == "/console/stream"
+        )
+        response = await route.endpoint(request=_FakeRequest(), device=None, cursor=0)
+
+        first = await response.body_iterator.__anext__()
+        assert json.loads(first.removeprefix("data: ").strip())["line"] == "line-A"
+
+        second = await response.body_iterator.__anext__()
+        assert json.loads(second.removeprefix("data: ").strip())["line"] == "line-B"
+
+        await response.body_iterator.aclose()

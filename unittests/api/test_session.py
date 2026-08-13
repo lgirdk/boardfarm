@@ -282,3 +282,30 @@ async def test_status_reports_lifecycle_fields(session: Session) -> None:
     assert status["state"] == "created"
     assert status["created_at"] > 0
     assert status["last_activity"] > 0
+    assert status["boot_job_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_status_boot_job_id_is_none_before_boot(session: Session) -> None:
+    """boot_job_id is absent from status until boot is submitted.
+
+    :param session: session under test
+    :type session: Session
+    """
+    assert session.status()["boot_job_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_status_boot_job_id_is_set_after_boot(session: Session) -> None:
+    """boot_job_id in status points to the execution queue job for the boot.
+
+    :param session: session under test
+    :type session: Session
+    """
+    await session.configure({"inventory": {}, "env": {}})
+    await session.boot()
+    boot_job_id = session.status()["boot_job_id"]
+    assert boot_job_id is not None
+    assert boot_job_id.startswith("j-")
+    # The job must be reachable in the queue.
+    assert session.queue.get(boot_job_id) is not None
