@@ -3,12 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from boardfarm3_control.models import (
-    AgentInfo,
-    SessionCreate,
-    SessionListResponse,
-    SessionResponse,
-)
+from boardfarm3_control.models import AgentInfo, SessionCreate
 
 
 def test_models_importable() -> None:
@@ -31,5 +26,5 @@ def test_session_create_rejects_extra_fields() -> None:
             board_name="b",
             runtime_profile="p",
             payload={},
-            unknown_field="x",  # type: ignore
+            unknown_field="x",  # type: ignore[call-arg]
         )

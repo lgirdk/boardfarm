@@ -5,7 +5,6 @@ from __future__ import annotations
 import pytest
 
 from boardfarm3_control.launcher import FakeLauncher
-from boardfarm3_control.models import AgentInfo
 
 
 @pytest.mark.asyncio
