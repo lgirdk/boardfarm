@@ -79,7 +79,7 @@ dev = [
     "types-requests",
 ]
 doc = ["sphinx", "mkdocs", "mkdocs-material"]
-test = ["pytest-cov", "pytest-mock", "pytest-randomly"]
+test = ["pytest-asyncio", "pytest-cov", "pytest-mock", "pytest-randomly"]
 docsis = ["boardfarm3-docsis>=1.0.0"]
 pytest = ["pytest-boardfarm3>=1.0.0"]
 api = ["fastapi", "uvicorn[standard]", "sse-starlette"]

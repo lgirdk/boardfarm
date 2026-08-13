@@ -1,8 +1,6 @@
 """Unit tests for the boardfarm API plugin."""
 
-import json
 from argparse import Namespace
-from pathlib import Path
 
 import pytest
 from pluggy import PluginManager
@@ -12,8 +10,6 @@ from boardfarm3.api import hookspecs, plugin
 from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 from boardfarm3.plugins import core as core_plugin
 from boardfarm3.plugins.hookspecs import core as core_hookspecs
-
-CONFIGS = Path(__file__).parents[2] / "boardfarm3" / "configs"
 
 
 @pytest.fixture(name="plugin_manager")
@@ -29,23 +25,6 @@ def plugin_manager_fixture() -> PluginManager:
     manager.register(plugin, "core_api")
     manager.add_hookspecs(hookspecs)
     return manager
-
-
-@pytest.fixture(name="native_payload")
-def native_payload_fixture() -> dict:
-    """Load the shipped example inventory and env config as a native payload.
-
-    :return: native session payload
-    :rtype: dict
-    """
-    return {
-        "inventory": json.loads(
-            (CONFIGS / "boardfarm_config_example.json").read_text(encoding="utf-8"),
-        ),
-        "env": json.loads(
-            (CONFIGS / "boardfarm_env_example.json").read_text(encoding="utf-8"),
-        ),
-    }
 
 
 def test_resolve_config_returns_boardfarm_config(
