@@ -43,6 +43,16 @@ def test(session: nox.Session) -> None:
 
 
 @nox.session(python=_PYTHON_VERSIONS)
+def integration(session: nox.Session) -> None:
+    """Run control-plane integration tests against live agent subprocesses.
+
+    # noqa: DAR101
+    """
+    session.install("--upgrade", ".[test,api]", "./control")
+    session.run("pytest", "integrationtests", "-v")
+
+
+@nox.session(python=_PYTHON_VERSIONS)
 def boardfarm_help(session: nox.Session) -> None:
     """Execute boardfarm --help.
 
