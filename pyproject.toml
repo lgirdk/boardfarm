@@ -82,6 +82,7 @@ doc = ["sphinx", "mkdocs", "mkdocs-material"]
 test = ["pytest-cov", "pytest-mock", "pytest-randomly"]
 docsis = ["boardfarm3-docsis>=1.0.0"]
 pytest = ["pytest-boardfarm3>=1.0.0"]
+api = ["fastapi", "uvicorn[standard]", "sse-starlette"]
 
 [project.scripts]
 boardfarm = "boardfarm3.main:main"
@@ -90,6 +91,9 @@ boardfarm = "boardfarm3.main:main"
 core = "boardfarm3.plugins.core"
 booting = "boardfarm3.plugins.setup_environment"
 no_reservation = "boardfarm3.plugins.no_reservation"
+
+[project.entry-points."boardfarm_api"]
+core_api = "boardfarm3.api.plugin"
 
 [project.urls]
 Source = "https://github.com/lgirdk/boardfarm"
