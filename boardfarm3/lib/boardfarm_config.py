@@ -223,33 +223,30 @@ def get_json(resource_name: str) -> dict[str, Any]:
     return cast("dict[str, Any]", json.loads(json_dict))
 
 
-def get_inventory_config(
+def select_inventory(
+    full_inventory_config: dict[str, Any],
     resource_name: str,
-    inventory_json_path: str,
 ) -> dict[str, Any]:
-    """Return inventory config based on given arguments.
+    """Select and normalise a single resource from a full inventory config.
 
+    Merges any referenced location devices and stamps the resource name onto
+    the board device.
+
+    :param full_inventory_config: complete inventory config
+    :type full_inventory_config: dict[str, Any]
     :param resource_name: inventory resource name
     :type resource_name: str
-    :param inventory_json_path: inventory json config path
-    :type inventory_json_path: str
     :raises EnvConfigError: on resource name not found in inventory config
     :raises EnvConfigError: on invalid location config
-    :return: inventory configuration
+    :return: inventory configuration for the given resource
     :rtype: dict[str, Any]
     """
-    full_inventory_config = get_json(inventory_json_path)
     if resource_name not in full_inventory_config:
         msg = f"{resource_name!r} resource not found in inventory config"
-        raise EnvConfigError(
-            msg,
-        )
-    inventory_config = full_inventory_config.get(resource_name)
+        raise EnvConfigError(msg)
+    inventory_config = full_inventory_config[resource_name]
     if "location" in inventory_config:
-        if locations := full_inventory_config.get(
-            "locations",
-            {},
-        ):  # optional, lab dependent
+        if locations := full_inventory_config.get("locations", {}):
             inventory_config["devices"] += locations[
                 inventory_config.pop("location")
             ].get("devices", [])
@@ -261,6 +258,22 @@ def get_inventory_config(
             device["resource_name"] = resource_name
             break
     return inventory_config
+
+
+def get_inventory_config(
+    resource_name: str,
+    inventory_json_path: str,
+) -> dict[str, Any]:
+    """Return inventory config based on given arguments.
+
+    :param resource_name: inventory resource name
+    :type resource_name: str
+    :param inventory_json_path: inventory json config path
+    :type inventory_json_path: str
+    :return: inventory configuration
+    :rtype: dict[str, Any]
+    """
+    return select_inventory(get_json(inventory_json_path), resource_name)
 
 
 def parse_boardfarm_config(

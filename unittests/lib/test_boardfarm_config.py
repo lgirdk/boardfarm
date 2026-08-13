@@ -16,6 +16,7 @@ from boardfarm3.lib.boardfarm_config import (
     get_inventory_config,
     get_json,
     parse_boardfarm_config,
+    select_inventory,
 )
 
 _TEST_DATA_PATH = Path(__file__).parent.parent / "testdata"
@@ -381,3 +382,48 @@ def test_parse_boardfarm_config_wan_clients_available() -> None:
         bf_config._merged_devices_config[0]["wan_clients"]
         == _VALID_ENV_CONFIG["environment_def"]["board"]["wan_clients"]
     )
+
+
+def test_select_inventory_stamps_resource_name_on_board() -> None:
+    """Board device must be stamped with the resource name."""
+    full = {"board-1": {"devices": [{"name": "board", "type": "bf_cpe"}]}}
+    result = select_inventory(full, "board-1")
+    assert result["devices"][0]["resource_name"] == "board-1"
+
+
+def test_select_inventory_merges_location_devices() -> None:
+    """Devices from a referenced location are appended and 'location' removed."""
+    full = {
+        "board-1": {
+            "location": "lab-a",
+            "devices": [{"name": "board", "type": "bf_cpe"}],
+        },
+        "locations": {"lab-a": {"devices": [{"name": "wan", "type": "bf_wan"}]}},
+    }
+    result = select_inventory(full, "board-1")
+    assert [device["name"] for device in result["devices"]] == ["board", "wan"]
+    assert "location" not in result
+
+
+def test_select_inventory_unknown_resource_raises() -> None:
+    """An unknown resource name is a configuration error."""
+    with pytest.raises(EnvConfigError, match="resource not found in inventory config"):
+        select_inventory({"board-1": {"devices": []}}, "board-2")
+
+
+def test_select_inventory_location_without_locations_raises() -> None:
+    """A location reference with no 'locations' block is a configuration error."""
+    full = {"board-1": {"location": "lab-a", "devices": []}}
+    with pytest.raises(EnvConfigError, match="invalid location config"):
+        select_inventory(full, "board-1")
+
+
+def test_get_inventory_config_delegates_to_select_inventory(tmp_path) -> None:  # noqa: ANN001
+    """Loading from a path must produce the same result as selecting from a dict."""
+    path = tmp_path / "inventory.json"
+    path.write_text(
+        json.dumps({"board-1": {"devices": [{"name": "board", "type": "bf_cpe"}]}}),
+        encoding="utf-8",
+    )
+    result = get_inventory_config("board-1", str(path))
+    assert result["devices"][0]["resource_name"] == "board-1"
