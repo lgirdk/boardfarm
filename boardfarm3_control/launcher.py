@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import socket
+import sys
 import time
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
@@ -120,6 +122,92 @@ def _free_port() -> int:
     with socket.socket() as sock:
         sock.bind(("", 0))
         return sock.getsockname()[1]
+
+
+class ProcessLauncher:
+    """Launcher that starts boardfarm3.api as local subprocesses.
+
+    No Docker daemon required — intended for local development and
+    integration testing.
+    """
+
+    def __init__(self) -> None:
+        """Initialise an empty process launcher."""
+        self._sessions: dict[str, tuple[asyncio.subprocess.Process, AgentInfo]] = {}
+
+    async def start(
+        self,
+        session_id: str,
+        board_name: str,
+        image: str,  # noqa: ARG002
+        runtime_profile: str,
+    ) -> AgentInfo:
+        """Start a boardfarm3.api subprocess on a free local port.
+
+        :param session_id: unique session identifier
+        :type session_id: str
+        :param board_name: board this agent will own
+        :type board_name: str
+        :param image: ignored — no container image is used
+        :type image: str
+        :param runtime_profile: profile key stored in AgentInfo
+        :type runtime_profile: str
+        :return: agent info with the subprocess pid as container_id
+        :rtype: AgentInfo
+        """
+        from boardfarm3_control.models import AgentInfo
+
+        host_port = _free_port()
+        proc = await asyncio.create_subprocess_exec(
+            sys.executable,
+            "-m",
+            "boardfarm3.api",
+            env={
+                **os.environ,
+                "BOARDFARM_SESSION_ID": session_id,
+                "BOARDFARM_BOARD_NAME": board_name,
+                "BOARDFARM_AGENT_PORT": str(host_port),
+            },
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        info = AgentInfo(
+            session_id=session_id,
+            board_name=board_name,
+            runtime_profile=runtime_profile,
+            container_id=str(proc.pid),
+            host_port=host_port,
+            created_at=time.time(),
+        )
+        self._sessions[session_id] = (proc, info)
+        return info
+
+    async def stop(self, session_id: str) -> None:
+        """Terminate the subprocess for a session.
+
+        Sends SIGTERM and waits up to 5 s; kills if it does not exit.
+
+        :param session_id: session whose subprocess to stop
+        :type session_id: str
+        """
+        entry = self._sessions.pop(session_id, None)
+        if entry is None:
+            return
+        proc, _ = entry
+        proc.terminate()
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=5.0)
+        except asyncio.TimeoutError:
+            proc.kill()
+            await proc.wait()
+
+    async def list_sessions(self) -> list[AgentInfo]:
+        """Return info for all running agent sessions.
+
+        :return: list of agent infos
+        :rtype: list[AgentInfo]
+        """
+        return [info for _, info in self._sessions.values()]
 
 
 class DockerLauncher:

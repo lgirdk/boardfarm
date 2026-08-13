@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "boardfarm3-control"
 version = "0.1.0"
 description = "Boardfarm control plane"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "boardfarm3[api]",
     "httpx[http2]",
