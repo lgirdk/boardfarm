@@ -1,0 +1,52 @@
+"""Tests for Launcher implementations (FakeLauncher only — no Docker daemon)."""
+
+from __future__ import annotations
+
+import pytest
+
+from boardfarm3_control.launcher import FakeLauncher
+from boardfarm3_control.models import AgentInfo
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_start_returns_agent_info():
+    launcher = FakeLauncher()
+    info = await launcher.start("s-abc", "board-1", "agent:latest", "prplos")
+    assert info.session_id == "s-abc"
+    assert info.board_name == "board-1"
+    assert info.runtime_profile == "prplos"
+    assert info.container_id == "fake-s-abc"
+    assert info.host_port == 18000  # first allocated port
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_stop_removes_session():
+    launcher = FakeLauncher()
+    await launcher.start("s-abc", "board-1", "agent:latest", "prplos")
+    await launcher.stop("s-abc")
+    sessions = await launcher.list_sessions()
+    assert sessions == []
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_stop_unknown_session_is_noop():
+    launcher = FakeLauncher()
+    await launcher.stop("s-nonexistent")  # must not raise
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_list_sessions_returns_all():
+    launcher = FakeLauncher()
+    await launcher.start("s-aaa", "board-1", "agent:latest", "prplos")
+    await launcher.start("s-bbb", "board-2", "agent:latest", "prplos")
+    sessions = await launcher.list_sessions()
+    sids = {s.session_id for s in sessions}
+    assert sids == {"s-aaa", "s-bbb"}
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_ports_are_unique():
+    launcher = FakeLauncher()
+    a = await launcher.start("s-aaa", "board-1", "img", "p")
+    b = await launcher.start("s-bbb", "board-2", "img", "p")
+    assert a.host_port != b.host_port
