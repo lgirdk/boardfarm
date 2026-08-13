@@ -446,7 +446,9 @@ min-similarity-lines=10
 
 # List of regular expressions of class ancestor names to ignore when counting
 # public methods (see R0903)
-exclude-too-few-public-methods=
+# pydantic request/response models are pure schema declarations and correctly
+# expose no public methods of their own.
+exclude-too-few-public-methods=pydantic.*BaseModel
 
 # List of qualified class names to ignore when counting class parents (see
 # R0901)

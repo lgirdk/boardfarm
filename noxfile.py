@@ -15,7 +15,7 @@ def lint(session: nox.Session) -> None:
 
     # noqa: DAR101
     """
-    session.install("--upgrade", ".[dev]")
+    session.install("--upgrade", ".[dev,api]")
     session.run("ruff", "format", "--check", ".")
     session.run("ruff", "check", ".")
     session.run("flake8", ".")
@@ -28,7 +28,7 @@ def pylint(session: nox.Session) -> None:
 
     # noqa: DAR101
     """
-    session.install("--upgrade", ".", "pylint", "pylint-per-file-ignores")
+    session.install("--upgrade", ".[api]", "pylint", "pylint-per-file-ignores")
     session.run("pylint", "boardfarm3")
 
 
@@ -38,7 +38,7 @@ def test(session: nox.Session) -> None:
 
     # noqa: DAR101
     """
-    session.install("--upgrade", ".[test]")
+    session.install("--upgrade", ".[test,api]")
     session.run("pytest", "unittests")
 
 
