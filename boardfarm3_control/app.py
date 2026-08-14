@@ -105,7 +105,7 @@ def create_app(  # noqa: C901, PLR0915
                 detail=f"failed to start container: {exc}",
             ) from exc
 
-        agent_url = f"http://localhost:{info.host_port}"
+        agent_url = info.agent_url
 
         # Health poll: 5 s total, 100 ms interval
         healthy = False
@@ -151,11 +151,13 @@ def create_app(  # noqa: C901, PLR0915
                 detail=f"agent rejected config: {cfg.text}",
             )
 
-        # Boot (async mode) — transport failures unwind the same as config failures
+        # Boot — always called; skip_boot controls init-only vs full sequence
+        skip_boot_param = "" if body.boot else "&skip_boot=true"
+        boot_url = f"{agent_url}/session/boot?mode=async{skip_boot_param}"
         boot_job_id: str | None = None
         try:
             async with httpx.AsyncClient() as client:
-                boot = await client.post(f"{agent_url}/session/boot?mode=async")
+                boot = await client.post(boot_url)
         except Exception as exc:
             await launcher.stop(session_id)
             await lease.release(session_id)
@@ -171,6 +173,7 @@ def create_app(  # noqa: C901, PLR0915
                 detail=f"agent boot rejected: {boot.status_code}",
             )
         boot_job_id = boot.json().get("boot_job_id")
+        session_state = "booting" if body.boot else "ready"
 
         registry.add(info)
         registry.touch(session_id)
@@ -179,8 +182,11 @@ def create_app(  # noqa: C901, PLR0915
             session_id=session_id,
             board_name=info.board_name,
             runtime_profile=info.runtime_profile,
-            state="booting",
+            state=session_state,
             boot_job_id=boot_job_id,
+            booted=False,
+            agent_url=info.agent_url,
+            pid=info.pid,
             created_at=info.created_at,
             last_activity=registry.last_activity(session_id),
         )
@@ -191,27 +197,31 @@ def create_app(  # noqa: C901, PLR0915
         page, total = registry.list_page(offset, limit)
 
         async def fetch_state(info: AgentInfo) -> SessionResponse:
-            agent_url = f"http://localhost:{info.host_port}"
             last_act: float | None
             try:
                 async with httpx.AsyncClient() as client:
                     resp = await asyncio.wait_for(
-                        client.get(f"{agent_url}/session"),
+                        client.get(f"{info.agent_url}/session"),
                         timeout=_STATE_TIMEOUT,
                     )
                 data: dict[str, Any] = resp.json()
                 state: str = data.get("state", "unknown")
+                booted: bool = state == "booted"
                 last_act = data.get("last_activity")
                 if last_act is not None:
                     registry.touch(info.session_id)
             except (asyncio.TimeoutError, httpx.TransportError):
                 state = "unreachable"
+                booted = False
                 last_act = registry.last_activity(info.session_id)
             return SessionResponse(
                 session_id=info.session_id,
                 board_name=info.board_name,
                 runtime_profile=info.runtime_profile,
                 state=state,
+                booted=booted,
+                agent_url=info.agent_url,
+                pid=info.pid,
                 created_at=info.created_at,
                 last_activity=last_act,
             )
@@ -234,7 +244,7 @@ def create_app(  # noqa: C901, PLR0915
             )
 
         # Graceful teardown — ignore if agent is already dead
-        agent_url = f"http://localhost:{info.host_port}"
+        agent_url = info.agent_url
         try:
             async with httpx.AsyncClient() as client:
                 await client.delete(f"{agent_url}/session")

@@ -46,8 +46,9 @@ def test_post_sessions_happy_path() -> None:
     assert resp.status_code == 202
     data = resp.json()
     assert data["board_name"] == "board-1"
-    assert data["state"] == "booting"
-    assert data["boot_job_id"] == "j-abc"
+    assert data["state"] == "ready"        # default skip_boot → ready
+    assert data["booted"] is False
+    assert data["agent_url"].startswith("http://localhost:")
 
 
 def test_post_sessions_unknown_profile_returns_400() -> None:
@@ -248,3 +249,98 @@ def test_session_create_boot_true_accepted() -> None:
 
     sc = SessionCreate(board_name="b", runtime_profile="p", payload={}, boot=True)
     assert sc.boot is True
+
+
+@respx.mock
+def test_post_sessions_default_skip_boot_returns_ready() -> None:
+    """Default boot=False must call /session/boot?skip_boot=true and return state ready."""
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
+    respx.post(_AGENT_BOOT).mock(
+        return_value=httpx.Response(202, json={"boot_job_id": "j-skip"}),
+    )
+    client = _make_client()
+    resp = client.post(
+        "/sessions",
+        json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}},
+    )
+    assert resp.status_code == 202
+    data = resp.json()
+    assert data["state"] == "ready"
+    assert data["booted"] is False
+
+    # Confirm the boot request had skip_boot=true in the query string
+    boot_call = respx.calls.last
+    assert "skip_boot=true" in str(boot_call.request.url)
+
+
+@respx.mock
+def test_post_sessions_boot_true_returns_booting() -> None:
+    """boot=True must call /session/boot without skip_boot and return state booting."""
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
+    respx.post(_AGENT_BOOT).mock(
+        return_value=httpx.Response(202, json={"boot_job_id": "j-full"}),
+    )
+    client = _make_client()
+    resp = client.post(
+        "/sessions",
+        json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}, "boot": True},
+    )
+    assert resp.status_code == 202
+    data = resp.json()
+    assert data["state"] == "booting"
+    assert data["booted"] is False
+
+    boot_call = respx.calls.last
+    assert "skip_boot" not in str(boot_call.request.url)
+
+
+@respx.mock
+def test_post_sessions_response_includes_agent_url_and_pid() -> None:
+    """POST /sessions response must include agent_url and pid fields."""
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    client = _make_client()
+    resp = client.post(
+        "/sessions",
+        json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}},
+    )
+    data = resp.json()
+    assert data["agent_url"].startswith("http://localhost:")
+    assert data["pid"] is None  # FakeLauncher always returns None
+
+
+@respx.mock
+def test_get_sessions_booted_true_when_agent_reports_booted() -> None:
+    """GET /sessions must set booted=True when agent state is 'booted'."""
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    respx.get(_AGENT_SESSION).mock(
+        return_value=httpx.Response(200, json={"state": "booted", "last_activity": 1.0}),
+    )
+    launcher = FakeLauncher()
+    client = _make_client(launcher)
+    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    resp = client.get("/sessions")
+    sessions = resp.json()["sessions"]
+    assert sessions[0]["booted"] is True
+
+
+@respx.mock
+def test_get_sessions_booted_false_when_agent_reports_ready() -> None:
+    """GET /sessions must set booted=False when agent state is 'ready'."""
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    respx.get(_AGENT_SESSION).mock(
+        return_value=httpx.Response(200, json={"state": "ready", "last_activity": 1.0}),
+    )
+    launcher = FakeLauncher()
+    client = _make_client(launcher)
+    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    resp = client.get("/sessions")
+    sessions = resp.json()["sessions"]
+    assert sessions[0]["booted"] is False
