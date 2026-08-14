@@ -19,6 +19,8 @@ def _info(sid: str, port: int = 18000, board: str = "board-1") -> AgentInfo:
         container_id=f"c-{sid}",
         host_port=port,
         created_at=0.0,
+        pid=None,
+        agent_url=f"http://localhost:{port}",
     )
 
 
@@ -63,15 +65,17 @@ def test_list_page_offset_beyond_total() -> None:
     assert page == []
 
 
-def test_agent_url_format() -> None:
+def test_agent_info_agent_url_field() -> None:
     reg = SessionRegistry()
     reg.add(_info("s-aaa", port=19999))
-    assert reg.agent_url("s-aaa") == "http://localhost:19999"
+    info = reg.get("s-aaa")
+    assert info is not None
+    assert info.agent_url == "http://localhost:19999"
 
 
-def test_agent_url_unknown_returns_none() -> None:
+def test_get_unknown_session_returns_none() -> None:
     reg = SessionRegistry()
-    assert reg.agent_url("s-unknown") is None
+    assert reg.get("s-unknown") is None
 
 
 def test_touch_and_last_activity() -> None:
@@ -99,4 +103,6 @@ async def test_rebuild_from_launcher() -> None:
     await reg.rebuild(launcher)
     assert reg.get("s-aaa") is not None
     assert reg.get("s-bbb") is not None
-    assert reg.agent_url("s-aaa") == "http://localhost:18000"
+    info = reg.get("s-aaa")
+    assert info is not None
+    assert info.agent_url == "http://localhost:18000"

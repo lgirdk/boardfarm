@@ -59,19 +59,6 @@ class SessionRegistry:
         total = len(all_sessions)
         return all_sessions[offset : offset + limit], total
 
-    def agent_url(self, session_id: str) -> str | None:
-        """Return the base URL for the agent serving this session.
-
-        :param session_id: session to look up
-        :type session_id: str
-        :return: ``http://localhost:{port}`` or None if unknown
-        :rtype: str | None
-        """
-        info = self._sessions.get(session_id)
-        if info is None:
-            return None
-        return f"http://localhost:{info.host_port}"
-
     def touch(self, session_id: str) -> None:
         """Record current time as last_activity for a session.
 

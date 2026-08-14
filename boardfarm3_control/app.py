@@ -262,13 +262,13 @@ def create_app(  # noqa: C901, PLR0915
         methods=["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     )
     async def proxy(session_id: str, path: str, request: Request) -> object:
-        agent_url = registry.agent_url(session_id)
-        if agent_url is None:
+        info = registry.get(session_id)
+        if info is None:
             raise HTTPException(
                 status_code=int(HTTPStatus.NOT_FOUND),
                 detail=f"unknown session {session_id}",
             )
         registry.touch(session_id)
-        return await proxy_request(request, agent_url, path)
+        return await proxy_request(request, info.agent_url, path)
 
     return app
