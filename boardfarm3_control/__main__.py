@@ -8,14 +8,28 @@ import os
 import uvicorn
 
 from boardfarm3_control.app import create_app
-from boardfarm3_control.launcher import DockerLauncher
+from boardfarm3_control.launcher import DockerLauncher, ProcessLauncher
+
+_LAUNCHERS = {
+    "docker": DockerLauncher,
+    "process": ProcessLauncher,
+}
 
 
 def main() -> None:
     """Run the control plane under uvicorn.
 
-    :raises ValueError: when BOARDFARM_PROFILES is absent or invalid JSON
+    :raises ValueError: when BOARDFARM_PROFILES is absent/invalid or
+        BOARDFARM_LAUNCHER names an unknown launcher.
     """
+    launcher_name = os.environ.get("BOARDFARM_LAUNCHER", "docker").lower()
+    if launcher_name not in _LAUNCHERS:
+        msg = (
+            f"BOARDFARM_LAUNCHER must be one of: {', '.join(_LAUNCHERS)};"
+            f" got {launcher_name!r}"
+        )
+        raise ValueError(msg)
+
     profiles_raw = os.environ.get("BOARDFARM_PROFILES", "")
     if not profiles_raw:
         msg = "BOARDFARM_PROFILES must be set (JSON: {profile: image, ...})"
@@ -26,7 +40,7 @@ def main() -> None:
         msg = f"BOARDFARM_PROFILES is not valid JSON: {exc}"
         raise ValueError(msg) from exc
 
-    app = create_app(launcher=DockerLauncher(), profiles=profiles)
+    app = create_app(launcher=_LAUNCHERS[launcher_name](), profiles=profiles)
     uvicorn.run(
         app,
         host="0.0.0.0",  # noqa: S104

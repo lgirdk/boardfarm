@@ -66,6 +66,8 @@ def create_app(  # noqa: C901, PLR0915
         existing = await launcher.list_sessions()
         await lease.rebuild_from(existing)
         yield
+        for info in await launcher.list_sessions():
+            await launcher.stop(info.session_id)
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
 
