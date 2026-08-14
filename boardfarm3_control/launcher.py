@@ -97,6 +97,8 @@ class FakeLauncher:
             container_id=f"fake-{session_id}",
             host_port=port,
             created_at=time.time(),
+            pid=None,
+            agent_url=f"http://localhost:{port}",
         )
         self._sessions[session_id] = info
         return info
@@ -280,6 +282,8 @@ class DockerLauncher:
             container_id=container.id,
             host_port=host_port,
             created_at=created_at,
+            pid=None,
+            agent_url=f"http://localhost:{host_port}",
         )
 
     async def stop(self, session_id: str) -> None:
@@ -327,6 +331,8 @@ class DockerLauncher:
                     container_id=container.id,
                     host_port=host_port,
                     created_at=float(labels.get(self._LABEL_CREATED, 0)),
+                    pid=None,
+                    agent_url=f"http://localhost:{host_port}",
                 ),
             )
         return result

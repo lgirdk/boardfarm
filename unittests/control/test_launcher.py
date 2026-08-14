@@ -65,3 +65,20 @@ async def test_fake_launcher_ports_are_unique() -> None:
     a = await launcher.start("s-aaa", "board-1", "img", "p")
     b = await launcher.start("s-bbb", "board-2", "img", "p")
     assert a.host_port != b.host_port
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_start_sets_pid_none_and_agent_url() -> None:
+    launcher = FakeLauncher()
+    info = await launcher.start("s-abc", "board-1", "agent:latest", "prplos")
+    assert info.pid is None
+    assert info.agent_url == "http://localhost:18000"
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_agent_url_increments_with_port() -> None:
+    launcher = FakeLauncher()
+    a = await launcher.start("s-aaa", "board-1", "img", "p")
+    b = await launcher.start("s-bbb", "board-2", "img", "p")
+    assert a.agent_url == "http://localhost:18000"
+    assert b.agent_url == "http://localhost:18001"
