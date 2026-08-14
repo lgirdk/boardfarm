@@ -103,10 +103,10 @@ def _make_proxy_endpoint(
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
         session_id: str = kwargs["session_id"]
         request: Request = kwargs["request"]
-        agent_url = registry.agent_url(session_id)
-        if agent_url is None:
+        info = registry.get(session_id)
+        if info is None:
             raise HTTPException(status_code=404, detail=f"unknown session {session_id}")
-        return await proxy_request(request, agent_url, clean_path)
+        return await proxy_request(request, info.agent_url, clean_path)
 
     proxy_endpoint.__signature__ = new_sig  # type: ignore[attr-defined]
     proxy_endpoint.__name__ = f"proxy_{original_endpoint.__name__}"
