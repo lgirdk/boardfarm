@@ -5,6 +5,22 @@ from __future__ import annotations
 import pytest
 
 from boardfarm3_control.launcher import FakeLauncher
+from boardfarm3_control.models import AgentInfo
+
+
+def test_agent_info_has_pid_and_agent_url() -> None:
+    info = AgentInfo(
+        session_id="s-aaa",
+        board_name="board-1",
+        runtime_profile="prplos",
+        container_id="c-1",
+        host_port=18000,
+        created_at=0.0,
+        pid=None,
+        agent_url="http://localhost:18000",
+    )
+    assert info.pid is None
+    assert info.agent_url == "http://localhost:18000"
 
 
 @pytest.mark.asyncio

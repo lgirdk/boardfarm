@@ -234,3 +234,17 @@ def test_post_sessions_returns_session_id_format() -> None:
     assert resp.status_code == 202
     sid = resp.json()["session_id"]
     assert re.fullmatch(r"s-[0-9a-f]{8}", sid), f"unexpected session_id format: {sid!r}"
+
+
+def test_session_create_boot_defaults_to_false() -> None:
+    from boardfarm3_control.models import SessionCreate
+
+    sc = SessionCreate(board_name="b", runtime_profile="p", payload={})
+    assert sc.boot is False
+
+
+def test_session_create_boot_true_accepted() -> None:
+    from boardfarm3_control.models import SessionCreate
+
+    sc = SessionCreate(board_name="b", runtime_profile="p", payload={}, boot=True)
+    assert sc.boot is True
