@@ -269,6 +269,7 @@ class ProcessLauncher:
                 "boardfarm control: state file corrupt, ignoring: %s",
                 path,
             )
+            path.unlink(missing_ok=True)
             return
 
         loop = asyncio.get_running_loop()
@@ -280,7 +281,7 @@ class ProcessLauncher:
                 continue
             try:
                 os.kill(pid, 0)  # probe — raises ProcessLookupError if dead
-            except ProcessLookupError:
+            except (ProcessLookupError, PermissionError):
                 continue  # already gone
 
             # PID is alive — terminate it
