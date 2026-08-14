@@ -157,16 +157,18 @@ class ProcessLauncher:
         )
 
     def _save_state(self) -> None:
-        """Atomically write current sessions to the state file.
+        """Persist current session state to disk for orphan cleanup on restart.
 
-        Writes to ``<path>.tmp`` and renames atomically so readers never
-        see a partial file.
+        :note: Errors are logged but not raised — the state file is best-effort.
         """
         path = self._state_path()
         data = {sid: info.model_dump() for sid, (_, info) in self._sessions.items()}
         tmp = Path(str(path) + ".tmp")
-        tmp.write_text(json.dumps(data, indent=2))
-        os.replace(tmp, path)
+        try:
+            tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            os.replace(tmp, path)
+        except OSError as exc:
+            _log.warning("boardfarm control: could not persist state file %s: %s", path, exc)
 
     async def start(
         self,
