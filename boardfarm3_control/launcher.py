@@ -3,14 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
 import os
+import signal
 import socket
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from boardfarm3_control.models import AgentInfo
+
+_log = logging.getLogger(__name__)
+
+_DEFAULT_STATE_FILE = "/tmp/boardfarm-control-sessions.json"
 
 
 @runtime_checkable
@@ -136,6 +144,29 @@ class ProcessLauncher:
     def __init__(self) -> None:
         """Initialise an empty process launcher."""
         self._sessions: dict[str, tuple[asyncio.subprocess.Process, AgentInfo]] = {}
+        self._started = False  # True after first list_sessions() call
+
+    def _state_path(self) -> Path:
+        """Return the path of the persistent state file.
+
+        :return: path to the JSON state file
+        :rtype: Path
+        """
+        return Path(
+            os.environ.get("BOARDFARM_CONTROL_STATE_FILE", _DEFAULT_STATE_FILE),
+        )
+
+    def _save_state(self) -> None:
+        """Atomically write current sessions to the state file.
+
+        Writes to ``<path>.tmp`` and renames atomically so readers never
+        see a partial file.
+        """
+        path = self._state_path()
+        data = {sid: info.model_dump() for sid, (_, info) in self._sessions.items()}
+        tmp = Path(str(path) + ".tmp")
+        tmp.write_text(json.dumps(data, indent=2))
+        os.replace(tmp, path)
 
     async def start(
         self,
@@ -180,8 +211,11 @@ class ProcessLauncher:
             container_id=str(proc.pid),
             host_port=host_port,
             created_at=time.time(),
+            pid=proc.pid,
+            agent_url=f"http://localhost:{host_port}",
         )
         self._sessions[session_id] = (proc, info)
+        self._save_state()
         return info
 
     async def stop(self, session_id: str) -> None:
@@ -202,14 +236,74 @@ class ProcessLauncher:
         except asyncio.TimeoutError:
             proc.kill()
             await proc.wait()
+        self._save_state()
 
     async def list_sessions(self) -> list[AgentInfo]:
         """Return info for all running agent sessions.
 
+        On the first call, reads the state file and kills any orphaned PIDs
+        left by a previous control plane instance.
+
         :return: list of agent infos
         :rtype: list[AgentInfo]
         """
+        if not self._started:
+            self._started = True
+            await self._cleanup_orphans()
         return [info for _, info in self._sessions.values()]
+
+    async def _cleanup_orphans(self) -> None:
+        """Kill any PIDs recorded in the state file from a prior run.
+
+        Reads the state file, sends SIGTERM to each live PID, waits up to
+        5 s per PID, then sends SIGKILL if still alive.  Rewrites the state
+        file empty afterwards.
+        """
+        path = self._state_path()
+        if not path.exists():
+            return
+        try:
+            data: dict[str, object] = json.loads(path.read_text())
+        except (json.JSONDecodeError, OSError):
+            _log.warning(
+                "boardfarm control: state file corrupt, ignoring: %s",
+                path,
+            )
+            return
+
+        loop = asyncio.get_running_loop()
+        for entry in data.values():
+            if not isinstance(entry, dict):
+                continue
+            pid = entry.get("pid")
+            if not isinstance(pid, int):
+                continue
+            try:
+                os.kill(pid, 0)  # probe — raises ProcessLookupError if dead
+            except ProcessLookupError:
+                continue  # already gone
+
+            # PID is alive — terminate it
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                continue
+
+            deadline = loop.time() + 5.0
+            while loop.time() < deadline:
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    break
+                await asyncio.sleep(0.1)
+            else:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+        # Rewrite state file — all orphans cleaned up, _sessions is empty
+        self._save_state()
 
 
 class DockerLauncher:
