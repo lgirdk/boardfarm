@@ -18,6 +18,8 @@ class AgentInfo(BaseModel):
     container_id: str
     host_port: int
     created_at: float
+    pid: int | None = None
+    agent_url: str = ""
 
 
 class SessionCreate(BaseModel):
@@ -29,6 +31,7 @@ class SessionCreate(BaseModel):
     runtime_profile: str
     payload: dict[str, Any]
     options: dict[str, Any] = Field(default_factory=dict)
+    boot: bool = False
 
 
 class SessionResponse(BaseModel):
@@ -39,6 +42,9 @@ class SessionResponse(BaseModel):
     runtime_profile: str
     state: str
     boot_job_id: str | None = None
+    booted: bool = False
+    agent_url: str = ""
+    pid: int | None = None
     created_at: float
     last_activity: float | None = None
 
