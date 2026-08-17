@@ -129,12 +129,16 @@ def create_app(  # noqa: C901, PLR0915
                 detail="agent did not become healthy within 5 s",
             )
 
-        # Configure agent — transport errors and HTTP errors both trigger cleanup
+        # Configure agent — inject skip_boot when caller did not request a full boot
+        # (skip_boot is a config-time option, not a boot-URL parameter)
+        config_options: dict[str, Any] = dict(body.options)
+        if not body.boot:
+            config_options.setdefault("skip_boot", True)
         try:
             async with httpx.AsyncClient() as client:
                 cfg = await client.post(
                     f"{agent_url}/session/config",
-                    json={"payload": body.payload, "options": body.options},
+                    json={"payload": body.payload, "options": config_options},
                 )
         except Exception as exc:
             await launcher.stop(session_id)
@@ -151,9 +155,8 @@ def create_app(  # noqa: C901, PLR0915
                 detail=f"agent rejected config: {cfg.text}",
             )
 
-        # Boot — always called; skip_boot controls init-only vs full sequence
-        skip_boot_param = "" if body.boot else "&skip_boot=true"
-        boot_url = f"{agent_url}/session/boot?mode=async{skip_boot_param}"
+        # Boot — always called; skip_boot was already set in config options above
+        boot_url = f"{agent_url}/session/boot?mode=async"
         boot_job_id: str | None = None
         try:
             async with httpx.AsyncClient() as client:
