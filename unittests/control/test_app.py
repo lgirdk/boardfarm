@@ -322,13 +322,15 @@ def test_post_sessions_response_includes_agent_url_and_pid() -> None:
 
 
 @respx.mock
-def test_get_sessions_booted_true_when_agent_reports_booted() -> None:
-    """GET /sessions must set booted=True when agent state is 'booted'."""
+def test_get_sessions_booted_true_when_agent_reports_booted_true() -> None:
+    """GET /sessions must set booted=True when agent status includes booted=True."""
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
     respx.get(_AGENT_SESSION).mock(
-        return_value=httpx.Response(200, json={"state": "booted", "last_activity": 1.0}),
+        return_value=httpx.Response(
+            200, json={"state": "ready", "booted": True, "last_activity": 1.0}
+        ),
     )
     launcher = FakeLauncher()
     client = _make_client(launcher)
@@ -340,7 +342,7 @@ def test_get_sessions_booted_true_when_agent_reports_booted() -> None:
 
 @respx.mock
 def test_get_sessions_booted_false_when_agent_reports_ready() -> None:
-    """GET /sessions must set booted=False when agent state is 'ready'."""
+    """GET /sessions must set booted=False when agent status has booted absent or False."""
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
