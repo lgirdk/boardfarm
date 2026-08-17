@@ -253,7 +253,7 @@ def test_session_create_boot_true_accepted() -> None:
 
 @respx.mock
 def test_post_sessions_default_skip_boot_returns_ready() -> None:
-    """Default boot=False must call /session/boot?skip_boot=true and return state ready."""
+    """Default boot=False must pass skip_boot=true in config options and return state ready."""
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
     respx.post(_AGENT_BOOT).mock(
@@ -269,14 +269,19 @@ def test_post_sessions_default_skip_boot_returns_ready() -> None:
     assert data["state"] == "ready"
     assert data["booted"] is False
 
-    # Confirm the boot request had skip_boot=true in the query string
-    boot_call = respx.calls.last
-    assert "skip_boot=true" in str(boot_call.request.url)
+    # Confirm skip_boot=true was set in the config options, not the boot URL
+    config_call = next(c for c in respx.calls if "/session/config" in str(c.request.url))
+    assert config_call.request.content
+    import json as _json
+    body = _json.loads(config_call.request.content)
+    assert body["options"].get("skip_boot") is True
+    boot_call = next(c for c in respx.calls if "/session/boot" in str(c.request.url))
+    assert "skip_boot" not in str(boot_call.request.url)
 
 
 @respx.mock
 def test_post_sessions_boot_true_returns_booting() -> None:
-    """boot=True must call /session/boot without skip_boot and return state booting."""
+    """boot=True must not inject skip_boot into config options and return state booting."""
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
     respx.post(_AGENT_BOOT).mock(
@@ -292,7 +297,11 @@ def test_post_sessions_boot_true_returns_booting() -> None:
     assert data["state"] == "booting"
     assert data["booted"] is False
 
-    boot_call = respx.calls.last
+    import json as _json
+    config_call = next(c for c in respx.calls if "/session/config" in str(c.request.url))
+    body = _json.loads(config_call.request.content)
+    assert body["options"].get("skip_boot") is not True
+    boot_call = next(c for c in respx.calls if "/session/boot" in str(c.request.url))
     assert "skip_boot" not in str(boot_call.request.url)
 
 
