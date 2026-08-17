@@ -160,6 +160,8 @@ class Session:
             "session_id": self.session_id,
             "board_name": self.options.board_name,
             "state": state,
+            # True only after a full boot sequence completed (skip_boot=False)
+            "booted": self.state is SessionState.READY and not self.options.skip_boot,
             "created_at": self.created_at,
             "last_activity": self.last_activity,
             "error": self.error,

@@ -209,7 +209,7 @@ def create_app(  # noqa: C901, PLR0915
                     )
                 data: dict[str, Any] = resp.json()
                 state: str = data.get("state", "unknown")
-                booted: bool = state == "booted"
+                booted: bool = bool(data.get("booted", False))
                 last_act = data.get("last_activity")
                 if last_act is not None:
                     registry.touch(info.session_id)

@@ -199,7 +199,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         cursor: int = 0,
         device: str | None = None,
         stream: str | None = None,
-        limit: int = 1000,
+        limit: int = 10_000,
     ) -> dict[str, Any]:
         events, next_cursor = session().buffer.read(
             cursor=cursor,
