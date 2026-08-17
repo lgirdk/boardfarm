@@ -84,8 +84,10 @@ async def proxy_request(
         try:
             async for chunk in response.aiter_bytes():
                 yield chunk
-        except httpx.TransportError as exc:
-            raise HTTPException(status_code=502, detail="agent unreachable") from exc
+        except httpx.TransportError:
+            # Client disconnected or agent closed the stream mid-flight.
+            # Response headers already sent — cannot raise HTTPException here.
+            return
         finally:
             await response.aclose()
             await client.aclose()
