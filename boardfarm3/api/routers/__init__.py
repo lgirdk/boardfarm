@@ -39,7 +39,7 @@ def _resolve(session: Session, template: type[T], index: int) -> T:
     devices = list(
         session.runtime.device_manager.get_devices_by_type(template).values()
     )
-    if index >= len(devices):
+    if index < 0 or index >= len(devices):
         raise HTTPException(
             status_code=int(HTTPStatus.NOT_FOUND),
             detail=f"no {template.__name__} device at index {index}",
