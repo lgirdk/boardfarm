@@ -69,3 +69,36 @@ def test_load_plugin_routers_returns_list() -> None:
     # load_plugin_routers must return an empty list (not raise).
     routers = load_plugin_routers()
     assert isinstance(routers, list)
+
+
+def test_load_plugin_routers_flattens_bundle_namespace_into_route_paths() -> None:
+    """Verify namespace prefix appears in flattened route paths.
+
+    :return: None
+    :rtype: None
+    """
+    from unittest.mock import MagicMock, patch
+
+    from fastapi.routing import APIRoute
+
+    from boardfarm3.api.routers import RouterBundle
+
+    inner = APIRouter(prefix="/templates/foo")
+
+    @inner.post("/bar", status_code=200, response_model=None)
+    async def _dummy() -> dict:
+        return {}
+
+    bundle = RouterBundle(namespace="myns", routers=[inner], skipped=[])
+
+    with patch("pluggy.PluginManager") as mock_cls:
+        mock_pm = MagicMock()
+        mock_cls.return_value = mock_pm
+        mock_pm.hook.boardfarm_add_api_routers.return_value = [[bundle]]
+        routers = load_plugin_routers()
+
+    assert len(routers) == 1
+    flat = routers[0]
+    # The flat router has no prefix; paths are stored in each route.
+    route_paths = [r.path for r in flat.routes if isinstance(r, APIRoute)]
+    assert any("myns" in p and "templates/foo" in p and "bar" in p for p in route_paths)
