@@ -5,6 +5,8 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any
 
+from fastapi import APIRouter
+
 from boardfarm3.api.routers._generator import generate_template_routers
 
 # ---------------------------------------------------------------------------
@@ -168,3 +170,38 @@ def test_lan_template_generates_all_serialisable_routes() -> None:
     # Properties must not appear
     assert "/iface_dut" not in paths
     assert "/console" not in paths
+
+
+def test_routerbundle_wraps_routers_under_namespace() -> None:
+    """RouterBundle namespace is prepended by load_plugin_routers.
+
+    :return: None
+    :rtype: None
+    """
+    from unittest.mock import MagicMock, patch
+
+    from boardfarm3.api.routers import RouterBundle, load_plugin_routers
+
+    inner = APIRouter(prefix="/templates/foo")
+
+    @inner.get("/bar")
+    async def _dummy() -> dict:  # noqa: ANN201
+        return {}
+
+    bundle = RouterBundle(namespace="test_ns", routers=[inner], skipped=[])
+
+    with patch(
+        "boardfarm3.api.routers.pluggy.PluginManager"
+    ) as mock_pm_cls:
+        mock_pm = MagicMock()
+        mock_pm_cls.return_value = mock_pm
+        mock_pm.hook.boardfarm_add_api_routers.return_value = [bundle]
+        routers, skipped = load_plugin_routers()
+
+    assert len(routers) == 1
+    wrapper = routers[0]
+    # Verify the namespace prefix is applied to the wrapper router
+    assert wrapper.prefix == "/test_ns"
+    # Verify the inner router is included (routes may be _IncludedRouter in newer FastAPI)
+    assert len(wrapper.routes) > 0
+    assert skipped == []

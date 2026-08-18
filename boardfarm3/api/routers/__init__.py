@@ -2,19 +2,43 @@
 
 from __future__ import annotations
 
+import logging
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, TypeVar
 
-from fastapi import HTTPException
+import pluggy
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
 if TYPE_CHECKING:
-    from fastapi import APIRouter
-
+    from boardfarm3.api.execution import Job
+    from boardfarm3.api.routers._generator import SkippedMethod
     from boardfarm3.api.session import Session
 
 T = TypeVar("T")
 
 _ENTRYPOINT_GROUP = "boardfarm_api"
+_log = logging.getLogger(__name__)
+
+
+@dataclass
+class RouterBundle:
+    """A namespace-prefixed group of FastAPI routers contributed by one plugin.
+
+    :param namespace: URL namespace for this plugin's routes, e.g. ``"core"``
+        or ``"docsis"``
+    :type namespace: str
+    :param routers: routers whose paths will be prefixed with
+        ``/{namespace}``
+    :type routers: list[APIRouter]
+    :param skipped: methods the generator could not route for this bundle
+    :type skipped: list[SkippedMethod]
+    """
+
+    namespace: str
+    routers: list[APIRouter] = field(default_factory=list)
+    skipped: list[SkippedMethod] = field(default_factory=list)
 
 
 def _resolve(session: Session, template: type[T], index: int) -> T:
@@ -47,25 +71,49 @@ def _resolve(session: Session, template: type[T], index: int) -> T:
     return devices[index]
 
 
-def load_plugin_routers() -> list[APIRouter]:
+def _async_response(job: Job) -> JSONResponse:
+    """Build a 202 Accepted JSON response from a queued *job*.
+
+    The route decorator's ``status_code`` only applies to non-``Response``
+    return values.  Async handlers therefore return an explicit
+    ``JSONResponse`` to emit HTTP 202 rather than the route's 200.
+
+    :param job: the job returned by ``queue.submit(..., mode="async")``
+    :type job: Job
+    :return: 202 response carrying ``job_id`` and the current job state
+    :rtype: JSONResponse
+    """
+    return JSONResponse(
+        status_code=int(HTTPStatus.ACCEPTED),
+        content={"job_id": job.id, "state": job.state.value},
+    )
+
+
+def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
     """Discover all FastAPI routers contributed via the ``boardfarm_api`` entrypoints.
 
     Creates a short-lived PluginManager, loads all installed ``boardfarm_api``
-    entrypoints, and collects their routers.  Returns an empty list on any
-    error so a missing or broken plugin does not crash the agent.
+    entrypoints, wraps each bundle's routers under ``/{bundle.namespace}``,
+    and aggregates the skipped method lists from all bundles.
 
-    :return: all contributed routers, in discovery order
-    :rtype: list[APIRouter]
+    :return: namespaced routers and all skipped methods from all bundles
+    :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
     try:
-        import pluggy
-
         from boardfarm3.api import hookspecs as _api_hookspecs
 
         _pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         _pm.add_hookspecs(_api_hookspecs)
         _pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
-        results: list[list[APIRouter]] = _pm.hook.boardfarm_add_api_routers()
-        return [router for routers in results for router in routers]
+        bundles: list[RouterBundle] = _pm.hook.boardfarm_add_api_routers()
+        result_routers: list[APIRouter] = []
+        result_skipped: list[SkippedMethod] = []
+        for bundle in bundles:
+            wrapper = APIRouter(prefix=f"/{bundle.namespace}")
+            for router in bundle.routers:
+                wrapper.include_router(router)
+            result_routers.append(wrapper)
+            result_skipped.extend(bundle.skipped)
+        return result_routers, result_skipped
     except Exception:  # noqa: BLE001
-        return []
+        return [], []
