@@ -13,6 +13,7 @@ from starlette.requests import Request
 if TYPE_CHECKING:
     from fastapi import FastAPI
 
+    from boardfarm3.api.routers import RouterBundle
     from boardfarm3_control.registry import SessionRegistry
 
 _ENTRYPOINT_GROUP = "boardfarm_api"
@@ -23,9 +24,14 @@ _HOOK_NAME = "boardfarm_add_api_routers"
 def load_plugin_routers() -> list[APIRouter]:
     """Discover routers from all ``boardfarm_api`` entrypoints.
 
-    :return: all APIRouter objects contributed by installed plugins
+    Each :class:`~boardfarm3.api.routers.RouterBundle` returned by the hook
+    is wrapped in an ``APIRouter`` with the bundle's namespace as its prefix
+    (e.g. ``/core``, ``/docsis``).
+
+    :return: namespaced APIRouter objects contributed by installed plugins
     :rtype: list[APIRouter]
     """
+    result: list[APIRouter] = []
     try:
         import pluggy
 
@@ -34,10 +40,16 @@ def load_plugin_routers() -> list[APIRouter]:
         pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         pm.add_hookspecs(api_hookspecs)
         pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
-        results: list[list[APIRouter]] = pm.hook.boardfarm_add_api_routers()
-        return [router for routers in results for router in routers]
+        bundle_lists: list[list[RouterBundle]] = pm.hook.boardfarm_add_api_routers()
+        for bundle_list in bundle_lists:
+            for bundle in bundle_list:
+                wrapper = APIRouter(prefix=f"/{bundle.namespace}")
+                for router in bundle.routers:
+                    wrapper.include_router(router)
+                result.append(wrapper)
     except Exception:  # noqa: BLE001
         return []
+    return result
 
 
 def _make_proxy_endpoint(
