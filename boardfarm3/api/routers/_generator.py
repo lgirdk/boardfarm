@@ -365,6 +365,11 @@ def _register_member(  # pylint: disable=too-many-return-statements
         build.all_skipped.append(
             SkippedMethod(spec.introspect.__name__, name, "private")
         )
+        _log.warning(
+            "template route skipped: %s.%s — private",
+            spec.introspect.__name__,
+            name,
+        )
         return
     if name in build.seen:
         build.all_skipped.append(

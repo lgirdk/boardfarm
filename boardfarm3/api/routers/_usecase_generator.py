@@ -43,9 +43,10 @@ def _is_template(annotation: Any) -> bool:  # noqa: ANN401
     :return: True when the annotation is a class under boardfarm3.templates
     :rtype: bool
     """
-    return isinstance(annotation, type) and annotation.__module__.startswith(
-        _TEMPLATE_ROOT
-    )
+    if not isinstance(annotation, type):
+        return False
+    module = annotation.__module__
+    return module == _TEMPLATE_ROOT or module.startswith(f"{_TEMPLATE_ROOT}.")
 
 
 def _union_args(annotation: Any) -> tuple[Any, ...]:  # noqa: ANN401
