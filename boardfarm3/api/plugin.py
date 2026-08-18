@@ -74,6 +74,9 @@ def boardfarm_add_api_routers() -> list[RouterBundle]:  # pylint: disable=too-ma
         TemplateMount,
         generate_template_routers,
     )
+    from boardfarm3.api.routers._usecase_generator import (  # pylint: disable=import-outside-toplevel
+        generate_usecase_routers,
+    )
     from boardfarm3.templates.acs import ACS  # pylint: disable=import-outside-toplevel
     from boardfarm3.templates.core_router import (  # pylint: disable=import-outside-toplevel
         CoreRouter,
@@ -100,6 +103,24 @@ def boardfarm_add_api_routers() -> list[RouterBundle]:  # pylint: disable=too-ma
     from boardfarm3.templates.wlan import (  # pylint: disable=import-outside-toplevel
         WLAN,
     )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        cpe as uc_cpe,
+    )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        dhcp as uc_dhcp,
+    )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        iperf as uc_iperf,
+    )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        networking as uc_networking,
+    )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        voice as uc_voice,
+    )
+    from boardfarm3.use_cases import (  # pylint: disable=import-outside-toplevel
+        wifi as uc_wifi,
+    )
 
     templates: list[type | TemplateMount] = [
         LAN,
@@ -116,4 +137,13 @@ def boardfarm_add_api_routers() -> list[RouterBundle]:  # pylint: disable=too-ma
         TemplateMount("ntu", NTU, CPEHW, "hw"),
     ]
     routers, skipped = generate_template_routers(templates)
-    return [RouterBundle(namespace="core", routers=routers, skipped=skipped)]
+    uc_routers, uc_skipped = generate_usecase_routers(
+        [uc_cpe, uc_dhcp, uc_networking, uc_wifi, uc_iperf, uc_voice]
+    )
+    return [
+        RouterBundle(
+            namespace="core",
+            routers=[*routers, *uc_routers],
+            skipped=[*skipped, *uc_skipped],
+        )
+    ]
