@@ -21,14 +21,51 @@ _HOOKSPEC_MODULE = "boardfarm3.api.hookspecs"
 _HOOK_NAME = "boardfarm_add_api_routers"
 
 
+def _flatten_bundle(bundle: RouterBundle) -> APIRouter:
+    """Build a single flat APIRouter from a :class:`RouterBundle`.
+
+    Iterates each inner router's routes directly (rather than calling
+    ``include_router``) so that FastAPI version-dependent prefix behaviour
+    does not affect path construction.  The resulting router has no prefix
+    of its own; every route's path is fully qualified:
+    ``/{namespace}{inner_prefix}{relative}``.
+
+    :param bundle: router bundle to flatten
+    :type bundle: RouterBundle
+    :return: flat APIRouter with all routes at their fully-qualified paths
+    :rtype: APIRouter
+    """
+    flat = APIRouter()
+    for inner in bundle.routers:
+        inner_pfx: str = getattr(inner, "prefix", "") or ""
+        for route in inner.routes:
+            if not isinstance(route, APIRoute):
+                continue
+            # route.path may or may not include inner_pfx depending on
+            # FastAPI version; removeprefix is safe for both cases.
+            rel = route.path.removeprefix(inner_pfx)
+            flat.add_api_route(
+                f"/{bundle.namespace}{inner_pfx}{rel}",
+                route.endpoint,
+                methods=list(route.methods or {"POST"}),
+                response_model=route.response_model,
+                tags=list(route.tags) if route.tags else None,
+                summary=route.summary,
+                description=route.description,
+                status_code=route.status_code,
+            )
+    return flat
+
+
 def load_plugin_routers() -> list[APIRouter]:
     """Discover routers from all ``boardfarm_api`` entrypoints.
 
-    Each :class:`~boardfarm3.api.routers.RouterBundle` returned by the hook
-    is wrapped in an ``APIRouter`` with the bundle's namespace as its prefix
-    (e.g. ``/core``, ``/docsis``).
+    Each :class:`~boardfarm3.api.routers.RouterBundle` is flattened into a
+    single ``APIRouter`` whose routes carry fully-qualified paths that include
+    both the bundle namespace and the inner router prefix
+    (e.g. ``/core/templates/lan/ping``).
 
-    :return: namespaced APIRouter objects contributed by installed plugins
+    :return: flattened APIRouter objects contributed by installed plugins
     :rtype: list[APIRouter]
     """
     result: list[APIRouter] = []
@@ -41,12 +78,11 @@ def load_plugin_routers() -> list[APIRouter]:
         pm.add_hookspecs(api_hookspecs)
         pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
         bundle_lists: list[list[RouterBundle]] = pm.hook.boardfarm_add_api_routers()
-        for bundle_list in bundle_lists:
-            for bundle in bundle_list:
-                wrapper = APIRouter(prefix=f"/{bundle.namespace}")
-                for router in bundle.routers:
-                    wrapper.include_router(router)
-                result.append(wrapper)
+        result.extend(
+            _flatten_bundle(bundle)
+            for bundle_list in bundle_lists
+            for bundle in bundle_list
+        )
     except Exception:  # noqa: BLE001
         return []
     return result
