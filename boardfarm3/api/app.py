@@ -107,6 +107,14 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
 
     app = FastAPI(title=f"boardfarm runtime agent [{board_name}]", lifespan=lifespan)
 
+    # Discover and mount plugin-contributed routers (template methods, use cases, etc.).
+    # load_plugin_routers() uses a short-lived PluginManager for the boardfarm_api
+    # entrypoint group — separate from the process-global boardfarm PluginManager.
+    from boardfarm3.api.routers import load_plugin_routers
+
+    for _router in load_plugin_routers():
+        app.include_router(_router)
+
     def session() -> Session:
         return state["session"]
 
