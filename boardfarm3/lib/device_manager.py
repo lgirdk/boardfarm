@@ -66,6 +66,21 @@ class DeviceManager:
         msg = f"No device available of type {device_type}"
         raise DeviceNotFound(msg)
 
+    def get_device_by_name(self, device_name: str) -> BoardfarmDevice:
+        """Return the registered device with the given name.
+
+        :param device_name: registered device name
+        :type device_name: str
+        :raises DeviceNotFound: when no device with that name is registered
+        :return: the device instance
+        :rtype: BoardfarmDevice
+        """
+        device = self._plugin_manager.get_plugin(device_name)
+        if device is None:
+            msg = f"No device registered with name {device_name}"
+            raise DeviceNotFound(msg)
+        return device
+
     def register_device(self, device: BoardfarmDevice) -> None:
         """Register a device as plugin with boardfarm.
 
