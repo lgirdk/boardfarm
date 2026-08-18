@@ -61,15 +61,59 @@ def boardfarm_api_resolve_config(
 
 
 @hookimpl_api
-def boardfarm_add_api_routers() -> list[RouterBundle]:
+def boardfarm_add_api_routers() -> list[RouterBundle]:  # pylint: disable=too-many-locals
     """Return the core boardfarm API routers, generated from template ABCs.
 
     :return: one RouterBundle for the ``core`` namespace
     :rtype: list[RouterBundle]
     """
-    from boardfarm3.api.routers import RouterBundle  # pylint: disable=import-outside-toplevel
-    from boardfarm3.api.routers._generator import generate_template_routers  # pylint: disable=import-outside-toplevel
+    from boardfarm3.api.routers import (  # pylint: disable=import-outside-toplevel
+        RouterBundle,
+    )
+    from boardfarm3.api.routers._generator import (  # pylint: disable=import-outside-toplevel
+        TemplateMount,
+        generate_template_routers,
+    )
+    from boardfarm3.templates.acs import ACS  # pylint: disable=import-outside-toplevel
+    from boardfarm3.templates.core_router import (  # pylint: disable=import-outside-toplevel
+        CoreRouter,
+    )
+    from boardfarm3.templates.cpe import (  # pylint: disable=import-outside-toplevel
+        CPE,
+        CPEHW,
+        CPESW,
+    )
     from boardfarm3.templates.lan import LAN  # pylint: disable=import-outside-toplevel
+    from boardfarm3.templates.ntu.ntu import (  # pylint: disable=import-outside-toplevel
+        NTU,
+    )
+    from boardfarm3.templates.provisioner import (  # pylint: disable=import-outside-toplevel
+        Provisioner,
+    )
+    from boardfarm3.templates.sip_phone import (  # pylint: disable=import-outside-toplevel
+        SIPPhone,
+    )
+    from boardfarm3.templates.sip_server import (  # pylint: disable=import-outside-toplevel
+        SIPServer,
+    )
+    from boardfarm3.templates.wan import WAN  # pylint: disable=import-outside-toplevel
+    from boardfarm3.templates.wlan import (  # pylint: disable=import-outside-toplevel
+        WLAN,
+    )
 
-    routers, skipped = generate_template_routers([LAN])
+    templates: list[type | TemplateMount] = [
+        LAN,
+        WAN,
+        WLAN,
+        ACS,
+        Provisioner,
+        SIPServer,
+        SIPPhone,
+        CoreRouter,
+        TemplateMount("cpe", CPE, CPESW, "sw"),
+        TemplateMount("cpe", CPE, CPEHW, "hw"),
+        TemplateMount("ntu", NTU, CPESW, "sw"),
+        TemplateMount("ntu", NTU, CPEHW, "hw"),
+    ]
+    routers, skipped = generate_template_routers(templates)
     return [RouterBundle(namespace="core", routers=routers, skipped=skipped)]
