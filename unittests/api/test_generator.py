@@ -172,6 +172,66 @@ def test_lan_template_generates_all_serialisable_routes() -> None:
     assert "/console" not in paths
 
 
+def test_template_mount_flattens_two_introspect_sources() -> None:
+    from boardfarm3.api.routers._generator import (
+        TemplateMount,
+        generate_template_routers,
+    )
+
+    class _Sw:
+        @abstractmethod
+        def reset(self) -> None: ...
+
+    class _Hw:
+        @abstractmethod
+        def power_cycle(self) -> None: ...
+
+    class _Composite:
+        pass
+
+    mounts = [
+        TemplateMount("cpe", _Composite, _Sw, "sw"),
+        TemplateMount("cpe", _Composite, _Hw, "hw"),
+    ]
+    routers, _ = generate_template_routers(mounts)
+    assert len(routers) == 1  # both specs merge into ONE mount router
+    assert routers[0].prefix == "/templates/cpe"
+    paths = set(_local_paths(routers[0]))
+    assert "/reset" in paths  # from _Sw via .sw
+    assert "/power_cycle" in paths  # from _Hw via .hw
+
+
+def test_template_mount_duplicate_name_skipped() -> None:
+    from boardfarm3.api.routers._generator import (
+        TemplateMount,
+        generate_template_routers,
+    )
+
+    class _A:
+        @abstractmethod
+        def dup(self) -> None: ...
+
+    class _B:
+        @abstractmethod
+        def dup(self) -> None: ...
+
+    class _C:
+        pass
+
+    routers, skipped = generate_template_routers(
+        [TemplateMount("x", _C, _A, "a"), TemplateMount("x", _C, _B, "b")]
+    )
+    paths = _local_paths(routers[0])
+    assert paths.count("/dup") == 1  # only first wins (plus its /{index}/dup)
+    assert any(s.method == "dup" and "duplicate" in s.reason for s in skipped)
+
+
+def test_bare_type_still_normalises_to_router() -> None:
+    routers, _ = generate_template_routers([_ReturnsBool])
+    assert routers[0].prefix == "/templates/_returnsbool"
+    assert "/check" in _local_paths(routers[0])
+
+
 def test_routerbundle_wraps_routers_under_namespace() -> None:
     """Verify that load_plugin_routers prepends the bundle namespace prefix.
 
