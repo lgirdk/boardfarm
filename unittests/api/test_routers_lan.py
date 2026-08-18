@@ -462,3 +462,22 @@ def test_skipped_routes_endpoint(booted_client: TestClient) -> None:
         assert "template" in entry
         assert "method" in entry
         assert "reason" in entry
+
+
+def test_skipped_routes_contains_non_serialisable_lan_methods(
+    booted_client: TestClient,
+) -> None:
+    """Skipped list includes LAN methods with non-serialisable return types.
+
+    Methods like get_default_gateway (-> IPv4Address) or http_get (-> HTTPResult)
+    cannot be auto-generated and must appear in the skipped list.
+
+    :param booted_client: test client with a booted LAN device
+    :type booted_client: TestClient
+    """
+    resp = booted_client.get("/diagnostics/skipped-routes")
+    data = resp.json()
+    skipped_methods = {entry["method"] for entry in data["skipped"]}
+    assert "get_default_gateway" in skipped_methods or "http_get" in skipped_methods, (
+        f"Expected at least one non-serialisable LAN method in skipped list, got: {skipped_methods}"
+    )
