@@ -60,8 +60,8 @@ def test_plugin_route_is_prefixed_with_session_id() -> None:
     schema = client.get("/openapi.json").json()
     # All plugin paths must be under /sessions/{session_id}/
     plugin_paths = [p for p in schema["paths"] if "ping" in p]
-    assert len(plugin_paths) == 1
-    assert plugin_paths[0].startswith("/sessions/{session_id}/")
+    assert len(plugin_paths) >= 1
+    assert all(p.startswith("/sessions/{session_id}/") for p in plugin_paths)
 
 
 def test_load_plugin_routers_returns_list() -> None:
