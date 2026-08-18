@@ -148,18 +148,19 @@ class KeaProvisioner(Provisioner):
     ) -> list[dict[str, Any]]:
         option_data = []
         for option in options:
+            data = option["data"]
             if option["name"] == "acs-url":
                 # Encode to binary with space char in case of empty data
-                if not option["data"].strip():
-                    option["data"] = " "
-                option["data"] = option["data"].encode().hex()
+                if not data.strip():
+                    data = " "
+                data = data.encode().hex()
 
             option_data.append(
                 {
                     "always-send": True,
                     "name": option["name"],
                     "space": space,
-                    "data": option["data"],
+                    "data": data,
                 },
             )
         return option_data
