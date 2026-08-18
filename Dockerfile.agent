@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        gcc g++ openssh-client telnet iputils-ping && \
+        gcc g++ openssh-client sshpass telnet iputils-ping && \
     rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml README.md LICENSE ./

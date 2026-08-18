@@ -1,13 +1,9 @@
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc && \
-    rm -rf /var/lib/apt/lists/*
 
 # Install build tooling
 RUN pip install --no-cache-dir hatchling
@@ -17,6 +13,7 @@ COPY boardfarm3_control ./boardfarm3_control
 COPY boardfarm3 ./boardfarm3
 COPY control/pyproject.toml ./control/pyproject.toml
 COPY pyproject.toml README.md LICENSE ./
+COPY docs/index.md ./docs/index.md
 
 # Install boardfarm3 (needed for hookspec discovery) then the control plane
 RUN pip install --no-cache-dir ".[api]" && \
