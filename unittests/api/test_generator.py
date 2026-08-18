@@ -56,6 +56,26 @@ class _ReturnsUnion:
 
 
 # ---------------------------------------------------------------------------
+# Helper: strip the router prefix so assertions use short method paths
+# ---------------------------------------------------------------------------
+
+
+def _local_paths(router: object) -> list[str]:
+    """Return route paths relative to the router prefix.
+
+    FastAPI 0.141+ stores the full ``prefix + path`` in ``route.path``,
+    so we strip the prefix to get the method-local portion (e.g. ``/ping``).
+
+    :param router: an APIRouter returned by generate_template_routers
+    :type router: object
+    :return: list of local route paths
+    :rtype: list[str]
+    """
+    pfx: str = getattr(router, "prefix", "") or ""
+    return [r.path.removeprefix(pfx) for r in router.routes]  # type: ignore[attr-defined]
+
+
+# ---------------------------------------------------------------------------
 # Skip rule tests
 # ---------------------------------------------------------------------------
 
@@ -96,7 +116,7 @@ def test_public_serialisable_method_generates_route() -> None:
     routers, skipped = generate_template_routers([_SimpleABC])
     assert len(routers) == 1
     router = routers[0]
-    route_paths = [r.path for r in router.routes]
+    route_paths = _local_paths(router)
     assert "/greet" in route_paths
     assert "/{index}/greet" in route_paths
     greet_skipped = [s for s in skipped if s.method == "greet"]
@@ -105,31 +125,31 @@ def test_public_serialisable_method_generates_route() -> None:
 
 def test_returns_none_generates_route() -> None:
     routers, _ = generate_template_routers([_ReturnsNone])
-    paths = [r.path for r in routers[0].routes]
+    paths = _local_paths(routers[0])
     assert "/reset" in paths
 
 
 def test_returns_bool_generates_route() -> None:
     routers, _ = generate_template_routers([_ReturnsBool])
-    paths = [r.path for r in routers[0].routes]
+    paths = _local_paths(routers[0])
     assert "/check" in paths
 
 
 def test_returns_dict_generates_route() -> None:
     routers, _ = generate_template_routers([_ReturnsDict])
-    paths = [r.path for r in routers[0].routes]
+    paths = _local_paths(routers[0])
     assert "/info" in paths
 
 
 def test_returns_list_generates_route() -> None:
     routers, _ = generate_template_routers([_ReturnsList])
-    paths = [r.path for r in routers[0].routes]
+    paths = _local_paths(routers[0])
     assert "/items" in paths
 
 
 def test_returns_union_str_none_generates_route() -> None:
     routers, _ = generate_template_routers([_ReturnsUnion])
-    paths = [r.path for r in routers[0].routes]
+    paths = _local_paths(routers[0])
     assert "/maybe" in paths
 
 
@@ -138,7 +158,7 @@ def test_lan_template_generates_all_serialisable_routes() -> None:
 
     routers, _skipped = generate_template_routers([LAN])
     assert len(routers) == 1
-    paths = {r.path for r in routers[0].routes}
+    paths = set(_local_paths(routers[0]))
     # These four were in the hand-written lan.py — must still be present
     assert "/ping" in paths
     assert "/{index}/ping" in paths
