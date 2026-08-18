@@ -160,6 +160,10 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 lambda done: None if done.cancelled() else done.exception(),
             )
             state["boot_task"] = task
+            # Yield to the event loop once so the task can run up to its first
+            # suspension point (queue.submit with mode="async" is effectively
+            # synchronous), ensuring _boot_job is set before status() is called.
+            await asyncio.sleep(0)
         else:
             await current.boot()
         return current.status()

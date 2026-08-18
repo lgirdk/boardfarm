@@ -351,7 +351,7 @@ class DockerLauncher:
 
         host_port = _free_port()
         created_at = time.time()
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         def _start() -> object:
             return self._client.containers.run(
@@ -389,7 +389,7 @@ class DockerLauncher:
         :param session_id: session whose containers to remove
         :type session_id: str
         """
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         containers = await loop.run_in_executor(
             None,
             lambda: self._client.containers.list(
@@ -408,7 +408,7 @@ class DockerLauncher:
         """
         from boardfarm3_control.models import AgentInfo
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         containers = await loop.run_in_executor(
             None,
             lambda: self._client.containers.list(
