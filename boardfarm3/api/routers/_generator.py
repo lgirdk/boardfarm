@@ -299,9 +299,8 @@ def generate_template_routers(
     all_skipped: list[SkippedMethod] = []
 
     for template in templates:
-        # No prefix here — prefix is added by the caller via app.include_router().
-        # Keeping routes without a prefix lets callers inspect r.path directly.
         router = APIRouter(
+            prefix=f"/templates/{template.__name__.lower()}",
             tags=[f"templates:{template.__name__.lower()}"],
         )
         for name, obj in inspect.getmembers(template):
