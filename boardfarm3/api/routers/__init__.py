@@ -89,6 +89,20 @@ def _async_response(job: Job) -> JSONResponse:
     )
 
 
+def _make_wrapper(bundle: RouterBundle) -> APIRouter:
+    """Wrap bundle routers under the bundle namespace prefix.
+
+    :param bundle: router bundle with namespace and routers
+    :type bundle: RouterBundle
+    :return: wrapper APIRouter with namespace prefix applied
+    :rtype: APIRouter
+    """
+    wrapper = APIRouter(prefix=f"/{bundle.namespace}")
+    for router in bundle.routers:
+        wrapper.include_router(router)
+    return wrapper
+
+
 def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
     """Discover all FastAPI routers contributed via the ``boardfarm_api`` entrypoints.
 
@@ -99,23 +113,19 @@ def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
     :return: namespaced routers and all skipped methods from all bundles
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
+    result_routers: list[APIRouter] = []
+    result_skipped: list[SkippedMethod] = []
     try:
-        from boardfarm3.api import hookspecs as _api_hookspecs
+        from boardfarm3.api import hookspecs as _api_hookspecs  # pylint: disable=import-outside-toplevel
 
         _pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         _pm.add_hookspecs(_api_hookspecs)
         _pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
-        bundles: list[RouterBundle] = _pm.hook.boardfarm_add_api_routers()
-        result_routers: list[APIRouter] = []
-        result_skipped: list[SkippedMethod] = []
+        bundles: list[list[RouterBundle]] = _pm.hook.boardfarm_add_api_routers()
         for bundle_list in bundles:
             for bundle in bundle_list:
-                wrapper = APIRouter(prefix=f"/{bundle.namespace}")
-                for router in bundle.routers:
-                    wrapper.include_router(router)
-                result_routers.append(wrapper)
+                result_routers.append(_make_wrapper(bundle))
                 result_skipped.extend(bundle.skipped)
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         return [], []
-    else:
-        return result_routers, result_skipped
+    return result_routers, result_skipped

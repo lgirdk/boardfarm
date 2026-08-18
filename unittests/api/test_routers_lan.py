@@ -256,8 +256,12 @@ def test_lan_ping_explicit_index_zero_same_as_shorthand(
     :param booted_client: test client with a booted LAN device
     :type booted_client: TestClient
     """
-    shorthand = booted_client.post("/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
-    explicit = booted_client.post("/core/templates/lan/0/ping", json={"ping_ip": "8.8.8.8"})
+    shorthand = booted_client.post(
+        "/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"}
+    )
+    explicit = booted_client.post(
+        "/core/templates/lan/0/ping", json={"ping_ip": "8.8.8.8"}
+    )
     assert shorthand.status_code == HTTP_OK
     assert explicit.status_code == HTTP_OK
     assert shorthand.json() == explicit.json()

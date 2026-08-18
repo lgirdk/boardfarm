@@ -173,7 +173,7 @@ def test_lan_template_generates_all_serialisable_routes() -> None:
 
 
 def test_routerbundle_wraps_routers_under_namespace() -> None:
-    """RouterBundle namespace is prepended by load_plugin_routers.
+    """Verify that load_plugin_routers prepends the bundle namespace prefix.
 
     :return: None
     :rtype: None
@@ -190,9 +190,7 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
 
     bundle = RouterBundle(namespace="test_ns", routers=[inner], skipped=[])
 
-    with patch(
-        "boardfarm3.api.routers.pluggy.PluginManager"
-    ) as mock_pm_cls:
+    with patch("boardfarm3.api.routers.pluggy.PluginManager") as mock_pm_cls:
         mock_pm = MagicMock()
         mock_pm_cls.return_value = mock_pm
         # pluggy collects each plugin's return value into a list, so the hook

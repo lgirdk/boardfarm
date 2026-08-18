@@ -59,6 +59,17 @@ class ConfigIn(BaseModel):
 _log = logging.getLogger(__name__)
 
 
+def _strip_operation_desc(operation: dict[str, Any]) -> None:
+    """Strip Sphinx field-list lines from a single OpenAPI operation description.
+
+    :param operation: OpenAPI operation object (mutated in-place)
+    :type operation: dict[str, Any]
+    """
+    desc = operation.get("description", "")
+    if desc:
+        operation["description"] = _strip_sphinx_params(desc)
+
+
 def _strip_sphinx_params(text: str) -> str:
     """Return the introductory paragraph of a Sphinx docstring.
 
@@ -138,9 +149,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         for path_item in schema.get("paths", {}).values():
             for operation in path_item.values():
                 if isinstance(operation, dict):
-                    desc = operation.get("description", "")
-                    if desc:
-                        operation["description"] = _strip_sphinx_params(desc)
+                    _strip_operation_desc(operation)
         return schema
 
     app.openapi = _clean_openapi  # type: ignore[method-assign]
@@ -148,7 +157,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     # Discover and mount plugin-contributed routers (template methods, use cases, etc.).
     # load_plugin_routers() uses a short-lived PluginManager for the boardfarm_api
     # entrypoint group — separate from the process-global boardfarm PluginManager.
-    from boardfarm3.api.routers import load_plugin_routers
+    from boardfarm3.api.routers import load_plugin_routers  # pylint: disable=import-outside-toplevel
 
     _plugin_routers, _skipped = load_plugin_routers()
     for _router in _plugin_routers:

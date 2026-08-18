@@ -67,9 +67,9 @@ def boardfarm_add_api_routers() -> list[RouterBundle]:
     :return: one RouterBundle for the ``core`` namespace
     :rtype: list[RouterBundle]
     """
-    from boardfarm3.api.routers import RouterBundle
-    from boardfarm3.api.routers._generator import generate_template_routers
-    from boardfarm3.templates.lan import LAN
+    from boardfarm3.api.routers import RouterBundle  # pylint: disable=import-outside-toplevel
+    from boardfarm3.api.routers._generator import generate_template_routers  # pylint: disable=import-outside-toplevel
+    from boardfarm3.templates.lan import LAN  # pylint: disable=import-outside-toplevel
 
     routers, skipped = generate_template_routers([LAN])
     return [RouterBundle(namespace="core", routers=routers, skipped=skipped)]
