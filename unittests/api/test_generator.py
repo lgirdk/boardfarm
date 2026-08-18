@@ -226,6 +226,24 @@ def test_template_mount_duplicate_name_skipped() -> None:
     assert any(s.method == "dup" and "duplicate" in s.reason for s in skipped)
 
 
+def test_cpe_flatten_exposes_sw_and_hw_methods() -> None:
+    from boardfarm3.api.routers._generator import (
+        TemplateMount,
+        generate_template_routers,
+    )
+    from boardfarm3.templates.cpe import CPE, CPEHW, CPESW
+
+    routers, _ = generate_template_routers(
+        [TemplateMount("cpe", CPE, CPESW, "sw"), TemplateMount("cpe", CPE, CPEHW, "hw")]
+    )
+    assert len(routers) == 1
+    assert routers[0].prefix == "/templates/cpe"
+    paths = set(_local_paths(routers[0]))
+    assert "/reset" in paths  # CPESW.reset -> None
+    assert "/factory_reset" in paths  # CPESW.factory_reset -> bool
+    assert "/power_cycle" in paths  # CPEHW.power_cycle -> None
+
+
 def test_bare_type_still_normalises_to_router() -> None:
     routers, _ = generate_template_routers([_ReturnsBool])
     assert routers[0].prefix == "/templates/_returnsbool"
