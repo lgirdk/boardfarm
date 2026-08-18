@@ -14,8 +14,9 @@ if TYPE_CHECKING:
 
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 
-# Create hookspec marker for the boardfarm_api entrypoint group
-hookspec = HookspecMarker("boardfarm_api")
+# Create hookspec markers for the two separate PluginManagers
+hookspec = HookspecMarker("boardfarm")  # For the main boardfarm PluginManager
+hookspec_api = HookspecMarker("boardfarm_api")  # For the boardfarm_api PluginManager
 
 # pylint: disable=unused-argument
 
@@ -42,7 +43,7 @@ def boardfarm_api_resolve_config(
     """
 
 
-@hookspec
+@hookspec_api
 def boardfarm_add_api_routers() -> list[APIRouter]:
     """Return FastAPI routers to mount on the runtime agent.
 
