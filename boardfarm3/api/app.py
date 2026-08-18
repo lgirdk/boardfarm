@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import logging
 import tarfile
 from contextlib import asynccontextmanager
 from http import HTTPStatus
@@ -53,6 +54,29 @@ class ConfigIn(BaseModel):
 
     payload: dict[str, Any]
     options: ConfigOptions = Field(default_factory=ConfigOptions)
+
+
+_log = logging.getLogger(__name__)
+
+
+def _strip_sphinx_params(text: str) -> str:
+    """Return the introductory paragraph of a Sphinx docstring.
+
+    Strips all content from the first Sphinx field-list marker onward
+    (any line whose stripped form starts with ``:``, e.g. ``:param``,
+    ``:type:``, ``:return:``, ``:raises:``).
+
+    :param text: raw docstring text
+    :type text: str
+    :return: text with Sphinx field-list lines removed
+    :rtype: str
+    """
+    clean: list[str] = []
+    for line in text.splitlines():
+        if line.lstrip().startswith(":"):
+            break
+        clean.append(line)
+    return "\n".join(clean).rstrip()
 
 
 def build_session(session_id: str, options: RuntimeOptions) -> Session:
@@ -107,14 +131,36 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
 
     app = FastAPI(title=f"boardfarm runtime agent [{board_name}]", lifespan=lifespan)
 
+    _orig_openapi = app.openapi
+
+    def _clean_openapi() -> dict[str, Any]:
+        schema = _orig_openapi()
+        for path_item in schema.get("paths", {}).values():
+            for operation in path_item.values():
+                if isinstance(operation, dict):
+                    desc = operation.get("description", "")
+                    if desc:
+                        operation["description"] = _strip_sphinx_params(desc)
+        return schema
+
+    app.openapi = _clean_openapi  # type: ignore[method-assign]
+
     # Discover and mount plugin-contributed routers (template methods, use cases, etc.).
     # load_plugin_routers() uses a short-lived PluginManager for the boardfarm_api
     # entrypoint group — separate from the process-global boardfarm PluginManager.
     from boardfarm3.api.routers import load_plugin_routers
 
-    _plugin_routers, _ = load_plugin_routers()
+    _plugin_routers, _skipped = load_plugin_routers()
     for _router in _plugin_routers:
         app.include_router(_router)
+    for _s in _skipped:
+        _log.warning(
+            "template route skipped: %s.%s — %s", _s.template, _s.method, _s.reason
+        )
+    app.state.skipped_routes = [
+        {"template": s.template, "method": s.method, "reason": s.reason}
+        for s in _skipped
+    ]
 
     def session() -> Session:
         return state["session"]
@@ -297,5 +343,18 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     async def job_console(job_id: str, cursor: int = 0) -> dict[str, Any]:
         events, next_cursor = session().buffer.read(cursor=cursor, job_id=job_id)
         return {"events": [event.__dict__ for event in events], "cursor": next_cursor}
+
+    @app.get("/diagnostics/skipped-routes")
+    async def diagnostics_skipped_routes() -> dict[str, Any]:
+        """List template methods that the router generator could not expose.
+
+        Returns methods excluded from route generation (non-serialisable returns,
+        missing annotations, properties, etc.) so developers know what to add
+        manually.
+
+        :return: skipped method list
+        :rtype: dict[str, Any]
+        """
+        return {"skipped": app.state.skipped_routes}
 
     return app
