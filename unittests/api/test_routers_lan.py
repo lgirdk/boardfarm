@@ -243,7 +243,7 @@ def test_lan_ping_sync_returns_true(booted_client: TestClient) -> None:
     :param booted_client: test client with a booted LAN device
     :type booted_client: TestClient
     """
-    resp = booted_client.post("/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
+    resp = booted_client.post("/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
     assert resp.status_code == HTTP_OK
     assert resp.json() == {"result": True}
 
@@ -256,8 +256,8 @@ def test_lan_ping_explicit_index_zero_same_as_shorthand(
     :param booted_client: test client with a booted LAN device
     :type booted_client: TestClient
     """
-    shorthand = booted_client.post("/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
-    explicit = booted_client.post("/templates/lan/0/ping", json={"ping_ip": "8.8.8.8"})
+    shorthand = booted_client.post("/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
+    explicit = booted_client.post("/core/templates/lan/0/ping", json={"ping_ip": "8.8.8.8"})
     assert shorthand.status_code == HTTP_OK
     assert explicit.status_code == HTTP_OK
     assert shorthand.json() == explicit.json()
@@ -270,7 +270,7 @@ def test_lan_ping_async_returns_202_and_job_id(booted_client: TestClient) -> Non
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/ping?mode=async", json={"ping_ip": "8.8.8.8"}
+        "/core/templates/lan/ping?mode=async", json={"ping_ip": "8.8.8.8"}
     )
     assert resp.status_code == HTTP_ACCEPTED
     data = resp.json()
@@ -285,7 +285,7 @@ def test_lan_ping_wrong_index_returns_404(booted_client: TestClient) -> None:
     :param booted_client: test client with a booted LAN device
     :type booted_client: TestClient
     """
-    resp = booted_client.post("/templates/lan/1/ping", json={"ping_ip": "8.8.8.8"})
+    resp = booted_client.post("/core/templates/lan/1/ping", json={"ping_ip": "8.8.8.8"})
     assert resp.status_code == HTTP_NOT_FOUND
 
 
@@ -295,7 +295,7 @@ def test_lan_ping_unbooted_session_returns_409(unbooted_client: TestClient) -> N
     :param unbooted_client: test client whose session has no device_manager
     :type unbooted_client: TestClient
     """
-    resp = unbooted_client.post("/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
+    resp = unbooted_client.post("/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
     assert resp.status_code == HTTP_CONFLICT
 
 
@@ -311,7 +311,7 @@ def test_lan_get_interface_macaddr_sync(booted_client: TestClient) -> None:
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/get_interface_macaddr", json={"interface": "eth0"}
+        "/core/templates/lan/get_interface_macaddr", json={"interface": "eth0"}
     )
     assert resp.status_code == HTTP_OK
     assert resp.json() == {"result": "aa:bb:cc:dd:ee:ff"}
@@ -324,7 +324,7 @@ def test_lan_get_interface_macaddr_async(booted_client: TestClient) -> None:
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/get_interface_macaddr?mode=async",
+        "/core/templates/lan/get_interface_macaddr?mode=async",
         json={"interface": "eth0"},
     )
     assert resp.status_code == HTTP_ACCEPTED
@@ -343,7 +343,7 @@ def test_lan_get_interface_ipv4addr_sync(booted_client: TestClient) -> None:
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/get_interface_ipv4addr", json={"interface": "eth0"}
+        "/core/templates/lan/get_interface_ipv4addr", json={"interface": "eth0"}
     )
     assert resp.status_code == HTTP_OK
     assert resp.json() == {"result": "192.168.1.100"}
@@ -358,7 +358,7 @@ def test_lan_get_interface_ipv4addr_wrong_index_returns_404(
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/99/get_interface_ipv4addr", json={"interface": "eth0"}
+        "/core/templates/lan/99/get_interface_ipv4addr", json={"interface": "eth0"}
     )
     assert resp.status_code == HTTP_NOT_FOUND
 
@@ -377,7 +377,7 @@ def test_lan_set_link_state_sync_returns_null_result(
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/set_link_state",
+        "/core/templates/lan/set_link_state",
         json={"interface": "eth0", "state": "up"},
     )
     assert resp.status_code == HTTP_OK
@@ -391,8 +391,74 @@ def test_lan_set_link_state_async(booted_client: TestClient) -> None:
     :type booted_client: TestClient
     """
     resp = booted_client.post(
-        "/templates/lan/set_link_state?mode=async",
+        "/core/templates/lan/set_link_state?mode=async",
         json={"interface": "eth0", "state": "down"},
     )
     assert resp.status_code == HTTP_ACCEPTED
     assert resp.json()["job_id"].startswith("j-")
+
+
+# ---------------------------------------------------------------------------
+# Tests — namespace + docstring + diagnostics
+# ---------------------------------------------------------------------------
+
+
+def test_namespace_prefix_applied(booted_client: TestClient) -> None:
+    """Routes appear under /core/templates/lan/, not bare /templates/lan/.
+
+    :param booted_client: test client with booted session
+    :type booted_client: TestClient
+    """
+    schema = booted_client.get("/openapi.json").json()
+    paths = list(schema["paths"].keys())
+    assert any("/core/templates/lan/" in p for p in paths)
+    assert not any(p.startswith("/templates/lan/") for p in paths)
+
+
+def test_namespace_prefix_absent_for_bare_templates(booted_client: TestClient) -> None:
+    """Bare /templates/lan/ paths are absent — namespace is always applied.
+
+    :param booted_client: test client with booted session
+    :type booted_client: TestClient
+    """
+    schema = booted_client.get("/openapi.json").json()
+    for path in schema["paths"]:
+        assert not path.startswith("/templates/lan/"), (
+            f"Bare template path leaked into schema: {path}"
+        )
+
+
+def test_openapi_descriptions_have_no_sphinx_params(booted_client: TestClient) -> None:
+    """No operation description contains raw Sphinx field markers.
+
+    :param booted_client: test client with booted session
+    :type booted_client: TestClient
+    """
+    schema = booted_client.get("/openapi.json").json()
+    for path, path_item in schema["paths"].items():
+        for method, operation in path_item.items():
+            desc = operation.get("description", "")
+            assert ":param" not in desc, (
+                f"Sphinx :param found in {method.upper()} {path}: {desc!r}"
+            )
+            assert ":rtype" not in desc, (
+                f"Sphinx :rtype found in {method.upper()} {path}: {desc!r}"
+            )
+
+
+def test_skipped_routes_endpoint(booted_client: TestClient) -> None:
+    """GET /diagnostics/skipped-routes returns a list of skipped methods.
+
+    :param booted_client: test client with booted session
+    :type booted_client: TestClient
+    """
+    resp = booted_client.get("/diagnostics/skipped-routes")
+    assert resp.status_code == HTTP_OK
+    data = resp.json()
+    assert "skipped" in data
+    assert isinstance(data["skipped"], list)
+    # Each entry must have the three required keys
+    for entry in data["skipped"]:
+        assert "template" in entry
+        assert "method" in entry
+        assert "reason" in entry
