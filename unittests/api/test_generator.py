@@ -185,7 +185,7 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
     inner = APIRouter(prefix="/templates/foo")
 
     @inner.get("/bar")
-    async def _dummy() -> dict:  # noqa: ANN201
+    async def _dummy() -> dict:
         return {}
 
     bundle = RouterBundle(namespace="test_ns", routers=[inner], skipped=[])
@@ -195,7 +195,9 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
     ) as mock_pm_cls:
         mock_pm = MagicMock()
         mock_pm_cls.return_value = mock_pm
-        mock_pm.hook.boardfarm_add_api_routers.return_value = [bundle]
+        # pluggy collects each plugin's return value into a list, so the hook
+        # call returns list[list[RouterBundle]] — one inner list per plugin.
+        mock_pm.hook.boardfarm_add_api_routers.return_value = [[bundle]]
         routers, skipped = load_plugin_routers()
 
     assert len(routers) == 1

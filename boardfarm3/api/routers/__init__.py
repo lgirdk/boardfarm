@@ -108,12 +108,14 @@ def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
         bundles: list[RouterBundle] = _pm.hook.boardfarm_add_api_routers()
         result_routers: list[APIRouter] = []
         result_skipped: list[SkippedMethod] = []
-        for bundle in bundles:
-            wrapper = APIRouter(prefix=f"/{bundle.namespace}")
-            for router in bundle.routers:
-                wrapper.include_router(router)
-            result_routers.append(wrapper)
-            result_skipped.extend(bundle.skipped)
-        return result_routers, result_skipped
+        for bundle_list in bundles:
+            for bundle in bundle_list:
+                wrapper = APIRouter(prefix=f"/{bundle.namespace}")
+                for router in bundle.routers:
+                    wrapper.include_router(router)
+                result_routers.append(wrapper)
+                result_skipped.extend(bundle.skipped)
     except Exception:  # noqa: BLE001
         return [], []
+    else:
+        return result_routers, result_skipped
