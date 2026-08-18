@@ -207,3 +207,35 @@ def test_unregister_device_registered_in_plugin(device_manager: DeviceManager) -
         )
     device_manager.unregister_device("dummy")
     assert not plugin_manager.has_plugin("dummy")
+
+
+def test_get_device_by_name_returns_registered_device() -> None:
+    from unittest.mock import MagicMock
+
+    from boardfarm3.lib.device_manager import DeviceManager
+
+    dm = DeviceManager.__new__(DeviceManager)  # bypass singleton __init__
+    sentinel = object()
+    pm = MagicMock()
+    pm.get_plugin.return_value = sentinel
+    dm._plugin_manager = pm
+
+    assert dm.get_device_by_name("lan") is sentinel
+    pm.get_plugin.assert_called_once_with("lan")
+
+
+def test_get_device_by_name_missing_raises() -> None:
+    from unittest.mock import MagicMock
+
+    import pytest
+
+    from boardfarm3.exceptions import DeviceNotFound
+    from boardfarm3.lib.device_manager import DeviceManager
+
+    dm = DeviceManager.__new__(DeviceManager)
+    pm = MagicMock()
+    pm.get_plugin.return_value = None
+    dm._plugin_manager = pm
+
+    with pytest.raises(DeviceNotFound):
+        dm.get_device_by_name("nope")
