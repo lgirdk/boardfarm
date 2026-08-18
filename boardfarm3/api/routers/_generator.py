@@ -16,18 +16,21 @@ from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 from fastapi import APIRouter, Request
 from pydantic import create_model
 
+from boardfarm3.api.routers import _async_response, _resolve
+
 if TYPE_CHECKING:
     from fastapi.responses import JSONResponse
-
-from boardfarm3.api.routers import _async_response, _resolve
 
 _log = logging.getLogger(__name__)
 
 # Guard for the Python 3.10+ union syntax type (X | Y).
-_UNION_TYPE: type | None = getattr(types, "UnionType", None)
+_UNION_TYPE: type | None = getattr(types, "UnionType", None)  # pylint: disable=invalid-name
 
 # Primitive types that are directly JSON-serialisable.
 _PRIMITIVE_TYPES: frozenset[type] = frozenset({str, int, float, bool, dict, list})
+
+# NoneType singleton — avoids calling type() at check time (pylint C0123).
+_NONE_TYPE: type = type(None)  # pylint: disable=invalid-name
 
 # ---------------------------------------------------------------------------
 # Serialisability check
@@ -43,9 +46,12 @@ def _is_serialisable(annotation: Any) -> bool:  # noqa: ANN401
     :rtype: bool
     """
     # None / NoneType (-> None annotation), typing.Any, and bare primitives
-    if annotation is None or annotation is type(None) or annotation is Any:
-        return True
-    if annotation in _PRIMITIVE_TYPES:
+    if (
+        annotation is None
+        or annotation is _NONE_TYPE
+        or annotation is Any
+        or annotation in _PRIMITIVE_TYPES
+    ):
         return True
     origin = get_origin(annotation)
     # Union types (both X | Y syntax and Union[X, Y]) and generic dict/list:
@@ -100,9 +106,7 @@ def _make_request_model(method_name: str, sig: inspect.Signature) -> type:
         if name == "self":
             continue
         annotation = param.annotation
-        default = (
-            param.default if param.default is not inspect.Parameter.empty else ...
-        )
+        default = param.default if param.default is not inspect.Parameter.empty else ...
         fields[name] = (annotation, default)
     model_name = (
         "".join(part.capitalize() for part in method_name.split("_")) + "Request"
@@ -183,7 +187,7 @@ def _make_handler(
     return handler
 
 
-def _validate_sig(
+def _validate_sig(  # pylint: disable=too-many-return-statements
     template_name: str,
     name: str,
     sig: inspect.Signature,
@@ -200,8 +204,7 @@ def _validate_sig(
     :rtype: SkippedMethod | None
     """
     has_var = any(
-        p.kind
-        in {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}
+        p.kind in {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}
         for p in sig.parameters.values()
     )
     if has_var:
@@ -228,7 +231,7 @@ def _validate_sig(
     return None
 
 
-def _process_member(
+def _process_member(  # pylint: disable=too-many-return-statements
     template: type,
     name: str,
     obj: object,
@@ -257,9 +260,7 @@ def _process_member(
     except (ValueError, TypeError):
         return None
     except NameError:
-        return SkippedMethod(
-            template.__name__, name, "unevaluable annotation"
-        )
+        return SkippedMethod(template.__name__, name, "unevaluable annotation")
 
     skipped = _validate_sig(template.__name__, name, sig)
     if skipped is not None:
@@ -324,9 +325,9 @@ def generate_template_routers(
 
             handler = result
             router.post(f"/{name}", status_code=200, response_model=None)(handler)
-            router.post(
-                f"/{{index}}/{name}", status_code=200, response_model=None
-            )(handler)
+            router.post(f"/{{index}}/{name}", status_code=200, response_model=None)(
+                handler
+            )
 
         routers.append(router)
 
