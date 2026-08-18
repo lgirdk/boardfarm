@@ -89,7 +89,6 @@ def load_plugin_routers() -> list[APIRouter]:
 
 
 def _make_proxy_endpoint(
-    original_path: str,
     original_endpoint: Any,  # noqa: ANN401
     registry: SessionRegistry,
 ) -> Any:  # noqa: ANN401
@@ -99,10 +98,10 @@ def _make_proxy_endpoint(
     OpenAPI schema.  The wrapper has the same signature as ``original_endpoint``
     with ``session_id: str`` prepended and ``request: Request`` ensured present.
     At runtime it only reads ``session_id`` and ``request`` — the body is forwarded
-    as raw bytes, never deserialised through Pydantic by the wrapper.
+    as raw bytes, never deserialised through Pydantic by the wrapper.  The
+    downstream path is derived from the live request URL so path parameters
+    keep their client-supplied values.
 
-    :param original_path: plugin route path (without session prefix)
-    :type original_path: str
     :param original_endpoint: the plugin's async handler function
     :type original_endpoint: Any
     :param registry: registry used to resolve the agent URL
@@ -146,15 +145,19 @@ def _make_proxy_endpoint(
     new_params.extend(existing_params)
     new_sig = sig.replace(parameters=new_params)
 
-    clean_path = original_path.lstrip("/")
-
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
         session_id: str = kwargs["session_id"]
         request: Request = kwargs["request"]
         info = registry.get(session_id)
         if info is None:
             raise HTTPException(status_code=404, detail=f"unknown session {session_id}")
-        return await proxy_request(request, info.agent_url, clean_path)
+        # Reconstruct the downstream path from the live request URL so that
+        # path parameters (e.g. ``{index}``) carry their client-supplied
+        # values.  Forwarding the frozen ``original_path`` template would send
+        # the literal ``{index}`` to the agent.
+        session_prefix = f"/sessions/{session_id}/"
+        downstream_path = request.url.path.split(session_prefix, 1)[1]
+        return await proxy_request(request, info.agent_url, downstream_path)
 
     proxy_endpoint.__signature__ = new_sig  # type: ignore[attr-defined]
     proxy_endpoint.__name__ = f"proxy_{original_endpoint.__name__}"
@@ -185,7 +188,7 @@ def register_plugin_routes(
             if not isinstance(route, APIRoute):
                 continue
             new_path = f"/sessions/{{session_id}}/{route.path.lstrip('/')}"
-            endpoint = _make_proxy_endpoint(route.path, route.endpoint, registry)
+            endpoint = _make_proxy_endpoint(route.endpoint, registry)
             wrapper_router.add_api_route(
                 path=new_path,
                 endpoint=endpoint,
