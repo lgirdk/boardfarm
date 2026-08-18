@@ -143,6 +143,47 @@ class _FakeRuntime:
         """
 
 
+class _FakeRuntimeNoDevices:
+    """RuntimeContext stand-in that never sets device_manager (stays None)."""
+
+    def __init__(self) -> None:
+        """Initialise with no config or device_manager."""
+        self.config: object = None
+        self.device_manager: object = None
+
+    def refresh_cmdline_args(self) -> None:
+        """No-op."""
+
+    def resolve(self, payload: dict[str, Any]) -> object:  # noqa: ARG002
+        """Set a placeholder config.
+
+        :param payload: ignored
+        :type payload: dict[str, Any]
+        :return: config
+        :rtype: object
+        """
+        self.config = object()
+        return self.config
+
+    def register_devices(self) -> object:
+        """Do NOT set device_manager (stays None).
+
+        :return: None
+        :rtype: object
+        """
+        return None
+
+    def boot_blocking(self) -> None:
+        """No-op boot."""
+
+    def release(self, deployment_status: dict[str, Any]) -> None:
+        """No-op release.
+
+        :param deployment_status: ignored
+        :type deployment_status: dict[str, Any]
+        """
+
+
 @pytest.fixture(name="client")
 def client_fixture(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     """Build a booted client with a real CPE (``board``) and a non-CPE (``other``).
@@ -180,6 +221,38 @@ def client_fixture(monkeypatch: pytest.MonkeyPatch) -> TestClient:
             json={"payload": {"inventory": {}, "env": {}}, "options": {}},
         )
         client.post("/session/boot")
+        yield client
+
+
+@pytest.fixture(name="unbooted_client")
+def unbooted_client_fixture(monkeypatch: pytest.MonkeyPatch) -> TestClient:
+    """Build a client whose session has never been configured or booted.
+
+    ``device_manager`` stays None so the use-case handler's 409 branch
+    (``session.runtime.device_manager is None``) is reached. The
+    ``cpe.get_cpu_usage`` use-case is monkeypatched (with its ``__module__``
+    rewritten) purely so the route is generated and mounted — the handler
+    raises before the stub would ever be invoked.
+
+    :param monkeypatch: pytest monkeypatch
+    :type monkeypatch: pytest.MonkeyPatch
+    :yield: unbooted test client
+    :rtype: TestClient
+    """
+    from boardfarm3.use_cases import cpe as uc_cpe
+
+    def _stub_get_cpu_usage(board: CPE) -> float:  # noqa: ARG001
+        return 12.5
+
+    _stub_get_cpu_usage.__module__ = uc_cpe.__name__
+    monkeypatch.setattr(uc_cpe, "get_cpu_usage", _stub_get_cpu_usage)
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=_FakeRuntimeNoDevices())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    with TestClient(application) as client:
         yield client
 
 
@@ -228,6 +301,21 @@ def test_usecase_wrong_type_device_422(client: TestClient) -> None:
     """
     resp = client.post("/core/use_cases/cpe/get_cpu_usage", json={"board": "other"})
     assert resp.status_code == HTTP_UNPROCESSABLE
+
+
+def test_usecase_unbooted_session_returns_409(unbooted_client: TestClient) -> None:
+    """Calling a use-case route before the session is booted returns 409.
+
+    ``session.runtime.device_manager`` stays None on an unbooted session, so
+    the handler must raise before attempting to resolve the ``board`` device.
+
+    :param unbooted_client: test client whose session has no device_manager
+    :type unbooted_client: TestClient
+    """
+    resp = unbooted_client.post(
+        "/core/use_cases/cpe/get_cpu_usage", json={"board": "board"}
+    )
+    assert resp.status_code == HTTP_CONFLICT
 
 
 def test_cpe_flatten_route_present_in_schema(client: TestClient) -> None:
