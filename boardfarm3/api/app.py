@@ -112,7 +112,8 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     # entrypoint group — separate from the process-global boardfarm PluginManager.
     from boardfarm3.api.routers import load_plugin_routers
 
-    for _router in load_plugin_routers():
+    _plugin_routers, _ = load_plugin_routers()
+    for _router in _plugin_routers:
         app.include_router(_router)
 
     def session() -> Session:

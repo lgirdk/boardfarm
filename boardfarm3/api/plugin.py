@@ -16,9 +16,9 @@ hookimpl_api = HookimplMarker("boardfarm_api")
 if TYPE_CHECKING:
     from argparse import Namespace
 
-    from fastapi import APIRouter
     from pluggy import PluginManager
 
+    from boardfarm3.api.routers import RouterBundle
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 
 
@@ -61,12 +61,15 @@ def boardfarm_api_resolve_config(
 
 
 @hookimpl_api
-def boardfarm_add_api_routers() -> list[APIRouter]:
-    """Return the core boardfarm API routers.
+def boardfarm_add_api_routers() -> list[RouterBundle]:
+    """Return the core boardfarm API routers, generated from template ABCs.
 
-    :return: LAN template router
-    :rtype: list[APIRouter]
+    :return: one RouterBundle for the ``core`` namespace
+    :rtype: list[RouterBundle]
     """
-    from boardfarm3.api.routers.lan import router as lan_router
+    from boardfarm3.api.routers import RouterBundle
+    from boardfarm3.api.routers._generator import generate_template_routers
+    from boardfarm3.templates.lan import LAN
 
-    return [lan_router]
+    routers, skipped = generate_template_routers([LAN])
+    return [RouterBundle(namespace="core", routers=routers, skipped=skipped)]

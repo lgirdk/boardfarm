@@ -9,9 +9,9 @@ from pluggy import HookspecMarker
 if TYPE_CHECKING:
     from argparse import Namespace
 
-    from fastapi import APIRouter
     from pluggy import PluginManager
 
+    from boardfarm3.api.routers import RouterBundle
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 
 # Create hookspec markers for the two separate PluginManagers
@@ -44,9 +44,9 @@ def boardfarm_api_resolve_config(
 
 
 @hookspec_api
-def boardfarm_add_api_routers() -> list[APIRouter]:
+def boardfarm_add_api_routers() -> list[RouterBundle]:
     """Return FastAPI routers to mount on the runtime agent.
 
-    :return: routers contributed by this plugin
-    :rtype: list[APIRouter]
+    :return: routers contributed by this plugin, wrapped in a RouterBundle
+    :rtype: list[RouterBundle]
     """

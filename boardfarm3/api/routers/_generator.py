@@ -19,14 +19,7 @@ from pydantic import create_model
 if TYPE_CHECKING:
     from fastapi.responses import JSONResponse
 
-from boardfarm3.api.routers import _resolve
-
-try:
-    from boardfarm3.api.routers import _async_response  # type: ignore[attr-defined]
-except ImportError:
-    from boardfarm3.api.routers.lan import (  # type: ignore[no-redef]
-        _async_response,
-    )
+from boardfarm3.api.routers import _async_response, _resolve
 
 _log = logging.getLogger(__name__)
 
