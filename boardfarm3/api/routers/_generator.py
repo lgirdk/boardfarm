@@ -86,6 +86,40 @@ class SkippedMethod:
     reason: str
 
 
+@dataclass
+class TemplateMount:
+    """Describes how a template's methods mount as routes.
+
+    :param mount: URL segment under ``/templates/`` (e.g. ``"cpe"``)
+    :type mount: str
+    :param resolve_as: template type looked up in the device manager
+    :type resolve_as: type
+    :param introspect: template ABC whose methods become routes
+    :type introspect: type
+    :param accessor: attribute on the resolved device to dispatch through
+        (``"sw"`` / ``"hw"``); ``None`` dispatches on the device itself
+    :type accessor: str | None
+    """
+
+    mount: str
+    resolve_as: type
+    introspect: type
+    accessor: str | None = None
+
+
+def _normalise_mount(item: type | TemplateMount) -> TemplateMount:
+    """Return *item* as a TemplateMount, wrapping a bare template type.
+
+    :param item: a template class or an explicit TemplateMount
+    :type item: type | TemplateMount
+    :return: a TemplateMount describing how to mount the template
+    :rtype: TemplateMount
+    """
+    if isinstance(item, TemplateMount):
+        return item
+    return TemplateMount(item.__name__.lower(), item, item, None)
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -115,21 +149,27 @@ def _make_request_model(method_name: str, sig: inspect.Signature) -> type:
 
 
 def _make_handler(
-    template: type,
+    resolve_as: type,
+    introspect: type,
     method_name: str,
     request_model: type,
+    accessor: str | None,
 ) -> Any:  # noqa: ANN401
-    """Build an async route handler for *method_name* on *template*.
+    """Build an async route handler for *method_name*.
 
     Injects ``__signature__`` so FastAPI generates a correct OpenAPI schema
     for the dynamically created function.
 
-    :param template: Template ABC class
-    :type template: type
+    :param resolve_as: template type resolved from the device manager
+    :type resolve_as: type
+    :param introspect: template whose method is dispatched
+    :type introspect: type
     :param method_name: name of the method to dispatch
     :type method_name: str
     :param request_model: Pydantic model for the request body
     :type request_model: type
+    :param accessor: attribute to dispatch through, or None for the device
+    :type accessor: str | None
     :return: async FastAPI route handler
     :rtype: Any
     """
@@ -142,21 +182,22 @@ def _make_handler(
     ) -> dict[str, Any] | JSONResponse:
         session = request.app.state.session
         device: Any = _resolve(  # type: ignore[type-abstract]
-            session, template, index
+            session, resolve_as, index
         )
+        target = device if accessor is None else getattr(device, accessor)
         job = await session.queue.submit(
-            lambda: getattr(device, method_name)(**body.model_dump()),
+            lambda: getattr(target, method_name)(**body.model_dump()),
             mode=mode,
         )
         if mode == "async":
             return _async_response(job)
         return {"result": job.result}
 
-    handler.__name__ = f"{template.__name__.lower()}_{method_name}"
+    handler.__name__ = f"{introspect.__name__.lower()}_{method_name}"
     handler.__qualname__ = handler.__name__
     handler.__doc__ = (
         f"{method_name.replace('_', ' ').capitalize()} on"
-        f" {template.__name__} device at *index*."
+        f" {introspect.__name__} device at *index*."
     )
     handler.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
         [
@@ -232,26 +273,26 @@ def _validate_sig(  # pylint: disable=too-many-return-statements
 
 
 def _process_member(  # pylint: disable=too-many-return-statements
-    template: type,
+    introspect: type,
     name: str,
     obj: object,
-) -> SkippedMethod | Any | None:  # noqa: ANN401
+) -> SkippedMethod | type | None:
     """Process a single class member to determine route generation outcome.
 
-    :param template: Template ABC class being introspected
-    :type template: type
+    :param introspect: Template ABC class being introspected
+    :type introspect: type
     :param name: attribute name from ``inspect.getmembers``
     :type name: str
-    :param obj: attribute value (result of ``getattr(template, name)``)
+    :param obj: attribute value (result of ``getattr(introspect, name)``)
     :type obj: object
-    :return: a handler callable to register, a SkippedMethod, or None to
-        skip silently
-    :rtype: SkippedMethod | Any | None
+    :return: a Pydantic request model to register a route for, a
+        SkippedMethod, or None to skip silently
+    :rtype: SkippedMethod | type | None
     """
-    raw = inspect.getattr_static(template, name, None)
+    raw = inspect.getattr_static(introspect, name, None)
 
     if isinstance(raw, (property, cached_property)):
-        return SkippedMethod(template.__name__, name, "property")
+        return SkippedMethod(introspect.__name__, name, "property")
     if not callable(obj) or isinstance(raw, (classmethod, staticmethod)):
         return None
 
@@ -260,13 +301,13 @@ def _process_member(  # pylint: disable=too-many-return-statements
     except (ValueError, TypeError):
         return None
     except NameError:
-        return SkippedMethod(template.__name__, name, "unevaluable annotation")
+        return SkippedMethod(introspect.__name__, name, "unevaluable annotation")
 
-    skipped = _validate_sig(template.__name__, name, sig)
+    skipped = _validate_sig(introspect.__name__, name, sig)
     if skipped is not None:
         return skipped
 
-    return _make_handler(template, name, _make_request_model(name, sig))
+    return _make_request_model(name, sig)
 
 
 # ---------------------------------------------------------------------------
@@ -274,60 +315,124 @@ def _process_member(  # pylint: disable=too-many-return-statements
 # ---------------------------------------------------------------------------
 
 
+@dataclass
+class _MountBuild:
+    """Mutable state accumulated while building one mount's router.
+
+    :param mount: URL segment this router mounts under
+    :type mount: str
+    :param router: router being built for *mount*
+    :type router: APIRouter
+    :param seen: method names already registered for *mount*
+    :type seen: set[str]
+    :param all_skipped: shared list of skipped methods to append to
+    :type all_skipped: list[SkippedMethod]
+    """
+
+    mount: str
+    router: APIRouter
+    seen: set[str]
+    all_skipped: list[SkippedMethod]
+
+
+def _register_member(  # pylint: disable=too-many-return-statements
+    build: _MountBuild,
+    spec: TemplateMount,
+    name: str,
+    obj: object,
+) -> None:
+    """Process one introspected member and register its route, if accepted.
+
+    Mutates *build* in place: on acceptance the handler is registered on
+    ``build.router`` and *name* is added to ``build.seen``; on rejection a
+    :class:`SkippedMethod` is appended to ``build.all_skipped`` (dunder
+    members are skipped silently).
+
+    :param build: mutable build state for the mount *name* belongs to
+    :type build: _MountBuild
+    :param spec: mount spec that *name* was introspected from
+    :type spec: TemplateMount
+    :param name: attribute name from ``inspect.getmembers``
+    :type name: str
+    :param obj: attribute value (result of ``getattr(spec.introspect, name)``)
+    :type obj: object
+    :return: None
+    :rtype: None
+    """
+    if name.startswith("__"):
+        return
+    if name.startswith("_"):
+        build.all_skipped.append(
+            SkippedMethod(spec.introspect.__name__, name, "private")
+        )
+        return
+    if name in build.seen:
+        build.all_skipped.append(
+            SkippedMethod(
+                spec.introspect.__name__, name, f"duplicate in mount '{build.mount}'"
+            )
+        )
+        return
+
+    result = _process_member(spec.introspect, name, obj)
+    if result is None:
+        return
+    if isinstance(result, SkippedMethod):
+        build.all_skipped.append(result)
+        _log.warning(
+            "template route skipped: %s.%s — %s",
+            spec.introspect.__name__,
+            result.method,
+            result.reason,
+        )
+        return
+
+    request_model = result
+    handler = _make_handler(
+        spec.resolve_as, spec.introspect, name, request_model, spec.accessor
+    )
+    build.seen.add(name)
+    router = build.router
+    router.post(f"/{name}", status_code=200, response_model=None)(handler)
+    router.post(f"/{{index}}/{name}", status_code=200, response_model=None)(handler)
+
+
 def generate_template_routers(
-    templates: list[type],
+    templates: list[type | TemplateMount],
 ) -> tuple[list[APIRouter], list[SkippedMethod]]:
-    """Generate FastAPI routers for each template ABC.
+    """Generate FastAPI routers for each template mount.
 
-    Reflects over public instance methods on each template, applies skip
-    rules, and builds a route handler for each accepted method.  Skipped
-    methods are collected, logged at WARNING, and returned alongside the
-    routers.
+    Bare template types are treated as a single-source mount. Multiple
+    ``TemplateMount`` specs sharing a ``mount`` flatten into one router; a
+    method name contributed by more than one spec is kept from the first
+    spec only and the rest are skipped.
 
-    :param templates: template ABC classes to introspect
-    :type templates: list[type]
+    :param templates: template classes or TemplateMount specs to introspect
+    :type templates: list[type | TemplateMount]
     :return: generated routers and list of skipped methods with reasons
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
+    mounts = [_normalise_mount(t) for t in templates]
+    grouped: dict[str, list[TemplateMount]] = {}
+    order: list[str] = []
+    for spec in mounts:
+        if spec.mount not in grouped:
+            grouped[spec.mount] = []
+            order.append(spec.mount)
+        grouped[spec.mount].append(spec)
+
     routers: list[APIRouter] = []
     all_skipped: list[SkippedMethod] = []
 
-    for template in templates:
+    for mount in order:
         router = APIRouter(
-            prefix=f"/templates/{template.__name__.lower()}",
-            tags=[f"templates:{template.__name__.lower()}"],
+            prefix=f"/templates/{mount}",
+            tags=[f"templates:{mount}"],
         )
-        for name, obj in inspect.getmembers(template):
-            if name.startswith("__"):
-                continue
-            if name.startswith("_"):
-                skipped = SkippedMethod(template.__name__, name, "private")
-                all_skipped.append(skipped)
-                _log.warning(
-                    "template route skipped: %s.%s — private",
-                    template.__name__,
-                    name,
-                )
-                continue
-
-            result = _process_member(template, name, obj)
-            if result is None:
-                continue
-            if isinstance(result, SkippedMethod):
-                all_skipped.append(result)
-                _log.warning(
-                    "template route skipped: %s.%s — %s",
-                    template.__name__,
-                    result.method,
-                    result.reason,
-                )
-                continue
-
-            handler = result
-            router.post(f"/{name}", status_code=200, response_model=None)(handler)
-            router.post(f"/{{index}}/{name}", status_code=200, response_model=None)(
-                handler
-            )
+        build = _MountBuild(mount, router, set(), all_skipped)
+        for spec in grouped[mount]:
+            for name, obj in inspect.getmembers(spec.introspect):
+                _register_member(build, spec, name, obj)
 
         routers.append(router)
 
