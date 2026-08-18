@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from boardfarm3 import hookspec
+from pluggy import HookspecMarker
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from pluggy import PluginManager
 
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
+
+# Create hookspec marker for the boardfarm_api entrypoint group
+hookspec = HookspecMarker("boardfarm_api")
 
 # pylint: disable=unused-argument
 

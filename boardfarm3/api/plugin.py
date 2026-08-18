@@ -4,13 +4,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from pluggy import HookimplMarker
+
 from boardfarm3 import hookimpl
 from boardfarm3.api import hookspecs
 from boardfarm3.lib.boardfarm_config import select_inventory
 
+# Create hookimpl marker for the boardfarm_api entrypoint group
+hookimpl_api = HookimplMarker("boardfarm_api")
+
 if TYPE_CHECKING:
     from argparse import Namespace
 
+    from fastapi import APIRouter
     from pluggy import PluginManager
 
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
@@ -52,3 +58,15 @@ def boardfarm_api_resolve_config(
         inventory_config=inventory_config,
         env_config=payload["env"],
     )
+
+
+@hookimpl_api
+def boardfarm_add_api_routers() -> list[APIRouter]:
+    """Return the core boardfarm API routers.
+
+    :return: LAN template router
+    :rtype: list[APIRouter]
+    """
+    from boardfarm3.api.routers.lan import router as lan_router
+
+    return [lan_router]
