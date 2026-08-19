@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import uvicorn
 
 from boardfarm3.api.app import create_app
+from boardfarm3.api.logs import install_agent_log
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -25,6 +26,7 @@ def build_app_from_env() -> FastAPI:
         msg = "BOARDFARM_BOARD_NAME must be set"
         raise ValueError(msg)
     session_id = os.environ.get("BOARDFARM_SESSION_ID", "s-local")
+    install_agent_log(session_id)
     return create_app(session_id, board_name)
 
 
