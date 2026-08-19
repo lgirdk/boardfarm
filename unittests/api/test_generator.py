@@ -343,6 +343,14 @@ def test_is_serialisable_typeddict_with_bad_value_false() -> None:
     assert _is_serialisable(_Bad) is False
 
 
+def test_is_serialisable_class_with_total_attr_is_false() -> None:
+    class _NotTypedDict:
+        __total__ = True
+        x: float
+
+    assert _is_serialisable(_NotTypedDict) is False
+
+
 # ---------------------------------------------------------------------------
 # _annotation_to_field_type
 # ---------------------------------------------------------------------------
