@@ -160,3 +160,25 @@ def test_generate_usecase_routers_enum_param_not_skipped() -> None:
 
     _, skipped = generate_usecase_routers([mod])
     assert not any(s.method == "send_probe" for s in skipped)
+
+
+def test_send_mldv2_report_is_routed_not_skipped() -> None:
+    """send_mldv2_report must appear in routes, not in skipped-routes.
+
+    This is the integration smoke test for the tuple+Enum type expansion
+    added in Tasks 1-3.  The real boardfarm3.use_cases.multicast module is
+    imported so that the annotation chain
+    ``list[tuple[list[str], str, MulticastGroupRecordType]]`` is evaluated
+    through ``_is_serialisable`` end-to-end.
+    """
+    import importlib
+
+    from boardfarm3.api.routers._usecase_generator import generate_usecase_routers
+
+    mod = importlib.import_module("boardfarm3.use_cases.multicast")
+    _, skipped = generate_usecase_routers([mod])
+    skipped_names = [s.method for s in skipped]
+    assert "send_mldv2_report" not in skipped_names, (
+        "send_mldv2_report was skipped: "
+        + next(s.reason for s in skipped if s.method == "send_mldv2_report")
+    )

@@ -16,17 +16,22 @@ from typing import TYPE_CHECKING, TypeAlias
 import pandas as pd
 
 from boardfarm3.exceptions import MulticastError, UseCaseFailure
-from boardfarm3.lib.multicast import IPerfResult, IPerfSession, IPerfStream
+from boardfarm3.lib.multicast import (
+    IPerfResult,
+    IPerfSession,
+    IPerfStream,
+    MulticastGroupRecordType,
+)
+from boardfarm3.templates.lan import LAN
+from boardfarm3.templates.wlan import WLAN
+
+CPEClients: TypeAlias = WLAN | LAN
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
     from boardfarm3.lib.multicast import IperfDevice
-    from boardfarm3.templates.lan import LAN
     from boardfarm3.templates.wan import WAN
-    from boardfarm3.templates.wlan import WLAN
-
-    CPEClients: TypeAlias = WLAN | LAN
 
 
 def _is_multicast_stream_active(
@@ -474,3 +479,32 @@ def wait_for_multicast_stream_to_end(stream_list: list[IPerfStream]) -> None:
 
     if failed_sessions:
         raise UseCaseFailure("Following sessions failed:\n".join(failed_sessions))
+
+
+def send_mldv2_report(
+    client: CPEClients,
+    mcast_group_record: list[tuple[list[str], str, MulticastGroupRecordType]],
+    count: int,
+) -> None:
+    """Send an MLDv2 membership report from a CPE client device.
+
+    Dispatches to the ``send_mldv2_report`` method on the device.
+    Source and group addresses must be valid IPv6 addresses; source
+    addresses must be non-multicast and the group address must be a
+    multicast address.
+
+    .. hint:: This Use Case implements statements from the test suite
+       such as:
+
+        - Send an MLDv2 report with allow-new-sources record from LAN client
+        - Send an MLDv2 leave report from WLAN client
+
+    :param client: CPE client (LAN or WLAN) to send the report from
+    :type client: CPEClients
+    :param mcast_group_record: list of ``(sources, group, record_type)``
+        tuples describing the MLDv2 group records
+    :type mcast_group_record: list[tuple[list[str], str, MulticastGroupRecordType]]
+    :param count: number of MLDv2 packets to send at 1 s intervals
+    :type count: int
+    """
+    client.send_mldv2_report(mcast_group_record, count)
