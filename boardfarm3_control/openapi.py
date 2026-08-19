@@ -103,6 +103,12 @@ def _make_proxy_endpoint(
     ``session_id`` from the body, strips it, and forwards the remainder to the
     downstream agent.
 
+    .. note::
+        The endpoint's body parameter **must** be named ``body`` (not ``_body`` or
+        any other name) for ``session_id`` injection to take effect.  An endpoint
+        whose body parameter has a different name will compile without error but
+        raise ``KeyError`` at call time.
+
     :param original_endpoint: the plugin's async handler function
     :type original_endpoint: Any
     :param registry: registry used to resolve the agent URL
