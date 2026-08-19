@@ -84,8 +84,12 @@ class Session:
         :type options: dict[str, Any] | None
         """
         for field_name, value in (options or {}).items():
-            if hasattr(self.options, field_name):
+            if field_name == "plugin_args":
+                self.options.plugin_args.update(value)
+            elif hasattr(self.options, field_name):
                 setattr(self.options, field_name, value)
+            else:
+                self.options.plugin_args[field_name] = value
         self.runtime.refresh_cmdline_args()
 
         def run() -> None:

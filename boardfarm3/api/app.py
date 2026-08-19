@@ -45,6 +45,7 @@ class ConfigOptions(BaseModel):
     skip_contingency_checks: bool | None = None
     save_console_logs: str | None = None
     ignore_devices: str | None = None
+    plugin_args: dict[str, Any] = Field(default_factory=dict)
 
 
 class ConfigIn(BaseModel):
