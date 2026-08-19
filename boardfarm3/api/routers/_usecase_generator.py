@@ -14,14 +14,18 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import create_model
+from pydantic import Field, create_model
 
 from boardfarm3.api.routers import _async_response
 from boardfarm3.api.routers._generator import (
     _NONE_TYPE,
     _UNION_TYPE,
     SkippedMethod,
+    _annotation_to_field_type,
+    _coerce,
+    _CoercionPlan,
     _is_serialisable,
+    _parse_sphinx_params,
 )
 from boardfarm3.exceptions import DeviceNotFound
 
@@ -118,33 +122,64 @@ class _ParamPlan:
     templates: tuple[type, ...]
 
 
-def _build_request_model(fn_name: str, sig: inspect.Signature) -> type:
+def _build_request_model(
+    fn_name: str,
+    sig: inspect.Signature,
+    docstring: str | None = None,
+) -> tuple[type, _CoercionPlan]:
     """Build a flat Pydantic model; device params become str name fields.
+
+    Enum and tuple annotations in primitive parameters are substituted with
+    API-friendly equivalents.  A :class:`_CoercionPlan` records which
+    parameters need coercion back to their original Python types at call time.
 
     :param fn_name: function name, used for the model class name
     :type fn_name: str
     :param sig: the function signature
     :type sig: inspect.Signature
-    :return: dynamically created Pydantic model
-    :rtype: type
+    :param docstring: raw function docstring for Sphinx param extraction
+    :type docstring: str | None
+    :return: (Pydantic model, coercion plan)
+    :rtype: tuple[type, _CoercionPlan]
     """
     fields: dict[str, Any] = {}
+    coercions: dict[str, Any] = {}
+    param_descriptions = _parse_sphinx_params(docstring)
     for name, param in sig.parameters.items():
         default = param.default if param.default is not inspect.Parameter.empty else ...
         if _classify_param(param.annotation) == "device":
             fields[name] = (str, ... if default is ... else default)
         else:
-            fields[name] = (param.annotation, default)
+            annotation = param.annotation
+            field_type = _annotation_to_field_type(annotation)
+            if field_type is not annotation:
+                coercions[name] = annotation
+            desc = param_descriptions.get(name, "")
+            if desc:
+                fields[name] = (
+                    field_type,
+                    Field(default=default, description=desc),
+                )
+            else:
+                fields[name] = (field_type, default)
     model_name = "".join(p.capitalize() for p in fn_name.split("_")) + "Request"
-    return create_model(model_name, **fields)  # type: ignore[call-overload]
+    return (
+        create_model(model_name, **fields),  # type: ignore[call-overload]
+        _CoercionPlan(coercions=coercions),
+    )
 
 
 def _make_usecase_handler(
     fn: Any,  # noqa: ANN401
     request_model: type,
     plans: list[_ParamPlan],
+    coercion_plan: _CoercionPlan,
 ) -> Any:  # noqa: ANN401
     """Build an async handler that resolves device params then calls *fn*.
+
+    Parameters in *coercion_plan* are translated from their API-friendly form
+    (e.g. Enum member name strings) back to real Python types before *fn* is
+    invoked.
 
     :param fn: the use-case function to invoke
     :type fn: Any
@@ -152,6 +187,8 @@ def _make_usecase_handler(
     :type request_model: type
     :param plans: per-parameter resolution plans
     :type plans: list[_ParamPlan]
+    :param coercion_plan: parameters requiring type coercion before the call
+    :type coercion_plan: _CoercionPlan
     :return: async FastAPI route handler
     :rtype: Any
     """
@@ -172,7 +209,11 @@ def _make_usecase_handler(
         kwargs: dict[str, Any] = {}
         for plan in plans:
             if not plan.is_device:
-                kwargs[plan.name] = data[plan.name]
+                raw = data[plan.name]
+                orig_ann = coercion_plan.coercions.get(plan.name)
+                kwargs[plan.name] = (
+                    _coerce(raw, orig_ann) if orig_ann is not None else raw
+                )
                 continue
             name = data[plan.name]
             try:
@@ -310,8 +351,8 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     module_name: str,
     fn_name: str,
     fn: Any,  # noqa: ANN401
-) -> SkippedMethod | tuple[type, list[_ParamPlan]]:
-    """Validate a function and return its request model + param plans.
+) -> SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan]:
+    """Validate a function and return its request model, param plans, and coercion plan.
 
     :param module_name: short module name for SkippedMethod records
     :type module_name: str
@@ -319,8 +360,8 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     :type fn_name: str
     :param fn: the function object
     :type fn: Any
-    :return: SkippedMethod when unroutable, else (request_model, plans)
-    :rtype: SkippedMethod | tuple[type, list[_ParamPlan]]
+    :return: SkippedMethod when unroutable, else (request_model, plans, coercion_plan)
+    :rtype: SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan]
     """
     sig = _signature_or_skip(module_name, fn_name, fn)
     if isinstance(sig, SkippedMethod):
@@ -334,7 +375,8 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     if skipped is not None:
         return skipped
 
-    return _build_request_model(fn_name, sig), plans
+    request_model, coercion_plan = _build_request_model(fn_name, sig, fn.__doc__)
+    return request_model, plans, coercion_plan
 
 
 def generate_usecase_routers(
@@ -371,8 +413,8 @@ def generate_usecase_routers(
                     result.reason,
                 )
                 continue
-            request_model, plans = result
-            handler = _make_usecase_handler(fn, request_model, plans)
+            request_model, plans, coercion_plan = result
+            handler = _make_usecase_handler(fn, request_model, plans, coercion_plan)
             router.post(f"/{fn_name}", status_code=200, response_model=None)(handler)
         routers.append(router)
 
