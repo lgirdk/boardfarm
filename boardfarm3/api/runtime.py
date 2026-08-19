@@ -30,6 +30,7 @@ class RuntimeOptions:
     skip_contingency_checks: bool = False
     save_console_logs: str = ""
     ignore_devices: str = ""
+    plugin_args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -82,6 +83,15 @@ class RuntimeContext:
             ignore_devices=self.options.ignore_devices,
             inventory_config="",
             env_config="",
+            # lgi-shared plugin args — defaults match what argparse produces when
+            # no flag is passed; can be overridden via options.plugin_args
+            flash_image=None,
+            flash_strategy=None,
+            flash_sku=None,
+            dependent_image=None,
+            dependent_strategy="bootloader",
+            # any plugin-specific args passed in the session options
+            **self.options.plugin_args,
         )
 
     def refresh_cmdline_args(self) -> None:

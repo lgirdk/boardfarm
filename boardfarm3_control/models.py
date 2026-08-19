@@ -32,6 +32,7 @@ class SessionCreate(BaseModel):
     payload: dict[str, Any]
     options: dict[str, Any] = Field(default_factory=dict)
     boot: bool = False
+    agent_env: dict[str, str] = Field(default_factory=dict)
 
 
 class SessionResponse(BaseModel):

@@ -31,6 +31,7 @@ class Launcher(Protocol):
         board_name: str,
         image: str,
         runtime_profile: str,
+        agent_env: dict[str, str] | None = None,
     ) -> AgentInfo:
         """Start a new agent container and return its info.
 
@@ -42,6 +43,8 @@ class Launcher(Protocol):
         :type image: str
         :param runtime_profile: profile key (stored as label)
         :type runtime_profile: str
+        :param agent_env: extra environment variables to pass to the agent
+        :type agent_env: dict[str, str] | None
         :return: container info
         :rtype: AgentInfo
         """
@@ -80,6 +83,7 @@ class FakeLauncher:
         board_name: str,
         image: str,  # noqa: ARG002
         runtime_profile: str,
+        agent_env: dict[str, str] | None = None,  # noqa: ARG002
     ) -> AgentInfo:
         """Allocate an in-memory session (no Docker).
 
@@ -176,6 +180,7 @@ class ProcessLauncher:
         board_name: str,
         image: str,  # noqa: ARG002
         runtime_profile: str,
+        agent_env: dict[str, str] | None = None,
     ) -> AgentInfo:
         """Start a boardfarm3.api subprocess on a free local port.
 
@@ -187,6 +192,8 @@ class ProcessLauncher:
         :type image: str
         :param runtime_profile: profile key stored in AgentInfo
         :type runtime_profile: str
+        :param agent_env: extra environment variables for the subprocess
+        :type agent_env: dict[str, str] | None
         :return: agent info with the subprocess pid as container_id
         :rtype: AgentInfo
         """
@@ -202,6 +209,7 @@ class ProcessLauncher:
                 "BOARDFARM_SESSION_ID": session_id,
                 "BOARDFARM_BOARD_NAME": board_name,
                 "BOARDFARM_AGENT_PORT": str(host_port),
+                **(agent_env or {}),
             },
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
@@ -333,6 +341,7 @@ class DockerLauncher:
         board_name: str,
         image: str,
         runtime_profile: str,
+        agent_env: dict[str, str] | None = None,
     ) -> AgentInfo:
         """Start a Docker container for a new agent session.
 
@@ -344,6 +353,8 @@ class DockerLauncher:
         :type image: str
         :param runtime_profile: profile key stored as label
         :type runtime_profile: str
+        :param agent_env: extra environment variables to inject into the container
+        :type agent_env: dict[str, str] | None
         :return: agent container info
         :rtype: AgentInfo
         """
@@ -368,6 +379,7 @@ class DockerLauncher:
                     "BOARDFARM_SESSION_ID": session_id,
                     "BOARDFARM_BOARD_NAME": board_name,
                     "BOARDFARM_AGENT_PORT": "8000",
+                    **(agent_env or {}),
                 },
             )
 

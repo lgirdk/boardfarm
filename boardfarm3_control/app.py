@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from boardfarm3_control.models import AgentInfo
 
 
-_HEALTH_TIMEOUT = 5.0      # seconds total for health poll
+_HEALTH_TIMEOUT = 30.0     # seconds total for health poll — plugin-heavy agents take >5 s to start
 _HEALTH_INTERVAL = 0.1     # seconds between health retries
 _STATE_TIMEOUT = 0.5       # seconds per-agent for GET /sessions fan-out
 _MAX_LIMIT = 100
@@ -96,7 +96,8 @@ def create_app(  # noqa: C901, PLR0915
         image = profiles[body.runtime_profile]
         try:
             info = await launcher.start(
-                session_id, body.board_name, image, body.runtime_profile
+                session_id, body.board_name, image, body.runtime_profile,
+                agent_env=body.agent_env or None,
             )
         except Exception as exc:
             await lease.release(session_id)

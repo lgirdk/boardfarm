@@ -34,6 +34,7 @@ def main() -> None:
         build_app_from_env(),
         host="0.0.0.0",  # noqa: S104
         port=int(os.environ.get("BOARDFARM_AGENT_PORT", "8000")),
+        loop="asyncio",  # nest_asyncio (used by lgi-shared) cannot patch uvloop
     )
 
 
