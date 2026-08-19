@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -33,7 +34,8 @@ if TYPE_CHECKING:
 
 _HEALTH_TIMEOUT = 30.0     # seconds total for health poll — plugin-heavy agents take >5 s to start
 _HEALTH_INTERVAL = 0.1     # seconds between health retries
-_STATE_TIMEOUT = 0.5       # seconds per-agent for GET /sessions fan-out
+# seconds per-agent for GET /sessions fan-out
+_STATE_TIMEOUT = float(os.environ.get("BOARDFARM_STATE_TIMEOUT", "2.0"))
 _MAX_LIMIT = 100
 
 
@@ -61,13 +63,15 @@ def create_app(  # noqa: C901, PLR0915
     registry = SessionRegistry()
 
     @asynccontextmanager
-    async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # noqa: ARG001
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await registry.rebuild(launcher)
         existing = await launcher.list_sessions()
         await lease.rebuild_from(existing)
+        app.state.http = httpx.AsyncClient()
         yield
         for info in await launcher.list_sessions():
             await launcher.stop(info.session_id)
+        await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
 
@@ -273,6 +277,12 @@ def create_app(  # noqa: C901, PLR0915
                 detail=f"unknown session {session_id}",
             )
         registry.touch(session_id)
-        return await proxy_request(request, info.agent_url, path)
+        return await proxy_request(
+            request,
+            info.agent_url,
+            path,
+            client=request.app.state.http,
+            session_id=session_id,
+        )
 
     return app
