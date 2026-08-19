@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import threading
 import time
 import uuid
@@ -14,6 +15,7 @@ from enum import Enum
 from typing import Any, Callable
 
 current_job_id: ContextVar[str | None] = ContextVar("current_job_id", default=None)
+_log = logging.getLogger(__name__)
 
 
 class JobState(str, Enum):
@@ -96,6 +98,10 @@ class ExecutionQueue:
             job.state = JobState.ERROR
             job.error = exc
             job.finished_at = time.time()
+            # Logged here so *every* job failure carries a traceback, not just
+            # boot. current_job_id is still set, so ConsoleCapture attributes
+            # the traceback to this job.
+            _log.exception("job %s failed", job.id)
             raise
         else:
             job.state = JobState.DONE
@@ -152,6 +158,14 @@ class ExecutionQueue:
         :rtype: Job | None
         """
         return self._running
+
+    def all_jobs(self) -> list[Job]:
+        """Return every retained job, oldest first.
+
+        :return: retained jobs in submission order
+        :rtype: list[Job]
+        """
+        return list(self._jobs.values())
 
     def cancel(self, job_id: str) -> bool:
         """Cancel a job that has not started yet.
