@@ -54,14 +54,19 @@ def test_plugin_route_request_model_in_openapi() -> None:
     assert "PingRequest" in schema_str or "host" in schema_str
 
 
-def test_plugin_route_is_prefixed_with_session_id() -> None:
+def test_plugin_route_has_session_id_in_body_not_path() -> None:
     app = _app_with_plugin()
     client = TestClient(app)
     schema = client.get("/openapi.json").json()
-    # All plugin paths must be under /sessions/{session_id}/
+    # Plugin paths must NOT carry {session_id} in the URL any more
     plugin_paths = [p for p in schema["paths"] if "ping" in p]
     assert len(plugin_paths) >= 1
-    assert all(p.startswith("/sessions/{session_id}/") for p in plugin_paths)
+    assert all("/sessions/{session_id}/" not in p for p in plugin_paths)
+    # The route is served at its original path (no /sessions/ prefix)
+    assert any(p.endswith("/use-cases/networking/ping") for p in plugin_paths)
+    # session_id field must appear in the request body schema
+    schema_str = str(schema)
+    assert "session_id" in schema_str
 
 
 def test_load_plugin_routers_returns_list() -> None:

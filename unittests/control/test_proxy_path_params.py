@@ -1,6 +1,6 @@
 """Regression tests for path-parameter substitution in proxied plugin routes.
 
-A proxied route such as ``/sessions/{sid}/core/templates/lan/{index}/foo`` must
+A proxied route such as ``/core/templates/lan/{index}/foo`` must
 forward the *client-supplied* value of ``{index}`` to the agent, not the literal
 template segment ``{index}``.
 """
@@ -25,7 +25,7 @@ _plugin_router = APIRouter()
 
 
 @_plugin_router.post("/core/templates/lan/{index}/get_interface_stats")
-async def _stats(index: int, _body: _StatsRequest) -> dict:  # noqa: ARG001
+async def _stats(index: int, body: _StatsRequest) -> dict:  # noqa: ARG001
     return {"result": {}}
 
 
@@ -79,8 +79,8 @@ def test_proxy_substitutes_index_path_param_into_downstream_url() -> None:
     respx.route(host="agent.local").mock(side_effect=capture)
 
     resp = _client().post(
-        "/sessions/s-1/core/templates/lan/0/get_interface_stats",
-        json={"iface": "eth1"},
+        "/core/templates/lan/0/get_interface_stats",
+        json={"session_id": "s-1", "iface": "eth1"},
     )
 
     assert resp.status_code == 200
