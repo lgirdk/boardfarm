@@ -19,6 +19,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.runtime import RuntimeOptions
@@ -417,5 +418,17 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         :rtype: dict[str, Any]
         """
         return {"skipped": app.state.skipped_routes}
+
+    @app.get("/diagnostics/threads")
+    async def diagnostics_threads() -> dict[str, Any]:
+        """Return the stack of every live thread.
+
+        Two samples taken 30 s apart, diffed, distinguish a wedged worker
+        from a healthy long wait.
+
+        :return: thread snapshot
+        :rtype: dict[str, Any]
+        """
+        return thread_snapshot()
 
     return app
