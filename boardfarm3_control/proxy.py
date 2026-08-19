@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 from typing import TYPE_CHECKING
@@ -76,6 +77,66 @@ def _client_or_default(
     return client, False
 
 
+async def _forward_stream(  # noqa: PLR0913
+    response: httpx.Response,
+    *,
+    request: Request,
+    url: str,
+    is_sse: bool,
+    session_id: str,
+    client: httpx.AsyncClient,
+    owns_client: bool,
+) -> AsyncIterator[bytes]:
+    """Stream *response* body, turning a mid-flight failure into an SSE frame.
+
+    Response headers have already been sent by the time this runs, so a
+    transport failure here cannot be raised as an ``HTTPException``. It is
+    logged instead, and for SSE responses a final ``event: error`` frame is
+    emitted so the client can tell a broken stream apart from one that ended
+    cleanly.
+
+    :param response: upstream streaming response being forwarded
+    :type response: httpx.Response
+    :param request: original incoming request, used for log context
+    :type request: Request
+    :param url: upstream URL being proxied, used for log context
+    :type url: str
+    :param is_sse: True when the response content-type is ``text/event-stream``
+    :type is_sse: bool
+    :param session_id: session this request belongs to, included in error frames
+    :type session_id: str
+    :param client: httpx client the response was made with
+    :type client: httpx.AsyncClient
+    :param owns_client: True when this call created *client* and must close it
+    :type owns_client: bool
+    :return: response body chunks, plus a trailing error frame on failure
+    :rtype: collections.abc.AsyncIterator[bytes]
+    """
+    try:
+        async for chunk in response.aiter_bytes():
+            yield chunk
+    except httpx.TransportError as exc:
+        _log.warning(
+            "proxy stream interrupted: %s %s: %s",
+            request.method,
+            url,
+            exc,
+        )
+        if is_sse:
+            payload = json.dumps(
+                {
+                    "error": "StreamInterrupted",
+                    "message": str(exc),
+                    "session_id": session_id,
+                },
+            )
+            yield f"event: error\ndata: {payload}\n\n".encode()
+    finally:
+        await response.aclose()
+        if owns_client:
+            await client.aclose()
+
+
 def _timeout_for(path: str) -> httpx.Timeout:
     """Build the httpx timeout appropriate for *path*.
 
@@ -99,7 +160,7 @@ async def proxy_request(  # noqa: PLR0913
     path: str,
     body: bytes | None = None,
     client: httpx.AsyncClient | None = None,
-    session_id: str = "",  # noqa: ARG001
+    session_id: str = "",
 ) -> StreamingResponse:
     """Forward *request* to *agent_url/path* and stream the response back.
 
@@ -152,21 +213,18 @@ async def proxy_request(  # noqa: PLR0913
             await client.aclose()
         raise HTTPException(status_code=502, detail="agent unreachable") from exc
 
-    async def generate() -> AsyncIterator[bytes]:
-        try:
-            async for chunk in response.aiter_bytes():
-                yield chunk
-        except httpx.TransportError:
-            # Client disconnected or agent closed the stream mid-flight.
-            # Response headers already sent — cannot raise HTTPException here.
-            return
-        finally:
-            await response.aclose()
-            if owns_client:
-                await client.aclose()
+    is_sse = "text/event-stream" in (response.headers.get("content-type") or "")
 
     return StreamingResponse(
-        content=generate(),
+        content=_forward_stream(
+            response,
+            request=request,
+            url=url,
+            is_sse=is_sse,
+            session_id=session_id,
+            client=client,
+            owns_client=owns_client,
+        ),
         status_code=response.status_code,
         headers=_filter_headers(dict(response.headers)),
         media_type=response.headers.get("content-type"),
