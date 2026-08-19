@@ -20,6 +20,7 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
+from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session, SessionState
 from boardfarm3.devices.base_devices import BoardfarmDevice
@@ -134,7 +135,16 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        session = build_session(session_id, RuntimeOptions(board_name=board_name))
+        session = build_session(
+            session_id,
+            RuntimeOptions(
+                board_name=board_name,
+                # console/ subdirectory, so agent.log sits beside it at the
+                # artifact root rather than inside the console-logs archive
+                # member (Task 12 relies on this layout).
+                save_console_logs=str(artifact_dir(session_id) / "console"),
+            ),
+        )
         state["session"] = session
         state["released"] = False
         # Exposed on app.state (in addition to the closure above) purely as
