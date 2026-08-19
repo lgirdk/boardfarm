@@ -42,10 +42,14 @@ async def proxy_request(
     request: Request,
     agent_url: str,
     path: str,
+    body: bytes | None = None,
 ) -> StreamingResponse:
     """Forward *request* to *agent_url/path* and stream the response back.
 
     Works for JSON, SSE, and binary (tar.gz) responses without buffering.
+    When *body* is provided it is forwarded instead of the original request
+    body; the stale ``content-length`` header is stripped so httpx can set
+    the correct value for the override payload.
 
     :param request: incoming Starlette request
     :type request: Request
@@ -53,6 +57,8 @@ async def proxy_request(
     :type agent_url: str
     :param path: path to append to agent_url
     :type path: str
+    :param body: optional body bytes to forward instead of the original
+    :type body: bytes | None
     :return: streaming response forwarded from the agent
     :rtype: StreamingResponse
     :raises HTTPException: 502 when the agent is unreachable or times out
@@ -61,15 +67,18 @@ async def proxy_request(
     if request.url.query:
         url = f"{url}?{request.url.query}"
 
-    body = await request.body()
+    raw = body if body is not None else await request.body()
+    forwarded_headers = _filter_headers(dict(request.headers))
+    if body is not None:
+        forwarded_headers.pop("content-length", None)
     client = httpx.AsyncClient()
 
     try:
         upstream_request = client.build_request(
             method=request.method,
             url=url,
-            headers=_filter_headers(dict(request.headers)),
-            content=body,
+            headers=forwarded_headers,
+            content=raw,
         )
         # Strip any hop-by-hop headers that httpx may have added during build
         upstream_request.headers = httpx.Headers(
