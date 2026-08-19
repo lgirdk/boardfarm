@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import inspect
+import json as _json
 import typing
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, HTTPException
 from fastapi.routing import APIRoute
+from pydantic import create_model
 from starlette.requests import Request
 
 if TYPE_CHECKING:
@@ -96,11 +98,10 @@ def _make_proxy_endpoint(
 
     FastAPI reads ``__signature__`` via ``inspect.signature()`` to generate the
     OpenAPI schema.  The wrapper has the same signature as ``original_endpoint``
-    with ``session_id: str`` prepended and ``request: Request`` ensured present.
-    At runtime it only reads ``session_id`` and ``request`` — the body is forwarded
-    as raw bytes, never deserialised through Pydantic by the wrapper.  The
-    downstream path is derived from the live request URL so path parameters
-    keep their client-supplied values.
+    with ``session_id: str`` injected into the Pydantic body model and
+    ``request: Request`` ensured present.  At runtime the proxy extracts
+    ``session_id`` from the body, strips it, and forwards the remainder to the
+    downstream agent.
 
     :param original_endpoint: the plugin's async handler function
     :type original_endpoint: Any
@@ -111,29 +112,41 @@ def _make_proxy_endpoint(
     """
     from boardfarm3_control.proxy import proxy_request
 
-    # Resolve ForwardRef annotations so Pydantic can build schemas correctly.
-    # This matters when the caller module uses `from __future__ import annotations`.
     try:
         resolved_hints = typing.get_type_hints(original_endpoint)
     except Exception:  # noqa: BLE001
         resolved_hints = {}
 
     sig = inspect.signature(original_endpoint)
-    existing_params = [
+    existing_params: list[inspect.Parameter] = [
         p.replace(annotation=resolved_hints[p.name])
         if p.name in resolved_hints and p.annotation is not inspect.Parameter.empty
         else p
         for p in sig.parameters.values()
     ]
 
-    # Build the new parameter list: session_id first, then request (if absent), then original params.
-    new_params: list[inspect.Parameter] = [
-        inspect.Parameter(
-            "session_id",
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=str,
-        ),
-    ]
+    # Extend the Pydantic body model with a required session_id field.
+    body_idx = next(
+        (i for i, p in enumerate(existing_params) if p.name == "body"),
+        None,
+    )
+    if body_idx is not None:
+        original_model = existing_params[body_idx].annotation
+        if hasattr(original_model, "model_fields"):
+            proxied_model = create_model(
+                f"Proxied{original_model.__name__}",
+                session_id=(str, ...),
+                **{
+                    name: (fi.annotation, fi)
+                    for name, fi in original_model.model_fields.items()
+                },
+            )
+            existing_params[body_idx] = existing_params[body_idx].replace(
+                annotation=proxied_model
+            )
+
+    # Ensure request is present; do not add a separate session_id path param.
+    new_params: list[inspect.Parameter] = []
     if not any(p.name == "request" for p in existing_params):
         new_params.append(
             inspect.Parameter(
@@ -146,18 +159,18 @@ def _make_proxy_endpoint(
     new_sig = sig.replace(parameters=new_params)
 
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
-        session_id: str = kwargs["session_id"]
+        body: Any = kwargs["body"]  # noqa: ANN401
         request: Request = kwargs["request"]
+        session_id: str = body.session_id
         info = registry.get(session_id)
         if info is None:
             raise HTTPException(status_code=404, detail=f"unknown session {session_id}")
-        # Reconstruct the downstream path from the live request URL so that
-        # path parameters (e.g. ``{index}``) carry their client-supplied
-        # values.  Forwarding the frozen ``original_path`` template would send
-        # the literal ``{index}`` to the agent.
-        session_prefix = f"/sessions/{session_id}/"
-        downstream_path = request.url.path.split(session_prefix, 1)[1]
-        return await proxy_request(request, info.agent_url, downstream_path)
+        stripped = body.model_dump(exclude={"session_id"})
+        stripped_bytes = _json.dumps(stripped).encode()
+        downstream_path = request.url.path.lstrip("/")
+        return await proxy_request(
+            request, info.agent_url, downstream_path, body=stripped_bytes
+        )
 
     proxy_endpoint.__signature__ = new_sig  # type: ignore[attr-defined]
     proxy_endpoint.__name__ = f"proxy_{original_endpoint.__name__}"
@@ -170,7 +183,7 @@ def register_plugin_routes(
     routers: list[APIRouter],
     registry: SessionRegistry,
 ) -> None:
-    """Wrap plugin routes as proxy-dispatch endpoints under ``/sessions/{session_id}/``.
+    """Wrap plugin routes as proxy-dispatch endpoints, injecting ``session_id`` into each body model.
 
     Each wrapped route preserves the original Pydantic request/response models
     so FastAPI generates an accurate unified OpenAPI schema.
@@ -187,7 +200,7 @@ def register_plugin_routes(
         for route in router.routes:
             if not isinstance(route, APIRoute):
                 continue
-            new_path = f"/sessions/{{session_id}}/{route.path.lstrip('/')}"
+            new_path = f"/{route.path.lstrip('/')}"
             endpoint = _make_proxy_endpoint(route.endpoint, registry)
             wrapper_router.add_api_route(
                 path=new_path,
