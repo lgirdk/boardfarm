@@ -2,127 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Callable
 
 import pytest
 
-from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session, SessionState
 from boardfarm3.exceptions import DeviceBootFailure, EnvConfigError
 
-
-class FakeRuntime:
-    """RuntimeContext stand-in that records calls instead of touching devices."""
-
-    def __init__(
-        self,
-        *,
-        resolve_error: Exception | None = None,
-        boot_error: Exception | None = None,
-    ) -> None:
-        """Initialise the fake.
-
-        :param resolve_error: raise this from resolve()
-        :type resolve_error: Exception | None
-        :param boot_error: raise this from boot_blocking()
-        :type boot_error: Exception | None
-        """
-        self.resolve_error = resolve_error
-        self.boot_error = boot_error
-        self.calls: list[str] = []
-        self.config = None
-        self.device_manager = None
-
-    def refresh_cmdline_args(self) -> None:
-        """Record that options were re-materialised."""
-        self.calls.append("refresh_cmdline_args")
-
-    def resolve(self, payload: dict[str, Any]) -> object:  # noqa: ARG002
-        """Record the call and optionally fail.
-
-        The configured error is an exception instance, so darglint2 cannot
-        infer its type from ``raise self.resolve_error``.
-
-        # noqa: DAR401
-        # noqa: DAR402
-
-        :param payload: opaque payload
-        :type payload: dict[str, Any]
-        :raises Exception: when configured to fail
-        :return: a placeholder config
-        :rtype: object
-        """
-        self.calls.append("resolve")
-        if self.resolve_error:
-            raise self.resolve_error
-        self.config = object()
-        return self.config
-
-    def register_devices(self) -> object:
-        """Record the call.
-
-        :return: a placeholder device manager
-        :rtype: object
-        """
-        self.calls.append("register_devices")
-        self.device_manager = object()
-        return self.device_manager
-
-    def boot_blocking(self) -> None:
-        """Record the call and optionally fail.
-
-        The configured error is an exception instance, so darglint2 cannot
-        infer its type from ``raise self.boot_error``.
-
-        # noqa: DAR401
-        # noqa: DAR402
-
-        :raises Exception: when configured to fail
-        """
-        self.calls.append("boot")
-        if self.boot_error:
-            raise self.boot_error
-
-    def release(self, deployment_status: dict[str, Any]) -> None:
-        """Record the call.
-
-        :param deployment_status: deployment outcome
-        :type deployment_status: dict[str, Any]
-        """
-        self.calls.append(f"release:{deployment_status['status']}")
-
-
-@pytest.fixture(name="make_session")
-def make_session_fixture() -> Callable[..., Session]:
-    """Build sessions and guarantee each one's console capture is uninstalled.
-
-    Two ``ConsoleCapture`` instances step on each other through the global
-    ``pexpect`` logger: whichever installs second snapshots the
-    already-modified ``propagate`` value, so its own later ``uninstall()``
-    restores the wrong value. Every session built through this factory is
-    tracked and torn down here -- ``uninstall()`` and ``queue.shutdown()``
-    are both safe to call twice, so this is harmless even for a test that
-    already released its own session -- which keeps a leftover session from
-    outliving its test with capture still installed.
-
-    :yield: factory that builds and tracks a session
-    :rtype: Callable[..., Session]
-    """
-    created: list[Session] = []
-
-    def factory(runtime: FakeRuntime | None = None) -> Session:
-        built = Session(
-            session_id="s-test",
-            options=RuntimeOptions(board_name="board-1"),
-            runtime=runtime if runtime is not None else FakeRuntime(),
-        )
-        created.append(built)
-        return built
-
-    yield factory
-    for built in created:
-        built.queue.shutdown()
-        built.capture.uninstall()
+from .conftest import FakeRuntime
 
 
 @pytest.fixture(name="session")
@@ -275,7 +162,7 @@ async def test_status_reports_lifecycle_fields(session: Session) -> None:
     """
     status = session.status()
     assert status["session_id"] == "s-test"
-    assert status["board_name"] == "board-1"
+    assert status["board_name"] == "board"
     assert status["state"] == "created"
     assert status["created_at"] > 0
     assert status["last_activity"] > 0
