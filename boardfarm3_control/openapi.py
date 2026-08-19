@@ -139,7 +139,7 @@ def _make_proxy_endpoint(
     if body_idx is not None:
         original_model = existing_params[body_idx].annotation
         if hasattr(original_model, "model_fields"):
-            proxied_model = create_model(
+            proxied_model = create_model(  # type: ignore[call-overload]
                 f"Proxied{original_model.__name__}",
                 session_id=(str, ...),
                 **{
@@ -165,7 +165,7 @@ def _make_proxy_endpoint(
     new_sig = sig.replace(parameters=new_params)
 
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
-        body: Any = kwargs["body"]  # noqa: ANN401
+        body: Any = kwargs["body"]
         request: Request = kwargs["request"]
         session_id: str = body.session_id
         info = registry.get(session_id)
