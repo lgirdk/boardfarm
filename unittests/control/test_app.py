@@ -355,3 +355,52 @@ def test_get_sessions_booted_false_when_agent_reports_ready() -> None:
     resp = client.get("/sessions")
     sessions = resp.json()["sessions"]
     assert sessions[0]["booted"] is False
+
+
+def test_lifespan_creates_and_closes_pooled_http_client() -> None:
+    """The app lifespan must own a pooled httpx.AsyncClient for the proxy route.
+
+    ``app.state.http`` only exists while the lifespan is active — that requires
+    driving the ``TestClient`` as a context manager, unlike ``_make_client()``
+    which never enters/exits the lifespan for the other tests in this module.
+    """
+    launcher = FakeLauncher()
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True):
+        assert isinstance(app.state.http, httpx.AsyncClient)
+        assert not app.state.http.is_closed
+    assert app.state.http.is_closed
+
+
+@respx.mock
+def test_proxy_route_uses_pooled_client_without_closing_it() -> None:
+    """The catch-all proxy route must forward via app.state.http and not close it.
+
+    A per-request client is only closed by ``proxy_request`` when it created
+    one itself. Passing the pooled ``app.state.http`` client must leave it
+    open after the response completes — otherwise every proxied call after
+    the first would fail against a closed client.
+    """
+    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    launcher = FakeLauncher()
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        create_resp = client.post(
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
+        )
+        sid = create_resp.json()["session_id"]
+        pooled_client = app.state.http
+        assert isinstance(pooled_client, httpx.AsyncClient)
+
+        respx.get(re.compile(r"http://localhost:\d+/custom/echo")).mock(
+            return_value=httpx.Response(200, json={"ok": True}),
+        )
+        resp = client.get(f"/sessions/{sid}/custom/echo")
+
+        assert resp.status_code == 200
+        assert resp.json() == {"ok": True}
+        assert not pooled_client.is_closed
+    assert pooled_client.is_closed
