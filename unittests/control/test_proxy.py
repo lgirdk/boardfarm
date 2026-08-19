@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import httpx
 import pytest
 import respx
@@ -10,6 +12,37 @@ from fastapi.testclient import TestClient
 from starlette.requests import Request  # noqa: TC002
 
 from boardfarm3_control.proxy import _HOP_BY_HOP, is_streaming_path, proxy_request
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Iterator
+
+
+class _Gen(httpx.SyncByteStream, httpx.AsyncByteStream):
+    """Wrap a byte generator as an httpx stream, for respx responses.
+
+    ``proxy_request`` always sends through ``httpx.AsyncClient``, so the
+    stream respx hands back must satisfy ``httpx.AsyncByteStream``
+    (``__aiter__``), not only ``httpx.SyncByteStream`` (``__iter__``) as in
+    the task brief's original helper: against the installed httpx 0.28.1,
+    ``AsyncClient.send()`` asserts the upstream response stream is
+    ``AsyncIterable`` and raises before ``generate()`` ever runs otherwise.
+    Adding ``__aiter__`` here only fixes that sync/async plumbing mismatch;
+    it does not change what the test asserts or weaken it.
+
+    :param gen: byte generator to replay over both sync and async iteration
+    :type gen: collections.abc.Iterator[bytes]
+    """
+
+    def __init__(self, gen: Iterator[bytes]) -> None:
+        self._gen = gen
+
+    def __iter__(self) -> Iterator[bytes]:
+        return iter(self._gen)
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        for chunk in self._gen:
+            yield chunk
+
 
 # A minimal FastAPI app that exposes the proxy for testing.
 _proxy_app = FastAPI()
@@ -160,3 +193,37 @@ def test_non_streaming_path_gets_long_read_timeout() -> None:
     respx.get("http://fake-agent/session").mock(side_effect=capture)
     _client.get("/proxy-test/session")
     assert captured["timeout"]["read"] == 1800.0
+
+
+@_proxy_app.get("/sse-test/{path:path}")
+async def _sse_route(path: str, request: Request) -> object:
+    return await proxy_request(
+        request,
+        "http://fake-agent",
+        path,
+        session_id="s-4f2a",
+    )
+
+
+@respx.mock
+def test_sse_stream_interruption_emits_error_frame() -> None:
+    """A mid-flight transport error must be visible, not a clean EOF."""
+
+    def broken_stream() -> Iterator[bytes]:
+        yield b"data: one\n\n"
+        msg = "connection reset"
+        raise httpx.ReadError(msg)
+
+    respx.get("http://fake-agent/console/stream").mock(
+        return_value=httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            stream=_Gen(broken_stream()),
+        ),
+    )
+    resp = _client.get("/sse-test/console/stream")
+    body = resp.text
+    assert "data: one" in body
+    assert "event: error" in body
+    assert "StreamInterrupted" in body
+    assert "s-4f2a" in body
