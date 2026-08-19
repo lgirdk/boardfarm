@@ -22,6 +22,16 @@ async def _proxy_route(path: str, request: Request) -> object:
 _client = TestClient(_proxy_app, raise_server_exceptions=True)
 
 
+@_proxy_app.post("/override-test/{path:path}")
+async def _override_route(path: str, request: Request) -> object:
+    return await proxy_request(request, "http://fake-agent", path, body=b'{"x": 1}')
+
+
+@_proxy_app.post("/cl-test/{path:path}")
+async def _cl_route(path: str, request: Request) -> object:
+    return await proxy_request(request, "http://fake-agent", path, body=b'{"x": 1}')
+
+
 @respx.mock
 def test_proxy_forwards_json_response() -> None:
     respx.get("http://fake-agent/session").mock(
@@ -74,3 +84,36 @@ def test_proxy_strips_hop_by_hop_from_forwarded_request() -> None:
 def test_hop_by_hop_set_contains_known_headers() -> None:
     for header in ("connection", "transfer-encoding", "te", "trailer", "upgrade"):
         assert header in _HOP_BY_HOP
+
+
+@respx.mock
+def test_proxy_uses_body_override_instead_of_request_body() -> None:
+    """When body override is provided it is forwarded instead of the original."""
+    captured: dict[str, bytes] = {}
+
+    def capture(req: httpx.Request) -> httpx.Response:
+        captured["body"] = req.content
+        return httpx.Response(200, json={})
+
+    respx.post("http://fake-agent/action").mock(side_effect=capture)
+
+    resp = _client.post("/override-test/action", json={"original": "ignored"})
+    assert resp.status_code == 200
+    assert captured["body"] == b'{"x": 1}'
+
+
+@respx.mock
+def test_proxy_body_override_sets_correct_content_length() -> None:
+    """content-length forwarded to the agent must match the override body."""
+    captured_headers: dict[str, str] = {}
+
+    def capture(req: httpx.Request) -> httpx.Response:
+        captured_headers.update(dict(req.headers))
+        return httpx.Response(200, json={})
+
+    respx.post("http://fake-agent/action").mock(side_effect=capture)
+
+    _client.post("/cl-test/action", json={"original": "longer payload here"})
+    # The override body is b'{"x": 1}' (8 bytes); httpx computes content-length
+    # from it, not from the larger original request body.
+    assert captured_headers.get("content-length") == str(len(b'{"x": 1}'))
