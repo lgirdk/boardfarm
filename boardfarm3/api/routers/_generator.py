@@ -8,10 +8,20 @@ from __future__ import annotations
 
 import inspect
 import logging
+import re
 import types
 from dataclasses import dataclass
+from enum import Enum
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from fastapi import APIRouter, Request
 from pydantic import create_model
@@ -37,15 +47,19 @@ _NONE_TYPE: type = type(None)  # pylint: disable=invalid-name
 # ---------------------------------------------------------------------------
 
 
-def _is_serialisable(annotation: Any) -> bool:  # noqa: ANN401
+def _is_serialisable(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
+    annotation: Any,  # noqa: ANN401
+) -> bool:
     """Return True if *annotation* is JSON-serialisable.
+
+    Accepts ``None``/``NoneType``, ``typing.Any``, primitives, ``tuple``,
+    ``Enum`` subclasses, ``TypedDict`` types, and Unions/generics thereof.
 
     :param annotation: a type annotation to check
     :type annotation: Any
     :return: True when the type can be expressed as JSON
     :rtype: bool
     """
-    # None / NoneType (-> None annotation), typing.Any, and bare primitives
     if (
         annotation is None
         or annotation is _NONE_TYPE
@@ -53,15 +67,152 @@ def _is_serialisable(annotation: Any) -> bool:  # noqa: ANN401
         or annotation in _PRIMITIVE_TYPES
     ):
         return True
+    # Enum subclasses serialise as their member names (Literal).
+    if isinstance(annotation, type) and issubclass(annotation, Enum):
+        return True
+    # TypedDict: all annotated values must be serialisable.
+    if (
+        isinstance(annotation, type)
+        and hasattr(annotation, "__annotations__")
+        and hasattr(annotation, "__total__")
+    ):
+        try:
+            hints = get_type_hints(annotation)
+        except (NameError, TypeError, AttributeError):
+            hints = annotation.__annotations__
+        return all(_is_serialisable(v) for v in hints.values())
     origin = get_origin(annotation)
-    # Union types (both X | Y syntax and Union[X, Y]) and generic dict/list:
-    # all share the same "recurse into args" logic.
+    # tuple[X, Y, Z] and tuple[str, ...] serialise as JSON arrays.
+    if origin is tuple:
+        args = get_args(annotation)
+        if not args:
+            return True
+        if args[-1] is Ellipsis:
+            return _is_serialisable(args[0])
+        return all(_is_serialisable(a) for a in args)
+    # Union types (both X | Y and Union[X, Y]) and generic dict/list.
     is_union = (
         _UNION_TYPE is not None and isinstance(annotation, _UNION_TYPE)
     ) or origin is Union
     if is_union or origin in (dict, list):
         return all(_is_serialisable(a) for a in get_args(annotation))
     return False
+
+
+def _annotation_to_field_type(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
+    annotation: Any,  # noqa: ANN401
+) -> Any:  # noqa: ANN401
+    """Return an API-friendly substitute for *annotation*.
+
+    Replaces ``Enum`` subclasses with ``Literal[member_names]`` and
+    ``tuple`` origins with ``list`` so FastAPI/Pydantic can generate a
+    JSON schema.  All other annotations are returned unchanged.
+
+    :param annotation: original type annotation
+    :type annotation: Any
+    :return: substituted annotation suitable for a Pydantic model field
+    :rtype: Any
+    """
+    if isinstance(annotation, type) and issubclass(annotation, Enum):
+        return Literal[tuple(m.name for m in annotation)]
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+    if origin is tuple:
+        if not args:
+            return list
+        if args[-1] is Ellipsis:
+            return list[_annotation_to_field_type(args[0])]  # type: ignore[misc]
+        substituted = tuple(_annotation_to_field_type(a) for a in args)
+        inner = Union[substituted] if len(substituted) > 1 else substituted[0]
+        return list[inner]  # type: ignore[misc, valid-type]
+    if origin is list and args:
+        return list[_annotation_to_field_type(args[0])]  # type: ignore[misc]
+    if origin is dict and len(args) == 2:  # noqa: PLR2004
+        return dict[  # type: ignore[misc]
+            _annotation_to_field_type(args[0]),
+            _annotation_to_field_type(args[1]),
+        ]
+    is_union = (
+        _UNION_TYPE is not None and isinstance(annotation, _UNION_TYPE)
+    ) or origin is Union
+    if is_union and args:
+        return Union[tuple(_annotation_to_field_type(a) for a in args)]
+    return annotation
+
+
+@dataclass
+class _CoercionPlan:
+    """Per-call coercion map from API-friendly types back to Python types.
+
+    :param coercions: mapping from parameter name to its original annotation
+    :type coercions: dict[str, Any]
+    """
+
+    coercions: dict[str, Any]
+
+
+def _coerce(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
+    value: Any,  # noqa: ANN401
+    ann: Any,  # noqa: ANN401
+) -> Any:  # noqa: ANN401
+    """Recursively coerce *value* from its JSON form to the Python type *ann*.
+
+    Handles ``Enum`` (name string -> member), ``tuple`` (list -> tuple),
+    ``list[T]`` (element-wise), and ``Union``/optional (tries each non-None
+    member in order).  All other annotations return *value* unchanged.
+
+    :param value: the JSON-decoded value to coerce
+    :type value: Any
+    :param ann: the original Python type annotation
+    :type ann: Any
+    :return: coerced value matching *ann*
+    :rtype: Any
+    """
+    if value is None:
+        return None
+    if isinstance(ann, type) and issubclass(ann, Enum):
+        return ann[value]
+    origin = get_origin(ann)
+    args = get_args(ann)
+    is_union = (
+        _UNION_TYPE is not None and isinstance(ann, _UNION_TYPE)
+    ) or origin is Union
+    if is_union:
+        non_none = [a for a in args if a is not _NONE_TYPE]
+        for candidate in non_none:
+            try:
+                return _coerce(value, candidate)
+            except (KeyError, TypeError, ValueError):  # noqa: PERF203
+                pass
+        return value
+    if origin is tuple:
+        if args and args[-1] is Ellipsis:
+            return tuple(_coerce(v, args[0]) for v in value)
+        return tuple(_coerce(v, a) for v, a in zip(value, args))
+    if origin is list and args:
+        return [_coerce(v, args[0]) for v in value]
+    return value
+
+
+_SPHINX_PARAM_RE: re.Pattern[str] = re.compile(
+    r":param\s+(\w+):\s*(.+?)(?=\n\s*:|$)", re.DOTALL
+)
+
+
+def _parse_sphinx_params(docstring: str | None) -> dict[str, str]:
+    """Extract ``:param name: description`` entries from a Sphinx docstring.
+
+    :param docstring: raw docstring text, or None
+    :type docstring: str | None
+    :return: mapping from parameter name to collapsed description text
+    :rtype: dict[str, str]
+    """
+    if not docstring:
+        return {}
+    return {
+        m.group(1): " ".join(m.group(2).split())
+        for m in _SPHINX_PARAM_RE.finditer(docstring)
+    }
 
 
 # ---------------------------------------------------------------------------
