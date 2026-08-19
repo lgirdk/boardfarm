@@ -44,6 +44,8 @@ class EventBuffer:
         self._events: deque[ConsoleEvent] = deque(maxlen=maxlen)
         self._next_seq = 0
         self._subscribers: list[asyncio.Queue[ConsoleEvent]] = []
+        self._last_event: ConsoleEvent | None = None
+        self._last_event_ts: float = time.time()
 
     def append(
         self,
@@ -76,6 +78,8 @@ class EventBuffer:
         )
         self._next_seq += 1
         self._events.append(event)
+        self._last_event = event
+        self._last_event_ts = event.ts
         for queue in self._subscribers:
             queue.put_nowait(event)
         return event
@@ -133,6 +137,24 @@ class EventBuffer:
         :rtype: int
         """
         return self._next_seq
+
+    @property
+    def last_event_ts(self) -> float:
+        """Timestamp of the most recent event, or of buffer creation.
+
+        :return: UNIX timestamp
+        :rtype: float
+        """
+        return self._last_event_ts
+
+    @property
+    def last_line(self) -> str | None:
+        """Text of the most recent event, or None when nothing was captured.
+
+        :return: last captured line
+        :rtype: str | None
+        """
+        return self._last_event.line if self._last_event is not None else None
 
     async def subscribe(self) -> AsyncIterator[ConsoleEvent]:
         """Yield events as they arrive, for SSE streaming.
