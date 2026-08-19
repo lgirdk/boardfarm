@@ -312,10 +312,30 @@ model is frozen, so transitions use `model_copy(update=...)`.
 ### 7.1 Console logs are always written
 
 `RuntimeOptions.save_console_logs` defaults to
-`{BOARDFARM_ARTIFACT_DIR}/{session_id}`, where `BOARDFARM_ARTIFACT_DIR` defaults
-to `/var/log/boardfarm`. `ConfigOptions.save_console_logs` may still *redirect*
-it, but an empty or omitted value no longer disables it — it resolves back to
-the default.
+`{BOARDFARM_ARTIFACT_DIR}/{session_id}/console`.
+`ConfigOptions.save_console_logs` may still *redirect* it, but an empty or
+omitted value no longer disables it — it resolves back to the default.
+
+The per-session layout is:
+
+```
+{artifact_root}/{session_id}/
+    agent.log        framework + uvicorn logs (§7.3)
+    console/         per-device console transcripts
+```
+
+`agent.log` and `console/` are siblings so the bundle's `agent.log` and
+`console-logs/` members (§8) do not nest.
+
+`{artifact_root}` is `$BOARDFARM_ARTIFACT_DIR` when set, else
+`/var/log/boardfarm` **when that path is writable**, else
+`{tempdir}/boardfarm`. The fallback is load-bearing rather than defensive:
+because console logging is now unconditional,
+`BoardfarmPexpect._configure_logging()` calls `mkdir(parents=True)` on every
+connection, so an unprivileged agent — `ProcessLauncher`, local development,
+`integrationtests/control/` — would raise `PermissionError` and crash every
+device connection. `DockerLauncher` agents run as root and always get
+`/var/log/boardfarm`.
 
 This resolves during `Session.configure()`, which calls
 `refresh_cmdline_args()` before `register_devices()`. Device connections are
@@ -593,7 +613,7 @@ both container and bundle.
 
 | Variable | Component | Default | Purpose |
 |---|---|---|---|
-| `BOARDFARM_ARTIFACT_DIR` | agent | `/var/log/boardfarm` | root of per-session artifact dirs |
+| `BOARDFARM_ARTIFACT_DIR` | agent | `/var/log/boardfarm` if writable, else `{tempdir}/boardfarm` | root of per-session artifact dirs |
 | `BOARDFARM_SSE_KEEPALIVE` | agent | `15` | seconds of SSE silence before a keepalive frame |
 | `BOARDFARM_CONTROL_STORE` | control | `/var/lib/boardfarm-control` | bundle and metadata store |
 | `BOARDFARM_CORPSE_TTL` | control | `86400` | seconds before a retained container is purged |
