@@ -56,6 +56,11 @@ async def proxy_request(
     ...
 ```
 
+**content-length:** When a custom body is supplied the original `content-length`
+header is stale (the stripped body is shorter). Strip `content-length` from
+the forwarded headers when `body` is not `None`; httpx recomputes it from the
+actual bytes passed via `content=`.
+
 ### 2. `boardfarm3_control/openapi.py`
 
 #### `_make_proxy_endpoint`
