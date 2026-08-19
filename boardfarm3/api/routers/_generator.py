@@ -25,7 +25,7 @@ from typing import (
 )
 
 from fastapi import APIRouter, Request
-from pydantic import create_model
+from pydantic import Field, create_model
 
 from boardfarm3.api.routers import _async_response, _resolve
 
@@ -273,40 +273,66 @@ def _normalise_mount(item: type | TemplateMount) -> TemplateMount:
 # ---------------------------------------------------------------------------
 
 
-def _make_request_model(method_name: str, sig: inspect.Signature) -> type:
+def _make_request_model(
+    method_name: str,
+    sig: inspect.Signature,
+    docstring: str | None = None,
+) -> tuple[type, _CoercionPlan]:
     """Build a Pydantic model from the non-self parameters of *sig*.
+
+    Enum annotations are substituted with ``Literal[member_names]`` and
+    ``tuple`` annotations with ``list`` in the model fields.  A
+    :class:`_CoercionPlan` records which parameters need coercion at
+    call time.
 
     :param method_name: used to derive the model class name
     :type method_name: str
-    :param sig: method signature (``self`` is excluded by the caller)
+    :param sig: method signature (``self`` is excluded)
     :type sig: inspect.Signature
-    :return: dynamically created Pydantic BaseModel subclass
-    :rtype: type
+    :param docstring: raw method docstring for Sphinx param extraction
+    :type docstring: str | None
+    :return: (Pydantic model, coercion plan)
+    :rtype: tuple[type, _CoercionPlan]
     """
     fields: dict[str, Any] = {}
+    coercions: dict[str, Any] = {}
+    param_descriptions = _parse_sphinx_params(docstring)
     for name, param in sig.parameters.items():
         if name == "self":
             continue
         annotation = param.annotation
+        field_type = _annotation_to_field_type(annotation)
+        if field_type is not annotation:
+            coercions[name] = annotation
         default = param.default if param.default is not inspect.Parameter.empty else ...
-        fields[name] = (annotation, default)
+        desc = param_descriptions.get(name, "")
+        if desc:
+            fields[name] = (field_type, Field(default=default, description=desc))
+        else:
+            fields[name] = (field_type, default)
     model_name = (
         "".join(part.capitalize() for part in method_name.split("_")) + "Request"
     )
-    return create_model(model_name, **fields)  # type: ignore[call-overload]
+    return (
+        create_model(model_name, **fields),  # type: ignore[call-overload]
+        _CoercionPlan(coercions=coercions),
+    )
 
 
-def _make_handler(
+def _make_handler(  # noqa: PLR0913
     resolve_as: type,
     introspect: type,
     method_name: str,
     request_model: type,
     accessor: str | None,
+    coercion_plan: _CoercionPlan,
 ) -> Any:  # noqa: ANN401
     """Build an async route handler for *method_name*.
 
     Injects ``__signature__`` so FastAPI generates a correct OpenAPI schema
-    for the dynamically created function.
+    for the dynamically created function.  Parameters in *coercion_plan* are
+    translated from their API-friendly form back to the real Python type before
+    dispatching.
 
     :param resolve_as: template type resolved from the device manager
     :type resolve_as: type
@@ -318,6 +344,8 @@ def _make_handler(
     :type request_model: type
     :param accessor: attribute to dispatch through, or None for the device
     :type accessor: str | None
+    :param coercion_plan: parameters requiring type coercion before the call
+    :type coercion_plan: _CoercionPlan
     :return: async FastAPI route handler
     :rtype: Any
     """
@@ -333,10 +361,15 @@ def _make_handler(
             session, resolve_as, index
         )
         target = device if accessor is None else getattr(device, accessor)
-        job = await session.queue.submit(
-            lambda: getattr(target, method_name)(**body.model_dump()),
-            mode=mode,
-        )
+
+        def _run() -> Any:  # noqa: ANN401
+            data = body.model_dump()
+            for p_name, orig_ann in coercion_plan.coercions.items():
+                if p_name in data:
+                    data[p_name] = _coerce(data[p_name], orig_ann)
+            return getattr(target, method_name)(**data)
+
+        job = await session.queue.submit(_run, mode=mode)
         if mode == "async":
             return _async_response(job)
         return {"result": job.result}
@@ -424,7 +457,7 @@ def _process_member(  # pylint: disable=too-many-return-statements
     introspect: type,
     name: str,
     obj: object,
-) -> SkippedMethod | type | None:
+) -> SkippedMethod | tuple[type, _CoercionPlan] | None:
     """Process a single class member to determine route generation outcome.
 
     :param introspect: Template ABC class being introspected
@@ -433,9 +466,9 @@ def _process_member(  # pylint: disable=too-many-return-statements
     :type name: str
     :param obj: attribute value (result of ``getattr(introspect, name)``)
     :type obj: object
-    :return: a Pydantic request model to register a route for, a
-        SkippedMethod, or None to skip silently
-    :rtype: SkippedMethod | type | None
+    :return: a (Pydantic request model, coercion plan) tuple to register a
+        route for, a SkippedMethod, or None to skip silently
+    :rtype: SkippedMethod | tuple[type, _CoercionPlan] | None
     """
     raw = inspect.getattr_static(introspect, name, None)
 
@@ -455,7 +488,7 @@ def _process_member(  # pylint: disable=too-many-return-statements
     if skipped is not None:
         return skipped
 
-    return _make_request_model(name, sig)
+    return _make_request_model(name, sig, obj.__doc__ if callable(obj) else None)
 
 
 # ---------------------------------------------------------------------------
@@ -540,9 +573,14 @@ def _register_member(  # pylint: disable=too-many-return-statements
         )
         return
 
-    request_model = result
+    request_model, coercion_plan = result
     handler = _make_handler(
-        spec.resolve_as, spec.introspect, name, request_model, spec.accessor
+        spec.resolve_as,
+        spec.introspect,
+        name,
+        request_model,
+        spec.accessor,
+        coercion_plan,
     )
     build.seen.add(name)
     router = build.router
