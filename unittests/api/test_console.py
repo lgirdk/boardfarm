@@ -268,3 +268,25 @@ def test_install_is_idempotent(buffer: EventBuffer) -> None:
     assert pexpect_logger.handlers.count(console_capture) == 1
     console_capture.uninstall()
     assert pexpect_logger.propagate is True
+
+
+def test_capture_preserves_exception_tracebacks() -> None:
+    """record.getMessage() drops exc_info, which loses every traceback."""
+    buffer = EventBuffer()
+    capture = ConsoleCapture(buffer)
+    capture.install()
+    try:
+        logger = logging.getLogger("boardfarm3.test")
+        try:
+            msg = "kaboom"
+            raise ValueError(msg)  # noqa: TRY301
+        except ValueError:
+            logger.exception("job failed")
+    finally:
+        capture.uninstall()
+
+    events, _ = buffer.read()
+    joined = "\n".join(event.line for event in events)
+    assert "job failed" in joined
+    assert "ValueError: kaboom" in joined
+    assert "Traceback" in joined
