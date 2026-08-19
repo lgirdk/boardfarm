@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import inspect
-import json as _json
 import typing
 from typing import TYPE_CHECKING, Any
 
@@ -171,8 +170,7 @@ def _make_proxy_endpoint(
         info = registry.get(session_id)
         if info is None:
             raise HTTPException(status_code=404, detail=f"unknown session {session_id}")
-        stripped = body.model_dump(exclude={"session_id"})
-        stripped_bytes = _json.dumps(stripped).encode()
+        stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
         downstream_path = request.url.path.lstrip("/")
         return await proxy_request(
             request, info.agent_url, downstream_path, body=stripped_bytes
