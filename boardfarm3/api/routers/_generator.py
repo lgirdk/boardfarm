@@ -21,6 +21,7 @@ from typing import (
     get_args,
     get_origin,
     get_type_hints,
+    is_typeddict,
 )
 
 from fastapi import APIRouter, Request
@@ -71,11 +72,7 @@ def _is_serialisable(  # pylint: disable=too-many-return-statements  # noqa: PLR
     if isinstance(annotation, type) and issubclass(annotation, Enum):
         return True
     # TypedDict: all annotated values must be serialisable.
-    if (
-        isinstance(annotation, type)
-        and hasattr(annotation, "__annotations__")
-        and hasattr(annotation, "__total__")
-    ):
+    if is_typeddict(annotation):
         try:
             hints = get_type_hints(annotation)
         except (NameError, TypeError, AttributeError):
