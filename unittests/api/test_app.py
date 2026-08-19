@@ -546,3 +546,50 @@ async def test_console_stream_replays_history_from_cursor(
         assert json.loads(second.removeprefix("data: ").strip())["line"] == "line-B"
 
         await response.body_iterator.aclose()
+
+
+@pytest.mark.asyncio
+async def test_console_stream_emits_keepalive_when_idle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A quiet console must still produce traffic, or proxies time it out.
+
+    ``/console/stream`` never terminates on its own, so this drives the
+    route's generator directly rather than through ``TestClient`` -- as the
+    disconnect-cleanup test above documents, ``TestClient`` (starlette
+    1.6.0's ``portal.call()``) blocks until the whole ASGI call completes
+    before it will even return a response, which hangs forever against an
+    endless stream. Each ``__anext__()`` is additionally wrapped in
+    ``asyncio.wait_for`` so a regression here fails the test instead of
+    hanging the suite.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+    monkeypatch.setenv("BOARDFARM_SSE_KEEPALIVE", "0")
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    async with application.router.lifespan_context(application):
+        route = next(
+            candidate
+            for candidate in application.routes
+            if getattr(candidate, "path", None) == "/console/stream"
+        )
+        response = await route.endpoint(request=_FakeRequest(), device=None, cursor=0)
+        assert response.headers["x-accel-buffering"] == "no"
+
+        for _ in range(5):
+            chunk = await asyncio.wait_for(
+                response.body_iterator.__anext__(),
+                timeout=5,
+            )
+            if chunk.startswith(": keepalive"):
+                break
+        else:  # pragma: no cover - only on failure
+            pytest.fail("no keepalive frame received")
+
+        await response.body_iterator.aclose()
