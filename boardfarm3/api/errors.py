@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import traceback as _traceback
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
@@ -67,7 +68,8 @@ def error_envelope(
     :type device: str | None
     :param console_tail: recent console output
     :type console_tail: str
-    :return: error envelope
+    :return: error envelope containing error type, message, device, session/job IDs,
+             console tail, and formatted traceback (including chained exceptions)
     :rtype: dict[str, Any]
     """
     return {
@@ -77,6 +79,7 @@ def error_envelope(
         "session_id": session_id,
         "job_id": job_id,
         "console_tail": console_tail,
+        "traceback": _traceback.format_exception(exc),
     }
 
 
@@ -85,7 +88,7 @@ def console_tail_from(
     job_id: str | None,
     lines: int = 40,
 ) -> str:
-    """Return the most recent console lines produced during a job.
+    """Return the most recent console and framework lines produced during a job.
 
     :param buffer: event buffer to read from
     :type buffer: EventBuffer
@@ -96,5 +99,5 @@ def console_tail_from(
     :return: newline joined console tail
     :rtype: str
     """
-    events, _ = buffer.read(stream="console", job_id=job_id, limit=1_000_000)
+    events, _ = buffer.read(job_id=job_id, limit=1_000_000)
     return "\n".join(event.line for event in events[-lines:])

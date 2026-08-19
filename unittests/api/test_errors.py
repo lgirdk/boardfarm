@@ -68,14 +68,13 @@ def test_envelope_carries_context() -> None:
         device="lan",
         console_tail="login:",
     )
-    assert envelope == {
-        "error": "DeviceConnectionError",
-        "message": "SSH to 172.25.1.2 refused",
-        "device": "lan",
-        "session_id": "s-4f2a",
-        "job_id": "j-8f3a",
-        "console_tail": "login:",
-    }
+    assert envelope["error"] == "DeviceConnectionError"
+    assert envelope["message"] == "SSH to 172.25.1.2 refused"
+    assert envelope["device"] == "lan"
+    assert envelope["session_id"] == "s-4f2a"
+    assert envelope["job_id"] == "j-8f3a"
+    assert envelope["console_tail"] == "login:"
+    assert "traceback" in envelope
 
 
 def test_console_tail_returns_last_lines_for_the_job() -> None:
@@ -93,3 +92,43 @@ def test_console_tail_returns_last_lines_for_the_job() -> None:
     assert tail.splitlines()[0] == "line-20"
     assert tail.splitlines()[-1] == "line-59"
     assert "other" not in tail
+
+
+def test_error_envelope_carries_a_traceback() -> None:
+    """An error with no traceback is not debuggable."""
+    try:
+        msg = "boom"
+        raise ValueError(msg)  # noqa: TRY301
+    except ValueError as exc:
+        envelope = error_envelope(exc, session_id="s-1")
+    assert envelope["error"] == "ValueError"
+    assert any("ValueError: boom" in frame for frame in envelope["traceback"])
+    assert any(
+        "test_error_envelope_carries" in frame for frame in envelope["traceback"]
+    )
+
+
+def test_error_envelope_traceback_includes_the_cause_chain() -> None:
+    """A chained exception must show both frames, not just the outermost."""
+    try:
+        try:
+            msg = "inner"
+            raise ValueError(msg)  # noqa: TRY301
+        except ValueError as inner:
+            msg = "outer"
+            raise RuntimeError(msg) from inner
+    except RuntimeError as exc:
+        envelope = error_envelope(exc, session_id="s-1")
+    joined = "".join(envelope["traceback"])
+    assert "ValueError: inner" in joined
+    assert "RuntimeError: outer" in joined
+
+
+def test_console_tail_includes_framework_lines() -> None:
+    """Framework output is where Python errors surface; it must be in the tail."""
+    buffer = EventBuffer()
+    buffer.append(stream="console", device="board", job_id="j-1", line="console line")
+    buffer.append(stream="framework", device=None, job_id="j-1", line="framework line")
+    tail = console_tail_from(buffer, "j-1")
+    assert "console line" in tail
+    assert "framework line" in tail
