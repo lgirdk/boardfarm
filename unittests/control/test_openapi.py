@@ -27,7 +27,7 @@ _plugin_router = APIRouter()
     "/use-cases/networking/ping",
     response_model=_PingResponse,
 )
-async def _ping(body: _PingRequest) -> _PingResponse:
+async def _ping(body: _PingRequest) -> _PingResponse:  # noqa: ARG001
     return _PingResponse(success=True)
 
 
@@ -65,7 +65,9 @@ def test_plugin_route_has_session_id_in_body_not_path() -> None:
     # The route is served at its original path (no /sessions/ prefix)
     assert any(p.endswith("/use-cases/networking/ping") for p in plugin_paths)
     # session_id field must appear as a property of the ping route's request body schema
-    ping_path = next(p for p in plugin_paths if p.endswith("/use-cases/networking/ping"))
+    ping_path = next(
+        p for p in plugin_paths if p.endswith("/use-cases/networking/ping")
+    )
     ping_schema = schema["paths"][ping_path]["post"]["requestBody"]["content"][
         "application/json"
     ]["schema"]
