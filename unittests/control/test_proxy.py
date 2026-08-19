@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import httpx
+import pytest
 import respx
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from starlette.requests import Request  # noqa: TC002
 
-from boardfarm3_control.proxy import _HOP_BY_HOP, proxy_request
+from boardfarm3_control.proxy import _HOP_BY_HOP, is_streaming_path, proxy_request
 
 # A minimal FastAPI app that exposes the proxy for testing.
 _proxy_app = FastAPI()
@@ -117,3 +118,45 @@ def test_proxy_body_override_sets_correct_content_length() -> None:
     # The override body is b'{"x": 1}' (8 bytes); httpx computes content-length
     # from it, not from the larger original request body.
     assert captured_headers.get("content-length") == str(len(b'{"x": 1}'))
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("console/stream", True),
+        ("/console/stream/", True),
+        ("diagnostics", True),
+        ("diagnostics/bundle", True),
+        ("session", False),
+        ("jobs/j-1a2b", False),
+        ("use-cases/networking/ping", False),
+    ],
+)
+def test_is_streaming_path(path: str, expected: bool) -> None:
+    assert is_streaming_path(path) is expected
+
+
+@respx.mock
+def test_streaming_path_gets_unbounded_read_timeout() -> None:
+    captured: dict[str, object] = {}
+
+    def capture(req: httpx.Request) -> httpx.Response:
+        captured["timeout"] = req.extensions.get("timeout")
+        return httpx.Response(200, text="data: hi\n\n")
+
+    respx.get("http://fake-agent/console/stream").mock(side_effect=capture)
+    _client.get("/proxy-test/console/stream")
+    assert captured["timeout"]["read"] is None
+
+
+@respx.mock
+def test_non_streaming_path_gets_long_read_timeout() -> None:
+    captured: dict[str, object] = {}
+
+    def capture(req: httpx.Request) -> httpx.Response:
+        captured["timeout"] = req.extensions.get("timeout")
+        return httpx.Response(200, json={})
+
+    respx.get("http://fake-agent/session").mock(side_effect=capture)
+    _client.get("/proxy-test/session")
+    assert captured["timeout"]["read"] == 1800.0
