@@ -6,7 +6,9 @@ import asyncio
 import io
 import json
 import logging
+import os
 import tarfile
+import time
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from pathlib import Path
@@ -284,8 +286,35 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         device: str | None = None,
         cursor: int = 0,
     ) -> StreamingResponse:
+        """Stream console events to the client as Server-Sent Events.
+
+        Replays buffered history from ``cursor``, then follows the live
+        console. A quiet console still produces a ``: keepalive`` comment
+        frame every ``BOARDFARM_SSE_KEEPALIVE`` seconds (default 15, read
+        from the environment at request time) so that an intermediate proxy
+        does not treat a long silence -- a CPE-online wait, an image flash
+        -- as a dead connection.
+
+        :param request: incoming request, polled to detect client disconnect
+        :type request: Request
+        :param device: restrict the stream to this device's events, defaults to None
+        :type device: str | None
+        :param cursor: sequence number to replay buffered history from
+        :type cursor: int
+        :return: an SSE response backed by an endless event generator
+        :rtype: StreamingResponse
+        """
+        keepalive = float(os.environ.get("BOARDFARM_SSE_KEEPALIVE", "15"))
+
         async def events() -> AsyncIterator[str]:
+            """Yield SSE frames: buffered history, then live events, then keepalives.
+
+            :yield: an SSE ``data:`` frame per console event, or a
+                ``: keepalive`` comment frame after a quiet spell
+            :rtype: str
+            """
             buf = session().buffer
+            last_sent = time.monotonic()
             async with buf.subscription() as queue:
                 # Snapshot the head before reading history so events that
                 # arrive between subscription and read are yielded exactly
@@ -295,18 +324,29 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 for event in past:
                     if event.seq < live_from:
                         yield f"data: {json.dumps(event.__dict__)}\n\n"
+                        last_sent = time.monotonic()
                 while True:
                     if await request.is_disconnected():
                         break
                     try:
                         event = await asyncio.wait_for(queue.get(), timeout=1.0)
                     except asyncio.TimeoutError:
+                        # A quiet console must still produce bytes, or an
+                        # intermediate proxy will treat the stream as dead.
+                        if time.monotonic() - last_sent >= keepalive:
+                            yield ": keepalive\n\n"
+                            last_sent = time.monotonic()
                         continue
                     if device is not None and event.device != device:
                         continue
                     yield f"data: {json.dumps(event.__dict__)}\n\n"
+                    last_sent = time.monotonic()
 
-        return StreamingResponse(events(), media_type="text/event-stream")
+        return StreamingResponse(
+            events(),
+            media_type="text/event-stream",
+            headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
+        )
 
     @app.get("/console/archive")
     async def console_archive() -> Response:
