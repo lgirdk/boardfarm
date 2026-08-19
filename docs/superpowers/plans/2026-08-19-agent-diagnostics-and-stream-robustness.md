@@ -1110,39 +1110,33 @@ Signed-off-by: Ketan Tewari <ktewari.contractor@libertyglobal.com>"
 - Consumes: nothing.
 - Produces: `EventBuffer.last_event_ts -> float`, `EventBuffer.last_line -> str | None`; `Session.liveness() -> dict[str, Any]` with keys `quiet`, `running_for`, `idle_for`, `last_line`, `last_event_ts`; `status()["liveness"]`. `SessionState.STUCK`, `Session.is_stuck()`, and `Session.stuck_after` are **removed**. `RuntimeOptions.quiet_after: float = 600.0` and `ConfigOptions.quiet_after: float | None = None` are added.
 
-- [ ] **Step 1: Write the failing tests**
+- [ ] **Step 1: Add the shared session factory to `unittests/api/conftest.py`**
 
-Create `unittests/api/test_liveness.py`:
+Tasks 9 and 12 both need a `Session` backed by a runtime that touches no devices. `unittests/` has no `__init__.py`, so a test module cannot import a helper from a sibling test file. Put it in `conftest.py`, where pytest injects it without an import:
 
 ```python
-"""Liveness reporting: quiet is evidence, never a verdict."""
-
-from __future__ import annotations
-
-import asyncio
-import time
-
-import pytest
+from collections.abc import Callable
 
 from boardfarm3.api.runtime import RuntimeOptions
-from boardfarm3.api.session import Session, SessionState
+from boardfarm3.api.session import Session
 
 
-class _FakeRuntime:
+class FakeRuntime:
     """RuntimeContext stand-in that touches no devices."""
 
     def __init__(self) -> None:
+        """Initialise the fake."""
         self.config: object | None = None
         self.device_manager: object | None = None
 
     def refresh_cmdline_args(self) -> None:
         """Re-materialise options. No-op for the fake."""
 
-    def resolve(self, payload: dict[str, object]) -> object:  # noqa: ARG002
+    def resolve(self, payload: dict[str, Any]) -> object:  # noqa: ARG002
         """Resolve the payload.
 
         :param payload: opaque payload
-        :type payload: dict[str, object]
+        :type payload: dict[str, Any]
         :return: placeholder config
         :rtype: object
         """
@@ -1159,15 +1153,52 @@ class _FakeRuntime:
         return self.device_manager
 
 
-def _session() -> Session:
-    options = RuntimeOptions(board_name="board", quiet_after=0.1)
-    return Session("s-test", options, runtime=_FakeRuntime())
+@pytest.fixture(name="make_session")
+def make_session_fixture() -> Callable[..., Session]:
+    """Return a factory building a Session with a device-free runtime.
+
+    :return: factory taking RuntimeOptions keyword overrides
+    :rtype: Callable[..., Session]
+    """
+
+    def _make(**overrides: Any) -> Session:
+        options = RuntimeOptions(board_name="board", **overrides)
+        return Session("s-test", options, runtime=FakeRuntime())
+
+    return _make
+```
+
+- [ ] **Step 2: Write the failing tests**
+
+Create `unittests/api/test_liveness.py`:
+
+```python
+"""Liveness reporting: quiet is evidence, never a verdict."""
+
+from __future__ import annotations
+
+import asyncio
+import time
+from typing import TYPE_CHECKING
+
+import pytest
+
+from boardfarm3.api.session import Session, SessionState
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @pytest.mark.asyncio
-async def test_idle_job_reports_quiet_without_changing_state() -> None:
-    """A silent job must not destroy the real lifecycle state."""
-    session = _session()
+async def test_idle_job_reports_quiet_without_changing_state(
+    make_session: Callable[..., Session],
+) -> None:
+    """A silent job must not destroy the real lifecycle state.
+
+    :param make_session: session factory fixture
+    :type make_session: Callable[..., Session]
+    """
+    session = make_session(quiet_after=0.1)
     await session.configure({"inventory": {}, "env": {}})
     await session.queue.submit(lambda: time.sleep(0.5), mode="async")  # noqa: ASYNC251
     await asyncio.sleep(0.3)
@@ -1179,9 +1210,15 @@ async def test_idle_job_reports_quiet_without_changing_state() -> None:
 
 
 @pytest.mark.asyncio
-async def test_chatty_job_is_never_quiet() -> None:
-    """A slow-but-chatty job is healthy and must not be flagged."""
-    session = _session()
+async def test_chatty_job_is_never_quiet(
+    make_session: Callable[..., Session],
+) -> None:
+    """A slow-but-chatty job is healthy and must not be flagged.
+
+    :param make_session: session factory fixture
+    :type make_session: Callable[..., Session]
+    """
+    session = make_session(quiet_after=0.1)
     await session.configure({"inventory": {}, "env": {}})
 
     def chatty() -> None:
@@ -1198,9 +1235,15 @@ async def test_chatty_job_is_never_quiet() -> None:
 
 
 @pytest.mark.asyncio
-async def test_quiet_clears_when_output_resumes() -> None:
-    """quiet is reversible — one more log line clears it."""
-    session = _session()
+async def test_quiet_clears_when_output_resumes(
+    make_session: Callable[..., Session],
+) -> None:
+    """quiet is reversible — one more log line clears it.
+
+    :param make_session: session factory fixture
+    :type make_session: Callable[..., Session]
+    """
+    session = make_session(quiet_after=0.1)
     await session.configure({"inventory": {}, "env": {}})
     await session.queue.submit(lambda: time.sleep(0.6), mode="async")  # noqa: ASYNC251
     await asyncio.sleep(0.3)
@@ -1214,9 +1257,15 @@ async def test_quiet_clears_when_output_resumes() -> None:
     session.queue.shutdown()
 
 
-def test_liveness_with_no_running_job() -> None:
-    """An idle session is not quiet — there is nothing to be quiet about."""
-    session = _session()
+def test_liveness_with_no_running_job(
+    make_session: Callable[..., Session],
+) -> None:
+    """An idle session is not quiet — there is nothing to be quiet about.
+
+    :param make_session: session factory fixture
+    :type make_session: Callable[..., Session]
+    """
+    session = make_session(quiet_after=0.1)
     liveness = session.liveness()
     assert liveness["quiet"] is False
     assert liveness["running_for"] is None
@@ -1231,12 +1280,12 @@ def test_stuck_state_is_gone() -> None:
 
 Delete `test_status_reports_stuck_when_a_job_overruns` from `unittests/api/test_session.py:184-196` — it asserts the removed behaviour.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [ ] **Step 3: Run the tests to verify they fail**
 
 Run: `pytest unittests/api/test_liveness.py -v -p no:randomly`
 Expected: FAIL — `TypeError: RuntimeOptions.__init__() got an unexpected keyword argument 'quiet_after'`.
 
-- [ ] **Step 3: Implement**
+- [ ] **Step 4: Implement**
 
 In `boardfarm3/api/console.py`, track the last event on `EventBuffer`. In `__init__`:
 
@@ -1340,15 +1389,15 @@ Rewrite `status()`:
         }
 ```
 
-- [ ] **Step 4: Run the tests**
+- [ ] **Step 5: Run the tests**
 
 Run: `pytest unittests/api -v -p no:randomly && nox -s lint`
 Expected: PASS. Grep for stragglers: `grep -rn "is_stuck\|STUCK\|stuck_after" boardfarm3/ unittests/` must return nothing.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add boardfarm3/api/console.py boardfarm3/api/session.py boardfarm3/api/runtime.py boardfarm3/api/app.py unittests/api/test_liveness.py unittests/api/test_session.py
+git add boardfarm3/api/console.py boardfarm3/api/session.py boardfarm3/api/runtime.py boardfarm3/api/app.py unittests/api/conftest.py unittests/api/test_liveness.py unittests/api/test_session.py
 git commit -m "feat(api): replace STUCK state with reversible liveness evidence
 
 status() overwrote state with 'stuck', so a legitimately booting session
@@ -1659,7 +1708,7 @@ Signed-off-by: Ketan Tewari <ktewari.contractor@libertyglobal.com>"
 - Test: `unittests/api/test_bundle.py` (new)
 
 **Interfaces:**
-- Consumes: `redact()` (Task 11), `thread_snapshot()`/`format_threads()` (Task 10), `ExecutionQueue.all_jobs()` (Task 8), `error_envelope()` (Task 6).
+- Consumes: `redact()` (Task 11), `thread_snapshot()`/`format_threads()` (Task 10), `ExecutionQueue.all_jobs()` (Task 8), `error_envelope()` (Task 6), and the `make_session` fixture added to `unittests/api/conftest.py` in Task 9.
 - Produces: `boardfarm3.api.bundle.write_bundle(session, dest: Path) -> dict[str, Any]` — writes a tar.gz to *dest* and returns the manifest. Route `GET /diagnostics/bundle` streaming `application/gzip`. `Session.payload: dict[str, Any]` retains the last configured payload.
 
 - [ ] **Step 1: Write the failing tests**
@@ -1673,7 +1722,7 @@ from __future__ import annotations
 
 import json
 import tarfile
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from fastapi.testclient import TestClient
@@ -1681,8 +1730,12 @@ from fastapi.testclient import TestClient
 from boardfarm3.api import app as app_module
 from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.redact import REDACTED
-from boardfarm3.api.runtime import RuntimeOptions
-from boardfarm3.api.session import Session
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
+
+    from boardfarm3.api.session import Session
 
 HTTP_OK = 200
 _EXPECTED = {
@@ -1695,50 +1748,36 @@ _EXPECTED = {
 }
 
 
-class _FakeRuntime:
-    """RuntimeContext stand-in that touches no devices."""
+@pytest.fixture(name="bundle_session")
+def bundle_session_fixture(
+    make_session: Callable[..., Session], tmp_path: Path,
+) -> Session:
+    """Return a session whose console logs land under *tmp_path*.
 
-    def __init__(self) -> None:
-        self.config: object | None = None
-        self.device_manager: object | None = None
-
-    def refresh_cmdline_args(self) -> None:
-        """Re-materialise options. No-op for the fake."""
-
-    def resolve(self, payload: dict[str, object]) -> object:  # noqa: ARG002
-        """Resolve the payload.
-
-        :param payload: opaque payload
-        :type payload: dict[str, object]
-        :return: placeholder config
-        :rtype: object
-        """
-        self.config = object()
-        return self.config
-
-    def register_devices(self) -> object:
-        """Register devices.
-
-        :return: placeholder device manager
-        :rtype: object
-        """
-        self.device_manager = object()
-        return self.device_manager
-
-
-def _session(tmp_path: Path) -> Session:
-    options = RuntimeOptions(
-        board_name="board", save_console_logs=str(tmp_path / "console"),
-    )
-    return Session("s-test", options, runtime=_FakeRuntime())
+    :param make_session: session factory fixture from conftest (Task 9)
+    :type make_session: Callable[..., Session]
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    :return: session under test
+    :rtype: Session
+    """
+    return make_session(save_console_logs=str(tmp_path / "console"))
 
 
 @pytest.mark.asyncio
-async def test_bundle_contains_every_documented_member(tmp_path: Path) -> None:
-    session = _session(tmp_path)
-    await session.configure({"inventory": {}, "env": {}})
+async def test_bundle_contains_every_documented_member(
+    bundle_session: Session, tmp_path: Path,
+) -> None:
+    """Every member the spec lists must be present.
+
+    :param bundle_session: session under test
+    :type bundle_session: Session
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    """
+    await bundle_session.configure({"inventory": {}, "env": {}})
     dest = tmp_path / "bundle.tar.gz"
-    manifest = write_bundle(session, dest)
+    manifest = write_bundle(bundle_session, dest)
 
     with tarfile.open(dest, "r:gz") as archive:
         names = set(archive.getnames())
@@ -1746,49 +1785,75 @@ async def test_bundle_contains_every_documented_member(tmp_path: Path) -> None:
     assert manifest["session_id"] == "s-test"
     assert manifest["board_name"] == "board"
     assert manifest["redacted"] == ["session.json", "config.json"]
-    session.queue.shutdown()
+    bundle_session.queue.shutdown()
 
 
 @pytest.mark.asyncio
-async def test_bundle_redacts_credentials_in_config(tmp_path: Path) -> None:
-    session = _session(tmp_path)
-    await session.configure(
+async def test_bundle_redacts_credentials_in_config(
+    bundle_session: Session, tmp_path: Path,
+) -> None:
+    """A password in the payload must not survive into the bundle.
+
+    :param bundle_session: session under test
+    :type bundle_session: Session
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    """
+    await bundle_session.configure(
         {"inventory": {"board": {"password": "hunter2"}}, "env": {}},
     )
     dest = tmp_path / "bundle.tar.gz"
-    write_bundle(session, dest)
+    write_bundle(bundle_session, dest)
 
     with tarfile.open(dest, "r:gz") as archive:
         member = archive.extractfile("config.json")
         assert member is not None
         config = json.loads(member.read())
     assert config["inventory"]["board"]["password"] == REDACTED
-    session.queue.shutdown()
+    bundle_session.queue.shutdown()
 
 
 @pytest.mark.asyncio
-async def test_bundle_records_absent_members(tmp_path: Path) -> None:
-    """A missing console-log directory must be reported, not crash the bundle."""
-    session = _session(tmp_path)
-    await session.configure({"inventory": {}, "env": {}})
+async def test_bundle_records_absent_members(
+    bundle_session: Session, tmp_path: Path,
+) -> None:
+    """A missing console-log directory must be reported, not crash the bundle.
+
+    :param bundle_session: session under test
+    :type bundle_session: Session
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    """
+    await bundle_session.configure({"inventory": {}, "env": {}})
     dest = tmp_path / "bundle.tar.gz"
-    manifest = write_bundle(session, dest)
+    manifest = write_bundle(bundle_session, dest)
     assert "console-logs" in manifest["absent"]
-    session.queue.shutdown()
+    bundle_session.queue.shutdown()
 
 
 @pytest.mark.asyncio
-async def test_bundle_jobs_carry_tracebacks(tmp_path: Path) -> None:
-    session = _session(tmp_path)
-    await session.configure({"inventory": {}, "env": {}})
+async def test_bundle_jobs_carry_tracebacks(
+    bundle_session: Session, tmp_path: Path,
+) -> None:
+    """jobs.json is where a failed run's traceback has to land.
+
+    :param bundle_session: session under test
+    :type bundle_session: Session
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    """
+    await bundle_session.configure({"inventory": {}, "env": {}})
 
     def boom() -> None:
         msg = "kaboom"
         raise ValueError(msg)
 
-    await session.queue.submit(boom, mode="sync")
+    # submit(mode="sync") re-raises the job's exception to the caller.
+    with pytest.raises(ValueError, match="kaboom"):
+        await bundle_session.queue.submit(boom, mode="sync")
+
     dest = tmp_path / "bundle.tar.gz"
-    write_bundle(session, dest)
+    write_bundle(bundle_session, dest)
 
     with tarfile.open(dest, "r:gz") as archive:
         member = archive.extractfile("jobs.json")
@@ -1797,23 +1862,17 @@ async def test_bundle_jobs_carry_tracebacks(tmp_path: Path) -> None:
     failed = [job for job in jobs if job["state"] == "error"]
     assert failed
     assert "ValueError: kaboom" in "".join(failed[0]["error"]["traceback"])
-    session.queue.shutdown()
+    bundle_session.queue.shutdown()
 
 
 def test_bundle_route_streams_gzip() -> None:
+    """The HTTP surface must return a real gzip stream."""
     app = app_module.create_app("s-test", "board")
     with TestClient(app) as client:
         response = client.get("/diagnostics/bundle")
     assert response.status_code == HTTP_OK
     assert response.headers["content-type"] == "application/gzip"
     assert response.content[:2] == b"\x1f\x8b"
-```
-
-Note: `await queue.submit(boom, mode="sync")` re-raises. Wrap it:
-
-```python
-    with pytest.raises(ValueError, match="kaboom"):
-        await session.queue.submit(boom, mode="sync")
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
