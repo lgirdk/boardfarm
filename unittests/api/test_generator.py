@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any
+from enum import Enum
+from typing import Any, TypedDict
 
 from fastapi import APIRouter
 
-from boardfarm3.api.routers._generator import generate_template_routers
+from boardfarm3.api.routers._generator import (
+    _annotation_to_field_type,
+    _coerce,
+    _CoercionPlan,
+    _is_serialisable,
+    _parse_sphinx_params,
+    generate_template_routers,
+)
 
 # ---------------------------------------------------------------------------
 # Minimal ABCs for testing
@@ -283,3 +291,200 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
     # Verify the inner router is included (routes may be _IncludedRouter in newer FastAPI)
     assert len(wrapper.routes) > 0
     assert skipped == []
+
+
+# ---------------------------------------------------------------------------
+# _is_serialisable — new cases
+# ---------------------------------------------------------------------------
+
+
+class _Color(Enum):
+    RED = 1
+    BLUE = 2
+
+
+class _Coord(TypedDict):
+    x: float
+    y: float
+
+
+def test_is_serialisable_tuple_of_primitives() -> None:
+    assert _is_serialisable(tuple[str, int]) is True
+
+
+def test_is_serialisable_tuple_uniform() -> None:
+    assert _is_serialisable(tuple[str, ...]) is True
+
+
+def test_is_serialisable_empty_tuple() -> None:
+    assert _is_serialisable(tuple[()]) is True  # type: ignore[misc]
+
+
+def test_is_serialisable_enum() -> None:
+    assert _is_serialisable(_Color) is True
+
+
+def test_is_serialisable_typeddict() -> None:
+    assert _is_serialisable(_Coord) is True
+
+
+def test_is_serialisable_nested_tuple_in_list() -> None:
+    assert _is_serialisable(list[tuple[str, int]]) is True
+
+
+def test_is_serialisable_set_remains_false() -> None:
+    assert _is_serialisable(set[str]) is False  # type: ignore[type-arg]
+
+
+def test_is_serialisable_typeddict_with_bad_value_false() -> None:
+    class _Bad(TypedDict):
+        obj: object
+
+    assert _is_serialisable(_Bad) is False
+
+
+# ---------------------------------------------------------------------------
+# _annotation_to_field_type
+# ---------------------------------------------------------------------------
+
+
+def test_annotation_to_field_type_primitive_unchanged() -> None:
+    assert _annotation_to_field_type(str) is str
+    assert _annotation_to_field_type(int) is int
+    assert _annotation_to_field_type(bool) is bool
+
+
+def test_annotation_to_field_type_enum_becomes_literal() -> None:
+    from typing import Literal, get_args, get_origin
+
+    result = _annotation_to_field_type(_Color)
+    assert get_origin(result) is Literal
+    assert set(get_args(result)) == {"RED", "BLUE"}
+
+
+def test_annotation_to_field_type_tuple_fixed_becomes_list_union() -> None:
+    from typing import get_args, get_origin
+
+    result = _annotation_to_field_type(tuple[str, int])
+    assert get_origin(result) is list
+    inner = get_args(result)[0]
+    assert set(get_args(inner)) == {str, int}
+
+
+def test_annotation_to_field_type_tuple_uniform_becomes_list() -> None:
+    result = _annotation_to_field_type(tuple[str, ...])
+    from typing import get_args, get_origin
+
+    assert get_origin(result) is list
+    assert get_args(result) == (str,)
+
+
+def test_annotation_to_field_type_list_with_enum_inner() -> None:
+    from typing import Literal, get_args, get_origin
+
+    result = _annotation_to_field_type(list[_Color])
+    assert get_origin(result) is list
+    inner = get_args(result)[0]
+    assert get_origin(inner) is Literal
+
+
+def test_annotation_to_field_type_typeddict_unchanged() -> None:
+    assert _annotation_to_field_type(_Coord) is _Coord
+
+
+# ---------------------------------------------------------------------------
+# _CoercionPlan
+# ---------------------------------------------------------------------------
+
+
+def test_coercion_plan_empty() -> None:
+    plan = _CoercionPlan(coercions={})
+    assert plan.coercions == {}
+
+
+def test_coercion_plan_stores_annotations() -> None:
+    plan = _CoercionPlan(coercions={"records": list[tuple[str, _Color]]})
+    assert plan.coercions["records"] == list[tuple[str, _Color]]
+
+
+# ---------------------------------------------------------------------------
+# _coerce
+# ---------------------------------------------------------------------------
+
+
+def test_coerce_primitive_unchanged() -> None:
+    assert _coerce("hello", str) == "hello"
+    assert _coerce(42, int) == 42
+
+
+def test_coerce_enum_by_name() -> None:
+    assert _coerce("RED", _Color) == _Color.RED
+
+
+def test_coerce_fixed_tuple() -> None:
+    result = _coerce(["RED", 42], tuple[_Color, int])
+    assert result == (_Color.RED, 42)
+    assert isinstance(result, tuple)
+
+
+def test_coerce_uniform_tuple() -> None:
+    result = _coerce(["a", "b"], tuple[str, ...])
+    assert result == ("a", "b")
+    assert isinstance(result, tuple)
+
+
+def test_coerce_list_of_enum() -> None:
+    result = _coerce(["RED", "BLUE"], list[_Color])
+    assert result == [_Color.RED, _Color.BLUE]
+
+
+def test_coerce_nested_list_of_tuple_with_enum() -> None:
+    result = _coerce([["RED", "group1"], ["BLUE", "group2"]], list[tuple[_Color, str]])
+    assert result == [(_Color.RED, "group1"), (_Color.BLUE, "group2")]
+
+
+def test_coerce_optional_enum_none() -> None:
+    result = _coerce(None, _Color | None)
+    assert result is None
+
+
+def test_coerce_optional_enum_value() -> None:
+    result = _coerce("RED", _Color | None)
+    assert result == _Color.RED
+
+
+def test_coerce_typeddict_passthrough() -> None:
+    data = {"x": 1.0, "y": 2.0}
+    assert _coerce(data, _Coord) == data
+
+
+# ---------------------------------------------------------------------------
+# _parse_sphinx_params
+# ---------------------------------------------------------------------------
+
+
+def test_parse_sphinx_params_basic() -> None:
+    doc = """Do something.\n\n:param name: the user name\n:param count: how many\n:return: result\n"""
+    result = _parse_sphinx_params(doc)
+    assert result == {"name": "the user name", "count": "how many"}
+
+
+def test_parse_sphinx_params_multiline_collapsed() -> None:
+    doc = ":param records: a list of\n    multicast records\n:return: nothing\n"
+    result = _parse_sphinx_params(doc)
+    assert result["records"] == "a list of multicast records"
+
+
+def test_parse_sphinx_params_none() -> None:
+    assert _parse_sphinx_params(None) == {}
+
+
+def test_parse_sphinx_params_no_params() -> None:
+    assert _parse_sphinx_params("Just a summary.") == {}
+
+
+def test_parse_sphinx_params_ignores_type_lines() -> None:
+    doc = ":param x: the x value\n:type x: int\n"
+    result = _parse_sphinx_params(doc)
+    assert "x" in result
+    assert "type x" not in result  # :type x: should not be a key
