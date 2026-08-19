@@ -2,6 +2,7 @@
 
 import asyncio
 import gc
+import logging
 import threading
 import time
 
@@ -204,3 +205,39 @@ async def test_job_store_is_bounded(queue: ExecutionQueue) -> None:  # noqa: ARG
         assert small.get(jobs[-1].id) is not None
     finally:
         small.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_job_failure_is_logged_with_a_traceback(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Every job failure must be logged, not only boot.
+
+    :param caplog: pytest log capture fixture
+    :type caplog: pytest.LogCaptureFixture
+    """
+    queue = ExecutionQueue()
+
+    def boom() -> None:
+        msg = "kaboom"
+        raise ValueError(msg)
+
+    with caplog.at_level(logging.DEBUG, logger="boardfarm3.api.execution"):
+        await queue.submit(boom, mode="async")
+        await asyncio.sleep(0.2)
+
+    assert any(record.exc_info for record in caplog.records)
+    assert "kaboom" in caplog.text
+    queue.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_all_jobs_returns_every_retained_job() -> None:
+    """The bundle needs to enumerate jobs without touching private state."""
+    queue = ExecutionQueue()
+    await queue.submit(lambda: 1, mode="sync")
+    await queue.submit(lambda: 2, mode="sync")
+    jobs = queue.all_jobs()
+    assert len(jobs) == 2
+    assert [job.result for job in jobs] == [1, 2]
+    queue.shutdown()
