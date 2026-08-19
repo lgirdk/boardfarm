@@ -84,6 +84,10 @@ class Session:
         :type options: dict[str, Any] | None
         """
         for field_name, value in (options or {}).items():
+            if field_name == "save_console_logs" and not value:
+                # Console logging is always on: an empty override redirects
+                # nothing, it must not disable it.
+                continue
             if field_name == "plugin_args":
                 self.options.plugin_args.update(value)
             elif hasattr(self.options, field_name):

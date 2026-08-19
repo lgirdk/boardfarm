@@ -182,6 +182,20 @@ async def test_configure_applies_option_overrides(session: Session) -> None:
 
 
 @pytest.mark.asyncio
+async def test_empty_save_console_logs_override_keeps_the_default(
+    session: Session,
+) -> None:
+    """An empty override must not disable always-on console logging.
+
+    :param session: session under test
+    :type session: Session
+    """
+    session.options.save_console_logs = "/var/log/boardfarm/s-test"
+    await session.configure({"inventory": {}, "env": {}}, {"save_console_logs": ""})
+    assert session.options.save_console_logs == "/var/log/boardfarm/s-test"
+
+
+@pytest.mark.asyncio
 async def test_status_reports_stuck_when_a_job_overruns(session: Session) -> None:
     """A job running past the watchdog threshold is reported as stuck.
 
