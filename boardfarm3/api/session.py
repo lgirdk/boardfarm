@@ -24,7 +24,6 @@ class SessionState(str, Enum):
     BOOTING = "booting"
     READY = "ready"
     FAILED = "failed"
-    STUCK = "stuck"
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -36,7 +35,6 @@ class Session:
         session_id: str,
         options: RuntimeOptions,
         runtime: RuntimeContext | None = None,
-        stuck_after: float = 900.0,
     ) -> None:
         """Initialise the session.
 
@@ -46,13 +44,9 @@ class Session:
         :type options: RuntimeOptions
         :param runtime: runtime context, built from options when omitted
         :type runtime: RuntimeContext | None
-        :param stuck_after: seconds a running job may take before the session
-            is reported as stuck
-        :type stuck_after: float
         """
         self.session_id = session_id
         self.options = options
-        self.stuck_after = stuck_after
         self.runtime = runtime if runtime is not None else RuntimeContext(options)
         self.queue = ExecutionQueue()
         self.buffer = EventBuffer()
@@ -143,19 +137,38 @@ class Session:
         self.capture.uninstall()
         self.queue.shutdown()
 
-    def is_stuck(self) -> bool:
-        """Report whether a job has been running past the watchdog threshold.
+    def liveness(self) -> dict[str, Any]:
+        """Report progress evidence for the running job.
 
-        A wedged pexpect console blocks the single worker, so this is the
-        signal that the session must be deleted and recreated.
+        ``quiet`` means only "no output for a while" and is reversible — one
+        more log line clears it. It is deliberately advisory: no code branches
+        on it, because a silent image flash and a wedged expect() are
+        indistinguishable by idle time alone. Use ``GET /diagnostics/threads``
+        to tell them apart.
 
-        :return: True when the running job has exceeded ``stuck_after``
-        :rtype: bool
+        :return: liveness evidence
+        :rtype: dict[str, Any]
         """
+        last_ts = self.buffer.last_event_ts
+        last_line = self.buffer.last_line
         running = self.queue.running_job()
         if running is None or running.started_at is None:
-            return False
-        return (time.time() - running.started_at) > self.stuck_after
+            return {
+                "quiet": False,
+                "running_for": None,
+                "idle_for": None,
+                "last_line": last_line,
+                "last_event_ts": last_ts,
+            }
+        now = time.time()
+        idle_for = now - max(running.started_at, last_ts)
+        return {
+            "quiet": idle_for > self.options.quiet_after,
+            "running_for": now - running.started_at,
+            "idle_for": idle_for,
+            "last_line": last_line,
+            "last_event_ts": last_ts,
+        }
 
     def status(self) -> dict[str, Any]:
         """Return the session status the control plane surfaces.
@@ -163,11 +176,11 @@ class Session:
         :return: session status
         :rtype: dict[str, Any]
         """
-        state = SessionState.STUCK.value if self.is_stuck() else self.state.value
         return {
             "session_id": self.session_id,
             "board_name": self.options.board_name,
-            "state": state,
+            "state": self.state.value,
+            "liveness": self.liveness(),
             # True only after a full boot sequence completed (skip_boot=False)
             "booted": self.state is SessionState.READY and not self.options.skip_boot,
             "created_at": self.created_at,

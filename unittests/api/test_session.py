@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
-import time
 from typing import Any, Callable
 
 import pytest
@@ -193,21 +191,6 @@ async def test_empty_save_console_logs_override_keeps_the_default(
     session.options.save_console_logs = "/var/log/boardfarm/s-test"
     await session.configure({"inventory": {}, "env": {}}, {"save_console_logs": ""})
     assert session.options.save_console_logs == "/var/log/boardfarm/s-test"
-
-
-@pytest.mark.asyncio
-async def test_status_reports_stuck_when_a_job_overruns(session: Session) -> None:
-    """A job running past the watchdog threshold is reported as stuck.
-
-    :param session: session under test
-    :type session: Session
-    """
-    session.stuck_after = 0.05
-    await session.configure({"inventory": {}, "env": {}})
-    await session.queue.submit(lambda: time.sleep(0.4), mode="async")  # noqa: ASYNC251
-    await asyncio.sleep(0.2)
-    assert session.status()["state"] == SessionState.STUCK.value
-    assert session.is_stuck() is True
 
 
 @pytest.mark.asyncio

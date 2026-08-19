@@ -21,6 +21,7 @@ API_ENTRY_POINT_GROUP = "boardfarm_api"
 
 
 @dataclass
+# pylint: disable-next=too-many-instance-attributes
 class RuntimeOptions:
     """Options controlling a single boardfarm runtime."""
 
@@ -30,6 +31,7 @@ class RuntimeOptions:
     skip_contingency_checks: bool = False
     save_console_logs: str = ""
     ignore_devices: str = ""
+    quiet_after: float = 600.0
     plugin_args: dict[str, Any] = field(default_factory=dict)
 
 
