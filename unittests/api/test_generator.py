@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict, get_args, get_origin
 
 from fastapi import APIRouter
 
@@ -13,6 +13,7 @@ from boardfarm3.api.routers._generator import (
     _coerce,
     _CoercionPlan,
     _is_serialisable,
+    _make_request_model,
     _parse_sphinx_params,
     generate_template_routers,
 )
@@ -496,3 +497,71 @@ def test_parse_sphinx_params_ignores_type_lines() -> None:
     result = _parse_sphinx_params(doc)
     assert "x" in result
     assert "type x" not in result  # :type x: should not be a key
+
+
+# ---------------------------------------------------------------------------
+# _make_request_model — wired coercion and field descriptions
+# ---------------------------------------------------------------------------
+
+
+class _Direction(Enum):
+    UP = 1
+    DOWN = 2
+
+
+class _ABCWithEnum:
+    def move(self, direction: _Direction, steps: int) -> None:
+        """Move the device.
+
+        :param direction: which way to move
+        :param steps: number of steps
+        """
+
+
+def test_make_request_model_enum_field_is_literal() -> None:
+    import inspect
+
+    sig = inspect.signature(_ABCWithEnum.move, eval_str=True)
+    model, plan = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
+    fields = model.model_fields
+    assert "direction" in fields
+    ann = fields["direction"].annotation
+    assert get_origin(ann) is Literal
+    assert set(get_args(ann)) == {"UP", "DOWN"}
+
+
+def test_make_request_model_coercion_plan_has_enum_entry() -> None:
+    import inspect
+
+    sig = inspect.signature(_ABCWithEnum.move, eval_str=True)
+    _, plan = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
+    assert "direction" in plan.coercions
+    assert plan.coercions["direction"] is _Direction
+
+
+def test_make_request_model_primitive_no_coercion_entry() -> None:
+    import inspect
+
+    sig = inspect.signature(_ABCWithEnum.move, eval_str=True)
+    _, plan = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
+    assert "steps" not in plan.coercions
+
+
+def test_make_request_model_field_has_description() -> None:
+    import inspect
+
+    sig = inspect.signature(_ABCWithEnum.move, eval_str=True)
+    model, _ = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
+    assert model.model_fields["direction"].description == "which way to move"
+    assert model.model_fields["steps"].description == "number of steps"
+
+
+def test_generate_template_routers_with_enum_param_produces_route() -> None:
+    class _ABCEnum:
+        @abstractmethod
+        def move(self, direction: _Direction, steps: int) -> None: ...
+
+    routers, skipped = generate_template_routers([_ABCEnum])
+    assert len(routers) == 1
+    skipped_names = [s.method for s in skipped]
+    assert "move" not in skipped_names
