@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import traceback
 from collections import deque
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -193,11 +194,16 @@ class ConsoleCapture(logging.Handler):
         else:
             stream = "framework"
             device = None
+        line = record.getMessage()
+        if record.exc_info:
+            # getMessage() drops exc_info entirely, which is how every
+            # traceback was being lost on the way into the buffer.
+            line = f"{line}\n{''.join(traceback.format_exception(*record.exc_info))}"
         self._buffer.append(
             stream=stream,
             device=device,
             job_id=current_job_id.get(),
-            line=record.getMessage(),
+            line=line,
         )
 
     def install(self) -> None:
