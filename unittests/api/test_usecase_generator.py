@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import inspect
+from enum import Enum
 from typing import Any, Literal
 
 from boardfarm3.api.routers._usecase_generator import (
+    _build_request_model,
     _classify_param,
     _is_template,
     _template_types,
@@ -12,6 +15,11 @@ from boardfarm3.api.routers._usecase_generator import (
 from boardfarm3.templates.cpe import CPE
 from boardfarm3.templates.lan import LAN
 from boardfarm3.templates.wan import WAN
+
+
+class _Proto(Enum):
+    TCP = 1
+    UDP = 2
 
 
 def test_is_template_true_for_template_abc() -> None:
@@ -96,3 +104,59 @@ def test_generate_usecase_routers_builds_routes_and_skips() -> None:
     skipped_names = {s.method for s in skipped}
     assert "parse_trace" in skipped_names  # unroutable param
     assert "make_ctx" in skipped_names  # non-serialisable return
+
+
+def test_classify_param_enum_is_primitive() -> None:
+    assert _classify_param(_Proto) == "primitive"
+
+
+def test_build_request_model_enum_field_is_literal() -> None:
+    from typing import Literal, get_args, get_origin
+
+    def fn(proto: _Proto, host: str) -> str:
+        """Send probe.
+
+        :param proto: transport protocol to use
+        :param host: target hostname
+        """
+
+    sig = inspect.signature(fn, eval_str=True)
+    model, plan = _build_request_model("fn", sig, fn.__doc__)
+    ann = model.model_fields["proto"].annotation
+    assert get_origin(ann) is Literal
+    assert set(get_args(ann)) == {"TCP", "UDP"}
+    assert plan.coercions.get("proto") is _Proto
+    assert "host" not in plan.coercions
+
+
+def test_build_request_model_field_has_description() -> None:
+    def fn(proto: _Proto, host: str) -> str:
+        """Send probe.
+
+        :param proto: transport protocol to use
+        :param host: target hostname
+        """
+
+    sig = inspect.signature(fn, eval_str=True)
+    model, _ = _build_request_model("fn", sig, fn.__doc__)
+    assert model.model_fields["proto"].description == "transport protocol to use"
+    assert model.model_fields["host"].description == "target hostname"
+
+
+def test_generate_usecase_routers_enum_param_not_skipped() -> None:
+    import types as _types
+
+    from boardfarm3.api.routers._usecase_generator import generate_usecase_routers
+
+    mod = _types.ModuleType("fake_uc_enum")
+    mod.__name__ = "fake_uc_enum"
+
+    def send_probe(proto: _Proto, host: str) -> str:
+        """Send probe."""
+        return f"{proto.name}:{host}"
+
+    send_probe.__module__ = "fake_uc_enum"
+    mod.send_probe = send_probe  # type: ignore[attr-defined]
+
+    _, skipped = generate_usecase_routers([mod])
+    assert not any(s.method == "send_probe" for s in skipped)
