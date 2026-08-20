@@ -6,7 +6,7 @@ import asyncio
 import os
 import secrets
 import time
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
@@ -22,6 +22,7 @@ from boardfarm3_control.models import (
 )
 from boardfarm3_control.openapi import load_plugin_routers, register_plugin_routes
 from boardfarm3_control.proxy import proxy_request
+from boardfarm3_control.reaper import run_reaper
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
 from boardfarm3_control.teardown import archive_bundle, teardown_session
@@ -35,8 +36,10 @@ if TYPE_CHECKING:
     from boardfarm3_control.models import AgentInfo
 
 
-_HEALTH_TIMEOUT = 30.0     # seconds total for health poll — plugin-heavy agents take >5 s to start
-_HEALTH_INTERVAL = 0.1     # seconds between health retries
+_HEALTH_TIMEOUT = (
+    30.0  # seconds total for health poll — plugin-heavy agents take >5 s to start
+)
+_HEALTH_INTERVAL = 0.1  # seconds between health retries
 # seconds per-agent for GET /sessions fan-out
 _STATE_TIMEOUT = float(os.environ.get("BOARDFARM_STATE_TIMEOUT", "2.0"))
 _MAX_LIMIT = 100
@@ -74,9 +77,15 @@ def create_app(  # noqa: C901, PLR0915
         # re-acquire a lease and block its board after a restart.
         await lease.rebuild_from([s for s in existing if s.state == "live"])
         app.state.http = httpx.AsyncClient()
+        app.state.reaper = asyncio.create_task(
+            run_reaper(launcher=launcher, registry=registry, store=store),
+        )
         yield
         # Running agents are deliberately left alone: a control plane restart
         # must not destroy live sessions or the containers being debugged.
+        app.state.reaper.cancel()
+        with suppress(asyncio.CancelledError):
+            await app.state.reaper
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
@@ -113,8 +122,14 @@ def create_app(  # noqa: C901, PLR0915
         """
         registry.add(info)
         await teardown_session(
-            session_id=session_id, info=info, launcher=launcher,
-            registry=registry, lease=lease, store=store, http=http, retain=True,
+            session_id=session_id,
+            info=info,
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            http=http,
+            retain=True,
         )
         return HTTPException(
             status_code=int(status),
@@ -149,7 +164,10 @@ def create_app(  # noqa: C901, PLR0915
         image = profiles[body.runtime_profile]
         try:
             info = await launcher.start(
-                session_id, body.board_name, image, body.runtime_profile,
+                session_id,
+                body.board_name,
+                image,
+                body.runtime_profile,
                 agent_env=body.agent_env or None,
             )
         except Exception as exc:
@@ -177,7 +195,9 @@ def create_app(  # noqa: C901, PLR0915
 
         if not healthy:
             raise await _unwind(
-                session_id, info, request.app.state.http,
+                session_id,
+                info,
+                request.app.state.http,
                 HTTPStatus.SERVICE_UNAVAILABLE,
                 "AgentUnhealthy",
                 f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
@@ -196,14 +216,18 @@ def create_app(  # noqa: C901, PLR0915
                 )
         except Exception as exc:
             raise await _unwind(
-                session_id, info, request.app.state.http,
+                session_id,
+                info,
+                request.app.state.http,
                 HTTPStatus.BAD_REQUEST,
                 "AgentConfigRejected",
                 f"agent rejected config: {exc}",
             ) from exc
         if cfg.status_code != int(HTTPStatus.OK):
             raise await _unwind(
-                session_id, info, request.app.state.http,
+                session_id,
+                info,
+                request.app.state.http,
                 HTTPStatus.BAD_REQUEST,
                 "AgentConfigRejected",
                 f"agent rejected config: {cfg.text}",
@@ -217,14 +241,18 @@ def create_app(  # noqa: C901, PLR0915
                 boot = await client.post(boot_url)
         except Exception as exc:
             raise await _unwind(
-                session_id, info, request.app.state.http,
+                session_id,
+                info,
+                request.app.state.http,
                 HTTPStatus.SERVICE_UNAVAILABLE,
                 "AgentBootUnreachable",
                 f"agent boot failed: {exc}",
             ) from exc
         if boot.status_code != int(HTTPStatus.ACCEPTED):
             raise await _unwind(
-                session_id, info, request.app.state.http,
+                session_id,
+                info,
+                request.app.state.http,
                 HTTPStatus.BAD_GATEWAY,
                 "AgentBootRejected",
                 f"agent boot rejected: {boot.status_code}",
