@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import io
+import tarfile
 from typing import TYPE_CHECKING
 
 import httpx
@@ -114,6 +116,50 @@ async def test_lease_is_released_even_when_every_step_fails(
     assert lease.held_by("board") is None
 
 
+@pytest.mark.asyncio
+@respx.mock
+async def test_lease_is_released_even_when_launcher_stop_fails(
+    tmp_path: Path,
+) -> None:
+    """launcher.stop() itself raising must not strand a board.
+
+    Steps 1 (archive) and 2 (graceful release) were already best-effort;
+    step 3 (``launcher.stop()``) was not, so a Docker daemon ``APIError``
+    there used to skip lease release entirely.
+    """
+    launcher, info, registry, lease, store = await _prepare(tmp_path)
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        return_value=httpx.Response(200, content=b"BUNDLE"),
+    )
+    respx.delete(f"{info.agent_url}/session").mock(
+        return_value=httpx.Response(200, json={}),
+    )
+
+    async def _boom(*_args: object, **_kwargs: object) -> None:
+        msg = "docker daemon unreachable"
+        raise RuntimeError(msg)
+
+    launcher.stop = _boom  # type: ignore[method-assign]
+
+    async with httpx.AsyncClient() as http:
+        await teardown_session(
+            session_id="s-1",
+            info=info,
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            http=http,
+            retain=False,
+        )
+    assert lease.held_by("board") is None
+    # stop() failed, so the container's real state is unknown -- the corpse
+    # must stay visible rather than vanish from the registry.
+    listed = registry.get("s-1")
+    assert listed is not None
+    assert listed.state == "dead"
+
+
 def test_retain_and_purge_are_mutually_exclusive(
     fake_launcher: FakeLauncher,
     profiles: dict[str, str],
@@ -154,3 +200,50 @@ async def test_archive_falls_back_to_the_launcher(tmp_path: Path) -> None:
         )
     assert source == "launcher"
     assert store.has_bundle("s-1")
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_archive_bundle_uses_the_session_artifact_root_not_the_default(
+    tmp_path: Path,
+) -> None:
+    """A per-session BOARDFARM_ARTIFACT_DIR override must reach capture_files.
+
+    Before the fix, tier-3 capture hardcoded "/var/log/boardfarm" regardless
+    of any per-session override, so a session configured with a different
+    artifact root silently retrieved nothing useful on a hard-crash fallback.
+    It must also be scoped to *this* session's own subdirectory, never the
+    shared root, so no other session's files can be swept in.
+    """
+    launcher = FakeLauncher()
+    info = await launcher.start(
+        "s-1",
+        "board",
+        "img",
+        "prplos",
+        agent_env={"BOARDFARM_ARTIFACT_DIR": "/custom/artifacts"},
+    )
+    assert info.artifact_dir == "/custom/artifacts"
+    store = DiagnosticsStore(root=tmp_path)
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        side_effect=httpx.ConnectError("down"),
+    )
+    async with httpx.AsyncClient() as http:
+        source = await archive_bundle(
+            session_id="s-1",
+            agent_url=info.agent_url,
+            launcher=launcher,
+            store=store,
+            http=http,
+            artifact_dir=info.artifact_dir,
+        )
+    assert source == "launcher"
+    bundle_bytes = store.bundle_path("s-1").read_bytes()
+    with tarfile.open(fileobj=io.BytesIO(bundle_bytes), mode="r:gz") as archive:
+        artifacts_member = archive.extractfile("artifacts.tar")
+        assert artifacts_member is not None
+        content = artifacts_member.read()
+    # FakeLauncher.capture_files() echoes back the path it was handed, so this
+    # proves the resolved per-session directory reached the launcher, not the
+    # hardcoded default root and not some other session's directory.
+    assert b"/custom/artifacts/s-1" in content

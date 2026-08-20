@@ -87,13 +87,26 @@ def _session_bytes(store: DiagnosticsStore, session_id: str) -> int:
 def _reap_aged_bundles(
     *,
     store: DiagnosticsStore,
+    registry: SessionRegistry,
     now: float,
     bundle_ttl: float,
 ) -> tuple[int, int, list[tuple[float, str]]]:
     """Delete bundles past the bundle TTL.
 
+    A missing ``ended_at`` (no meta.json, or one with the key absent) is
+    treated as "not eligible for this sweep", never as "infinitely old": a
+    session that was only ever snapshotted (never torn down) or whose
+    ``ProcessLauncher`` process just started has no real death time to judge
+    age against, and a missing timestamp must never be the trigger for a
+    destructive action. A session still ``state == "live"`` in the registry
+    is skipped outright regardless of what its store meta says, since a live
+    session's store entry must never be touched by a TTL sweep.
+
     :param store: diagnostics store
     :type store: DiagnosticsStore
+    :param registry: session registry, consulted so a live session's store
+        entry is never swept regardless of its meta
+    :type registry: SessionRegistry
     :param now: current time, injected for testability
     :type now: float
     :param bundle_ttl: seconds a bundle may remain before deletion
@@ -105,8 +118,14 @@ def _reap_aged_bundles(
     reclaimed = 0
     remaining: list[tuple[float, str]] = []
     for session_id in store.list_sessions():
+        info = registry.get(session_id)
+        if info is not None and info.state == "live":
+            continue
         meta = store.read_meta(session_id) or {}
-        ended_at = float(meta.get("ended_at") or 0.0)
+        ended_at = meta.get("ended_at")
+        if ended_at is None:
+            continue
+        ended_at = float(ended_at)
         if now - ended_at > bundle_ttl:
             size = _session_bytes(store, session_id)
             store.delete(session_id)
@@ -199,6 +218,7 @@ async def reap_once(
     )
     bundles, reclaimed, aged = _reap_aged_bundles(
         store=store,
+        registry=registry,
         now=now,
         bundle_ttl=bundle_ttl,
     )

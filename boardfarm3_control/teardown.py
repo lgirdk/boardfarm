@@ -19,6 +19,10 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 _BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=300.0, write=30.0, pool=10.0)
+# Matches boardfarm3_control.launcher._DEFAULT_ARTIFACT_ROOT and
+# boardfarm3.api.logs's default. Callers should pass a resolved
+# AgentInfo.artifact_dir; this is only the fallback when none is known.
+_DEFAULT_ARTIFACT_ROOT = "/var/log/boardfarm"
 
 
 def _launcher_bundle(logs: bytes, files: bytes) -> bytes:
@@ -43,13 +47,14 @@ def _launcher_bundle(logs: bytes, files: bytes) -> bytes:
     return buffer.getvalue()
 
 
-async def archive_bundle(
+async def archive_bundle(  # noqa: PLR0913
     *,
     session_id: str,
     agent_url: str,
     launcher: Launcher,
     store: DiagnosticsStore,
     http: httpx.AsyncClient,
+    artifact_dir: str = _DEFAULT_ARTIFACT_ROOT,
 ) -> str:
     """Pull a diagnostics bundle and archive it, preferring the live agent.
 
@@ -63,6 +68,10 @@ async def archive_bundle(
     :type store: DiagnosticsStore
     :param http: pooled HTTP client
     :type http: httpx.AsyncClient
+    :param artifact_dir: this session's resolved artifact root (``AgentInfo
+        .artifact_dir``), e.g. honouring a per-session
+        ``BOARDFARM_ARTIFACT_DIR`` override in ``agent_env``
+    :type artifact_dir: str
     :return: which tier produced the bundle: agent, launcher, or none
     :rtype: str
     """
@@ -79,7 +88,11 @@ async def archive_bundle(
         return "agent"
 
     logs = await launcher.capture_logs(session_id)
-    files = await launcher.capture_files(session_id, "/var/log/boardfarm")
+    # The per-session subdirectory, not the shared root: capture_files()
+    # implementations that share a filesystem across sessions (ProcessLauncher)
+    # must never be handed a path that spans more than one session's files.
+    session_dir = f"{artifact_dir.rstrip('/')}/{session_id}"
+    files = await launcher.capture_files(session_id, session_dir)
     if not logs and not files:
         return "none"
     store.write_bundle(session_id, [_launcher_bundle(logs, files)])
@@ -99,9 +112,13 @@ async def teardown_session(  # noqa: PLR0913
 ) -> None:
     """Archive, release devices, stop the container, and free the board.
 
-    Steps 1 and 2 are best-effort: a diagnostics or graceful-release failure
-    must never strand a board or leak a container, so the lease is released
-    and the container stopped regardless.
+    Steps 1, 2, and 3 are best-effort: a diagnostics failure, a graceful-
+    release failure, or even ``launcher.stop()`` itself raising (e.g. a
+    Docker daemon ``APIError``) must never strand a board, so the lease is
+    released unconditionally in a ``finally`` block. When ``stop()`` fails,
+    the container's real state is unknown, so the registry keeps the corpse
+    listed (``mark_dead``) instead of forgetting it, on the theory that a
+    human will need to intervene on it directly.
 
     :param session_id: session to tear down
     :type session_id: str
@@ -131,6 +148,7 @@ async def teardown_session(  # noqa: PLR0913
             launcher=launcher,
             store=store,
             http=http,
+            artifact_dir=info.artifact_dir,
         )
     except Exception:  # noqa: BLE001
         _log.warning("diagnostics capture failed for %s", session_id)
@@ -154,10 +172,26 @@ async def teardown_session(  # noqa: PLR0913
     except httpx.HTTPError as exc:
         _log.info("graceful release skipped for %s: %s", session_id, exc)
 
-    # 3-5. Always run, whatever happened above.
-    await launcher.stop(session_id, remove=not retain)
-    await lease.release(session_id)
-    if retain:
-        registry.mark_dead(session_id, ended_at=ended_at)
-    else:
-        registry.remove(session_id)
+    # 3. Best-effort: a Docker daemon APIError (or any other stop() failure)
+    # must not skip step 4 -- lease.release() belongs in a finally so a dead
+    # agent can never strand a board, even when the container itself refuses
+    # to stop.
+    stop_failed = False
+    try:
+        await launcher.stop(session_id, remove=not retain)
+    except Exception:  # noqa: BLE001
+        stop_failed = True
+        _log.exception(
+            "launcher.stop failed for %s; releasing the lease anyway",
+            session_id,
+        )
+    finally:
+        # 4. Unconditional, whatever happened above.
+        await lease.release(session_id)
+        # 5. A failed stop() means the container's real state is unknown --
+        # keep the corpse visible in the registry rather than losing it, so a
+        # human can still find and intervene on it directly.
+        if retain or stop_failed:
+            registry.mark_dead(session_id, ended_at=ended_at)
+        else:
+            registry.remove(session_id)

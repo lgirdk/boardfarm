@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 from boardfarm3 import __version__
 from boardfarm3.api.diagnostics import format_threads, thread_snapshot
 from boardfarm3.api.errors import error_envelope
+from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.redact import redact
 
 if TYPE_CHECKING:
@@ -85,8 +86,13 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
     """
     console_dir = Path(session.options.save_console_logs or "")
     has_console = bool(session.options.save_console_logs) and console_dir.is_dir()
-    agent_log = console_dir.parent / "agent.log" if has_console else None
-    has_agent_log = agent_log is not None and agent_log.is_file()
+    # Independent of console_dir: agent.log is installed at process start
+    # (boardfarm3.api.__main__), while console/ is only created lazily by
+    # BoardfarmPexpect on the first device connect. Gating agent.log's
+    # inclusion on console/ existing silently dropped it for exactly the
+    # crash-before-boot sessions this bundle exists to diagnose.
+    agent_log = artifact_dir(session.session_id) / "agent.log"
+    has_agent_log = agent_log.is_file()
 
     absent = [
         name
@@ -129,7 +135,7 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
             "\n".join(json.dumps(event.__dict__) for event in events),
         )
         _add_text(archive, "threads.txt", format_threads(thread_snapshot()))
-        if has_agent_log and agent_log is not None:
+        if has_agent_log:
             archive.add(agent_log, arcname="agent.log")
         if has_console:
             archive.add(console_dir, arcname="console-logs")

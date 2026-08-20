@@ -133,3 +133,31 @@ async def test_rebuild_from_launcher() -> None:
     info = reg.get("s-aaa")
     assert info is not None
     assert info.agent_url == "http://localhost:18000"
+
+
+@pytest.mark.asyncio
+async def test_rebuild_from_launcher_recovers_dead_sessions_with_ended_at() -> None:
+    """rebuild() must recover corpses too, not just live sessions.
+
+    A dead session that survived a control plane restart is only ever
+    visible through the launcher (the registry is rebuilt purely from
+    ``launcher.list_sessions()``, never the store), so it must come back
+    with ``state == "dead"`` and a real ``ended_at`` -- otherwise it becomes
+    invisible to the reaper forever.
+    """
+    launcher = FakeLauncher()
+    await launcher.start("s-live", "board-1", "img", "prplos")
+    await launcher.start("s-dead", "board-2", "img", "prplos")
+    await launcher.stop("s-dead", remove=False)
+    reg = SessionRegistry()
+    await reg.rebuild(launcher)
+
+    live = reg.get("s-live")
+    assert live is not None
+    assert live.state == "live"
+    assert live.ended_at is None
+
+    dead = reg.get("s-dead")
+    assert dead is not None
+    assert dead.state == "dead"
+    assert dead.ended_at is not None

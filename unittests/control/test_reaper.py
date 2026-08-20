@@ -102,6 +102,71 @@ async def test_never_touches_a_live_session_even_with_a_stale_ended_at(
 
 
 @pytest.mark.asyncio
+async def test_bundle_with_no_ended_at_is_not_reaped(tmp_path: Path) -> None:
+    """A missing timestamp must never be the trigger for a destructive action.
+
+    Before the fix, a missing ``ended_at`` defaulted to 0.0, making the
+    bundle look infinitely old and evicting it on the very first pass.
+    """
+    launcher, registry = FakeLauncher(), SessionRegistry()
+    store = DiagnosticsStore(root=tmp_path)
+    store.write_bundle("s-no-meta", [b"BUNDLE"])  # no write_meta() call at all
+    result = await reap_once(
+        launcher=launcher,
+        registry=registry,
+        store=store,
+        now=100 * _DAY,
+    )
+    assert result["bundles"] == 0
+    assert store.has_bundle("s-no-meta")
+
+
+@pytest.mark.asyncio
+async def test_bundle_with_meta_missing_ended_at_key_is_not_reaped(
+    tmp_path: Path,
+) -> None:
+    """Same as above, but meta.json exists without an ``ended_at`` key."""
+    launcher, registry = FakeLauncher(), SessionRegistry()
+    store = DiagnosticsStore(root=tmp_path)
+    store.write_meta("s-partial-meta", {"session_id": "s-partial-meta"})
+    store.write_bundle("s-partial-meta", [b"BUNDLE"])
+    result = await reap_once(
+        launcher=launcher,
+        registry=registry,
+        store=store,
+        now=100 * _DAY,
+    )
+    assert result["bundles"] == 0
+    assert store.has_bundle("s-partial-meta")
+
+
+@pytest.mark.asyncio
+async def test_live_sessions_bundle_is_never_reaped_regardless_of_meta(
+    tmp_path: Path,
+) -> None:
+    """A registry-live session must never lose its store entry to the TTL sweep.
+
+    Even a stale/ancient ``ended_at`` in meta.json must not matter once the
+    registry says the session is still ``live`` -- the registry is the
+    authority on liveness, not whatever a store's meta.json happens to say.
+    """
+    launcher, registry = FakeLauncher(), SessionRegistry()
+    store = DiagnosticsStore(root=tmp_path)
+    info = await launcher.start("s-live", "board", "img", "prplos")
+    registry.add(info)
+    store.write_meta("s-live", {"ended_at": 1.0})  # ancient, if it mattered
+    store.write_bundle("s-live", [b"BUNDLE"])
+    result = await reap_once(
+        launcher=launcher,
+        registry=registry,
+        store=store,
+        now=100 * _DAY,
+    )
+    assert result["bundles"] == 0
+    assert store.has_bundle("s-live")
+
+
+@pytest.mark.asyncio
 async def test_size_cap_evicts_oldest_first(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

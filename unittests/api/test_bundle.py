@@ -27,6 +27,7 @@ _EXPECTED = {
     "jobs.json",
     "events.jsonl",
     "threads.txt",
+    "agent.log",
 }
 
 
@@ -34,17 +35,29 @@ _EXPECTED = {
 def bundle_session_fixture(
     make_session: Callable[..., Session],
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> Session:
-    """Return a session whose console logs land under *tmp_path*.
+    """Return a session whose console logs and agent.log land under *tmp_path*.
+
+    ``agent.log`` is installed at process start (``boardfarm3.api.__main__``),
+    independently of any device connecting, so it is pre-created here rather
+    than produced by the session itself -- these fixtures never boot a real
+    device.
 
     :param make_session: session factory fixture from conftest (Task 9)
     :type make_session: Callable[..., Session]
     :param tmp_path: pytest temporary directory
     :type tmp_path: Path
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
     :return: session under test
     :rtype: Session
     """
-    return make_session(save_console_logs=str(tmp_path / "console"))
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    session_dir = tmp_path / "s-test"
+    session_dir.mkdir(parents=True, exist_ok=True)
+    (session_dir / "agent.log").write_text("agent log contents\n")
+    return make_session(save_console_logs=str(session_dir / "console"))
 
 
 @pytest.mark.asyncio
@@ -146,6 +159,45 @@ async def test_bundle_jobs_carry_tracebacks(
     failed = [job for job in jobs if job["state"] == "error"]
     assert failed
     assert "ValueError: kaboom" in "".join(failed[0]["error"]["traceback"])
+
+
+def test_bundle_includes_agent_log_for_a_created_session_with_no_console_dir(
+    make_session: Callable[..., Session],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """agent.log must survive a crash before any device ever connects.
+
+    Before the fix, agent.log's inclusion was gated on console/ existing,
+    but console/ is only created lazily on the first device connect while
+    agent.log is installed at process start. A session that fails in the
+    ``created`` state -- before ``configure()`` is even called, let alone a
+    device connection -- has an agent.log on disk but console/ genuinely
+    does not exist, and the bundle used to silently drop agent.log too.
+
+    :param make_session: session factory fixture from conftest (Task 9)
+    :type make_session: Callable[..., Session]
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    session_dir = tmp_path / "s-test"
+    session_dir.mkdir(parents=True, exist_ok=True)
+    (session_dir / "agent.log").write_text("crash before boot\n")
+
+    session = make_session()
+    assert not (session_dir / "console").exists()
+
+    dest = tmp_path / "bundle.tar.gz"
+    manifest = write_bundle(session, dest)
+
+    with tarfile.open(dest, "r:gz") as archive:
+        names = set(archive.getnames())
+    assert "agent.log" in names
+    assert "console-logs" in manifest["absent"]
+    assert "agent.log" not in manifest["absent"]
 
 
 def test_bundle_route_streams_gzip() -> None:

@@ -13,6 +13,7 @@ import socket
 import sys
 import tarfile
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Protocol, runtime_checkable
 
@@ -22,6 +23,22 @@ if TYPE_CHECKING:
 _log = logging.getLogger(__name__)
 
 _DEFAULT_STATE_FILE = "/tmp/boardfarm-control-sessions.json"
+# Matches boardfarm3.api.logs's default artifact root. Duplicated here rather
+# than imported: boardfarm3_control is a separate deployable from boardfarm3
+# and must not take on a hard runtime dependency on the agent package to
+# resolve a single fallback string.
+_DEFAULT_ARTIFACT_ROOT = "/var/log/boardfarm"
+
+
+def _artifact_root(agent_env: dict[str, str] | None) -> str:
+    """Resolve the artifact root a launched agent will use.
+
+    :param agent_env: extra environment variables passed to the agent
+    :type agent_env: dict[str, str] | None
+    :return: ``BOARDFARM_ARTIFACT_DIR`` override, or the shared default
+    :rtype: str
+    """
+    return (agent_env or {}).get("BOARDFARM_ARTIFACT_DIR") or _DEFAULT_ARTIFACT_ROOT
 
 
 @runtime_checkable
@@ -118,7 +135,7 @@ class FakeLauncher:
         board_name: str,
         image: str,  # noqa: ARG002
         runtime_profile: str,
-        agent_env: dict[str, str] | None = None,  # noqa: ARG002
+        agent_env: dict[str, str] | None = None,
     ) -> AgentInfo:
         """Allocate an in-memory session (no Docker).
 
@@ -130,6 +147,9 @@ class FakeLauncher:
         :type image: str
         :param runtime_profile: profile key
         :type runtime_profile: str
+        :param agent_env: extra environment variables, honoured only for
+            ``BOARDFARM_ARTIFACT_DIR``
+        :type agent_env: dict[str, str] | None
         :return: fake agent info
         :rtype: AgentInfo
         """
@@ -146,6 +166,7 @@ class FakeLauncher:
             created_at=time.time(),
             pid=None,
             agent_url=f"http://localhost:{port}",
+            artifact_dir=_artifact_root(agent_env),
         )
         self._sessions[session_id] = info
         return info
@@ -214,6 +235,33 @@ def _free_port() -> int:
     with socket.socket() as sock:
         sock.bind(("", 0))
         return sock.getsockname()[1]
+
+
+def _finished_at(container: Any) -> float | None:  # noqa: ANN401
+    """Parse a Docker container's ``State.FinishedAt`` to a Unix timestamp.
+
+    Docker reports the zero value ``"0001-01-01T00:00:00Z"`` for a container
+    that has never stopped, and emits nanosecond-precision fractional seconds
+    that :func:`datetime.fromisoformat` cannot parse directly (it accepts at
+    most microseconds).
+
+    :param container: docker-py container object
+    :type container: typing.Any
+    :return: Unix timestamp, or None when absent, zero, or unparseable
+    :rtype: float | None
+    """
+    raw = container.attrs.get("State", {}).get("FinishedAt", "")
+    if not raw or raw.startswith("0001-01-01"):
+        return None
+    if "." in raw:
+        head, _, fractional_and_zone = raw.partition(".")
+        fractional = fractional_and_zone.rstrip("Z")
+        raw = f"{head}.{fractional[:6]}Z"
+    try:
+        return datetime.fromisoformat(raw).timestamp()
+    except ValueError:
+        _log.warning("could not parse container FinishedAt %r", raw)
+        return None
 
 
 class ProcessLauncher:
@@ -295,6 +343,29 @@ class ProcessLauncher:
             / session_id
         )
         log_dir.mkdir(parents=True, exist_ok=True)
+        # Written alongside process.log so the reaper's aged-bundle sweep
+        # never mistakes a live session's freshly created store directory
+        # for an ended one: no "ended_at" key means "not eligible" (see
+        # reaper._reap_aged_bundles), not "infinitely old".
+        try:
+            (log_dir / "meta.json").write_text(
+                json.dumps(
+                    {
+                        "session_id": session_id,
+                        "board_name": board_name,
+                        "runtime_profile": runtime_profile,
+                        "created_at": time.time(),
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            _log.warning(
+                "boardfarm control: could not write meta.json in %s: %s",
+                log_dir,
+                exc,
+            )
         log_file = (log_dir / "process.log").open("wb")
         proc = await asyncio.create_subprocess_exec(
             sys.executable,
@@ -319,6 +390,7 @@ class ProcessLauncher:
             created_at=time.time(),
             pid=proc.pid,
             agent_url=f"http://localhost:{host_port}",
+            artifact_dir=_artifact_root(agent_env),
         )
         self._sessions[session_id] = (proc, info, log_file)
         self._save_state()
@@ -390,17 +462,32 @@ class ProcessLauncher:
         except OSError:
             return b""
 
-    async def capture_files(self, session_id: str, path: str) -> bytes:  # noqa: ARG002
+    async def capture_files(self, session_id: str, path: str) -> bytes:
         """Return a tar of *path*, which is local for this launcher.
+
+        Refuses anything whose final path component is not *session_id*: the
+        caller is expected to pass this session's own artifact directory
+        (``{artifact_root}/{session_id}``), and this launcher shares its
+        filesystem with the control plane, so a caller-supplied path that
+        strayed into another session's directory would otherwise leak one
+        session's console transcripts into another's bundle.
 
         :param session_id: session whose files to capture
         :type session_id: str
-        :param path: local path to archive
+        :param path: local path to archive; must end in ``/{session_id}``
         :type path: str
-        :return: tar bytes, empty when the path does not exist
+        :return: tar bytes, empty when the path does not exist or is not
+            scoped to this session
         :rtype: bytes
         """
         source = Path(path)
+        if source.name != session_id:
+            _log.warning(
+                "capture_files for %s refused non-session path %s",
+                session_id,
+                path,
+            )
+            return b""
         if not source.exists():
             return b""
         buffer = io.BytesIO()
@@ -484,6 +571,7 @@ class DockerLauncher:
     _LABEL_BOARD = "boardfarm.board_name"
     _LABEL_PROFILE = "boardfarm.runtime_profile"
     _LABEL_CREATED = "boardfarm.created_at"
+    _LABEL_ARTIFACT_DIR = "boardfarm.artifact_dir"
 
     def __init__(self, client: object | None = None) -> None:
         """Initialise with an optional pre-built docker client.
@@ -522,6 +610,7 @@ class DockerLauncher:
 
         host_port = _free_port()
         created_at = time.time()
+        artifact_root = _artifact_root(agent_env)
         loop = asyncio.get_running_loop()
 
         def _start() -> object:
@@ -534,6 +623,12 @@ class DockerLauncher:
                     self._LABEL_BOARD: board_name,
                     self._LABEL_PROFILE: runtime_profile,
                     self._LABEL_CREATED: str(created_at),
+                    # Persisted as a label, not just an env var, so a restart
+                    # can recover it from list_sessions() alone (Docker
+                    # labels survive a container restart; recomputing the
+                    # override from agent_env would require it, which is not
+                    # otherwise stored anywhere on the control plane).
+                    self._LABEL_ARTIFACT_DIR: artifact_root,
                 },
                 environment={
                     "BOARDFARM_SESSION_ID": session_id,
@@ -553,6 +648,7 @@ class DockerLauncher:
             created_at=created_at,
             pid=None,
             agent_url=f"http://localhost:{host_port}",
+            artifact_dir=artifact_root,
         )
 
     def _find(self, session_id: str) -> list[Any]:
@@ -685,6 +781,15 @@ class DockerLauncher:
                     pid=None,
                     agent_url=f"http://localhost:{host_port}",
                     state="live" if is_running else "dead",
+                    # None for a running container; every corpse must carry a
+                    # real timestamp or it becomes permanently unreapable
+                    # after a restart (SessionRegistry.rebuild() only ever
+                    # consults the launcher, never the store).
+                    ended_at=None if is_running else _finished_at(container),
+                    artifact_dir=labels.get(
+                        self._LABEL_ARTIFACT_DIR,
+                        _DEFAULT_ARTIFACT_ROOT,
+                    ),
                 ),
             )
         return result
