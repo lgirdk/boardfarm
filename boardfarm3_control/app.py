@@ -85,8 +85,51 @@ def create_app(  # noqa: C901, PLR0915
         plugin_routers.extend(extra_routers)
     register_plugin_routes(app, plugin_routers, registry)
 
+    async def _unwind(  # noqa: PLR0913
+        session_id: str,
+        info: AgentInfo,
+        http: httpx.AsyncClient,
+        status: HTTPStatus,
+        error: str,
+        message: str,
+    ) -> HTTPException:
+        """Retain the failed container and build the error to raise.
+
+        :param session_id: failed session
+        :type session_id: str
+        :param info: registry entry for the failed session
+        :type info: AgentInfo
+        :param http: pooled HTTP client
+        :type http: httpx.AsyncClient
+        :param status: HTTP status to return
+        :type status: HTTPStatus
+        :param error: machine-readable error name
+        :type error: str
+        :param message: human-readable detail
+        :type message: str
+        :return: the exception the caller should raise
+        :rtype: HTTPException
+        """
+        registry.add(info)
+        await teardown_session(
+            session_id=session_id, info=info, launcher=launcher,
+            registry=registry, lease=lease, store=store, http=http, retain=True,
+        )
+        return HTTPException(
+            status_code=int(status),
+            detail={
+                "error": error,
+                "message": message,
+                "session_id": session_id,
+                "diagnostics": f"/sessions/{session_id}/diagnostics",
+            },
+        )
+
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
-    async def create_session(body: SessionCreate) -> SessionResponse:  # noqa: C901, PLR0915
+    async def create_session(  # noqa: C901, PLR0915
+        body: SessionCreate,
+        request: Request,
+    ) -> SessionResponse:
         if body.runtime_profile not in profiles:
             raise HTTPException(
                 status_code=int(HTTPStatus.BAD_REQUEST),
@@ -132,11 +175,11 @@ def create_app(  # noqa: C901, PLR0915
                 await asyncio.sleep(_HEALTH_INTERVAL)
 
         if not healthy:
-            await launcher.stop(session_id)
-            await lease.release(session_id)
-            raise HTTPException(
-                status_code=int(HTTPStatus.SERVICE_UNAVAILABLE),
-                detail="agent did not become healthy within 5 s",
+            raise await _unwind(
+                session_id, info, request.app.state.http,
+                HTTPStatus.SERVICE_UNAVAILABLE,
+                "AgentUnhealthy",
+                f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
             )
 
         # Configure agent — inject skip_boot when caller did not request a full boot
@@ -151,18 +194,18 @@ def create_app(  # noqa: C901, PLR0915
                     json={"payload": body.payload, "options": config_options},
                 )
         except Exception as exc:
-            await launcher.stop(session_id)
-            await lease.release(session_id)
-            raise HTTPException(
-                status_code=int(HTTPStatus.BAD_REQUEST),
-                detail=f"agent rejected config: {exc}",
+            raise await _unwind(
+                session_id, info, request.app.state.http,
+                HTTPStatus.BAD_REQUEST,
+                "AgentConfigRejected",
+                f"agent rejected config: {exc}",
             ) from exc
         if cfg.status_code != int(HTTPStatus.OK):
-            await launcher.stop(session_id)
-            await lease.release(session_id)
-            raise HTTPException(
-                status_code=int(HTTPStatus.BAD_REQUEST),
-                detail=f"agent rejected config: {cfg.text}",
+            raise await _unwind(
+                session_id, info, request.app.state.http,
+                HTTPStatus.BAD_REQUEST,
+                "AgentConfigRejected",
+                f"agent rejected config: {cfg.text}",
             )
 
         # Boot — always called; skip_boot was already set in config options above
@@ -172,18 +215,18 @@ def create_app(  # noqa: C901, PLR0915
             async with httpx.AsyncClient() as client:
                 boot = await client.post(boot_url)
         except Exception as exc:
-            await launcher.stop(session_id)
-            await lease.release(session_id)
-            raise HTTPException(
-                status_code=int(HTTPStatus.SERVICE_UNAVAILABLE),
-                detail="agent boot failed",
+            raise await _unwind(
+                session_id, info, request.app.state.http,
+                HTTPStatus.SERVICE_UNAVAILABLE,
+                "AgentBootUnreachable",
+                f"agent boot failed: {exc}",
             ) from exc
         if boot.status_code != int(HTTPStatus.ACCEPTED):
-            await launcher.stop(session_id)
-            await lease.release(session_id)
-            raise HTTPException(
-                status_code=int(HTTPStatus.BAD_GATEWAY),
-                detail=f"agent boot rejected: {boot.status_code}",
+            raise await _unwind(
+                session_id, info, request.app.state.http,
+                HTTPStatus.BAD_GATEWAY,
+                "AgentBootRejected",
+                f"agent boot rejected: {boot.status_code}",
             )
         boot_job_id = boot.json().get("boot_job_id")
         session_state = "booting" if body.boot else "ready"

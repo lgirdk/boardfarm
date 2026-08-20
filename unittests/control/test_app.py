@@ -11,6 +11,7 @@ import pytest
 import respx
 from fastapi.testclient import TestClient
 
+from boardfarm3_control import app as app_module
 from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import FakeLauncher
 
@@ -198,45 +199,67 @@ def test_delete_session_with_unreachable_agent_still_releases(
 
 
 @respx.mock
-def test_post_sessions_boot_transport_failure_releases_resources() -> None:
+def test_post_sessions_boot_transport_failure_releases_resources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(side_effect=httpx.ConnectError("dead"))
+    # The failure unwind now archives a bundle and gracefully releases the
+    # agent — both need a mocked response, unlike the old destroy-only path.
+    respx.get(re.compile(r"http://localhost:\d+/diagnostics/bundle")).mock(
+        return_value=httpx.Response(200, content=b"BUNDLE"),
+    )
+    respx.delete(_AGENT_DELETE).mock(return_value=httpx.Response(200, json={}))
     launcher = FakeLauncher()
-    client = _make_client(launcher)
-    resp = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    assert resp.status_code == 503
-    # Board is released — same board can be acquired again immediately
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
-    resp2 = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    assert resp2.status_code == 202
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    # The pooled http client _unwind() uses is only created while the
+    # TestClient runs its lifespan, so it must be used as a context manager.
+    with TestClient(app, raise_server_exceptions=True) as client:
+        resp = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        assert resp.status_code == 503
+        # Board is released — same board can be acquired again immediately
+        respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+        resp2 = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        assert resp2.status_code == 202
 
 
 @respx.mock
-def test_post_sessions_boot_rejected_releases_resources() -> None:
+def test_post_sessions_boot_rejected_releases_resources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(503, json={}))
+    respx.get(re.compile(r"http://localhost:\d+/diagnostics/bundle")).mock(
+        return_value=httpx.Response(200, content=b"BUNDLE"),
+    )
+    respx.delete(_AGENT_DELETE).mock(return_value=httpx.Response(200, json={}))
     launcher = FakeLauncher()
-    client = _make_client(launcher)
-    resp = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    assert resp.status_code == 502
-    # Board is released — same board can be acquired again immediately
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
-    resp2 = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    assert resp2.status_code == 202
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        resp = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        assert resp.status_code == 502
+        # Board is released — same board can be acquired again immediately
+        respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+        resp2 = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        assert resp2.status_code == 202
 
 
 def test_delete_unknown_session_returns_404() -> None:
@@ -450,7 +473,10 @@ async def test_shutdown_leaves_running_agents_alone(
 
 @pytest.mark.asyncio
 async def test_dead_sessions_do_not_reacquire_a_lease(
-    fake_launcher: FakeLauncher, profiles: dict[str, str],
+    fake_launcher: FakeLauncher,
+    profiles: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     """A corpse must never block its board after a restart.
 
@@ -458,7 +484,12 @@ async def test_dead_sessions_do_not_reacquire_a_lease(
     :type fake_launcher: FakeLauncher
     :param profiles: profile map
     :type profiles: dict[str, str]
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
     """
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     await fake_launcher.start("s-dead", "board-a", "img", "prplos")
     await fake_launcher.stop("s-dead", remove=False)
     app = create_app(launcher=fake_launcher, profiles=profiles)
@@ -503,3 +534,52 @@ def test_list_sessions_forwards_liveness(
     with TestClient(app) as client:
         body = client.get("/sessions").json()
     assert body["sessions"][0]["liveness"]["quiet"] is True
+
+
+def test_health_timeout_retains_the_container_and_points_at_diagnostics(
+    fake_launcher: FakeLauncher,
+    profiles: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """A 503 must say where to look, and leave something to look at.
+
+    :param fake_launcher: launcher test double
+    :type fake_launcher: FakeLauncher
+    :param profiles: profile map
+    :type profiles: dict[str, str]
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param tmp_path: pytest temporary directory
+    :type tmp_path: Path
+    """
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    monkeypatch.setattr(app_module, "_HEALTH_TIMEOUT", 0.2)
+    app = create_app(launcher=fake_launcher, profiles=profiles)
+    with TestClient(app) as client:
+        response = client.post(
+            "/sessions",
+            json={
+                "board_name": "board",
+                "runtime_profile": "prplos",
+                "payload": {},
+            },
+        )
+        assert response.status_code == 503
+        body = response.json()
+        session_id = body["detail"]["session_id"]
+        assert body["detail"]["diagnostics"] == f"/sessions/{session_id}/diagnostics"
+
+        listed = client.get("/sessions").json()["sessions"]
+        assert [s["state"] for s in listed] == ["dead"]
+
+        # Board is free again despite the corpse.
+        retry = client.post(
+            "/sessions",
+            json={
+                "board_name": "board",
+                "runtime_profile": "prplos",
+                "payload": {},
+            },
+        )
+        assert retry.status_code != 409
