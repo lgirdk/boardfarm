@@ -258,3 +258,21 @@ async def test_capture_on_unknown_session_returns_empty() -> None:
     launcher = FakeLauncher()
     assert await launcher.capture_logs("nope") == b""
     assert await launcher.capture_files("nope", "/var/log") == b""
+
+
+@pytest.mark.asyncio
+async def test_process_launcher_retains_and_marks_dead_on_stop_without_remove(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """stop(remove=False) keeps the record and flips state/ended_at."""
+    state_file = tmp_path / "sessions.json"
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    launcher = ProcessLauncher()
+    await launcher.start("s-proc", "board-1", "ignored", "prplos")
+    await launcher.stop("s-proc", remove=False)
+    sessions = await launcher.list_sessions()
+    assert [s.session_id for s in sessions] == ["s-proc"]
+    assert sessions[0].state == "dead"
+    assert sessions[0].ended_at is not None

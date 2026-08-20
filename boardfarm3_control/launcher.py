@@ -341,7 +341,7 @@ class ProcessLauncher:
         )
         if entry is None:
             return
-        proc, _info, log_file = entry
+        proc, info, log_file = entry
         proc.terminate()
         try:
             await asyncio.wait_for(proc.wait(), timeout=5.0)
@@ -349,6 +349,12 @@ class ProcessLauncher:
             proc.kill()
             await proc.wait()
         log_file.close()
+        if not remove:
+            self._sessions[session_id] = (
+                proc,
+                info.model_copy(update={"state": "dead", "ended_at": time.time()}),
+                log_file,
+            )
         self._save_state()
 
     async def purge(self, session_id: str) -> None:
