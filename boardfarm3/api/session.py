@@ -56,6 +56,7 @@ class Session:
         self.created_at = time.time()
         self.last_activity = self.created_at
         self.error: dict[str, Any] | None = None
+        self.payload: dict[str, Any] = {}
         self._boot_job: Job | None = None
 
     def touch(self) -> None:
@@ -77,6 +78,7 @@ class Session:
         :param options: overrides for the runtime options
         :type options: dict[str, Any] | None
         """
+        self.payload = payload
         for field_name, value in (options or {}).items():
             if field_name == "save_console_logs" and not value:
                 # Console logging is always on: an empty override redirects
