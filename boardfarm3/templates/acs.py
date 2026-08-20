@@ -459,3 +459,26 @@ class ACS(ABC):
         :rtype: str
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def tshark_read_pcap(
+        self,
+        fname: str,
+        additional_args: str | None = None,
+        timeout: int = 30,
+        rm_pcap: bool = False,
+    ) -> str:
+        """Read packet captures from an existing pcap file using tshark.
+
+        :param fname: name of the pcap file to read
+        :type fname: str
+        :param additional_args: additional arguments passed to tshark
+        :type additional_args: str | None
+        :param timeout: timeout in seconds for the tshark command, defaults to 30
+        :type timeout: int
+        :param rm_pcap: if True, remove the pcap file after reading, defaults to False
+        :type rm_pcap: bool
+        :return: tshark output
+        :rtype: str
+        """
+        raise NotImplementedError
