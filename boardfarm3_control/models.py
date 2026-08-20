@@ -50,6 +50,8 @@ class SessionResponse(BaseModel):
     pid: int | None = None
     created_at: float
     last_activity: float | None = None
+    ended_at: float | None = None
+    liveness: dict[str, Any] | None = None
 
 
 class SessionListResponse(BaseModel):

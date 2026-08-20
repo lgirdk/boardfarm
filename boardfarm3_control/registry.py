@@ -77,6 +77,25 @@ class SessionRegistry:
         """
         return self._last_activity.get(session_id)
 
+    def mark_dead(self, session_id: str, ended_at: float) -> None:
+        """Mark a session dead while keeping it listed.
+
+        A corpse stays in the registry so it can be found, its diagnostics
+        served, and its container purged. ``AgentInfo`` is frozen, so the
+        entry is replaced rather than mutated.
+
+        :param session_id: session to mark
+        :type session_id: str
+        :param ended_at: when the session ended
+        :type ended_at: float
+        """
+        info = self._sessions.get(session_id)
+        if info is None:
+            return
+        self._sessions[session_id] = info.model_copy(
+            update={"state": "dead", "ended_at": ended_at},
+        )
+
     async def rebuild(self, launcher: Launcher) -> None:
         """Repopulate the registry from launcher-listed sessions.
 

@@ -94,6 +94,33 @@ def test_last_activity_unknown_returns_none() -> None:
     assert reg.last_activity("s-unknown") is None
 
 
+def test_mark_dead_keeps_the_session_listed() -> None:
+    """A corpse stays listed so it can be found and purged."""
+    registry = SessionRegistry()
+    registry.add(
+        AgentInfo(
+            session_id="s-1",
+            board_name="board",
+            runtime_profile="prplos",
+            container_id="c",
+            host_port=1,
+            created_at=0.0,
+        ),
+    )
+    registry.mark_dead("s-1", ended_at=123.0)
+    info = registry.get("s-1")
+    assert info is not None
+    assert info.state == "dead"
+    assert info.ended_at == 123.0
+    assert registry.list_page(0, 10)[1] == 1
+
+
+def test_mark_dead_on_unknown_session_is_a_noop() -> None:
+    registry = SessionRegistry()
+    registry.mark_dead("nope", ended_at=1.0)
+    assert registry.get("nope") is None
+
+
 @pytest.mark.asyncio
 async def test_rebuild_from_launcher() -> None:
     launcher = FakeLauncher()

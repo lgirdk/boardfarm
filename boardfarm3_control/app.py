@@ -207,7 +207,22 @@ def create_app(  # noqa: C901, PLR0915
         page, total = registry.list_page(offset, limit)
 
         async def fetch_state(info: AgentInfo) -> SessionResponse:
+            if info.state == "dead":
+                return SessionResponse(
+                    session_id=info.session_id,
+                    board_name=info.board_name,
+                    runtime_profile=info.runtime_profile,
+                    state="dead",
+                    booted=False,
+                    agent_url=info.agent_url,
+                    pid=info.pid,
+                    created_at=info.created_at,
+                    ended_at=info.ended_at,
+                    last_activity=registry.last_activity(info.session_id),
+                    liveness=None,
+                )
             last_act: float | None
+            liveness: dict[str, Any] | None
             try:
                 async with httpx.AsyncClient() as client:
                     resp = await asyncio.wait_for(
@@ -218,12 +233,14 @@ def create_app(  # noqa: C901, PLR0915
                 state: str = data.get("state", "unknown")
                 booted: bool = bool(data.get("booted", False))
                 last_act = data.get("last_activity")
+                liveness = data.get("liveness")
                 if last_act is not None:
                     registry.touch(info.session_id)
             except (asyncio.TimeoutError, httpx.TransportError):
                 state = "unreachable"
                 booted = False
                 last_act = registry.last_activity(info.session_id)
+                liveness = None
             return SessionResponse(
                 session_id=info.session_id,
                 board_name=info.board_name,
@@ -233,7 +250,9 @@ def create_app(  # noqa: C901, PLR0915
                 agent_url=info.agent_url,
                 pid=info.pid,
                 created_at=info.created_at,
+                ended_at=info.ended_at,
                 last_activity=last_act,
+                liveness=liveness,
             )
 
         sessions = await asyncio.gather(*[fetch_state(info) for info in page])

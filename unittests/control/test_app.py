@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 
 import httpx
@@ -451,3 +452,32 @@ async def test_dead_sessions_do_not_reacquire_a_lease(
     # Board is free: the request proceeds past the lease check (it fails later
     # on the health poll, which is a 503 — not the 409 a held lease produces).
     assert response.status_code != 409
+
+
+@respx.mock
+def test_list_sessions_forwards_liveness(
+    fake_launcher: FakeLauncher, profiles: dict[str, str],
+) -> None:
+    """A list view must show progress without a round trip per session.
+
+    :param fake_launcher: launcher test double
+    :type fake_launcher: FakeLauncher
+    :param profiles: profile map
+    :type profiles: dict[str, str]
+    """
+    asyncio.run(fake_launcher.start("s-1", "board", "img", "prplos"))
+    respx.get("http://localhost:18000/session").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "state": "booting",
+                "booted": False,
+                "last_activity": 5.0,
+                "liveness": {"quiet": True, "idle_for": 700.0},
+            },
+        ),
+    )
+    app = create_app(launcher=fake_launcher, profiles=profiles)
+    with TestClient(app) as client:
+        body = client.get("/sessions").json()
+    assert body["sessions"][0]["liveness"]["quiet"] is True
