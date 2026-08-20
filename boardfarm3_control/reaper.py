@@ -64,12 +64,32 @@ async def _reap_corpses(
     return containers
 
 
+def _session_bytes(store: DiagnosticsStore, session_id: str) -> int:
+    """Return the actual on-disk footprint of a session (bundle + metadata).
+
+    This is the same measure ``store.total_bytes()`` sums across sessions,
+    so a per-session value here can be subtracted from a
+    ``store.total_bytes()`` total without drift.
+
+    :param store: diagnostics store
+    :type store: DiagnosticsStore
+    :param session_id: session identifier
+    :type session_id: str
+    :return: total bytes on disk for this session
+    :rtype: int
+    """
+    directory = store.session_dir(session_id)
+    if not directory.is_dir():
+        return 0
+    return sum(p.stat().st_size for p in directory.rglob("*") if p.is_file())
+
+
 def _reap_aged_bundles(
     *,
     store: DiagnosticsStore,
     now: float,
     bundle_ttl: float,
-) -> tuple[int, int, list[tuple[float, str, int]]]:
+) -> tuple[int, int, list[tuple[float, str]]]:
     """Delete bundles past the bundle TTL.
 
     :param store: diagnostics store
@@ -78,47 +98,45 @@ def _reap_aged_bundles(
     :type now: float
     :param bundle_ttl: seconds a bundle may remain before deletion
     :type bundle_ttl: float
-    :return: (bundles deleted, bytes reclaimed, remaining (ended_at, id, size))
-    :rtype: tuple[int, int, list[tuple[float, str, int]]]
+    :return: (bundles deleted, bytes reclaimed, remaining (ended_at, id))
+    :rtype: tuple[int, int, list[tuple[float, str]]]
     """
     bundles = 0
     reclaimed = 0
-    remaining: list[tuple[float, str, int]] = []
+    remaining: list[tuple[float, str]] = []
     for session_id in store.list_sessions():
         meta = store.read_meta(session_id) or {}
         ended_at = float(meta.get("ended_at") or 0.0)
-        size = (
-            store.bundle_path(session_id).stat().st_size
-            if store.has_bundle(session_id)
-            else 0
-        )
         if now - ended_at > bundle_ttl:
+            size = _session_bytes(store, session_id)
             store.delete(session_id)
             bundles += 1
             reclaimed += size
             _log.info("reaped bundle for %s (%d bytes)", session_id, size)
             continue
-        remaining.append((ended_at, session_id, size))
+        remaining.append((ended_at, session_id))
     return bundles, reclaimed, remaining
 
 
 def _evict_over_cap(
     *,
     store: DiagnosticsStore,
-    aged: list[tuple[float, str, int]],
+    aged: list[tuple[float, str]],
     max_bytes: int,
 ) -> tuple[int, int]:
     """Evict bundles oldest-first until the store is back under the cap.
 
-    The running total is the sum of the surviving bundle sizes rather than
-    a fresh ``store.total_bytes()`` call, so the decrement on each eviction
-    stays exactly consistent with the threshold check (no drift from
-    on-disk metadata that isn't tracked per-bundle).
+    The running total starts from a real ``store.total_bytes()`` call (taken
+    after the TTL sweep already ran, so it reflects what is actually left on
+    disk) and is decremented by each session's actual on-disk footprint —
+    bundle plus metadata — right before that session is deleted. This keeps
+    the threshold check tied to real disk usage rather than a partial
+    per-bundle accounting that can drift from it.
 
     :param store: diagnostics store
     :type store: DiagnosticsStore
-    :param aged: candidate bundles as (ended_at, session_id, size)
-    :type aged: list[tuple[float, str, int]]
+    :param aged: candidate bundles as (ended_at, session_id)
+    :type aged: list[tuple[float, str]]
     :param max_bytes: byte cap for the store
     :type max_bytes: int
     :return: (bundles evicted, bytes reclaimed)
@@ -126,10 +144,11 @@ def _evict_over_cap(
     """
     bundles = 0
     reclaimed = 0
-    total = sum(size for _, _, size in aged)
-    for _, session_id, size in sorted(aged):
+    total = store.total_bytes()
+    for _, session_id in sorted(aged):
         if total <= max_bytes:
             break
+        size = _session_bytes(store, session_id)
         store.delete(session_id)
         total -= size
         bundles += 1
