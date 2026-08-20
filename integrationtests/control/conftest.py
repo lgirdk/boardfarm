@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, AsyncIterator
 
 import httpx
 import pytest
+import uvicorn
 
 from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import ProcessLauncher
@@ -26,9 +27,7 @@ _MINIMAL_SESSION = {
     "board_name": "integration-board",
     "runtime_profile": "local",
     "payload": {
-        "inventory": {
-            "integration-board": {"devices": []}
-        },
+        "inventory": {"integration-board": {"devices": []}},
         "env": {"environment_def": {}},
     },
     "options": {"skip_boot": True},
@@ -66,10 +65,36 @@ class _ReadyProcessLauncher(ProcessLauncher):
         board_name: str,
         image: str,
         runtime_profile: str,
+        agent_env: dict[str, str] | None = None,
     ) -> AgentInfo:
-        info = await super().start(session_id, board_name, image, runtime_profile)
+        info = await super().start(
+            session_id,
+            board_name,
+            image,
+            runtime_profile,
+            agent_env,
+        )
         await _wait_for_health(info.host_port)
         return info
+
+
+@pytest.fixture(autouse=True)
+def _isolated_store(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path_factory: pytest.TempPathFactory,
+) -> None:
+    """Keep integration artifacts out of /var, which is not writable in CI.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param tmp_path_factory: pytest temp directory factory
+    :type tmp_path_factory: pytest.TempPathFactory
+    """
+    root = tmp_path_factory.mktemp("bf-integration")
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(root / "control"))
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(root / "artifacts"))
+    # Keep the SSE keepalive test from waiting the 15 s production default.
+    monkeypatch.setenv("BOARDFARM_SSE_KEEPALIVE", "1")
 
 
 @pytest.fixture
@@ -78,11 +103,53 @@ async def control_client() -> AsyncIterator[httpx.AsyncClient]:
     launcher = _ReadyProcessLauncher()
     app = create_app(launcher, _PROFILES)
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
-    # Safety net: terminate any subprocess left alive (e.g. test aborted mid-run).
-    for info in await launcher.list_sessions():
-        await launcher.stop(info.session_id)
+    # httpx.ASGITransport never sends lifespan events, so app.state.http
+    # (created only in create_app's lifespan) would otherwise never exist —
+    # run the lifespan explicitly, the way a real ASGI server would.
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=transport,
+            base_url="http://test",
+        ) as client:
+            yield client
+        # Safety net: terminate any subprocess left alive (e.g. test aborted
+        # mid-run).
+        for info in await launcher.list_sessions():
+            await launcher.stop(info.session_id)
+
+
+@pytest.fixture
+async def control_server() -> AsyncIterator[str]:
+    """Run the control plane under uvicorn on a real socket; yield its base URL.
+
+    ``httpx.ASGITransport`` (used by ``control_client``) drains an ASGI
+    app's *entire* response before it ever returns control to the caller —
+    see ``handle_async_request`` in httpx's ``asgi.py``, which awaits
+    ``self.app(...)`` to completion and only then hands back a ``Response``.
+    That makes it structurally unable to host an unbounded stream: the
+    console SSE generator only stops on client disconnect, and disconnect
+    is only observed by awaiting a further ``receive()`` call that itself
+    blocks on the very completion the generator is waiting to be told about
+    — a deadlock. A real socket, exactly what a production ``uvicorn.run()``
+    deployment already uses, has no such restriction.
+    """
+    launcher = _ReadyProcessLauncher()
+    app = create_app(launcher, _PROFILES)
+    config = uvicorn.Config(app, host="127.0.0.1", port=0, log_level="warning")
+    server = uvicorn.Server(config)
+    serve_task = asyncio.create_task(server.serve())
+    while not server.started:
+        await asyncio.sleep(0.02)
+    port = server.servers[0].sockets[0].getsockname()[1]
+    try:
+        yield f"http://127.0.0.1:{port}"
+    finally:
+        # Safety net: terminate any subprocess left alive (e.g. test aborted
+        # mid-run).
+        for info in await launcher.list_sessions():
+            await launcher.stop(info.session_id)
+        server.should_exit = True
+        await serve_task
 
 
 @pytest.fixture
