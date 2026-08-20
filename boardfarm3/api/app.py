@@ -7,7 +7,9 @@ import io
 import json
 import logging
 import os
+import shutil
 import tarfile
+import tempfile
 import time
 from contextlib import asynccontextmanager
 from http import HTTPStatus
@@ -19,6 +21,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
@@ -430,5 +433,36 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         :rtype: dict[str, Any]
         """
         return thread_snapshot()
+
+    @app.get("/diagnostics/bundle")
+    async def diagnostics_bundle() -> StreamingResponse:
+        """Return a tar.gz of everything needed to debug this session.
+
+        Valid in any state including ready -- taking a bundle has no side
+        effects on the session.
+
+        :return: streaming gzip archive
+        :rtype: StreamingResponse
+        """
+        tmp = Path(tempfile.mkdtemp(prefix="bf-bundle-")) / "bundle.tar.gz"
+        write_bundle(session(), tmp)
+
+        async def stream() -> AsyncIterator[bytes]:
+            try:
+                with tmp.open("rb") as handle:
+                    while chunk := handle.read(64 * 1024):
+                        yield chunk
+            finally:
+                shutil.rmtree(tmp.parent, ignore_errors=True)
+
+        return StreamingResponse(
+            stream(),
+            media_type="application/gzip",
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{session_id}-diagnostics.tar.gz"'
+                ),
+            },
+        )
 
     return app
