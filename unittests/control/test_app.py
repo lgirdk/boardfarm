@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from typing import TYPE_CHECKING
 
 import httpx
 import pytest
@@ -12,6 +13,9 @@ from fastapi.testclient import TestClient
 
 from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import FakeLauncher
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # All tests mock agent HTTP calls so no real agent is needed.
 _AGENT_HEALTH = re.compile(r"http://localhost:\d+/health")
@@ -132,47 +136,65 @@ def test_get_sessions_limit_capped_at_100() -> None:
 
 
 @respx.mock
-def test_delete_session_happy_path() -> None:
+def test_delete_session_happy_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    respx.get(re.compile(r"http://localhost:\d+/diagnostics/bundle")).mock(
+        return_value=httpx.Response(200, content=b"BUNDLE"),
+    )
     respx.delete(_AGENT_DELETE).mock(return_value=httpx.Response(200, json={"status": "released"}))
     launcher = FakeLauncher()
-    client = _make_client(launcher)
-    create_resp = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    sid = create_resp.json()["session_id"]
-    resp = client.delete(f"/sessions/{sid}")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "released"}
-    # Session is gone
-    list_resp = client.get("/sessions")
-    assert list_resp.json()["total"] == 0
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    # delete_session uses the pooled app.state.http client, which the
+    # lifespan only creates while the TestClient is used as a context manager.
+    with TestClient(app, raise_server_exceptions=True) as client:
+        create_resp = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        sid = create_resp.json()["session_id"]
+        resp = client.delete(f"/sessions/{sid}")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "released"}
+        # Session is gone
+        list_resp = client.get("/sessions")
+        assert list_resp.json()["total"] == 0
 
 
 @respx.mock
-def test_delete_session_with_unreachable_agent_still_releases() -> None:
+def test_delete_session_with_unreachable_agent_still_releases(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+    respx.get(re.compile(r"http://localhost:\d+/diagnostics/bundle")).mock(
+        side_effect=httpx.ConnectError("dead"),
+    )
     respx.delete(_AGENT_DELETE).mock(side_effect=httpx.ConnectError("dead"))
     launcher = FakeLauncher()
-    client = _make_client(launcher)
-    create_resp = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    sid = create_resp.json()["session_id"]
-    resp = client.delete(f"/sessions/{sid}")
-    assert resp.status_code == 200
-    # Board is released — same board can be acquired again
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
-    resp2 = client.post(
-        "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
-    )
-    assert resp2.status_code == 202
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        create_resp = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        sid = create_resp.json()["session_id"]
+        resp = client.delete(f"/sessions/{sid}")
+        assert resp.status_code == 200
+        # Board is released — same board can be acquired again
+        respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
+        respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
+        resp2 = client.post(
+            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+        )
+        assert resp2.status_code == 202
 
 
 @respx.mock

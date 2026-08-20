@@ -22,6 +22,8 @@ from boardfarm3_control.models import (
 from boardfarm3_control.openapi import load_plugin_routers, register_plugin_routes
 from boardfarm3_control.proxy import proxy_request
 from boardfarm3_control.registry import SessionRegistry
+from boardfarm3_control.store import DiagnosticsStore
+from boardfarm3_control.teardown import teardown_session
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -61,6 +63,7 @@ def create_app(  # noqa: C901, PLR0915
     """
     lease = BoardLease()
     registry = SessionRegistry()
+    store = DiagnosticsStore()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -264,26 +267,40 @@ def create_app(  # noqa: C901, PLR0915
         )
 
     @app.delete("/sessions/{session_id}")
-    async def delete_session(session_id: str) -> dict[str, str]:
+    async def delete_session(
+        session_id: str,
+        request: Request,
+        retain: bool = False,
+        purge: bool = False,
+    ) -> dict[str, str]:
         info = registry.get(session_id)
         if info is None:
             raise HTTPException(
                 status_code=int(HTTPStatus.NOT_FOUND),
                 detail=f"unknown session {session_id}",
             )
-
-        # Graceful teardown — ignore if agent is already dead
-        agent_url = info.agent_url
-        try:
-            async with httpx.AsyncClient() as client:
-                await client.delete(f"{agent_url}/session")
-        except Exception:  # noqa: BLE001, S110
-            pass
-
-        await launcher.stop(session_id)
-        registry.remove(session_id)
-        await lease.release(session_id)
-        return {"status": "released"}
+        if retain and purge:
+            raise HTTPException(
+                status_code=int(HTTPStatus.BAD_REQUEST),
+                detail="retain and purge are mutually exclusive",
+            )
+        if info.state == "dead":
+            # Already stopped: purge the corpse and its bundle.
+            await launcher.purge(session_id)
+            store.delete(session_id)
+            registry.remove(session_id)
+            return {"status": "purged"}
+        await teardown_session(
+            session_id=session_id,
+            info=info,
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            http=request.app.state.http,
+            retain=retain,
+        )
+        return {"status": "retained" if retain else "released"}
 
     # Catch-all proxy for everything else under /sessions/{session_id}/
     @app.api_route(
