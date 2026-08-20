@@ -89,6 +89,11 @@ def create_app(  # noqa: C901, PLR0915
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
+    # Exposed for tests that need to drive the reaper or inspect store/registry
+    # state directly against the exact instances this app is wired to.
+    app.state.registry = registry
+    app.state.store = store
+    app.state.launcher = launcher
 
     plugin_routers = load_plugin_routers()
     if extra_routers:
@@ -357,7 +362,11 @@ def create_app(  # noqa: C901, PLR0915
                 detail="retain and purge are mutually exclusive",
             )
         if info.state == "dead":
-            # Already stopped: purge the corpse and its bundle.
+            if retain:
+                # Explicit request to keep the corpse: it is already
+                # retained, so this is a no-op rather than a silent purge.
+                return {"status": "retained"}
+            # Bare DELETE or ?purge=true: purge the corpse and its bundle.
             await launcher.purge(session_id)
             store.delete(session_id)
             registry.remove(session_id)
@@ -391,18 +400,38 @@ def create_app(  # noqa: C901, PLR0915
             launcher=launcher,
             store=store,
             http=request.app.state.http,
+            artifact_dir=info.artifact_dir,
         )
         if source == "none":
             raise HTTPException(
                 status_code=int(HTTPStatus.BAD_GATEWAY),
                 detail="agent unreachable and launcher capture produced nothing",
             )
+        captured_at = time.time()
+        # A snapshot is a "last touched" evidence capture, not a death record:
+        # this is on a session that may still be perfectly healthy. Writing
+        # meta.json here (which archive_bundle()/write_bundle() never does on
+        # its own) is what keeps the reaper's aged-bundle sweep from treating
+        # a missing ended_at as "infinitely old" and deleting it on the very
+        # next pass.
+        store.write_meta(
+            session_id,
+            {
+                "session_id": session_id,
+                "board_name": info.board_name,
+                "runtime_profile": info.runtime_profile,
+                "created_at": info.created_at,
+                "ended_at": captured_at,
+                "retained": False,
+                "bundle_source": source,
+            },
+        )
         path = store.bundle_path(session_id)
         return {
             "path": str(path),
             "size": path.stat().st_size,
             "source": source,
-            "captured_at": time.time(),
+            "captured_at": captured_at,
         }
 
     @app.get("/sessions/{session_id}/diagnostics")
@@ -443,6 +472,7 @@ def create_app(  # noqa: C901, PLR0915
             launcher=launcher,
             store=store,
             http=request.app.state.http,
+            artifact_dir=info.artifact_dir,
         )
         if source != "none":
             return FileResponse(

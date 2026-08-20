@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import sys
+import tarfile
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-from boardfarm3_control.launcher import FakeLauncher, ProcessLauncher
+from boardfarm3_control.launcher import DockerLauncher, FakeLauncher, ProcessLauncher
 from boardfarm3_control.models import AgentInfo
 
 
@@ -261,6 +264,37 @@ async def test_capture_on_unknown_session_returns_empty() -> None:
 
 
 @pytest.mark.asyncio
+async def test_process_launcher_capture_files_scopes_to_its_own_session(
+    tmp_path: Path,
+) -> None:
+    """capture_files() must never leak another session's directory.
+
+    ProcessLauncher shares its filesystem with the control plane, so if a
+    caller ever passed the wrong path -- the shared artifact root instead of
+    this session's own subdirectory, say -- this must refuse rather than
+    silently archive it.
+    """
+    launcher = ProcessLauncher()
+    own_dir = tmp_path / "s-mine"
+    own_dir.mkdir()
+    (own_dir / "secret.txt").write_text("mine")
+    other_dir = tmp_path / "s-other"
+    other_dir.mkdir()
+    (other_dir / "secret.txt").write_text("not mine")
+
+    tar_bytes = await launcher.capture_files("s-mine", str(own_dir))
+    assert tar_bytes
+    with tarfile.open(fileobj=io.BytesIO(tar_bytes)) as archive:
+        names = archive.getnames()
+    assert any(name.endswith("secret.txt") for name in names)
+
+    # The final path component does not match the session id -- refused
+    # outright, even though the directory is real and readable.
+    leaked = await launcher.capture_files("s-mine", str(other_dir))
+    assert leaked == b""
+
+
+@pytest.mark.asyncio
 async def test_process_launcher_retains_and_marks_dead_on_stop_without_remove(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -276,3 +310,159 @@ async def test_process_launcher_retains_and_marks_dead_on_stop_without_remove(
     assert [s.session_id for s in sessions] == ["s-proc"]
     assert sessions[0].state == "dead"
     assert sessions[0].ended_at is not None
+
+
+@pytest.mark.asyncio
+async def test_process_launcher_start_writes_meta_without_ended_at(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """start() must leave the reaper unable to mistake a live session as dead.
+
+    Before the fix, start() opened process.log but wrote no meta.json at
+    all, so the reaper's aged-bundle sweep -- which used to default a
+    missing ``ended_at`` to 0.0 -- could rmtree a live agent's own log
+    directory on its very first pass.
+    """
+    state_file = tmp_path / "sessions.json"
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    launcher = ProcessLauncher()
+    await launcher.start("s-proc", "board-1", "ignored", "prplos")
+    meta_path = tmp_path / "sessions" / "s-proc" / "meta.json"
+    assert meta_path.exists()
+    meta = json.loads(meta_path.read_text())
+    assert meta["session_id"] == "s-proc"
+    assert "ended_at" not in meta
+    await launcher.stop("s-proc")
+
+
+class _FakeContainer:
+    """Minimal docker-py container stand-in for DockerLauncher tests."""
+
+    def __init__(
+        self,
+        *,
+        status: str,
+        labels: dict[str, str],
+        ports: dict[str, list[dict[str, str]]],
+        finished_at: str = "",
+        container_id: str = "c-1",
+    ) -> None:
+        self.status = status
+        self.labels = labels
+        self.ports = ports
+        self.id = container_id
+        self.attrs: dict[str, Any] = {"State": {"FinishedAt": finished_at}}
+
+
+class _FakeContainers:
+    def __init__(self, containers: list[_FakeContainer]) -> None:
+        self._containers = containers
+
+    def list(
+        self,
+        all: bool = False,  # noqa: A002, ARG002
+        filters: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> list[_FakeContainer]:
+        return self._containers
+
+
+class _FakeDockerClient:
+    def __init__(self, containers: list[_FakeContainer]) -> None:
+        self.containers = _FakeContainers(containers)
+
+
+def _docker_labels(**overrides: str) -> dict[str, str]:
+    labels = {
+        "boardfarm.session_id": "s-1",
+        "boardfarm.board_name": "board",
+        "boardfarm.runtime_profile": "prplos",
+        "boardfarm.created_at": "0",
+    }
+    labels.update(overrides)
+    return labels
+
+
+@pytest.mark.asyncio
+async def test_docker_launcher_list_sessions_dead_container_has_ended_at() -> None:
+    """A stopped container must report state=dead with a real ended_at.
+
+    Before the fix, ended_at always stayed None, so a corpse that survived a
+    control plane restart became invisible to the reaper forever.
+    """
+    container = _FakeContainer(
+        status="exited",
+        labels=_docker_labels(),
+        ports={"8000/tcp": [{"HostPort": "18000"}]},
+        finished_at="2024-01-01T12:00:00.123456789Z",
+    )
+    launcher = DockerLauncher(client=_FakeDockerClient([container]))
+    sessions = await launcher.list_sessions()
+    assert len(sessions) == 1
+    assert sessions[0].state == "dead"
+    assert sessions[0].ended_at is not None
+    assert sessions[0].ended_at > 0
+
+
+@pytest.mark.asyncio
+async def test_docker_launcher_list_sessions_live_container_has_no_ended_at() -> None:
+    container = _FakeContainer(
+        status="running",
+        labels=_docker_labels(),
+        ports={"8000/tcp": [{"HostPort": "18000"}]},
+        finished_at="0001-01-01T00:00:00Z",
+    )
+    launcher = DockerLauncher(client=_FakeDockerClient([container]))
+    sessions = await launcher.list_sessions()
+    assert sessions[0].state == "live"
+    assert sessions[0].ended_at is None
+
+
+@pytest.mark.asyncio
+async def test_docker_launcher_list_sessions_unparseable_finished_at_is_none() -> None:
+    container = _FakeContainer(
+        status="exited",
+        labels=_docker_labels(),
+        ports={"8000/tcp": [{"HostPort": "18000"}]},
+        finished_at="not-a-timestamp",
+    )
+    launcher = DockerLauncher(client=_FakeDockerClient([container]))
+    sessions = await launcher.list_sessions()
+    assert sessions[0].state == "dead"
+    assert sessions[0].ended_at is None
+
+
+@pytest.mark.asyncio
+async def test_docker_launcher_start_records_artifact_dir_label() -> None:
+    """A per-session BOARDFARM_ARTIFACT_DIR override must survive a restart.
+
+    Docker labels are immutable after creation and are the only thing
+    list_sessions() (used to rebuild the registry on restart) can read back.
+    """
+    container = _FakeContainer(
+        status="running",
+        labels=_docker_labels(),
+        ports={"8000/tcp": [{"HostPort": "18000"}]},
+    )
+
+    class _Client:
+        def __init__(self) -> None:
+            self.containers = self
+            self.run_kwargs: dict[str, Any] = {}
+
+        def run(self, image: str, **kwargs: Any) -> _FakeContainer:  # noqa: ARG002
+            self.run_kwargs = kwargs
+            return container
+
+    client = _Client()
+    launcher = DockerLauncher(client=client)
+    info = await launcher.start(
+        "s-1",
+        "board",
+        "img",
+        "prplos",
+        agent_env={"BOARDFARM_ARTIFACT_DIR": "/custom/artifacts"},
+    )
+    assert info.artifact_dir == "/custom/artifacts"
+    assert client.run_kwargs["labels"]["boardfarm.artifact_dir"] == "/custom/artifacts"

@@ -22,6 +22,7 @@ class AgentInfo(BaseModel):
     agent_url: str = ""
     state: str = "live"
     ended_at: float | None = None
+    artifact_dir: str = "/var/log/boardfarm"
 
 
 class SessionCreate(BaseModel):

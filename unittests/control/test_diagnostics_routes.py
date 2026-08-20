@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import TYPE_CHECKING
 
 import httpx
@@ -12,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import FakeLauncher
+from boardfarm3_control.reaper import reap_once
 from boardfarm3_control.store import DiagnosticsStore
 
 if TYPE_CHECKING:
@@ -110,6 +112,35 @@ def test_unknown_session_snapshot_is_404(wired: tuple) -> None:
     with TestClient(app) as client:
         response = client.post("/sessions/nope/diagnostics/snapshot")
     assert response.status_code == HTTP_NOT_FOUND
+
+
+@respx.mock
+def test_snapshot_on_a_live_session_survives_an_immediate_reap(wired: tuple) -> None:
+    """A snapshot of a healthy session must not become reapable immediately.
+
+    Before the fix, diagnostics_snapshot never wrote meta.json, so the
+    reaper's missing-ended_at handling made a fresh snapshot of a perfectly
+    healthy, still-``live`` session look infinitely old and evict it on the
+    very next pass, run far in the future to prove the TTL itself is not the
+    reason it survives.
+    """
+    app, launcher, store, agent_url = wired
+    respx.get(f"{agent_url}/diagnostics/bundle").mock(
+        return_value=httpx.Response(200, content=b"SNAP"),
+    )
+    with TestClient(app) as client:
+        response = client.post("/sessions/s-1/diagnostics/snapshot")
+        assert response.status_code == HTTP_OK
+        result = asyncio.run(
+            reap_once(
+                launcher=launcher,
+                registry=app.state.registry,
+                store=store,
+                now=time.time() + 10 * 365 * 86_400,
+            ),
+        )
+    assert store.has_bundle("s-1")
+    assert result["bundles"] == 0
 
 
 @respx.mock

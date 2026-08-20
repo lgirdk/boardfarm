@@ -583,3 +583,84 @@ def test_health_timeout_retains_the_container_and_points_at_diagnostics(
             },
         )
         assert retry.status_code != 409
+
+
+def _dead_session_id(
+    client: TestClient,
+    board_name: str = "board",
+) -> str:
+    """Force a health-timeout failure and return the resulting dead session id.
+
+    :param client: TestClient already driving a lifespan-active app
+    :type client: TestClient
+    :param board_name: board to fail a session for
+    :type board_name: str
+    :return: session id of the resulting dead session
+    :rtype: str
+    """
+    response = client.post(
+        "/sessions",
+        json={"board_name": board_name, "runtime_profile": "prplos", "payload": {}},
+    )
+    session_id: str = response.json()["detail"]["session_id"]
+    return session_id
+
+
+def test_delete_bare_on_a_dead_session_purges_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A bare DELETE on an already-dead session purges it -- existing default."""
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    monkeypatch.setattr(app_module, "_HEALTH_TIMEOUT", 0.2)
+    launcher = FakeLauncher()
+    app = create_app(launcher=launcher, profiles={"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        session_id = _dead_session_id(client)
+        resp = client.delete(f"/sessions/{session_id}")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "purged"}
+        assert app.state.registry.get(session_id) is None
+        assert not app.state.store.has_bundle(session_id)
+
+
+def test_delete_purge_true_on_a_dead_session_purges_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """?purge=true on an already-dead session is explicit but equivalent."""
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    monkeypatch.setattr(app_module, "_HEALTH_TIMEOUT", 0.2)
+    launcher = FakeLauncher()
+    app = create_app(launcher=launcher, profiles={"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        session_id = _dead_session_id(client)
+        resp = client.delete(f"/sessions/{session_id}?purge=true")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "purged"}
+        assert app.state.registry.get(session_id) is None
+        assert not app.state.store.has_bundle(session_id)
+
+
+def test_delete_retain_true_on_a_dead_session_is_a_noop(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """?retain=true on an already-dead session must not purge it.
+
+    Before the fix, the dead-session branch purged unconditionally, so an
+    explicit request to keep the corpse destroyed it anyway.
+    """
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    monkeypatch.setattr(app_module, "_HEALTH_TIMEOUT", 0.2)
+    launcher = FakeLauncher()
+    app = create_app(launcher=launcher, profiles={"prplos": "boardfarm3-agent:latest"})
+    with TestClient(app, raise_server_exceptions=True) as client:
+        session_id = _dead_session_id(client)
+        resp = client.delete(f"/sessions/{session_id}?retain=true")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "retained"}
+        listed = app.state.registry.get(session_id)
+        assert listed is not None
+        assert listed.state == "dead"
+        assert app.state.store.has_bundle(session_id)
