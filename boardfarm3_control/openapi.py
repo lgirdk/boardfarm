@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import logging
 import typing
 from typing import TYPE_CHECKING, Any
 
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 
     from boardfarm3.api.routers import RouterBundle
     from boardfarm3_control.registry import SessionRegistry
+
+_log = logging.getLogger(__name__)
 
 _ENTRYPOINT_GROUP = "boardfarm_api"
 _HOOKSPEC_MODULE = "boardfarm3.api.hookspecs"
@@ -66,27 +69,26 @@ def load_plugin_routers() -> list[APIRouter]:
     both the bundle namespace and the inner router prefix
     (e.g. ``/core/templates/lan/ping``).
 
+    A plugin that raises while building its routers is logged and skipped;
+    the remaining plugins still contribute their routes.
+
     :return: flattened APIRouter objects contributed by installed plugins
     :rtype: list[APIRouter]
     """
-    result: list[APIRouter] = []
     try:
         import pluggy
 
         from boardfarm3.api import hookspecs as api_hookspecs
+        from boardfarm3.api.routers import iter_plugin_bundles
 
         pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         pm.add_hookspecs(api_hookspecs)
         pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
-        bundle_lists: list[list[RouterBundle]] = pm.hook.boardfarm_add_api_routers()
-        result.extend(
-            _flatten_bundle(bundle)
-            for bundle_list in bundle_lists
-            for bundle in bundle_list
-        )
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+        _log.exception("failed to load %s entrypoints", _ENTRYPOINT_GROUP)
         return []
-    return result
+
+    return [_flatten_bundle(bundle) for bundle in iter_plugin_bundles(pm)]
 
 
 def _make_proxy_endpoint(
