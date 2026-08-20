@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
 
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.models import (
@@ -23,7 +24,7 @@ from boardfarm3_control.openapi import load_plugin_routers, register_plugin_rout
 from boardfarm3_control.proxy import proxy_request
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
-from boardfarm3_control.teardown import teardown_session
+from boardfarm3_control.teardown import archive_bundle, teardown_session
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -344,6 +345,88 @@ def create_app(  # noqa: C901, PLR0915
             retain=retain,
         )
         return {"status": "retained" if retain else "released"}
+
+    @app.post("/sessions/{session_id}/diagnostics/snapshot")
+    async def diagnostics_snapshot(
+        session_id: str,
+        request: Request,
+    ) -> dict[str, Any]:
+        info = registry.get(session_id)
+        if info is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=f"unknown session {session_id}",
+            )
+        source = await archive_bundle(
+            session_id=session_id,
+            agent_url=info.agent_url,
+            launcher=launcher,
+            store=store,
+            http=request.app.state.http,
+        )
+        if source == "none":
+            raise HTTPException(
+                status_code=int(HTTPStatus.BAD_GATEWAY),
+                detail="agent unreachable and launcher capture produced nothing",
+            )
+        path = store.bundle_path(session_id)
+        return {
+            "path": str(path),
+            "size": path.stat().st_size,
+            "source": source,
+            "captured_at": time.time(),
+        }
+
+    @app.get("/sessions/{session_id}/diagnostics")
+    async def diagnostics(session_id: str, request: Request) -> object:
+        info = registry.get(session_id)
+        if info is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=f"unknown session {session_id}",
+            )
+        attempted: list[str] = []
+        # Tier 1 — live agent: stream straight through, nothing buffered.
+        if info.state == "live":
+            try:
+                return await proxy_request(
+                    request,
+                    info.agent_url,
+                    "diagnostics/bundle",
+                    client=request.app.state.http,
+                    session_id=session_id,
+                )
+            except HTTPException:
+                attempted.append("agent: unreachable")
+        else:
+            attempted.append("agent: session is dead")
+        # Tier 2 — archived bundle.
+        if store.has_bundle(session_id):
+            return FileResponse(
+                store.bundle_path(session_id),
+                media_type="application/gzip",
+                filename=f"{session_id}-diagnostics.tar.gz",
+            )
+        attempted.append("archive: no bundle stored")
+        # Tier 3 — build one now from the launcher.
+        source = await archive_bundle(
+            session_id=session_id,
+            agent_url=info.agent_url,
+            launcher=launcher,
+            store=store,
+            http=request.app.state.http,
+        )
+        if source != "none":
+            return FileResponse(
+                store.bundle_path(session_id),
+                media_type="application/gzip",
+                filename=f"{session_id}-diagnostics.tar.gz",
+            )
+        attempted.append("launcher: capture produced nothing")
+        raise HTTPException(
+            status_code=int(HTTPStatus.NOT_FOUND),
+            detail={"error": "NoDiagnostics", "attempted": attempted},
+        )
 
     # Catch-all proxy for everything else under /sessions/{session_id}/
     @app.api_route(
