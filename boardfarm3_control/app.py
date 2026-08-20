@@ -66,11 +66,13 @@ def create_app(  # noqa: C901, PLR0915
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await registry.rebuild(launcher)
         existing = await launcher.list_sessions()
-        await lease.rebuild_from(existing)
+        # Only live sessions hold a board. A retained corpse must never
+        # re-acquire a lease and block its board after a restart.
+        await lease.rebuild_from([s for s in existing if s.state == "live"])
         app.state.http = httpx.AsyncClient()
         yield
-        for info in await launcher.list_sessions():
-            await launcher.stop(info.session_id)
+        # Running agents are deliberately left alone: a control plane restart
+        # must not destroy live sessions or the containers being debugged.
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)

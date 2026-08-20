@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 
 import httpx
+import pytest
 import respx
 from fastapi.testclient import TestClient
 
@@ -404,3 +405,49 @@ def test_proxy_route_uses_pooled_client_without_closing_it() -> None:
         assert resp.json() == {"ok": True}
         assert not pooled_client.is_closed
     assert pooled_client.is_closed
+
+
+@pytest.mark.asyncio
+async def test_shutdown_leaves_running_agents_alone(
+    fake_launcher: FakeLauncher, profiles: dict[str, str],
+) -> None:
+    """A control plane restart must not destroy live sessions.
+
+    :param fake_launcher: launcher test double
+    :type fake_launcher: FakeLauncher
+    :param profiles: profile map
+    :type profiles: dict[str, str]
+    """
+    await fake_launcher.start("s-existing", "board", "img", "prplos")
+    app = create_app(launcher=fake_launcher, profiles=profiles)
+    with TestClient(app):
+        pass
+    assert [s.session_id for s in await fake_launcher.list_sessions()] == ["s-existing"]
+
+
+@pytest.mark.asyncio
+async def test_dead_sessions_do_not_reacquire_a_lease(
+    fake_launcher: FakeLauncher, profiles: dict[str, str],
+) -> None:
+    """A corpse must never block its board after a restart.
+
+    :param fake_launcher: launcher test double
+    :type fake_launcher: FakeLauncher
+    :param profiles: profile map
+    :type profiles: dict[str, str]
+    """
+    await fake_launcher.start("s-dead", "board-a", "img", "prplos")
+    await fake_launcher.stop("s-dead", remove=False)
+    app = create_app(launcher=fake_launcher, profiles=profiles)
+    with TestClient(app) as client:
+        response = client.post(
+            "/sessions",
+            json={
+                "board_name": "board-a",
+                "runtime_profile": "prplos",
+                "payload": {},
+            },
+        )
+    # Board is free: the request proceeds past the lease check (it fails later
+    # on the health poll, which is a 503 — not the 409 a held lease produces).
+    assert response.status_code != 409
