@@ -20,6 +20,8 @@ class AgentInfo(BaseModel):
     created_at: float
     pid: int | None = None
     agent_url: str = ""
+    state: str = "live"
+    ended_at: float | None = None
 
 
 class SessionCreate(BaseModel):

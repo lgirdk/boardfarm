@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import asyncio
+import functools
+import io
 import json
 import logging
 import os
 import signal
 import socket
 import sys
+import tarfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import IO, TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from boardfarm3_control.models import AgentInfo
@@ -50,18 +53,50 @@ class Launcher(Protocol):
         """
         ...
 
-    async def stop(self, session_id: str) -> None:
-        """Stop and remove the container for a session.
+    async def stop(self, session_id: str, *, remove: bool = True) -> None:
+        """Stop the container, and remove it only when *remove* is set.
 
-        :param session_id: session whose container to remove
+        :param session_id: session whose container to stop
+        :type session_id: str
+        :param remove: also remove the container, as ``docker rm`` would
+        :type remove: bool
+        """
+        ...
+
+    async def purge(self, session_id: str) -> None:
+        """Remove a stopped session's record entirely.
+
+        :param session_id: session to purge
         :type session_id: str
         """
         ...
 
-    async def list_sessions(self) -> list[AgentInfo]:
-        """List all running agent sessions.
+    async def capture_logs(self, session_id: str) -> bytes:
+        """Return the captured stdout/stderr for a session.
 
-        :return: info for every running agent container
+        :param session_id: session whose output to capture
+        :type session_id: str
+        :return: log bytes, empty when unavailable
+        :rtype: bytes
+        """
+        ...
+
+    async def capture_files(self, session_id: str, path: str) -> bytes:
+        """Return a tar archive of *path* for a session.
+
+        :param session_id: session whose files to capture
+        :type session_id: str
+        :param path: path to archive
+        :type path: str
+        :return: tar bytes, empty when unavailable
+        :rtype: bytes
+        """
+        ...
+
+    async def list_sessions(self) -> list[AgentInfo]:
+        """List all agent sessions.
+
+        :return: info for every known agent container, running or stopped
         :rtype: list[AgentInfo]
         """
         ...
@@ -115,13 +150,56 @@ class FakeLauncher:
         self._sessions[session_id] = info
         return info
 
-    async def stop(self, session_id: str) -> None:
-        """Remove the in-memory session record.
+    async def stop(self, session_id: str, *, remove: bool = True) -> None:
+        """Mark a session dead, optionally dropping its record.
 
-        :param session_id: session to remove
+        :param session_id: session to stop
+        :type session_id: str
+        :param remove: also forget the session, as ``docker rm`` would
+        :type remove: bool
+        """
+        if remove:
+            self._sessions.pop(session_id, None)
+            return
+        info = self._sessions.get(session_id)
+        if info is not None:
+            self._sessions[session_id] = info.model_copy(
+                update={"state": "dead", "ended_at": time.time()},
+            )
+
+    async def purge(self, session_id: str) -> None:
+        """Forget a stopped session.
+
+        :param session_id: session to purge
         :type session_id: str
         """
         self._sessions.pop(session_id, None)
+
+    async def capture_logs(self, session_id: str) -> bytes:
+        """Return synthetic agent output for tests.
+
+        :param session_id: session whose output to capture
+        :type session_id: str
+        :return: log bytes, empty when the session is unknown
+        :rtype: bytes
+        """
+        if session_id not in self._sessions:
+            return b""
+        return f"fake logs for {session_id}\n".encode()
+
+    async def capture_files(self, session_id: str, path: str) -> bytes:
+        """Return synthetic tar bytes for tests.
+
+        :param session_id: session whose files to capture
+        :type session_id: str
+        :param path: path inside the agent
+        :type path: str
+        :return: tar bytes, empty when the session is unknown
+        :rtype: bytes
+        """
+        if session_id not in self._sessions:
+            return b""
+        return f"fake tar of {path} for {session_id}".encode()
 
     async def list_sessions(self) -> list[AgentInfo]:
         """Return all in-memory session records.
@@ -147,7 +225,10 @@ class ProcessLauncher:
 
     def __init__(self) -> None:
         """Initialise an empty process launcher."""
-        self._sessions: dict[str, tuple[asyncio.subprocess.Process, AgentInfo]] = {}
+        self._sessions: dict[
+            str,
+            tuple[asyncio.subprocess.Process, AgentInfo, IO[bytes]],
+        ] = {}
         self._started = False  # True after first list_sessions() call
 
     def _state_path(self) -> Path:
@@ -166,7 +247,10 @@ class ProcessLauncher:
         :note: Errors are logged but not raised — the state file is best-effort.
         """
         path = self._state_path()
-        data = {sid: info.model_dump() for sid, (_, info) in self._sessions.items()}
+        data = {
+            sid: info.model_dump()
+            for sid, (_, info, _log_file) in self._sessions.items()
+        }
         tmp = Path(str(path) + ".tmp")
         try:
             tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
@@ -200,6 +284,18 @@ class ProcessLauncher:
         from boardfarm3_control.models import AgentInfo
 
         host_port = _free_port()
+        log_dir = (
+            Path(
+                os.environ.get(
+                    "BOARDFARM_CONTROL_STORE",
+                    "/var/lib/boardfarm-control",
+                ),
+            )
+            / "sessions"
+            / session_id
+        )
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = (log_dir / "process.log").open("wb")
         proc = await asyncio.create_subprocess_exec(
             sys.executable,
             "-m",
@@ -211,8 +307,8 @@ class ProcessLauncher:
                 "BOARDFARM_AGENT_PORT": str(host_port),
                 **(agent_env or {}),
             },
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
+            stdout=log_file,
+            stderr=asyncio.subprocess.STDOUT,
         )
         info = AgentInfo(
             session_id=session_id,
@@ -224,29 +320,87 @@ class ProcessLauncher:
             pid=proc.pid,
             agent_url=f"http://localhost:{host_port}",
         )
-        self._sessions[session_id] = (proc, info)
+        self._sessions[session_id] = (proc, info, log_file)
         self._save_state()
         return info
 
-    async def stop(self, session_id: str) -> None:
+    async def stop(self, session_id: str, *, remove: bool = True) -> None:
         """Terminate the subprocess for a session.
 
         Sends SIGTERM and waits up to 5 s; kills if it does not exit.
 
         :param session_id: session whose subprocess to stop
         :type session_id: str
+        :param remove: also forget the session record
+        :type remove: bool
         """
-        entry = self._sessions.pop(session_id, None)
+        entry = (
+            self._sessions.pop(session_id, None)
+            if remove
+            else self._sessions.get(session_id)
+        )
         if entry is None:
             return
-        proc, _ = entry
+        proc, _info, log_file = entry
         proc.terminate()
         try:
             await asyncio.wait_for(proc.wait(), timeout=5.0)
         except asyncio.TimeoutError:
             proc.kill()
             await proc.wait()
+        log_file.close()
         self._save_state()
+
+    async def purge(self, session_id: str) -> None:
+        """Delete the on-disk record for a stopped session.
+
+        :param session_id: session to purge
+        :type session_id: str
+        """
+        self._sessions.pop(session_id, None)
+        self._save_state()
+
+    async def capture_logs(self, session_id: str) -> bytes:
+        """Read the subprocess output file for a session.
+
+        :param session_id: session whose output to read
+        :type session_id: str
+        :return: log bytes, empty when unavailable
+        :rtype: bytes
+        """
+        path = (
+            Path(
+                os.environ.get(
+                    "BOARDFARM_CONTROL_STORE",
+                    "/var/lib/boardfarm-control",
+                ),
+            )
+            / "sessions"
+            / session_id
+            / "process.log"
+        )
+        try:
+            return path.read_bytes()
+        except OSError:
+            return b""
+
+    async def capture_files(self, session_id: str, path: str) -> bytes:  # noqa: ARG002
+        """Return a tar of *path*, which is local for this launcher.
+
+        :param session_id: session whose files to capture
+        :type session_id: str
+        :param path: local path to archive
+        :type path: str
+        :return: tar bytes, empty when the path does not exist
+        :rtype: bytes
+        """
+        source = Path(path)
+        if not source.exists():
+            return b""
+        buffer = io.BytesIO()
+        with tarfile.open(fileobj=buffer, mode="w") as archive:
+            archive.add(source, arcname=source.name)
+        return buffer.getvalue()
 
     async def list_sessions(self) -> list[AgentInfo]:
         """Return info for all running agent sessions.
@@ -260,7 +414,7 @@ class ProcessLauncher:
         if not self._started:
             self._started = True
             await self._cleanup_orphans()
-        return [info for _, info in self._sessions.values()]
+        return [info for _, info, _log_file in self._sessions.values()]
 
     async def _cleanup_orphans(self) -> None:
         """Kill any PIDs recorded in the state file from a prior run.
@@ -395,25 +549,105 @@ class DockerLauncher:
             agent_url=f"http://localhost:{host_port}",
         )
 
-    async def stop(self, session_id: str) -> None:
-        """Stop and remove all containers labelled with this session.
+    def _find(self, session_id: str) -> list[Any]:
+        """Return every container for a session, running or not.
 
-        :param session_id: session whose containers to remove
+        :param session_id: session to look up
+        :type session_id: str
+        :return: matching containers
+        :rtype: list[typing.Any]
+        """
+        return self._client.containers.list(
+            all=True,
+            filters={"label": f"{self._LABEL_SESSION}={session_id}"},
+        )
+
+    async def stop(self, session_id: str, *, remove: bool = True) -> None:
+        """Stop the container, and remove it only when *remove* is set.
+
+        A stopped container releases every tty and socket the agent held, so a
+        retained corpse can never contend with a fresh session on the board.
+
+        :param session_id: session whose container to stop
+        :type session_id: str
+        :param remove: also ``docker rm`` the container
+        :type remove: bool
+        """
+        loop = asyncio.get_running_loop()
+        containers = await loop.run_in_executor(None, self._find, session_id)
+        for container in containers:
+            await loop.run_in_executor(None, container.stop)
+            if remove:
+                await loop.run_in_executor(None, container.remove)
+
+    async def purge(self, session_id: str) -> None:
+        """Remove the stopped container for a session.
+
+        :param session_id: session whose container to remove
         :type session_id: str
         """
         loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(
-            None,
-            lambda: self._client.containers.list(
-                filters={"label": f"{self._LABEL_SESSION}={session_id}"},
-            ),
-        )
+        containers = await loop.run_in_executor(None, self._find, session_id)
         for container in containers:
-            await loop.run_in_executor(None, container.stop)
-            await loop.run_in_executor(None, container.remove)
+            await loop.run_in_executor(
+                None,
+                functools.partial(container.remove, force=True),
+            )
+
+    async def capture_logs(self, session_id: str) -> bytes:
+        """Return the container's stdout and stderr.
+
+        A daemon API call, so it works against a remote host and a stopped
+        container alike.
+
+        :param session_id: session whose logs to capture
+        :type session_id: str
+        :return: log bytes, empty when the container is gone
+        :rtype: bytes
+        """
+        loop = asyncio.get_running_loop()
+        containers = await loop.run_in_executor(None, self._find, session_id)
+        if not containers:
+            return b""
+        return await loop.run_in_executor(
+            None,
+            lambda: containers[0].logs(stdout=True, stderr=True),
+        )
+
+    async def capture_files(self, session_id: str, path: str) -> bytes:
+        """Return a tar of *path* from inside the container.
+
+        :param session_id: session whose files to capture
+        :type session_id: str
+        :param path: path inside the container
+        :type path: str
+        :return: tar bytes, empty when unavailable
+        :rtype: bytes
+        """
+        loop = asyncio.get_running_loop()
+        containers = await loop.run_in_executor(None, self._find, session_id)
+        if not containers:
+            return b""
+
+        def _archive() -> bytes:
+            stream, _ = containers[0].get_archive(path)
+            return b"".join(stream)
+
+        try:
+            return await loop.run_in_executor(None, _archive)
+        except Exception:  # noqa: BLE001
+            _log.warning(
+                "could not archive %s from session %s",
+                path,
+                session_id,
+            )
+            return b""
 
     async def list_sessions(self) -> list[AgentInfo]:
         """Return info for every container with a boardfarm.session_id label.
+
+        Includes stopped containers so a failed agent's evidence remains
+        visible until it is explicitly purged.
 
         :return: agent infos rebuilt from Docker container labels
         :rtype: list[AgentInfo]
@@ -424,6 +658,7 @@ class DockerLauncher:
         containers = await loop.run_in_executor(
             None,
             lambda: self._client.containers.list(
+                all=True,
                 filters={"label": self._LABEL_SESSION},
             ),
         )
@@ -432,6 +667,7 @@ class DockerLauncher:
             labels = container.labels
             port_bindings = container.ports.get("8000/tcp") or [{}]
             host_port = int(port_bindings[0].get("HostPort", 0))
+            is_running = container.status == "running"
             result.append(
                 AgentInfo(
                     session_id=labels[self._LABEL_SESSION],
@@ -442,6 +678,7 @@ class DockerLauncher:
                     created_at=float(labels.get(self._LABEL_CREATED, 0)),
                     pid=None,
                     agent_url=f"http://localhost:{host_port}",
+                    state="live" if is_running else "dead",
                 ),
             )
         return result

@@ -97,6 +97,7 @@ async def test_process_launcher_start_sets_pid_and_agent_url(
     """ProcessLauncher.start() sets pid and agent_url on the returned AgentInfo."""
     state_file = tmp_path / "sessions.json"
     monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     launcher = ProcessLauncher()
     info = await launcher.start("s-proc", "board-1", "ignored", "prplos")
     assert isinstance(info.pid, int)
@@ -113,6 +114,7 @@ async def test_process_launcher_start_writes_state_file(
     """ProcessLauncher.start() writes the session to the state file."""
     state_file = tmp_path / "sessions.json"
     monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     launcher = ProcessLauncher()
     info = await launcher.start("s-proc", "board-1", "ignored", "prplos")
     assert state_file.exists()
@@ -130,6 +132,7 @@ async def test_process_launcher_stop_removes_from_state_file(
     """ProcessLauncher.stop() removes the session from the state file."""
     state_file = tmp_path / "sessions.json"
     monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
     launcher = ProcessLauncher()
     await launcher.start("s-proc", "board-1", "ignored", "prplos")
     await launcher.stop("s-proc")
@@ -213,3 +216,45 @@ async def test_process_launcher_list_sessions_corrupt_state_file_returns_empty(
     launcher = ProcessLauncher()
     sessions = await launcher.list_sessions()
     assert sessions == []
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_retains_on_stop_without_remove() -> None:
+    launcher = FakeLauncher()
+    await launcher.start("s-1", "board", "img", "prplos")
+    await launcher.stop("s-1", remove=False)
+    sessions = await launcher.list_sessions()
+    assert [s.session_id for s in sessions] == ["s-1"]
+    assert sessions[0].state == "dead"
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_purge_removes_the_record() -> None:
+    launcher = FakeLauncher()
+    await launcher.start("s-1", "board", "img", "prplos")
+    await launcher.stop("s-1", remove=False)
+    await launcher.purge("s-1")
+    assert await launcher.list_sessions() == []
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_stop_with_remove_purges() -> None:
+    launcher = FakeLauncher()
+    await launcher.start("s-1", "board", "img", "prplos")
+    await launcher.stop("s-1")
+    assert await launcher.list_sessions() == []
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_capture_returns_bytes() -> None:
+    launcher = FakeLauncher()
+    await launcher.start("s-1", "board", "img", "prplos")
+    assert isinstance(await launcher.capture_logs("s-1"), bytes)
+    assert isinstance(await launcher.capture_files("s-1", "/var/log"), bytes)
+
+
+@pytest.mark.asyncio
+async def test_capture_on_unknown_session_returns_empty() -> None:
+    launcher = FakeLauncher()
+    assert await launcher.capture_logs("nope") == b""
+    assert await launcher.capture_files("nope", "/var/log") == b""
