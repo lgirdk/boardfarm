@@ -265,10 +265,16 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
     :return: None
     :rtype: None
     """
-    from unittest.mock import MagicMock, patch
+    import pluggy
 
-    from boardfarm3.api.routers import RouterBundle, load_plugin_routers
+    from boardfarm3.api import hookspecs as api_hookspecs
+    from boardfarm3.api.routers import (
+        RouterBundle,
+        _make_wrapper,
+        iter_plugin_bundles,
+    )
 
+    hookimpl_api = pluggy.HookimplMarker("boardfarm_api")
     inner = APIRouter(prefix="/templates/foo")
 
     @inner.get("/bar")
@@ -277,13 +283,18 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
 
     bundle = RouterBundle(namespace="test_ns", routers=[inner], skipped=[])
 
-    with patch("boardfarm3.api.routers.pluggy.PluginManager") as mock_pm_cls:
-        mock_pm = MagicMock()
-        mock_pm_cls.return_value = mock_pm
-        # pluggy collects each plugin's return value into a list, so the hook
-        # call returns list[list[RouterBundle]] — one inner list per plugin.
-        mock_pm.hook.boardfarm_add_api_routers.return_value = [[bundle]]
-        routers, skipped = load_plugin_routers()
+    class _Plugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            return [bundle]
+
+    pm = pluggy.PluginManager("boardfarm_api")
+    pm.add_hookspecs(api_hookspecs)
+    pm.register(_Plugin(), name="test_ns")
+
+    bundles = list(iter_plugin_bundles(pm))
+    routers = [_make_wrapper(b) for b in bundles]
+    skipped = [s for b in bundles for s in b.skipped]
 
     assert len(routers) == 1
     wrapper = routers[0]
@@ -565,3 +576,119 @@ def test_generate_template_routers_with_enum_param_produces_route() -> None:
     assert len(routers) == 1
     skipped_names = [s.method for s in skipped]
     assert "move" not in skipped_names
+
+
+# ---------------------------------------------------------------------------
+# Non-serialisable parameter annotations
+# ---------------------------------------------------------------------------
+
+
+class _OpaqueTemplate:
+    """Stand-in for a template ABC used as a parameter annotation."""
+
+
+class _ABCTemplateParam:
+    @abstractmethod
+    def configure(self, wan: _OpaqueTemplate) -> None: ...
+
+    @abstractmethod
+    def greet(self, name: str) -> str: ...
+
+
+def test_non_serialisable_param_skipped() -> None:
+    """A method taking a template ABC parameter is skipped, not raised on.
+
+    :return: None
+    :rtype: None
+    """
+    _, skipped = generate_template_routers([_ABCTemplateParam])
+    found = next((s for s in skipped if s.method == "configure"), None)
+    assert found is not None
+    assert "non-serialisable param" in found.reason
+
+
+def test_non_serialisable_param_does_not_kill_sibling_routes() -> None:
+    """Sibling methods on the same template still generate routes.
+
+    :return: None
+    :rtype: None
+    """
+    routers, _ = generate_template_routers([_ABCTemplateParam])
+    assert len(routers) == 1
+    paths = [r.path for r in routers[0].routes]
+    assert any("greet" in p for p in paths)
+    assert not any("configure" in p for p in paths)
+
+
+# ---------------------------------------------------------------------------
+# Per-plugin failure isolation in load_plugin_routers
+# ---------------------------------------------------------------------------
+
+
+def _two_plugin_manager() -> tuple[object, object]:
+    """Build a PluginManager with one healthy and one raising plugin.
+
+    :return: (plugin manager, the bundle the healthy plugin contributes)
+    :rtype: tuple[object, object]
+    """
+    import pluggy
+
+    from boardfarm3.api import hookspecs as api_hookspecs
+    from boardfarm3.api.routers import RouterBundle
+
+    hookimpl_api = pluggy.HookimplMarker("boardfarm_api")
+    inner = APIRouter(prefix="/templates/foo")
+
+    @inner.get("/bar")
+    async def _dummy() -> dict:
+        return {}
+
+    bundle = RouterBundle(namespace="healthy", routers=[inner], skipped=[])
+
+    class _HealthyPlugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            return [bundle]
+
+    class _BrokenPlugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            msg = "unable to generate pydantic-core schema"
+            raise RuntimeError(msg)
+
+    pm = pluggy.PluginManager("boardfarm_api")
+    pm.add_hookspecs(api_hookspecs)
+    pm.register(_BrokenPlugin(), name="broken")
+    pm.register(_HealthyPlugin(), name="healthy")
+    return pm, bundle
+
+
+def test_broken_plugin_does_not_suppress_healthy_plugin() -> None:
+    """One plugin raising must not discard every other plugin's bundles.
+
+    :return: None
+    :rtype: None
+    """
+    from boardfarm3.api.routers import iter_plugin_bundles
+
+    pm, bundle = _two_plugin_manager()
+    bundles = list(iter_plugin_bundles(pm))
+    assert bundles == [bundle]
+
+
+def test_broken_plugin_is_logged(caplog: Any) -> None:
+    """A raising plugin is reported by name rather than failing silently.
+
+    :param caplog: pytest log capture fixture
+    :type caplog: Any
+    :return: None
+    :rtype: None
+    """
+    import logging
+
+    from boardfarm3.api.routers import iter_plugin_bundles
+
+    pm, _ = _two_plugin_manager()
+    with caplog.at_level(logging.ERROR, logger="boardfarm3.api.routers"):
+        list(iter_plugin_bundles(pm))
+    assert "broken" in caplog.text

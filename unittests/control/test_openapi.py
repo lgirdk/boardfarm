@@ -90,12 +90,14 @@ def test_load_plugin_routers_flattens_bundle_namespace_into_route_paths() -> Non
     :return: None
     :rtype: None
     """
-    from unittest.mock import MagicMock, patch
-
+    import pluggy
     from fastapi.routing import APIRoute
 
-    from boardfarm3.api.routers import RouterBundle
+    from boardfarm3.api import hookspecs as api_hookspecs
+    from boardfarm3.api.routers import RouterBundle, iter_plugin_bundles
+    from boardfarm3_control.openapi import _flatten_bundle
 
+    hookimpl_api = pluggy.HookimplMarker("boardfarm_api")
     inner = APIRouter(prefix="/templates/foo")
 
     @inner.post("/bar", status_code=200, response_model=None)
@@ -104,14 +106,76 @@ def test_load_plugin_routers_flattens_bundle_namespace_into_route_paths() -> Non
 
     bundle = RouterBundle(namespace="myns", routers=[inner], skipped=[])
 
-    with patch("pluggy.PluginManager") as mock_cls:
-        mock_pm = MagicMock()
-        mock_cls.return_value = mock_pm
-        mock_pm.hook.boardfarm_add_api_routers.return_value = [[bundle]]
-        routers = load_plugin_routers()
+    class _Plugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            return [bundle]
+
+    pm = pluggy.PluginManager("boardfarm_api")
+    pm.add_hookspecs(api_hookspecs)
+    pm.register(_Plugin(), name="myns")
+
+    routers = [_flatten_bundle(b) for b in iter_plugin_bundles(pm)]
 
     assert len(routers) == 1
     flat = routers[0]
     # The flat router has no prefix; paths are stored in each route.
     route_paths = [r.path for r in flat.routes if isinstance(r, APIRoute)]
     assert any("myns" in p and "templates/foo" in p and "bar" in p for p in route_paths)
+
+
+def _two_plugin_manager() -> tuple[object, object]:
+    """Build a PluginManager with one healthy and one raising plugin.
+
+    :return: (plugin manager, the bundle the healthy plugin contributes)
+    :rtype: tuple[object, object]
+    """
+    import pluggy
+
+    from boardfarm3.api import hookspecs as api_hookspecs
+    from boardfarm3.api.routers import RouterBundle
+
+    hookimpl_api = pluggy.HookimplMarker("boardfarm_api")
+    inner = APIRouter(prefix="/templates/foo")
+
+    @inner.post("/bar", status_code=200, response_model=None)
+    async def _dummy() -> dict:
+        return {}
+
+    bundle = RouterBundle(namespace="healthy", routers=[inner], skipped=[])
+
+    class _HealthyPlugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            return [bundle]
+
+    class _BrokenPlugin:
+        @hookimpl_api
+        def boardfarm_add_api_routers(self) -> list:
+            msg = "unable to generate pydantic-core schema"
+            raise RuntimeError(msg)
+
+    pm = pluggy.PluginManager("boardfarm_api")
+    pm.add_hookspecs(api_hookspecs)
+    pm.register(_BrokenPlugin(), name="broken")
+    pm.register(_HealthyPlugin(), name="healthy")
+    return pm, bundle
+
+
+def test_broken_plugin_does_not_suppress_healthy_plugin() -> None:
+    """One plugin raising must not discard every other plugin's routes.
+
+    :return: None
+    :rtype: None
+    """
+    from fastapi.routing import APIRoute
+
+    from boardfarm3.api.routers import iter_plugin_bundles
+    from boardfarm3_control.openapi import _flatten_bundle
+
+    pm, _ = _two_plugin_manager()
+    routers = [_flatten_bundle(b) for b in iter_plugin_bundles(pm)]
+
+    assert len(routers) == 1
+    route_paths = [r.path for r in routers[0].routes if isinstance(r, APIRoute)]
+    assert any("healthy" in p and "bar" in p for p in route_paths)

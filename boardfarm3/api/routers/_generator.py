@@ -442,6 +442,21 @@ def _validate_sig(  # pylint: disable=too-many-return-statements
             template_name, name, f"missing annotation on: {', '.join(missing)}"
         )
 
+    # A parameter annotated with a non-JSON type (typically another Template
+    # ABC, e.g. ``configure_aftr(self, wan: WAN)``) cannot become a Pydantic
+    # body field.  Reject it here rather than letting ``create_model`` raise.
+    unroutable = [
+        f"{p_name}: {p.annotation!r}"
+        for p_name, p in sig.parameters.items()
+        if p_name != "self" and not _is_serialisable(p.annotation)
+    ]
+    if unroutable:
+        return SkippedMethod(
+            template_name,
+            name,
+            f"non-serialisable param type: {', '.join(unroutable)}",
+        )
+
     ret = sig.return_annotation
     if ret is inspect.Parameter.empty:
         return SkippedMethod(template_name, name, "missing return annotation")

@@ -12,6 +12,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from boardfarm3.api.execution import Job
     from boardfarm3.api.routers._generator import SkippedMethod
     from boardfarm3.api.session import Session
@@ -19,6 +21,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 _ENTRYPOINT_GROUP = "boardfarm_api"
+_HOOK_NAME = "boardfarm_add_api_routers"
 _log = logging.getLogger(__name__)
 
 
@@ -103,29 +106,69 @@ def _make_wrapper(bundle: RouterBundle) -> APIRouter:
     return wrapper
 
 
+def iter_plugin_bundles(
+    plugin_manager: pluggy.PluginManager,
+) -> Iterator[RouterBundle]:
+    """Yield every bundle contributed to *plugin_manager*, isolating failures.
+
+    Shared by the runtime agent and the control plane, which each build
+    their own PluginManager but need identical failure-isolation semantics.
+
+    Each plugin's hookimpl is invoked through its own subset hook caller so
+    that one plugin raising (for example, a template the generator cannot
+    turn into routes) costs only that plugin's bundles instead of aborting
+    the whole hook call and discarding every other plugin's routes.
+
+    :param plugin_manager: manager with ``boardfarm_api`` plugins registered
+    :type plugin_manager: pluggy.PluginManager
+    :yield: bundles from every plugin that contributed without raising
+    :rtype: Iterator[RouterBundle]
+    """
+    registered = list(plugin_manager.list_name_plugin())
+    for plugin_name, plugin in registered:
+        caller = plugin_manager.subset_hook_caller(
+            _HOOK_NAME,
+            remove_plugins=[other for _, other in registered if other is not plugin],
+        )
+        try:
+            bundle_lists: list[list[RouterBundle]] = caller()
+        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            _log.exception(
+                "boardfarm_api plugin %r raised while contributing routers; "
+                "its routes will be absent from the API",
+                plugin_name,
+            )
+            continue
+        for bundle_list in bundle_lists:
+            yield from bundle_list
+
+
 def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
     """Discover all FastAPI routers contributed via the ``boardfarm_api`` entrypoints.
 
     Creates a short-lived PluginManager, loads all installed ``boardfarm_api``
     entrypoints, wraps each bundle's routers under ``/{bundle.namespace}``,
-    and aggregates the skipped method lists from all bundles.
+    and aggregates the skipped method lists from all bundles.  A plugin that
+    raises is logged and skipped; the remaining plugins still contribute.
 
     :return: namespaced routers and all skipped methods from all bundles
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
-    result_routers: list[APIRouter] = []
-    result_skipped: list[SkippedMethod] = []
     try:
-        from boardfarm3.api import hookspecs as _api_hookspecs  # pylint: disable=import-outside-toplevel
+        from boardfarm3.api import (
+            hookspecs as _api_hookspecs,  # pylint: disable=import-outside-toplevel
+        )
 
         _pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         _pm.add_hookspecs(_api_hookspecs)
         _pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
-        bundles: list[list[RouterBundle]] = _pm.hook.boardfarm_add_api_routers()
-        for bundle_list in bundles:
-            for bundle in bundle_list:
-                result_routers.append(_make_wrapper(bundle))
-                result_skipped.extend(bundle.skipped)
     except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+        _log.exception("failed to load boardfarm_api entrypoints")
         return [], []
+
+    result_routers: list[APIRouter] = []
+    result_skipped: list[SkippedMethod] = []
+    for bundle in iter_plugin_bundles(_pm):
+        result_routers.append(_make_wrapper(bundle))
+        result_skipped.extend(bundle.skipped)
     return result_routers, result_skipped
