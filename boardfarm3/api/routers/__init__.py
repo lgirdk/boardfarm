@@ -12,7 +12,9 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
+
+    from fastapi import Response
 
     from boardfarm3.api.execution import Job
     from boardfarm3.api.routers._generator import SkippedMethod
@@ -37,11 +39,21 @@ class RouterBundle:
     :type routers: list[APIRouter]
     :param skipped: methods the generator could not route for this bundle
     :type skipped: list[SkippedMethod]
+    :param error_shaper: converts an exception raised at the control-plane
+        dispatch edge into a response in this bundle's contract; None keeps
+        the native error behaviour
+    :type error_shaper: Callable[[Exception], Response] | None
+    :param optional_session_id: when True the control plane injects
+        ``session_id`` into the proxied body model as optional, so a missing
+        value reaches the endpoint instead of raising a pre-handler 422
+    :type optional_session_id: bool
     """
 
     namespace: str
     routers: list[APIRouter] = field(default_factory=list)
     skipped: list[SkippedMethod] = field(default_factory=list)
+    error_shaper: Callable[[Exception], Response] | None = None
+    optional_session_id: bool = False
 
 
 def _resolve(session: Session, template: type[T], index: int) -> T:

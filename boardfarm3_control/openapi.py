@@ -12,7 +12,11 @@ from fastapi.routing import APIRoute
 from pydantic import create_model
 from starlette.requests import Request
 
+from boardfarm3_control.proxy import proxy_request
+
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from fastapi import FastAPI
 
     from boardfarm3.api.routers import RouterBundle
@@ -48,6 +52,10 @@ def _flatten_bundle(bundle: RouterBundle) -> APIRouter:
             # route.path may or may not include inner_pfx depending on
             # FastAPI version; removeprefix is safe for both cases.
             rel = route.path.removeprefix(inner_pfx)
+            if bundle.error_shaper is not None:
+                route.endpoint.__bf_error_shaper__ = bundle.error_shaper  # type: ignore[attr-defined]  # pylint: disable=line-too-long
+            if bundle.optional_session_id:
+                route.endpoint.__bf_optional_session_id__ = True  # type: ignore[attr-defined]
             flat.add_api_route(
                 f"/{bundle.namespace}{inner_pfx}{rel}",
                 route.endpoint,
@@ -91,6 +99,55 @@ def load_plugin_routers() -> list[APIRouter]:
     return [_flatten_bundle(bundle) for bundle in iter_plugin_bundles(pm)]
 
 
+async def _dispatch_proxy_request(
+    kwargs: dict[str, Any],
+    *,
+    registry: SessionRegistry,
+    shaper: Callable[[Exception], Any] | None,
+) -> Any:  # noqa: ANN401
+    """Resolve the session, forward to the agent, and shape dispatch-edge errors.
+
+    Split out of :func:`_make_proxy_endpoint` so the control-plane dispatch
+    edge (unknown session, missing ``session_id``) has its own complexity
+    budget, separate from the signature-rewriting machinery around it.
+
+    :param kwargs: the proxy endpoint's call-time keyword arguments; must
+        contain ``body`` and ``request``
+    :type kwargs: dict[str, Any]
+    :param registry: registry used to resolve the agent URL
+    :type registry: SessionRegistry
+    :param shaper: converts a dispatch-edge exception into a response in the
+        bundle's contract; None re-raises natively
+    :type shaper: Callable[[Exception], Any] | None
+    :return: the downstream response, or the shaper's response on failure
+    :rtype: Any
+    :raises Exception: whatever was raised, when *shaper* is None
+    """
+    try:
+        body: Any = kwargs["body"]
+        request: Request = kwargs["request"]
+        session_id: str | None = body.session_id
+        if not session_id:
+            raise HTTPException(  # noqa: TRY301
+                status_code=422,
+                detail="session_id is required",
+            )
+        info = registry.get(session_id)
+        if info is None:
+            raise HTTPException(  # noqa: TRY301
+                status_code=404, detail=f"unknown session {session_id}"
+            )
+        stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
+        downstream_path = request.url.path.lstrip("/")
+        return await proxy_request(
+            request, info.agent_url, downstream_path, body=stripped_bytes
+        )
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        if shaper is None:
+            raise
+        return shaper(exc)
+
+
 def _make_proxy_endpoint(
     original_endpoint: Any,  # noqa: ANN401
     registry: SessionRegistry,
@@ -110,6 +167,14 @@ def _make_proxy_endpoint(
         whose body parameter has a different name will compile without error but
         raise ``KeyError`` at call time.
 
+    .. note::
+        ``__bf_error_shaper__`` and ``__bf_optional_session_id__`` are read off
+        *original_endpoint*.  They are stamped by ``_flatten_bundle`` from the
+        owning :class:`~boardfarm3.api.routers.RouterBundle`; the channel exists
+        as a plain function attribute (rather than being threaded through as a
+        parameter) because ``create_app`` also accepts ``extra_routers`` that
+        were never wrapped from a bundle and so carry no such metadata.
+
     :param original_endpoint: the plugin's async handler function
     :type original_endpoint: Any
     :param registry: registry used to resolve the agent URL
@@ -117,7 +182,8 @@ def _make_proxy_endpoint(
     :return: proxy async function with adjusted signature
     :rtype: Any
     """
-    from boardfarm3_control.proxy import proxy_request
+    shaper = getattr(original_endpoint, "__bf_error_shaper__", None)
+    optional_sid = getattr(original_endpoint, "__bf_optional_session_id__", False)
 
     try:
         resolved_hints = typing.get_type_hints(original_endpoint)
@@ -140,9 +206,10 @@ def _make_proxy_endpoint(
     if body_idx is not None:
         original_model = existing_params[body_idx].annotation
         if hasattr(original_model, "model_fields"):
+            session_id_spec = (str | None, None) if optional_sid else (str, ...)
             proxied_model = create_model(  # type: ignore[call-overload]
                 f"Proxied{original_model.__name__}",
-                session_id=(str, ...),
+                session_id=session_id_spec,
                 **{
                     name: (fi.annotation, fi)
                     for name, fi in original_model.model_fields.items()
@@ -166,17 +233,7 @@ def _make_proxy_endpoint(
     new_sig = sig.replace(parameters=new_params)
 
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
-        body: Any = kwargs["body"]
-        request: Request = kwargs["request"]
-        session_id: str = body.session_id
-        info = registry.get(session_id)
-        if info is None:
-            raise HTTPException(status_code=404, detail=f"unknown session {session_id}")
-        stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
-        downstream_path = request.url.path.lstrip("/")
-        return await proxy_request(
-            request, info.agent_url, downstream_path, body=stripped_bytes
-        )
+        return await _dispatch_proxy_request(kwargs, registry=registry, shaper=shaper)
 
     proxy_endpoint.__signature__ = new_sig  # type: ignore[attr-defined]
     proxy_endpoint.__name__ = f"proxy_{original_endpoint.__name__}"
