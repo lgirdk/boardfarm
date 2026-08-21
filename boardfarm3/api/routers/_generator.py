@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
 from typing import (
-    TYPE_CHECKING,
     Any,
     Literal,
     Union,
@@ -27,10 +26,13 @@ from typing import (
 from fastapi import APIRouter, Request
 from pydantic import Field, create_model
 
-from boardfarm3.api.routers import _async_response, _resolve
-
-if TYPE_CHECKING:
-    from fastapi.responses import JSONResponse
+from boardfarm3.api.routers import _resolve
+from boardfarm3.api.routers.adapter import (
+    DefaultAdapter,
+    Outcome,
+    ResponseAdapter,
+    Unsupported,
+)
 
 _log = logging.getLogger(__name__)
 
@@ -273,11 +275,13 @@ def _normalise_mount(item: type | TemplateMount) -> TemplateMount:
 # ---------------------------------------------------------------------------
 
 
-def _make_request_model(
+def _make_request_model(  # pylint: disable=too-many-locals
     method_name: str,
     sig: inspect.Signature,
     docstring: str | None = None,
-) -> tuple[type, _CoercionPlan]:
+    *,
+    adapter: ResponseAdapter | None = None,
+) -> tuple[type, _CoercionPlan] | Unsupported:
     """Build a Pydantic model from the non-self parameters of *sig*.
 
     Enum annotations are substituted with ``Literal[member_names]`` and
@@ -291,9 +295,13 @@ def _make_request_model(
     :type sig: inspect.Signature
     :param docstring: raw method docstring for Sphinx param extraction
     :type docstring: str | None
-    :return: (Pydantic model, coercion plan)
-    :rtype: tuple[type, _CoercionPlan]
+    :param adapter: response adapter controlling field types and extra fields;
+        None uses the native default
+    :type adapter: ResponseAdapter | None
+    :return: (Pydantic model, coercion plan), or Unsupported to skip the method
+    :rtype: tuple[type, _CoercionPlan] | Unsupported
     """
+    active = adapter or DefaultAdapter()
     fields: dict[str, Any] = {}
     coercions: dict[str, Any] = {}
     param_descriptions = _parse_sphinx_params(docstring)
@@ -301,15 +309,19 @@ def _make_request_model(
         if name == "self":
             continue
         annotation = param.annotation
-        field_type = _annotation_to_field_type(annotation)
+        default = param.default if param.default is not inspect.Parameter.empty else ...
+        spec = active.field_spec_for(name, annotation, default)
+        if isinstance(spec, Unsupported):
+            return spec
+        field_type, field_default = spec
         if field_type is not annotation:
             coercions[name] = annotation
-        default = param.default if param.default is not inspect.Parameter.empty else ...
         desc = param_descriptions.get(name, "")
         if desc:
-            fields[name] = (field_type, Field(default=default, description=desc))
+            fields[name] = (field_type, Field(default=field_default, description=desc))
         else:
-            fields[name] = (field_type, default)
+            fields[name] = (field_type, field_default)
+    fields.update(active.extra_fields())
     model_name = (
         "".join(part.capitalize() for part in method_name.split("_")) + "Request"
     )
@@ -326,6 +338,8 @@ def _make_handler(  # noqa: PLR0913
     request_model: type,
     accessor: str | None,
     coercion_plan: _CoercionPlan,
+    required: frozenset[str],
+    adapter: ResponseAdapter,
 ) -> Any:  # noqa: ANN401
     """Build an async route handler for *method_name*.
 
@@ -346,33 +360,53 @@ def _make_handler(  # noqa: PLR0913
     :type accessor: str | None
     :param coercion_plan: parameters requiring type coercion before the call
     :type coercion_plan: _CoercionPlan
+    :param required: names of parameters that had no default
+    :type required: frozenset[str]
+    :param adapter: response adapter controlling coercion, checks and body
+    :type adapter: ResponseAdapter
     :return: async FastAPI route handler
     :rtype: Any
     """
+    extra_names = tuple(adapter.extra_fields())
 
     async def handler(
         request: Request,
         body: Any,  # noqa: ANN401
         index: int = 0,
         mode: str = "sync",
-    ) -> dict[str, Any] | JSONResponse:
-        session = request.app.state.session
-        device: Any = _resolve(  # type: ignore[type-abstract]
-            session, resolve_as, index
-        )
-        target = device if accessor is None else getattr(device, accessor)
+    ) -> Any:  # noqa: ANN401
+        effective_mode = mode if adapter.supports_async else "sync"
+        short_circuit = adapter.check_request(body, required)
+        if short_circuit is not None:
+            return short_circuit
+        job = None
+        try:
+            session = request.app.state.session
+            device: Any = _resolve(  # type: ignore[type-abstract]
+                session, resolve_as, index
+            )
+            target = device if accessor is None else getattr(device, accessor)
 
-        def _run() -> Any:  # noqa: ANN401
-            data = body.model_dump()
-            for p_name, orig_ann in coercion_plan.coercions.items():
-                if p_name in data:
-                    data[p_name] = _coerce(data[p_name], orig_ann)
-            return getattr(target, method_name)(**data)
+            def _run() -> Any:  # noqa: ANN401
+                data = body.model_dump()
+                for p_name, orig_ann in coercion_plan.coercions.items():
+                    if p_name in data:
+                        data[p_name] = adapter.coerce(data[p_name], orig_ann)
+                # Adapter-injected fields are transport concerns; the target
+                # method never declared them and would raise TypeError.
+                for extra in extra_names:
+                    data.pop(extra, None)
+                return getattr(target, method_name)(**data)
 
-        job = await session.queue.submit(_run, mode=mode)
-        if mode == "async":
-            return _async_response(job)
-        return {"result": job.result}
+            job = await session.queue.submit(_run, mode=effective_mode)
+            outcome = Outcome(
+                job=job, value=job.result, error=None, mode=effective_mode
+            )
+        except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            # Safe because DefaultAdapter.respond re-raises, preserving the
+            # native path. Only an adapter that opts in absorbs the error.
+            outcome = Outcome(job=job, value=None, error=exc, mode=effective_mode)
+        return adapter.respond(outcome)
 
     handler.__name__ = f"{introspect.__name__.lower()}_{method_name}"
     handler.__qualname__ = handler.__name__
@@ -380,32 +414,30 @@ def _make_handler(  # noqa: PLR0913
         f"{method_name.replace('_', ' ').capitalize()} on"
         f" {introspect.__name__} device at *index*."
     )
-    handler.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
-        [
-            inspect.Parameter(
-                "request",
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=Request,
-            ),
-            inspect.Parameter(
-                "body",
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=request_model,
-            ),
-            inspect.Parameter(
-                "index",
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                default=0,
-                annotation=int,
-            ),
+    params = [
+        inspect.Parameter(
+            "request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request
+        ),
+        inspect.Parameter(
+            "body", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=request_model
+        ),
+        inspect.Parameter(
+            "index",
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            default=0,
+            annotation=int,
+        ),
+    ]
+    if adapter.supports_async:
+        params.append(
             inspect.Parameter(
                 "mode",
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 default="sync",
                 annotation=Literal["sync", "async"],
-            ),
-        ]
-    )
+            )
+        )
+    handler.__signature__ = inspect.Signature(params)  # type: ignore[attr-defined]
     return handler
 
 
@@ -468,11 +500,12 @@ def _validate_sig(  # pylint: disable=too-many-return-statements
     return None
 
 
-def _process_member(  # pylint: disable=too-many-return-statements
+def _process_member(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
     introspect: type,
     name: str,
     obj: object,
-) -> SkippedMethod | tuple[type, _CoercionPlan] | None:
+    adapter: ResponseAdapter,
+) -> SkippedMethod | tuple[type, _CoercionPlan, frozenset[str]] | None:
     """Process a single class member to determine route generation outcome.
 
     :param introspect: Template ABC class being introspected
@@ -481,9 +514,12 @@ def _process_member(  # pylint: disable=too-many-return-statements
     :type name: str
     :param obj: attribute value (result of ``getattr(introspect, name)``)
     :type obj: object
-    :return: a (Pydantic request model, coercion plan) tuple to register a
-        route for, a SkippedMethod, or None to skip silently
-    :rtype: SkippedMethod | tuple[type, _CoercionPlan] | None
+    :param adapter: response adapter controlling field types and extra fields
+    :type adapter: ResponseAdapter
+    :return: a (Pydantic request model, coercion plan, required parameter
+        names) tuple to register a route for, a SkippedMethod, or None to
+        skip silently
+    :rtype: SkippedMethod | tuple[type, _CoercionPlan, frozenset[str]] | None
     """
     raw = inspect.getattr_static(introspect, name, None)
 
@@ -503,7 +539,21 @@ def _process_member(  # pylint: disable=too-many-return-statements
     if skipped is not None:
         return skipped
 
-    return _make_request_model(name, sig, obj.__doc__ if callable(obj) else None)
+    result = _make_request_model(
+        name,
+        sig,
+        obj.__doc__ if callable(obj) else None,
+        adapter=adapter,
+    )
+    if isinstance(result, Unsupported):
+        return SkippedMethod(introspect.__name__, name, result.reason)
+    request_model, coercion_plan = result
+    required = frozenset(
+        p_name
+        for p_name, p in sig.parameters.items()
+        if p_name != "self" and p.default is inspect.Parameter.empty
+    )
+    return request_model, coercion_plan, required
 
 
 # ---------------------------------------------------------------------------
@@ -523,12 +573,15 @@ class _MountBuild:
     :type seen: set[str]
     :param all_skipped: shared list of skipped methods to append to
     :type all_skipped: list[SkippedMethod]
+    :param adapter: response adapter controlling route generation and dispatch
+    :type adapter: ResponseAdapter
     """
 
     mount: str
     router: APIRouter
     seen: set[str]
     all_skipped: list[SkippedMethod]
+    adapter: ResponseAdapter
 
 
 def _register_member(  # pylint: disable=too-many-return-statements
@@ -575,7 +628,7 @@ def _register_member(  # pylint: disable=too-many-return-statements
         )
         return
 
-    result = _process_member(spec.introspect, name, obj)
+    result = _process_member(spec.introspect, name, obj, build.adapter)
     if result is None:
         return
     if isinstance(result, SkippedMethod):
@@ -588,7 +641,7 @@ def _register_member(  # pylint: disable=too-many-return-statements
         )
         return
 
-    request_model, coercion_plan = result
+    request_model, coercion_plan, required = result
     handler = _make_handler(
         spec.resolve_as,
         spec.introspect,
@@ -596,6 +649,8 @@ def _register_member(  # pylint: disable=too-many-return-statements
         request_model,
         spec.accessor,
         coercion_plan,
+        required,
+        build.adapter,
     )
     build.seen.add(name)
     router = build.router
@@ -605,6 +660,8 @@ def _register_member(  # pylint: disable=too-many-return-statements
 
 def generate_template_routers(
     templates: list[type | TemplateMount],
+    *,
+    adapter: ResponseAdapter | None = None,
 ) -> tuple[list[APIRouter], list[SkippedMethod]]:
     """Generate FastAPI routers for each template mount.
 
@@ -615,9 +672,13 @@ def generate_template_routers(
 
     :param templates: template classes or TemplateMount specs to introspect
     :type templates: list[type | TemplateMount]
+    :param adapter: response adapter controlling route generation and
+        dispatch; None uses the native default
+    :type adapter: ResponseAdapter | None
     :return: generated routers and list of skipped methods with reasons
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
+    active = adapter or DefaultAdapter()
     mounts = [_normalise_mount(t) for t in templates]
     grouped: dict[str, list[TemplateMount]] = {}
     order: list[str] = []
@@ -635,7 +696,7 @@ def generate_template_routers(
             prefix=f"/templates/{mount}",
             tags=[f"templates:{mount}"],
         )
-        build = _MountBuild(mount, router, set(), all_skipped)
+        build = _MountBuild(mount, router, set(), all_skipped, active)
         for spec in grouped[mount]:
             for name, obj in inspect.getmembers(spec.introspect):
                 _register_member(build, spec, name, obj)
