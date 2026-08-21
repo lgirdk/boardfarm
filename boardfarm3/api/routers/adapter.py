@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class Unsupported:
     """Marker meaning a parameter cannot be exposed on this adapter's surface.
 
-    Returned from :meth:`ResponseAdapter.field_spec_for`.  The generator turns
+    Returned from ``ResponseAdapter.field_spec_for``.  The generator turns
     it into a ``SkippedMethod`` carrying *reason*, so the whole method is
     excluded and reported by ``GET /diagnostics/skipped-routes``.
 
@@ -132,7 +132,7 @@ class DefaultAdapter:
 
     def field_spec_for(
         self,
-        name: str,  # noqa: ARG002
+        name: str,  # noqa: ARG002 # pylint: disable=unused-argument
         annotation: Any,  # noqa: ANN401
         default: Any,  # noqa: ANN401
     ) -> tuple[Any, Any] | Unsupported:
@@ -185,8 +185,8 @@ class DefaultAdapter:
 
     def check_request(
         self,
-        body: Any,  # noqa: ANN401, ARG002
-        required: frozenset[str],  # noqa: ARG002
+        body: Any,  # noqa: ANN401, ARG002 # pylint: disable=unused-argument
+        required: frozenset[str],  # noqa: ARG002 # pylint: disable=unused-argument
     ) -> Any | None:  # noqa: ANN401
         """Never short-circuit; Pydantic already enforced required fields.
 
