@@ -16,23 +16,24 @@ from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import Field, create_model
 
-from boardfarm3.api.routers import _async_response
 from boardfarm3.api.routers._generator import (
     _NONE_TYPE,
     _UNION_TYPE,
     SkippedMethod,
-    _annotation_to_field_type,
-    _coerce,
     _CoercionPlan,
     _is_serialisable,
     _parse_sphinx_params,
+)
+from boardfarm3.api.routers.adapter import (
+    DefaultAdapter,
+    Outcome,
+    ResponseAdapter,
+    Unsupported,
 )
 from boardfarm3.exceptions import DeviceNotFound
 
 if TYPE_CHECKING:
     from types import ModuleType
-
-    from fastapi.responses import JSONResponse
 
 _log = logging.getLogger(__name__)
 
@@ -122,11 +123,13 @@ class _ParamPlan:
     templates: tuple[type, ...]
 
 
-def _build_request_model(
+def _build_request_model(  # pylint: disable=too-many-locals
     fn_name: str,
     sig: inspect.Signature,
     docstring: str | None = None,
-) -> tuple[type, _CoercionPlan]:
+    *,
+    adapter: ResponseAdapter | None = None,
+) -> tuple[type, _CoercionPlan] | Unsupported:
     """Build a flat Pydantic model; device params become str name fields.
 
     Enum and tuple annotations in primitive parameters are substituted with
@@ -139,29 +142,36 @@ def _build_request_model(
     :type sig: inspect.Signature
     :param docstring: raw function docstring for Sphinx param extraction
     :type docstring: str | None
-    :return: (Pydantic model, coercion plan)
-    :rtype: tuple[type, _CoercionPlan]
+    :param adapter: response adapter controlling field types and extra fields;
+        None uses the native default
+    :type adapter: ResponseAdapter | None
+    :return: (Pydantic model, coercion plan), or Unsupported to skip the function
+    :rtype: tuple[type, _CoercionPlan] | Unsupported
     """
+    active = adapter or DefaultAdapter()
     fields: dict[str, Any] = {}
     coercions: dict[str, Any] = {}
     param_descriptions = _parse_sphinx_params(docstring)
     for name, param in sig.parameters.items():
         default = param.default if param.default is not inspect.Parameter.empty else ...
         if _classify_param(param.annotation) == "device":
+            # Device params are addressed by name; they are always a flat str
+            # and never pass through the adapter.
             fields[name] = (str, ... if default is ... else default)
+            continue
+        annotation = param.annotation
+        spec = active.field_spec_for(name, annotation, default)
+        if isinstance(spec, Unsupported):
+            return spec
+        field_type, field_default = spec
+        if field_type is not annotation:
+            coercions[name] = annotation
+        desc = param_descriptions.get(name, "")
+        if desc:
+            fields[name] = (field_type, Field(default=field_default, description=desc))
         else:
-            annotation = param.annotation
-            field_type = _annotation_to_field_type(annotation)
-            if field_type is not annotation:
-                coercions[name] = annotation
-            desc = param_descriptions.get(name, "")
-            if desc:
-                fields[name] = (
-                    field_type,
-                    Field(default=default, description=desc),
-                )
-            else:
-                fields[name] = (field_type, default)
+            fields[name] = (field_type, field_default)
+    fields.update(active.extra_fields())
     model_name = "".join(p.capitalize() for p in fn_name.split("_")) + "Request"
     return (
         create_model(model_name, **fields),  # type: ignore[call-overload]
@@ -169,11 +179,13 @@ def _build_request_model(
     )
 
 
-def _make_usecase_handler(
+def _make_usecase_handler(  # noqa: C901, PLR0913, RUF100
     fn: Any,  # noqa: ANN401
     request_model: type,
     plans: list[_ParamPlan],
     coercion_plan: _CoercionPlan,
+    required: frozenset[str],
+    adapter: ResponseAdapter,
 ) -> Any:  # noqa: ANN401
     """Build an async handler that resolves device params then calls *fn*.
 
@@ -189,77 +201,88 @@ def _make_usecase_handler(
     :type plans: list[_ParamPlan]
     :param coercion_plan: parameters requiring type coercion before the call
     :type coercion_plan: _CoercionPlan
+    :param required: names of parameters that had no default
+    :type required: frozenset[str]
+    :param adapter: response adapter controlling coercion, checks and body
+    :type adapter: ResponseAdapter
     :return: async FastAPI route handler
     :rtype: Any
     """
 
-    async def handler(
+    async def handler(  # pylint: disable=too-many-locals
         request: Request,
         body: Any,  # noqa: ANN401
         mode: str = "sync",
-    ) -> dict[str, Any] | JSONResponse:
-        session = request.app.state.session
-        dm = session.runtime.device_manager
-        if dm is None:
-            raise HTTPException(
-                status_code=int(HTTPStatus.CONFLICT),
-                detail="session is not booted — device_manager unavailable",
+    ) -> Any:  # noqa: ANN401
+        effective_mode = mode if adapter.supports_async else "sync"
+        short_circuit = adapter.check_request(body, required)
+        if short_circuit is not None:
+            return short_circuit
+        job = None
+        try:
+            session = request.app.state.session
+            dm = session.runtime.device_manager
+            if dm is None:
+                raise HTTPException(  # noqa: TRY301
+                    status_code=int(HTTPStatus.CONFLICT),
+                    detail="session is not booted — device_manager unavailable",
+                )
+            data = body.model_dump()
+            kwargs: dict[str, Any] = {}
+            for plan in plans:
+                if not plan.is_device:
+                    raw = data[plan.name]
+                    orig_ann = coercion_plan.coercions.get(plan.name)
+                    kwargs[plan.name] = (
+                        adapter.coerce(raw, orig_ann) if orig_ann is not None else raw
+                    )
+                    continue
+                name = data[plan.name]
+                try:
+                    device = dm.get_device_by_name(name)
+                except DeviceNotFound as exc:
+                    raise HTTPException(
+                        status_code=int(HTTPStatus.NOT_FOUND),
+                        detail=f"no device named {name!r}",
+                    ) from exc
+                if not isinstance(device, plan.templates):
+                    raise HTTPException(  # noqa: TRY301
+                        status_code=int(HTTPStatus.UNPROCESSABLE_ENTITY),
+                        detail=(
+                            f"device {name!r} is not one of "
+                            f"{[t.__name__ for t in plan.templates]}"
+                        ),
+                    )
+                kwargs[plan.name] = device
+            job = await session.queue.submit(lambda: fn(**kwargs), mode=effective_mode)
+            outcome = Outcome(
+                job=job, value=job.result, error=None, mode=effective_mode
             )
-        data = body.model_dump()
-        kwargs: dict[str, Any] = {}
-        for plan in plans:
-            if not plan.is_device:
-                raw = data[plan.name]
-                orig_ann = coercion_plan.coercions.get(plan.name)
-                kwargs[plan.name] = (
-                    _coerce(raw, orig_ann) if orig_ann is not None else raw
-                )
-                continue
-            name = data[plan.name]
-            try:
-                device = dm.get_device_by_name(name)
-            except DeviceNotFound as exc:
-                raise HTTPException(
-                    status_code=int(HTTPStatus.NOT_FOUND),
-                    detail=f"no device named {name!r}",
-                ) from exc
-            if not isinstance(device, plan.templates):
-                raise HTTPException(
-                    status_code=int(HTTPStatus.UNPROCESSABLE_ENTITY),
-                    detail=(
-                        f"device {name!r} is not one of "
-                        f"{[t.__name__ for t in plan.templates]}"
-                    ),
-                )
-            kwargs[plan.name] = device
-        job = await session.queue.submit(lambda: fn(**kwargs), mode=mode)
-        if mode == "async":
-            return _async_response(job)
-        return {"result": job.result}
+        except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            outcome = Outcome(job=job, value=None, error=exc, mode=effective_mode)
+        return adapter.respond(outcome)
 
     handler.__name__ = f"usecase_{fn.__name__}"
     handler.__qualname__ = handler.__name__
     handler.__doc__ = (fn.__doc__ or fn.__name__).strip().splitlines()[0]
-    handler.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
-        [
-            inspect.Parameter(
-                "request",
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=Request,
-            ),
-            inspect.Parameter(
-                "body",
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=request_model,
-            ),
+    params = [
+        inspect.Parameter(
+            "request", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=Request
+        ),
+        inspect.Parameter(
+            "body", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=request_model
+        ),
+    ]
+    if adapter.supports_async:
+        params.append(
             inspect.Parameter(
                 "mode",
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 default="sync",
                 annotation=Literal["sync", "async"],
-            ),
-        ]
-    )
+            )
+        )
+    handler.__signature__ = inspect.Signature(params)  # type: ignore[attr-defined]
     return handler
 
 
@@ -351,7 +374,8 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     module_name: str,
     fn_name: str,
     fn: Any,  # noqa: ANN401
-) -> SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan]:
+    adapter: ResponseAdapter,
+) -> SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str]]:
     """Validate a function and return its request model, param plans, and coercion plan.
 
     :param module_name: short module name for SkippedMethod records
@@ -360,8 +384,11 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     :type fn_name: str
     :param fn: the function object
     :type fn: Any
-    :return: SkippedMethod when unroutable, else (request_model, plans, coercion_plan)
-    :rtype: SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan]
+    :param adapter: response adapter controlling field types and extra fields
+    :type adapter: ResponseAdapter
+    :return: SkippedMethod when unroutable, else (request_model, plans,
+        coercion_plan, required parameter names)
+    :rtype: SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str]]
     """
     sig = _signature_or_skip(module_name, fn_name, fn)
     if isinstance(sig, SkippedMethod):
@@ -375,20 +402,34 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     if skipped is not None:
         return skipped
 
-    request_model, coercion_plan = _build_request_model(fn_name, sig, fn.__doc__)
-    return request_model, plans, coercion_plan
+    result = _build_request_model(fn_name, sig, fn.__doc__, adapter=adapter)
+    if isinstance(result, Unsupported):
+        return SkippedMethod(module_name, fn_name, result.reason)
+    request_model, coercion_plan = result
+    required = frozenset(
+        name
+        for name, p in sig.parameters.items()
+        if p.default is inspect.Parameter.empty
+    )
+    return request_model, plans, coercion_plan, required
 
 
-def generate_usecase_routers(
+def generate_usecase_routers(  # pylint: disable=too-many-locals
     modules: list[ModuleType],
+    *,
+    adapter: ResponseAdapter | None = None,
 ) -> tuple[list[APIRouter], list[SkippedMethod]]:
     """Generate FastAPI routers for the public functions of each module.
 
     :param modules: use-case modules to introspect
     :type modules: list[ModuleType]
+    :param adapter: response adapter controlling route generation and
+        dispatch; None uses the native default
+    :type adapter: ResponseAdapter | None
     :return: generated routers and skipped functions with reasons
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
+    active = adapter or DefaultAdapter()
     routers: list[APIRouter] = []
     all_skipped: list[SkippedMethod] = []
 
@@ -403,7 +444,7 @@ def generate_usecase_routers(
                 continue
             if getattr(fn, "__module__", "") != module.__name__:
                 continue  # skip imported symbols
-            result = _plan_function(short, fn_name, fn)
+            result = _plan_function(short, fn_name, fn, active)
             if isinstance(result, SkippedMethod):
                 all_skipped.append(result)
                 _log.warning(
@@ -413,8 +454,10 @@ def generate_usecase_routers(
                     result.reason,
                 )
                 continue
-            request_model, plans, coercion_plan = result
-            handler = _make_usecase_handler(fn, request_model, plans, coercion_plan)
+            request_model, plans, coercion_plan, required = result
+            handler = _make_usecase_handler(
+                fn, request_model, plans, coercion_plan, required, active
+            )
             router.post(f"/{fn_name}", status_code=200, response_model=None)(handler)
         routers.append(router)
 
