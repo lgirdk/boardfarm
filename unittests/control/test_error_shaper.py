@@ -91,3 +91,24 @@ def test_unstamped_bundle_still_returns_native_404() -> None:
             json={"session_id": "nope", "label": "x"},
         )
     assert resp.status_code == HTTP_NOT_FOUND
+
+
+def test_unstamped_route_empty_session_id_is_native_404_not_422() -> None:
+    """An empty-string session_id must behave like any other unknown id.
+
+    ``_dispatch_proxy_request`` distinguishes a genuinely absent session_id
+    (``None``, only reachable via ``optional_session_id``) from an empty
+    string supplied by the caller. On an unstamped route session_id is
+    required, so "" is a present-but-unknown value that should resolve via
+    ``registry.get("")`` -> None -> 404, not the 422 reserved for a missing
+    value.
+    """
+    plain = _flatten_bundle(
+        RouterBundle(namespace="probe", routers=[_plugin_router()]),
+    )
+    with _client(plain) as client:
+        resp = client.post(
+            "/probe/poke",
+            json={"session_id": "", "label": "x"},
+        )
+    assert resp.status_code == HTTP_NOT_FOUND
