@@ -321,7 +321,11 @@ def _make_request_model(  # pylint: disable=too-many-locals
             fields[name] = (field_type, Field(default=field_default, description=desc))
         else:
             fields[name] = (field_type, field_default)
-    fields.update(active.extra_fields())
+    extra = active.extra_fields()
+    collision = next((name for name in extra if name in fields), None)
+    if collision is not None:
+        return Unsupported(f"extra field collides with parameter {collision!r}")
+    fields.update(extra)
     model_name = (
         "".join(part.capitalize() for part in method_name.split("_")) + "Request"
     )
@@ -400,7 +404,10 @@ def _make_handler(  # noqa: PLR0913
 
             job = await session.queue.submit(_run, mode=effective_mode)
             outcome = Outcome(
-                job=job, value=job.result, error=None, mode=effective_mode
+                job=job,
+                value=job.result if effective_mode != "async" else None,
+                error=None,
+                mode=effective_mode,
             )
         except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             # Safe because DefaultAdapter.respond re-raises, preserving the

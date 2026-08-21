@@ -171,7 +171,11 @@ def _build_request_model(  # pylint: disable=too-many-locals
             fields[name] = (field_type, Field(default=field_default, description=desc))
         else:
             fields[name] = (field_type, field_default)
-    fields.update(active.extra_fields())
+    extra = active.extra_fields()
+    collision = next((name for name in extra if name in fields), None)
+    if collision is not None:
+        return Unsupported(f"extra field collides with parameter {collision!r}")
+    fields.update(extra)
     model_name = "".join(p.capitalize() for p in fn_name.split("_")) + "Request"
     return (
         create_model(model_name, **fields),  # type: ignore[call-overload]
@@ -256,7 +260,10 @@ def _make_usecase_handler(  # noqa: C901, PLR0913, RUF100
                 kwargs[plan.name] = device
             job = await session.queue.submit(lambda: fn(**kwargs), mode=effective_mode)
             outcome = Outcome(
-                job=job, value=job.result, error=None, mode=effective_mode
+                job=job,
+                value=job.result if effective_mode != "async" else None,
+                error=None,
+                mode=effective_mode,
             )
         except Exception as exc:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             outcome = Outcome(job=job, value=None, error=exc, mode=effective_mode)

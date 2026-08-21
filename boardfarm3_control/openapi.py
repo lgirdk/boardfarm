@@ -127,7 +127,7 @@ async def _dispatch_proxy_request(
         body: Any = kwargs["body"]
         request: Request = kwargs["request"]
         session_id: str | None = body.session_id
-        if not session_id:
+        if session_id is None:
             raise HTTPException(  # noqa: TRY301
                 status_code=422,
                 detail="session_id is required",
@@ -165,7 +165,9 @@ def _make_proxy_endpoint(
         The endpoint's body parameter **must** be named ``body`` (not ``_body`` or
         any other name) for ``session_id`` injection to take effect.  An endpoint
         whose body parameter has a different name will compile without error but
-        raise ``KeyError`` at call time.
+        raise ``KeyError`` at call time — unless the bundle supplies an
+        ``error_shaper``, in which case the ``KeyError`` is caught and shaped
+        like any other dispatch-edge failure (harder to diagnose).
 
     .. note::
         ``__bf_error_shaper__`` and ``__bf_optional_session_id__`` are read off
