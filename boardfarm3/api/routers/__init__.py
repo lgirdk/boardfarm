@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, TypeVar
@@ -25,6 +26,8 @@ T = TypeVar("T")
 _ENTRYPOINT_GROUP = "boardfarm_api"
 _HOOK_NAME = "boardfarm_add_api_routers"
 _log = logging.getLogger(__name__)
+
+DISABLED_PLUGINS_ENV = "BOARDFARM_API_DISABLED_PLUGINS"
 
 
 @dataclass
@@ -118,6 +121,19 @@ def _make_wrapper(bundle: RouterBundle) -> APIRouter:
     return wrapper
 
 
+def _disabled_plugins() -> frozenset[str]:
+    """Return the set of ``boardfarm_api`` plugin names to exclude.
+
+    Read from the ``BOARDFARM_API_DISABLED_PLUGINS`` environment variable as a
+    comma-separated list. Unset or empty disables nothing.
+
+    :return: entrypoint names to skip
+    :rtype: frozenset[str]
+    """
+    raw = os.environ.get(DISABLED_PLUGINS_ENV, "")
+    return frozenset(name.strip() for name in raw.split(",") if name.strip())
+
+
 def iter_plugin_bundles(
     plugin_manager: pluggy.PluginManager,
 ) -> Iterator[RouterBundle]:
@@ -131,16 +147,32 @@ def iter_plugin_bundles(
     turn into routes) costs only that plugin's bundles instead of aborting
     the whole hook call and discarding every other plugin's routes.
 
+    Plugins named in the ``BOARDFARM_API_DISABLED_PLUGINS`` environment
+    variable (comma-separated entrypoint names) are skipped entirely. The
+    control plane seeds this same variable into every agent it launches, so
+    the agent and the control plane cannot disagree about which plugins are
+    active.
+
     :param plugin_manager: manager with ``boardfarm_api`` plugins registered
     :type plugin_manager: pluggy.PluginManager
     :yield: bundles from every plugin that contributed without raising
     :rtype: Iterator[RouterBundle]
     """
-    registered = list(plugin_manager.list_name_plugin())
-    for plugin_name, plugin in registered:
+    all_registered = list(plugin_manager.list_name_plugin())
+    disabled = _disabled_plugins()
+    # The remove list is computed from ALL registered plugins, not just the
+    # active ones: a disabled plugin is still registered on the manager, so
+    # omitting it from remove_plugins would let its hookimpl fire inside
+    # another plugin's subset caller.
+    for plugin_name, plugin in all_registered:
+        if plugin_name in disabled:
+            _log.info("boardfarm_api plugin %r disabled by environment", plugin_name)
+            continue
         caller = plugin_manager.subset_hook_caller(
             _HOOK_NAME,
-            remove_plugins=[other for _, other in registered if other is not plugin],
+            remove_plugins=[
+                other for _, other in all_registered if other is not plugin
+            ],
         )
         try:
             bundle_lists: list[list[RouterBundle]] = caller()

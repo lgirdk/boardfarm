@@ -14,6 +14,7 @@ import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 
+from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.models import (
     SessionCreate,
@@ -47,6 +48,26 @@ _MAX_LIMIT = 100
 
 def _new_session_id() -> str:
     return f"s-{secrets.token_hex(4)}"
+
+
+def _agent_env(requested: dict[str, str] | None) -> dict[str, str] | None:
+    """Merge the control plane's plugin deny-list into an agent environment.
+
+    An explicit value in the session-create body wins, so a caller can opt a
+    single session out. ``DockerLauncher`` already spreads this mapping into the
+    container environment and ``ProcessLauncher`` inherits ``os.environ``, so
+    seeding here covers both launchers.
+
+    :param requested: agent_env from the session-create body, if any
+    :type requested: dict[str, str] | None
+    :return: the environment to pass to the launcher, or None when empty
+    :rtype: dict[str, str] | None
+    """
+    env = dict(requested or {})
+    disabled = os.environ.get(DISABLED_PLUGINS_ENV)
+    if disabled and DISABLED_PLUGINS_ENV not in env:
+        env[DISABLED_PLUGINS_ENV] = disabled
+    return env or None
 
 
 def create_app(  # noqa: C901, PLR0915
@@ -173,7 +194,7 @@ def create_app(  # noqa: C901, PLR0915
                 body.board_name,
                 image,
                 body.runtime_profile,
-                agent_env=body.agent_env or None,
+                agent_env=_agent_env(body.agent_env),
             )
         except Exception as exc:
             await lease.release(session_id)
