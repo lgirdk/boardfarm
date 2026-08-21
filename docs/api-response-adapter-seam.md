@@ -9,9 +9,10 @@ packages at the version you are reading this against.
 
 ## 1. What the seam is for
 
-`generate_template_routers` and `generate_usecase_routers` (both in
-`boardfarm3.api.routers`) are the two functions that turn Template ABC
-methods and `use_cases` functions into FastAPI routes. Historically they
+`generate_template_routers` (`boardfarm3.api.routers._generator`) and
+`generate_usecase_routers` (`boardfarm3.api.routers._usecase_generator`)
+are the two functions that turn Template ABC methods and `use_cases`
+functions into FastAPI routes. Historically they
 produced exactly one response shape. The response adapter seam lets a plugin
 pass its own `adapter` argument to either generator so it can reuse all of
 the introspection, skip-detection and dispatch machinery — the same code
@@ -158,8 +159,8 @@ place — there is nothing to strip.
 **(b) The dispatch `try` blocks catch `Exception`, not `BaseException`.**
 `except Exception as exc:` in both `_make_handler` and
 `_make_usecase_handler` deliberately excludes `asyncio.CancelledError` and
-`KeyboardInterrupt` (in Python 3.11+, `CancelledError` derives from
-`BaseException`, not `Exception`). A slow call cancelled by client
+`KeyboardInterrupt` (`asyncio.CancelledError` has derived from
+`BaseException`, not `Exception`, since Python 3.8). A slow call cancelled by client
 disconnect or a queue shutdown propagates normally instead of being
 captured into `outcome.error` and handed to `adapter.respond` — an adapter
 never sees, and cannot suppress or reshape, a cancellation.
@@ -192,21 +193,39 @@ into control-plane-only failures:
   `check_request`/`respond` logic — instead of failing a pre-handler 422
   from Pydantic.
 
-Both fields travel from the agent process, where the `RouterBundle` is
-built, to the control-plane process, where `_dispatch_proxy_request` and
-`_make_proxy_endpoint` (`boardfarm3_control/openapi.py`) need them, via a
-plain function-attribute channel: `_flatten_bundle` stamps
+Nothing crosses the process boundary to carry these fields. The runtime
+agent (`boardfarm3/api/app.py`, via
+`boardfarm3.api.routers.load_plugin_routers`) and the control plane
+(`boardfarm3_control.openapi.load_plugin_routers`) each build their own
+`pluggy.PluginManager`, each call `load_setuptools_entrypoints("boardfarm_api")`
+independently, and each execute the plugin's `boardfarm_add_api_routers()`
+hookimpl in their own process — so the plugin code that builds the
+`RouterBundle` runs twice, once per process, not once with the result
+shipped across. `_flatten_bundle` stamps
 `route.endpoint.__bf_error_shaper__` and
-`route.endpoint.__bf_optional_session_id__` directly onto each route's
-endpoint function, and `_make_proxy_endpoint` reads them back with
+`route.endpoint.__bf_optional_session_id__` onto each route's endpoint
+function entirely inside the control-plane process, using the
+`RouterBundle` its own local hookimpl call just returned; `_make_proxy_endpoint`
+then reads them back in that same process with
 `getattr(original_endpoint, "__bf_error_shaper__", None)` /
-`getattr(original_endpoint, "__bf_optional_session_id__", False)`. This
-exists because `create_app` also accepts `extra_routers` (used in tests)
-that were never built from a `RouterBundle` at all — those routers' endpoint
-functions simply lack the attributes, and `getattr`'s defaults keep them on
-the native, unshaped path. Threading the values through as an explicit
-parameter instead would require every caller of `create_app` to also carry a
-bundle, which `extra_routers` by design does not.
+`getattr(original_endpoint, "__bf_optional_session_id__", False)`. The
+plain function-attribute channel exists because `create_app` also accepts
+`extra_routers` (used in tests) that were never built from a `RouterBundle`
+at all — those routers' endpoint functions simply lack the attributes, and
+`getattr`'s defaults keep them on the native, unshaped path. Threading the
+values through as an explicit parameter instead would require every caller
+of `create_app` to also carry a bundle, which `extra_routers` by design
+does not.
+
+The practical consequence: a plugin package must be installed and
+importable in **both** the agent environment and the control-plane
+environment. If it is only installed on the agent side, the agent's own
+`load_setuptools_entrypoints` call finds it and the agent serves its
+routes directly, but the control plane's independent entrypoint scan never
+sees it — the plugin's routes are silently absent from the control
+plane's unified OpenAPI schema, no proxy route is registered for them at
+all, and `error_shaper`/`optional_session_id` never apply, because there is
+no control-plane-side `RouterBundle` to read them from in the first place.
 
 Two constraints this proxy layer imposes on any adapter-backed route, beyond
 the ordinary FastAPI route rules:
