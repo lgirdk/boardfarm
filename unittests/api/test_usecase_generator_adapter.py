@@ -123,3 +123,32 @@ def test_sync_only_adapter_removes_mode_from_use_case_signature() -> None:
         if getattr(r, "path", "").endswith("/simple")  # type: ignore[arg-type]
     )
     assert "mode" not in inspect.signature(route.endpoint).parameters  # type: ignore[attr-defined]
+
+
+class _CollidingAdapter(DefaultAdapter):
+    """Adapter whose extra field collides with a real parameter name."""
+
+    def extra_fields(self) -> dict[str, tuple[Any, Any]]:
+        """Inject a field that shadows ``simple``'s ``host`` param.
+
+        :return: the extra field mapping
+        :rtype: dict[str, tuple[Any, Any]]
+        """
+        return {"host": (str | None, None)}
+
+
+def test_extra_field_collision_skips_the_use_case_instead_of_clobbering() -> None:
+    sig = inspect.signature(_module().simple, eval_str=True)
+    result = _build_request_model("simple", sig, adapter=_CollidingAdapter())
+    assert isinstance(result, Unsupported)
+    assert result.reason == "extra field collides with parameter 'host'"
+
+
+def test_extra_field_collision_is_reported_by_the_use_case_generator() -> None:
+    routers, skipped = generate_usecase_routers(
+        [_module()], adapter=_CollidingAdapter()
+    )
+    paths = {r.path for r in routers[0].routes}  # type: ignore[attr-defined]
+    assert not any(p.endswith("/simple") for p in paths)
+    reasons = {(s.method, s.reason) for s in skipped}
+    assert ("simple", "extra field collides with parameter 'host'") in reasons

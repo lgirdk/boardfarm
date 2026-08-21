@@ -34,7 +34,7 @@ generators use internally whenever no adapter is supplied.
 |---|---|---|---|
 | `field_spec_for(name, annotation, default)` | The `(field_type, default)` pair used to build one field of the generated Pydantic request model | Substitutes API-friendly types via `_annotation_to_field_type` (`Enum` → `Literal[member_names]`, `tuple` → `list`), keeps the original default | To accept a different wire representation for a parameter, or to return `Unsupported(reason)` and exclude a method the native generator would otherwise route |
 | `coerce(value, annotation)` | How a JSON-decoded value is converted back to the real Python type before the target callable is invoked | Delegates to the shared `_coerce` helper (`Literal` name → `Enum` member, `list` → `tuple`, element-wise recursion, first-match `Union` handling) | If `field_spec_for` swaps in a different wire type, `coerce` must know how to invert it |
-| `extra_fields()` | Fields merged into every generated request model in addition to the method's own parameters | Returns `{}` — no extra fields | To carry adapter-specific metadata (e.g. a correlation id) on every request without changing the target method's signature |
+| `extra_fields()` | Fields merged into every generated request model in addition to the method's own parameters | Returns `{}` — no extra fields | To carry adapter-specific metadata (e.g. a correlation id) on every request without changing the target method's signature. A name that collides with a real parameter is not merged silently: the generator detects the collision and returns `Unsupported(reason)` for that method instead, so it is skipped and reported rather than shadowing the real parameter. |
 | `check_request(body, required)` | Whether to short-circuit before dispatch, and with what response | Returns `None` unconditionally — "Pydantic already enforced required fields" | To validate something Pydantic's type system cannot express (e.g. a required field that must be non-empty, or a value that must come from `extra_fields()`) and return an adapter-shaped error response without ever touching `queue.submit` |
 | `respond(outcome)` | The HTTP response built from a completed or failed call | Re-raises `outcome.error` when set (so the native path is unchanged end to end); otherwise returns the 202 job ticket for async mode or `{"result": outcome.value}` for sync | To wrap success and failure into the plugin's own contract, e.g. `{"status": ..., "payload": ..., "detail": ...}` |
 | `supports_async` (attribute, `bool`) | Whether the generated route accepts a `mode` query/body parameter and can run in async (queued) mode at all | `True` | To force every dispatch through the sync path only, e.g. because the plugin's contract has no notion of a job ticket |
@@ -100,8 +100,10 @@ Template ABC method):
      `adapter.extra_fields()` out of the dict**, then calls
      `getattr(target, method_name)(**data)`.
    - `job = await session.queue.submit(_run, mode=effective_mode)`.
-   - `outcome = Outcome(job=job, value=job.result, error=None,
-     mode=effective_mode)`.
+   - `outcome = Outcome(job=job, value=job.result if effective_mode !=
+     "async" else None, error=None, mode=effective_mode)`. In async mode the
+     job is still running when this line executes, so `job.result` is not
+     read; the seam's contract is that `outcome.value` is `None` for async.
 5. `except Exception as exc:` — `outcome = Outcome(job=job, value=None,
    error=exc, mode=effective_mode)`. `job` is whatever it was bound to when
    the exception hit (`None` if `_resolve` itself raised).
@@ -128,8 +130,9 @@ route per use-case function):
      exactly like the device-manager check above.
    - `job = await session.queue.submit(lambda: fn(**kwargs),
      mode=effective_mode)`.
-   - `outcome = Outcome(job=job, value=job.result, error=None,
-     mode=effective_mode)`.
+   - `outcome = Outcome(job=job, value=job.result if effective_mode !=
+     "async" else None, error=None, mode=effective_mode)` — same async-mode
+     guard as the template generator.
 5. `except Exception as exc:` — same shape as the template generator.
 6. `return adapter.respond(outcome)`.
 
@@ -233,7 +236,10 @@ the ordinary FastAPI route rules:
 1. The body parameter must be named `body`. `_make_proxy_endpoint` looks it
    up by that exact name (`p.name == "body"`) to inject `session_id`; an
    endpoint with a differently-named body parameter compiles without error
-   but raises `KeyError` the first time the control plane calls it.
+   but raises `KeyError` the first time the control plane calls it — unless
+   the bundle supplies an `error_shaper`, in which case the `KeyError` is
+   caught and shaped like any other dispatch-edge failure (harder to
+   diagnose).
 2. The Pydantic request model must survive reconstruction through
    `pydantic.create_model`. `_make_proxy_endpoint` rebuilds a `Proxied<Model>`
    model from `original_model.model_fields`, adding `session_id`. A field

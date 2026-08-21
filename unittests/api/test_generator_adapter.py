@@ -156,3 +156,29 @@ def test_absorbing_adapter_is_accepted_by_the_generator() -> None:
     routers, skipped = generate_template_routers([_Widget], adapter=_AbsorbingAdapter())
     assert any(path.endswith("/poke") for path in _routes(routers[0]))
     assert all(s.method != "poke" for s in skipped)
+
+
+class _CollidingAdapter(DefaultAdapter):
+    """Adapter whose extra field collides with a real parameter name."""
+
+    def extra_fields(self) -> dict[str, tuple[Any, Any]]:
+        """Inject a field that shadows ``_Widget.poke``'s ``label`` param.
+
+        :return: the extra field mapping
+        :rtype: dict[str, tuple[Any, Any]]
+        """
+        return {"label": (str | None, None)}
+
+
+def test_extra_field_collision_skips_the_method_instead_of_clobbering() -> None:
+    sig = inspect.signature(_Widget.poke, eval_str=True)
+    result = _make_request_model("poke", sig, adapter=_CollidingAdapter())
+    assert isinstance(result, Unsupported)
+    assert result.reason == "extra field collides with parameter 'label'"
+
+
+def test_extra_field_collision_is_reported_by_the_generator() -> None:
+    routers, skipped = generate_template_routers([_Widget], adapter=_CollidingAdapter())
+    assert not any(path.endswith("/poke") for path in _routes(routers[0]))
+    reasons = {(s.method, s.reason) for s in skipped}
+    assert ("poke", "extra field collides with parameter 'label'") in reasons

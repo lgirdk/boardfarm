@@ -69,6 +69,7 @@ nav:
     - Getting Started: getting_started.md
     - Architecture: architecture.md
     - Developer Docs: development.md
+    - Response Adapter Seam: api-response-adapter-seam.md
     - CHANGELOG: changelog.md
     - API Reference:
           - Templates: reference/templates.md
