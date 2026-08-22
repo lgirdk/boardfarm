@@ -179,3 +179,49 @@ def test_broken_plugin_does_not_suppress_healthy_plugin() -> None:
     assert len(routers) == 1
     route_paths = [r.path for r in routers[0].routes if isinstance(r, APIRoute)]
     assert any("healthy" in p and "bar" in p for p in route_paths)
+
+
+def test_dynamically_signatured_endpoint_keeps_its_body_model() -> None:
+    """A generator-style endpoint (literal ``body: Any`` + injected signature).
+
+    Regression: ``get_type_hints`` reads ``__annotations__`` (Any), which must
+    not clobber the concrete Pydantic model carried by ``__signature__`` —
+    doing so demoted the body to an untyped query parameter and skipped the
+    ``session_id`` injection entirely.
+    """
+    import inspect
+    from typing import Any
+
+    dyn_router = APIRouter()
+
+    async def handler(request: Any, body: Any) -> dict:  # noqa: ARG001
+        return {"ok": True}
+
+    from fastapi import Request
+
+    handler.__signature__ = inspect.Signature(  # type: ignore[attr-defined]
+        [
+            inspect.Parameter(
+                "request",
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=Request,
+            ),
+            inspect.Parameter(
+                "body",
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                annotation=_PingRequest,
+            ),
+        ]
+    )
+    dyn_router.post("/templates/fake/dyn")(handler)
+
+    app = create_app(FakeLauncher(), {"prplos": "img:latest"}, extra_routers=[dyn_router])
+    client = TestClient(app)
+    op = client.get("/openapi.json").json()["paths"]["/templates/fake/dyn"]["post"]
+    assert "requestBody" in op, "body model was clobbered to a query parameter"
+    schema_str = str(op["requestBody"])
+    assert "Proxied" in schema_str or "host" in str(
+        client.get("/openapi.json").json()["components"]["schemas"]
+    )
+    body_params = [p for p in op.get("parameters", []) if p["name"] == "body"]
+    assert not body_params, "body must not appear as a query parameter"

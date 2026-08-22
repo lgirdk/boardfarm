@@ -193,9 +193,15 @@ def _make_proxy_endpoint(
         resolved_hints = {}
 
     sig = inspect.signature(original_endpoint)
+    # Resolve only STRING (from __future__ import annotations) annotations.
+    # get_type_hints() reads __annotations__, which for dynamically-signatured
+    # endpoints (the route generators inject __signature__ onto a handler whose
+    # literal annotation is ``body: Any``) disagrees with the signature; blindly
+    # replacing a concrete annotation with the hint clobbers the Pydantic body
+    # model and demotes it to an untyped query parameter.
     existing_params: list[inspect.Parameter] = [
         p.replace(annotation=resolved_hints[p.name])
-        if p.name in resolved_hints and p.annotation is not inspect.Parameter.empty
+        if isinstance(p.annotation, str) and p.name in resolved_hints
         else p
         for p in sig.parameters.values()
     ]
