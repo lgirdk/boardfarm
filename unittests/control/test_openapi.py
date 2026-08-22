@@ -215,7 +215,9 @@ def test_dynamically_signatured_endpoint_keeps_its_body_model() -> None:
     )
     dyn_router.post("/templates/fake/dyn")(handler)
 
-    app = create_app(FakeLauncher(), {"prplos": "img:latest"}, extra_routers=[dyn_router])
+    app = create_app(
+        FakeLauncher(), {"prplos": "img:latest"}, extra_routers=[dyn_router]
+    )
     client = TestClient(app)
     op = client.get("/openapi.json").json()["paths"]["/templates/fake/dyn"]["post"]
     assert "requestBody" in op, "body model was clobbered to a query parameter"
@@ -225,3 +227,33 @@ def test_dynamically_signatured_endpoint_keeps_its_body_model() -> None:
     )
     body_params = [p for p in op.get("parameters", []) if p["name"] == "body"]
     assert not body_params, "body must not appear as a query parameter"
+
+
+def test_docs_only_responses_survive_the_mirror() -> None:
+    """Extra ``responses`` docs must survive proxy re-registration.
+
+    The generators attach 200/202 docs models via the route's ``responses``
+    mapping; both mirror layers must forward it.
+    """
+    from pydantic import create_model
+
+    doc_router = APIRouter()
+    result_model = create_model("MirrorResult", result=(bool, ...))
+    ticket_model = create_model("MirrorTicket", job_id=(str, ...), state=(str, ...))
+
+    @doc_router.post(
+        "/templates/fake/doc",
+        response_model=None,
+        responses={200: {"model": result_model}, 202: {"model": ticket_model}},
+    )
+    async def documented(body: _PingRequest) -> dict:  # noqa: ARG001
+        return {"result": True}
+
+    app = create_app(
+        FakeLauncher(), {"prplos": "img:latest"}, extra_routers=[doc_router]
+    )
+    spec = TestClient(app).get("/openapi.json").json()
+    op = spec["paths"]["/templates/fake/doc"]["post"]
+    r200 = op["responses"]["200"]["content"]["application/json"]["schema"]
+    assert "$ref" in r200, "200 docs model was dropped by the mirror"
+    assert "202" in op["responses"], "202 docs model was dropped by the mirror"
