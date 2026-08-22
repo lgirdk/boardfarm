@@ -65,6 +65,7 @@ def _flatten_bundle(bundle: RouterBundle) -> APIRouter:
                 summary=route.summary,
                 description=route.description,
                 status_code=route.status_code,
+                responses=route.responses,
             )
     return flat
 
@@ -281,5 +282,6 @@ def register_plugin_routes(
                 tags=list(route.tags) if route.tags else None,
                 summary=route.summary,
                 description=route.description,
+                responses=route.responses,
             )
         app.include_router(wrapper_router)
