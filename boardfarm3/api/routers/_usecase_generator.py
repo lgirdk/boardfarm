@@ -23,6 +23,7 @@ from boardfarm3.api.routers._generator import (
     _CoercionPlan,
     _is_serialisable,
     _parse_sphinx_params,
+    _response_docs,
 )
 from boardfarm3.api.routers.adapter import (
     DefaultAdapter,
@@ -382,7 +383,7 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     fn_name: str,
     fn: Any,  # noqa: ANN401
     adapter: ResponseAdapter,
-) -> SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str]]:
+) -> SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str], Any]:
     """Validate a function and return its request model, param plans, and coercion plan.
 
     :param module_name: short module name for SkippedMethod records
@@ -395,7 +396,7 @@ def _plan_function(  # pylint: disable=too-many-return-statements
     :type adapter: ResponseAdapter
     :return: SkippedMethod when unroutable, else (request_model, plans,
         coercion_plan, required parameter names)
-    :rtype: SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str]]
+    :rtype: SkippedMethod | tuple[type, list[_ParamPlan], _CoercionPlan, frozenset[str], Any]
     """
     sig = _signature_or_skip(module_name, fn_name, fn)
     if isinstance(sig, SkippedMethod):
@@ -418,7 +419,7 @@ def _plan_function(  # pylint: disable=too-many-return-statements
         for name, p in sig.parameters.items()
         if p.default is inspect.Parameter.empty
     )
-    return request_model, plans, coercion_plan, required
+    return request_model, plans, coercion_plan, required, sig.return_annotation
 
 
 def generate_usecase_routers(  # pylint: disable=too-many-locals
@@ -461,11 +462,14 @@ def generate_usecase_routers(  # pylint: disable=too-many-locals
                     result.reason,
                 )
                 continue
-            request_model, plans, coercion_plan, required = result
+            request_model, plans, coercion_plan, required, ret = result
             handler = _make_usecase_handler(
                 fn, request_model, plans, coercion_plan, required, active
             )
-            router.post(f"/{fn_name}", status_code=200, response_model=None)(handler)
+            docs = _response_docs(fn_name, ret, active)
+            router.post(
+                f"/{fn_name}", status_code=200, response_model=None, responses=docs
+            )(handler)
         routers.append(router)
 
     return routers, all_skipped

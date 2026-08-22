@@ -215,6 +215,59 @@ def _parse_sphinx_params(docstring: str | None) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
+# Response documentation (docs-only; runtime bodies are built by the adapter)
+# ---------------------------------------------------------------------------
+
+_ASYNC_TICKET_MODEL = create_model(  # documents the 202 mode=async ticket
+    "AsyncJobTicket",
+    job_id=(str, ...),
+    state=(str, ...),
+)
+
+
+def _response_docs(
+    method_name: str,
+    return_annotation: Any,  # noqa: ANN401
+    adapter: ResponseAdapter,
+) -> dict[int | str, dict[str, Any]] | None:
+    """Build docs-only ``responses`` metadata for a generated route.
+
+    Only the exact native :class:`DefaultAdapter` gets documentation: a
+    custom adapter defines its own response contract, and these models
+    would misdescribe it. Attached via the route's ``responses`` mapping
+    with ``response_model=None``, so FastAPI renders the schemas without
+    ever validating or serialising through them.
+
+    :param method_name: dispatched method name, used for the model name
+    :type method_name: str
+    :param return_annotation: the method's return annotation
+    :type return_annotation: Any
+    :param adapter: active response adapter
+    :type adapter: ResponseAdapter
+    :return: responses mapping for the route decorator, or None
+    :rtype: dict[int | str, dict[str, Any]] | None
+    """
+    if type(adapter) is not DefaultAdapter:  # pylint: disable=unidiomatic-typecheck
+        return None
+    result_type = _annotation_to_field_type(return_annotation)
+    if return_annotation is None or return_annotation is _NONE_TYPE:
+        result_type = None
+    doc_model = create_model(
+        "".join(part.capitalize() for part in method_name.split("_")) + "Result",
+        result=(result_type, ...),
+    )
+    docs: dict[int | str, dict[str, Any]] = {
+        200: {"model": doc_model, "description": "Completed (mode=sync)."},
+    }
+    if adapter.supports_async:
+        docs[202] = {
+            "model": _ASYNC_TICKET_MODEL,
+            "description": "Queued (mode=async); poll GET /jobs/{job_id}.",
+        }
+    return docs
+
+
+# ---------------------------------------------------------------------------
 # SkippedMethod
 # ---------------------------------------------------------------------------
 
@@ -512,7 +565,7 @@ def _process_member(  # pylint: disable=too-many-return-statements  # noqa: PLR0
     name: str,
     obj: object,
     adapter: ResponseAdapter,
-) -> SkippedMethod | tuple[type, _CoercionPlan, frozenset[str]] | None:
+) -> SkippedMethod | tuple[type, _CoercionPlan, frozenset[str], Any] | None:
     """Process a single class member to determine route generation outcome.
 
     :param introspect: Template ABC class being introspected
@@ -526,7 +579,7 @@ def _process_member(  # pylint: disable=too-many-return-statements  # noqa: PLR0
     :return: a (Pydantic request model, coercion plan, required parameter
         names) tuple to register a route for, a SkippedMethod, or None to
         skip silently
-    :rtype: SkippedMethod | tuple[type, _CoercionPlan, frozenset[str]] | None
+    :rtype: SkippedMethod | tuple[type, _CoercionPlan, frozenset[str], Any] | None
     """
     raw = inspect.getattr_static(introspect, name, None)
 
@@ -560,7 +613,7 @@ def _process_member(  # pylint: disable=too-many-return-statements  # noqa: PLR0
         for p_name, p in sig.parameters.items()
         if p_name != "self" and p.default is inspect.Parameter.empty
     )
-    return request_model, coercion_plan, required
+    return request_model, coercion_plan, required, sig.return_annotation
 
 
 # ---------------------------------------------------------------------------
@@ -648,7 +701,7 @@ def _register_member(  # pylint: disable=too-many-return-statements
         )
         return
 
-    request_model, coercion_plan, required = result
+    request_model, coercion_plan, required, return_annotation = result
     handler = _make_handler(
         spec.resolve_as,
         spec.introspect,
@@ -661,8 +714,13 @@ def _register_member(  # pylint: disable=too-many-return-statements
     )
     build.seen.add(name)
     router = build.router
-    router.post(f"/{name}", status_code=200, response_model=None)(handler)
-    router.post(f"/{{index}}/{name}", status_code=200, response_model=None)(handler)
+    docs = _response_docs(name, return_annotation, build.adapter)
+    router.post(f"/{name}", status_code=200, response_model=None, responses=docs)(
+        handler
+    )
+    router.post(
+        f"/{{index}}/{name}", status_code=200, response_model=None, responses=docs
+    )(handler)
 
 
 def generate_template_routers(
