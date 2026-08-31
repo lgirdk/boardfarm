@@ -546,7 +546,7 @@ def test_routerbundle_wraps_routers_under_namespace() -> None:
     assert skipped == []
 ```
 
-Run: `pytest unittests/api/test_generator.py::test_routerbundle_wraps_routers_under_namespace -v`  
+Run: `pytest unittests/api/test_generator.py::test_routerbundle_wraps_routers_under_namespace -v`
 Expected: FAIL (`RouterBundle` not importable yet).
 
 - [ ] **Step 2: Update `boardfarm3/api/routers/__init__.py`**

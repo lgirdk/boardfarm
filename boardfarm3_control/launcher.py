@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import io
 import json
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 
-_DEFAULT_STATE_FILE = "/tmp/boardfarm-control-sessions.json"
+_DEFAULT_STATE_FILE = "/tmp/boardfarm-control-sessions.json"  # noqa: S108
 # Matches boardfarm3.api.logs's default artifact root. Duplicated here rather
 # than imported: boardfarm3_control is a separate deployable from boardfarm3
 # and must not take on a hard runtime dependency on the agent package to
@@ -153,7 +154,7 @@ class FakeLauncher:
         :return: fake agent info
         :rtype: AgentInfo
         """
-        from boardfarm3_control.models import AgentInfo
+        from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
         port = self._next_port
         self._next_port += 1
@@ -246,7 +247,7 @@ def _finished_at(container: Any) -> float | None:  # noqa: ANN401
     most microseconds).
 
     :param container: docker-py container object
-    :type container: typing.Any
+    :type container: Any
     :return: Unix timestamp, or None when absent, zero, or unparseable
     :rtype: float | None
     """
@@ -302,9 +303,11 @@ class ProcessLauncher:
         tmp = Path(str(path) + ".tmp")
         try:
             tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-            os.replace(tmp, path)
+            tmp.replace(path)
         except OSError as exc:
-            _log.warning("boardfarm control: could not persist state file %s: %s", path, exc)
+            _log.warning(
+                "boardfarm control: could not persist state file %s: %s", path, exc
+            )
 
     async def start(
         self,
@@ -329,7 +332,7 @@ class ProcessLauncher:
         :return: agent info with the subprocess pid as container_id
         :rtype: AgentInfo
         """
-        from boardfarm3_control.models import AgentInfo
+        from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
         host_port = _free_port()
         log_dir = (
@@ -529,7 +532,6 @@ class ProcessLauncher:
             path.unlink(missing_ok=True)
             return
 
-        loop = asyncio.get_running_loop()
         for entry in data.values():
             if not isinstance(entry, dict):
                 continue
@@ -540,28 +542,33 @@ class ProcessLauncher:
                 os.kill(pid, 0)  # probe — raises ProcessLookupError if dead
             except (ProcessLookupError, PermissionError):
                 continue  # already gone
-
-            # PID is alive — terminate it
-            try:
-                os.kill(pid, signal.SIGTERM)
-            except ProcessLookupError:
-                continue
-
-            deadline = loop.time() + 5.0
-            while loop.time() < deadline:
-                try:
-                    os.kill(pid, 0)
-                except ProcessLookupError:
-                    break
-                await asyncio.sleep(0.1)
-            else:
-                try:
-                    os.kill(pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
+            await self._terminate_pid(pid)
 
         # Rewrite state file — all orphans cleaned up, _sessions is empty
         self._save_state()
+
+    @staticmethod
+    async def _terminate_pid(pid: int) -> None:
+        """Send SIGTERM to a live PID, wait up to 5 s, then SIGKILL it.
+
+        :param pid: process id to terminate
+        """
+        loop = asyncio.get_running_loop()
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+
+        deadline = loop.time() + 5.0
+        while loop.time() < deadline:
+            try:
+                os.kill(pid, 0)
+            except ProcessLookupError:
+                break
+            await asyncio.sleep(0.1)
+        else:
+            with contextlib.suppress(ProcessLookupError):
+                os.kill(pid, signal.SIGKILL)
 
 
 class DockerLauncher:
@@ -579,7 +586,7 @@ class DockerLauncher:
         :param client: docker.DockerClient instance; created from env if None
         :type client: object | None
         """
-        import docker as _docker
+        import docker as _docker  # noqa: PLC0415
 
         self._client = client or _docker.from_env()
 
@@ -606,7 +613,7 @@ class DockerLauncher:
         :return: agent container info
         :rtype: AgentInfo
         """
-        from boardfarm3_control.models import AgentInfo
+        from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
         host_port = _free_port()
         created_at = time.time()
@@ -754,7 +761,7 @@ class DockerLauncher:
         :return: agent infos rebuilt from Docker container labels
         :rtype: list[AgentInfo]
         """
-        from boardfarm3_control.models import AgentInfo
+        from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
         loop = asyncio.get_running_loop()
         containers = await loop.run_in_executor(

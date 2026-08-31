@@ -85,10 +85,10 @@ def load_plugin_routers() -> list[APIRouter]:
     :rtype: list[APIRouter]
     """
     try:
-        import pluggy
+        import pluggy  # noqa: PLC0415
 
-        from boardfarm3.api import hookspecs as api_hookspecs
-        from boardfarm3.api.routers import iter_plugin_bundles
+        from boardfarm3.api import hookspecs as api_hookspecs  # noqa: PLC0415
+        from boardfarm3.api.routers import iter_plugin_bundles  # noqa: PLC0415
 
         pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         pm.add_hookspecs(api_hookspecs)
@@ -111,6 +111,7 @@ async def _dispatch_proxy_request(
     Split out of :func:`_make_proxy_endpoint` so the control-plane dispatch
     edge (unknown session, missing ``session_id``) has its own complexity
     budget, separate from the signature-rewriting machinery around it.
+    When *shaper* is None any dispatch failure is re-raised unchanged.
 
     :param kwargs: the proxy endpoint's call-time keyword arguments; must
         contain ``body`` and ``request``
@@ -122,7 +123,7 @@ async def _dispatch_proxy_request(
     :type shaper: Callable[[Exception], Any] | None
     :return: the downstream response, or the shaper's response on failure
     :rtype: Any
-    :raises Exception: whatever was raised, when *shaper* is None
+    :raises HTTPException: when ``session_id`` is missing or unknown
     """
     try:
         body: Any = kwargs["body"]
