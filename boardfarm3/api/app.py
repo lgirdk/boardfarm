@@ -175,7 +175,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     # Discover and mount plugin-contributed routers (template methods, use cases, etc.).
     # load_plugin_routers() uses a short-lived PluginManager for the boardfarm_api
     # entrypoint group — separate from the process-global boardfarm PluginManager.
-    from boardfarm3.api.routers import load_plugin_routers  # pylint: disable=import-outside-toplevel
+    from boardfarm3.api.routers import (  # noqa: PLC0415
+        load_plugin_routers,  # pylint: disable=import-outside-toplevel
+    )
 
     _plugin_routers, _skipped = load_plugin_routers()
     for _router in _plugin_routers:

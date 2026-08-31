@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -10,6 +10,9 @@ from boardfarm3_control.launcher import FakeLauncher
 from boardfarm3_control.reaper import reap_once
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _DAY = 86_400
 

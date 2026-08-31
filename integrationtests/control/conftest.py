@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING, AsyncIterator
+from typing import TYPE_CHECKING
 
 import httpx
 import pytest
@@ -14,6 +14,8 @@ from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import ProcessLauncher
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from boardfarm3_control.models import AgentInfo
 
 _PREWARM_TIMEOUT = 20.0
@@ -138,7 +140,7 @@ async def control_server() -> AsyncIterator[str]:
     config = uvicorn.Config(app, host="127.0.0.1", port=0, log_level="warning")
     server = uvicorn.Server(config)
     serve_task = asyncio.create_task(server.serve())
-    while not server.started:
+    while not server.started:  # noqa: ASYNC110 — uvicorn exposes no readiness Event
         await asyncio.sleep(0.02)
     port = server.servers[0].sockets[0].getsockname()[1]
     try:

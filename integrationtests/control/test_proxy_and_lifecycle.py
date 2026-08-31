@@ -89,7 +89,7 @@ async def test_board_conflict_returns_409(
     session: str,
 ) -> None:
     """POST /sessions with the same board while one session is active returns 409."""
-    from integrationtests.control.conftest import _MINIMAL_SESSION  # noqa: PLC0415
+    from integrationtests.control.conftest import _MINIMAL_SESSION
 
     resp = await control_client.post("/sessions", json=_MINIMAL_SESSION)
     assert resp.status_code == 409

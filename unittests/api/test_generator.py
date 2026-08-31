@@ -533,7 +533,7 @@ def test_make_request_model_enum_field_is_literal() -> None:
     import inspect
 
     sig = inspect.signature(_ABCWithEnum.move, eval_str=True)
-    model, plan = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
+    model, _plan = _make_request_model("move", sig, _ABCWithEnum.move.__doc__)
     fields = model.model_fields
     assert "direction" in fields
     ann = fields["direction"].annotation

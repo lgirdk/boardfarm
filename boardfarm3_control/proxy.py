@@ -109,8 +109,7 @@ async def _forward_stream(  # noqa: PLR0913
     :type client: httpx.AsyncClient
     :param owns_client: True when this call created *client* and must close it
     :type owns_client: bool
-    :return: response body chunks, plus a trailing error frame on failure
-    :rtype: collections.abc.AsyncIterator[bytes]
+    :yield: response body chunks, plus a trailing error frame on failure
     """
     try:
         async for chunk in response.aiter_bytes():

@@ -7,13 +7,15 @@ import json
 import os
 import sys
 import tarfile
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 from boardfarm3_control.launcher import DockerLauncher, FakeLauncher, ProcessLauncher
 from boardfarm3_control.models import AgentInfo
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def test_agent_info_has_pid_and_agent_url() -> None:

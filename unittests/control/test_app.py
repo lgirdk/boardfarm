@@ -40,10 +40,16 @@ def _make_client(
 
 @respx.mock
 def test_post_sessions_happy_path() -> None:
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
+    respx.get(_AGENT_HEALTH).mock(
+        return_value=httpx.Response(200, json={"state": "ready"})
+    )
+    respx.post(_AGENT_CONFIG).mock(
+        return_value=httpx.Response(200, json={"state": "configured"})
+    )
     respx.post(_AGENT_BOOT).mock(
-        return_value=httpx.Response(202, json={"boot_job_id": "j-abc", "state": "booting"}),
+        return_value=httpx.Response(
+            202, json={"boot_job_id": "j-abc", "state": "booting"}
+        ),
     )
     client = _make_client()
     resp = client.post(
@@ -53,7 +59,7 @@ def test_post_sessions_happy_path() -> None:
     assert resp.status_code == 202
     data = resp.json()
     assert data["board_name"] == "board-1"
-    assert data["state"] == "ready"        # default skip_boot → ready
+    assert data["state"] == "ready"  # default skip_boot → ready
     assert data["booted"] is False
     assert data["agent_url"].startswith("http://localhost:")
 
@@ -75,7 +81,10 @@ def test_post_sessions_board_conflict_returns_409() -> None:
     launcher = FakeLauncher()
     client = _make_client(launcher)
     # First session succeeds
-    client.post("/sessions", json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}})
+    client.post(
+        "/sessions",
+        json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}},
+    )
     # Second session on same board must 409
     resp = client.post(
         "/sessions",
@@ -98,14 +107,19 @@ def test_get_sessions_empty() -> None:
 def test_get_sessions_returns_session_state() -> None:
     respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={}))
     respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
-    respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={"boot_job_id": "j-1"}))
+    respx.post(_AGENT_BOOT).mock(
+        return_value=httpx.Response(202, json={"boot_job_id": "j-1"})
+    )
     # Fan-out health call for list
     respx.get(_AGENT_SESSION).mock(
         return_value=httpx.Response(200, json={"state": "ready", "last_activity": 1.0}),
     )
     launcher = FakeLauncher()
     client = _make_client(launcher)
-    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    client.post(
+        "/sessions",
+        json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
+    )
     resp = client.get("/sessions")
     assert resp.status_code == 200
     sessions = resp.json()["sessions"]
@@ -121,7 +135,10 @@ def test_get_sessions_unreachable_agent() -> None:
     respx.get(_AGENT_SESSION).mock(side_effect=httpx.ConnectError("down"))
     launcher = FakeLauncher()
     client = _make_client(launcher)
-    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    client.post(
+        "/sessions",
+        json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
+    )
     resp = client.get("/sessions")
     sessions = resp.json()["sessions"]
     assert sessions[0]["state"] == "unreachable"
@@ -148,14 +165,17 @@ def test_delete_session_happy_path(
     respx.get(re.compile(r"http://localhost:\d+/diagnostics/bundle")).mock(
         return_value=httpx.Response(200, content=b"BUNDLE"),
     )
-    respx.delete(_AGENT_DELETE).mock(return_value=httpx.Response(200, json={"status": "released"}))
+    respx.delete(_AGENT_DELETE).mock(
+        return_value=httpx.Response(200, json={"status": "released"})
+    )
     launcher = FakeLauncher()
     app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
     # delete_session uses the pooled app.state.http client, which the
     # lifespan only creates while the TestClient is used as a context manager.
     with TestClient(app, raise_server_exceptions=True) as client:
         create_resp = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         sid = create_resp.json()["session_id"]
         resp = client.delete(f"/sessions/{sid}")
@@ -183,7 +203,8 @@ def test_delete_session_with_unreachable_agent_still_releases(
     app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
     with TestClient(app, raise_server_exceptions=True) as client:
         create_resp = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         sid = create_resp.json()["session_id"]
         resp = client.delete(f"/sessions/{sid}")
@@ -193,7 +214,8 @@ def test_delete_session_with_unreachable_agent_still_releases(
         respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
         respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
         resp2 = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         assert resp2.status_code == 202
 
@@ -219,7 +241,8 @@ def test_post_sessions_boot_transport_failure_releases_resources(
     # TestClient runs its lifespan, so it must be used as a context manager.
     with TestClient(app, raise_server_exceptions=True) as client:
         resp = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         assert resp.status_code == 503
         # Board is released — same board can be acquired again immediately
@@ -227,7 +250,8 @@ def test_post_sessions_boot_transport_failure_releases_resources(
         respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
         respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
         resp2 = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         assert resp2.status_code == 202
 
@@ -249,7 +273,8 @@ def test_post_sessions_boot_rejected_releases_resources(
     app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
     with TestClient(app, raise_server_exceptions=True) as client:
         resp = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         assert resp.status_code == 502
         # Board is released — same board can be acquired again immediately
@@ -257,7 +282,8 @@ def test_post_sessions_boot_rejected_releases_resources(
         respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={}))
         respx.post(_AGENT_BOOT).mock(return_value=httpx.Response(202, json={}))
         resp2 = client.post(
-            "/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}}
+            "/sessions",
+            json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
         )
         assert resp2.status_code == 202
 
@@ -301,8 +327,12 @@ def test_session_create_boot_true_accepted() -> None:
 @respx.mock
 def test_post_sessions_default_skip_boot_returns_ready() -> None:
     """Default boot=False must pass skip_boot=true in config options and return state ready."""
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
+    respx.get(_AGENT_HEALTH).mock(
+        return_value=httpx.Response(200, json={"state": "ready"})
+    )
+    respx.post(_AGENT_CONFIG).mock(
+        return_value=httpx.Response(200, json={"state": "configured"})
+    )
     respx.post(_AGENT_BOOT).mock(
         return_value=httpx.Response(202, json={"boot_job_id": "j-skip"}),
     )
@@ -317,9 +347,12 @@ def test_post_sessions_default_skip_boot_returns_ready() -> None:
     assert data["booted"] is False
 
     # Confirm skip_boot=true was set in the config options, not the boot URL
-    config_call = next(c for c in respx.calls if "/session/config" in str(c.request.url))
+    config_call = next(
+        c for c in respx.calls if "/session/config" in str(c.request.url)
+    )
     assert config_call.request.content
     import json as _json
+
     body = _json.loads(config_call.request.content)
     assert body["options"].get("skip_boot") is True
     boot_call = next(c for c in respx.calls if "/session/boot" in str(c.request.url))
@@ -329,15 +362,24 @@ def test_post_sessions_default_skip_boot_returns_ready() -> None:
 @respx.mock
 def test_post_sessions_boot_true_returns_booting() -> None:
     """boot=True must not inject skip_boot into config options and return state booting."""
-    respx.get(_AGENT_HEALTH).mock(return_value=httpx.Response(200, json={"state": "ready"}))
-    respx.post(_AGENT_CONFIG).mock(return_value=httpx.Response(200, json={"state": "configured"}))
+    respx.get(_AGENT_HEALTH).mock(
+        return_value=httpx.Response(200, json={"state": "ready"})
+    )
+    respx.post(_AGENT_CONFIG).mock(
+        return_value=httpx.Response(200, json={"state": "configured"})
+    )
     respx.post(_AGENT_BOOT).mock(
         return_value=httpx.Response(202, json={"boot_job_id": "j-full"}),
     )
     client = _make_client()
     resp = client.post(
         "/sessions",
-        json={"board_name": "board-1", "runtime_profile": "prplos", "payload": {}, "boot": True},
+        json={
+            "board_name": "board-1",
+            "runtime_profile": "prplos",
+            "payload": {},
+            "boot": True,
+        },
     )
     assert resp.status_code == 202
     data = resp.json()
@@ -345,7 +387,10 @@ def test_post_sessions_boot_true_returns_booting() -> None:
     assert data["booted"] is False
 
     import json as _json
-    config_call = next(c for c in respx.calls if "/session/config" in str(c.request.url))
+
+    config_call = next(
+        c for c in respx.calls if "/session/config" in str(c.request.url)
+    )
     body = _json.loads(config_call.request.content)
     assert body["options"].get("skip_boot") is not True
     boot_call = next(c for c in respx.calls if "/session/boot" in str(c.request.url))
@@ -381,7 +426,10 @@ def test_get_sessions_booted_true_when_agent_reports_booted_true() -> None:
     )
     launcher = FakeLauncher()
     client = _make_client(launcher)
-    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    client.post(
+        "/sessions",
+        json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
+    )
     resp = client.get("/sessions")
     sessions = resp.json()["sessions"]
     assert sessions[0]["booted"] is True
@@ -398,7 +446,10 @@ def test_get_sessions_booted_false_when_agent_reports_ready() -> None:
     )
     launcher = FakeLauncher()
     client = _make_client(launcher)
-    client.post("/sessions", json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}})
+    client.post(
+        "/sessions",
+        json={"board_name": "b1", "runtime_profile": "prplos", "payload": {}},
+    )
     resp = client.get("/sessions")
     sessions = resp.json()["sessions"]
     assert sessions[0]["booted"] is False
@@ -455,7 +506,8 @@ def test_proxy_route_uses_pooled_client_without_closing_it() -> None:
 
 @pytest.mark.asyncio
 async def test_shutdown_leaves_running_agents_alone(
-    fake_launcher: FakeLauncher, profiles: dict[str, str],
+    fake_launcher: FakeLauncher,
+    profiles: dict[str, str],
 ) -> None:
     """A control plane restart must not destroy live sessions.
 
@@ -509,7 +561,8 @@ async def test_dead_sessions_do_not_reacquire_a_lease(
 
 @respx.mock
 def test_list_sessions_forwards_liveness(
-    fake_launcher: FakeLauncher, profiles: dict[str, str],
+    fake_launcher: FakeLauncher,
+    profiles: dict[str, str],
 ) -> None:
     """A list view must show progress without a round trip per session.
 

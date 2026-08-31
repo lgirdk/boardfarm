@@ -1655,7 +1655,7 @@ git check-ignore -v .claude/plugins/boardfarm-dev/.cache/interview-defaults.json
 rm -rf .claude/plugins/boardfarm-dev/.cache
 ```
 
-Expected output: `.gitignore:44:.cache	.claude/plugins/boardfarm-dev/.cache/interview-defaults.json`
+Expected output: `.gitignore:44:.cache  .claude/plugins/boardfarm-dev/.cache/interview-defaults.json`
 — confirms the pre-existing bare `.cache` pattern already covers the new
 cache file, so no `.gitignore` edit is needed (see Global Constraints).
 

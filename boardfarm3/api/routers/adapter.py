@@ -149,7 +149,7 @@ class DefaultAdapter:
         """
         # Imported here rather than at module scope: _generator imports this
         # module for its default argument, so a top-level import would cycle.
-        from boardfarm3.api.routers._generator import (  # pylint: disable=import-outside-toplevel
+        from boardfarm3.api.routers._generator import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
             _annotation_to_field_type,
         )
 
@@ -169,7 +169,7 @@ class DefaultAdapter:
         :return: the coerced value
         :rtype: Any
         """
-        from boardfarm3.api.routers._generator import (  # pylint: disable=import-outside-toplevel
+        from boardfarm3.api.routers._generator import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
             _coerce,
         )
 
@@ -204,6 +204,9 @@ class DefaultAdapter:
 
         Re-raising is what keeps the native path unchanged: the exception
         reaches the app-level handlers with its traceback intact.
+
+        # noqa: DAR401
+        # noqa: DAR402
 
         :param outcome: the result of the dispatch attempt
         :type outcome: Outcome
