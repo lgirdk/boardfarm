@@ -73,7 +73,7 @@ dev = [
     "pre-commit",
     "pylint>=3.3.8",
     "pylint-per-file-ignores",
-    "ruff==v0.11.5",
+    "ruff==v0.13.0",
     "types-ipaddress",
     "types-PyYAML",
     "types-requests",
@@ -253,6 +253,9 @@ target-version = "py39"
 "boardfarm3/plugins/hookspecs/*" = [
     "ARG001", # hook specs never use any argument
 ]
+"boardfarm3/api/plugin.py" = [
+    "PLC0415", # routers/templates are imported lazily so the plugin stays importable without the api extra
+]
 "unittests/*" = [
     "INP001",  # pytest works this way
     "S101",    # we do use assert in unit test written for pytest
@@ -261,6 +264,18 @@ target-version = "py39"
     "E501",    # line too long errors are ignored for unittests
     "ANN401",  # dynamically typed expressions (typing.Any) are used in arguments
     "PLR2004", # Magic value used in comparison
+    "PLC0415", # function-level imports are idiomatic in tests
+]
+"integrationtests/*" = [
+    "INP001",  # pytest works this way
+    "S101",    # we do use assert in integration tests written for pytest
+    "D103",    # doc-strings are not mandatory for integration tests
+    "SLF001",  # we do access private members for validation in tests
+    "E501",    # line too long errors are ignored for tests
+    "ANN401",  # dynamically typed expressions (typing.Any) are used in arguments
+    "PLR2004", # Magic value used in comparison
+    "PLC0415", # function-level imports are idiomatic in tests
+    "ARG001",  # fixtures are requested for their side effects
 ]
 
 [tool.ruff.lint.mccabe]

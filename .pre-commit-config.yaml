@@ -118,6 +118,11 @@ repos:
           - id: darglint2
             args: [boardfarm3]
             stages: [pre-commit]
+            exclude: |
+                (?x)^(
+                  unittests/.*|
+                  integrationtests/.*
+                )$
     - repo: local
       hooks:
           - id: nox
