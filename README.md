@@ -184,5 +184,5 @@ In short, you need to include a "Signed-off-by" tag in every patch. "Signed-off-
 
 ## License
 
-Distributed under the terms of the Clear BSD License, Boardfarm is free and
+Distributed under the terms of the BSD 3-Clause Clear License, Boardfarm is free and
 open source software.

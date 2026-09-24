@@ -5,7 +5,7 @@
 #
 # All rights reserved.
 #
-# This file is distributed under the Clear BSD license.
+# This file is distributed under the BSD 3-Clause Clear License (BSD-3-Clause-Clear).
 # The full text can be found in LICENSE in the root directory.
 
 # Restrict all 4 numbers in the IP address to 0..255. It stores each of the 4
