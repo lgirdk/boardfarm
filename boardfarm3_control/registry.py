@@ -107,3 +107,28 @@ class SessionRegistry:
         sessions = await launcher.list_sessions()
         self._sessions = {s.session_id: s for s in sessions}
         self._last_activity = {}
+
+    def sessions(self) -> list[AgentInfo]:
+        """Return every registered session.
+
+        :return: all sessions
+        :rtype: list[AgentInfo]
+        """
+        return list(self._sessions.values())
+
+    def pending_stop_for(self, board_name: str) -> AgentInfo | None:
+        """Return a session of *board_name* whose stop is not confirmed yet.
+
+        :param board_name: board to look up
+        :type board_name: str
+        :return: the pending session, or None
+        :rtype: AgentInfo | None
+        """
+        return next(
+            (
+                info
+                for info in self._sessions.values()
+                if info.board_name == board_name and info.stop_pending
+            ),
+            None,
+        )
