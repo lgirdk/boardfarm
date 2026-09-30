@@ -118,3 +118,37 @@ class HostSpec(BaseModel):
         if self.docker_url is None or self.docker_url.startswith("unix://"):
             return "localhost"
         return urlsplit(self.docker_url).hostname or "localhost"
+
+
+class HostPatch(BaseModel):
+    """Body of ``PATCH /admin/hosts/{name}``; only the fields sent change."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    docker_url: str | None = None
+    advertise_addr: str | None = None
+    bind_addr: str | None = None
+    registry: str | None = None
+    tls: dict[str, str] | None = None
+    drain: bool | None = None
+    default: bool | None = None
+
+
+class HostStatus(BaseModel):
+    """Live status of one host."""
+
+    breaker: str
+    last_error: str | None = None
+    last_ok_at: float | None = None
+    sessions: dict[str, int]
+    conflicts: int = 0
+
+
+class HostView(BaseModel):
+    """One host as returned by ``/admin/hosts``."""
+
+    name: str
+    spec: HostSpec
+    effective_registry: str | None = None
+    status: HostStatus
+    probe: bool | None = None
