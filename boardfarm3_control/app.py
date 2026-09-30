@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
@@ -74,6 +75,7 @@ def create_app(  # noqa: C901, PLR0915
     launcher: Launcher,
     profiles: dict[str, str],
     extra_routers: list[APIRouter] | None = None,
+    cors_origins: list[str] | None = None,
 ) -> FastAPI:
     """Build the control plane application.
 
@@ -83,6 +85,9 @@ def create_app(  # noqa: C901, PLR0915
     :type profiles: dict[str, str]
     :param extra_routers: additional plugin routers to include (used in tests)
     :type extra_routers: list[APIRouter] | None
+    :param cors_origins: browser origins allowed to call the API cross-origin;
+        None or empty keeps the control plane same-origin only
+    :type cors_origins: list[str] | None
     :return: FastAPI application
     :rtype: FastAPI
     """
@@ -110,6 +115,16 @@ def create_app(  # noqa: C901, PLR0915
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
+    if cors_origins:
+        # Browser GUIs on another origin (e.g. a scheduler page) need the
+        # preflight answered and the response headers set, or the browser
+        # discards a response the control plane has already acted on.
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=cors_origins,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
     # Exposed for tests that need to drive the reaper or inspect store/registry
     # state directly against the exact instances this app is wired to.
     app.state.registry = registry
