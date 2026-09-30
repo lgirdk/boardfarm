@@ -13,6 +13,17 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 _DEFAULT_ROOT = "/var/lib/boardfarm-control"
+
+
+def store_root() -> Path:
+    """Return the control store directory.
+
+    :return: ``$BOARDFARM_CONTROL_STORE``, or the default store root
+    :rtype: Path
+    """
+    return Path(os.environ.get("BOARDFARM_CONTROL_STORE") or _DEFAULT_ROOT)
+
+
 _log = logging.getLogger(__name__)
 
 
@@ -29,9 +40,7 @@ class DiagnosticsStore:
         :param root: store root; ``$BOARDFARM_CONTROL_STORE`` when omitted
         :type root: Path | None
         """
-        self._root = root or Path(
-            os.environ.get("BOARDFARM_CONTROL_STORE") or _DEFAULT_ROOT,
-        )
+        self._root = root or store_root()
 
     def session_dir(self, session_id: str) -> Path:
         """Return the directory holding a session's artifacts.

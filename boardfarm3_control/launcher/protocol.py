@@ -12,13 +12,14 @@ if TYPE_CHECKING:
 class Launcher(Protocol):
     """Protocol for starting, stopping, and listing agent containers."""
 
-    async def start(
+    async def start(  # noqa: PLR0913
         self,
         session_id: str,
         board_name: str,
         image: str,
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
+        host: str | None = None,
     ) -> AgentInfo:
         """Start a new agent container and return its info.
 
@@ -32,6 +33,8 @@ class Launcher(Protocol):
         :type runtime_profile: str
         :param agent_env: extra environment variables to pass to the agent
         :type agent_env: dict[str, str] | None
+        :param host: lab host to place the agent on; ignored by single-host launchers
+        :type host: str | None
         :return: container info
         :rtype: AgentInfo
         """

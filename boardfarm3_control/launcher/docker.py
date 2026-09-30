@@ -1,24 +1,26 @@
-"""Launcher that runs agents as Docker containers."""
+"""Launcher that runs agent containers on one Docker host."""
 
 from __future__ import annotations
 
-import asyncio
-import functools
 import logging
 import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from boardfarm3_control.launcher._common import (
-    _DEFAULT_ARTIFACT_ROOT,
-    _artifact_root,
-    _free_port,
-)
+from boardfarm3_control.errors import HostUnreachable
+from boardfarm3_control.launcher._common import _DEFAULT_ARTIFACT_ROOT, _artifact_root
 
 if TYPE_CHECKING:
+    from boardfarm3_control.launcher.docker_host import DockerHost
     from boardfarm3_control.models import AgentInfo
 
 _log = logging.getLogger(__name__)
+
+# Container statuses in which an agent may still hold the board's consoles.
+BUSY_STATUSES = ("running", "paused", "restarting")
+DEFAULT_PULL_TIMEOUT = 600.0
+_STOP_GRACE = 10.0
+_ARCHIVE_TIMEOUT = 300.0
 
 
 def _finished_at(container: Any) -> float | None:  # noqa: ANN401
@@ -48,157 +50,191 @@ def _finished_at(container: Any) -> float | None:  # noqa: ANN401
         return None
 
 
+def _published_port(_client: Any, container: Any) -> int | None:  # noqa: ANN401
+    container.reload()
+    for binding in container.ports.get("8000/tcp") or []:
+        if binding.get("HostPort"):
+            return int(binding["HostPort"])
+    return None
+
+
 class DockerLauncher:
-    """Production launcher using docker-py (sync calls run in asyncio executor)."""
+    """Runs agent containers on one Docker host, scoped to one control plane.
+
+    Every list, stop, purge and capture is filtered by the
+    ``boardfarm.control_id`` label, so containers another control plane
+    launched on the same host are never adopted, stopped or reaped.
+    """
 
     _LABEL_SESSION = "boardfarm.session_id"
     _LABEL_BOARD = "boardfarm.board_name"
     _LABEL_PROFILE = "boardfarm.runtime_profile"
     _LABEL_CREATED = "boardfarm.created_at"
     _LABEL_ARTIFACT_DIR = "boardfarm.artifact_dir"
+    _LABEL_CONTROL = "boardfarm.control_id"
 
-    def __init__(self, client: object | None = None) -> None:
-        """Initialise with an optional pre-built docker client.
+    def __init__(
+        self,
+        host: DockerHost,
+        control_id: str,
+        *,
+        pull_timeout: float = DEFAULT_PULL_TIMEOUT,
+    ) -> None:
+        """Bind the launcher to one host and one control plane.
 
-        :param client: docker.DockerClient instance; created from env if None
-        :type client: object | None
+        :param host: the Docker host agents run on
+        :type host: DockerHost
+        :param control_id: this control plane's id (``boardfarm.control_id``)
+        :type control_id: str
+        :param pull_timeout: seconds allowed for pulling a missing image
+        :type pull_timeout: float
         """
-        import docker as _docker  # noqa: PLC0415
+        self._host = host
+        self._control_id = control_id
+        self._pull_timeout = pull_timeout
 
-        self._client = client or _docker.from_env()
+    @property
+    def host(self) -> DockerHost:
+        """Return the host this launcher runs agents on.
 
-    async def start(
+        :return: the Docker host
+        :rtype: DockerHost
+        """
+        return self._host
+
+    async def start(  # noqa: PLR0913
         self,
         session_id: str,
         board_name: str,
         image: str,
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
+        host: str | None = None,
     ) -> AgentInfo:
-        """Start a Docker container for a new agent session.
+        """Start an agent container with a Docker-assigned host port.
 
         :param session_id: unique session identifier
         :type session_id: str
         :param board_name: board this agent will own
         :type board_name: str
-        :param image: Docker image to run
+        :param image: profile image, resolved against the host's registry
         :type image: str
-        :param runtime_profile: profile key stored as label
+        :param runtime_profile: profile key stored as a label
         :type runtime_profile: str
-        :param agent_env: extra environment variables to inject into the container
+        :param agent_env: extra environment variables for the agent
         :type agent_env: dict[str, str] | None
-        :return: agent container info
+        :param host: ignored; a DockerLauncher is bound to one host
+        :type host: str | None
+        :return: the agent's info
         :rtype: AgentInfo
+        :raises RuntimeError: when Docker published no port for the agent
         """
         from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
-        host_port = _free_port()
+        del host
+        ref = self._host.image_ref(image)
         created_at = time.time()
         artifact_root = _artifact_root(agent_env)
-        loop = asyncio.get_running_loop()
+        labels = {
+            self._LABEL_SESSION: session_id,
+            self._LABEL_BOARD: board_name,
+            self._LABEL_PROFILE: runtime_profile,
+            self._LABEL_CREATED: str(created_at),
+            # A label, not only an env var, so a restart recovers it from
+            # list_sessions() alone: labels survive a container restart.
+            self._LABEL_ARTIFACT_DIR: artifact_root,
+            self._LABEL_CONTROL: self._control_id,
+        }
+        environment = {
+            "BOARDFARM_SESSION_ID": session_id,
+            "BOARDFARM_BOARD_NAME": board_name,
+            "BOARDFARM_AGENT_PORT": "8000",
+            **(agent_env or {}),
+        }
+        # (bind_addr, None): Docker picks a free port on the host that owns it.
+        ports = {"8000/tcp": (self._host.spec.bind_addr, None)}
 
-        def _start() -> object:
-            return self._client.containers.run(
-                image,
+        def _run(client: Any) -> Any:  # noqa: ANN401
+            return client.containers.run(
+                ref,
                 detach=True,
-                ports={"8000/tcp": host_port},
-                labels={
-                    self._LABEL_SESSION: session_id,
-                    self._LABEL_BOARD: board_name,
-                    self._LABEL_PROFILE: runtime_profile,
-                    self._LABEL_CREATED: str(created_at),
-                    # Persisted as a label, not just an env var, so a restart
-                    # can recover it from list_sessions() alone (Docker
-                    # labels survive a container restart; recomputing the
-                    # override from agent_env would require it, which is not
-                    # otherwise stored anywhere on the control plane).
-                    self._LABEL_ARTIFACT_DIR: artifact_root,
-                },
-                environment={
-                    "BOARDFARM_SESSION_ID": session_id,
-                    "BOARDFARM_BOARD_NAME": board_name,
-                    "BOARDFARM_AGENT_PORT": "8000",
-                    **(agent_env or {}),
-                },
+                ports=ports,
+                labels=labels,
+                environment=environment,
             )
 
-        container = await loop.run_in_executor(None, _start)
+        container = await self._host.call(_run)
+        port = await self._host.call(_published_port, container)
+        if port is None:
+            await self._remove_quietly(container)
+            msg = f"agent container {container.id} on host {self._host.name} has no published port"
+            raise RuntimeError(msg)
         return AgentInfo(
             session_id=session_id,
             board_name=board_name,
             runtime_profile=runtime_profile,
             container_id=container.id,
-            host_port=host_port,
+            host_port=port,
             created_at=created_at,
             pid=None,
-            agent_url=f"http://localhost:{host_port}",
+            agent_url=self._host.agent_url(port),
             artifact_dir=artifact_root,
-        )
-
-    def _find(self, session_id: str) -> list[Any]:
-        """Return every container for a session, running or not.
-
-        :param session_id: session to look up
-        :type session_id: str
-        :return: matching containers
-        :rtype: list[typing.Any]
-        """
-        return self._client.containers.list(
-            all=True,
-            filters={"label": f"{self._LABEL_SESSION}={session_id}"},
+            host=self._host.name,
+            image_id=container.attrs.get("Image"),
         )
 
     async def stop(self, session_id: str, *, remove: bool = True) -> None:
-        """Stop the container, and remove it only when *remove* is set.
-
-        A stopped container releases every tty and socket the agent held, so a
-        retained corpse can never contend with a fresh session on the board.
+        """Stop this control plane's container for a session.
 
         :param session_id: session whose container to stop
         :type session_id: str
-        :param remove: also ``docker rm`` the container
+        :param remove: also remove the container, as ``docker rm`` would
         :type remove: bool
         """
-        loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(None, self._find, session_id)
-        for container in containers:
-            await loop.run_in_executor(None, container.stop)
-            if remove:
-                await loop.run_in_executor(None, container.remove)
+
+        def _stop(client: Any) -> None:  # noqa: ANN401
+            for container in self._find(client, session_id):
+                container.stop()
+                if remove:
+                    container.remove()
+
+        await self._host.call(_stop, timeout=self._host.timeout + _STOP_GRACE)
 
     async def purge(self, session_id: str) -> None:
-        """Remove the stopped container for a session.
+        """Force-remove this control plane's container for a session.
 
         :param session_id: session whose container to remove
         :type session_id: str
         """
-        loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(None, self._find, session_id)
-        for container in containers:
-            await loop.run_in_executor(
-                None,
-                functools.partial(container.remove, force=True),
-            )
+
+        def _purge(client: Any) -> None:  # noqa: ANN401
+            for container in self._find(client, session_id):
+                container.remove(force=True)
+
+        await self._host.call(_purge)
 
     async def capture_logs(self, session_id: str) -> bytes:
-        """Return the container's stdout and stderr.
-
-        A daemon API call, so it works against a remote host and a stopped
-        container alike.
+        """Return the container's stdout and stderr through the Docker API.
 
         :param session_id: session whose logs to capture
         :type session_id: str
-        :return: log bytes, empty when the container is gone
+        :return: log bytes, empty when the container or the host is gone
         :rtype: bytes
         """
-        loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(None, self._find, session_id)
-        if not containers:
+
+        def _logs(client: Any) -> bytes:  # noqa: ANN401
+            containers = self._find(client, session_id)
+            if not containers:
+                return b""
+            return containers[0].logs(stdout=True, stderr=True)
+
+        try:
+            return await self._host.call(_logs)
+        except HostUnreachable:
+            _log.warning(
+                "host %s unreachable; no logs for %s", self._host.name, session_id
+            )
             return b""
-        return await loop.run_in_executor(
-            None,
-            lambda: containers[0].logs(stdout=True, stderr=True),
-        )
 
     async def capture_files(self, session_id: str, path: str) -> bytes:
         """Return a tar of *path* from inside the container.
@@ -210,70 +246,90 @@ class DockerLauncher:
         :return: tar bytes, empty when unavailable
         :rtype: bytes
         """
-        loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(None, self._find, session_id)
-        if not containers:
-            return b""
 
-        def _archive() -> bytes:
+        def _archive(client: Any) -> bytes:  # noqa: ANN401
+            containers = self._find(client, session_id)
+            if not containers:
+                return b""
             stream, _ = containers[0].get_archive(path)
             return b"".join(stream)
 
         try:
-            return await loop.run_in_executor(None, _archive)
+            return await self._host.call(_archive, timeout=_ARCHIVE_TIMEOUT)
         except Exception:  # noqa: BLE001
             _log.warning(
-                "could not archive %s from session %s",
+                "could not archive %s from session %s on host %s",
                 path,
                 session_id,
+                self._host.name,
             )
             return b""
 
     async def list_sessions(self) -> list[AgentInfo]:
-        """Return info for every container with a boardfarm.session_id label.
+        """Return every container this control plane launched on the host.
 
-        Includes stopped containers so a failed agent's evidence remains
-        visible until it is explicitly purged.
+        Busy containers (running, paused, restarting) are ``live``; any other
+        status is ``dead`` with ``ended_at`` from ``State.FinishedAt``.
 
-        :return: agent infos rebuilt from Docker container labels
+        :return: agent infos rebuilt from container labels
         :rtype: list[AgentInfo]
         """
+
+        def _list(client: Any) -> list[Any]:  # noqa: ANN401
+            return client.containers.list(
+                all=True,
+                filters={
+                    "label": [
+                        self._LABEL_SESSION,
+                        f"{self._LABEL_CONTROL}={self._control_id}",
+                    ],
+                },
+            )
+
+        return [self._to_info(container) for container in await self._host.call(_list)]
+
+    def _find(self, client: Any, session_id: str) -> list[Any]:  # noqa: ANN401
+        return client.containers.list(
+            all=True,
+            filters={
+                "label": [
+                    f"{self._LABEL_SESSION}={session_id}",
+                    f"{self._LABEL_CONTROL}={self._control_id}",
+                ],
+            },
+        )
+
+    def _to_info(self, container: Any) -> AgentInfo:  # noqa: ANN401
         from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
-        loop = asyncio.get_running_loop()
-        containers = await loop.run_in_executor(
-            None,
-            lambda: self._client.containers.list(
-                all=True,
-                filters={"label": self._LABEL_SESSION},
-            ),
+        labels = container.labels
+        bindings = container.ports.get("8000/tcp") or [{}]
+        host_port = int(bindings[0].get("HostPort") or 0)
+        busy = container.status in BUSY_STATUSES
+        return AgentInfo(
+            session_id=labels[self._LABEL_SESSION],
+            board_name=labels[self._LABEL_BOARD],
+            runtime_profile=labels[self._LABEL_PROFILE],
+            container_id=container.id,
+            host_port=host_port,
+            created_at=float(labels.get(self._LABEL_CREATED, 0)),
+            pid=None,
+            agent_url=self._host.agent_url(host_port),
+            state="live" if busy else "dead",
+            # None while busy; every corpse carries a real timestamp or it
+            # becomes unreapable after a restart.
+            ended_at=None if busy else _finished_at(container),
+            artifact_dir=labels.get(self._LABEL_ARTIFACT_DIR, _DEFAULT_ARTIFACT_ROOT),
+            host=self._host.name,
+            image_id=container.attrs.get("Image"),
         )
-        result = []
-        for container in containers:
-            labels = container.labels
-            port_bindings = container.ports.get("8000/tcp") or [{}]
-            host_port = int(port_bindings[0].get("HostPort", 0))
-            is_running = container.status == "running"
-            result.append(
-                AgentInfo(
-                    session_id=labels[self._LABEL_SESSION],
-                    board_name=labels[self._LABEL_BOARD],
-                    runtime_profile=labels[self._LABEL_PROFILE],
-                    container_id=container.id,
-                    host_port=host_port,
-                    created_at=float(labels.get(self._LABEL_CREATED, 0)),
-                    pid=None,
-                    agent_url=f"http://localhost:{host_port}",
-                    state="live" if is_running else "dead",
-                    # None for a running container; every corpse must carry a
-                    # real timestamp or it becomes permanently unreapable
-                    # after a restart (SessionRegistry.rebuild() only ever
-                    # consults the launcher, never the store).
-                    ended_at=None if is_running else _finished_at(container),
-                    artifact_dir=labels.get(
-                        self._LABEL_ARTIFACT_DIR,
-                        _DEFAULT_ARTIFACT_ROOT,
-                    ),
-                ),
+
+    async def _remove_quietly(self, container: Any) -> None:  # noqa: ANN401
+        try:
+            await self._host.call(lambda _client: container.remove(force=True))
+        except Exception:  # noqa: BLE001
+            _log.warning(
+                "could not remove container %s on host %s",
+                container.id,
+                self._host.name,
             )
-        return result

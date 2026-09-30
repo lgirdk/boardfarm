@@ -69,13 +69,14 @@ class ProcessLauncher:
                 "boardfarm control: could not persist state file %s: %s", path, exc
             )
 
-    async def start(
+    async def start(  # noqa: PLR0913
         self,
         session_id: str,
         board_name: str,
         image: str,  # noqa: ARG002
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
+        host: str | None = None,  # noqa: ARG002
     ) -> AgentInfo:
         """Start a boardfarm3.api subprocess on a free local port.
 
@@ -89,6 +90,8 @@ class ProcessLauncher:
         :type runtime_profile: str
         :param agent_env: extra environment variables for the subprocess
         :type agent_env: dict[str, str] | None
+        :param host: lab host to place the agent on; ignored by single-host launchers
+        :type host: str | None
         :return: agent info with the subprocess pid as container_id
         :rtype: AgentInfo
         """
