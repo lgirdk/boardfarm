@@ -6,7 +6,8 @@ from typing import Any
 
 import pytest
 
-from boardfarm3_control.launcher.docker import DockerLauncher
+from boardfarm3_control.errors import BoardBusyOnHost, ImagePullFailed
+from boardfarm3_control.launcher.docker import DockerLauncher, _created_ns
 from boardfarm3_control.launcher.docker_host import DockerHost
 from boardfarm3_control.models import HostSpec
 
@@ -152,3 +153,108 @@ async def test_capture_returns_empty_when_host_is_down(fake_daemon: Any) -> None
     daemon.down = True
     assert await launcher.capture_logs("s-1") == b""
     assert await launcher.capture_files("s-1", "/var/log/boardfarm/s-1") == b""
+
+
+class _Created:
+    def __init__(self, created: str) -> None:
+        self.attrs = {"Created": created}
+
+
+def test_created_ns_compares_numerically() -> None:
+    assert _created_ns(_Created("2026-09-30T10:00:00.1Z")) < _created_ns(
+        _Created("2026-09-30T10:00:00.12Z")
+    )
+    assert _created_ns(_Created("2026-09-30T10:00:01Z")) > _created_ns(
+        _Created("2026-09-30T10:00:00.999999999Z")
+    )
+    assert _created_ns(_Created("garbage")) == 0
+
+
+async def test_busy_board_blocks_launch_whoever_owns_it(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    daemon.add_agent(
+        session_id="s-old", board_name="board-1", control_id="c-other", status="paused"
+    )
+    with pytest.raises(BoardBusyOnHost) as err:
+        await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert err.value.fields["control_id"] == "c-other"
+    assert err.value.fields["session_id"] == "s-old"
+    assert daemon.runs == []
+
+
+async def test_stopped_agent_does_not_block_launch(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    daemon.add_agent(
+        session_id="s-old", board_name="board-1", control_id=CONTROL, status="exited"
+    )
+    info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert info.session_id == "s-1"
+
+
+async def test_missing_image_is_pulled_before_run(fake_daemon: Any) -> None:
+    daemon = fake_daemon(pullable={"img:1": "sha256:ppp"})
+    info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert daemon.pulls == ["img:1"]
+    assert info.image_id == "sha256:ppp"
+
+
+async def test_present_image_is_not_pulled(fake_daemon: Any) -> None:
+    daemon = fake_daemon(
+        images={"img:1": "sha256:aaa"}, pullable={"img:1": "sha256:new"}
+    )
+    info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert daemon.pulls == []
+    assert info.image_id == "sha256:aaa"
+
+
+async def test_pull_failure_raises_image_pull_failed_and_runs_nothing(
+    fake_daemon: Any,
+) -> None:
+    daemon = fake_daemon()
+    launcher = _launcher(daemon)
+    with pytest.raises(ImagePullFailed) as err:
+        await launcher.start("s-1", "board-1", "img:1", "prplos")
+    assert err.value.fields == {"host": "lab-1", "image": "img:1"}
+    assert "manifest for img:1 not found" in err.value.message
+    assert daemon.runs == []
+    assert not launcher.host.is_down
+
+
+async def test_recheck_loser_removes_its_own_container(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    original_run = daemon.containers.run
+
+    def run_with_rival(image: str, **kwargs: Any) -> Any:
+        daemon.add_agent(
+            session_id="s-rival",
+            board_name="board-1",
+            control_id="c-other",
+            created="2026-09-30T09:59:59.9Z",
+        )
+        return original_run(image, **kwargs)
+
+    daemon.containers.run = run_with_rival
+    with pytest.raises(BoardBusyOnHost) as err:
+        await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert err.value.fields["session_id"] == "s-rival"
+    assert [c.labels["boardfarm.session_id"] for c in daemon.agents()] == ["s-rival"]
+
+
+async def test_recheck_winner_keeps_its_container(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    original_run = daemon.containers.run
+
+    def run_with_later_rival(image: str, **kwargs: Any) -> Any:
+        container = original_run(image, **kwargs)
+        daemon.add_agent(
+            session_id="s-rival",
+            board_name="board-1",
+            control_id="c-other",
+            created="2026-09-30T11:00:00Z",
+        )
+        return container
+
+    daemon.containers.run = run_with_later_rival
+    info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert info.session_id == "s-1"
+    assert len(daemon.agents("board-1")) == 2  # the rival's control removes its own
