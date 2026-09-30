@@ -48,12 +48,17 @@ async def _reap_corpses(
     containers = 0
     page, _ = registry.list_page(0, 10_000)
     for info in page:
-        if info.state != "dead" or info.ended_at is None:
+        # A pending stop belongs to the reconciler, not the reaper.
+        if info.state != "dead" or info.ended_at is None or info.stop_pending:
             continue
         age = now - info.ended_at
         if age <= corpse_ttl:
             continue
-        await launcher.purge(info.session_id)
+        try:
+            await launcher.purge(info.session_id)
+        except Exception:  # noqa: BLE001
+            _log.warning("could not purge %s; will retry next pass", info.session_id)
+            continue
         registry.remove(info.session_id)
         containers += 1
         _log.info(

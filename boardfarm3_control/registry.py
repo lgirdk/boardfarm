@@ -77,7 +77,9 @@ class SessionRegistry:
         """
         return self._last_activity.get(session_id)
 
-    def mark_dead(self, session_id: str, ended_at: float) -> None:
+    def mark_dead(
+        self, session_id: str, ended_at: float, *, stop_pending: bool = False
+    ) -> None:
         """Mark a session dead while keeping it listed.
 
         A corpse stays in the registry so it can be found, its diagnostics
@@ -88,12 +90,18 @@ class SessionRegistry:
         :type session_id: str
         :param ended_at: when the session ended
         :type ended_at: float
+        :param stop_pending: the host could not confirm the stop yet
+        :type stop_pending: bool
         """
         info = self._sessions.get(session_id)
         if info is None:
             return
         self._sessions[session_id] = info.model_copy(
-            update={"state": "dead", "ended_at": ended_at},
+            update={
+                "state": "dead",
+                "ended_at": ended_at,
+                "stop_pending": stop_pending,
+            },
         )
 
     async def rebuild(self, launcher: Launcher) -> None:
