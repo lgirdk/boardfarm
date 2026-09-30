@@ -62,3 +62,20 @@ def boardfarm_help(session: nox.Session) -> None:
     """
     session.install("--upgrade", "-e", ".")
     session.run("boardfarm", "--help")
+
+
+@nox.session(python=_PYTHON_VERSIONS)
+def integration_multihost(session: nox.Session) -> None:
+    """Run the multi-host control-plane tests against two docker:dind lab hosts.
+
+    Needs a local Docker daemon that can run privileged containers.
+
+    # noqa: DAR101
+    """
+    session.install("--upgrade", ".[test,api]", "./control")
+    session.run(
+        "pytest",
+        "integrationtests/multihost",
+        "-v",
+        env={"BOARDFARM_IT_DIND": "1"},
+    )
