@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 _BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=300.0, write=30.0, pool=10.0)
-# Matches boardfarm3_control.launcher._DEFAULT_ARTIFACT_ROOT and
+# Matches boardfarm3_control.launcher._common._DEFAULT_ARTIFACT_ROOT and
 # boardfarm3.api.logs's default. Callers should pass a resolved
 # AgentInfo.artifact_dir; this is only the fallback when none is known.
 _DEFAULT_ARTIFACT_ROOT = "/var/log/boardfarm"
