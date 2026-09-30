@@ -23,7 +23,7 @@ from boardfarm3_control.models import (
     SessionResponse,
 )
 from boardfarm3_control.openapi import load_plugin_routers, register_plugin_routes
-from boardfarm3_control.proxy import proxy_request
+from boardfarm3_control.proxy import _client_or_default, proxy_request
 from boardfarm3_control.reaper import run_reaper
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
@@ -45,6 +45,46 @@ _HEALTH_INTERVAL = 0.1  # seconds between health retries
 # seconds per-agent for GET /sessions fan-out
 _STATE_TIMEOUT = float(os.environ.get("BOARDFARM_STATE_TIMEOUT", "2.0"))
 _MAX_LIMIT = 100
+_PROXY_MAX_CONNECTIONS_ENV = "BOARDFARM_PROXY_MAX_CONNECTIONS"
+_PROXY_KEEPALIVE_CAP = 100
+
+
+def _proxy_limits() -> httpx.Limits:
+    """Return connection limits for the shared agent client.
+
+    Every open console stream holds a connection for as long as it runs, so
+    httpx's default of 100 would starve other proxied calls at ~100 users.
+
+    :return: limits from ``BOARDFARM_PROXY_MAX_CONNECTIONS`` (default 500)
+    :rtype: httpx.Limits
+    """
+    max_connections = int(os.environ.get(_PROXY_MAX_CONNECTIONS_ENV, "500"))
+    return httpx.Limits(
+        max_connections=max_connections,
+        max_keepalive_connections=min(max_connections, _PROXY_KEEPALIVE_CAP),
+    )
+
+
+async def _wait_healthy(client: httpx.AsyncClient, agent_url: str) -> bool:
+    """Poll the agent's /health until it answers 200 or the deadline passes.
+
+    :param client: client to poll with
+    :type client: httpx.AsyncClient
+    :param agent_url: the agent's base URL
+    :type agent_url: str
+    :return: True when the agent became healthy in time
+    :rtype: bool
+    """
+    deadline = time.monotonic() + _HEALTH_TIMEOUT
+    while time.monotonic() < deadline:
+        try:
+            resp = await client.get(f"{agent_url}/health")
+            if resp.status_code == int(HTTPStatus.OK):
+                return True
+        except httpx.TransportError:
+            pass
+        await asyncio.sleep(_HEALTH_INTERVAL)
+    return False
 
 
 def _new_session_id() -> str:
@@ -102,7 +142,7 @@ def create_app(  # noqa: C901, PLR0915
         # Only live sessions hold a board. A retained corpse must never
         # re-acquire a lease and block its board after a restart.
         await lease.rebuild_from([s for s in existing if s.state == "live"])
-        app.state.http = httpx.AsyncClient()
+        app.state.http = httpx.AsyncClient(limits=_proxy_limits())
         app.state.reaper = asyncio.create_task(
             run_reaper(launcher=launcher, registry=registry, store=store),
         )
@@ -131,10 +171,18 @@ def create_app(  # noqa: C901, PLR0915
     app.state.store = store
     app.state.launcher = launcher
 
+    def _agent_http(info: AgentInfo) -> httpx.AsyncClient | None:
+        # The launcher's per-host client when it has one, else the shared
+        # pool; None before the lifespan has created the pool.
+        return launcher.agent_client(info) or getattr(app.state, "http", None)
+
+    def _agent_http_or_pool(info: AgentInfo, request: Request) -> httpx.AsyncClient:
+        return launcher.agent_client(info) or request.app.state.http
+
     plugin_routers = load_plugin_routers()
     if extra_routers:
         plugin_routers.extend(extra_routers)
-    register_plugin_routes(app, plugin_routers, registry)
+    register_plugin_routes(app, plugin_routers, registry, client_for=_agent_http)
 
     async def _unwind(  # noqa: PLR0913
         session_id: str,
@@ -183,7 +231,7 @@ def create_app(  # noqa: C901, PLR0915
         )
 
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
-    async def create_session(  # noqa: C901, PLR0915
+    async def create_session(  # noqa: C901
         body: SessionCreate,
         request: Request,
     ) -> SessionResponse:
@@ -219,86 +267,72 @@ def create_app(  # noqa: C901, PLR0915
             ) from exc
 
         agent_url = info.agent_url
-
-        # Health poll: 5 s total, 100 ms interval
-        healthy = False
-        deadline = time.monotonic() + _HEALTH_TIMEOUT
-        async with httpx.AsyncClient() as client:
-            while time.monotonic() < deadline:
-                try:
-                    resp = await client.get(f"{agent_url}/health")
-                    if resp.status_code == int(HTTPStatus.OK):
-                        healthy = True
-                        break
-                except httpx.TransportError:
-                    pass
-                await asyncio.sleep(_HEALTH_INTERVAL)
-
-        if not healthy:
-            raise await _unwind(
-                session_id,
-                info,
-                request.app.state.http,
-                HTTPStatus.SERVICE_UNAVAILABLE,
-                "AgentUnhealthy",
-                f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
-            )
-
-        # Configure agent — inject skip_boot when caller did not request a full boot
-        # (skip_boot is a config-time option, not a boot-URL parameter)
-        config_options: dict[str, Any] = dict(body.options)
-        if not body.boot:
-            config_options.setdefault("skip_boot", True)
+        client, owns_client = _client_or_default(_agent_http(info))
         try:
-            async with httpx.AsyncClient() as client:
+            if not await _wait_healthy(client, agent_url):
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                    "AgentUnhealthy",
+                    f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
+                )
+
+            # Configure agent — inject skip_boot when caller did not request a full boot
+            # (skip_boot is a config-time option, not a boot-URL parameter)
+            config_options: dict[str, Any] = dict(body.options)
+            if not body.boot:
+                config_options.setdefault("skip_boot", True)
+            try:
                 cfg = await client.post(
                     f"{agent_url}/session/config",
                     json={"payload": body.payload, "options": config_options},
                 )
-        except Exception as exc:
-            raise await _unwind(
-                session_id,
-                info,
-                request.app.state.http,
-                HTTPStatus.BAD_REQUEST,
-                "AgentConfigRejected",
-                f"agent rejected config: {exc}",
-            ) from exc
-        if cfg.status_code != int(HTTPStatus.OK):
-            raise await _unwind(
-                session_id,
-                info,
-                request.app.state.http,
-                HTTPStatus.BAD_REQUEST,
-                "AgentConfigRejected",
-                f"agent rejected config: {cfg.text}",
-            )
+            except Exception as exc:
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.BAD_REQUEST,
+                    "AgentConfigRejected",
+                    f"agent rejected config: {exc}",
+                ) from exc
+            if cfg.status_code != int(HTTPStatus.OK):
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.BAD_REQUEST,
+                    "AgentConfigRejected",
+                    f"agent rejected config: {cfg.text}",
+                )
 
-        # Boot — always called; skip_boot was already set in config options above
-        boot_url = f"{agent_url}/session/boot?mode=async"
-        boot_job_id: str | None = None
-        try:
-            async with httpx.AsyncClient() as client:
-                boot = await client.post(boot_url)
-        except Exception as exc:
-            raise await _unwind(
-                session_id,
-                info,
-                request.app.state.http,
-                HTTPStatus.SERVICE_UNAVAILABLE,
-                "AgentBootUnreachable",
-                f"agent boot failed: {exc}",
-            ) from exc
-        if boot.status_code != int(HTTPStatus.ACCEPTED):
-            raise await _unwind(
-                session_id,
-                info,
-                request.app.state.http,
-                HTTPStatus.BAD_GATEWAY,
-                "AgentBootRejected",
-                f"agent boot rejected: {boot.status_code}",
-            )
-        boot_job_id = boot.json().get("boot_job_id")
+            # Boot — always called; skip_boot was already set in config options above
+            try:
+                boot = await client.post(f"{agent_url}/session/boot?mode=async")
+            except Exception as exc:
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                    "AgentBootUnreachable",
+                    f"agent boot failed: {exc}",
+                ) from exc
+            if boot.status_code != int(HTTPStatus.ACCEPTED):
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.BAD_GATEWAY,
+                    "AgentBootRejected",
+                    f"agent boot rejected: {boot.status_code}",
+                )
+        finally:
+            if owns_client:
+                await client.aclose()
+        boot_job_id: str | None = boot.json().get("boot_job_id")
         session_state = "booting" if body.boot else "ready"
 
         registry.add(info)
@@ -339,12 +373,12 @@ def create_app(  # noqa: C901, PLR0915
                 )
             last_act: float | None
             liveness: dict[str, Any] | None
+            client, owns_client = _client_or_default(_agent_http(info))
             try:
-                async with httpx.AsyncClient() as client:
-                    resp = await asyncio.wait_for(
-                        client.get(f"{info.agent_url}/session"),
-                        timeout=_STATE_TIMEOUT,
-                    )
+                resp = await asyncio.wait_for(
+                    client.get(f"{info.agent_url}/session"),
+                    timeout=_STATE_TIMEOUT,
+                )
                 data: dict[str, Any] = resp.json()
                 state: str = data.get("state", "unknown")
                 booted: bool = bool(data.get("booted", False))
@@ -357,6 +391,9 @@ def create_app(  # noqa: C901, PLR0915
                 booted = False
                 last_act = registry.last_activity(info.session_id)
                 liveness = None
+            finally:
+                if owns_client:
+                    await client.aclose()
             return SessionResponse(
                 session_id=info.session_id,
                 board_name=info.board_name,
@@ -414,7 +451,7 @@ def create_app(  # noqa: C901, PLR0915
             registry=registry,
             lease=lease,
             store=store,
-            http=request.app.state.http,
+            http=_agent_http_or_pool(info, request),
             retain=retain,
         )
         return {"status": "retained" if retain else "released"}
@@ -435,7 +472,7 @@ def create_app(  # noqa: C901, PLR0915
             agent_url=info.agent_url,
             launcher=launcher,
             store=store,
-            http=request.app.state.http,
+            http=_agent_http_or_pool(info, request),
             artifact_dir=info.artifact_dir,
         )
         if source == "none":
@@ -486,7 +523,7 @@ def create_app(  # noqa: C901, PLR0915
                     request,
                     info.agent_url,
                     "diagnostics/bundle",
-                    client=request.app.state.http,
+                    client=_agent_http(info),
                     session_id=session_id,
                 )
             except HTTPException:
@@ -507,7 +544,7 @@ def create_app(  # noqa: C901, PLR0915
             agent_url=info.agent_url,
             launcher=launcher,
             store=store,
-            http=request.app.state.http,
+            http=_agent_http_or_pool(info, request),
             artifact_dir=info.artifact_dir,
         )
         if source != "none":
@@ -539,7 +576,7 @@ def create_app(  # noqa: C901, PLR0915
             request,
             info.agent_url,
             path,
-            client=request.app.state.http,
+            client=_agent_http(info),
             session_id=session_id,
         )
 
