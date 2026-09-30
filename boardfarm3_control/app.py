@@ -34,6 +34,11 @@ from boardfarm3_control.openapi import load_plugin_routers, register_plugin_rout
 from boardfarm3_control.placement import resolve_host
 from boardfarm3_control.proxy import _client_or_default, proxy_request
 from boardfarm3_control.reaper import run_reaper
+from boardfarm3_control.reconcile import (
+    DEFAULT_RECONCILE_INTERVAL,
+    RECONCILE_INTERVAL_ENV,
+    Reconciler,
+)
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
 from boardfarm3_control.teardown import archive_bundle, teardown_session
@@ -71,6 +76,17 @@ def _proxy_limits() -> httpx.Limits:
     return httpx.Limits(
         max_connections=max_connections,
         max_keepalive_connections=min(max_connections, _PROXY_KEEPALIVE_CAP),
+    )
+
+
+def _reconcile_interval() -> float:
+    """Return seconds between reconcile passes.
+
+    :return: ``BOARDFARM_RECONCILE_INTERVAL``, default 30
+    :rtype: float
+    """
+    return float(
+        os.environ.get(RECONCILE_INTERVAL_ENV, str(DEFAULT_RECONCILE_INTERVAL))
     )
 
 
@@ -145,24 +161,47 @@ def create_app(  # noqa: C901, PLR0915
     store = DiagnosticsStore()
     inflight: set[str] = set()
     hosts = launcher.hosts if isinstance(launcher, MultiHostLauncher) else None
+    reconciler: Reconciler | None = None
+    if isinstance(launcher, MultiHostLauncher):
+        reconciler = Reconciler(
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            inflight=inflight,
+            http_for=lambda info: launcher.agent_client(info) or app.state.http,
+        )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        await registry.rebuild(launcher)
-        existing = await launcher.list_sessions()
-        # Only live sessions hold a board. A retained corpse must never
-        # re-acquire a lease and block its board after a restart.
-        await lease.rebuild_from([s for s in existing if s.state == "live"])
         app.state.http = httpx.AsyncClient(limits=_proxy_limits())
+        background: list[asyncio.Task[None]] = []
+        if reconciler is not None:
+            # Replaces the label rebuild: restore sessions.json, then ask every
+            # reachable host (bounded per host, so a dead host cannot hang startup).
+            await reconciler.startup()
+            app.state.reconcile = asyncio.create_task(
+                reconciler.run(_reconcile_interval())
+            )
+            background.append(app.state.reconcile)
+        else:
+            await registry.rebuild(launcher)
+            existing = await launcher.list_sessions()
+            # Only live sessions hold a board. A retained corpse must never
+            # re-acquire a lease and block its board after a restart.
+            await lease.rebuild_from([s for s in existing if s.state == "live"])
         app.state.reaper = asyncio.create_task(
             run_reaper(launcher=launcher, registry=registry, store=store),
         )
+        background.append(app.state.reaper)
         yield
         # Running agents are deliberately left alone: a control plane restart
         # must not destroy live sessions or the containers being debugged.
-        app.state.reaper.cancel()
-        with suppress(asyncio.CancelledError):
-            await app.state.reaper
+        for task in background:
+            task.cancel()
+        for task in background:
+            with suppress(asyncio.CancelledError):
+                await task
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
@@ -183,6 +222,7 @@ def create_app(  # noqa: C901, PLR0915
     app.state.launcher = launcher
     app.state.inflight = inflight
     app.state.lease = lease
+    app.state.reconciler = reconciler
     if isinstance(launcher, MultiHostLauncher):
         app.include_router(
             build_admin_router(launcher=launcher, registry=registry, lease=lease)
