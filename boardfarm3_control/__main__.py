@@ -8,10 +8,20 @@ import os
 import uvicorn
 
 from boardfarm3_control.app import create_app
+from boardfarm3_control.identity import resolve_control_id
 from boardfarm3_control.launcher import DockerLauncher, ProcessLauncher
+from boardfarm3_control.launcher.docker_host import DockerHost
+from boardfarm3_control.models import HostSpec
+from boardfarm3_control.store import store_root
+
+
+def _docker_launcher() -> DockerLauncher:
+    host = DockerHost("local", HostSpec(advertise_addr="localhost", registry=""))
+    return DockerLauncher(host, resolve_control_id(store_root()))
+
 
 _LAUNCHERS = {
-    "docker": DockerLauncher,
+    "docker": _docker_launcher,
     "process": ProcessLauncher,
 }
 

@@ -24,6 +24,9 @@ class AgentInfo(BaseModel):
     state: str = "live"
     ended_at: float | None = None
     artifact_dir: str = "/var/log/boardfarm"
+    host: str | None = None
+    image_id: str | None = None
+    stop_pending: bool = False
 
 
 class SessionCreate(BaseModel):

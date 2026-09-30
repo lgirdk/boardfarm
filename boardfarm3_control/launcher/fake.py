@@ -21,13 +21,14 @@ class FakeLauncher:
         self._sessions: dict[str, AgentInfo] = {}
         self._next_port = self._FIRST_PORT
 
-    async def start(
+    async def start(  # noqa: PLR0913
         self,
         session_id: str,
         board_name: str,
         image: str,  # noqa: ARG002
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
+        host: str | None = None,  # noqa: ARG002
     ) -> AgentInfo:
         """Allocate an in-memory session (no Docker).
 
@@ -42,6 +43,8 @@ class FakeLauncher:
         :param agent_env: extra environment variables, honoured only for
             ``BOARDFARM_ARTIFACT_DIR``
         :type agent_env: dict[str, str] | None
+        :param host: lab host to place the agent on; ignored by single-host launchers
+        :type host: str | None
         :return: fake agent info
         :rtype: AgentInfo
         """

@@ -1,0 +1,154 @@
+"""DockerLauncher against one fake Docker host."""
+
+from __future__ import annotations
+
+from typing import Any
+
+import pytest
+
+from boardfarm3_control.launcher.docker import DockerLauncher
+from boardfarm3_control.launcher.docker_host import DockerHost
+from boardfarm3_control.models import HostSpec
+
+CONTROL = "c-test"
+
+
+def _launcher(daemon: Any, **spec: Any) -> DockerLauncher:
+    host = DockerHost(
+        "lab-1",
+        HostSpec(docker_url="tcp://10.0.0.5:2375", **spec),
+        client_factory=daemon.client_factory,
+    )
+    return DockerLauncher(host, CONTROL)
+
+
+async def test_start_uses_docker_assigned_port_and_advertise_addr(
+    fake_daemon: Any,
+) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    run = daemon.runs[0]
+    assert run["ports"] == {"8000/tcp": ("0.0.0.0", None)}  # noqa: S104
+    assert run["labels"]["boardfarm.control_id"] == CONTROL
+    assert run["environment"]["BOARDFARM_AGENT_PORT"] == "8000"
+    assert info.host == "lab-1"
+    assert info.host_port == 32768
+    assert info.agent_url == "http://10.0.0.5:32768"
+    assert info.image_id == "sha256:aaa"
+
+
+async def test_start_publishes_on_bind_addr(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon, bind_addr="10.0.0.5").start(
+        "s-1", "board-1", "img:1", "prplos"
+    )
+    assert daemon.runs[0]["ports"] == {"8000/tcp": ("10.0.0.5", None)}
+
+
+async def test_start_runs_the_registry_resolved_image(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"mirror:5000/img:1": "sha256:bbb"})
+    await _launcher(daemon, registry="mirror:5000").start(
+        "s-1", "board-1", "img:1", "prplos"
+    )
+    assert daemon.runs[0]["image"] == "mirror:5000/img:1"
+
+
+async def test_start_records_artifact_dir_label(fake_daemon: Any) -> None:
+    """A per-session BOARDFARM_ARTIFACT_DIR override must survive a restart."""
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    info = await _launcher(daemon).start(
+        "s-1",
+        "board",
+        "img:1",
+        "prplos",
+        agent_env={"BOARDFARM_ARTIFACT_DIR": "/custom/artifacts"},
+    )
+    assert info.artifact_dir == "/custom/artifacts"
+    assert daemon.runs[0]["labels"]["boardfarm.artifact_dir"] == "/custom/artifacts"
+
+
+async def test_start_without_a_published_port_removes_the_container(
+    fake_daemon: Any,
+) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    daemon.publish = False
+    with pytest.raises(RuntimeError, match="no published port"):
+        await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert daemon.agents() == []
+
+
+async def test_list_sessions_only_returns_this_control_plane(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(session_id="s-mine", board_name="b1", control_id=CONTROL)
+    daemon.add_agent(session_id="s-other", board_name="b2", control_id="c-other")
+    daemon.add_agent(session_id="s-legacy", board_name="b3", control_id=None)
+    sessions = await _launcher(daemon).list_sessions()
+    assert [info.session_id for info in sessions] == ["s-mine"]
+    assert sessions[0].host == "lab-1"
+    assert sessions[0].agent_url.startswith("http://10.0.0.5:")
+
+
+@pytest.mark.parametrize(
+    ("status", "state"),
+    [
+        ("running", "live"),
+        ("paused", "live"),
+        ("restarting", "live"),
+        ("exited", "dead"),
+        ("created", "dead"),
+    ],
+)
+async def test_list_sessions_maps_busy_statuses_to_live(
+    fake_daemon: Any, status: str, state: str
+) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(
+        session_id="s-1", board_name="b1", control_id=CONTROL, status=status
+    )
+    [info] = await _launcher(daemon).list_sessions()
+    assert info.state == state
+    assert (info.ended_at is None) == (state == "live")
+
+
+async def test_list_sessions_unparseable_finished_at_is_none(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    container = daemon.add_agent(
+        session_id="s-1", board_name="b1", control_id=CONTROL, status="exited"
+    )
+    container.attrs["State"]["FinishedAt"] = "not-a-timestamp"
+    [info] = await _launcher(daemon).list_sessions()
+    assert info.state == "dead"
+    assert info.ended_at is None
+
+
+async def test_stop_and_purge_never_touch_foreign_containers(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(session_id="s-1", board_name="b1", control_id="c-other")
+    launcher = _launcher(daemon)
+    await launcher.stop("s-1")
+    await launcher.purge("s-1")
+    assert [container.status for container in daemon.agents()] == ["running"]
+
+
+async def test_stop_keeps_or_removes_the_container(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(session_id="s-1", board_name="b1", control_id=CONTROL)
+    daemon.add_agent(session_id="s-2", board_name="b2", control_id=CONTROL)
+    launcher = _launcher(daemon)
+    await launcher.stop("s-1", remove=False)
+    await launcher.stop("s-2")
+    remaining = {
+        container.labels["boardfarm.session_id"]: container.status
+        for container in daemon.agents()
+    }
+    assert remaining == {"s-1": "exited"}
+
+
+async def test_capture_returns_empty_when_host_is_down(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(session_id="s-1", board_name="b1", control_id=CONTROL)
+    launcher = _launcher(daemon)
+    assert await launcher.capture_logs("s-1") == b"logs:s-1"
+    daemon.down = True
+    assert await launcher.capture_logs("s-1") == b""
+    assert await launcher.capture_files("s-1", "/var/log/boardfarm/s-1") == b""
