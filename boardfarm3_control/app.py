@@ -485,13 +485,13 @@ def create_app(  # noqa: C901, PLR0915
             limit=limit,
         )
 
-    @app.delete("/sessions/{session_id}")
+    @app.delete("/sessions/{session_id}", response_model=None)
     async def delete_session(
         session_id: str,
         request: Request,
         retain: bool = False,
         purge: bool = False,
-    ) -> dict[str, str]:
+    ) -> dict[str, str] | JSONResponse:
         info = registry.get(session_id)
         if info is None:
             raise HTTPException(
@@ -508,22 +508,35 @@ def create_app(  # noqa: C901, PLR0915
                 # Explicit request to keep the corpse: it is already
                 # retained, so this is a no-op rather than a silent purge.
                 return {"status": "retained"}
-            # Bare DELETE or ?purge=true: purge the corpse and its bundle.
+            # Bare DELETE or ?purge=true. On a pending stop whose host is still
+            # unreachable, purge raises HostUnreachable (503) and nothing changes.
             await launcher.purge(session_id)
             store.delete(session_id)
             registry.remove(session_id)
+            # A dead session should hold no lease; release anyway so a corpse
+            # can never strand its board.
+            await lease.release(session_id)
             return {"status": "purged"}
-        await teardown_session(
-            session_id=session_id,
-            info=info,
-            launcher=launcher,
-            registry=registry,
-            lease=lease,
-            store=store,
-            http=_agent_http_or_pool(info, request),
-            retain=retain,
-        )
-        return {"status": "retained" if retain else "released"}
+        inflight.add(session_id)
+        try:
+            status = await teardown_session(
+                session_id=session_id,
+                info=info,
+                launcher=launcher,
+                registry=registry,
+                lease=lease,
+                store=store,
+                http=_agent_http_or_pool(info, request),
+                retain=retain,
+            )
+        finally:
+            inflight.discard(session_id)
+        if status == "stop_pending":
+            return JSONResponse(
+                status_code=int(HTTPStatus.ACCEPTED),
+                content={"status": status},
+            )
+        return {"status": status}
 
     @app.post("/sessions/{session_id}/diagnostics/snapshot")
     async def diagnostics_snapshot(

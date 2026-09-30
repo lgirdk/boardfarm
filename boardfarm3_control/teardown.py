@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from boardfarm3_control.errors import StopPending
+
 if TYPE_CHECKING:
     from boardfarm3_control.launcher import Launcher
     from boardfarm3_control.lease import BoardLease
@@ -18,7 +20,10 @@ if TYPE_CHECKING:
     from boardfarm3_control.store import DiagnosticsStore
 
 _log = logging.getLogger(__name__)
-_BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=300.0, write=30.0, pool=10.0)
+# read bounds each wait for a byte, not the whole download: a streaming bundle
+# never idles 30 s, and a hung agent (e.g. on a paused host) must not hold a
+# DELETE for 5 minutes before the stop is even attempted.
+_BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
 # Matches boardfarm3_control.launcher._common._DEFAULT_ARTIFACT_ROOT and
 # boardfarm3.api.logs's default. Callers should pass a resolved
 # AgentInfo.artifact_dir; this is only the fallback when none is known.
@@ -109,7 +114,8 @@ async def teardown_session(  # noqa: PLR0913
     store: DiagnosticsStore,
     http: httpx.AsyncClient,
     retain: bool,
-) -> None:
+    ended_at: float | None = None,
+) -> str:
     """Archive, release devices, stop the container, and free the board.
 
     Steps 1, 2, and 3 are best-effort: a diagnostics failure, a graceful-
@@ -136,8 +142,14 @@ async def teardown_session(  # noqa: PLR0913
     :type http: httpx.AsyncClient
     :param retain: keep the stopped container for post-mortem
     :type retain: bool
+    :param ended_at: when the session ended; now when omitted (the reconciler
+        passes the original time when it finishes a pending stop)
+    :type ended_at: float | None
+    :return: ``released``, ``retained``, or ``stop_pending`` when the host
+        could not confirm the stop (the reconciler finishes it)
+    :rtype: str
     """
-    ended_at = time.time()
+    ended_at = time.time() if ended_at is None else ended_at
 
     # 1. Capture while the agent can still answer — the only moment this works.
     source = "none"
@@ -177,8 +189,17 @@ async def teardown_session(  # noqa: PLR0913
     # agent can never strand a board, even when the container itself refuses
     # to stop.
     stop_failed = False
+    pending = False
     try:
         await launcher.stop(session_id, remove=not retain)
+    except StopPending:
+        # The fence is at launch (host gate, pending-stop check, daemon busy
+        # check), so releasing the lease below is safe.
+        pending = True
+        _log.warning(
+            "stop of %s could not be confirmed; the reconciler will finish it",
+            session_id,
+        )
     except Exception:  # noqa: BLE001
         stop_failed = True
         _log.exception(
@@ -188,10 +209,14 @@ async def teardown_session(  # noqa: PLR0913
     finally:
         # 4. Unconditional, whatever happened above.
         await lease.release(session_id)
-        # 5. A failed stop() means the container's real state is unknown --
-        # keep the corpse visible in the registry rather than losing it, so a
-        # human can still find and intervene on it directly.
-        if retain or stop_failed:
+        # 5. A failed or pending stop means the container's real state is
+        # unknown -- keep the corpse visible rather than losing it.
+        if pending:
+            registry.mark_dead(session_id, ended_at=ended_at, stop_pending=True)
+        elif retain or stop_failed:
             registry.mark_dead(session_id, ended_at=ended_at)
         else:
             registry.remove(session_id)
+    if pending:
+        return "stop_pending"
+    return "retained" if retain else "released"
