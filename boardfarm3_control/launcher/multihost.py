@@ -19,6 +19,8 @@ from boardfarm3_control.models import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    import httpx
+
     from boardfarm3_control.hosts import HostRegistry
 
 _log = logging.getLogger(__name__)
@@ -276,3 +278,13 @@ class MultiHostLauncher:
     def _save_index(self) -> None:
         sessions = {sid: self._index[sid].model_dump() for sid in sorted(self._index)}
         write_json_atomic(self._index_path, {"version": _VERSION, "sessions": sessions})
+
+    def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:  # noqa: ARG002
+        """Use the control plane's shared pool for every agent.
+
+        :param info: the session's agent info
+        :type info: AgentInfo
+        :return: None, meaning the shared pooled client
+        :rtype: httpx.AsyncClient | None
+        """
+        return None

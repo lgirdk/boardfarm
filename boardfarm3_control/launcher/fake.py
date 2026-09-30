@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 from boardfarm3_control.launcher._common import _artifact_root
 
 if TYPE_CHECKING:
+    import httpx
+
     from boardfarm3_control.models import AgentInfo
 
 
@@ -124,3 +126,13 @@ class FakeLauncher:
         :rtype: list[AgentInfo]
         """
         return list(self._sessions.values())
+
+    def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:  # noqa: ARG002
+        """Use the control plane's shared pool for every agent.
+
+        :param info: the session's agent info
+        :type info: AgentInfo
+        :return: None, meaning the shared pooled client
+        :rtype: httpx.AsyncClient | None
+        """
+        return None

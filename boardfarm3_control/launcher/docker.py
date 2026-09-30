@@ -11,6 +11,8 @@ from boardfarm3_control.errors import BoardBusyOnHost, HostUnreachable, ImagePul
 from boardfarm3_control.launcher._common import _DEFAULT_ARTIFACT_ROOT, _artifact_root
 
 if TYPE_CHECKING:
+    import httpx
+
     from boardfarm3_control.launcher.docker_host import DockerHost
     from boardfarm3_control.models import AgentInfo
 
@@ -406,3 +408,13 @@ class DockerLauncher:
                 container.id,
                 self._host.name,
             )
+
+    def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:  # noqa: ARG002
+        """Use the control plane's shared pool for every agent.
+
+        :param info: the session's agent info
+        :type info: AgentInfo
+        :return: None, meaning the shared pooled client
+        :rtype: httpx.AsyncClient | None
+        """
+        return None

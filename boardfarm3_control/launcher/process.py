@@ -18,6 +18,8 @@ from typing import IO, TYPE_CHECKING
 from boardfarm3_control.launcher._common import _artifact_root, _free_port
 
 if TYPE_CHECKING:
+    import httpx
+
     from boardfarm3_control.models import AgentInfo
 
 _log = logging.getLogger(__name__)
@@ -332,3 +334,13 @@ class ProcessLauncher:
         else:
             with contextlib.suppress(ProcessLookupError):
                 os.kill(pid, signal.SIGKILL)
+
+    def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:  # noqa: ARG002
+        """Use the control plane's shared pool for every agent.
+
+        :param info: the session's agent info
+        :type info: AgentInfo
+        :return: None, meaning the shared pooled client
+        :rtype: httpx.AsyncClient | None
+        """
+        return None

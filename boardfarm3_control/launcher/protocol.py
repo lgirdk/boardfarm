@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
+    import httpx
+
     from boardfarm3_control.models import AgentInfo
 
 
@@ -85,5 +87,15 @@ class Launcher(Protocol):
 
         :return: info for every known agent container, running or stopped
         :rtype: list[AgentInfo]
+        """
+        ...
+
+    def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:
+        """Return the HTTP client for reaching *info*'s agent.
+
+        :param info: the session's agent info
+        :type info: AgentInfo
+        :return: a client, or None to use the control plane's shared pool
+        :rtype: httpx.AsyncClient | None
         """
         ...

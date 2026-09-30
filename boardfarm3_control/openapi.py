@@ -17,9 +17,11 @@ from boardfarm3_control.proxy import proxy_request
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    import httpx
     from fastapi import FastAPI
 
     from boardfarm3.api.routers import RouterBundle
+    from boardfarm3_control.models import AgentInfo
     from boardfarm3_control.registry import SessionRegistry
 
 _log = logging.getLogger(__name__)
@@ -105,6 +107,7 @@ async def _dispatch_proxy_request(
     *,
     registry: SessionRegistry,
     shaper: Callable[[Exception], Any] | None,
+    client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None = None,
 ) -> Any:  # noqa: ANN401
     """Resolve the session, forward to the agent, and shape dispatch-edge errors.
 
@@ -121,6 +124,8 @@ async def _dispatch_proxy_request(
     :param shaper: converts a dispatch-edge exception into a response in the
         bundle's contract; None re-raises natively
     :type shaper: Callable[[Exception], Any] | None
+    :param client_for: returns the HTTP client for a session's agent; None uses a per-request client
+    :type client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None
     :return: the downstream response, or the shaper's response on failure
     :rtype: Any
     :raises HTTPException: when ``session_id`` is missing or unknown
@@ -142,7 +147,11 @@ async def _dispatch_proxy_request(
         stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
         downstream_path = request.url.path.lstrip("/")
         return await proxy_request(
-            request, info.agent_url, downstream_path, body=stripped_bytes
+            request,
+            info.agent_url,
+            downstream_path,
+            body=stripped_bytes,
+            client=client_for(info) if client_for is not None else None,
         )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         if shaper is None:
@@ -153,6 +162,8 @@ async def _dispatch_proxy_request(
 def _make_proxy_endpoint(
     original_endpoint: Any,  # noqa: ANN401
     registry: SessionRegistry,
+    *,
+    client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None = None,
 ) -> Any:  # noqa: ANN401
     """Return a proxy handler that preserves the original endpoint's signature.
 
@@ -183,6 +194,8 @@ def _make_proxy_endpoint(
     :type original_endpoint: Any
     :param registry: registry used to resolve the agent URL
     :type registry: SessionRegistry
+    :param client_for: returns the HTTP client for a session's agent; None uses a per-request client
+    :type client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None
     :return: proxy async function with adjusted signature
     :rtype: Any
     """
@@ -243,7 +256,9 @@ def _make_proxy_endpoint(
     new_sig = sig.replace(parameters=new_params)
 
     async def proxy_endpoint(**kwargs: Any) -> Any:  # noqa: ANN401
-        return await _dispatch_proxy_request(kwargs, registry=registry, shaper=shaper)
+        return await _dispatch_proxy_request(
+            kwargs, registry=registry, shaper=shaper, client_for=client_for
+        )
 
     proxy_endpoint.__signature__ = new_sig  # type: ignore[attr-defined]
     proxy_endpoint.__name__ = f"proxy_{original_endpoint.__name__}"
@@ -255,6 +270,7 @@ def register_plugin_routes(
     app: FastAPI,
     routers: list[APIRouter],
     registry: SessionRegistry,
+    client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None = None,
 ) -> None:
     """Wrap plugin routes as proxy-dispatch endpoints, injecting ``session_id`` into each body model.
 
@@ -267,6 +283,8 @@ def register_plugin_routes(
     :type routers: list[APIRouter]
     :param registry: session registry used to resolve agent URLs at request time
     :type registry: SessionRegistry
+    :param client_for: returns the HTTP client for a session's agent; None uses a per-request client
+    :type client_for: Callable[[AgentInfo], httpx.AsyncClient | None] | None
     """
     for router in routers:
         wrapper_router = APIRouter()
@@ -274,7 +292,9 @@ def register_plugin_routes(
             if not isinstance(route, APIRoute):
                 continue
             new_path = f"/{route.path.lstrip('/')}"
-            endpoint = _make_proxy_endpoint(route.endpoint, registry)
+            endpoint = _make_proxy_endpoint(
+                route.endpoint, registry, client_for=client_for
+            )
             wrapper_router.add_api_route(
                 path=new_path,
                 endpoint=endpoint,
