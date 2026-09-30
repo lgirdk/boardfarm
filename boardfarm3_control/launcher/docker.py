@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from boardfarm3_control.errors import HostUnreachable
+from boardfarm3_control.errors import BoardBusyOnHost, HostUnreachable, ImagePullFailed
 from boardfarm3_control.launcher._common import _DEFAULT_ARTIFACT_ROOT, _artifact_root
 
 if TYPE_CHECKING:
@@ -56,6 +56,19 @@ def _published_port(_client: Any, container: Any) -> int | None:  # noqa: ANN401
         if binding.get("HostPort"):
             return int(binding["HostPort"])
     return None
+
+
+def _created_ns(container: Any) -> int:  # noqa: ANN401
+    # Go trims trailing zeros from RFC 3339 fractions (".1Z" vs ".12Z"), so
+    # Docker's Created strings must be compared as numbers, never as text.
+    raw = str(container.attrs.get("Created", ""))
+    head, _, fraction = raw.removesuffix("Z").partition(".")
+    try:
+        seconds = int(datetime.fromisoformat(f"{head}+00:00").timestamp())
+    except ValueError:
+        return 0
+    digits = "".join(ch for ch in fraction if ch.isdigit())[:9]
+    return seconds * 1_000_000_000 + int(digits.ljust(9, "0"))
 
 
 class DockerLauncher:
@@ -128,11 +141,15 @@ class DockerLauncher:
         :return: the agent's info
         :rtype: AgentInfo
         :raises RuntimeError: when Docker published no port for the agent
+        :raises BoardBusyOnHost: when the board already has a busy agent on this host
+        :raises ImagePullFailed: when the image is missing and cannot be pulled
         """
         from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 
         del host
+        await self._ensure_not_busy(board_name)
         ref = self._host.image_ref(image)
+        image_id = await self._ensure_image(ref)
         created_at = time.time()
         artifact_root = _artifact_root(agent_env)
         labels = {
@@ -169,6 +186,7 @@ class DockerLauncher:
             await self._remove_quietly(container)
             msg = f"agent container {container.id} on host {self._host.name} has no published port"
             raise RuntimeError(msg)
+        await self._recheck(board_name, container)
         return AgentInfo(
             session_id=session_id,
             board_name=board_name,
@@ -180,7 +198,7 @@ class DockerLauncher:
             agent_url=self._host.agent_url(port),
             artifact_dir=artifact_root,
             host=self._host.name,
-            image_id=container.attrs.get("Image"),
+            image_id=image_id,
         )
 
     async def stop(self, session_id: str, *, remove: bool = True) -> None:
@@ -287,6 +305,61 @@ class DockerLauncher:
             )
 
         return [self._to_info(container) for container in await self._host.call(_list)]
+
+    def _busy_for_board(self, client: Any, board_name: str) -> list[Any]:  # noqa: ANN401
+        # Any control plane's agent counts: another control's agent still
+        # holds the board's consoles.
+        return client.containers.list(
+            all=True,
+            filters={
+                "label": [f"{self._LABEL_BOARD}={board_name}"],
+                "status": list(BUSY_STATUSES),
+            },
+        )
+
+    def _busy_error(self, board_name: str, other: Any) -> BoardBusyOnHost:  # noqa: ANN401
+        msg = (
+            f"board {board_name} already has a running agent on host {self._host.name}"
+        )
+        return BoardBusyOnHost(
+            msg,
+            host=self._host.name,
+            container_id=other.id,
+            control_id=other.labels.get(self._LABEL_CONTROL),
+            session_id=other.labels.get(self._LABEL_SESSION),
+        )
+
+    async def _ensure_not_busy(self, board_name: str) -> None:
+        busy = await self._host.call(self._busy_for_board, board_name)
+        if busy:
+            raise self._busy_error(board_name, busy[0])
+
+    async def _ensure_image(self, ref: str) -> str:
+        import docker.errors  # noqa: PLC0415
+
+        def _get_or_pull(client: Any) -> str:  # noqa: ANN401
+            try:
+                return client.images.get(ref).id
+            except docker.errors.ImageNotFound:
+                return client.images.pull(ref).id
+
+        try:
+            return await self._host.call(_get_or_pull, timeout=self._pull_timeout)
+        except docker.errors.APIError as exc:
+            msg = f"could not pull {ref} on host {self._host.name}: {exc}"
+            raise ImagePullFailed(msg, host=self._host.name, image=ref) from exc
+
+    async def _recheck(self, board_name: str, ours: Any) -> None:  # noqa: ANN401
+        # Two control planes can pass the busy check at the same moment. Both
+        # launches land on this daemon (boards are pinned), so the earliest
+        # Created wins and every loser removes its own container.
+        busy = await self._host.call(self._busy_for_board, board_name)
+        ranked = sorted(
+            busy, key=lambda container: (_created_ns(container), container.id)
+        )
+        if ranked and ranked[0].id != ours.id:
+            await self._remove_quietly(ours)
+            raise self._busy_error(board_name, ranked[0])
 
     def _find(self, client: Any, session_id: str) -> list[Any]:  # noqa: ANN401
         return client.containers.list(
