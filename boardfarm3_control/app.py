@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
+from boardfarm3_control.admin import build_admin_router
 from boardfarm3_control.errors import (
     BoardPendingStop,
     ControlError,
@@ -181,6 +182,11 @@ def create_app(  # noqa: C901, PLR0915
     app.state.store = store
     app.state.launcher = launcher
     app.state.inflight = inflight
+    app.state.lease = lease
+    if isinstance(launcher, MultiHostLauncher):
+        app.include_router(
+            build_admin_router(launcher=launcher, registry=registry, lease=lease)
+        )
 
     @app.exception_handler(ControlError)
     async def control_error(_request: Request, exc: ControlError) -> JSONResponse:
