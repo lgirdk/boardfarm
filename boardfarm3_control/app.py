@@ -13,9 +13,16 @@ from typing import TYPE_CHECKING, Any
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
+from boardfarm3_control.errors import (
+    BoardPendingStop,
+    ControlError,
+    HostDraining,
+    HostUnreachable,
+)
+from boardfarm3_control.launcher import MultiHostLauncher
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.models import (
     SessionCreate,
@@ -23,6 +30,7 @@ from boardfarm3_control.models import (
     SessionResponse,
 )
 from boardfarm3_control.openapi import load_plugin_routers, register_plugin_routes
+from boardfarm3_control.placement import resolve_host
 from boardfarm3_control.proxy import _client_or_default, proxy_request
 from boardfarm3_control.reaper import run_reaper
 from boardfarm3_control.registry import SessionRegistry
@@ -134,6 +142,8 @@ def create_app(  # noqa: C901, PLR0915
     lease = BoardLease()
     registry = SessionRegistry()
     store = DiagnosticsStore()
+    inflight: set[str] = set()
+    hosts = launcher.hosts if isinstance(launcher, MultiHostLauncher) else None
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -170,6 +180,13 @@ def create_app(  # noqa: C901, PLR0915
     app.state.registry = registry
     app.state.store = store
     app.state.launcher = launcher
+    app.state.inflight = inflight
+
+    @app.exception_handler(ControlError)
+    async def control_error(_request: Request, exc: ControlError) -> JSONResponse:
+        return JSONResponse(
+            status_code=int(exc.status), content={"detail": exc.detail()}
+        )
 
     def _agent_http(info: AgentInfo) -> httpx.AsyncClient | None:
         # The launcher's per-host client when it has one, else the shared
@@ -226,31 +243,36 @@ def create_app(  # noqa: C901, PLR0915
                 "error": error,
                 "message": message,
                 "session_id": session_id,
+                "host": info.host,
                 "diagnostics": f"/sessions/{session_id}/diagnostics",
             },
         )
 
-    @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
-    async def create_session(  # noqa: C901
+    def _placement_gate(body: SessionCreate) -> str | None:
+        if hosts is None:
+            return None
+        host_name = resolve_host(body.payload, body.board_name, hosts)
+        docker_host = hosts.docker_host(host_name)
+        if docker_host.spec.drain:
+            msg = f"host {host_name} is draining"
+            raise HostDraining(msg, host=host_name)
+        if docker_host.is_down:
+            msg = f"host {host_name} is unreachable"
+            raise HostUnreachable(
+                msg, host=host_name, last_error=docker_host.last_error
+            )
+        return host_name
+
+    async def _launch(
+        session_id: str,
         body: SessionCreate,
+        image: str,
+        host_name: str | None,
         request: Request,
     ) -> SessionResponse:
-        if body.runtime_profile not in profiles:
-            raise HTTPException(
-                status_code=int(HTTPStatus.BAD_REQUEST),
-                detail=f"unknown runtime_profile {body.runtime_profile!r}",
-            )
-
-        session_id = _new_session_id()
-        acquired = await lease.acquire(body.board_name, session_id)
-        if not acquired:
-            held = lease.held_by(body.board_name)
-            raise HTTPException(
-                status_code=int(HTTPStatus.CONFLICT),
-                detail=f"board {body.board_name} is held by session {held}",
-            )
-
-        image = profiles[body.runtime_profile]
+        # host= is passed only when placement chose one, so Launcher
+        # subclasses whose start() predates the parameter keep working.
+        placement = {"host": host_name} if host_name is not None else {}
         try:
             info = await launcher.start(
                 session_id,
@@ -258,12 +280,17 @@ def create_app(  # noqa: C901, PLR0915
                 image,
                 body.runtime_profile,
                 agent_env=_agent_env(body.agent_env),
+                **placement,
             )
+        except ControlError:
+            await lease.release(session_id)
+            raise
         except Exception as exc:
             await lease.release(session_id)
+            where = f" on host {host_name}" if host_name else ""
             raise HTTPException(
                 status_code=int(HTTPStatus.SERVICE_UNAVAILABLE),
-                detail=f"failed to start container: {exc}",
+                detail=f"failed to start container{where}: {exc}",
             ) from exc
 
         agent_url = info.agent_url
@@ -278,9 +305,6 @@ def create_app(  # noqa: C901, PLR0915
                     "AgentUnhealthy",
                     f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
                 )
-
-            # Configure agent — inject skip_boot when caller did not request a full boot
-            # (skip_boot is a config-time option, not a boot-URL parameter)
             config_options: dict[str, Any] = dict(body.options)
             if not body.boot:
                 config_options.setdefault("skip_boot", True)
@@ -307,8 +331,6 @@ def create_app(  # noqa: C901, PLR0915
                     "AgentConfigRejected",
                     f"agent rejected config: {cfg.text}",
                 )
-
-            # Boot — always called; skip_boot was already set in config options above
             try:
                 boot = await client.post(f"{agent_url}/session/boot?mode=async")
             except Exception as exc:
@@ -332,24 +354,59 @@ def create_app(  # noqa: C901, PLR0915
         finally:
             if owns_client:
                 await client.aclose()
-        boot_job_id: str | None = boot.json().get("boot_job_id")
-        session_state = "booting" if body.boot else "ready"
 
         registry.add(info)
         registry.touch(session_id)
-
         return SessionResponse(
             session_id=session_id,
             board_name=info.board_name,
             runtime_profile=info.runtime_profile,
-            state=session_state,
-            boot_job_id=boot_job_id,
+            state="booting" if body.boot else "ready",
+            boot_job_id=boot.json().get("boot_job_id"),
             booted=False,
             agent_url=info.agent_url,
             pid=info.pid,
             created_at=info.created_at,
             last_activity=registry.last_activity(session_id),
+            host=info.host,
+            image_id=info.image_id,
         )
+
+    @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
+    async def create_session(body: SessionCreate, request: Request) -> SessionResponse:
+        if body.runtime_profile not in profiles:
+            raise HTTPException(
+                status_code=int(HTTPStatus.BAD_REQUEST),
+                detail=f"unknown runtime_profile {body.runtime_profile!r}",
+            )
+        host_name = _placement_gate(body)
+        pending = registry.pending_stop_for(body.board_name)
+        if pending is not None:
+            msg = f"board {body.board_name} has a stop pending on host {pending.host}"
+            raise BoardPendingStop(
+                msg, session_id=pending.session_id, host=pending.host
+            )
+
+        session_id = _new_session_id()
+        acquired = await lease.acquire(body.board_name, session_id)
+        if not acquired:
+            held = lease.held_by(body.board_name)
+            where = f" on host {host_name}" if host_name else ""
+            raise HTTPException(
+                status_code=int(HTTPStatus.CONFLICT),
+                detail=f"board {body.board_name} is held by session {held}{where}",
+            )
+        inflight.add(session_id)
+        try:
+            return await _launch(
+                session_id,
+                body,
+                profiles[body.runtime_profile],
+                host_name,
+                request,
+            )
+        finally:
+            inflight.discard(session_id)
 
     @app.get("/sessions")
     async def list_sessions(offset: int = 0, limit: int = 20) -> SessionListResponse:
@@ -370,6 +427,9 @@ def create_app(  # noqa: C901, PLR0915
                     ended_at=info.ended_at,
                     last_activity=registry.last_activity(info.session_id),
                     liveness=None,
+                    host=info.host,
+                    image_id=info.image_id,
+                    stop_pending=info.stop_pending,
                 )
             last_act: float | None
             liveness: dict[str, Any] | None
@@ -406,6 +466,9 @@ def create_app(  # noqa: C901, PLR0915
                 ended_at=info.ended_at,
                 last_activity=last_act,
                 liveness=liveness,
+                host=info.host,
+                image_id=info.image_id,
+                stop_pending=info.stop_pending,
             )
 
         sessions = await asyncio.gather(*[fetch_state(info) for info in page])

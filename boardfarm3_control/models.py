@@ -57,6 +57,9 @@ class SessionResponse(BaseModel):
     last_activity: float | None = None
     ended_at: float | None = None
     liveness: dict[str, Any] | None = None
+    host: str | None = None
+    image_id: str | None = None
+    stop_pending: bool = False
 
 
 class SessionListResponse(BaseModel):
