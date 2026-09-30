@@ -49,8 +49,17 @@ def build_admin_router(  # noqa: C901
                 counts["live"] += 1
         return counts
 
+    def _sessions_on(name: str) -> list[str]:
+        # The index as well as the registry: a failed launch's pending stop
+        # may be known only to sessions.json.
+        in_registry = {
+            info.session_id for info in registry.sessions() if info.host == name
+        }
+        in_index = {entry.info.session_id for entry in launcher.entries(name)}
+        return sorted(in_registry | in_index)
+
     def _in_use(name: str) -> bool:
-        return any(_counts(name).values())
+        return bool(_sessions_on(name))
 
     def _known(name: str) -> None:
         if name not in hosts.names():
@@ -112,9 +121,7 @@ def build_admin_router(  # noqa: C901
     @router.delete("/hosts/{name}")
     async def delete_host(name: str, force: bool = False) -> dict[str, object]:
         _known(name)
-        abandoned = [
-            info.session_id for info in registry.sessions() if info.host == name
-        ]
+        abandoned = _sessions_on(name)
         if abandoned and not force:
             msg = f"host {name} has {len(abandoned)} session(s); delete them, or pass force=true"
             raise HostInUse(msg, host=name, sessions=abandoned)

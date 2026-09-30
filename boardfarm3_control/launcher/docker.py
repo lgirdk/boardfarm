@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from boardfarm3_control.errors import BoardBusyOnHost, HostUnreachable, ImagePullFailed
+from boardfarm3_control.errors import (
+    BoardBusyOnHost,
+    ImagePullFailed,
+    StopPending,
+)
 from boardfarm3_control.launcher._common import _DEFAULT_ARTIFACT_ROOT, _artifact_root
 
 if TYPE_CHECKING:
@@ -23,6 +28,9 @@ BUSY_STATUSES = ("running", "paused", "restarting")
 DEFAULT_PULL_TIMEOUT = 600.0
 _STOP_GRACE = 10.0
 _ARCHIVE_TIMEOUT = 300.0
+# A created-but-never-started container younger than this still counts as a
+# rival in the re-check (another control plane may be about to start it).
+_CREATED_GRACE_NS = 60 * 1_000_000_000
 
 
 def _finished_at(container: Any) -> float | None:  # noqa: ANN401
@@ -50,6 +58,16 @@ def _finished_at(container: Any) -> float | None:  # noqa: ANN401
     except ValueError:
         _log.warning("could not parse container FinishedAt %r", raw)
         return None
+
+
+def _ended_at(container: Any) -> float | None:  # noqa: ANN401
+    # A container that never started has no FinishedAt; use its Created time
+    # so the reaper can still purge it.
+    finished = _finished_at(container)
+    if finished is not None or container.status != "created":
+        return finished
+    created = _created_ns(container)
+    return created / 1_000_000_000 if created else None
 
 
 def _published_port(_client: Any, container: Any) -> int | None:  # noqa: ANN401
@@ -143,6 +161,7 @@ class DockerLauncher:
         :return: the agent's info
         :rtype: AgentInfo
         :raises RuntimeError: when Docker published no port for the agent
+        :raises StopPending: when a failed launch could not remove its container
         :raises BoardBusyOnHost: when the board already has a busy agent on this host
         :raises ImagePullFailed: when the image is missing and cannot be pulled
         """
@@ -173,22 +192,31 @@ class DockerLauncher:
         # (bind_addr, None): Docker picks a free port on the host that owns it.
         ports = {"8000/tcp": (self._host.spec.bind_addr, None)}
 
-        def _run(client: Any) -> Any:  # noqa: ANN401
-            return client.containers.run(
+        def _create(client: Any) -> Any:  # noqa: ANN401
+            return client.containers.create(
                 ref,
-                detach=True,
                 ports=ports,
                 labels=labels,
                 environment=environment,
             )
 
-        container = await self._host.call(_run)
-        port = await self._host.call(_published_port, container)
-        if port is None:
-            await self._remove_quietly(container)
-            msg = f"agent container {container.id} on host {self._host.name} has no published port"
-            raise RuntimeError(msg)
-        await self._recheck(board_name, container)
+        container = await self._host.call(_create)
+        try:
+            # Re-check before starting: a rival that is only created is still
+            # a rival, and a loser that never started never touched the board.
+            await self._recheck(board_name, container)
+            await self._host.call(lambda _client: container.start())
+            port = await self._host.call(_published_port, container)
+            if port is None:
+                msg = f"agent container {container.id} on host {self._host.name} has no published port"
+                raise RuntimeError(msg)  # noqa: TRY301
+        except BaseException as exc:
+            removed = await self._remove_quietly(container)
+            if not removed and not isinstance(exc, asyncio.CancelledError):
+                # The container may still exist; the caller records a pending
+                # stop so the reconciler removes it once the host answers.
+                raise StopPending(session_id, self._host.name) from exc
+            raise
         return AgentInfo(
             session_id=session_id,
             board_name=board_name,
@@ -250,7 +278,7 @@ class DockerLauncher:
 
         try:
             return await self._host.call(_logs)
-        except HostUnreachable:
+        except Exception:  # noqa: BLE001
             _log.warning(
                 "host %s unreachable; no logs for %s", self._host.name, session_id
             )
@@ -275,7 +303,7 @@ class DockerLauncher:
             return b"".join(stream)
 
         try:
-            return await self._host.call(_archive, timeout=_ARCHIVE_TIMEOUT)
+            return await self._host.call(_archive, timeout=_ARCHIVE_TIMEOUT, long=True)
         except Exception:  # noqa: BLE001
             _log.warning(
                 "could not archive %s from session %s on host %s",
@@ -298,6 +326,7 @@ class DockerLauncher:
         def _list(client: Any) -> list[Any]:  # noqa: ANN401
             return client.containers.list(
                 all=True,
+                ignore_removed=True,
                 filters={
                     "label": [
                         self._LABEL_SESSION,
@@ -313,6 +342,7 @@ class DockerLauncher:
         # holds the board's consoles.
         return client.containers.list(
             all=True,
+            ignore_removed=True,
             filters={
                 "label": [f"{self._LABEL_BOARD}={board_name}"],
                 "status": list(BUSY_STATUSES),
@@ -346,26 +376,45 @@ class DockerLauncher:
                 return client.images.pull(ref).id
 
         try:
-            return await self._host.call(_get_or_pull, timeout=self._pull_timeout)
+            return await self._host.single_flight(
+                f"pull:{ref}",
+                lambda: self._host.call(
+                    _get_or_pull, timeout=self._pull_timeout, long=True
+                ),
+            )
         except docker.errors.APIError as exc:
             msg = f"could not pull {ref} on host {self._host.name}: {exc}"
             raise ImagePullFailed(msg, host=self._host.name, image=ref) from exc
 
+    def _contenders(self, client: Any, board_name: str) -> list[Any]:  # noqa: ANN401
+        return client.containers.list(
+            all=True,
+            ignore_removed=True,
+            filters={
+                "label": [f"{self._LABEL_BOARD}={board_name}"],
+                "status": [*BUSY_STATUSES, "created"],
+            },
+        )
+
     async def _recheck(self, board_name: str, ours: Any) -> None:  # noqa: ANN401
         # Two control planes can pass the busy check at the same moment. Both
         # launches land on this daemon (boards are pinned), so the earliest
-        # Created wins and every loser removes its own container.
-        busy = await self._host.call(self._busy_for_board, board_name)
-        ranked = sorted(
-            busy, key=lambda container: (_created_ns(container), container.id)
-        )
+        # Created wins; start() removes a loser's container before it starts.
+        contenders = await self._host.call(self._contenders, board_name)
+        horizon = _created_ns(ours) - _CREATED_GRACE_NS
+        rivals = [
+            c
+            for c in contenders
+            if c.id == ours.id or c.status in BUSY_STATUSES or _created_ns(c) >= horizon
+        ]
+        ranked = sorted(rivals, key=lambda c: (_created_ns(c), c.id))
         if ranked and ranked[0].id != ours.id:
-            await self._remove_quietly(ours)
             raise self._busy_error(board_name, ranked[0])
 
     def _find(self, client: Any, session_id: str) -> list[Any]:  # noqa: ANN401
         return client.containers.list(
             all=True,
+            ignore_removed=True,
             filters={
                 "label": [
                     f"{self._LABEL_SESSION}={session_id}",
@@ -393,13 +442,13 @@ class DockerLauncher:
             state="live" if busy else "dead",
             # None while busy; every corpse carries a real timestamp or it
             # becomes unreapable after a restart.
-            ended_at=None if busy else _finished_at(container),
+            ended_at=None if busy else _ended_at(container),
             artifact_dir=labels.get(self._LABEL_ARTIFACT_DIR, _DEFAULT_ARTIFACT_ROOT),
             host=self._host.name,
             image_id=container.attrs.get("Image"),
         )
 
-    async def _remove_quietly(self, container: Any) -> None:  # noqa: ANN401
+    async def _remove_quietly(self, container: Any) -> bool:  # noqa: ANN401
         try:
             await self._host.call(lambda _client: container.remove(force=True))
         except Exception:  # noqa: BLE001
@@ -408,6 +457,8 @@ class DockerLauncher:
                 container.id,
                 self._host.name,
             )
+            return False
+        return True
 
     def agent_client(self, info: AgentInfo) -> httpx.AsyncClient | None:  # noqa: ARG002
         """Use the control plane's shared pool for every agent.

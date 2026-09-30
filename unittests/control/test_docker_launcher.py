@@ -222,18 +222,18 @@ async def test_pull_failure_raises_image_pull_failed_and_runs_nothing(
 
 async def test_recheck_loser_removes_its_own_container(fake_daemon: Any) -> None:
     daemon = fake_daemon(images={"img:1": "sha256:aaa"})
-    original_run = daemon.containers.run
+    original_create = daemon.containers.create
 
-    def run_with_rival(image: str, **kwargs: Any) -> Any:
+    def create_with_rival(image: str, **kwargs: Any) -> Any:
         daemon.add_agent(
             session_id="s-rival",
             board_name="board-1",
             control_id="c-other",
             created="2026-09-30T09:59:59.9Z",
         )
-        return original_run(image, **kwargs)
+        return original_create(image, **kwargs)
 
-    daemon.containers.run = run_with_rival
+    daemon.containers.create = create_with_rival
     with pytest.raises(BoardBusyOnHost) as err:
         await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
     assert err.value.fields["session_id"] == "s-rival"
@@ -242,10 +242,10 @@ async def test_recheck_loser_removes_its_own_container(fake_daemon: Any) -> None
 
 async def test_recheck_winner_keeps_its_container(fake_daemon: Any) -> None:
     daemon = fake_daemon(images={"img:1": "sha256:aaa"})
-    original_run = daemon.containers.run
+    original_create = daemon.containers.create
 
-    def run_with_later_rival(image: str, **kwargs: Any) -> Any:
-        container = original_run(image, **kwargs)
+    def create_with_later_rival(image: str, **kwargs: Any) -> Any:
+        container = original_create(image, **kwargs)
         daemon.add_agent(
             session_id="s-rival",
             board_name="board-1",
@@ -254,7 +254,7 @@ async def test_recheck_winner_keeps_its_container(fake_daemon: Any) -> None:
         )
         return container
 
-    daemon.containers.run = run_with_later_rival
+    daemon.containers.create = create_with_later_rival
     info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
     assert info.session_id == "s-1"
     assert len(daemon.agents("board-1")) == 2  # the rival's control removes its own
