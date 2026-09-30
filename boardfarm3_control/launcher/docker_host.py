@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from boardfarm3_control.errors import HostUnreachable
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Awaitable, Callable
 
     from boardfarm3_control.models import HostSpec
 
@@ -121,6 +121,13 @@ class DockerHost:
             max_workers=workers,
             thread_name_prefix=f"docker-{name}",
         )
+        # Pulls and archive downloads run for minutes; on their own pool they
+        # can never starve the pings, lists and stops of the same host.
+        self._long_executor = ThreadPoolExecutor(
+            max_workers=workers,
+            thread_name_prefix=f"docker-{name}-long",
+        )
+        self._flights: dict[str, asyncio.Future[Any]] = {}
         self._failure_threshold = failure_threshold
         self._failures = 0
 
@@ -189,6 +196,7 @@ class DockerHost:
         fn: Callable[..., _T],
         *args: object,
         timeout: float | None = None,
+        long: bool = False,
         **kwargs: object,
     ) -> _T:
         """Run ``fn(client, *args, **kwargs)`` on this host's thread pool.
@@ -199,6 +207,10 @@ class DockerHost:
         :type args: object
         :param timeout: seconds before giving up; defaults to the host timeout
         :type timeout: float | None
+        :param long: run on the long-operation pool (pulls, archives); running
+            out of time there says nothing about the daemon, so it does not
+            count against the breaker
+        :type long: bool
         :param kwargs: extra keyword arguments for *fn*
         :type kwargs: object
         :return: whatever *fn* returns
@@ -208,7 +220,27 @@ class DockerHost:
         if self.is_down:
             msg = f"host {self.name} is unreachable"
             raise HostUnreachable(msg, host=self.name, last_error=self.last_error)
-        return await self._run(fn, *args, timeout=timeout, **kwargs)
+        return await self._run(fn, *args, timeout=timeout, long=long, **kwargs)
+
+    async def single_flight(self, key: str, make: Callable[[], Awaitable[_T]]) -> _T:
+        """Share one in-progress operation between concurrent callers.
+
+        Concurrent creates of the same image await one pull instead of each
+        pulling. One caller's cancellation never cancels the shared operation.
+
+        :param key: identifies the operation, e.g. ``pull:<ref>``
+        :type key: str
+        :param make: starts the operation when none is in progress
+        :type make: Callable[[], Awaitable[_T]]
+        :return: the operation's result
+        :rtype: _T
+        """
+        flight = self._flights.get(key)
+        if flight is None:
+            flight = asyncio.ensure_future(make())
+            self._flights[key] = flight
+            flight.add_done_callback(lambda _done: self._flights.pop(key, None))
+        return await asyncio.shield(flight)
 
     async def ping(self) -> bool:
         """Probe the daemon, bypassing the breaker; success closes it.
@@ -223,8 +255,14 @@ class DockerHost:
         return True
 
     def close(self) -> None:
-        """Stop the thread pool and close the client."""
-        self._executor.shutdown(wait=False, cancel_futures=True)
+        """Stop the thread pools and close the client.
+
+        Queued calls still run: cancelling them would hand their awaiting
+        coroutines a CancelledError nobody asked for (e.g. a create would then
+        skip releasing its lease).
+        """
+        self._executor.shutdown(wait=False)
+        self._long_executor.shutdown(wait=False)
         with self._client_lock:
             client, self._client = self._client, None
         if client is not None:
@@ -236,17 +274,22 @@ class DockerHost:
         fn: Callable[..., _T],
         *args: object,
         timeout: float | None,
+        long: bool = False,
         **kwargs: object,
     ) -> _T:
         loop = asyncio.get_running_loop()
+        executor = self._long_executor if long else self._executor
         job = functools.partial(self._invoke, fn, args, kwargs)
         limit = (self.timeout if timeout is None else timeout) + _OUTER_MARGIN
         try:
             result = await asyncio.wait_for(
-                loop.run_in_executor(self._executor, job),
+                loop.run_in_executor(executor, job),
                 timeout=limit,
             )
         except Exception as exc:
+            if long and isinstance(exc, TimeoutError):
+                msg = f"host {self.name}: operation did not finish within {limit:.0f} s"
+                raise HostUnreachable(msg, host=self.name) from exc
             if is_transport_error(exc):
                 self._record_failure(exc)
                 msg = f"host {self.name} did not answer: {self.last_error}"

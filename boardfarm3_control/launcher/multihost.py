@@ -13,7 +13,7 @@ from boardfarm3_control._jsonfile import read_json, write_json_atomic
 from boardfarm3_control.errors import HostUnreachable, NoHostForBoard, StopPending
 from boardfarm3_control.launcher.docker import DEFAULT_PULL_TIMEOUT, DockerLauncher
 from boardfarm3_control.models import (
-    AgentInfo,  # noqa: TC001 - pydantic needs it at runtime
+    AgentInfo,
 )
 
 if TYPE_CHECKING:
@@ -151,17 +151,38 @@ class MultiHostLauncher:
         :return: the agent's info
         :rtype: AgentInfo
         :raises NoHostForBoard: when no host was chosen
+        :raises StopPending: when the launch failed and its container may remain
         """
         if host is None:
             msg = f"no host chosen for board {board_name}"
             raise NoHostForBoard(msg, board_name=board_name)
-        info = await self.launcher_for(host).start(
-            session_id,
-            board_name,
-            image,
-            runtime_profile,
-            agent_env=agent_env,
-        )
+        try:
+            info = await self.launcher_for(host).start(
+                session_id,
+                board_name,
+                image,
+                runtime_profile,
+                agent_env=agent_env,
+            )
+        except StopPending:
+            # The launch failed and its container could not be removed: record
+            # a pending stop so the reconciler removes it once the host answers.
+            self.record(
+                AgentInfo(
+                    session_id=session_id,
+                    board_name=board_name,
+                    runtime_profile=runtime_profile,
+                    container_id="",
+                    host_port=0,
+                    created_at=time.time(),
+                    state="dead",
+                    ended_at=time.time(),
+                    host=host,
+                    stop_pending=True,
+                ),
+                retained=False,
+            )
+            raise
         self.record(info, retained=False)
         return info
 
@@ -183,9 +204,12 @@ class MultiHostLauncher:
         try:
             await self.launcher_for(entry.info.host).stop(session_id, remove=remove)
         except Exception as exc:
-            self.record(
-                dead.model_copy(update={"stop_pending": True}), retained=not remove
-            )
+            # A host force-delete may have forgotten the session meanwhile;
+            # recording it again would strand its board behind a removed host.
+            if session_id in self._index:
+                self.record(
+                    dead.model_copy(update={"stop_pending": True}), retained=not remove
+                )
             raise StopPending(session_id, entry.info.host) from exc
         if remove:
             self.forget(session_id)

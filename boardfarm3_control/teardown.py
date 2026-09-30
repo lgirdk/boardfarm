@@ -65,7 +65,7 @@ async def archive_bundle(  # noqa: PLR0913
 
     :param session_id: session to capture
     :type session_id: str
-    :param agent_url: base URL of the agent
+    :param agent_url: base URL of the agent; empty skips the agent tier
     :type agent_url: str
     :param launcher: launcher used for the fallback capture
     :type launcher: Launcher
@@ -80,17 +80,18 @@ async def archive_bundle(  # noqa: PLR0913
     :return: which tier produced the bundle: agent, launcher, or none
     :rtype: str
     """
-    try:
-        response = await http.get(
-            f"{agent_url}/diagnostics/bundle",
-            timeout=_BUNDLE_TIMEOUT,
-        )
-        response.raise_for_status()
-    except (httpx.HTTPError, httpx.InvalidURL) as exc:
-        _log.info("agent bundle unavailable for %s: %s", session_id, exc)
-    else:
-        store.write_bundle(session_id, [response.content])
-        return "agent"
+    if agent_url:  # empty: the agent is known to be gone; use the launcher
+        try:
+            response = await http.get(
+                f"{agent_url}/diagnostics/bundle",
+                timeout=_BUNDLE_TIMEOUT,
+            )
+            response.raise_for_status()
+        except (httpx.HTTPError, httpx.InvalidURL) as exc:
+            _log.info("agent bundle unavailable for %s: %s", session_id, exc)
+        else:
+            store.write_bundle(session_id, [response.content])
+            return "agent"
 
     logs = await launcher.capture_logs(session_id)
     # The per-session subdirectory, not the shared root: capture_files()

@@ -122,6 +122,9 @@ def lab() -> Iterator[dict[str, Any]]:
                 f"bf-it-{name}",
                 ip,
                 privileged=True,
+                # tmpfs /run: a "reboot" (docker restart) must not find the old
+                # containerd pid file, or dockerd fails to start on PID reuse.
+                tmpfs={"/run": ""},
                 environment={"DOCKER_TLS_CERTDIR": ""},
                 command=[
                     "--host=tcp://0.0.0.0:2375",

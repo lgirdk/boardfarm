@@ -309,7 +309,7 @@ def create_app(  # noqa: C901, PLR0915
             )
         return host_name
 
-    async def _launch(
+    async def _launch(  # noqa: C901
         session_id: str,
         body: SessionCreate,
         image: str,
@@ -338,6 +338,11 @@ def create_app(  # noqa: C901, PLR0915
                 status_code=int(HTTPStatus.SERVICE_UNAVAILABLE),
                 detail=f"failed to start container{where}: {exc}",
             ) from exc
+        except BaseException:
+            # A cancelled create (client gone, pool shut down) must not strand
+            # the board's lease until the next restart.
+            await lease.release(session_id)
+            raise
 
         agent_url = info.agent_url
         client, owns_client = _client_or_default(_agent_http(info))

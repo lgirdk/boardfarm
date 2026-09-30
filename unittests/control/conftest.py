@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import itertools
+import time
 from typing import TYPE_CHECKING, Any
 
 import docker.errors
@@ -49,6 +50,7 @@ class FakeContainer:
         """Create a running container."""
         self._daemon = daemon
         self.id = container_id
+        self.bind_ip = bind_ip
         self.labels = dict(labels)
         self.status = "running"
         self.ports: dict[str, list[dict[str, str]]] = {}
@@ -63,6 +65,14 @@ class FakeContainer:
     def reload(self) -> None:
         """Refresh attributes (a daemon round trip)."""
         self._daemon.touch("reload")
+
+    def start(self) -> None:
+        """Start a created container; Docker assigns the published port now."""
+        self._daemon.touch("start")
+        self.status = "running"
+        if self._daemon.publish:
+            port = str(next(self._daemon.port_counter))
+            self.ports["8000/tcp"] = [{"HostIp": self.bind_ip, "HostPort": port}]
 
     def stop(self, timeout: int | None = None) -> None:  # noqa: ARG002
         """Stop the container."""
@@ -107,32 +117,53 @@ class _Containers:
         """Bind to the daemon."""
         self._daemon = daemon
 
-    def run(self, image: str, **kwargs: Any) -> FakeContainer:
-        """Create and start a container like ``containers.run(detach=True)``."""
+    def create(self, image: str, **kwargs: Any) -> FakeContainer:
+        """Create a container (status ``created``, no port yet)."""
         daemon = self._daemon
-        daemon.touch("run")
+        daemon.touch("create")
         daemon.runs.append({"image": image, **kwargs})
         bind_ip, _ = kwargs["ports"]["8000/tcp"]
         return daemon.add(
             labels=kwargs["labels"],
             image_id=daemon.images_present.get(image, "sha256:unknown"),
             bind_ip=bind_ip,
-            publish=daemon.publish,
+            status="created",
+            publish=False,
         )
+
+    def run(self, image: str, **kwargs: Any) -> FakeContainer:
+        """Create, then start, like docker-py (a failed start leaves the container)."""
+        kwargs.pop("detach", None)
+        container = self.create(image, **kwargs)
+        container.start()
+        return container
 
     def list(
         self,
         all: bool = False,  # noqa: A002
         filters: dict[str, Any] | None = None,
+        ignore_removed: bool = False,
     ) -> list[FakeContainer]:
-        """List containers, honouring label and status filters."""
+        """List containers like docker-py: ids first, then one inspect each.
+
+        A container in ``vanish`` is removed between the two steps; docker-py
+        then raises NotFound unless ``ignore_removed`` is set.
+        """
         self._daemon.touch("list")
-        return [
+        listed = [
             container
             for container in list(self._daemon.store.values())
             if (all or container.status == "running")
             and (not filters or _matches(container, filters))
         ]
+        vanished = [c for c in listed if c.id in self._daemon.vanish]
+        for container in vanished:
+            self._daemon.store.pop(container.id, None)
+            self._daemon.vanish.discard(container.id)
+        if vanished and not ignore_removed:
+            msg = f"No such container: {vanished[0].id}"
+            raise docker.errors.NotFound(msg)
+        return [c for c in listed if c not in vanished]
 
 
 class _Image:
@@ -162,6 +193,9 @@ class _Images:
         """Pull a pullable image or raise APIError."""
         self._daemon.touch("pull")
         self._daemon.pulls.append(ref)
+        if self._daemon.pull_hang is not None:
+            self._daemon.pull_hang.wait(10)
+        time.sleep(self._daemon.pull_delay)
         if ref not in self._daemon.pullable:
             msg = f"manifest for {ref} not found"
             raise docker.errors.APIError(msg)
@@ -187,9 +221,12 @@ class FakeDockerDaemon:
         self.down = False
         self.publish = True
         self.hang: threading.Event | None = None
+        self.pull_hang: threading.Event | None = None
+        self.pull_delay = 0.0
+        self.vanish: set[str] = set()
         self.fail: dict[str, Exception] = {}
         self._ids = itertools.count(1)
-        self._ports = itertools.count(32768)
+        self.port_counter = itertools.count(32768)
         self._ticks = itertools.count(1)
         self.containers = _Containers(self)
         self.images = _Images(self)
@@ -239,11 +276,11 @@ class FakeDockerDaemon:
             labels=labels,
             created=created or self.next_created(),
             image_id=image_id,
-            host_port=next(self._ports) if publish else None,
+            host_port=next(self.port_counter) if publish else None,
             bind_ip=bind_ip,
         )
         container.status = status
-        if status not in _BUSY:
+        if status in ("exited", "dead"):
             container.attrs["State"]["FinishedAt"] = _STOPPED_AT
         self.store[container.id] = container
         return container
