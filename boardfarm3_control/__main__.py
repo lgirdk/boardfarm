@@ -40,7 +40,17 @@ def main() -> None:
         msg = f"BOARDFARM_PROFILES is not valid JSON: {exc}"
         raise ValueError(msg) from exc
 
-    app = create_app(launcher=_LAUNCHERS[launcher_name](), profiles=profiles)
+    cors_origins = [
+        origin.strip()
+        for origin in os.environ.get("BOARDFARM_CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+
+    app = create_app(
+        launcher=_LAUNCHERS[launcher_name](),
+        profiles=profiles,
+        cors_origins=cors_origins,
+    )
     uvicorn.run(
         app,
         host="0.0.0.0",  # noqa: S104
