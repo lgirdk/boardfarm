@@ -65,6 +65,14 @@ class ConfigIn(BaseModel):
     options: ConfigOptions = Field(default_factory=ConfigOptions)
 
 
+class CommandIn(BaseModel):
+    """Body of ``POST /devices``."""
+
+    device: str
+    command: str
+    console_name: str = "console"
+
+
 _log = logging.getLogger(__name__)
 
 
@@ -272,6 +280,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 {
                     "name": name,
                     "type": type(device).__name__,
+                    "consoles": list(device.get_interactive_consoles().keys()),
                     "templates": sorted(
                         base.__name__
                         for base in type(device).__mro__
@@ -281,6 +290,16 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 for name, device in found.items()
             ],
         }
+
+    @app.post("/devices")
+    async def execute_command(body: CommandIn) -> dict[str, Any]:
+        current = session()
+        if current.runtime.device_manager is None:
+            return {"devices": []}
+        dev = current.runtime.device_manager.get_device_by_name(body.device)
+        console = dev.get_interactive_consoles()[body.console_name]
+        output = console.execute_command(body.command)
+        return {"output": output}
 
     @app.get("/console")
     async def console(
