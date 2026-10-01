@@ -107,6 +107,11 @@ class EventBuffer:
         :return: matching events and the next cursor
         :rtype: tuple[list[ConsoleEvent], int]
         """
+        if cursor < 0:
+            snap = list(self._events)
+            if not snap:
+                return [], self._next_seq
+            cursor = snap[-abs(cursor)].seq if len(snap) >= abs(cursor) else snap[0].seq
         selected: list[ConsoleEvent] = []
         truncated = False
         for event in self._events:
