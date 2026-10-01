@@ -593,3 +593,89 @@ async def test_console_stream_emits_keepalive_when_idle(
             pytest.fail("no keepalive frame received")
 
         await response.body_iterator.aclose()
+
+
+def test_console_negative_cursor_returns_tail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A negative cursor tails the last N buffered events.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    with TestClient(application) as test_client:
+        buf = application.state.session.buffer
+        for i in range(10):
+            buf.append(stream="framework", device=None, job_id=None, line=f"line-{i}")
+
+        body = test_client.get("/console?cursor=-5").json()
+        lines = [e["line"] for e in body["events"]]
+        assert lines == [f"line-{i}" for i in range(5, 10)]
+
+
+def test_console_negative_cursor_clamps_when_fewer_events(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A negative cursor larger than the buffer returns all events.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    with TestClient(application) as test_client:
+        buf = application.state.session.buffer
+        for i in range(3):
+            buf.append(stream="framework", device=None, job_id=None, line=f"line-{i}")
+
+        body = test_client.get("/console?cursor=-1000").json()
+        assert len(body["events"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_console_stream_negative_cursor_replays_tail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A negative cursor on the stream replays the last N buffered events.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    async with application.router.lifespan_context(application):
+        buf = application.state.session.buffer
+        for i in range(5):
+            buf.append(stream="framework", device=None, job_id=None, line=f"line-{i}")
+
+        route = next(
+            candidate
+            for candidate in application.routes
+            if getattr(candidate, "path", None) == "/console/stream"
+        )
+        response = await route.endpoint(request=_FakeRequest(), device=None, cursor=-3)
+
+        first = await response.body_iterator.__anext__()
+        assert json.loads(first.removeprefix("data: ").strip())["line"] == "line-2"
+
+        second = await response.body_iterator.__anext__()
+        assert json.loads(second.removeprefix("data: ").strip())["line"] == "line-3"
+
+        third = await response.body_iterator.__anext__()
+        assert json.loads(third.removeprefix("data: ").strip())["line"] == "line-4"
+
+        await response.body_iterator.aclose()
