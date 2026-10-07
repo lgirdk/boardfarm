@@ -54,7 +54,7 @@ To quickly deploy a local environment, run:
 # Assuming boardfarm repo is already cloned
 
 cd resources/deploy/prplos
-docker compose up -f docker-compose.yaml -d
+docker compose -f docker-compose.yaml up -d
 ```
 
 > **Note:** If you want to explore more examples, see `/examples/double_hop` directory in [raikou-net](https://github.com/lgirdk/raikou-net.git)
