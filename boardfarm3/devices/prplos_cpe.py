@@ -67,11 +67,31 @@ class PrplOSx86HW(CPEHW):
         :return: MAC address
         :rtype: str
         """
+        # Try config first (user-provided)
+        config_mac = self._config.get("mac")
+        if config_mac:
+            return config_mac
+        
         if self._console:
-            output = self._console.execute_command("grep HWMACADDRESS /etc/environment")
-            return re.findall('"([^"]*)"', output).pop()
-
-        return self._config.get("mac")
+            # Try HWMACADDRESS first (as is the case with v3.0.3)
+            output = self._console.execute_command("grep HWMACADDRESS /etc/environment 2>/dev/null || true")
+            matches = re.findall('"([^"]*)"', output)
+            if matches and matches[0]:
+                return matches[0]
+            
+            # Fallback to BASEMACADDRESS (as is the case with v3.0.2)
+            output = self._console.execute_command("grep BASEMACADDRESS /etc/environment 2>/dev/null || true")
+            matches = re.findall('"([^"]*)"', output)
+            if matches and matches[0]:
+                return matches[0]
+            
+            # Final fallback: read directly from eth1 interface
+            output = self._console.execute_command("cat /sys/class/net/eth1/address 2>/dev/null || true")
+            mac = output.strip()
+            if mac:
+                return mac.upper()
+        
+        return ""
 
     @property
     def serial_number(self) -> str:
