@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from boardfarm3.api.console import ConsoleCapture, EventBuffer
 from boardfarm3.api.errors import console_tail_from, error_envelope
-from boardfarm3.api.execution import ExecutionQueue, Job
+from boardfarm3.api.execution import ExecutionQueue, Job, JobState
 from boardfarm3.api.runtime import RuntimeContext
 
 if TYPE_CHECKING:
@@ -92,6 +92,11 @@ class Session:
         self._configuring = True
         try:
             await self._configure(payload, options)
+        except Exception as exc:
+            # Still CREATED, so a corrected payload can be retried; the status
+            # says why the last attempt failed.
+            self.error = error_envelope(exc, session_id=self.session_id)
+            raise
         finally:
             self._configuring = False
 
@@ -125,6 +130,10 @@ class Session:
     async def boot(self) -> None:
         """Run the boot chain, moving the session to READY or FAILED.
 
+        The outcome is applied by the job's completion callback, not by this
+        coroutine: a caller that stops waiting (a client or proxy giving up on
+        a sync boot) must not leave the session stuck in BOOTING.
+
         :raises RuntimeError: when the session has not been configured
         """
         if self.state is not SessionState.CONFIGURED:
@@ -132,22 +141,35 @@ class Session:
             raise RuntimeError(msg)
         self.state = SessionState.BOOTING
         self.touch()
+        finished: asyncio.Future[None] = asyncio.get_running_loop().create_future()
+
+        def _on_done(job: Job) -> None:
+            self._finish_boot(job)
+            if not finished.done():
+                finished.set_result(None)
+
         self._boot_job = await self.queue.submit(
-            self.runtime.boot_blocking, mode="async"
+            self.runtime.boot_blocking,
+            mode="async",
+            on_done=_on_done,
         )
-        job = self._boot_job
-        while job.state.value in ("queued", "running"):  # noqa: ASYNC110
-            await asyncio.sleep(0.05)
-        if job.error is not None:
+        await asyncio.shield(finished)
+
+    def _finish_boot(self, job: Job) -> None:
+        if job.state is JobState.DONE:
+            self.state = SessionState.READY
+        else:
+            # ERROR, or CANCELLED before it ever ran: either way not booted.
+            failure = job.error or RuntimeError(
+                f"boot job {job.id} was cancelled before it started",
+            )
             self.state = SessionState.FAILED
             self.error = error_envelope(
-                job.error,
+                failure,
                 session_id=self.session_id,
                 job_id=job.id,
                 console_tail=console_tail_from(self.buffer, job.id),
             )
-        else:
-            self.state = SessionState.READY
         self.touch()
 
     async def release(self) -> None:

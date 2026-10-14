@@ -26,7 +26,7 @@ from fastapi.testclient import TestClient
 from boardfarm3.api.routers._generator import generate_template_routers
 from boardfarm3.api.routers.adapter import DefaultAdapter, Outcome, Unsupported
 from boardfarm3.api.runtime import RuntimeOptions
-from boardfarm3.api.session import Session
+from boardfarm3.api.session import Session, SessionState
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -175,6 +175,8 @@ def _build_client(adapter: DefaultAdapter, device: object) -> Iterator[TestClien
         RuntimeOptions(board_name="board-1"),
         runtime=_FakeRuntime(_FakeDeviceManager(device)),
     )
+    # Device calls need a booted session; this harness stands in for one.
+    session.state = SessionState.READY
     app.state.session = session
     try:
         yield TestClient(app)

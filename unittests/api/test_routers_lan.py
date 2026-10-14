@@ -485,3 +485,25 @@ def test_skipped_routes_contains_non_serialisable_lan_methods(
     assert "get_default_gateway" in skipped_methods or "http_get" in skipped_methods, (
         f"Expected at least one non-serialisable LAN method in skipped list, got: {skipped_methods}"
     )
+
+
+def test_lan_ping_configured_but_not_booted_returns_409(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Devices exist after configure, but their consoles are not connected yet.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=_FakeRuntimeWithLAN())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    with TestClient(app_module.create_app("s-test", "board-1")) as client:
+        client.post(
+            "/session/config",
+            json={"payload": {"inventory": {}, "env": {}}, "options": {}},
+        )
+        resp = client.post("/core/templates/lan/ping", json={"ping_ip": "8.8.8.8"})
+    assert resp.status_code == HTTP_CONFLICT

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import io
 import json
 import logging
 import os
@@ -20,13 +19,16 @@ import pexpect
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import Headers
 
 from boardfarm3.api import SESSION_HEADER
+from boardfarm3.api import bundle as bundle_module
 from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
+from boardfarm3.api.routers import _async_response, require_device_manager
 from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session, SessionConflict, SessionState
 from boardfarm3.devices.base_devices import BoardfarmDevice
@@ -69,12 +71,40 @@ class ConfigIn(BaseModel):
     options: ConfigOptions = Field(default_factory=ConfigOptions)
 
 
+class ExecIn(BaseModel):
+    """Body of ``POST /devices/{device_name}/exec``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    command: str
+    console_name: str = "console"
+    timeout: int | None = None
+
+
 class CommandIn(BaseModel):
-    """Body of ``POST /devices``."""
+    """Body of the deprecated ``POST /devices``."""
 
     device: str
     command: str
     console_name: str = "console"
+    timeout: int | None = None
+
+
+def _console_names(device: Any) -> list[str]:  # noqa: ANN401
+    """Return a device's interactive console names, empty when it has none.
+
+    :param device: a registered device
+    :type device: Any
+    :return: console names
+    :rtype: list[str]
+    """
+    getter = getattr(device, "get_interactive_consoles", None)
+    if getter is None:
+        return []
+    try:
+        return list(getter().keys())
+    except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+        return []
 
 
 _log = logging.getLogger(__name__)
@@ -151,6 +181,115 @@ class SessionGuard:
                 await response(scope, receive, send)
                 return
         await self._app(scope, receive, send)
+
+
+def _write_console_archive(directory: Path, dest: Path) -> None:
+    """Write a tar.gz of a console-log directory.
+
+    :param directory: console-log directory
+    :type directory: Path
+    :param dest: archive to write
+    :type dest: Path
+    """
+    with tarfile.open(dest, "w:gz") as archive:
+        bundle_module.add_tree(archive, directory, "console-logs")
+
+
+async def _build_in_thread(
+    build: Any,  # noqa: ANN401
+    *args: Any,  # noqa: ANN401
+    prefix: str,
+    name: str,
+) -> Path:
+    """Run *build* off the event loop into a fresh temp dir; remove it on failure.
+
+    :param build: blocking callable taking ``(*args, dest)``
+    :type build: Any
+    :param args: leading arguments for *build*
+    :type args: Any
+    :param prefix: temp directory prefix
+    :type prefix: str
+    :param name: file name of the artefact inside the temp dir
+    :type name: str
+    :return: path of the built artefact
+    :rtype: Path
+    """
+    dest = Path(tempfile.mkdtemp(prefix=prefix)) / name
+    try:
+        await run_in_threadpool(build, *args, dest)
+    except BaseException:
+        shutil.rmtree(dest.parent, ignore_errors=True)
+        raise
+    return dest
+
+
+async def _stream_then_remove(path: Path) -> AsyncIterator[bytes]:
+    """Stream a temp file, then delete its directory.
+
+    :param path: file to stream
+    :type path: Path
+    :yield: file chunks
+    :rtype: AsyncIterator[bytes]
+    """
+    try:
+        with path.open("rb") as handle:
+            while chunk := handle.read(64 * 1024):
+                yield chunk
+    finally:
+        shutil.rmtree(path.parent, ignore_errors=True)
+
+
+class ErrorEnvelope:
+    """Answer any exception no handler claimed with the API error envelope.
+
+    Starlette's ``Exception`` handler runs in ``ServerErrorMiddleware``, which
+    re-raises afterwards; an ASGI middleware inside it returns cleanly.
+    """
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        respond: Any,  # noqa: ANN401
+    ) -> None:
+        """Wrap *app*.
+
+        :param app: the ASGI application
+        :type app: ASGIApp
+        :param respond: builds the response for an exception
+        :type respond: Any
+        """
+        self._app = app
+        self._respond = respond
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Run the request, turning an unhandled exception into the envelope.
+
+        :param scope: ASGI connection scope
+        :type scope: Scope
+        :param receive: ASGI receive channel
+        :type receive: Receive
+        :param send: ASGI send channel
+        :type send: Send
+        :raises Exception: when the response had already started
+        """
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+        started = False
+
+        async def tracked(message: dict[str, Any]) -> None:
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self._app(scope, receive, tracked)
+        except Exception as exc:
+            if started:
+                raise
+            _log.error("unhandled error on %s", scope.get("path"), exc_info=exc)
+            await self._respond(exc)(scope, receive, send)
 
 
 def build_session(session_id: str, options: RuntimeOptions) -> Session:
@@ -253,10 +392,10 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     # Exception. Starlette's ServerErrorMiddleware re-raises after running an
     # `Exception` handler, so TestClient would see the exception instead of the
     # envelope. Narrower handlers run in ExceptionMiddleware and return cleanly.
-    async def handle_boardfarm_error(_: Request, exc: Exception) -> JSONResponse:
+    def envelope_response(exc: Exception, status: int | None = None) -> JSONResponse:
         current = state.get("session")
         return JSONResponse(
-            status_code=http_status_for(exc),
+            status_code=status if status is not None else http_status_for(exc),
             content=error_envelope(
                 exc,
                 session_id=session_id,
@@ -265,6 +404,11 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 ),
             ),
         )
+
+    async def handle_boardfarm_error(_: Request, exc: Exception) -> JSONResponse:
+        return envelope_response(exc)
+
+    app.add_middleware(ErrorEnvelope, respond=envelope_response)
 
     for exception_type in (BoardfarmException, pexpect.TIMEOUT, pexpect.EOF):
         app.add_exception_handler(exception_type, handle_boardfarm_error)
@@ -300,6 +444,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
             raise HTTPException(
                 status_code=int(HTTPStatus.CONFLICT), detail=str(exc)
             ) from exc
+        except (KeyError, TypeError, ValueError) as exc:
+            # The payload did not have the shape the resolver needs.
+            return envelope_response(exc, int(HTTPStatus.BAD_REQUEST))
         return current.status()
 
     @app.post("/session/boot", status_code=int(HTTPStatus.ACCEPTED))
@@ -349,7 +496,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 {
                     "name": name,
                     "type": type(device).__name__,
-                    "consoles": list(device.get_interactive_consoles().keys()),
+                    "consoles": _console_names(device),
                     "templates": sorted(
                         base.__name__
                         for base in type(device).__mro__
@@ -360,15 +507,52 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
             ],
         }
 
-    @app.post("/devices")
-    async def execute_command(body: CommandIn) -> dict[str, Any]:
+    async def _exec(
+        device_name: str,
+        command: str,
+        console_name: str,
+        timeout: int | None,
+        mode: str,
+    ) -> Any:  # noqa: ANN401
         current = session()
-        if current.runtime.device_manager is None:
-            return {"devices": []}
-        dev = current.runtime.device_manager.get_device_by_name(body.device)
-        console = dev.get_interactive_consoles()[body.console_name]
-        output = console.execute_command(body.command)
-        return {"output": output}
+        device = require_device_manager(current).get_device_by_name(device_name)
+        consoles = device.get_interactive_consoles()
+        console = consoles.get(console_name)
+        if console is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=(
+                    f"device {device_name} has no console {console_name!r};"
+                    f" it has {sorted(consoles)}"
+                ),
+            )
+        kwargs = {} if timeout is None else {"timeout": timeout}
+        # Through the queue: its single worker is what keeps two operations
+        # off one pexpect console, and it keeps the event loop free.
+        return await current.queue.submit(
+            lambda: console.execute_command(command, **kwargs),
+            mode=mode,
+        )
+
+    @app.post("/devices/{device_name}/exec")
+    async def exec_command(
+        device_name: str,
+        body: ExecIn,
+        mode: Literal["sync", "async"] = "sync",
+    ) -> Any:  # noqa: ANN401
+        job = await _exec(
+            device_name, body.command, body.console_name, body.timeout, mode
+        )
+        if mode == "async":
+            return _async_response(job)
+        return {"result": job.result, "job_id": job.id}
+
+    @app.post("/devices", deprecated=True)
+    async def execute_command(body: CommandIn) -> dict[str, Any]:
+        job = await _exec(
+            body.device, body.command, body.console_name, body.timeout, "sync"
+        )
+        return {"output": job.result}
 
     @app.get("/console")
     async def console(
@@ -462,11 +646,14 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 status_code=int(HTTPStatus.NOT_FOUND),
                 detail="save_console_logs is not enabled for this session",
             )
-        buffer = io.BytesIO()
-        with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
-            archive.add(directory, arcname="console-logs")
-        return Response(
-            content=buffer.getvalue(),
+        archive = await _build_in_thread(
+            _write_console_archive,
+            Path(directory),
+            prefix="bf-console-",
+            name="console.tar.gz",
+        )
+        return StreamingResponse(
+            _stream_then_remove(archive),
             media_type="application/gzip",
             headers={
                 "Content-Disposition": (
@@ -534,19 +721,14 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         :return: streaming gzip archive
         :rtype: StreamingResponse
         """
-        tmp = Path(tempfile.mkdtemp(prefix="bf-bundle-")) / "bundle.tar.gz"
-        write_bundle(session(), tmp)
-
-        async def stream() -> AsyncIterator[bytes]:
-            try:
-                with tmp.open("rb") as handle:
-                    while chunk := handle.read(64 * 1024):
-                        yield chunk
-            finally:
-                shutil.rmtree(tmp.parent, ignore_errors=True)
-
+        bundle = await _build_in_thread(
+            write_bundle,
+            session(),
+            prefix="bf-bundle-",
+            name="bundle.tar.gz",
+        )
         return StreamingResponse(
-            stream(),
+            _stream_then_remove(bundle),
             media_type="application/gzip",
             headers={
                 "Content-Disposition": (

@@ -38,6 +38,45 @@ def _add_text(archive: tarfile.TarFile, name: str, text: str) -> None:
     archive.addfile(info, io.BytesIO(data))
 
 
+def add_tree(
+    archive: tarfile.TarFile,
+    root: Path,
+    arcname: str,
+) -> list[dict[str, str]]:
+    """Add every file under *root*, skipping and reporting any that cannot be read.
+
+    Each file is read whole before its header is written: console logs grow
+    and rotate while the archive is built, and ``TarFile.add`` would write a
+    header promising bytes the file no longer has.
+
+    :param archive: open tar archive
+    :type archive: tarfile.TarFile
+    :param root: directory to archive
+    :type root: Path
+    :param arcname: member prefix inside the archive
+    :type arcname: str
+    :return: one ``{"path", "error"}`` entry per file that was skipped
+    :rtype: list[dict[str, str]]
+    """
+    errors: list[dict[str, str]] = []
+    for path in sorted(root.rglob("*")):
+        member = f"{arcname}/{path.relative_to(root).as_posix()}"
+        try:
+            if not path.is_file():
+                continue
+            data = path.read_bytes()
+            mtime = path.stat().st_mtime
+        except OSError as exc:
+            errors.append({"path": member, "error": str(exc)})
+            continue
+        info = tarfile.TarInfo(member)
+        info.size = len(data)
+        info.mtime = int(mtime)
+        info.mode = 0o644
+        archive.addfile(info, io.BytesIO(data))
+    return errors
+
+
 def _jobs_payload(session: Session) -> list[dict[str, Any]]:
     """Serialise every retained job, with tracebacks for failures.
 
@@ -116,8 +155,8 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
 
     events, _ = session.buffer.read(cursor=0, limit=1_000_000)
     dest.parent.mkdir(parents=True, exist_ok=True)
+    errors: list[dict[str, str]] = []
     with tarfile.open(dest, "w:gz") as archive:
-        _add_text(archive, "manifest.json", json.dumps(manifest, indent=2))
         _add_text(
             archive,
             "session.json",
@@ -136,7 +175,13 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
         )
         _add_text(archive, "threads.txt", format_threads(thread_snapshot()))
         if has_agent_log:
-            archive.add(agent_log, arcname="agent.log")
+            try:
+                _add_text(archive, "agent.log", agent_log.read_text(errors="replace"))
+            except OSError as exc:
+                errors.append({"path": "agent.log", "error": str(exc)})
         if has_console:
-            archive.add(console_dir, arcname="console-logs")
+            errors.extend(add_tree(archive, console_dir, "console-logs"))
+        # Written last, so it can record what could not be read.
+        manifest["errors"] = errors
+        _add_text(archive, "manifest.json", json.dumps(manifest, indent=2))
     return manifest

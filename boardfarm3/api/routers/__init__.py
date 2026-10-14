@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from boardfarm3.api.execution import Job
     from boardfarm3.api.routers._generator import SkippedMethod
     from boardfarm3.api.session import Session
+    from boardfarm3.lib.device_manager import DeviceManager
 
 T = TypeVar("T")
 
@@ -59,6 +60,32 @@ class RouterBundle:
     optional_session_id: bool = False
 
 
+# A device call before boot reaches unconnected consoles; during boot it
+# queues behind the boot job; after a failed boot it is how you debug.
+_DEVICE_CALL_STATES = frozenset({"booting", "ready", "failed"})
+
+
+def require_device_manager(session: Session) -> DeviceManager:
+    """Return the session's device manager, or refuse a device call with 409.
+
+    :param session: session whose devices are about to be used
+    :type session: Session
+    :return: the device manager
+    :rtype: DeviceManager
+    :raises HTTPException: 409 when the session has not started booting
+    """
+    device_manager = session.runtime.device_manager
+    if device_manager is None or session.state.value not in _DEVICE_CALL_STATES:
+        raise HTTPException(
+            status_code=int(HTTPStatus.CONFLICT),
+            detail=(
+                f"session is {session.state.value}; device calls need a session"
+                " that has been booted"
+            ),
+        )
+    return device_manager
+
+
 def _resolve(session: Session, template: type[T], index: int) -> T:
     """Return the device of *template* type at *index* from the session.
 
@@ -73,13 +100,8 @@ def _resolve(session: Session, template: type[T], index: int) -> T:
     :raises HTTPException: 409 when the session is not booted;
         404 when no device of the requested type exists at *index*
     """
-    if session.runtime.device_manager is None:
-        raise HTTPException(
-            status_code=int(HTTPStatus.CONFLICT),
-            detail="session is not booted — device_manager unavailable",
-        )
     devices = list(
-        session.runtime.device_manager.get_devices_by_type(template).values()
+        require_device_manager(session).get_devices_by_type(template).values()
     )
     if index < 0 or index >= len(devices):
         raise HTTPException(

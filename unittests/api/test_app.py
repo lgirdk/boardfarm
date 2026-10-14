@@ -385,6 +385,7 @@ def test_devices_lists_registered_devices_with_templates(client: TestClient) -> 
             {
                 "name": "router",
                 "type": "_ConcreteRadio",
+                "consoles": [],
                 "templates": ["_AbstractRadio"],
             },
         ],
@@ -827,3 +828,198 @@ def test_configure_after_boot_is_refused(client: TestClient) -> None:
     )
     assert again.status_code == HTTP_CONFLICT
     assert client.get("/session").json()["state"] == SessionState.READY.value
+
+
+# -- console commands go through the job queue ---------------------------------
+#
+# The queue's single worker is what keeps two operations off one pexpect
+# console; running a command on the event loop also froze /health and SSE for
+# its whole duration.
+
+
+class _RecordingConsole:
+    """Console stand-in recording what ran, with which timeout, on which thread."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, int, str]] = []
+
+    def execute_command(self, command: str, timeout: int = -1) -> str:
+        import threading
+
+        self.calls.append((command, timeout, threading.current_thread().name))
+        return f"out:{command}"
+
+
+class _ExecDevice:
+    """Device with one interactive console."""
+
+    def __init__(self) -> None:
+        self.console = _RecordingConsole()
+
+    def get_interactive_consoles(self) -> dict[str, _RecordingConsole]:
+        return {"console": self.console}
+
+
+class _ExecDeviceManager:
+    """Knows one device, ``router``."""
+
+    def __init__(self, device: _ExecDevice) -> None:
+        self.device = device
+
+    def get_device_by_name(self, device_name: str) -> _ExecDevice:
+        from boardfarm3.exceptions import DeviceNotFound
+
+        if device_name != "router":
+            msg = f"no device named {device_name}"
+            raise DeviceNotFound(msg)
+        return self.device
+
+    def get_devices_by_type(self, device_type: type) -> dict[str, _ExecDevice]:
+        del device_type
+        return {"router": self.device}
+
+
+def _booted_with(client: TestClient, device: _ExecDevice, *, boot: bool = True) -> None:
+    client.post("/session/config", json={"payload": {"inventory": {}, "env": {}}})
+    if boot:
+        client.post("/session/boot")
+    client.app.state.session.runtime.device_manager = _ExecDeviceManager(device)
+
+
+def test_exec_runs_on_the_job_queue_worker(client: TestClient) -> None:
+    device = _ExecDevice()
+    _booted_with(client, device)
+    response = client.post(
+        "/devices/router/exec", json={"command": "uptime", "timeout": 5}
+    )
+    assert response.status_code == HTTP_OK
+    assert response.json()["result"] == "out:uptime"
+    assert response.json()["job_id"].startswith("j-")
+    [(command, timeout, thread)] = device.console.calls
+    assert (command, timeout) == ("uptime", 5)
+    assert thread.startswith("bf")
+
+
+def test_exec_async_returns_a_job_ticket(client: TestClient) -> None:
+    device = _ExecDevice()
+    _booted_with(client, device)
+    response = client.post(
+        "/devices/router/exec?mode=async", json={"command": "uptime"}
+    )
+    assert response.status_code == HTTP_ACCEPTED
+    job_id = response.json()["job_id"]
+    for _ in range(100):
+        job = client.get(f"/jobs/{job_id}").json()
+        if job["state"] == "done":
+            break
+        time.sleep(0.01)
+    assert job["result"] == "out:uptime"
+
+
+def test_exec_before_boot_is_409(client: TestClient) -> None:
+    device = _ExecDevice()
+    _booted_with(client, device, boot=False)
+    response = client.post("/devices/router/exec", json={"command": "uptime"})
+    assert response.status_code == HTTP_CONFLICT
+    assert device.console.calls == []
+
+
+def test_exec_unknown_console_or_device_is_404(client: TestClient) -> None:
+    device = _ExecDevice()
+    _booted_with(client, device)
+    no_console = client.post(
+        "/devices/router/exec", json={"command": "x", "console_name": "serial"}
+    )
+    no_device = client.post("/devices/nobody/exec", json={"command": "x"})
+    assert no_console.status_code == HTTP_NOT_FOUND
+    assert no_device.status_code == HTTP_NOT_FOUND
+    assert device.console.calls == []
+
+
+def test_legacy_post_devices_runs_through_the_queue(client: TestClient) -> None:
+    device = _ExecDevice()
+    _booted_with(client, device)
+    response = client.post("/devices", json={"device": "router", "command": "id"})
+    assert response.status_code == HTTP_OK
+    assert response.json() == {"output": "out:id"}
+    assert device.console.calls[0][2].startswith("bf")
+
+
+# -- every failure answers with the error envelope ---------------------------------
+
+
+def _client_with(monkeypatch: pytest.MonkeyPatch, runtime: FakeRuntime) -> TestClient:
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=runtime)
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    return TestClient(
+        app_module.create_app("s-test", "board-1"), raise_server_exceptions=False
+    )
+
+
+def test_payload_missing_its_inventory_is_a_400_envelope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A malformed payload is the client's error, reported like any other.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+    with _client_with(
+        monkeypatch, FakeRuntime(resolve_error=KeyError("inventory"))
+    ) as client:
+        response = client.post("/session/config", json={"payload": {"env": {}}})
+        status = client.get("/session").json()
+    assert response.status_code == HTTP_BAD_REQUEST
+    assert response.json()["error"] == "KeyError"
+    assert status["state"] == SessionState.CREATED.value
+    assert status["error"]["error"] == "KeyError"
+
+
+def test_unexpected_device_error_is_a_500_envelope_with_its_job(
+    client: TestClient,
+) -> None:
+    """A device bug surfaces as the envelope, naming the job that hit it.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    device = _ExecDevice()
+
+    def broken(command: str, timeout: int = -1) -> str:  # noqa: ARG001
+        msg = "'NoneType' object has no attribute 'sendline'"
+        raise AttributeError(msg)
+
+    device.console.execute_command = broken  # type: ignore[method-assign]
+    _booted_with(client, device)
+    # Not a context manager: that would re-run the lifespan and replace the session.
+    raw = TestClient(client.app, raise_server_exceptions=False)
+    response = raw.post("/devices/router/exec", json={"command": "uptime"})
+    assert response.status_code == 500
+    body = response.json()
+    assert body["error"] == "AttributeError"
+    assert body["job_id"].startswith("j-")
+    assert body["session_id"] == "s-test"
+
+
+def test_envelope_scrubs_credentials_from_messages(client: TestClient) -> None:
+    """Connection strings in an exception must not leak their passwords.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    device = _ExecDevice()
+
+    def broken(command: str, timeout: int = -1) -> str:  # noqa: ARG001
+        msg = "spawn failed: sshpass -p s3cr3t ssh -p 22 root@10.0.0.1 via http://admin:pw123@acs"
+        raise ValueError(msg)
+
+    device.console.execute_command = broken  # type: ignore[method-assign]
+    _booted_with(client, device)
+    raw = TestClient(client.app, raise_server_exceptions=False)
+    body = raw.post("/devices/router/exec", json={"command": "uptime"}).json()
+    text = json.dumps(body)
+    assert "s3cr3t" not in text
+    assert "pw123" not in text
+    assert "ssh -p 22 root@10.0.0.1" in body["message"]

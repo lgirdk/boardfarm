@@ -14,6 +14,9 @@ _LOG_BACKUPS = 3
 _ATTACH_TO = ("boardfarm3", "uvicorn", "uvicorn.error", "uvicorn.access")
 
 _log = logging.getLogger(__name__)
+# One handler per log file, so installing again re-attaches instead of
+# duplicating every line.
+_HANDLERS: dict[Path, RotatingFileHandler] = {}
 
 
 def _root() -> Path:
@@ -55,7 +58,9 @@ def install_agent_log(session_id: str) -> Path | None:
     """Attach a rotating file handler capturing framework and uvicorn logs.
 
     Best-effort: an unwritable artifact directory is logged and ignored rather
-    than preventing the agent from starting.
+    than preventing the agent from starting. Idempotent: calling it again
+    re-attaches the same handler to any logger that lost it (uvicorn's
+    logging dictConfig removes handlers from the ``uvicorn*`` loggers).
 
     :param session_id: session identifier
     :type session_id: str
@@ -63,23 +68,28 @@ def install_agent_log(session_id: str) -> Path | None:
     :rtype: Path | None
     """
     directory = artifact_dir(session_id)
-    try:
-        directory.mkdir(parents=True, exist_ok=True)
-        handler = RotatingFileHandler(
-            directory / "agent.log",
-            maxBytes=_LOG_BYTES,
-            backupCount=_LOG_BACKUPS,
-            encoding="utf-8",
+    path = directory / "agent.log"
+    handler = _HANDLERS.get(path)
+    if handler is None:
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+            handler = RotatingFileHandler(
+                path,
+                maxBytes=_LOG_BYTES,
+                backupCount=_LOG_BACKUPS,
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            _log.warning("could not open agent log in %s: %s", directory, exc)
+            return None
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"),
         )
-    except OSError as exc:
-        _log.warning("could not open agent log in %s: %s", directory, exc)
-        return None
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"),
-    )
+        _HANDLERS[path] = handler
     for name in _ATTACH_TO:
         logger = logging.getLogger(name)
-        logger.addHandler(handler)
+        if handler not in logger.handlers:
+            logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
-    return directory / "agent.log"
+    return path
