@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -31,6 +32,33 @@ _ARCHIVE_TIMEOUT = 300.0
 # A created-but-never-started container younger than this still counts as a
 # rival in the re-check (another control plane may be about to start it).
 _CREATED_GRACE_NS = 60 * 1_000_000_000
+
+
+def _container_options() -> dict[str, Any]:
+    """Return log rotation, always, and the resource limits the environment sets.
+
+    Docker's default json-file driver never rotates, so a chatty agent would
+    fill the lab host's disk. Limits are opt-in because they depend on the lab.
+
+    :return: extra keyword arguments for ``containers.create``
+    :rtype: dict[str, Any]
+    """
+    options: dict[str, Any] = {
+        "log_config": {
+            "type": "json-file",
+            "config": {
+                "max-size": os.environ.get("BOARDFARM_AGENT_LOG_MAX_SIZE", "50m"),
+                "max-file": os.environ.get("BOARDFARM_AGENT_LOG_MAX_FILE", "3"),
+            },
+        },
+    }
+    if memory := os.environ.get("BOARDFARM_AGENT_MEM_LIMIT", "").strip():
+        options["mem_limit"] = memory
+    if pids := os.environ.get("BOARDFARM_AGENT_PIDS_LIMIT", "").strip():
+        options["pids_limit"] = int(pids)
+    if cpus := os.environ.get("BOARDFARM_AGENT_CPUS", "").strip():
+        options["nano_cpus"] = int(float(cpus) * 1_000_000_000)
+    return options
 
 
 def _finished_at(container: Any) -> float | None:  # noqa: ANN401
@@ -192,6 +220,7 @@ class DockerLauncher:
         }
         # (bind_addr, None): Docker picks a free port on the host that owns it.
         ports = {"8000/tcp": (self._host.spec.bind_addr, None)}
+        options = _container_options()
 
         def _create(client: Any) -> Any:  # noqa: ANN401
             return client.containers.create(
@@ -199,6 +228,7 @@ class DockerLauncher:
                 ports=ports,
                 labels=labels,
                 environment=environment,
+                **options,
             )
 
         container = await self._host.call(_create)

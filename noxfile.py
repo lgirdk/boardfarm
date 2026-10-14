@@ -19,7 +19,7 @@ def lint(session: nox.Session) -> None:
     session.run("ruff", "format", "--check", ".")
     session.run("ruff", "check", ".")
     session.run("flake8", ".")
-    session.run("mypy", "boardfarm3")
+    session.run("mypy", "boardfarm3", "boardfarm3_control")
 
 
 @nox.session(python=_PYTHON_VERSIONS)
@@ -38,7 +38,9 @@ def test(session: nox.Session) -> None:
 
     # noqa: DAR101
     """
-    session.install("--upgrade", ".[test,api]")
+    # ./control brings docker and respx: without them unittests/control
+    # cannot even be collected.
+    session.install("--upgrade", ".[test,api]", "./control[dev]")
     session.run("pytest", "unittests")
 
 

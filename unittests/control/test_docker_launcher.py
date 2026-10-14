@@ -282,3 +282,43 @@ async def test_start_keeps_its_own_identity_env_over_agent_env(
     assert env["BOARDFARM_SESSION_ID"] == "s-1"
     assert env["BOARDFARM_AGENT_PORT"] == "8000"
     assert env["FOO"] == "bar"
+
+
+# -- agent containers on shared lab hosts -----------------------------------------
+#
+# Docker's default json-file log driver never rotates: a chatty agent fills the
+# lab host's disk. Limits are opt-in, sized per lab.
+
+
+async def test_agent_container_logs_are_rotated(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    log_config = daemon.runs[0]["log_config"]
+    assert log_config["type"] == "json-file"
+    assert log_config["config"] == {"max-size": "50m", "max-file": "3"}
+
+
+async def test_agent_resource_limits_come_from_the_environment(
+    fake_daemon: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_AGENT_MEM_LIMIT", "2g")
+    monkeypatch.setenv("BOARDFARM_AGENT_PIDS_LIMIT", "512")
+    monkeypatch.setenv("BOARDFARM_AGENT_CPUS", "1.5")
+    monkeypatch.setenv("BOARDFARM_AGENT_LOG_MAX_SIZE", "10m")
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    run = daemon.runs[0]
+    assert run["mem_limit"] == "2g"
+    assert run["pids_limit"] == 512
+    assert run["nano_cpus"] == 1_500_000_000
+    assert run["log_config"]["config"]["max-size"] == "10m"
+
+
+async def test_agent_has_no_resource_limits_unless_asked(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    run = daemon.runs[0]
+    assert "mem_limit" not in run
+    assert "pids_limit" not in run
+    assert "nano_cpus" not in run
