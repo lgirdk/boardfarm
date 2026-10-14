@@ -304,14 +304,33 @@ class ProcessLauncher:
             pid = entry.get("pid")
             if not isinstance(pid, int):
                 continue
-            try:
-                os.kill(pid, 0)  # probe — raises ProcessLookupError if dead
-            except (ProcessLookupError, PermissionError):
-                continue  # already gone
+            # After a reboot the PID may belong to anything: only kill a
+            # process that carries the recorded session in its environment.
+            if not self._is_agent(pid, str(entry.get("session_id", ""))):
+                continue
             await self._terminate_pid(pid)
 
         # Rewrite state file — all orphans cleaned up, _sessions is empty
         self._save_state()
+
+    @staticmethod
+    def _is_agent(pid: int, session_id: str) -> bool:
+        """Report whether *pid* is the agent this launcher started for *session_id*.
+
+        :param pid: recorded process id
+        :type pid: int
+        :param session_id: session recorded with it
+        :type session_id: str
+        :return: True only when the process environment names that session
+        :rtype: bool
+        """
+        if not session_id:
+            return False
+        try:
+            environ = Path(f"/proc/{pid}/environ").read_bytes()
+        except OSError:  # gone, not ours to read, or no /proc
+            return False
+        return f"BOARDFARM_SESSION_ID={session_id}".encode() in environ.split(b"\0")
 
     @staticmethod
     async def _terminate_pid(pid: int) -> None:

@@ -118,14 +118,15 @@ async def test_failed_create_retains_evidence_and_frees_the_board(
     control_client: httpx.AsyncClient,
 ) -> None:
     """A failed session must leave evidence and must not block its board."""
-    # An inventory the agent cannot resolve makes POST /session/config fail,
-    # exercising the config-rejection unwind path.
+    # A board entry the agent cannot resolve makes POST /session/config fail,
+    # exercising the config-rejection unwind path. (A board missing from the
+    # inventory altogether is refused by control before any launch.)
     bad = await control_client.post(
         "/sessions",
         json={
             "board_name": "integration-board",
             "runtime_profile": "local",
-            "payload": {"inventory": {}, "env": {}},
+            "payload": {"inventory": {"integration-board": {}}, "env": {}},
             "options": {"skip_boot": True},
         },
     )

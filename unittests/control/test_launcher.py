@@ -156,11 +156,13 @@ async def test_process_launcher_list_sessions_kills_orphaned_pid(
     state_file = tmp_path / "sessions.json"
     monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
 
-    # Start a real process to use as an orphan target
+    # Start a real process to use as an orphan target: an agent carries its
+    # session id in its environment, which is how the launcher recognises it.
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
         "-c",
         "import time; time.sleep(60)",
+        env={**os.environ, "BOARDFARM_SESSION_ID": "s-orphan"},
     )
     orphan_pid = proc.pid
 
@@ -379,3 +381,40 @@ async def test_process_launcher_keeps_its_own_identity_env_over_agent_env(
     assert seen["BOARDFARM_SESSION_ID"] == "s-1"
     assert seen["BOARDFARM_AGENT_PORT"] == str(info.host_port)
     assert seen["FOO"] == "bar"
+
+
+@pytest.mark.asyncio
+async def test_process_launcher_spares_a_pid_that_is_not_its_agent(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """After a reboot a recorded PID can belong to anything: never kill on a PID alone."""
+    import asyncio
+
+    state_file = tmp_path / "sessions.json"
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    stranger = await asyncio.create_subprocess_exec(
+        sys.executable, "-c", "import time; time.sleep(60)"
+    )
+    try:
+        state_file.write_text(
+            json.dumps(
+                {
+                    "s-orphan": {
+                        "session_id": "s-orphan",
+                        "board_name": "board-x",
+                        "runtime_profile": "p",
+                        "container_id": str(stranger.pid),
+                        "host_port": 19999,
+                        "created_at": 0.0,
+                        "pid": stranger.pid,
+                        "agent_url": "http://localhost:19999",
+                    },
+                },
+            ),
+        )
+        await ProcessLauncher().list_sessions()
+        os.kill(stranger.pid, 0)  # raises ProcessLookupError if it was killed
+    finally:
+        stranger.kill()
+        await stranger.wait()
