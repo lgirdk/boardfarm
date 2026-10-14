@@ -266,3 +266,29 @@ async def test_cancelled_boot_job_fails_the_session(
     assert session.state is SessionState.FAILED
     assert "cancelled" in session.status()["error"]["message"]
     assert "boot" not in session.runtime.calls
+
+
+@pytest.mark.asyncio
+async def test_release_cancels_queued_jobs_instead_of_running_them(
+    session: Session,
+) -> None:
+    """Teardown must not wait for a backlog of work nobody will collect.
+
+    :param session: session under test
+    :type session: Session
+    """
+    import asyncio
+    import threading
+
+    from boardfarm3.api.execution import JobState
+
+    await session.configure({"inventory": {}, "env": {}})
+    gate = threading.Event()
+    await session.queue.submit(gate.wait, mode="async")
+    backlog = [await session.queue.submit(lambda: None, mode="async") for _ in range(3)]
+    releasing = asyncio.create_task(session.release())
+    await asyncio.sleep(0.05)
+    gate.set()
+    await asyncio.wait_for(releasing, timeout=5)
+    assert [job.state for job in backlog] == [JobState.CANCELLED] * 3
+    assert "release:failed" in session.runtime.calls

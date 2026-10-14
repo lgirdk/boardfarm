@@ -238,11 +238,22 @@ class ExecutionQueue:
             job.finished_at = time.time()
             return True
 
-    def shutdown(self) -> None:
-        """Shut the worker thread down, cancelling every job still waiting."""
+    def cancel_pending(self) -> int:
+        """Cancel every job that has not started yet.
+
+        :return: how many jobs were cancelled
+        :rtype: int
+        """
+        cancelled = 0
         with self._lock:
             for job in self._jobs.values():
                 if job.state is JobState.QUEUED:
                     job.state = JobState.CANCELLED
                     job.finished_at = time.time()
+                    cancelled += 1
+        return cancelled
+
+    def shutdown(self) -> None:
+        """Shut the worker thread down, cancelling every job still waiting."""
+        self.cancel_pending()
         self._executor.shutdown(wait=False, cancel_futures=True)

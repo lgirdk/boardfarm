@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, TypeVar
@@ -11,6 +10,12 @@ from typing import TYPE_CHECKING, TypeVar
 import pluggy
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
+
+from boardfarm3.api.entrypoints import (
+    DISABLED_PLUGINS_ENV,
+    disabled_plugins,
+    load_entrypoints,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -28,7 +33,7 @@ _ENTRYPOINT_GROUP = "boardfarm_api"
 _HOOK_NAME = "boardfarm_add_api_routers"
 _log = logging.getLogger(__name__)
 
-DISABLED_PLUGINS_ENV = "BOARDFARM_API_DISABLED_PLUGINS"
+__all__ = ["DISABLED_PLUGINS_ENV"]
 
 
 @dataclass
@@ -146,14 +151,10 @@ def _make_wrapper(bundle: RouterBundle) -> APIRouter:
 def _disabled_plugins() -> frozenset[str]:
     """Return the set of ``boardfarm_api`` plugin names to exclude.
 
-    Read from the ``BOARDFARM_API_DISABLED_PLUGINS`` environment variable as a
-    comma-separated list. Unset or empty disables nothing.
-
     :return: entrypoint names to skip
     :rtype: frozenset[str]
     """
-    raw = os.environ.get(DISABLED_PLUGINS_ENV, "")
-    return frozenset(name.strip() for name in raw.split(",") if name.strip())
+    return disabled_plugins()
 
 
 def iter_plugin_bundles(
@@ -227,7 +228,7 @@ def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
 
         _pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         _pm.add_hookspecs(_api_hookspecs)
-        _pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
+        load_entrypoints(_pm, _ENTRYPOINT_GROUP, skip=disabled_plugins())
     except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         _log.exception("failed to load boardfarm_api entrypoints")
         return [], []

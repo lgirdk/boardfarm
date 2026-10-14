@@ -91,11 +91,15 @@ def load_plugin_routers() -> list[APIRouter]:
         import pluggy  # noqa: PLC0415
 
         from boardfarm3.api import hookspecs as api_hookspecs  # noqa: PLC0415
+        from boardfarm3.api.entrypoints import (  # noqa: PLC0415
+            disabled_plugins,
+            load_entrypoints,
+        )
         from boardfarm3.api.routers import iter_plugin_bundles  # noqa: PLC0415
 
         pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)
         pm.add_hookspecs(api_hookspecs)
-        pm.load_setuptools_entrypoints(_ENTRYPOINT_GROUP)
+        load_entrypoints(pm, _ENTRYPOINT_GROUP, skip=disabled_plugins())
     except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
         _log.exception("failed to load %s entrypoints", _ENTRYPOINT_GROUP)
         return []
@@ -153,6 +157,7 @@ async def _dispatch_proxy_request(
                 state=info.state,
                 diagnostics=f"/sessions/{session_id}/diagnostics",
             )
+        registry.touch(session_id)
         stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
         downstream_path = request.url.path.lstrip("/")
         return await proxy_request(

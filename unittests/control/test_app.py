@@ -59,7 +59,8 @@ def test_post_sessions_happy_path() -> None:
     assert resp.status_code == 202
     data = resp.json()
     assert data["board_name"] == "board-1"
-    assert data["state"] == "ready"  # default skip_boot → ready
+    # boot=false still runs the agent's connect job: not ready until it ends
+    assert data["state"] == "booting"
     assert data["booted"] is False
     assert data["agent_url"].startswith("http://localhost:")
 
@@ -325,8 +326,8 @@ def test_session_create_boot_true_accepted() -> None:
 
 
 @respx.mock
-def test_post_sessions_default_skip_boot_returns_ready() -> None:
-    """Default boot=False must pass skip_boot=true in config options and return state ready."""
+def test_post_sessions_default_skip_boot_reports_booting() -> None:
+    """Default boot=False passes skip_boot=true; the connect job is still running."""
     respx.get(_AGENT_HEALTH).mock(
         return_value=httpx.Response(200, json={"state": "ready"})
     )
@@ -343,7 +344,7 @@ def test_post_sessions_default_skip_boot_returns_ready() -> None:
     )
     assert resp.status_code == 202
     data = resp.json()
-    assert data["state"] == "ready"
+    assert data["state"] == "booting"
     assert data["booted"] is False
 
     # Confirm skip_boot=true was set in the config options, not the boot URL

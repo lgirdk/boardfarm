@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import posixpath
 import secrets
 import time
+from collections import Counter
 from contextlib import asynccontextmanager, suppress
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
@@ -17,9 +19,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from boardfarm3.api import SESSION_HEADER
+from boardfarm3.api.entrypoints import plugin_versions
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
+from boardfarm3_control import __version__
 from boardfarm3_control.admin import build_admin_router
 from boardfarm3_control.errors import (
+    BoardNotInInventory,
     BoardPendingStop,
     ControlError,
     HostDraining,
@@ -27,6 +32,7 @@ from boardfarm3_control.errors import (
     ManagedByControl,
     SessionNotLive,
 )
+from boardfarm3_control.expiry import run_expiry
 from boardfarm3_control.launcher import MultiHostLauncher
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.models import (
@@ -56,6 +62,8 @@ if TYPE_CHECKING:
     from boardfarm3_control.models import AgentInfo
 
 
+_log = logging.getLogger(__name__)
+
 _HEALTH_TIMEOUT = (
     30.0  # seconds total for health poll — plugin-heavy agents take >5 s to start
 )
@@ -67,6 +75,18 @@ _MAX_LIMIT = 100
 _LIFECYCLE_PATHS = frozenset({"session", "session/config", "session/boot"})
 _PROXY_MAX_CONNECTIONS_ENV = "BOARDFARM_PROXY_MAX_CONNECTIONS"
 _PROXY_KEEPALIVE_CAP = 100
+# Configuring parses the inventory and constructs every device in the agent.
+_CONFIG_TIMEOUT_ENV = "BOARDFARM_AGENT_CONFIG_TIMEOUT"
+_DEFAULT_CONFIG_TIMEOUT = 120.0
+
+
+def _config_timeout() -> float:
+    """Return the seconds an agent may take to configure a session.
+
+    :return: ``BOARDFARM_AGENT_CONFIG_TIMEOUT``, default 120
+    :rtype: float
+    """
+    return float(os.environ.get(_CONFIG_TIMEOUT_ENV, str(_DEFAULT_CONFIG_TIMEOUT)))
 
 
 def _proxy_limits() -> httpx.Limits:
@@ -83,6 +103,52 @@ def _proxy_limits() -> httpx.Limits:
         max_connections=max_connections,
         max_keepalive_connections=min(max_connections, _PROXY_KEEPALIVE_CAP),
     )
+
+
+_STRICT_VERSIONS_ENV = "BOARDFARM_REQUIRE_MATCHING_VERSIONS"
+
+
+def _version_mismatch(ours: dict[str, str], theirs: object) -> list[str]:
+    """Describe how the agent's code differs from control's.
+
+    :param ours: control's ``plugin_versions()``
+    :type ours: dict[str, str]
+    :param theirs: the ``versions`` the agent reported, if any
+    :type theirs: object
+    :return: one line per difference; empty when they match
+    :rtype: list[str]
+    """
+    if not isinstance(theirs, dict):
+        return ["the agent does not report its versions: its image predates this check"]
+    differences: list[str] = []
+    for name in sorted(ours.keys() | theirs.keys()):
+        agent, control = theirs.get(name), ours.get(name)
+        if agent == control:
+            continue
+        if agent is None:
+            differences.append(f"agent lacks {name} {control}")
+        elif control is None:
+            differences.append(f"agent has {name} {agent}; control does not")
+        else:
+            differences.append(f"agent has {name} {agent}; control has {control}")
+    return differences
+
+
+def _json_object(response: httpx.Response) -> dict[str, Any] | None:
+    """Return a 2xx response's JSON object body, or None.
+
+    :param response: an agent response
+    :type response: httpx.Response
+    :return: the decoded object, or None when absent or malformed
+    :rtype: dict[str, Any] | None
+    """
+    if not response.is_success:
+        return None
+    try:
+        data = response.json()
+    except ValueError:
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _reconcile_interval() -> float:
@@ -111,7 +177,7 @@ async def _wait_healthy(
     client: httpx.AsyncClient,
     agent_url: str,
     session_id: str,
-) -> bool:
+) -> dict[str, Any] | None:
     """Poll the agent's /health until it answers 200 or the deadline passes.
 
     :param client: client to poll with
@@ -120,19 +186,19 @@ async def _wait_healthy(
     :type agent_url: str
     :param session_id: session the agent must be serving
     :type session_id: str
-    :return: True when the agent became healthy in time
-    :rtype: bool
+    :return: the health body once healthy, or None when the deadline passed
+    :rtype: dict[str, Any] | None
     """
     deadline = time.monotonic() + _HEALTH_TIMEOUT
     while time.monotonic() < deadline:
         try:
             resp = await client.get(f"{agent_url}/health", headers=_sid(session_id))
             if resp.status_code == int(HTTPStatus.OK):
-                return True
+                return _json_object(resp) or {}
         except httpx.TransportError:
             pass
         await asyncio.sleep(_HEALTH_INTERVAL)
-    return False
+    return None
 
 
 def _new_session_id() -> str:
@@ -183,6 +249,7 @@ def create_app(  # noqa: C901, PLR0915
     registry = SessionRegistry()
     store = DiagnosticsStore()
     inflight: set[str] = set()
+    local_versions = plugin_versions()
     hosts = launcher.hosts if isinstance(launcher, MultiHostLauncher) else None
     reconciler: Reconciler | None = None
     if isinstance(launcher, MultiHostLauncher):
@@ -217,6 +284,17 @@ def create_app(  # noqa: C901, PLR0915
             run_reaper(launcher=launcher, registry=registry, store=store),
         )
         background.append(app.state.reaper)
+        app.state.expiry = asyncio.create_task(
+            run_expiry(
+                registry=registry,
+                launcher=launcher,
+                lease=lease,
+                store=store,
+                inflight=inflight,
+                http_for=lambda info: launcher.agent_client(info) or app.state.http,
+            ),
+        )
+        background.append(app.state.expiry)
         yield
         # Running agents are deliberately left alone: a control plane restart
         # must not destroy live sessions or the containers being debugged.
@@ -317,6 +395,57 @@ def create_app(  # noqa: C901, PLR0915
             },
         )
 
+    unwinding: set[asyncio.Task[None]] = set()
+
+    def _unwind_in_background(session_id: str, info: AgentInfo) -> None:
+        # The create was cancelled (client gone) after the container started.
+        # Without this the reconciler adopts it: a session nobody asked for,
+        # holding the board until someone deletes it.
+        async def _teardown() -> None:
+            inflight.add(session_id)
+            try:
+                registry.add(info)
+                await teardown_session(
+                    session_id=session_id,
+                    info=info,
+                    launcher=launcher,
+                    registry=registry,
+                    lease=lease,
+                    store=store,
+                    http=launcher.agent_client(info) or app.state.http,
+                    retain=False,
+                )
+            finally:
+                inflight.discard(session_id)
+
+        task = asyncio.get_running_loop().create_task(_teardown())
+        unwinding.add(task)
+        task.add_done_callback(unwinding.discard)
+
+    async def _check_agent_versions(
+        session_id: str,
+        info: AgentInfo,
+        health: dict[str, Any],
+        request: Request,
+    ) -> list[str]:
+        # Control builds the unified OpenAPI from its own plugins; an agent
+        # image with different ones 404s some of those routes.
+        mismatch = _version_mismatch(local_versions, health.get("versions"))
+        if mismatch and os.environ.get(_STRICT_VERSIONS_ENV, "") not in ("", "0"):
+            raise await _unwind(
+                session_id,
+                info,
+                _agent_http_or_pool(info, request),
+                HTTPStatus.CONFLICT,
+                "AgentVersionMismatch",
+                "; ".join(mismatch),
+            )
+        if mismatch:
+            _log.warning(
+                "agent for %s runs different code: %s", session_id, "; ".join(mismatch)
+            )
+        return mismatch
+
     def _placement_gate(body: SessionCreate) -> str | None:
         if hosts is None:
             return None
@@ -332,7 +461,7 @@ def create_app(  # noqa: C901, PLR0915
             )
         return host_name
 
-    async def _launch(  # noqa: C901
+    async def _launch(  # noqa: C901, PLR0912, PLR0915
         session_id: str,
         body: SessionCreate,
         image: str,
@@ -369,8 +498,10 @@ def create_app(  # noqa: C901, PLR0915
 
         agent_url = info.agent_url
         client, owns_client = _client_or_default(_agent_http(info))
+        warnings: list[str] = []
         try:
-            if not await _wait_healthy(client, agent_url, session_id):
+            health = await _wait_healthy(client, agent_url, session_id)
+            if health is None:
                 raise await _unwind(
                     session_id,
                     info,
@@ -379,15 +510,31 @@ def create_app(  # noqa: C901, PLR0915
                     "AgentUnhealthy",
                     f"agent did not become healthy within {_HEALTH_TIMEOUT} s",
                 )
+            warnings.extend(
+                await _check_agent_versions(session_id, info, health, request)
+            )
             config_options: dict[str, Any] = dict(body.options)
             if not body.boot:
                 config_options.setdefault("skip_boot", True)
+            config_timeout = _config_timeout()
             try:
                 cfg = await client.post(
                     f"{agent_url}/session/config",
                     json={"payload": body.payload, "options": config_options},
                     headers=_sid(session_id),
+                    timeout=httpx.Timeout(
+                        connect=10.0, read=config_timeout, write=30.0, pool=10.0
+                    ),
                 )
+            except httpx.TimeoutException as exc:
+                raise await _unwind(
+                    session_id,
+                    info,
+                    _agent_http_or_pool(info, request),
+                    HTTPStatus.GATEWAY_TIMEOUT,
+                    "AgentConfigTimeout",
+                    f"agent did not finish configuring within {config_timeout:.0f} s",
+                ) from exc
             except Exception as exc:
                 raise await _unwind(
                     session_id,
@@ -429,18 +576,24 @@ def create_app(  # noqa: C901, PLR0915
                     "AgentBootRejected",
                     f"agent boot rejected: {boot.status_code}",
                 )
+        except asyncio.CancelledError:
+            _unwind_in_background(session_id, info)
+            raise
         finally:
             if owns_client:
                 await client.aclose()
 
         registry.add(info)
         registry.touch(session_id)
+        booting = _json_object(boot) or {}
         return SessionResponse(
             session_id=session_id,
             board_name=info.board_name,
             runtime_profile=info.runtime_profile,
-            state="booting" if body.boot else "ready",
-            boot_job_id=boot.json().get("boot_job_id"),
+            # Even with boot=false the agent runs a connect job first: report
+            # what the agent says, never a "ready" it has not reached.
+            state=booting.get("state") or "booting",
+            boot_job_id=booting.get("boot_job_id"),
             booted=False,
             agent_url=info.agent_url,
             pid=info.pid,
@@ -448,6 +601,7 @@ def create_app(  # noqa: C901, PLR0915
             last_activity=registry.last_activity(session_id),
             host=info.host,
             image_id=info.image_id,
+            warnings=warnings,
         )
 
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
@@ -457,6 +611,11 @@ def create_app(  # noqa: C901, PLR0915
                 status_code=int(HTTPStatus.BAD_REQUEST),
                 detail=f"unknown runtime_profile {body.runtime_profile!r}",
             )
+        inventory = body.payload.get("inventory")
+        if isinstance(inventory, dict) and body.board_name not in inventory:
+            # Found out now, not after an image pull and a container start.
+            msg = f"payload.inventory has no entry for board {body.board_name}"
+            raise BoardNotInInventory(msg, board_name=body.board_name)
         host_name = _placement_gate(body)
         pending = registry.pending_stop_for(body.board_name)
         if pending is not None:
@@ -486,71 +645,79 @@ def create_app(  # noqa: C901, PLR0915
         finally:
             inflight.discard(session_id)
 
-    @app.get("/sessions")
-    async def list_sessions(offset: int = 0, limit: int = 20) -> SessionListResponse:
-        limit = min(limit, _MAX_LIMIT)
-        page, total = registry.list_page(offset, limit)
-
-        async def fetch_state(info: AgentInfo) -> SessionResponse:
-            if info.state == "dead":
-                return SessionResponse(
-                    session_id=info.session_id,
-                    board_name=info.board_name,
-                    runtime_profile=info.runtime_profile,
-                    state="dead",
-                    booted=False,
-                    agent_url=info.agent_url,
-                    pid=info.pid,
-                    created_at=info.created_at,
-                    ended_at=info.ended_at,
-                    last_activity=registry.last_activity(info.session_id),
-                    liveness=None,
-                    host=info.host,
-                    image_id=info.image_id,
-                    stop_pending=info.stop_pending,
-                )
-            last_act: float | None
-            liveness: dict[str, Any] | None
-            client, owns_client = _client_or_default(_agent_http(info))
-            try:
-                resp = await asyncio.wait_for(
-                    client.get(
-                        f"{info.agent_url}/session", headers=_sid(info.session_id)
-                    ),
-                    timeout=_STATE_TIMEOUT,
-                )
-                data: dict[str, Any] = resp.json()
-                state: str = data.get("state", "unknown")
-                booted: bool = bool(data.get("booted", False))
-                last_act = data.get("last_activity")
-                liveness = data.get("liveness")
-                if last_act is not None:
-                    registry.touch(info.session_id)
-            except (asyncio.TimeoutError, httpx.TransportError):
-                state = "unreachable"
-                booted = False
-                last_act = registry.last_activity(info.session_id)
-                liveness = None
-            finally:
-                if owns_client:
-                    await client.aclose()
+    async def fetch_state(info: AgentInfo) -> SessionResponse:
+        if info.state == "dead":
             return SessionResponse(
                 session_id=info.session_id,
                 board_name=info.board_name,
                 runtime_profile=info.runtime_profile,
-                state=state,
-                booted=booted,
+                state="dead",
+                booted=False,
                 agent_url=info.agent_url,
                 pid=info.pid,
                 created_at=info.created_at,
                 ended_at=info.ended_at,
-                last_activity=last_act,
-                liveness=liveness,
+                last_activity=registry.last_activity(info.session_id),
+                liveness=None,
                 host=info.host,
                 image_id=info.image_id,
                 stop_pending=info.stop_pending,
             )
+        last_act: float | None
+        liveness: dict[str, Any] | None
+        client, owns_client = _client_or_default(_agent_http(info))
+        try:
+            resp = await asyncio.wait_for(
+                client.get(f"{info.agent_url}/session", headers=_sid(info.session_id)),
+                timeout=_STATE_TIMEOUT,
+            )
+            # A 500 or a non-JSON reply from one agent must not fail the
+            # whole listing.
+            data = _json_object(resp) or {}
+            state: str = data.get("state", "unknown")
+            booted: bool = bool(data.get("booted", False))
+            last_act = data.get("last_activity")
+            liveness = data.get("liveness")
+        except (asyncio.TimeoutError, httpx.TransportError):
+            state = "unreachable"
+            booted = False
+            last_act = registry.last_activity(info.session_id)
+            liveness = None
+        finally:
+            if owns_client:
+                await client.aclose()
+        return SessionResponse(
+            session_id=info.session_id,
+            board_name=info.board_name,
+            runtime_profile=info.runtime_profile,
+            state=state,
+            booted=booted,
+            agent_url=info.agent_url,
+            pid=info.pid,
+            created_at=info.created_at,
+            ended_at=info.ended_at,
+            last_activity=last_act,
+            liveness=liveness,
+            host=info.host,
+            image_id=info.image_id,
+            stop_pending=info.stop_pending,
+        )
 
+    @app.get("/healthz")
+    async def healthz() -> dict[str, Any]:
+        counts = Counter(info.state for info in registry.sessions())
+        return {
+            "status": "ok",
+            "version": __version__,
+            "control_id": getattr(launcher, "control_id", None),
+            "versions": local_versions,
+            "sessions": {"live": counts["live"], "dead": counts["dead"]},
+        }
+
+    @app.get("/sessions")
+    async def list_sessions(offset: int = 0, limit: int = 20) -> SessionListResponse:
+        limit = min(limit, _MAX_LIMIT)
+        page, total = registry.list_page(offset, limit)
         sessions = await asyncio.gather(*[fetch_state(info) for info in page])
         return SessionListResponse(
             sessions=list(sessions),
@@ -558,6 +725,16 @@ def create_app(  # noqa: C901, PLR0915
             offset=offset,
             limit=limit,
         )
+
+    @app.get("/sessions/{session_id}")
+    async def get_session(session_id: str) -> SessionResponse:
+        info = registry.get(session_id)
+        if info is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=f"unknown session {session_id}",
+            )
+        return await fetch_state(info)
 
     @app.delete("/sessions/{session_id}", response_model=None)
     async def delete_session(
