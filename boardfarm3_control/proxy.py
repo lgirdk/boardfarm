@@ -11,6 +11,8 @@ import httpx
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 
+from boardfarm3.api import SESSION_HEADER
+
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
@@ -192,6 +194,8 @@ async def proxy_request(  # noqa: PLR0913
     forwarded_headers = _filter_headers(dict(request.headers))
     if body is not None:
         forwarded_headers.pop("content-length", None)
+    if session_id:
+        forwarded_headers[SESSION_HEADER] = session_id
     client, owns_client = _client_or_default(client)
 
     try:

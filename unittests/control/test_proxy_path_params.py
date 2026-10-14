@@ -30,8 +30,10 @@ async def _stats(index: int, body: _StatsRequest) -> dict:  # noqa: ARG001
 
 
 class _Info:
-    """Minimal session info exposing an agent URL."""
+    """Minimal session info: a live session and its agent URL."""
 
+    session_id = "s-1"
+    state = "live"
     agent_url = "http://agent.local"
 
 

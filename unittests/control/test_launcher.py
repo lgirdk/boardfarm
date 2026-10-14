@@ -337,3 +337,45 @@ async def test_process_launcher_start_writes_meta_without_ended_at(
     assert meta["session_id"] == "s-proc"
     assert "ended_at" not in meta
     await launcher.stop("s-proc")
+
+
+@pytest.mark.asyncio
+async def test_process_launcher_keeps_its_own_identity_env_over_agent_env(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """agent_env may add variables but never replace the agent's identity."""
+    import asyncio
+
+    from boardfarm3_control.launcher import process as process_module
+
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(tmp_path / "state.json"))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    seen: dict[str, str] = {}
+
+    class _Proc:
+        pid = 4242
+
+    async def fake_exec(
+        *_args: object, env: dict[str, str], **_kwargs: object
+    ) -> _Proc:
+        seen.update(env)
+        return _Proc()
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_exec)
+    info = await process_module.ProcessLauncher().start(
+        "s-1",
+        "board-1",
+        "ignored",
+        "prplos",
+        agent_env={
+            "BOARDFARM_BOARD_NAME": "board-2",
+            "BOARDFARM_SESSION_ID": "s-9",
+            "BOARDFARM_AGENT_PORT": "1",
+            "FOO": "bar",
+        },
+    )
+    assert seen["BOARDFARM_BOARD_NAME"] == "board-1"
+    assert seen["BOARDFARM_SESSION_ID"] == "s-1"
+    assert seen["BOARDFARM_AGENT_PORT"] == str(info.host_port)
+    assert seen["FOO"] == "bar"

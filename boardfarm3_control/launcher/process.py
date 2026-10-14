@@ -139,12 +139,13 @@ class ProcessLauncher:
             sys.executable,
             "-m",
             "boardfarm3.api",
+            # Identity last: agent_env may add variables, never re-point the agent.
             env={
                 **os.environ,
+                **(agent_env or {}),
                 "BOARDFARM_SESSION_ID": session_id,
                 "BOARDFARM_BOARD_NAME": board_name,
                 "BOARDFARM_AGENT_PORT": str(host_port),
-                **(agent_env or {}),
             },
             stdout=log_file,
             stderr=asyncio.subprocess.STDOUT,

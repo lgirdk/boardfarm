@@ -258,3 +258,27 @@ async def test_recheck_winner_keeps_its_container(fake_daemon: Any) -> None:
     info = await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
     assert info.session_id == "s-1"
     assert len(daemon.agents("board-1")) == 2  # the rival's control removes its own
+
+
+async def test_start_keeps_its_own_identity_env_over_agent_env(
+    fake_daemon: Any,
+) -> None:
+    """agent_env may add variables but never replace the agent's identity."""
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start(
+        "s-1",
+        "board-1",
+        "img:1",
+        "prplos",
+        agent_env={
+            "BOARDFARM_BOARD_NAME": "board-2",
+            "BOARDFARM_SESSION_ID": "s-9",
+            "BOARDFARM_AGENT_PORT": "1",
+            "FOO": "bar",
+        },
+    )
+    env = daemon.runs[0]["environment"]
+    assert env["BOARDFARM_BOARD_NAME"] == "board-1"
+    assert env["BOARDFARM_SESSION_ID"] == "s-1"
+    assert env["BOARDFARM_AGENT_PORT"] == "8000"
+    assert env["FOO"] == "bar"

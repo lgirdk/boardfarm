@@ -20,18 +20,22 @@ import pexpect
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.datastructures import Headers
 
+from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.runtime import RuntimeOptions
-from boardfarm3.api.session import Session, SessionState
+from boardfarm3.api.session import Session, SessionConflict, SessionState
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.exceptions import BoardfarmException
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+
+    from starlette.types import ASGIApp, Receive, Scope, Send
 
 
 class ConfigOptions(BaseModel):
@@ -107,6 +111,48 @@ def _strip_sphinx_params(text: str) -> str:
     return "\n".join(clean).rstrip()
 
 
+class SessionGuard:
+    """Refuse requests the control plane addressed to a different session."""
+
+    def __init__(self, app: ASGIApp, session_id: str) -> None:
+        """Wrap *app*.
+
+        :param app: the ASGI application to protect
+        :type app: ASGIApp
+        :param session_id: the session this agent serves
+        :type session_id: str
+        """
+        self._app = app
+        self._session_id = session_id
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Serve the request unless it names another session.
+
+        :param scope: ASGI connection scope
+        :type scope: Scope
+        :param receive: ASGI receive channel
+        :type receive: Receive
+        :param send: ASGI send channel
+        :type send: Send
+        """
+        if scope["type"] == "http":
+            claimed = Headers(scope=scope).get(SESSION_HEADER)
+            if claimed is not None and claimed != self._session_id:
+                response = JSONResponse(
+                    status_code=int(HTTPStatus.CONFLICT),
+                    content={
+                        "error": "SessionMismatch",
+                        "message": (
+                            f"this agent serves {self._session_id}, not {claimed}"
+                        ),
+                        "session_id": self._session_id,
+                    },
+                )
+                await response(scope, receive, send)
+                return
+        await self._app(scope, receive, send)
+
+
 def build_session(session_id: str, options: RuntimeOptions) -> Session:
     """Build a session. Overridden in tests to inject a fake runtime.
 
@@ -167,6 +213,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         await release_once()
 
     app = FastAPI(title=f"boardfarm runtime agent [{board_name}]", lifespan=lifespan)
+    app.add_middleware(SessionGuard, session_id=session_id)
 
     _orig_openapi = app.openapi
 
@@ -226,11 +273,33 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     async def health() -> dict[str, Any]:
         return session().status()
 
+    def _confined_console_dir(requested: str) -> str:
+        # /console/archive and the diagnostics bundle tar this directory, so
+        # it must stay inside the session's artifact dir. Relative paths are
+        # taken relative to that dir.
+        root = artifact_dir(session_id).resolve()
+        candidate = (root / requested).resolve()
+        if not candidate.is_relative_to(root):
+            raise HTTPException(
+                status_code=int(HTTPStatus.UNPROCESSABLE_ENTITY),
+                detail=f"save_console_logs must be inside {root}",
+            )
+        return str(candidate)
+
     @app.post("/session/config")
     async def configure(body: ConfigIn) -> dict[str, Any]:
         current = session()
         overrides = body.options.model_dump(exclude_none=True)
-        await current.configure(body.payload, overrides)
+        if overrides.get("save_console_logs"):
+            overrides["save_console_logs"] = _confined_console_dir(
+                overrides["save_console_logs"]
+            )
+        try:
+            await current.configure(body.payload, overrides)
+        except SessionConflict as exc:
+            raise HTTPException(
+                status_code=int(HTTPStatus.CONFLICT), detail=str(exc)
+            ) from exc
         return current.status()
 
     @app.post("/session/boot", status_code=int(HTTPStatus.ACCEPTED))

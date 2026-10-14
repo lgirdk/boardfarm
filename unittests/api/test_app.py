@@ -430,6 +430,7 @@ def test_console_archive_404_when_not_configured(client: TestClient) -> None:
 def test_console_archive_returns_tar_of_saved_logs(
     client: TestClient,
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """When console logs are saved to disk, the archive tars that directory.
 
@@ -437,13 +438,18 @@ def test_console_archive_returns_tar_of_saved_logs(
     :type client: TestClient
     :param tmp_path: pytest temporary directory fixture
     :type tmp_path: Path
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
     """
-    (tmp_path / "board.log").write_text("login:\n", encoding="utf-8")
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    logs = tmp_path / "s-test" / "custom"
+    logs.mkdir(parents=True)
+    (logs / "board.log").write_text("login:\n", encoding="utf-8")
     client.post(
         "/session/config",
         json={
             "payload": {"inventory": {}, "env": {}},
-            "options": {"save_console_logs": str(tmp_path)},
+            "options": {"save_console_logs": str(logs)},
         },
     )
     response = client.get("/console/archive")
@@ -679,3 +685,145 @@ async def test_console_stream_negative_cursor_replays_tail(
         assert json.loads(third.removeprefix("data: ").strip())["line"] == "line-4"
 
         await response.body_iterator.aclose()
+
+
+# -- save_console_logs is confined to the session's artifact directory -------
+#
+# /console/archive and the diagnostics bundle tar whatever directory this
+# option names. Left unconfined, ``"/"`` would tar the agent's whole
+# filesystem (``/proc`` included) into memory.
+
+
+@pytest.mark.parametrize("escape", ["/", "/etc", "../elsewhere", "s-test/../../x"])
+def test_config_rejects_console_log_dir_outside_artifact_dir(
+    client: TestClient,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    escape: str,
+) -> None:
+    """A console-log directory outside the artifact dir is a 422, and nothing changes.
+
+    :param client: test client
+    :type client: TestClient
+    :param tmp_path: pytest temporary directory fixture
+    :type tmp_path: Path
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param escape: a directory that is not under the session's artifact dir
+    :type escape: str
+    """
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path / "artifacts"))
+    before = client.app.state.session.options.save_console_logs
+    response = client.post(
+        "/session/config",
+        json={
+            "payload": {"inventory": {}, "env": {}},
+            "options": {"save_console_logs": escape},
+        },
+    )
+    assert response.status_code == HTTP_UNPROCESSABLE
+    assert client.app.state.session.options.save_console_logs == before
+    assert client.get("/session").json()["state"] == SessionState.CREATED.value
+
+
+def test_config_resolves_relative_console_log_dir_under_artifact_dir(
+    client: TestClient,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A relative directory is taken relative to the session's artifact dir.
+
+    :param client: test client
+    :type client: TestClient
+    :param tmp_path: pytest temporary directory fixture
+    :type tmp_path: Path
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    response = client.post(
+        "/session/config",
+        json={
+            "payload": {"inventory": {}, "env": {}},
+            "options": {"save_console_logs": "extra"},
+        },
+    )
+    assert response.status_code == HTTP_OK
+    assert client.app.state.session.options.save_console_logs == str(
+        tmp_path / "s-test" / "extra"
+    )
+
+
+# -- requests addressed to another session are refused -----------------------
+#
+# Docker reuses host ports. A control plane holding a stale agent_url for a
+# dead session would otherwise drive whichever agent now owns that port.
+
+
+def test_request_for_another_session_is_refused(client: TestClient) -> None:
+    """A mismatched X-Boardfarm-Session header is a 409 and changes nothing.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    response = client.post(
+        "/session/config",
+        json={"payload": {"inventory": {}, "env": {}}},
+        headers={"X-Boardfarm-Session": "s-other"},
+    )
+    assert response.status_code == HTTP_CONFLICT
+    assert response.json()["error"] == "SessionMismatch"
+    assert client.get("/session").json()["state"] == SessionState.CREATED.value
+
+
+def test_request_for_this_session_or_unaddressed_is_served(client: TestClient) -> None:
+    """The matching header, or no header at all, is served normally.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    assert (
+        client.get("/health", headers={"X-Boardfarm-Session": "s-test"}).status_code
+        == HTTP_OK
+    )
+    assert client.get("/health").status_code == HTTP_OK
+
+
+# -- configure happens once ----------------------------------------------------
+#
+# A second configure builds a new DeviceManager while the first one's
+# connections stay open, and races the boot coroutine for the session state.
+
+
+def test_second_configure_is_refused(client: TestClient) -> None:
+    """Configuring an already-configured session is a 409 and keeps the first config.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    payload = {"payload": {"inventory": {}, "env": {}}}
+    assert client.post("/session/config", json=payload).status_code == HTTP_OK
+    first = client.app.state.session.payload
+    again = client.post(
+        "/session/config",
+        json={"payload": {"inventory": {"other": {}}, "env": {}}},
+    )
+    assert again.status_code == HTTP_CONFLICT
+    assert client.app.state.session.payload is first
+    assert client.get("/session").json()["state"] == SessionState.CONFIGURED.value
+
+
+def test_configure_after_boot_is_refused(client: TestClient) -> None:
+    """A ready session cannot be reconfigured underneath its devices.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    client.post("/session/config", json={"payload": {"inventory": {}, "env": {}}})
+    client.post("/session/boot")
+    again = client.post(
+        "/session/config",
+        json={"payload": {"inventory": {}, "env": {}}},
+    )
+    assert again.status_code == HTTP_CONFLICT
+    assert client.get("/session").json()["state"] == SessionState.READY.value

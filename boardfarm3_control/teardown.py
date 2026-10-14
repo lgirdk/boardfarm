@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from boardfarm3.api import SESSION_HEADER
 from boardfarm3_control.errors import StopPending
 
 if TYPE_CHECKING:
@@ -85,6 +86,7 @@ async def archive_bundle(  # noqa: PLR0913
             response = await http.get(
                 f"{agent_url}/diagnostics/bundle",
                 timeout=_BUNDLE_TIMEOUT,
+                headers={SESSION_HEADER: session_id},
             )
             response.raise_for_status()
         except (httpx.HTTPError, httpx.InvalidURL) as exc:
@@ -181,7 +183,9 @@ async def teardown_session(  # noqa: PLR0913
 
     # 2. Graceful device release, so board-side state is not left half-open.
     try:
-        await http.delete(f"{info.agent_url}/session")
+        await http.delete(
+            f"{info.agent_url}/session", headers={SESSION_HEADER: session_id}
+        )
     except httpx.HTTPError as exc:
         _log.info("graceful release skipped for %s: %s", session_id, exc)
 
