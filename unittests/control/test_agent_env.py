@@ -102,3 +102,36 @@ def test_create_session_hands_seeded_env_to_the_launcher(
     assert resp.status_code == 202
     assert len(launcher.start_calls) == 1
     assert launcher.start_calls[0]["agent_env"] == {DISABLED_PLUGINS_ENV: "beta_api"}
+
+
+_RESERVED_KEYS = [
+    "BOARDFARM_BOARD_NAME",
+    "BOARDFARM_SESSION_ID",
+    "BOARDFARM_AGENT_PORT",
+]
+
+
+@pytest.mark.parametrize("key", _RESERVED_KEYS)
+def test_create_session_rejects_reserved_agent_env_keys(key: str) -> None:
+    """A client must not re-point its agent at another board, session or port.
+
+    Overriding ``BOARDFARM_BOARD_NAME`` would lease one board while the agent
+    drives another; nothing may be launched and the board must stay free.
+    """
+    launcher = _RecordingLauncher()
+    app = create_app(launcher, {"prplos": "boardfarm3-agent:latest"})
+    client = TestClient(app)
+
+    resp = client.post(
+        "/sessions",
+        json={
+            "board_name": "board-1",
+            "runtime_profile": "prplos",
+            "payload": {},
+            "agent_env": {key: "other"},
+        },
+    )
+
+    assert resp.status_code == 422
+    assert launcher.start_calls == []
+    assert app.state.lease.held_by("board-1") is None

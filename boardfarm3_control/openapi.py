@@ -12,6 +12,7 @@ from fastapi.routing import APIRoute
 from pydantic import create_model
 from starlette.requests import Request
 
+from boardfarm3_control.errors import SessionNotLive
 from boardfarm3_control.proxy import proxy_request
 
 if TYPE_CHECKING:
@@ -144,6 +145,14 @@ async def _dispatch_proxy_request(
             raise HTTPException(  # noqa: TRY301
                 status_code=404, detail=f"unknown session {session_id}"
             )
+        if info.state != "live":
+            msg = f"session {session_id} is {info.state}"
+            raise SessionNotLive(  # noqa: TRY301
+                msg,
+                session_id=session_id,
+                state=info.state,
+                diagnostics=f"/sessions/{session_id}/diagnostics",
+            )
         stripped_bytes = body.model_dump_json(exclude={"session_id"}).encode()
         downstream_path = request.url.path.lstrip("/")
         return await proxy_request(
@@ -152,6 +161,7 @@ async def _dispatch_proxy_request(
             downstream_path,
             body=stripped_bytes,
             client=client_for(info) if client_for is not None else None,
+            session_id=session_id,
         )
     except Exception as exc:  # pylint: disable=broad-exception-caught
         if shaper is None:

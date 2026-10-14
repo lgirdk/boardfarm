@@ -16,6 +16,10 @@ if TYPE_CHECKING:
     from boardfarm3.api.runtime import RuntimeOptions
 
 
+class SessionConflict(RuntimeError):
+    """The request is not valid in the session's current state."""
+
+
 class SessionState(str, Enum):
     """Lifecycle states of a runtime agent session."""
 
@@ -58,6 +62,7 @@ class Session:
         self.error: dict[str, Any] | None = None
         self.payload: dict[str, Any] = {}
         self._boot_job: Job | None = None
+        self._configuring = False
 
     def touch(self) -> None:
         """Record activity, so idle reaping can be added later."""
@@ -77,7 +82,24 @@ class Session:
         :type payload: dict[str, Any]
         :param options: overrides for the runtime options
         :type options: dict[str, Any] | None
+        :raises SessionConflict: when the session was already configured
         """
+        # Once only: a second configure would build a new DeviceManager while
+        # the first one's connections stay open.
+        if self.state is not SessionState.CREATED or self._configuring:
+            msg = f"cannot configure from state {self.state.value}"
+            raise SessionConflict(msg)
+        self._configuring = True
+        try:
+            await self._configure(payload, options)
+        finally:
+            self._configuring = False
+
+    async def _configure(
+        self,
+        payload: dict[str, Any],
+        options: dict[str, Any] | None,
+    ) -> None:
         self.payload = payload
         for field_name, value in (options or {}).items():
             if field_name == "save_console_logs" and not value:

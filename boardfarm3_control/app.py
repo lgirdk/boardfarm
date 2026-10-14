@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import posixpath
 import secrets
 import time
 from contextlib import asynccontextmanager, suppress
@@ -15,6 +16,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
+from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
 from boardfarm3_control.admin import build_admin_router
 from boardfarm3_control.errors import (
@@ -22,6 +24,8 @@ from boardfarm3_control.errors import (
     ControlError,
     HostDraining,
     HostUnreachable,
+    ManagedByControl,
+    SessionNotLive,
 )
 from boardfarm3_control.launcher import MultiHostLauncher
 from boardfarm3_control.lease import BoardLease
@@ -59,6 +63,8 @@ _HEALTH_INTERVAL = 0.1  # seconds between health retries
 # seconds per-agent for GET /sessions fan-out
 _STATE_TIMEOUT = float(os.environ.get("BOARDFARM_STATE_TIMEOUT", "2.0"))
 _MAX_LIMIT = 100
+# Agent paths whose non-GET calls change its lifecycle; only control may make them.
+_LIFECYCLE_PATHS = frozenset({"session", "session/config", "session/boot"})
 _PROXY_MAX_CONNECTIONS_ENV = "BOARDFARM_PROXY_MAX_CONNECTIONS"
 _PROXY_KEEPALIVE_CAP = 100
 
@@ -90,20 +96,37 @@ def _reconcile_interval() -> float:
     )
 
 
-async def _wait_healthy(client: httpx.AsyncClient, agent_url: str) -> bool:
+def _sid(session_id: str) -> dict[str, str]:
+    """Return the header that addresses an agent call to *session_id*.
+
+    :param session_id: session the call is for
+    :type session_id: str
+    :return: headers to send
+    :rtype: dict[str, str]
+    """
+    return {SESSION_HEADER: session_id}
+
+
+async def _wait_healthy(
+    client: httpx.AsyncClient,
+    agent_url: str,
+    session_id: str,
+) -> bool:
     """Poll the agent's /health until it answers 200 or the deadline passes.
 
     :param client: client to poll with
     :type client: httpx.AsyncClient
     :param agent_url: the agent's base URL
     :type agent_url: str
+    :param session_id: session the agent must be serving
+    :type session_id: str
     :return: True when the agent became healthy in time
     :rtype: bool
     """
     deadline = time.monotonic() + _HEALTH_TIMEOUT
     while time.monotonic() < deadline:
         try:
-            resp = await client.get(f"{agent_url}/health")
+            resp = await client.get(f"{agent_url}/health", headers=_sid(session_id))
             if resp.status_code == int(HTTPStatus.OK):
                 return True
         except httpx.TransportError:
@@ -347,7 +370,7 @@ def create_app(  # noqa: C901, PLR0915
         agent_url = info.agent_url
         client, owns_client = _client_or_default(_agent_http(info))
         try:
-            if not await _wait_healthy(client, agent_url):
+            if not await _wait_healthy(client, agent_url, session_id):
                 raise await _unwind(
                     session_id,
                     info,
@@ -363,6 +386,7 @@ def create_app(  # noqa: C901, PLR0915
                 cfg = await client.post(
                     f"{agent_url}/session/config",
                     json={"payload": body.payload, "options": config_options},
+                    headers=_sid(session_id),
                 )
             except Exception as exc:
                 raise await _unwind(
@@ -383,7 +407,10 @@ def create_app(  # noqa: C901, PLR0915
                     f"agent rejected config: {cfg.text}",
                 )
             try:
-                boot = await client.post(f"{agent_url}/session/boot?mode=async")
+                boot = await client.post(
+                    f"{agent_url}/session/boot?mode=async",
+                    headers=_sid(session_id),
+                )
             except Exception as exc:
                 raise await _unwind(
                     session_id,
@@ -487,7 +514,9 @@ def create_app(  # noqa: C901, PLR0915
             client, owns_client = _client_or_default(_agent_http(info))
             try:
                 resp = await asyncio.wait_for(
-                    client.get(f"{info.agent_url}/session"),
+                    client.get(
+                        f"{info.agent_url}/session", headers=_sid(info.session_id)
+                    ),
                     timeout=_STATE_TIMEOUT,
                 )
                 data: dict[str, Any] = resp.json()
@@ -547,6 +576,11 @@ def create_app(  # noqa: C901, PLR0915
             raise HTTPException(
                 status_code=int(HTTPStatus.BAD_REQUEST),
                 detail="retain and purge are mutually exclusive",
+            )
+        if session_id in inflight:
+            raise HTTPException(
+                status_code=int(HTTPStatus.CONFLICT),
+                detail=f"session {session_id} is already being created or torn down",
             )
         if info.state == "dead":
             if retain:
@@ -698,6 +732,21 @@ def create_app(  # noqa: C901, PLR0915
                 status_code=int(HTTPStatus.NOT_FOUND),
                 detail=f"unknown session {session_id}",
             )
+        if info.state != "live":
+            msg = f"session {session_id} is {info.state}"
+            raise SessionNotLive(
+                msg,
+                session_id=session_id,
+                state=info.state,
+                diagnostics=f"/sessions/{session_id}/diagnostics",
+            )
+        normalised = posixpath.normpath(f"/{path}").strip("/")
+        if normalised in _LIFECYCLE_PATHS and request.method not in ("GET", "HEAD"):
+            msg = (
+                f"{request.method} /{normalised} is managed by the control plane;"
+                " use POST /sessions or DELETE /sessions/{session_id}"
+            )
+            raise ManagedByControl(msg, session_id=session_id)
         registry.touch(session_id)
         return await proxy_request(
             request,

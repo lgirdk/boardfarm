@@ -183,11 +183,12 @@ class DockerLauncher:
             self._LABEL_ARTIFACT_DIR: artifact_root,
             self._LABEL_CONTROL: self._control_id,
         }
+        # Identity last: agent_env may add variables, never re-point the agent.
         environment = {
+            **(agent_env or {}),
             "BOARDFARM_SESSION_ID": session_id,
             "BOARDFARM_BOARD_NAME": board_name,
             "BOARDFARM_AGENT_PORT": "8000",
-            **(agent_env or {}),
         }
         # (bind_addr, None): Docker picks a free port on the host that owns it.
         ports = {"8000/tcp": (self._host.spec.bind_addr, None)}

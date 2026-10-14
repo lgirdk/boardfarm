@@ -88,6 +88,18 @@ class HostInUse(ControlError):
     status = HTTPStatus.CONFLICT
 
 
+class ManagedByControl(ControlError):
+    """The call would change the agent's lifecycle behind the control plane's back."""
+
+    status = HTTPStatus.FORBIDDEN
+
+
+class SessionNotLive(ControlError):
+    """The session has ended; its old agent port may belong to another agent now."""
+
+    status = HTTPStatus.GONE
+
+
 class StopPending(Exception):
     """A stop was requested but the session's host could not confirm it."""
 

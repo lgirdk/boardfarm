@@ -5,7 +5,14 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+# The agent's identity: set by the launcher, never by the client. Letting a
+# client override BOARDFARM_BOARD_NAME would lease one board while the agent
+# drives another.
+RESERVED_AGENT_ENV = frozenset(
+    {"BOARDFARM_BOARD_NAME", "BOARDFARM_SESSION_ID", "BOARDFARM_AGENT_PORT"},
+)
 
 
 class AgentInfo(BaseModel):
@@ -40,6 +47,23 @@ class SessionCreate(BaseModel):
     options: dict[str, Any] = Field(default_factory=dict)
     boot: bool = False
     agent_env: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("agent_env")
+    @classmethod
+    def no_reserved_keys(cls, value: dict[str, str]) -> dict[str, str]:
+        """Reject variables that would change which board or session the agent serves.
+
+        :param value: the requested agent environment
+        :type value: dict[str, str]
+        :return: the environment, unchanged
+        :rtype: dict[str, str]
+        :raises ValueError: when a reserved key is present
+        """
+        reserved = sorted(RESERVED_AGENT_ENV & value.keys())
+        if reserved:
+            msg = f"agent_env must not set {', '.join(reserved)}"
+            raise ValueError(msg)
+        return value
 
 
 class SessionResponse(BaseModel):
