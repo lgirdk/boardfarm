@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
+import itertools
 import logging
+import threading
 import time
 import traceback
 from collections import deque
@@ -32,18 +35,62 @@ class ConsoleEvent:
     line: str
 
 
-class EventBuffer:
-    """Bounded, cursor-ordered store of console and framework events."""
+def _put_dropping_oldest(
+    queue: asyncio.Queue[ConsoleEvent],
+    event: ConsoleEvent,
+) -> None:
+    """Queue *event*, dropping the oldest queued event when the queue is full.
 
-    def __init__(self, maxlen: int = 50_000) -> None:
+    Runs on the subscriber's event loop. The reader sees the drop as a gap in
+    ``seq``.
+
+    :param queue: subscriber queue
+    :type queue: asyncio.Queue[ConsoleEvent]
+    :param event: event to deliver
+    :type event: ConsoleEvent
+    """
+    if queue.full():
+        queue.get_nowait()
+    queue.put_nowait(event)
+
+
+def _matches(
+    event: ConsoleEvent,
+    device: str | None,
+    stream: str | None,
+    job_id: str | None,
+) -> bool:
+    return (
+        (device is None or event.device == device)
+        and (stream is None or event.stream == stream)
+        and (job_id is None or event.job_id == job_id)
+    )
+
+
+class EventBuffer:
+    """Bounded, cursor-ordered store of console and framework events.
+
+    Written from the pexpect worker thread and read on the event loop, so all
+    state is guarded by a lock and live subscribers are fed through their own
+    loop with ``call_soon_threadsafe``.
+    """
+
+    def __init__(self, maxlen: int = 50_000, subscriber_limit: int = 10_000) -> None:
         """Initialise the buffer.
 
         :param maxlen: how many events to retain
         :type maxlen: int
+        :param subscriber_limit: how many undelivered events one live
+            subscriber may hold before the oldest are dropped
+        :type subscriber_limit: int
         """
         self._events: deque[ConsoleEvent] = deque(maxlen=maxlen)
+        self._lock = threading.Lock()
         self._next_seq = 0
-        self._subscribers: list[asyncio.Queue[ConsoleEvent]] = []
+        self._subscriber_limit = subscriber_limit
+        self._subscribers: list[
+            tuple[asyncio.AbstractEventLoop, asyncio.Queue[ConsoleEvent]]
+        ] = []
         self._last_event: ConsoleEvent | None = None
         self._last_event_ts: float = time.time()
 
@@ -68,21 +115,49 @@ class EventBuffer:
         :return: the stored event
         :rtype: ConsoleEvent
         """
-        event = ConsoleEvent(
-            seq=self._next_seq,
-            ts=time.time(),
-            stream=stream,
-            device=device,
-            job_id=job_id,
-            line=line,
-        )
-        self._next_seq += 1
-        self._events.append(event)
-        self._last_event = event
-        self._last_event_ts = event.ts
-        for queue in self._subscribers:
-            queue.put_nowait(event)
+        with self._lock:
+            event = ConsoleEvent(
+                seq=self._next_seq,
+                ts=time.time(),
+                stream=stream,
+                device=device,
+                job_id=job_id,
+                line=line,
+            )
+            self._next_seq += 1
+            self._events.append(event)
+            self._last_event = event
+            self._last_event_ts = event.ts
+            subscribers = list(self._subscribers)
+        for loop, queue in subscribers:
+            self._deliver(loop, queue, event)
         return event
+
+    @staticmethod
+    def _deliver(
+        loop: asyncio.AbstractEventLoop,
+        queue: asyncio.Queue[ConsoleEvent],
+        event: ConsoleEvent,
+    ) -> None:
+        """Hand *event* to a subscriber on the subscriber's own loop.
+
+        :param loop: loop the subscriber's queue belongs to
+        :type loop: asyncio.AbstractEventLoop
+        :param queue: subscriber queue
+        :type queue: asyncio.Queue[ConsoleEvent]
+        :param event: event to deliver
+        :type event: ConsoleEvent
+        """
+        try:
+            on_loop = asyncio.get_running_loop() is loop
+        except RuntimeError:
+            on_loop = False
+        if on_loop:
+            _put_dropping_oldest(queue, event)
+            return
+        # RuntimeError: the subscriber's loop has already closed.
+        with contextlib.suppress(RuntimeError):
+            loop.call_soon_threadsafe(_put_dropping_oldest, queue, event)
 
     def read(
         self,
@@ -107,31 +182,26 @@ class EventBuffer:
         :return: matching events and the next cursor
         :rtype: tuple[list[ConsoleEvent], int]
         """
+        with self._lock:
+            next_seq = self._next_seq
+            if not self._events:
+                return [], next_seq
+            # seq is contiguous inside the deque, so the cursor maps to an
+            # offset; copy only from there, under the lock, and filter outside.
+            start = 0 if cursor < 0 else max(0, cursor - self._events[0].seq)
+            snapshot = list(itertools.islice(self._events, start, None))
         if cursor < 0:
-            snap = list(self._events)
-            if not snap:
-                return [], self._next_seq
-            cursor = snap[-abs(cursor)].seq if len(snap) >= abs(cursor) else snap[0].seq
-        selected: list[ConsoleEvent] = []
-        truncated = False
-        for event in self._events:
-            if event.seq < cursor:
-                continue
-            if device is not None and event.device != device:
-                continue
-            if stream is not None and event.stream != stream:
-                continue
-            if job_id is not None and event.job_id != job_id:
-                continue
-            selected.append(event)
-            if len(selected) >= limit:
-                truncated = True
-                break
-        # When the scan stops early because `limit` was hit, the next cursor
-        # must resume right after the last event actually returned -- not
-        # jump to the buffer's global append-tail, which would silently skip
-        # every event in between on the caller's next read().
-        next_cursor = selected[-1].seq + 1 if truncated else self._next_seq
+            # The last -cursor events *matching the filters*, like tail(1).
+            tail = [e for e in snapshot if _matches(e, device, stream, job_id)]
+            candidates = tail[-abs(cursor) :]
+        else:
+            candidates = [e for e in snapshot if _matches(e, device, stream, job_id)]
+        selected = candidates[:limit]
+        # When `limit` cuts the scan short, the next cursor must resume right
+        # after the last event returned -- not jump to the append-tail, which
+        # would silently skip every event in between on the next read().
+        truncated = len(selected) >= limit
+        next_cursor = selected[-1].seq + 1 if truncated else next_seq
         return selected, next_cursor
 
     @property
@@ -167,13 +237,9 @@ class EventBuffer:
         :yield: newly appended events
         :rtype: AsyncIterator[ConsoleEvent]
         """
-        queue: asyncio.Queue[ConsoleEvent] = asyncio.Queue()
-        self._subscribers.append(queue)
-        try:
+        async with self.subscription() as queue:
             while True:
                 yield await queue.get()
-        finally:
-            self._subscribers.remove(queue)
 
     @asynccontextmanager
     async def subscription(self) -> AsyncIterator[asyncio.Queue[ConsoleEvent]]:
@@ -185,12 +251,17 @@ class EventBuffer:
         :yield: queue that receives every event appended after this call
         :rtype: asyncio.Queue[ConsoleEvent]
         """
-        queue: asyncio.Queue[ConsoleEvent] = asyncio.Queue()
-        self._subscribers.append(queue)
+        queue: asyncio.Queue[ConsoleEvent] = asyncio.Queue(
+            maxsize=self._subscriber_limit,
+        )
+        entry = (asyncio.get_running_loop(), queue)
+        with self._lock:
+            self._subscribers.append(entry)
         try:
             yield queue
         finally:
-            self._subscribers.remove(queue)
+            with self._lock:
+                self._subscribers.remove(entry)
 
 
 class ConsoleCapture(logging.Handler):
@@ -212,26 +283,31 @@ class ConsoleCapture(logging.Handler):
         :param record: log record to capture
         :type record: logging.LogRecord
         """
-        if record.name == CONSOLE_LOGGER or record.name.startswith(
-            f"{CONSOLE_LOGGER}.",
-        ):
-            stream = "console"
-            parts = record.name.split(".")
-            device = parts[1] if len(parts) > 2 else None  # noqa: PLR2004
-        else:
-            stream = "framework"
-            device = None
-        line = record.getMessage()
-        if record.exc_info:
-            # getMessage() drops exc_info entirely, which is how every
-            # traceback was being lost on the way into the buffer.
-            line = f"{line}\n{''.join(traceback.format_exception(*record.exc_info))}"
-        self._buffer.append(
-            stream=stream,
-            device=device,
-            job_id=current_job_id.get(),
-            line=line,
-        )
+        try:
+            if record.name == CONSOLE_LOGGER or record.name.startswith(
+                f"{CONSOLE_LOGGER}.",
+            ):
+                stream = "console"
+                parts = record.name.split(".")
+                device = parts[1] if len(parts) > 2 else None  # noqa: PLR2004
+            else:
+                stream = "framework"
+                device = None
+            line = record.getMessage()
+            if record.exc_info:
+                # getMessage() drops exc_info entirely, which is how every
+                # traceback was being lost on the way into the buffer.
+                formatted = "".join(traceback.format_exception(*record.exc_info))
+                line = f"{line}\n{formatted}"
+            self._buffer.append(
+                stream=stream,
+                device=device,
+                job_id=current_job_id.get(),
+                line=line,
+            )
+        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            # A handler must never raise into the code that logged.
+            self.handleError(record)
 
     def install(self) -> None:
         """Attach to the console and framework loggers.

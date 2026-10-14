@@ -338,3 +338,36 @@ def test_usecase_routes_present_in_schema(client: TestClient) -> None:
     """
     schema = client.get("/openapi.json").json()
     assert any(p.startswith("/core/use_cases/") for p in schema["paths"])
+
+
+def test_usecase_configured_but_not_booted_returns_409(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A use case must not run against devices that were never booted.
+
+    :param monkeypatch: pytest monkeypatch
+    :type monkeypatch: pytest.MonkeyPatch
+    """
+    from boardfarm3.use_cases import cpe as uc_cpe
+
+    calls: list[object] = []
+
+    def _stub_get_cpu_usage(board: CPE) -> float:
+        calls.append(board)
+        return 12.5
+
+    _stub_get_cpu_usage.__module__ = uc_cpe.__name__
+    monkeypatch.setattr(uc_cpe, "get_cpu_usage", _stub_get_cpu_usage)
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=_FakeRuntime())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    with TestClient(app_module.create_app("s-test", "board-1")) as client:
+        client.post(
+            "/session/config",
+            json={"payload": {"inventory": {}, "env": {}}, "options": {}},
+        )
+        resp = client.post("/core/use_cases/cpe/get_cpu_usage", json={"board": "board"})
+    assert resp.status_code == 409
+    assert calls == []

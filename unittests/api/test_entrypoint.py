@@ -66,3 +66,90 @@ def test_build_app_from_env_installs_agent_log(
 
     build_app_from_env()
     assert (tmp_path / "s-4f2a" / "agent.log").exists()
+
+
+_LOGGERS = ("boardfarm3", "uvicorn", "uvicorn.error", "uvicorn.access")
+
+
+@pytest.fixture(name="restore_loggers")
+def restore_loggers_fixture() -> object:
+    """Put the agent's and uvicorn's loggers back the way they were.
+
+    :yield: None
+    :rtype: object
+    """
+    import logging
+
+    saved = {
+        name: (
+            list(logging.getLogger(name).handlers),
+            logging.getLogger(name).level,
+            logging.getLogger(name).propagate,
+        )
+        for name in _LOGGERS
+    }
+    yield
+    for name, (handlers, level, propagate) in saved.items():
+        logger = logging.getLogger(name)
+        for handler in list(logger.handlers):
+            if handler not in handlers:
+                logger.removeHandler(handler)
+                handler.close()
+        logger.setLevel(level)
+        logger.propagate = propagate
+
+
+@pytest.mark.usefixtures("restore_loggers")
+def test_agent_log_keeps_uvicorn_lines_after_uvicorn_configures_logging(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Uvicorn's own dictConfig must not strip the agent log from its loggers.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param tmp_path: temporary directory path
+    :type tmp_path: Path
+    """
+    import logging
+
+    import uvicorn
+
+    from boardfarm3.api import __main__ as entrypoint
+
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    monkeypatch.setenv("BOARDFARM_BOARD_NAME", "board")
+    monkeypatch.setenv("BOARDFARM_SESSION_ID", "s-4f2a")
+
+    def fake_serve(server: uvicorn.Server, sockets: object = None) -> None:  # noqa: ARG001
+        server.started = True
+        logging.getLogger("uvicorn.error").info("uvicorn says hello")
+
+    monkeypatch.setattr(uvicorn.Server, "run", fake_serve)
+    entrypoint.main()
+    text = (tmp_path / "s-4f2a" / "agent.log").read_text(encoding="utf-8")
+    assert "uvicorn says hello" in text
+
+
+@pytest.mark.usefixtures("restore_loggers")
+def test_installing_the_agent_log_twice_writes_each_line_once(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Re-installing (after uvicorn configures logging) must not duplicate lines.
+
+    :param monkeypatch: pytest monkeypatch fixture
+    :type monkeypatch: pytest.MonkeyPatch
+    :param tmp_path: temporary directory path
+    :type tmp_path: Path
+    """
+    import logging
+
+    from boardfarm3.api.logs import install_agent_log
+
+    monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path))
+    install_agent_log("s-1")
+    install_agent_log("s-1")
+    logging.getLogger("boardfarm3.demo").warning("exactly once")
+    text = (tmp_path / "s-1" / "agent.log").read_text(encoding="utf-8")
+    assert text.count("exactly once") == 1

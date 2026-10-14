@@ -193,3 +193,76 @@ async def test_status_boot_job_id_is_set_after_boot(session: Session) -> None:
     assert boot_job_id.startswith("j-")
     # The job must be reachable in the queue.
     assert session.queue.get(boot_job_id) is not None
+
+
+# -- the boot outcome does not depend on who is waiting -----------------------
+#
+# A sync boot runs inside an HTTP request. A client or proxy that gives up
+# cancels that request; the boot job keeps running and its outcome must still
+# land on the session.
+
+
+class _SlowBootRuntime(FakeRuntime):
+    """Boots in a fraction of a second, long enough to abandon the waiter."""
+
+    def boot_blocking(self) -> None:
+        """Take a moment, then succeed."""
+        import time
+
+        time.sleep(0.3)
+        super().boot_blocking()
+
+
+async def _wait_for_state(session: Session, *states: SessionState) -> None:
+    import asyncio
+
+    for _ in range(200):
+        if session.state in states:
+            return
+        await asyncio.sleep(0.01)
+
+
+@pytest.mark.asyncio
+async def test_boot_outcome_lands_even_when_the_waiter_is_cancelled(
+    make_session: Callable[..., Session],
+) -> None:
+    """Cancelling the request that started the boot leaves READY, not BOOTING.
+
+    :param make_session: factory that builds and tracks a session
+    :type make_session: Callable[..., Session]
+    """
+    import asyncio
+
+    session = make_session(runtime=_SlowBootRuntime())
+    await session.configure({"inventory": {}, "env": {}})
+    waiter = asyncio.create_task(session.boot())
+    await asyncio.sleep(0.05)
+    waiter.cancel()
+    await _wait_for_state(session, SessionState.READY, SessionState.FAILED)
+    assert session.state is SessionState.READY
+
+
+@pytest.mark.asyncio
+async def test_cancelled_boot_job_fails_the_session(
+    make_session: Callable[..., Session],
+) -> None:
+    """A boot job cancelled before it started must not report READY.
+
+    :param make_session: factory that builds and tracks a session
+    :type make_session: Callable[..., Session]
+    """
+    import asyncio
+    import threading
+
+    session = make_session()
+    await session.configure({"inventory": {}, "env": {}})
+    gate = threading.Event()
+    await session.queue.submit(gate.wait, mode="async")  # occupies the worker
+    booting = asyncio.create_task(session.boot())
+    await asyncio.sleep(0.05)
+    assert session.queue.cancel(session.status()["boot_job_id"])
+    gate.set()
+    await asyncio.wait_for(booting, timeout=5)
+    assert session.state is SessionState.FAILED
+    assert "cancelled" in session.status()["error"]["message"]
+    assert "boot" not in session.runtime.calls

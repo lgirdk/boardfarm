@@ -241,3 +241,68 @@ async def test_all_jobs_returns_every_retained_job() -> None:
     assert len(jobs) == 2
     assert [job.result for job in jobs] == [1, 2]
     queue.shutdown()
+
+
+# -- the backlog is bounded and every job reaches a final state ----------------
+
+
+async def test_queued_and_running_jobs_are_never_evicted() -> None:
+    """Retention trims finished jobs only; pending work stays pollable."""
+    small = ExecutionQueue(max_jobs=2)
+    gate = threading.Event()
+    try:
+        running = await small.submit(gate.wait, mode="async")
+        queued = [await small.submit(lambda: None, mode="async") for _ in range(4)]
+        await asyncio.sleep(0.05)
+        assert small.get(running.id) is running
+        assert all(small.get(job.id) is job for job in queued)
+    finally:
+        gate.set()
+        small.shutdown()
+
+
+async def test_a_full_backlog_is_refused() -> None:
+    """Beyond max_pending queued jobs, submit refuses instead of growing forever."""
+    from boardfarm3.api.execution import QueueFull
+
+    small = ExecutionQueue(max_pending=2)
+    gate = threading.Event()
+    try:
+        await small.submit(gate.wait, mode="async")
+        await asyncio.sleep(0.05)  # now running, not queued
+        await small.submit(lambda: None, mode="async")
+        await small.submit(lambda: None, mode="async")
+        with pytest.raises(QueueFull):
+            await small.submit(lambda: None, mode="async")
+    finally:
+        gate.set()
+        small.shutdown()
+
+
+async def test_abandoned_sync_job_is_cancelled_not_left_queued(
+    queue: ExecutionQueue,
+) -> None:
+    """A sync caller that goes away before its job starts cancels the job."""
+    gate = threading.Event()
+    ran: list[bool] = []
+    await queue.submit(gate.wait, mode="async")
+    waiter = asyncio.create_task(queue.submit(lambda: ran.append(True), mode="sync"))
+    await asyncio.sleep(0.05)
+    abandoned = queue.all_jobs()[-1]
+    waiter.cancel()
+    await asyncio.sleep(0.05)
+    gate.set()
+    await asyncio.sleep(0.1)
+    assert abandoned.state is JobState.CANCELLED
+    assert ran == []
+
+
+async def test_shutdown_cancels_jobs_still_queued() -> None:
+    """Jobs that will never run must not stay 'queued' forever."""
+    small = ExecutionQueue()
+    gate = threading.Event()
+    await small.submit(gate.wait, mode="async")
+    pending = await small.submit(lambda: None, mode="async")
+    small.shutdown()
+    gate.set()
+    assert pending.state is JobState.CANCELLED

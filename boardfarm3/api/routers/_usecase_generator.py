@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import Field, create_model
 
+from boardfarm3.api.routers import require_device_manager
 from boardfarm3.api.routers._generator import (
     _NONE_TYPE,
     _UNION_TYPE,
@@ -226,12 +227,7 @@ def _make_usecase_handler(  # noqa: C901, PLR0913, RUF100
         job = None
         try:
             session = request.app.state.session
-            dm = session.runtime.device_manager
-            if dm is None:
-                raise HTTPException(  # noqa: TRY301
-                    status_code=int(HTTPStatus.CONFLICT),
-                    detail="session is not booted — device_manager unavailable",
-                )
+            dm = require_device_manager(session)
             data = body.model_dump()
             kwargs: dict[str, Any] = {}
             for plan in plans:

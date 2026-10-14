@@ -132,3 +132,10 @@ def test_console_tail_includes_framework_lines() -> None:
     tail = console_tail_from(buffer, "j-1")
     assert "console line" in tail
     assert "framework line" in tail
+
+
+def test_a_full_job_backlog_is_429() -> None:
+    """A refused submission tells the client to back off, not that the agent broke."""
+    from boardfarm3.api.execution import QueueFull
+
+    assert http_status_for(QueueFull("backlog full")) == 429

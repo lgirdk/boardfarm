@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import re
 import traceback as _traceback
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
 import pexpect
 
+from boardfarm3.api.execution import JOB_ID_ATTR, QueueFull
 from boardfarm3.exceptions import (
     DeviceConnectionError,
     DeviceNotFound,
@@ -31,7 +33,36 @@ _STATUS_BY_EXCEPTION: tuple[tuple[type[BaseException], int], ...] = (
     (TR069ResponseError, HTTPStatus.BAD_GATEWAY),
     (DeviceConnectionError, HTTPStatus.BAD_GATEWAY),
     (pexpect.TIMEOUT, HTTPStatus.GATEWAY_TIMEOUT),
+    (QueueFull, HTTPStatus.TOO_MANY_REQUESTS),
 )
+
+
+# Credentials that inventories embed in connection strings, and that
+# exceptions about those connections then quote.
+_SCRUBBERS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"(sshpass\s+-p\s*)\S+"), r"\1***"),
+    (re.compile(r"(://[^/\s:@]+:)[^@\s/]+@"), r"\1***@"),
+    (
+        re.compile(
+            r"((?:password|passwd|pwd|secret|token)\s*[=:]\s*)[^\s,;'\"]+",
+            re.IGNORECASE,
+        ),
+        r"\1***",
+    ),
+)
+
+
+def scrub(text: str) -> str:
+    """Mask passwords embedded in connection strings.
+
+    :param text: text that may quote a connection string
+    :type text: str
+    :return: the text with credential values replaced by ``***``
+    :rtype: str
+    """
+    for pattern, replacement in _SCRUBBERS:
+        text = pattern.sub(replacement, text)
+    return text
 
 
 def http_status_for(exc: BaseException) -> int:
@@ -74,12 +105,13 @@ def error_envelope(
     """
     return {
         "error": type(exc).__name__,
-        "message": str(exc),
+        "message": scrub(str(exc)),
         "device": device,
         "session_id": session_id,
-        "job_id": job_id,
-        "console_tail": console_tail,
-        "traceback": _traceback.format_exception(exc),
+        "job_id": job_id if job_id is not None else getattr(exc, JOB_ID_ATTR, None),
+        # The tail includes framework log lines, which quote exceptions too.
+        "console_tail": scrub(console_tail),
+        "traceback": [scrub(line) for line in _traceback.format_exception(exc)],
     }
 
 

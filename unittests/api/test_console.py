@@ -290,3 +290,101 @@ def test_capture_preserves_exception_tracebacks() -> None:
     assert "job failed" in joined
     assert "ValueError: kaboom" in joined
     assert "Traceback" in joined
+
+
+# -- the buffer is written from the pexpect worker thread ---------------------
+#
+# Console lines are appended on the ``bf`` worker thread while HTTP handlers
+# read on the event loop thread. Both sides must be safe against the other.
+
+
+def test_read_is_safe_while_the_worker_thread_appends() -> None:
+    """A full read never fails because the worker appended mid-scan."""
+    import threading
+    import time
+
+    buffer = EventBuffer(maxlen=20_000)
+    for index in range(20_000):
+        buffer.append(stream="console", device="board", job_id=None, line=str(index))
+    stop = threading.Event()
+
+    def writer() -> None:
+        while not stop.is_set():
+            buffer.append(stream="console", device="board", job_id=None, line="y")
+
+    thread = threading.Thread(target=writer)
+    thread.start()
+    errors: list[Exception] = []
+    deadline = time.monotonic() + 2.0
+    try:
+        while time.monotonic() < deadline:
+            try:
+                buffer.read(cursor=0, device="nobody", limit=1000)
+            except RuntimeError as exc:  # noqa: PERF203  # deque mutated during iteration
+                errors.append(exc)
+    finally:
+        stop.set()
+        thread.join()
+    assert errors == []
+
+
+@pytest.mark.asyncio
+async def test_live_subscriber_is_woken_promptly_by_a_worker_thread_append() -> None:
+    """A line logged on the worker thread reaches an idle SSE subscriber at once."""
+    import threading
+    import time
+
+    buffer = EventBuffer()
+    async with buffer.subscription() as queue:
+        threading.Timer(
+            0.05,
+            lambda: buffer.append(
+                stream="console", device="board", job_id=None, line="hello"
+            ),
+        ).start()
+        started = time.monotonic()
+        event = await asyncio.wait_for(queue.get(), timeout=3.0)
+        elapsed = time.monotonic() - started
+    assert event.line == "hello"
+    assert elapsed < 1.0
+
+
+@pytest.mark.asyncio
+async def test_slow_subscriber_keeps_only_the_newest_events() -> None:
+    """A subscriber that stops reading cannot grow memory without bound."""
+    buffer = EventBuffer(subscriber_limit=100)
+    async with buffer.subscription() as queue:
+        for index in range(1_000):
+            buffer.append(stream="console", device="b", job_id=None, line=str(index))
+        await asyncio.sleep(0)
+        assert queue.qsize() == 100
+        kept = [queue.get_nowait() for _ in range(100)]
+    assert [event.line for event in kept] == [str(i) for i in range(900, 1_000)]
+
+
+def test_a_bad_log_call_never_raises_into_device_code(
+    capture: ConsoleCapture,
+) -> None:
+    """A malformed log call in device code must not fail the job that made it.
+
+    Driven through the handler directly: pytest's own capture handler
+    deliberately re-raises bad log calls, which would mask ours.
+    """
+    record = logging.LogRecord(
+        name="boardfarm3.devices.demo",
+        level=logging.DEBUG,
+        pathname=__file__,
+        lineno=1,
+        msg="%s and %s",
+        args=("only-one",),
+        exc_info=None,
+    )
+    capture.handle(record)
+
+
+def test_negative_cursor_tails_the_matching_events(buffer: EventBuffer) -> None:
+    """``cursor=-N`` with a device filter returns that device's last N lines."""
+    for device in ("lan", "wan", "lan", "wan", "wan"):
+        buffer.append(stream="console", device=device, job_id=None, line=device)
+    events, _ = buffer.read(cursor=-2, device="lan")
+    assert [event.seq for event in events] == [0, 2]
