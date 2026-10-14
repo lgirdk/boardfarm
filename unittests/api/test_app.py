@@ -1023,3 +1023,15 @@ def test_envelope_scrubs_credentials_from_messages(client: TestClient) -> None:
     assert "s3cr3t" not in text
     assert "pw123" not in text
     assert "ssh -p 22 root@10.0.0.1" in body["message"]
+
+
+def test_health_reports_the_code_the_agent_runs(client: TestClient) -> None:
+    """Control compares these with its own to catch a stale agent image.
+
+    :param client: test client
+    :type client: TestClient
+    """
+    from boardfarm3 import __version__
+
+    versions = client.get("/health").json()["versions"]
+    assert versions["boardfarm3"] == __version__

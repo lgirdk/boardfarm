@@ -26,6 +26,7 @@ from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api import bundle as bundle_module
 from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.diagnostics import thread_snapshot
+from boardfarm3.api.entrypoints import plugin_versions
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.routers import _async_response, require_device_manager
@@ -413,9 +414,12 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     for exception_type in (BoardfarmException, pexpect.TIMEOUT, pexpect.EOF):
         app.add_exception_handler(exception_type, handle_boardfarm_error)
 
+    versions = plugin_versions()
+
     @app.get("/health")
     async def health() -> dict[str, Any]:
-        return session().status()
+        # versions lets control notice an agent image that differs from it.
+        return {**session().status(), "versions": versions}
 
     def _confined_console_dir(requested: str) -> str:
         # /console/archive and the diagnostics bundle tar this directory, so

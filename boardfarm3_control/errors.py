@@ -40,6 +40,12 @@ class ControlError(Exception):
         return {"error": self.code, "message": self.message, **self.fields}
 
 
+class BoardNotInInventory(ControlError):
+    """The payload's inventory has no entry for the board being leased."""
+
+    status = HTTPStatus.BAD_REQUEST
+
+
 class NoHostForBoard(ControlError):
     """The inventory names no host for the board and no default host is set."""
 

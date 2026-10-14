@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import tarfile
 import time
 from typing import TYPE_CHECKING
@@ -25,6 +26,21 @@ _log = logging.getLogger(__name__)
 # never idles 30 s, and a hung agent (e.g. on a paused host) must not hold a
 # DELETE for 5 minutes before the stop is even attempted.
 _BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
+# Releasing closes every console, after whatever job is running finishes.
+_RELEASE_TIMEOUT_ENV = "BOARDFARM_AGENT_RELEASE_TIMEOUT"
+_DEFAULT_RELEASE_TIMEOUT = 120.0
+
+
+def _release_timeout() -> httpx.Timeout:
+    """Return the timeout for the agent's graceful device release.
+
+    :return: read bound from ``BOARDFARM_AGENT_RELEASE_TIMEOUT``, default 120
+    :rtype: httpx.Timeout
+    """
+    read = float(os.environ.get(_RELEASE_TIMEOUT_ENV, str(_DEFAULT_RELEASE_TIMEOUT)))
+    return httpx.Timeout(connect=10.0, read=read, write=30.0, pool=10.0)
+
+
 # Matches boardfarm3_control.launcher._common._DEFAULT_ARTIFACT_ROOT and
 # boardfarm3.api.logs's default. Callers should pass a resolved
 # AgentInfo.artifact_dir; this is only the fallback when none is known.
@@ -184,7 +200,9 @@ async def teardown_session(  # noqa: PLR0913
     # 2. Graceful device release, so board-side state is not left half-open.
     try:
         await http.delete(
-            f"{info.agent_url}/session", headers={SESSION_HEADER: session_id}
+            f"{info.agent_url}/session",
+            headers={SESSION_HEADER: session_id},
+            timeout=_release_timeout(),
         )
     except httpx.HTTPError as exc:
         _log.info("graceful release skipped for %s: %s", session_id, exc)

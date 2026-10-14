@@ -179,6 +179,9 @@ class Session:
             if self.state is SessionState.READY
             else {"status": "failed", "exception": self.error}
         )
+        # Release runs right after the job in progress, not after a backlog
+        # of work that nobody will collect.
+        self.queue.cancel_pending()
         await self.queue.submit(lambda: self.runtime.release(status), mode="sync")
         self.capture.uninstall()
         self.queue.shutdown()

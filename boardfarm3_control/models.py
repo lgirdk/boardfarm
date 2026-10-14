@@ -84,6 +84,7 @@ class SessionResponse(BaseModel):
     host: str | None = None
     image_id: str | None = None
     stop_pending: bool = False
+    warnings: list[str] = Field(default_factory=list)
 
 
 class SessionListResponse(BaseModel):

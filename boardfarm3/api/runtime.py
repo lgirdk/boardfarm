@@ -11,6 +11,7 @@ from pluggy import PluginManager
 
 from boardfarm3 import PROJECT_NAME
 from boardfarm3.api import plugin as api_plugin
+from boardfarm3.api.entrypoints import disabled_plugins, load_entrypoints
 from boardfarm3.plugins.hookspecs import core as core_hookspecs
 
 if TYPE_CHECKING:
@@ -59,8 +60,10 @@ class RuntimeContext:
         """
         plugin_manager = PluginManager(PROJECT_NAME)
         plugin_manager.add_hookspecs(core_hookspecs)
-        plugin_manager.load_setuptools_entrypoints(PROJECT_NAME)
-        plugin_manager.load_setuptools_entrypoints(API_ENTRY_POINT_GROUP)
+        # One plugin at a time: a plugin that cannot be imported is logged
+        # and skipped rather than stopping the agent from starting.
+        load_entrypoints(plugin_manager, PROJECT_NAME)
+        load_entrypoints(plugin_manager, API_ENTRY_POINT_GROUP, skip=disabled_plugins())
         if not plugin_manager.is_registered(api_plugin):
             plugin_manager.register(api_plugin, "core_api")
         plugin_manager.hook.boardfarm_add_hookspecs(plugin_manager=plugin_manager)
