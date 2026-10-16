@@ -80,10 +80,12 @@ class FakeContainer:
         self.status = "exited"
         self.attrs["State"]["FinishedAt"] = _STOPPED_AT
 
-    def remove(self, force: bool = False) -> None:  # noqa: ARG002
-        """Remove the container."""
+    def remove(self, force: bool = False, v: bool = False) -> None:  # noqa: ARG002
+        """Remove the container; without ``v`` its anonymous volumes stay behind."""
         self._daemon.touch("remove")
         self._daemon.store.pop(self.id, None)
+        if not v:
+            self._daemon.orphaned_volumes.append(self.id)
 
     def logs(self, stdout: bool = True, stderr: bool = True) -> bytes:  # noqa: ARG002
         """Return canned logs."""
@@ -214,6 +216,8 @@ class FakeDockerDaemon:
     ) -> None:
         """Create an empty daemon with the given images present or pullable."""
         self.store: dict[str, FakeContainer] = {}
+        # Ids of removed containers whose anonymous volumes were left behind.
+        self.orphaned_volumes: list[str] = []
         self.images_present = dict(images or {})
         self.pullable = dict(pullable or {})
         self.pulls: list[str] = []
