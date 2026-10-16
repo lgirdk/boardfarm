@@ -145,6 +145,36 @@ async def test_stop_keeps_or_removes_the_container(fake_daemon: Any) -> None:
     assert remaining == {"s-1": "exited"}
 
 
+async def _stop(launcher: DockerLauncher) -> None:
+    await launcher.stop("s-1")
+
+
+async def _purge(launcher: DockerLauncher) -> None:
+    await launcher.purge("s-1")
+
+
+async def _failed_start(launcher: DockerLauncher) -> None:
+    with pytest.raises(RuntimeError, match="no published port"):
+        await launcher.start("s-1", "board-1", "img:1", "prplos")
+
+
+@pytest.mark.parametrize("remove_agent", [_stop, _purge, _failed_start])
+async def test_removed_agents_leave_no_anonymous_volumes(
+    fake_daemon: Any,
+    remove_agent: Any,
+) -> None:
+    # Images built on the Jenkins agent base declare VOLUMEs; each removal
+    # without v=True leaves those volumes behind on the lab host.
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    if remove_agent is _failed_start:
+        daemon.publish = False
+    else:
+        daemon.add_agent(session_id="s-1", board_name="board-1", control_id=CONTROL)
+    await remove_agent(_launcher(daemon))
+    assert daemon.agents() == []
+    assert daemon.orphaned_volumes == []
+
+
 async def test_capture_returns_empty_when_host_is_down(fake_daemon: Any) -> None:
     daemon = fake_daemon()
     daemon.add_agent(session_id="s-1", board_name="b1", control_id=CONTROL)

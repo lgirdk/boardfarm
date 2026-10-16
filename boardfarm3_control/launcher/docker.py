@@ -275,7 +275,9 @@ class DockerLauncher:
             for container in self._find(client, session_id):
                 container.stop()
                 if remove:
-                    container.remove()
+                    # v=True: an image's VOLUMEs become anonymous volumes that
+                    # outlive the container otherwise.
+                    container.remove(v=True)
 
         await self._host.call(_stop, timeout=self._host.timeout + _STOP_GRACE)
 
@@ -288,7 +290,7 @@ class DockerLauncher:
 
         def _purge(client: Any) -> None:  # noqa: ANN401
             for container in self._find(client, session_id):
-                container.remove(force=True)
+                container.remove(force=True, v=True)
 
         await self._host.call(_purge)
 
@@ -481,7 +483,7 @@ class DockerLauncher:
 
     async def _remove_quietly(self, container: Any) -> bool:  # noqa: ANN401
         try:
-            await self._host.call(lambda _client: container.remove(force=True))
+            await self._host.call(lambda _client: container.remove(force=True, v=True))
         except Exception:  # noqa: BLE001
             _log.warning(
                 "could not remove container %s on host %s",
