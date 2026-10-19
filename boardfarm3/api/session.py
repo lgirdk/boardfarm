@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import shutil
 import tempfile
 import time
@@ -27,6 +28,8 @@ if TYPE_CHECKING:
 
     from boardfarm3.api.modes import SessionMode
     from boardfarm3.api.runtime import RuntimeOptions
+
+_log = logging.getLogger(__name__)
 
 
 class SessionConflict(RuntimeError):
@@ -201,25 +204,27 @@ class Session:
             )
 
         self._private_dir = Path(tempfile.mkdtemp(prefix="bf-run-"))
-        handler = mode_class(
-            ModeContext(
-                session_id=self.session_id,
-                board_name=self.options.board_name,
-                payload=payload,
-                options=dict(options or {}),
-                run=dict(run),
-                run_dir=artifact_dir(self.session_id) / "run",
-                private_dir=self._private_dir,
-                boardfarm_parser=boardfarm_argparser(
-                    getattr(self.runtime, "plugin_manager", None)
-                ),
-                emit=emit,
-                finished=self._finish_run,
-            )
-        )
         try:
+            handler = mode_class(
+                ModeContext(
+                    session_id=self.session_id,
+                    board_name=self.options.board_name,
+                    payload=payload,
+                    options=dict(options or {}),
+                    run=dict(run),
+                    run_dir=artifact_dir(self.session_id) / "run",
+                    private_dir=self._private_dir,
+                    boardfarm_parser=boardfarm_argparser(
+                        getattr(self.runtime, "plugin_manager", None)
+                    ),
+                    emit=emit,
+                    finished=self._finish_run,
+                )
+            )
             handler.validate()
-        except ModeRequestError:
+        except Exception:
+            # A bad request or a crashing mode: either way nothing may be left
+            # on disk, or a retry would orphan this directory.
             self._remove_private_dir()
             raise
         self.mode = mode
@@ -292,7 +297,15 @@ class Session:
     async def release(self) -> None:
         """Tear the runtime down and stop console capture."""
         if self.run is not None:
-            await self.run.cancel()
+            try:
+                await self.run.cancel()
+            except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+                # A run that cannot be cancelled must not keep the runtime up.
+                _log.exception(
+                    "could not cancel the %s run of session %s; releasing anyway",
+                    self.mode,
+                    self.session_id,
+                )
         self._remove_private_dir()
         status = (
             {"status": "success"}
