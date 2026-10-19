@@ -34,6 +34,8 @@ class AgentInfo(BaseModel):
     host: str | None = None
     image_id: str | None = None
     stop_pending: bool = False
+    mode: str = "interact"
+    run: dict[str, Any] | None = None
 
 
 class SessionCreate(BaseModel):
@@ -47,6 +49,8 @@ class SessionCreate(BaseModel):
     options: dict[str, Any] = Field(default_factory=dict)
     boot: bool = False
     agent_env: dict[str, str] = Field(default_factory=dict)
+    mode: str = "interact"
+    run: dict[str, Any] | None = None
 
     @field_validator("agent_env")
     @classmethod
@@ -64,6 +68,30 @@ class SessionCreate(BaseModel):
             msg = f"agent_env must not set {', '.join(reserved)}"
             raise ValueError(msg)
         return value
+
+    @model_validator(mode="after")
+    def check_mode(self) -> SessionCreate:
+        """Require a run outside interact, refuse one in it, and refuse boot with it.
+
+        :return: the validated body
+        :rtype: SessionCreate
+        :raises ValueError: when mode, run and boot do not fit together
+        """
+        if self.mode == "interact":
+            if self.run is not None:
+                msg = "run is only valid when mode is not interact"
+                raise ValueError(msg)
+            return self
+        if self.run is None:
+            msg = f"mode {self.mode} needs a run"
+            raise ValueError(msg)
+        if self.boot:
+            msg = (
+                f"boot does not apply to {self.mode} sessions;"
+                " set options.skip_boot instead"
+            )
+            raise ValueError(msg)
+        return self
 
 
 class SessionResponse(BaseModel):
@@ -85,6 +113,8 @@ class SessionResponse(BaseModel):
     image_id: str | None = None
     stop_pending: bool = False
     warnings: list[str] = Field(default_factory=list)
+    mode: str = "interact"
+    run: dict[str, Any] | None = None
 
 
 class SessionListResponse(BaseModel):
