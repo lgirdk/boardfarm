@@ -310,3 +310,28 @@ async def test_a_spawn_failure_leaks_nothing(tmp_path: Path) -> None:
         await run.start()
     assert run._log_file is None
     assert _open_fds() == open_fds
+
+
+async def test_a_log_on_a_full_device_still_finishes_the_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    (tmp_path / "run").mkdir()
+    script = "for i in range(3):\n    print(f'line {i}', flush=True)\n"
+    lines: list[str] = []
+    finished: list[bool] = []
+    run = _ScriptRun(_context(tmp_path, lines, finished), script)
+    monkeypatch.setattr(run, "_open_log", lambda: open("/dev/full", "ab"))  # noqa: SIM115, PTH123
+    with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
+        await run.start()
+        await asyncio.wait_for(run.wait(), 5)
+    assert finished == [True]
+    assert run.status()["state"] == "finished"
+    assert run.status()["exit_code"] == 0
+    assert lines == ["line 0", "line 1", "line 2"]
+    assert (tmp_path / "run" / "run.json").exists()
+    warnings = [
+        record
+        for record in caplog.records
+        if record.name == "boardfarm3.api.modes" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings) == 1
