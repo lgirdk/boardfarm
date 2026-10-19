@@ -113,8 +113,10 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
     25 MB per device by the connection layer's rotating handler.
 
     Console transcripts are deliberately not redacted -- a credential echoed by
-    a login prompt cannot be reliably scrubbed. ``manifest.json`` records
-    exactly which members were processed.
+    a login prompt cannot be reliably scrubbed. The ``run/`` directory
+    (``pytest.log``, ``report.html``, ``run.json``) is included unredacted too,
+    like the console transcripts. ``manifest.json`` records exactly which
+    members were processed.
 
     :param session: session to capture
     :type session: Session

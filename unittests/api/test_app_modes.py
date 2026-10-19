@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import io
 import json
+import logging
 import tarfile
 import time
 from typing import TYPE_CHECKING, Any
@@ -20,7 +21,7 @@ from ._fake_mode import FakeMode
 from .conftest import FakeRuntime
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
     from pathlib import Path
 
     from boardfarm3.api.runtime import RuntimeOptions
@@ -39,6 +40,23 @@ class _FakeRequest:
         return False
 
 
+class _FailingCancelMode(FakeMode):
+    async def cancel(self) -> bool:
+        self.cancel_calls += 1
+        msg = "cannot signal the process group"
+        raise PermissionError(msg)
+
+
+class _SelfCancellingMode(FakeMode):
+    """The first cancel ends its task as cancelled; later ones are normal."""
+
+    async def cancel(self) -> bool:
+        self.cancel_calls += 1
+        if self.cancel_calls == 1:
+            raise asyncio.CancelledError
+        return False
+
+
 @pytest.fixture(autouse=True)
 def _isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path / "artifacts"))
@@ -47,6 +65,15 @@ def _isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _build(session_id: str, options: RuntimeOptions) -> Session:
     return Session(session_id, options, runtime=FakeRuntime(), modes={"fake": FakeMode})
+
+
+def _build_with(
+    mode: type[FakeMode],
+) -> Callable[[str, RuntimeOptions], Session]:
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=FakeRuntime(), modes={"fake": mode})
+
+    return build
 
 
 @pytest.fixture(name="client")
@@ -142,6 +169,54 @@ def test_cancel_is_accepted_once_and_then_refused(client: TestClient) -> None:
     assert client.post("/run/cancel").status_code == 409
 
 
+def test_a_cancel_that_fails_in_the_background_is_logged(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    def cancel_errors() -> list[logging.LogRecord]:
+        return [
+            record
+            for record in caplog.records
+            if record.name == "boardfarm3.api.app" and record.levelno == logging.ERROR
+        ]
+
+    monkeypatch.setattr(app_module, "build_session", _build_with(_FailingCancelMode))
+    with TestClient(app_module.create_app("s-test", "board-1")) as client:
+        client.post("/session/config", json=_FAKE)
+        with caplog.at_level(logging.ERROR, logger="boardfarm3.api.app"):
+            response = client.post("/run/cancel")
+            deadline = time.monotonic() + 5
+            while not cancel_errors() and time.monotonic() < deadline:
+                time.sleep(0.01)
+    assert response.status_code == 202
+    assert response.json() == {"status": "cancelling"}
+    errors = cancel_errors()
+    assert len(errors) == 1
+    assert "s-test" in errors[0].getMessage()
+    assert errors[0].exc_info is not None
+    assert isinstance(errors[0].exc_info[1], PermissionError)
+
+
+async def test_a_background_cancel_that_ends_cancelled_is_not_logged(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(app_module, "build_session", _build_with(_SelfCancellingMode))
+    application = app_module.create_app("s-test", "board-1")
+    async with application.router.lifespan_context(application):
+        await application.state.session.configure({}, {}, mode="fake", run={})
+        route = next(
+            candidate
+            for candidate in application.routes
+            if getattr(candidate, "path", None) == "/run/cancel"
+        )
+        with caplog.at_level(logging.ERROR):
+            assert await route.endpoint() == {"status": "cancelling"}
+            # Enough turns for the task to end and its done-callback to run.
+            for _ in range(3):
+                await asyncio.sleep(0)
+        assert FakeMode.instances[-1].cancel_calls == 1
+    assert [r for r in caplog.records if r.levelno >= logging.ERROR] == []
+
+
 def test_artifacts_are_the_run_directory(client: TestClient) -> None:
     client.post("/session/config", json=_FAKE)
     run_dir = artifact_dir("s-test") / "run"
@@ -171,6 +246,26 @@ def test_the_bundle_carries_the_run_directory_and_the_mode(client: TestClient) -
         manifest = archive.extractfile("manifest.json")
         assert manifest is not None
         assert json.load(manifest)["mode"] == "fake"
+
+
+def test_the_bundle_session_json_has_the_mode_and_run_but_never_run_env(
+    client: TestClient,
+) -> None:
+    canary = "canary-run-env-value"
+    body = {**_FAKE, "run": {"env": {"UIM_PWD": canary}}}
+    assert client.post("/session/config", json=body).status_code == 200
+    response = client.get("/diagnostics/bundle")
+    members: dict[str, str] = {}
+    with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:gz") as archive:
+        for name in ("session.json", "config.json"):
+            member = archive.extractfile(name)
+            assert member is not None
+            members[name] = member.read().decode("utf-8")
+    session_json = json.loads(members["session.json"])
+    assert session_json["mode"] == "fake"
+    assert session_json["run"] == {"state": "running", "fake": True}
+    for name, text in members.items():
+        assert canary not in text, f"{name} carries run.env"
 
 
 async def test_the_console_stream_filters_by_stream(

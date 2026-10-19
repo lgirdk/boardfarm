@@ -16,6 +16,7 @@ from boardfarm3.api.entrypoints import (
     disabled_plugins,
     load_entrypoints,
 )
+from boardfarm3.api.modes import INTERACT
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -77,11 +78,12 @@ def require_device_manager(session: Session) -> DeviceManager:
     :type session: Session
     :return: the device manager
     :rtype: DeviceManager
-    :raises HTTPException: 409 when the session has not started booting
+    :raises HTTPException: 409 when the session has not started booting, or when
+        it runs in a non-interact mode (the run owns the devices)
     """
     device_manager = session.runtime.device_manager
     if device_manager is None or session.state.value not in _DEVICE_CALL_STATES:
-        if session.mode != "interact":
+        if session.mode != INTERACT:
             detail = f"devices are owned by the {session.mode} run"
         else:
             detail = (

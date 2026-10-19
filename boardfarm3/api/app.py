@@ -534,6 +534,17 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
             )
         return current.run
 
+    def _log_failed_cancel(done: asyncio.Task[bool]) -> None:
+        # The route has answered by now and run.cancel() records nothing
+        # itself, so a failure would otherwise vanish.
+        if done.cancelled():
+            return
+        exc = done.exception()
+        if exc is not None:
+            _log.error(
+                "could not cancel the run of session %s", session_id, exc_info=exc
+            )
+
     @app.get("/run")
     async def run_status() -> dict[str, Any]:
         return _run_of(session()).status()
@@ -548,9 +559,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         # The escalation can take the whole cancel grace: answer now, cancel
         # in the background, and keep a reference so the task is not collected.
         task = asyncio.create_task(run.cancel())
-        task.add_done_callback(
-            lambda done: None if done.cancelled() else done.exception(),
-        )
+        task.add_done_callback(_log_failed_cancel)
         state["cancel_task"] = task
         return {"status": "cancelling"}
 
