@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import tempfile
 from typing import TYPE_CHECKING
 
@@ -154,3 +155,68 @@ async def test_a_mode_session_configures_once(
     await session.configure({}, {}, mode="fake", run={})
     with pytest.raises(SessionConflict):
         await session.configure({}, {}, mode="fake", run={})
+
+
+class _UncancellableMode(FakeMode):
+    """A run whose cancel fails."""
+
+    async def cancel(self) -> bool:
+        self.cancel_calls += 1
+        msg = "cancel failed"
+        raise RuntimeError(msg)
+
+
+class _CrashingValidateMode(FakeMode):
+    def validate(self) -> None:
+        msg = "validate broke"
+        raise RuntimeError(msg)
+
+
+class _CrashingInitMode(FakeMode):
+    def __init__(self, *_args: object) -> None:
+        msg = "constructor broke"
+        raise RuntimeError(msg)
+
+
+async def test_release_goes_on_when_a_run_cannot_be_cancelled(
+    make_session: Callable[..., Session], caplog: pytest.LogCaptureFixture
+) -> None:
+    runtime = FakeRuntime()
+    session = make_session(runtime=runtime, modes={"stuck": _UncancellableMode})
+    await session.configure({}, {}, mode="stuck", run={})
+    with caplog.at_level(logging.ERROR, logger="boardfarm3.api.session"):
+        await session.release()
+    assert FakeMode.instances[-1].cancel_calls == 1
+    assert "release:failed" in runtime.calls
+    assert session.capture not in logging.getLogger("boardfarm3").handlers
+    with pytest.raises(RuntimeError, match="shutdown"):
+        await session.queue.submit(lambda: None, mode="sync")
+    errors = [
+        record
+        for record in caplog.records
+        if record.name == "boardfarm3.api.session" and record.levelno == logging.ERROR
+    ]
+    assert len(errors) == 1
+    assert "stuck" in errors[0].getMessage()
+    assert errors[0].exc_info is not None
+    assert str(errors[0].exc_info[1]) == "cancel failed"
+
+
+@pytest.mark.parametrize(
+    "crashing", [_CrashingValidateMode, _CrashingInitMode], ids=["validate", "init"]
+)
+async def test_a_mode_that_crashes_before_starting_leaves_nothing_behind(
+    make_session: Callable[..., Session], tmp_path: Path, crashing: type[FakeMode]
+) -> None:
+    session = make_session(modes={"crash": crashing, "fake": FakeMode})
+    with pytest.raises(RuntimeError, match="broke"):
+        await session.configure({}, {}, mode="crash", run={})
+    assert _private_dirs(tmp_path) == []
+    assert session._private_dir is None
+    assert session.state is SessionState.CREATED
+    assert session.mode == "interact"
+    assert session.error is not None
+    assert session.error["error"] == "RuntimeError"
+    await session.configure({}, {}, mode="fake", run={})
+    assert session.state is SessionState.RUNNING
+    assert len(_private_dirs(tmp_path)) == 1

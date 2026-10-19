@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+from boardfarm3.api import modes
 from boardfarm3.api.modes import CANCEL_GRACE_ENV, Command, ModeContext, SubprocessRun
 
 if TYPE_CHECKING:
@@ -335,3 +336,80 @@ async def test_a_log_on_a_full_device_still_finishes_the_run(
         if record.name == "boardfarm3.api.modes" and record.levelno == logging.WARNING
     ]
     assert len(warnings) == 1
+
+
+async def test_a_malformed_cancel_grace_still_cancels(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv(CANCEL_GRACE_ENV, "abc")
+    script = (
+        "import signal, sys, time\n"
+        "def stop(*_):\n"
+        "    print('interrupted', flush=True)\n"
+        "    sys.exit(2)\n"
+        "signal.signal(signal.SIGINT, stop)\n"
+        "print('ready', flush=True)\n"
+        "time.sleep(30)\n"
+    )
+    lines: list[str] = []
+    run = _ScriptRun(_context(tmp_path, lines, []), script)
+    await run.start()
+    try:
+        await _until(lambda: "ready" in lines)
+        with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
+            assert await run.cancel() is True
+    finally:
+        if run.running_since() is not None:
+            # The cancel failed; do not leave the child running.
+            os.killpg(run._process.pid, signal.SIGKILL)
+            await asyncio.wait_for(run.wait(), 10)
+    assert "interrupted" in lines
+    assert run.status()["exit_code"] == 2
+    warnings = [
+        record
+        for record in caplog.records
+        if record.name == "boardfarm3.api.modes" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings) == 1
+    assert CANCEL_GRACE_ENV in warnings[0].getMessage()
+
+
+@pytest.mark.parametrize(
+    "raw",
+    ["abc", "", "-1", "nan", "inf"],
+    ids=["text", "empty", "negative", "nan", "infinite"],
+)
+def test_an_unusable_cancel_grace_falls_back_to_the_default(
+    raw: str, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv(CANCEL_GRACE_ENV, raw)
+    with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
+        grace = modes._cancel_grace()
+    assert grace == modes._DEFAULT_CANCEL_GRACE
+    warnings = [
+        record
+        for record in caplog.records
+        if record.name == "boardfarm3.api.modes" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings) == 1
+    assert CANCEL_GRACE_ENV in warnings[0].getMessage()
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [(None, modes._DEFAULT_CANCEL_GRACE), ("0", 0.0), ("0.2", 0.2)],
+    ids=["unset", "zero", "fraction"],
+)
+def test_a_usable_cancel_grace_is_used_without_a_warning(
+    raw: str | None,
+    expected: float,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    if raw is None:
+        monkeypatch.delenv(CANCEL_GRACE_ENV, raising=False)
+    else:
+        monkeypatch.setenv(CANCEL_GRACE_ENV, raw)
+    with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
+        assert modes._cancel_grace() == expected
+    assert [r for r in caplog.records if r.name == "boardfarm3.api.modes"] == []

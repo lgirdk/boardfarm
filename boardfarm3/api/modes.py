@@ -13,6 +13,7 @@ import asyncio
 import contextlib
 import json
 import logging
+import math
 import os
 import signal
 import time
@@ -244,6 +245,34 @@ def load_plugin_modes() -> dict[str, type[SessionMode]]:
     return collect_modes(plugin_manager)
 
 
+def _cancel_grace() -> float:
+    """Return how long a cancelled run gets to stop on Ctrl-C.
+
+    A malformed ``BOARDFARM_RUN_CANCEL_GRACE`` must not stop a run from being
+    cancelled, so it falls back to the default instead of raising.
+
+    :return: the variable's value in seconds; the default when it is unset, or
+        when it is not a finite number of 0 or more (which is logged)
+    :rtype: float
+    """
+    raw = os.environ.get(CANCEL_GRACE_ENV)
+    if raw is None:
+        return _DEFAULT_CANCEL_GRACE
+    try:
+        grace = float(raw)
+    except ValueError:
+        grace = math.nan
+    if math.isfinite(grace) and grace >= 0:
+        return grace
+    _log.warning(
+        "%s=%r is not a finite number of seconds, 0 or more; using %s",
+        CANCEL_GRACE_ENV,
+        raw,
+        _DEFAULT_CANCEL_GRACE,
+    )
+    return _DEFAULT_CANCEL_GRACE
+
+
 class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attributes
     """A mode whose run is one subprocess supervised by the agent.
 
@@ -455,7 +484,7 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
         return True
 
     async def _escalate(self, pid: int) -> None:
-        grace = float(os.environ.get(CANCEL_GRACE_ENV, str(_DEFAULT_CANCEL_GRACE)))
+        grace = _cancel_grace()
         for sig, wait_for in (
             (signal.SIGINT, grace),
             (signal.SIGTERM, _TERM_GRACE),
