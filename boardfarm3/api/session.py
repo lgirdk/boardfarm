@@ -194,7 +194,6 @@ class Session:
         run: dict[str, Any],
     ) -> None:
         self.payload = payload
-        self._apply_options(options)
         mode_class = self.modes[mode]
         stream_name = mode_class.stream_name
 
@@ -222,6 +221,9 @@ class Session:
                 )
             )
             handler.validate()
+            # Only an accepted request may change the session's options: a
+            # refused one must leave nothing behind for the retry to inherit.
+            self._apply_options(options)
         except Exception:
             # A bad request or a crashing mode: either way nothing may be left
             # on disk, or a retry would orphan this directory.
@@ -237,6 +239,8 @@ class Session:
             raise
         self.run = handler
         self.state = SessionState.RUNNING
+        # A retry that got this far no longer has a failure to report.
+        self.error = None
         self.touch()
 
     def _finish_run(self) -> None:
@@ -256,8 +260,12 @@ class Session:
         coroutine: a caller that stops waiting (a client or proxy giving up on
         a sync boot) must not leave the session stuck in BOOTING.
 
+        :raises SessionConflict: when the session runs in a non-interact mode
         :raises RuntimeError: when the session has not been configured
         """
+        if self.mode != INTERACT:
+            msg = f"boot() does not apply to a {self.mode} session"
+            raise SessionConflict(msg)
         if self.state is not SessionState.CONFIGURED:
             msg = "configure() must succeed before boot()"
             raise RuntimeError(msg)
@@ -295,7 +303,11 @@ class Session:
         self.touch()
 
     async def release(self) -> None:
-        """Tear the runtime down and stop console capture."""
+        """Cancel an active run, tear the runtime down and stop console capture.
+
+        The run's private directory is removed too. A run that cannot be
+        cancelled is logged, and the release goes on.
+        """
         if self.run is not None:
             try:
                 await self.run.cancel()
