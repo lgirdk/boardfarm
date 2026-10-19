@@ -184,3 +184,61 @@ def test_snapshot_route_is_not_swallowed_by_the_catch_all(wired: tuple) -> None:
     assert response.status_code == HTTP_OK
     body = response.json()
     assert set(body) == {"path", "size", "source", "captured_at"}
+
+
+@respx.mock
+def test_snapshot_of_a_retained_corpse_keeps_its_mode_and_run(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profiles: dict[str, str]
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    launcher = FakeLauncher()
+    info = asyncio.run(launcher.start("s-1", "board", "img", "prplos", mode="pytest"))
+    final = {"state": "finished", "outcome": "passed"}
+    respx.get(f"{info.agent_url}/run").mock(
+        return_value=httpx.Response(200, json=final)
+    )
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        return_value=httpx.Response(200, content=b"BUNDLE")
+    )
+    respx.delete(f"{info.agent_url}/session").mock(
+        return_value=httpx.Response(200, json={})
+    )
+    app = create_app(launcher=launcher, profiles=profiles)
+    with TestClient(app) as client:
+        retained = client.delete("/sessions/s-1", params={"retain": "true"})
+        assert retained.json() == {"status": "retained"}
+        assert app.state.registry.get("s-1").run == final
+        assert client.post("/sessions/s-1/diagnostics/snapshot").status_code == HTTP_OK
+    meta = DiagnosticsStore(root=tmp_path).read_meta("s-1")
+    assert meta is not None
+    assert meta["mode"] == "pytest"
+    assert meta["run"] == final
+
+
+@respx.mock
+def test_snapshot_after_a_restart_keeps_the_run_saved_in_meta(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profiles: dict[str, str]
+) -> None:
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    launcher = FakeLauncher()
+    info = asyncio.run(launcher.start("s-1", "board", "img", "prplos", mode="pytest"))
+    asyncio.run(launcher.stop("s-1", remove=False))  # a retained container
+    final = {"state": "finished", "outcome": "passed"}
+    store = DiagnosticsStore(root=tmp_path)
+    store.write_meta(
+        "s-1", {"session_id": "s-1", "ended_at": 1.0, "mode": "pytest", "run": final}
+    )
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        return_value=httpx.Response(200, content=b"BUNDLE")
+    )
+    app = create_app(launcher=launcher, profiles=profiles)
+    with TestClient(app) as client:
+        # As rebuilt after a restart: the record has the mode but no run.
+        rebuilt = app.state.registry.get("s-1")
+        assert rebuilt.state == "dead"
+        assert rebuilt.run is None
+        assert client.post("/sessions/s-1/diagnostics/snapshot").status_code == HTTP_OK
+    meta = store.read_meta("s-1")
+    assert meta is not None
+    assert meta["mode"] == "pytest"
+    assert meta["run"] == final
