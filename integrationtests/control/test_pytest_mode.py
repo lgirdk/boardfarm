@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import json
 import tarfile
 import time
 from typing import TYPE_CHECKING, Any
@@ -210,4 +211,10 @@ async def test_deleting_a_running_session_keeps_its_cancelled_result(
     assert meta["mode"] == "pytest"
     assert meta["run"]["outcome"] == "cancelled"
     with tarfile.open(store.bundle_path(sid), mode="r:gz") as bundle:
-        assert any(name.endswith("run/junit.xml") for name in bundle.getnames())
+        names = bundle.getnames()
+        assert any(name.endswith("run/junit.xml") for name in names)
+        saved = [name for name in names if name.endswith("run/run.json")]
+        assert len(saved) == 1
+        run_json = bundle.extractfile(saved[0])
+        assert run_json is not None
+        assert json.load(run_json)["outcome"] == "cancelled"

@@ -89,6 +89,9 @@ def _isolated_store(
 ) -> None:
     """Keep integration artifacts out of /var, which is not writable in CI.
 
+    The launcher's state file moves too: its default, in /tmp, is the one a
+    developer's own control plane may be using.
+
     :param monkeypatch: pytest monkeypatch fixture
     :type monkeypatch: pytest.MonkeyPatch
     :param tmp_path_factory: pytest temp directory factory
@@ -97,6 +100,7 @@ def _isolated_store(
     root = tmp_path_factory.mktemp("bf-integration")
     monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(root / "control"))
     monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(root / "artifacts"))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(root / "sessions.json"))
     # Keep the SSE keepalive test from waiting the 15 s production default.
     monkeypatch.setenv("BOARDFARM_SSE_KEEPALIVE", "1")
 
