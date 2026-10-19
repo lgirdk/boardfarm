@@ -8,9 +8,10 @@ from typing import Any
 REDACTED = "***"
 
 # Matched against dict *keys* only, so a value that merely contains the word
-# "key" is preserved. "cred" catches ldap_credentials and loc_res_credentials.
+# "key" is preserved. "cred" catches ldap_credentials and loc_res_credentials;
+# "pwd" catches UIM_PWD and ldap_pwd.
 _SECRET_KEY = re.compile(
-    r"pass|passwd|password|secret|token|key|auth|cred", re.IGNORECASE
+    r"pass|passwd|password|secret|token|key|auth|cred|pwd", re.IGNORECASE
 )
 
 

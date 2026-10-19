@@ -57,3 +57,13 @@ def test_credential_keys_are_redacted() -> None:
 )
 def test_is_secret_key_matches_the_redaction_rule(name: str, secret: bool) -> None:
     assert is_secret_key(name) is secret
+
+
+@pytest.mark.parametrize("name", ["UIM_PWD", "ldap_pwd"])
+def test_pwd_names_are_secret(name: str) -> None:
+    assert is_secret_key(name) is True
+
+
+def test_redacts_a_pwd_value() -> None:
+    out = redact({"uim_pwd": "hunter2", "uim_user": "admin"})
+    assert out == {"uim_pwd": REDACTED, "uim_user": "admin"}
