@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from boardfarm3.api.redact import REDACTED, redact
+import pytest
+
+from boardfarm3.api.redact import REDACTED, is_secret_key, redact
 
 
 def test_redacts_secret_looking_keys() -> None:
@@ -28,3 +30,30 @@ def test_leaves_non_mapping_values_alone() -> None:
     assert redact("plain") == "plain"
     assert redact(42) == 42
     assert redact(None) is None
+
+
+def test_credential_keys_are_redacted() -> None:
+    value = {
+        "ldap_credentials": "user;pw",
+        "loc_res_credentials": "user;pw",
+        "loc_res_url": "http://locker:8000",
+    }
+    assert redact(value) == {
+        "ldap_credentials": REDACTED,
+        "loc_res_credentials": REDACTED,
+        "loc_res_url": "http://locker:8000",
+    }
+
+
+@pytest.mark.parametrize(
+    ("name", "secret"),
+    [
+        ("ldap_credentials", True),
+        ("PASSWORD", True),
+        ("api_token", True),
+        ("loc_res_url", False),
+        ("board_name", False),
+    ],
+)
+def test_is_secret_key_matches_the_redaction_rule(name: str, secret: bool) -> None:
+    assert is_secret_key(name) is secret
