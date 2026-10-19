@@ -11,6 +11,7 @@ import pytest
 
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.modes import ModeRequestError
+from boardfarm3.api.runtime import RuntimeContext
 from boardfarm3.api.session import Session, SessionConflict, SessionState
 
 from ._fake_mode import FakeMode
@@ -303,8 +304,22 @@ async def test_options_are_applied_after_validate_and_before_start(
 
     session = make_session(runtime=runtime, modes={"rec": _Recording})
     await session.configure({}, {"quiet_after": 9.0}, mode="rec", run={})
-    assert steps == ["validate", "refresh_cmdline_args", "start"]
+    assert steps == ["validate", "start"]
     assert session.options.quiet_after == 9.0
+
+
+async def test_a_mode_session_accepts_plugin_args_named_like_namespace_fields(
+    make_session: Callable[..., Session],
+) -> None:
+    session = make_session(modes=_MODES)
+    # What Session builds when it is given no runtime: a real one, made from the
+    # session's own options (a FakeRuntime would never rebuild the Namespace).
+    session.runtime = RuntimeContext(session.options)
+    plugin_args = {"flash_image": "img.bin", "legacy": True}
+    await session.configure({}, {"plugin_args": plugin_args}, mode="fake", run={})
+    assert session.state is SessionState.RUNNING
+    assert FakeMode.instances[-1].context.options == {"plugin_args": plugin_args}
+    assert session.options.plugin_args == plugin_args
 
 
 async def test_the_mode_is_handed_the_agents_context(
