@@ -3,16 +3,29 @@
 from __future__ import annotations
 
 import asyncio
+import shutil
+import tempfile
 import time
 from enum import Enum
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from boardfarm3.api.console import ConsoleCapture, EventBuffer
 from boardfarm3.api.errors import console_tail_from, error_envelope
 from boardfarm3.api.execution import ExecutionQueue, Job, JobState
+from boardfarm3.api.logs import artifact_dir
+from boardfarm3.api.modes import (
+    INTERACT,
+    ModeContext,
+    ModeRequestError,
+    boardfarm_argparser,
+)
 from boardfarm3.api.runtime import RuntimeContext
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from boardfarm3.api.modes import SessionMode
     from boardfarm3.api.runtime import RuntimeOptions
 
 
@@ -28,6 +41,8 @@ class SessionState(str, Enum):
     BOOTING = "booting"
     READY = "ready"
     FAILED = "failed"
+    RUNNING = "running"
+    FINISHED = "finished"
 
 
 # pylint: disable-next=too-many-instance-attributes
@@ -39,6 +54,7 @@ class Session:
         session_id: str,
         options: RuntimeOptions,
         runtime: RuntimeContext | None = None,
+        modes: Mapping[str, type[SessionMode]] | None = None,
     ) -> None:
         """Initialise the session.
 
@@ -48,6 +64,8 @@ class Session:
         :type options: RuntimeOptions
         :param runtime: runtime context, built from options when omitted
         :type runtime: RuntimeContext | None
+        :param modes: non-interactive modes this agent offers, by name
+        :type modes: Mapping[str, type[SessionMode]] | None
         """
         self.session_id = session_id
         self.options = options
@@ -61,8 +79,21 @@ class Session:
         self.last_activity = self.created_at
         self.error: dict[str, Any] | None = None
         self.payload: dict[str, Any] = {}
+        self.modes: dict[str, type[SessionMode]] = dict(modes or {})
+        self.mode = INTERACT
+        self.run: SessionMode | None = None
+        self._private_dir: Path | None = None
         self._boot_job: Job | None = None
         self._configuring = False
+
+    @property
+    def run_id(self) -> str:
+        """Return the id the run's console lines carry as their job id.
+
+        :return: ``run-<session_id>``
+        :rtype: str
+        """
+        return f"run-{self.session_id}"
 
     def touch(self) -> None:
         """Record activity, so idle reaping can be added later."""
@@ -72,16 +103,20 @@ class Session:
         self,
         payload: dict[str, Any],
         options: dict[str, Any] | None = None,
+        *,
+        mode: str = INTERACT,
+        run: dict[str, Any] | None = None,
     ) -> None:
-        """Apply options, resolve the payload and register devices.
-
-        Runs on the worker thread so device construction is serialised with
-        everything else.
+        """Apply options, then build devices (interact) or start the mode's run.
 
         :param payload: opaque session payload
         :type payload: dict[str, Any]
         :param options: overrides for the runtime options
         :type options: dict[str, Any] | None
+        :param mode: ``interact`` or a mode from ``self.modes``
+        :type mode: str
+        :param run: the mode's request; required outside interact
+        :type run: dict[str, Any] | None
         :raises SessionConflict: when the session was already configured
         """
         # Once only: a second configure would build a new DeviceManager while
@@ -91,21 +126,34 @@ class Session:
             raise SessionConflict(msg)
         self._configuring = True
         try:
-            await self._configure(payload, options)
+            self._check_mode(mode, run)
+            if mode == INTERACT:
+                await self._configure(payload, options)
+            else:
+                await self._start_mode(mode, payload, options, run or {})
         except Exception as exc:
-            # Still CREATED, so a corrected payload can be retried; the status
-            # says why the last attempt failed.
-            self.error = error_envelope(exc, session_id=self.session_id)
+            # A failed start already recorded its own error.
+            if self.state is not SessionState.FAILED:
+                self.error = error_envelope(exc, session_id=self.session_id)
             raise
         finally:
             self._configuring = False
 
-    async def _configure(
-        self,
-        payload: dict[str, Any],
-        options: dict[str, Any] | None,
-    ) -> None:
-        self.payload = payload
+    def _check_mode(self, mode: str, run: dict[str, Any] | None) -> None:
+        if mode == INTERACT:
+            if run is not None:
+                msg = "run applies only to sessions in a non-interact mode"
+                raise ModeRequestError(msg)
+            return
+        if mode not in self.modes:
+            offered = ", ".join([INTERACT, *sorted(self.modes)])
+            msg = f"unknown mode {mode!r}; this agent offers {offered}"
+            raise ModeRequestError(msg)
+        if run is None:
+            msg = f"mode {mode} needs a run"
+            raise ModeRequestError(msg)
+
+    def _apply_options(self, options: dict[str, Any] | None) -> None:
         for field_name, value in (options or {}).items():
             if field_name == "save_console_logs" and not value:
                 # Console logging is always on: an empty override redirects
@@ -119,6 +167,14 @@ class Session:
                 self.options.plugin_args[field_name] = value
         self.runtime.refresh_cmdline_args()
 
+    async def _configure(
+        self,
+        payload: dict[str, Any],
+        options: dict[str, Any] | None,
+    ) -> None:
+        self.payload = payload
+        self._apply_options(options)
+
         def run() -> None:
             self.runtime.resolve(payload)
             self.runtime.register_devices()
@@ -126,6 +182,67 @@ class Session:
         await self.queue.submit(run, mode="sync")
         self.state = SessionState.CONFIGURED
         self.touch()
+
+    async def _start_mode(
+        self,
+        mode: str,
+        payload: dict[str, Any],
+        options: dict[str, Any] | None,
+        run: dict[str, Any],
+    ) -> None:
+        self.payload = payload
+        self._apply_options(options)
+        mode_class = self.modes[mode]
+        stream_name = mode_class.stream_name
+
+        def emit(line: str) -> None:
+            self.buffer.append(
+                stream=stream_name, device=None, job_id=self.run_id, line=line
+            )
+
+        self._private_dir = Path(tempfile.mkdtemp(prefix="bf-run-"))
+        handler = mode_class(
+            ModeContext(
+                session_id=self.session_id,
+                board_name=self.options.board_name,
+                payload=payload,
+                options=dict(options or {}),
+                run=dict(run),
+                run_dir=artifact_dir(self.session_id) / "run",
+                private_dir=self._private_dir,
+                boardfarm_parser=boardfarm_argparser(
+                    getattr(self.runtime, "plugin_manager", None)
+                ),
+                emit=emit,
+                finished=self._finish_run,
+            )
+        )
+        try:
+            handler.validate()
+        except ModeRequestError:
+            self._remove_private_dir()
+            raise
+        self.mode = mode
+        try:
+            await handler.start()
+        except Exception as exc:
+            self.state = SessionState.FAILED
+            self.error = error_envelope(exc, session_id=self.session_id)
+            self._remove_private_dir()
+            raise
+        self.run = handler
+        self.state = SessionState.RUNNING
+        self.touch()
+
+    def _finish_run(self) -> None:
+        self.state = SessionState.FINISHED
+        self._remove_private_dir()
+        self.touch()
+
+    def _remove_private_dir(self) -> None:
+        if self._private_dir is not None:
+            shutil.rmtree(self._private_dir, ignore_errors=True)
+            self._private_dir = None
 
     async def boot(self) -> None:
         """Run the boot chain, moving the session to READY or FAILED.
@@ -174,6 +291,9 @@ class Session:
 
     async def release(self) -> None:
         """Tear the runtime down and stop console capture."""
+        if self.run is not None:
+            await self.run.cancel()
+        self._remove_private_dir()
         status = (
             {"status": "success"}
             if self.state is SessionState.READY
@@ -201,7 +321,10 @@ class Session:
         last_ts = self.buffer.last_event_ts
         last_line = self.buffer.last_line
         running = self.queue.running_job()
-        if running is None or running.started_at is None:
+        started = running.started_at if running is not None else None
+        if started is None and self.run is not None:
+            started = self.run.running_since()
+        if started is None:
             return {
                 "quiet": False,
                 "running_for": None,
@@ -210,10 +333,10 @@ class Session:
                 "last_event_ts": last_ts,
             }
         now = time.time()
-        idle_for = now - max(running.started_at, last_ts)
+        idle_for = now - max(started, last_ts)
         return {
             "quiet": idle_for > self.options.quiet_after,
-            "running_for": now - running.started_at,
+            "running_for": now - started,
             "idle_for": idle_for,
             "last_line": last_line,
             "last_event_ts": last_ts,
@@ -236,4 +359,6 @@ class Session:
             "last_activity": self.last_activity,
             "error": self.error,
             "boot_job_id": self._boot_job.id if self._boot_job is not None else None,
+            "mode": self.mode,
+            "run": self.run.status() if self.run is not None else None,
         }

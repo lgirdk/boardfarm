@@ -12,6 +12,8 @@ from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session
 from boardfarm3.lib import device_manager as device_manager_module
 
+from ._fake_mode import FakeMode
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -31,6 +33,17 @@ def _reset_device_manager_singleton() -> Any:
     device_manager_module._DEVICE_MANAGER_INSTANCE = None
     yield
     device_manager_module._DEVICE_MANAGER_INSTANCE = None
+
+
+@pytest.fixture(autouse=True)
+def _clear_fake_mode_instances() -> None:
+    """Forget the runs earlier tests created through ``FakeMode``.
+
+    ``FakeMode.instances`` is a class-level list and ``pytest-randomly``
+    shuffles test order, so a test reading ``instances[-1]`` could otherwise
+    see another test's run.
+    """
+    FakeMode.instances.clear()
 
 
 @pytest.fixture(name="native_payload")
@@ -144,18 +157,23 @@ def make_session_fixture() -> Callable[..., Session]:
     (e.g. ``test_console.py::test_uninstall_restores_logger_state``)
     depending on collection order.
 
-    :yield: factory taking an optional ``runtime`` override and
-        ``RuntimeOptions`` keyword overrides
+    :yield: factory taking an optional ``runtime`` override, an optional
+        ``modes`` registry and ``RuntimeOptions`` keyword overrides
     :rtype: Callable[..., Session]
     """
     created: list[Session] = []
 
-    def _make(runtime: object | None = None, **overrides: Any) -> Session:
+    def _make(
+        runtime: object | None = None,
+        modes: dict[str, Any] | None = None,
+        **overrides: Any,
+    ) -> Session:
         options = RuntimeOptions(board_name="board", **overrides)
         built = Session(
             "s-test",
             options,
             runtime=runtime if runtime is not None else FakeRuntime(),
+            modes=modes,
         )
         created.append(built)
         return built
