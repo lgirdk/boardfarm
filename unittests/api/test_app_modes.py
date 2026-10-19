@@ -7,7 +7,7 @@ import io
 import json
 import tarfile
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,6 +26,12 @@ if TYPE_CHECKING:
     from boardfarm3.api.runtime import RuntimeOptions
 
 _FAKE = {"payload": {"inventory": {}}, "mode": "fake", "run": {}}
+_SECRETS = ("s3cr3t-cfg", "u;s3cr3t-ldap")
+_WITH_SECRETS: dict[str, Any] = {
+    **_FAKE,
+    "run": {"env": {"UIM_PWD": _SECRETS[0]}},
+    "options": {"plugin_args": {"ldap_credentials": _SECRETS[1]}},
+}
 
 
 class _FakeRequest:
@@ -74,6 +80,38 @@ def test_an_unknown_mode_is_a_400(client: TestClient) -> None:
     response = client.post("/session/config", json={**_FAKE, "mode": "robot"})
     assert response.status_code == 400
     assert "unknown mode" in response.json()["message"]
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param(
+            {**_WITH_SECRETS, "env": _WITH_SECRETS["run"]["env"]},
+            id="unknown-top-level-key",
+        ),
+        pytest.param(
+            {key: value for key, value in _WITH_SECRETS.items() if key != "payload"},
+            id="no-payload",
+        ),
+        pytest.param(
+            {**_WITH_SECRETS, "options": {"ldap_credentials": _SECRETS[1]}},
+            id="unknown-option",
+        ),
+    ],
+)
+def test_validation_errors_never_echo_the_request(
+    client: TestClient, body: dict[str, Any]
+) -> None:
+    response = client.post("/session/config", json=body)
+    assert response.status_code == 422
+    for secret in _SECRETS:
+        assert secret not in response.text
+    detail = response.json()["detail"]
+    assert isinstance(detail, list)
+    assert detail
+    assert all(
+        isinstance(error, dict) and {"loc", "msg"} <= error.keys() for error in detail
+    )
 
 
 def test_a_mode_session_cannot_boot(client: TestClient) -> None:
