@@ -29,6 +29,7 @@ from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.entrypoints import plugin_versions
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
 from boardfarm3.api.logs import artifact_dir
+from boardfarm3.api.modes import INTERACT, load_plugin_modes
 from boardfarm3.api.routers import _async_response, require_device_manager
 from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session, SessionConflict, SessionState
@@ -39,6 +40,8 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
     from starlette.types import ASGIApp, Receive, Scope, Send
+
+    from boardfarm3.api.modes import SessionMode
 
 
 class ConfigOptions(BaseModel):
@@ -70,6 +73,8 @@ class ConfigIn(BaseModel):
 
     payload: dict[str, Any]
     options: ConfigOptions = Field(default_factory=ConfigOptions)
+    mode: str = INTERACT
+    run: dict[str, Any] | None = None
 
 
 class ExecIn(BaseModel):
@@ -196,6 +201,19 @@ def _write_console_archive(directory: Path, dest: Path) -> None:
         bundle_module.add_tree(archive, directory, "console-logs")
 
 
+def _write_run_archive(directory: Path, dest: Path) -> None:
+    """Write a tar.gz of a run directory; empty while nothing was written yet.
+
+    :param directory: the run directory
+    :type directory: Path
+    :param dest: archive to write
+    :type dest: Path
+    """
+    with tarfile.open(dest, "w:gz") as archive:
+        if directory.is_dir():
+            bundle_module.add_tree(archive, directory, "run")
+
+
 async def _build_in_thread(
     build: Any,  # noqa: ANN401
     *args: Any,  # noqa: ANN401
@@ -303,7 +321,7 @@ def build_session(session_id: str, options: RuntimeOptions) -> Session:
     :return: session
     :rtype: Session
     """
-    return Session(session_id, options)
+    return Session(session_id, options, modes=load_plugin_modes())
 
 
 def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-many-statements
@@ -419,7 +437,11 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     @app.get("/health")
     async def health() -> dict[str, Any]:
         # versions lets control notice an agent image that differs from it.
-        return {**session().status(), "versions": versions}
+        return {
+            **session().status(),
+            "versions": versions,
+            "modes": [INTERACT, *sorted(session().modes)],
+        }
 
     def _confined_console_dir(requested: str) -> str:
         # /console/archive and the diagnostics bundle tar this directory, so
@@ -443,7 +465,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 overrides["save_console_logs"]
             )
         try:
-            await current.configure(body.payload, overrides)
+            await current.configure(
+                body.payload, overrides, mode=body.mode, run=body.run
+            )
         except SessionConflict as exc:
             raise HTTPException(
                 status_code=int(HTTPStatus.CONFLICT), detail=str(exc)
@@ -488,6 +512,51 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     async def release() -> dict[str, str]:
         await release_once()
         return {"status": "released"}
+
+    def _run_of(current: Session) -> SessionMode:
+        if current.run is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=f"session {session_id} has no run",
+            )
+        return current.run
+
+    @app.get("/run")
+    async def run_status() -> dict[str, Any]:
+        return _run_of(session()).status()
+
+    @app.post("/run/cancel", status_code=int(HTTPStatus.ACCEPTED))
+    async def run_cancel() -> dict[str, str]:
+        run = _run_of(session())
+        if run.running_since() is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.CONFLICT), detail="the run is not running"
+            )
+        # The escalation can take the whole cancel grace: answer now, cancel
+        # in the background, and keep a reference so the task is not collected.
+        task = asyncio.create_task(run.cancel())
+        task.add_done_callback(
+            lambda done: None if done.cancelled() else done.exception(),
+        )
+        state["cancel_task"] = task
+        return {"status": "cancelling"}
+
+    @app.get("/run/artifacts")
+    async def run_artifacts() -> Response:
+        _run_of(session())
+        archive = await _build_in_thread(
+            _write_run_archive,
+            artifact_dir(session_id) / "run",
+            prefix="bf-run-",
+            name="run.tar.gz",
+        )
+        return StreamingResponse(
+            _stream_then_remove(archive),
+            media_type="application/gzip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{session_id}-run.tar.gz"',
+            },
+        )
 
     @app.get("/devices")
     async def devices() -> dict[str, Any]:
@@ -578,6 +647,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         request: Request,
         device: str | None = None,
         cursor: int = 0,
+        stream: str | None = None,
     ) -> StreamingResponse:
         """Stream console events to the client as Server-Sent Events.
 
@@ -594,6 +664,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         :type device: str | None
         :param cursor: sequence number to replay buffered history from
         :type cursor: int
+        :param stream: restrict the stream to one stream name (``pytest``,
+            ``console``, ...), defaults to None
+        :type stream: str | None
         :return: an SSE response backed by an endless event generator
         :rtype: StreamingResponse
         """
@@ -613,7 +686,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 # arrive between subscription and read are yielded exactly
                 # once — from the live queue, not duplicated from history.
                 live_from = buf.next_seq
-                past, _ = buf.read(cursor=cursor, limit=50_000, device=device)
+                past, _ = buf.read(
+                    cursor=cursor, limit=50_000, device=device, stream=stream
+                )
                 for event in past:
                     if event.seq < live_from:
                         yield f"data: {json.dumps(event.__dict__)}\n\n"
@@ -631,6 +706,8 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                             last_sent = time.monotonic()
                         continue
                     if device is not None and event.device != device:
+                        continue
+                    if stream is not None and event.stream != stream:
                         continue
                     yield f"data: {json.dumps(event.__dict__)}\n\n"
                     last_sent = time.monotonic()

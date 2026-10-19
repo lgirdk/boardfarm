@@ -81,13 +81,14 @@ def require_device_manager(session: Session) -> DeviceManager:
     """
     device_manager = session.runtime.device_manager
     if device_manager is None or session.state.value not in _DEVICE_CALL_STATES:
-        raise HTTPException(
-            status_code=int(HTTPStatus.CONFLICT),
-            detail=(
+        if session.mode != "interact":
+            detail = f"devices are owned by the {session.mode} run"
+        else:
+            detail = (
                 f"session is {session.state.value}; device calls need a session"
                 " that has been booted"
-            ),
-        )
+            )
+        raise HTTPException(status_code=int(HTTPStatus.CONFLICT), detail=detail)
     return device_manager
 
 
