@@ -9,10 +9,16 @@ devices: the mode owns the board for the length of its run.
 from __future__ import annotations
 
 import argparse
+import asyncio
+import contextlib
+import json
 import logging
+import os
+import signal
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, BinaryIO, ClassVar
 
 import pluggy
 
@@ -24,7 +30,13 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 INTERACT = "interact"
+CANCEL_GRACE_ENV = "BOARDFARM_RUN_CANCEL_GRACE"
 
+_DEFAULT_CANCEL_GRACE = 60.0
+_TERM_GRACE = 5.0
+_DRAIN_TIMEOUT = 2.0
+_READ_CHUNK = 64 * 1024
+_MAX_LINE = 64 * 1024
 _ENTRYPOINT_GROUP = "boardfarm_api"
 _HOOK_NAME = "boardfarm_add_api_modes"
 _log = logging.getLogger(__name__)
@@ -230,3 +242,209 @@ def load_plugin_modes() -> dict[str, type[SessionMode]]:
         _log.exception("failed to load %s entrypoints", _ENTRYPOINT_GROUP)
         return {}
     return collect_modes(plugin_manager)
+
+
+class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attributes
+    """A mode whose run is one subprocess supervised by the agent.
+
+    The process gets its own process group, so a cancel reaches what it
+    started (browsers, helpers). Every output line goes to the console stream
+    and to ``<run_dir>/<stream_name>.log``. The final status is written to
+    ``<run_dir>/run.json``.
+    """
+
+    def __init__(self, context: ModeContext) -> None:
+        """Prepare an unstarted run.
+
+        :param context: what the session hands the mode
+        :type context: ModeContext
+        """
+        super().__init__(context)
+        self._command: Command | None = None
+        self._process: asyncio.subprocess.Process | None = None
+        self._log_file: BinaryIO | None = None
+        self._pump_task: asyncio.Task[None] | None = None
+        self._cancel_task: asyncio.Task[None] | None = None
+        self._done = asyncio.Event()
+        self._started_at: float | None = None
+        self._ended_at: float | None = None
+        self._exit_code: int | None = None
+        self._cancelled = False
+
+    @abstractmethod
+    def command(self) -> Command:
+        """Return the process to run.
+
+        :return: argv, environment, working directory and display form
+        :rtype: Command
+        """
+
+    @abstractmethod
+    def summary(self, exit_code: int | None, *, cancelled: bool) -> dict[str, Any]:
+        """Return the mode's own status fields.
+
+        :param exit_code: the exit code, or None while the run is going
+        :type exit_code: int | None
+        :param cancelled: whether a cancel was requested
+        :type cancelled: bool
+        :return: fields merged into ``status()``
+        :rtype: dict[str, Any]
+        """
+
+    async def start(self) -> None:
+        """Spawn the process and start streaming its output.
+
+        :raises OSError: when the process cannot be started
+        """
+        command = self.command()
+        self._log_file = self._open_log()
+        # The process writes to a pipe this class owns. asyncio's own stdout
+        # pipe would tie Process.wait() to its closing, and a descendant
+        # holding it would then block the exit.
+        read_fd, write_fd = os.pipe()
+        try:
+            self._process = await asyncio.create_subprocess_exec(
+                *command.argv,
+                cwd=command.cwd,
+                env=command.env,
+                stdin=asyncio.subprocess.DEVNULL,
+                stdout=write_fd,
+                stderr=write_fd,
+                start_new_session=True,
+            )
+        except OSError:
+            os.close(read_fd)
+            self._log_file.close()
+            self._log_file = None
+            raise
+        finally:
+            os.close(write_fd)
+        self._command = command
+        self._started_at = time.time()
+        self._pump_task = asyncio.create_task(self._pump(read_fd))
+
+    def _open_log(self) -> BinaryIO:
+        self.context.run_dir.mkdir(parents=True, exist_ok=True)
+        return (self.context.run_dir / f"{self.stream_name}.log").open("ab")
+
+    async def _pump(self, read_fd: int) -> None:
+        process = self._process
+        log_file = self._log_file
+        if process is None or log_file is None:
+            return
+        output = asyncio.StreamReader()
+        transport, _ = await asyncio.get_running_loop().connect_read_pipe(
+            lambda: asyncio.StreamReaderProtocol(output), os.fdopen(read_fd, "rb", 0)
+        )
+        reader = asyncio.create_task(self._read_output(output, log_file))
+        try:
+            self._exit_code = await process.wait()
+            # A descendant in its own session can hold the pipe open after the
+            # process exits; drain briefly, then stop listening.
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(reader, _DRAIN_TIMEOUT)
+        finally:
+            reader.cancel()
+            transport.close()
+            log_file.close()
+            self._ended_at = time.time()
+            self._done.set()
+            self._write_final_status()
+            self.context.finished()
+
+    async def _read_output(
+        self, stdout: asyncio.StreamReader, log_file: BinaryIO
+    ) -> None:
+        pending = b""
+        try:
+            while chunk := await stdout.read(_READ_CHUNK):
+                log_file.write(chunk)
+                log_file.flush()
+                pending = self._emit_lines(pending + chunk)
+        finally:
+            if pending:
+                self._emit_text(pending)
+
+    def _emit_lines(self, data: bytes) -> bytes:
+        *lines, rest = data.split(b"\n")
+        for line in lines:
+            self._emit_text(line)
+        if len(rest) > _MAX_LINE:
+            # A process that never prints a newline must not grow this buffer.
+            self._emit_text(rest)
+            return b""
+        return rest
+
+    def _emit_text(self, raw: bytes) -> None:
+        self.context.emit(raw.decode("utf-8", "replace").rstrip("\r"))
+
+    def _write_final_status(self) -> None:
+        try:
+            (self.context.run_dir / "run.json").write_text(
+                json.dumps(self.status(), indent=2, default=str), encoding="utf-8"
+            )
+        except OSError:
+            _log.warning("could not write run.json in %s", self.context.run_dir)
+
+    def status(self) -> dict[str, Any]:
+        """Return the run's state, times, exit code, command and summary.
+
+        :return: the run summary
+        :rtype: dict[str, Any]
+        """
+        finished = self._done.is_set()
+        return {
+            "state": "finished" if finished else "running",
+            "started_at": self._started_at,
+            "ended_at": self._ended_at,
+            "exit_code": self._exit_code,
+            "command": list(self._command.display) if self._command else [],
+            **self.summary(
+                self._exit_code if finished else None, cancelled=self._cancelled
+            ),
+        }
+
+    def running_since(self) -> float | None:
+        """Return when the process started, while it is still running.
+
+        :return: start time, or None before start and after the end
+        :rtype: float | None
+        """
+        if self._started_at is None or self._done.is_set():
+            return None
+        return self._started_at
+
+    async def cancel(self) -> bool:
+        """Ctrl-C the process group, then SIGTERM, then SIGKILL.
+
+        A second call while the first is still escalating waits for it
+        instead of signalling again: pytest treats a second Ctrl-C as "skip
+        teardown".
+
+        :return: False when nothing was running
+        :rtype: bool
+        """
+        if self._process is None or self._done.is_set():
+            return False
+        if self._cancel_task is None:
+            self._cancelled = True
+            self._cancel_task = asyncio.create_task(self._escalate(self._process.pid))
+        await asyncio.shield(self._cancel_task)
+        return True
+
+    async def _escalate(self, pid: int) -> None:
+        grace = float(os.environ.get(CANCEL_GRACE_ENV, str(_DEFAULT_CANCEL_GRACE)))
+        for sig, wait_for in (
+            (signal.SIGINT, grace),
+            (signal.SIGTERM, _TERM_GRACE),
+            (signal.SIGKILL, _TERM_GRACE),
+        ):
+            with contextlib.suppress(ProcessLookupError):
+                os.killpg(pid, sig)
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(self._done.wait(), wait_for)
+                return
+
+    async def wait(self) -> None:
+        """Return once the process has exited and its output is drained."""
+        await self._done.wait()
