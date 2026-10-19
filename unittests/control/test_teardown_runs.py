@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
 from typing import TYPE_CHECKING
 
 import httpx
@@ -137,4 +139,65 @@ async def test_an_unreachable_agent_does_not_block_teardown() -> None:
     )
     assert await _teardown(launcher, info, registry, lease, retain=False) == "released"
     assert _meta()["run"] is None
+    assert lease.held_by("b1") is None
+
+
+@respx.mock
+async def test_a_second_pass_keeps_the_run_already_on_the_record() -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    held = {"state": "finished", "outcome": "passed"}
+    info = info.model_copy(update={"run": held})
+    registry.add(info)
+    respx.get(f"{info.agent_url}/run").mock(side_effect=httpx.ConnectError("down"))
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        side_effect=httpx.ConnectError("down")
+    )
+    respx.delete(f"{info.agent_url}/session").mock(
+        side_effect=httpx.ConnectError("down")
+    )
+    assert await _teardown(launcher, info, registry, lease, retain=True) == "retained"
+    assert _meta()["run"] == held
+    corpse = registry.get("s-1")
+    assert corpse is not None
+    assert corpse.run == held
+
+
+@respx.mock
+async def test_a_run_lookup_that_fails_in_any_way_still_releases_the_board(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    respx.get(f"{info.agent_url}/run").mock(side_effect=RuntimeError("boom"))
+    with caplog.at_level(logging.WARNING):
+        status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    assert lease.held_by("b1") is None
+    assert _meta()["run"] is None
+    assert any(
+        record.levelno == logging.WARNING and "s-1" in record.getMessage()
+        for record in caplog.records
+    )
+
+
+@respx.mock
+async def test_a_run_that_outlives_the_release_timeout_does_not_hold_teardown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("BOARDFARM_AGENT_RELEASE_TIMEOUT", "1")
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    polls = respx.get(f"{info.agent_url}/run").mock(
+        return_value=httpx.Response(200, json={"state": "running"})
+    )
+    cancel = respx.post(f"{info.agent_url}/run/cancel").mock(
+        return_value=httpx.Response(202, json={"status": "cancelling"})
+    )
+    status = await asyncio.wait_for(
+        _teardown(launcher, info, registry, lease, retain=False), timeout=5
+    )
+    assert status == "released"
+    assert cancel.call_count == 1
+    assert polls.call_count > 1
+    assert _meta()["run"] == {"state": "running"}
     assert lease.held_by("b1") is None

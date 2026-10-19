@@ -76,13 +76,15 @@ async def _final_run(http: httpx.AsyncClient, info: AgentInfo) -> dict[str, Any]
     """Cancel a session's run if it is still going, and return its final status.
 
     Cancelling before the bundle is taken means the bundle holds the run's
-    final junit.xml and log, not a half-written report.
+    final junit.xml and log, not a half-written report. A lookup that fails
+    for any reason is logged and skipped, so the teardown goes on to release
+    the board.
 
     :param http: pooled HTTP client
     :type http: httpx.AsyncClient
     :param info: registry entry for the session
     :type info: AgentInfo
-    :return: the run summary; None for interact sessions and unreachable agents
+    :return: the run summary; None for interact sessions and when the lookup fails
     :rtype: dict[str, Any] | None
     """
     if info.mode == "interact":
@@ -107,8 +109,8 @@ async def _final_run(http: httpx.AsyncClient, info: AgentInfo) -> dict[str, Any]
             ):
                 await asyncio.sleep(_RUN_POLL_INTERVAL)
                 run = await fetch()
-    except (httpx.HTTPError, ValueError):
-        _log.info("final run status unavailable for %s", info.session_id)
+    except Exception:  # noqa: BLE001
+        _log.warning("final run status unavailable for %s", info.session_id)
         return None
     return run
 
@@ -217,6 +219,9 @@ async def teardown_session(  # noqa: PLR0913
     # 0. A run still going is cancelled first, so step 1 archives its final
     # reports. For interact sessions this is a no-op.
     run = await _final_run(http, info)
+    if run is None:
+        # Safe to keep: info.run only ever comes from a GET /run reply (no run.env).
+        run = info.run
 
     # 1. Capture while the agent can still answer — the only moment this works.
     source = "none"
