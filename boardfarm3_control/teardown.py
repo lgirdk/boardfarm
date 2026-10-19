@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
 import os
 import tarfile
 import time
-from typing import TYPE_CHECKING
+from http import HTTPStatus
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
@@ -29,6 +31,7 @@ _BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
 # Releasing closes every console, after whatever job is running finishes.
 _RELEASE_TIMEOUT_ENV = "BOARDFARM_AGENT_RELEASE_TIMEOUT"
 _DEFAULT_RELEASE_TIMEOUT = 120.0
+_RUN_POLL_INTERVAL = 1.0
 
 
 def _release_timeout() -> httpx.Timeout:
@@ -67,6 +70,47 @@ def _launcher_bundle(logs: bytes, files: bytes) -> bytes:
             info.mtime = int(time.time())
             archive.addfile(info, io.BytesIO(payload))
     return buffer.getvalue()
+
+
+async def _final_run(http: httpx.AsyncClient, info: AgentInfo) -> dict[str, Any] | None:
+    """Cancel a session's run if it is still going, and return its final status.
+
+    Cancelling before the bundle is taken means the bundle holds the run's
+    final junit.xml and log, not a half-written report.
+
+    :param http: pooled HTTP client
+    :type http: httpx.AsyncClient
+    :param info: registry entry for the session
+    :type info: AgentInfo
+    :return: the run summary; None for interact sessions and unreachable agents
+    :rtype: dict[str, Any] | None
+    """
+    if info.mode == "interact":
+        return None
+    url = f"{info.agent_url}/run"
+    headers = {SESSION_HEADER: info.session_id}
+    deadline = time.monotonic() + (_release_timeout().read or _DEFAULT_RELEASE_TIMEOUT)
+
+    async def fetch() -> dict[str, Any] | None:
+        response = await http.get(url, headers=headers, timeout=10.0)
+        body = response.json() if response.status_code == HTTPStatus.OK else None
+        return body if isinstance(body, dict) else None
+
+    try:
+        run = await fetch()
+        if run is not None and run.get("state") == "running":
+            await http.post(f"{url}/cancel", headers=headers, timeout=10.0)
+            while (
+                run is not None
+                and run.get("state") == "running"
+                and time.monotonic() < deadline
+            ):
+                await asyncio.sleep(_RUN_POLL_INTERVAL)
+                run = await fetch()
+    except (httpx.HTTPError, ValueError):
+        _log.info("final run status unavailable for %s", info.session_id)
+        return None
+    return run
 
 
 async def archive_bundle(  # noqa: PLR0913
@@ -170,6 +214,10 @@ async def teardown_session(  # noqa: PLR0913
     """
     ended_at = time.time() if ended_at is None else ended_at
 
+    # 0. A run still going is cancelled first, so step 1 archives its final
+    # reports. For interact sessions this is a no-op.
+    run = await _final_run(http, info)
+
     # 1. Capture while the agent can still answer — the only moment this works.
     source = "none"
     try:
@@ -194,6 +242,8 @@ async def teardown_session(  # noqa: PLR0913
             "ended_at": ended_at,
             "retained": retain,
             "bundle_source": source,
+            "mode": info.mode,
+            "run": run,
         },
     )
 
@@ -235,9 +285,11 @@ async def teardown_session(  # noqa: PLR0913
         # 5. A failed or pending stop means the container's real state is
         # unknown -- keep the corpse visible rather than losing it.
         if pending:
-            registry.mark_dead(session_id, ended_at=ended_at, stop_pending=True)
+            registry.mark_dead(
+                session_id, ended_at=ended_at, stop_pending=True, run=run
+            )
         elif retain or stop_failed:
-            registry.mark_dead(session_id, ended_at=ended_at)
+            registry.mark_dead(session_id, ended_at=ended_at, run=run)
         else:
             registry.remove(session_id)
     if pending:
