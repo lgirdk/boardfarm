@@ -38,6 +38,12 @@ class _Reserved:
         return {"interact": FakeMode}
 
 
+class _Malformed:
+    @hookimpl_api
+    def boardfarm_add_api_modes(self) -> list[str]:
+        return ["fake"]
+
+
 def _manager(*plugins: tuple[str, object]) -> pluggy.PluginManager:
     manager = pluggy.PluginManager("boardfarm_api")
     manager.add_hookspecs(api_hookspecs)
@@ -61,6 +67,15 @@ def test_a_raising_plugin_costs_only_its_own_modes(
     with caplog.at_level(logging.ERROR, logger="boardfarm3.api.modes"):
         assert collect_modes(manager) == {"fake": FakeMode}
     assert "broken_api" in caplog.text
+
+
+def test_a_malformed_plugin_costs_only_its_own_modes(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    manager = _manager(("malformed_api", _Malformed()), ("fake_api", _Provides()))
+    with caplog.at_level(logging.ERROR, logger="boardfarm3.api.modes"):
+        assert collect_modes(manager) == {"fake": FakeMode}
+    assert "malformed_api" in caplog.text
 
 
 def test_interact_cannot_be_taken_by_a_plugin() -> None:

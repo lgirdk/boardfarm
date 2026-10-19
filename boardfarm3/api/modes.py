@@ -187,14 +187,14 @@ def iter_plugin_modes(
         )
         try:
             contributions: list[dict[str, type[SessionMode]]] = caller()
+            offered = [item for modes in contributions for item in modes.items()]
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             _log.exception(
                 "boardfarm_api plugin %r raised while contributing modes; skipped",
                 plugin_name,
             )
             continue
-        for modes in contributions:
-            yield from modes.items()
+        yield from offered
 
 
 def collect_modes(
