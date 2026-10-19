@@ -156,7 +156,9 @@ class Session:
             msg = f"mode {mode} needs a run"
             raise ModeRequestError(msg)
 
-    def _apply_options(self, options: dict[str, Any] | None) -> None:
+    def _apply_options(
+        self, options: dict[str, Any] | None, *, refresh: bool = True
+    ) -> None:
         for field_name, value in (options or {}).items():
             if field_name == "save_console_logs" and not value:
                 # Console logging is always on: an empty override redirects
@@ -168,7 +170,8 @@ class Session:
                 setattr(self.options, field_name, value)
             else:
                 self.options.plugin_args[field_name] = value
-        self.runtime.refresh_cmdline_args()
+        if refresh:
+            self.runtime.refresh_cmdline_args()
 
     async def _configure(
         self,
@@ -223,7 +226,11 @@ class Session:
             handler.validate()
             # Only an accepted request may change the session's options: a
             # refused one must leave nothing behind for the retry to inherit.
-            self._apply_options(options)
+            # A mode session never builds devices: its mode turns the options
+            # into its own flags from ModeContext.options, so the synthesised
+            # Namespace is not rebuilt. Rebuilding it would raise for keys
+            # that are also Namespace fields (flash_image, legacy, ...).
+            self._apply_options(options, refresh=False)
         except Exception:
             # A bad request or a crashing mode: either way nothing may be left
             # on disk, or a retry would orphan this directory.
