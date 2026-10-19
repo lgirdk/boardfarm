@@ -132,6 +132,7 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
     # crash-before-boot sessions this bundle exists to diagnose.
     agent_log = artifact_dir(session.session_id) / "agent.log"
     has_agent_log = agent_log.is_file()
+    run_dir = artifact_dir(session.session_id) / "run"
 
     absent = [
         name
@@ -149,6 +150,7 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
         "created_at": session.created_at,
         "captured_at": time.time(),
         "state": session.state.value,
+        "mode": session.mode,
         "redacted": list(_REDACTED_MEMBERS),
         "absent": absent,
     }
@@ -181,6 +183,8 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
                 errors.append({"path": "agent.log", "error": str(exc)})
         if has_console:
             errors.extend(add_tree(archive, console_dir, "console-logs"))
+        if run_dir.is_dir():
+            errors.extend(add_tree(archive, run_dir, "run"))
         # Written last, so it can record what could not be read.
         manifest["errors"] = errors
         _add_text(archive, "manifest.json", json.dumps(manifest, indent=2))
