@@ -14,7 +14,7 @@ import signal
 import sys
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, BinaryIO
 
 import pytest
 
@@ -90,6 +90,11 @@ class _FullDisk(io.BytesIO):
     def write(self, _chunk: bytes, /) -> int:
         msg = "No space left on device"
         raise OSError(errno.ENOSPC, msg)
+
+
+def _full_device_log() -> BinaryIO:
+    """Open /dev/full, where every write fails with ENOSPC."""
+    return Path("/dev/full").open("ab")
 
 
 class _BrokenSummaryRun(_ScriptRun):
@@ -321,7 +326,7 @@ async def test_a_log_on_a_full_device_still_finishes_the_run(
     lines: list[str] = []
     finished: list[bool] = []
     run = _ScriptRun(_context(tmp_path, lines, finished), script)
-    monkeypatch.setattr(run, "_open_log", lambda: open("/dev/full", "ab"))  # noqa: SIM115, PTH123
+    monkeypatch.setattr(run, "_open_log", _full_device_log)
     with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
         await run.start()
         await asyncio.wait_for(run.wait(), 5)
