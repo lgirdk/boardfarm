@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 from boardfarm3_control import app as control_app
 from boardfarm3_control.app import create_app
 from boardfarm3_control.launcher import FakeLauncher
-from boardfarm3_control.models import AgentInfo, SessionResponse
+from boardfarm3_control.models import AgentInfo, SessionCreate, SessionResponse
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -136,6 +136,16 @@ def test_records_default_to_interact() -> None:
     )
     assert (info.mode, info.run) == ("interact", None)
     assert (response.mode, response.run) == ("interact", None)
+
+
+def test_the_run_fields_say_what_they_hold() -> None:
+    request = SessionCreate.model_fields["run"].description
+    assert request is not None
+    assert "request" in request
+    for model in (AgentInfo, SessionResponse):
+        summary = model.model_fields["run"].description
+        assert summary is not None
+        assert "summary" in summary
 
 
 _HEALTH = re.compile(r"http://localhost:\d+/health")

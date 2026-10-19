@@ -35,7 +35,13 @@ class AgentInfo(BaseModel):
     image_id: str | None = None
     stop_pending: bool = False
     mode: str = "interact"
-    run: dict[str, Any] | None = None
+    run: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "The run's latest summary as the agent reported it (outcome, counts,"
+            " selection). Null in interact mode."
+        ),
+    )
 
 
 class SessionCreate(BaseModel):
@@ -50,7 +56,13 @@ class SessionCreate(BaseModel):
     boot: bool = False
     agent_env: dict[str, str] = Field(default_factory=dict)
     mode: str = "interact"
-    run: dict[str, Any] | None = None
+    run: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "The run request: the test selection and arguments for the session's"
+            " mode. Absent in interact mode."
+        ),
+    )
 
     @field_validator("agent_env")
     @classmethod
@@ -114,7 +126,13 @@ class SessionResponse(BaseModel):
     stop_pending: bool = False
     warnings: list[str] = Field(default_factory=list)
     mode: str = "interact"
-    run: dict[str, Any] | None = None
+    run: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "The run's latest summary as the agent reported it (outcome, counts,"
+            " selection). Null in interact mode."
+        ),
+    )
 
 
 class SessionListResponse(BaseModel):
