@@ -8,8 +8,21 @@ from typing import Any
 REDACTED = "***"
 
 # Matched against dict *keys* only, so a value that merely contains the word
-# "key" is preserved.
-_SECRET_KEY = re.compile(r"pass|passwd|password|secret|token|key|auth", re.IGNORECASE)
+# "key" is preserved. "cred" catches ldap_credentials and loc_res_credentials.
+_SECRET_KEY = re.compile(
+    r"pass|passwd|password|secret|token|key|auth|cred", re.IGNORECASE
+)
+
+
+def is_secret_key(name: str) -> bool:
+    """Return whether *name* names a credential-bearing value.
+
+    :param name: a dict key or an option name
+    :type name: str
+    :return: True when redaction hides the value stored under *name*
+    :rtype: bool
+    """
+    return _SECRET_KEY.search(name) is not None
 
 
 def redact(value: Any) -> Any:  # noqa: ANN401
@@ -25,7 +38,7 @@ def redact(value: Any) -> Any:  # noqa: ANN401
     """
     if isinstance(value, dict):
         return {
-            key: REDACTED if _SECRET_KEY.search(str(key)) else redact(item)
+            key: REDACTED if is_secret_key(str(key)) else redact(item)
             for key, item in value.items()
         }
     if isinstance(value, list):
