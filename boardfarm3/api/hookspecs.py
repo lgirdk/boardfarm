@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
     from pluggy import PluginManager
 
+    from boardfarm3.api.modes import SessionMode
     from boardfarm3.api.routers import RouterBundle
     from boardfarm3.lib.boardfarm_config import BoardfarmConfig
 
@@ -49,4 +50,16 @@ def boardfarm_add_api_routers() -> list[RouterBundle]:
 
     :return: routers contributed by this plugin, wrapped in a RouterBundle
     :rtype: list[RouterBundle]
+    """
+
+
+@hookspec_api
+def boardfarm_add_api_modes() -> dict[str, type[SessionMode]]:
+    """Return the non-interactive session modes this plugin provides, by name.
+
+    A mode named ``interact`` is ignored: that name is the agent's own
+    behaviour.
+
+    :return: mode classes keyed by the name a session asks for
+    :rtype: dict[str, type[SessionMode]]
     """
