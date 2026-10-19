@@ -348,7 +348,8 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
         finally:
             reader.cancel()
             transport.close()
-            log_file.close()
+            with contextlib.suppress(OSError):
+                log_file.close()
             self._ended_at = time.time()
             self._done.set()
             self._write_final_status()
@@ -373,9 +374,14 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
         try:
             log_file.write(chunk)
             log_file.flush()
-        except OSError:
+        except OSError as exc:
+            # Close now: the chunk still buffered would make a later close fail again.
+            with contextlib.suppress(OSError):
+                log_file.close()
             _log.warning(
-                "could not write %s.log; output is no longer saved", self.stream_name
+                "could not write %s.log (%s); output is no longer saved",
+                self.stream_name,
+                exc,
             )
             return False
         return True
