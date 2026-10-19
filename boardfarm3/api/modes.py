@@ -294,7 +294,9 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
     async def start(self) -> None:
         """Spawn the process and start streaming its output.
 
-        :raises OSError: when the process cannot be started
+        :raises BaseException: whatever stopped the process from starting
+            (usually OSError); the pipe and the log are released before it
+            propagates
         """
         command = self.command()
         self._log_file = self._open_log()
@@ -312,7 +314,7 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
                 stderr=write_fd,
                 start_new_session=True,
             )
-        except OSError:
+        except BaseException:
             os.close(read_fd)
             self._log_file.close()
             self._log_file = None
@@ -356,14 +358,27 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
         self, stdout: asyncio.StreamReader, log_file: BinaryIO
     ) -> None:
         pending = b""
+        tee = True
         try:
             while chunk := await stdout.read(_READ_CHUNK):
-                log_file.write(chunk)
-                log_file.flush()
+                # A failed log stops being written; the pipe is drained regardless.
+                if tee:
+                    tee = self._tee(log_file, chunk)
                 pending = self._emit_lines(pending + chunk)
         finally:
             if pending:
                 self._emit_text(pending)
+
+    def _tee(self, log_file: BinaryIO, chunk: bytes) -> bool:
+        try:
+            log_file.write(chunk)
+            log_file.flush()
+        except OSError:
+            _log.warning(
+                "could not write %s.log; output is no longer saved", self.stream_name
+            )
+            return False
+        return True
 
     def _emit_lines(self, data: bytes) -> bytes:
         *lines, rest = data.split(b"\n")
@@ -383,8 +398,9 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
             (self.context.run_dir / "run.json").write_text(
                 json.dumps(self.status(), indent=2, default=str), encoding="utf-8"
             )
-        except OSError:
-            _log.warning("could not write run.json in %s", self.context.run_dir)
+        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            # A failing summary must not keep the session running.
+            _log.exception("could not write run.json in %s", self.context.run_dir)
 
     def status(self) -> dict[str, Any]:
         """Return the run's state, times, exit code, command and summary.

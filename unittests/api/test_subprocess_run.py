@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import errno
+import gc
+import io
 import json
+import logging
 import os
 import signal
 import sys
@@ -73,6 +77,26 @@ def _alive(pid: int) -> bool:
     except FileNotFoundError:
         return False
     return stat.split(") ", 1)[1].split()[0] != "Z"
+
+
+def _open_fds() -> int:
+    return len(list(Path("/proc/self/fd").iterdir()))
+
+
+class _FullDisk(io.BytesIO):
+    """A log file on a full disk: every write fails."""
+
+    def write(self, _chunk: bytes, /) -> int:
+        msg = "No space left on device"
+        raise OSError(errno.ENOSPC, msg)
+
+
+class _BrokenSummaryRun(_ScriptRun):
+    def summary(self, exit_code: int | None, *, cancelled: bool) -> dict[str, Any]:
+        if exit_code is not None:
+            msg = "summary broke"
+            raise RuntimeError(msg)
+        return super().summary(exit_code, cancelled=cancelled)
 
 
 async def test_output_reaches_the_stream_and_the_log(tmp_path: Path) -> None:
@@ -193,8 +217,10 @@ async def test_cancelling_twice_sends_one_ctrl_c(tmp_path: Path) -> None:
     run = _ScriptRun(_context(tmp_path, lines, []), script)
     await run.start()
     await _until(lambda: "ready" in lines)
-    first, second = await asyncio.gather(run.cancel(), run.cancel())
-    assert (first, second) == (True, True)
+    first = asyncio.create_task(run.cancel())
+    await _until(lambda: "sigint 1" in lines)
+    assert await run.cancel() is True
+    assert await first is True
     assert [line for line in lines if line.startswith("sigint")] == ["sigint 1"]
 
 
@@ -234,3 +260,50 @@ async def test_a_daemon_holding_the_pipe_does_not_keep_the_run_going(
     finally:
         if lines:
             os.kill(int(lines[0]), signal.SIGKILL)
+
+
+async def test_a_failing_log_does_not_stop_the_stream(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv(CANCEL_GRACE_ENV, "0.2")
+    (tmp_path / "run").mkdir()
+    script = "for i in range(2000):\n    print(f'line {i:04d}', 'x' * 64, flush=True)\n"
+    lines: list[str] = []
+    run = _ScriptRun(_context(tmp_path, lines, []), script)
+    monkeypatch.setattr(run, "_open_log", _FullDisk)
+    with caplog.at_level(logging.WARNING, logger="boardfarm3.api.modes"):
+        await run.start()
+        try:
+            await asyncio.wait_for(run.wait(), 10)
+        finally:
+            await run.cancel()
+    assert run.status()["exit_code"] == 0
+    assert len(lines) == 2000
+    assert lines[-1] == f"line 1999 {'x' * 64}"
+    warnings = [
+        record
+        for record in caplog.records
+        if record.name == "boardfarm3.api.modes" and record.levelno == logging.WARNING
+    ]
+    assert len(warnings) == 1
+
+
+async def test_a_failing_summary_still_finishes_the_run(tmp_path: Path) -> None:
+    finished: list[bool] = []
+    run = _BrokenSummaryRun(_context(tmp_path, [], finished), "pass")
+    await run.start()
+    await asyncio.wait_for(run.wait(), 10)
+    assert finished == [True]
+    assert not (tmp_path / "run" / "run.json").exists()
+
+
+async def test_a_spawn_failure_leaks_nothing(tmp_path: Path) -> None:
+    run = _ScriptRun(
+        _context(tmp_path, [], []), "", argv=[sys.executable, "-c", "\x00"]
+    )
+    gc.collect()
+    open_fds = _open_fds()
+    with pytest.raises(ValueError, match="embedded null byte"):
+        await run.start()
+    assert run._log_file is None
+    assert _open_fds() == open_fds
