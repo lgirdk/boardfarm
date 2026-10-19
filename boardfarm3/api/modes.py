@@ -28,7 +28,7 @@ from boardfarm3.api import hookspecs as api_hookspecs
 from boardfarm3.api.entrypoints import disabled_plugins, load_entrypoints
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterator, Mapping
     from pathlib import Path
 
 INTERACT = "interact"
@@ -176,14 +176,42 @@ def boardfarm_argparser(
     return parser
 
 
+def _session_modes(
+    plugin_name: str, modes: Mapping[str, object]
+) -> Iterator[tuple[str, type[SessionMode]]]:
+    """Yield the ``SessionMode`` subclasses among one plugin's contribution.
+
+    Anything else is logged with the plugin and the mode name, and skipped: a
+    value that is not a mode class must never be offered, or advertised.
+
+    :param plugin_name: the plugin that made the contribution
+    :type plugin_name: str
+    :param modes: the mode names and the values the plugin offered for them
+    :type modes: Mapping[str, object]
+    :yield: ``(name, mode class)`` pairs
+    :rtype: Iterator[tuple[str, type[SessionMode]]]
+    """
+    for name, value in modes.items():
+        if isinstance(value, type) and issubclass(value, SessionMode):
+            yield name, value
+        else:
+            _log.error(
+                "boardfarm_api plugin %r offers mode %r, which is not a"
+                " SessionMode subclass; skipped",
+                plugin_name,
+                name,
+            )
+
+
 def iter_plugin_modes(
     plugin_manager: pluggy.PluginManager,
 ) -> Iterator[tuple[str, type[SessionMode]]]:
     """Yield every mode the plugins offer, calling one plugin at a time.
 
     Mirrors ``iter_plugin_bundles``: a plugin that raises costs only its own
-    modes, and disabled plugins are skipped. It is a separate loop because
-    that function's log records belong to ``boardfarm3.api.routers``.
+    modes, and disabled plugins are skipped. A value that is not a
+    ``SessionMode`` subclass is logged and skipped. It is a separate loop
+    because that function's log records belong to ``boardfarm3.api.routers``.
 
     :param plugin_manager: manager with ``boardfarm_api`` plugins registered
     :type plugin_manager: pluggy.PluginManager
@@ -201,7 +229,11 @@ def iter_plugin_modes(
         )
         try:
             contributions: list[dict[str, type[SessionMode]]] = caller()
-            offered = [item for modes in contributions for item in modes.items()]
+            offered = [
+                item
+                for modes in contributions
+                for item in _session_modes(plugin_name, modes)
+            ]
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             _log.exception(
                 "boardfarm_api plugin %r raised while contributing modes; skipped",
