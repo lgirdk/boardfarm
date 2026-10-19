@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api.entrypoints import plugin_versions
+from boardfarm3.api.modes import INTERACT, load_plugin_modes
 from boardfarm3.api.routers import DISABLED_PLUGINS_ENV
 from boardfarm3_control import __version__
 from boardfarm3_control.admin import build_admin_router
@@ -31,6 +32,7 @@ from boardfarm3_control.errors import (
     HostUnreachable,
     ManagedByControl,
     SessionNotLive,
+    UnknownMode,
 )
 from boardfarm3_control.expiry import run_expiry
 from boardfarm3_control.launcher import MultiHostLauncher
@@ -54,7 +56,7 @@ from boardfarm3_control.store import DiagnosticsStore
 from boardfarm3_control.teardown import archive_bundle, teardown_session
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Iterable
 
     from fastapi import APIRouter
 
@@ -230,6 +232,7 @@ def create_app(  # noqa: C901, PLR0915
     profiles: dict[str, str],
     extra_routers: list[APIRouter] | None = None,
     cors_origins: list[str] | None = None,
+    modes: Iterable[str] | None = None,
 ) -> FastAPI:
     """Build the control plane application.
 
@@ -242,6 +245,9 @@ def create_app(  # noqa: C901, PLR0915
     :param cors_origins: browser origins allowed to call the API cross-origin;
         None or empty keeps the control plane same-origin only
     :type cors_origins: list[str] | None
+    :param modes: session modes on offer besides ``interact``; None discovers
+        them from the installed ``boardfarm_api`` plugins
+    :type modes: Iterable[str] | None
     :return: FastAPI application
     :rtype: FastAPI
     """
@@ -250,6 +256,9 @@ def create_app(  # noqa: C901, PLR0915
     store = DiagnosticsStore()
     inflight: set[str] = set()
     local_versions = plugin_versions()
+    available_modes = frozenset(
+        {INTERACT, *(modes if modes is not None else load_plugin_modes())}
+    )
     hosts = launcher.hosts if isinstance(launcher, MultiHostLauncher) else None
     reconciler: Reconciler | None = None
     if isinstance(launcher, MultiHostLauncher):
@@ -611,6 +620,9 @@ def create_app(  # noqa: C901, PLR0915
                 status_code=int(HTTPStatus.BAD_REQUEST),
                 detail=f"unknown runtime_profile {body.runtime_profile!r}",
             )
+        if body.mode not in available_modes:
+            msg = f"mode {body.mode!r} is not offered by this control plane"
+            raise UnknownMode(msg, modes=sorted(available_modes))
         inventory = body.payload.get("inventory")
         if isinstance(inventory, dict) and body.board_name not in inventory:
             # Found out now, not after an image pull and a container start.
@@ -711,6 +723,7 @@ def create_app(  # noqa: C901, PLR0915
             "version": __version__,
             "control_id": getattr(launcher, "control_id", None),
             "versions": local_versions,
+            "modes": sorted(available_modes),
             "sessions": {"live": counts["live"], "dead": counts["dead"]},
         }
 

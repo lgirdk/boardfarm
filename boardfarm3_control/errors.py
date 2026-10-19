@@ -46,6 +46,12 @@ class BoardNotInInventory(ControlError):
     status = HTTPStatus.BAD_REQUEST
 
 
+class UnknownMode(ControlError):
+    """The session asks for a mode no installed plugin offers."""
+
+    status = HTTPStatus.UNPROCESSABLE_ENTITY
+
+
 class NoHostForBoard(ControlError):
     """The inventory names no host for the board and no default host is set."""
 
