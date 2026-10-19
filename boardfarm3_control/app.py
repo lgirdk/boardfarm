@@ -15,6 +15,8 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -342,6 +344,17 @@ def create_app(  # noqa: C901, PLR0915
     async def control_error(_request: Request, exc: ControlError) -> JSONResponse:
         return JSONResponse(
             status_code=int(exc.status), content={"detail": exc.detail()}
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(
+        _request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        # The default 422 echoes each failing input, so run.env and credentials leak.
+        errors = [{k: v for k, v in e.items() if k != "input"} for e in exc.errors()]
+        return JSONResponse(
+            status_code=int(HTTPStatus.UNPROCESSABLE_ENTITY),
+            content={"detail": jsonable_encoder(errors)},
         )
 
     def _agent_http(info: AgentInfo) -> httpx.AsyncClient | None:

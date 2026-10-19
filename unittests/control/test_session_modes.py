@@ -23,6 +23,12 @@ _PYTEST: dict[str, Any] = {
     "mode": "pytest",
     "run": {"test_names": ["MVX_TST-1"]},
 }
+_SECRETS = ("s3cr3t-value-XYZ", "u;s3cr3t-ldap")
+_WITH_SECRETS: dict[str, Any] = {
+    **_PYTEST,
+    "run": {"test_names": ["MVX_TST-1"], "env": {"UIM_PWD": _SECRETS[0]}},
+    "options": {"plugin_args": {"ldap_credentials": _SECRETS[1]}},
+}
 
 
 @pytest.fixture(autouse=True)
@@ -60,6 +66,29 @@ def test_create_checks_that_mode_run_and_boot_fit(
         response = client.post("/sessions", json={**_PYTEST, **change})
     assert response.status_code == 422
     assert message in response.text
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param({**_WITH_SECRETS, "boot": True}, id="boot-with-a-mode"),
+        pytest.param({**_WITH_SECRETS, "mode": "interact"}, id="run-in-interact"),
+        pytest.param(
+            {k: v for k, v in _WITH_SECRETS.items() if k != "board_name"},
+            id="no-board-name",
+        ),
+    ],
+)
+def test_validation_errors_never_echo_the_request(body: dict[str, Any]) -> None:
+    with TestClient(create_app(FakeLauncher(), _PROFILES, modes={"pytest"})) as client:
+        response = client.post("/sessions", json=body)
+    assert response.status_code == 422
+    for secret in _SECRETS:
+        assert secret not in response.text
+    detail = response.json()["detail"]
+    assert isinstance(detail, list)
+    assert detail
+    assert all(isinstance(e, dict) and {"loc", "msg"} <= e.keys() for e in detail)
 
 
 def test_an_unknown_mode_is_refused_before_launch() -> None:
