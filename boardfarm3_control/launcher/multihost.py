@@ -133,6 +133,7 @@ class MultiHostLauncher:
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
         host: str | None = None,
+        mode: str = "interact",
     ) -> AgentInfo:
         """Start the agent on *host* and record where it runs.
 
@@ -148,6 +149,8 @@ class MultiHostLauncher:
         :type agent_env: dict[str, str] | None
         :param host: host chosen by placement
         :type host: str | None
+        :param mode: the session's mode, recorded so a restarted control plane knows it
+        :type mode: str
         :return: the agent's info
         :rtype: AgentInfo
         :raises NoHostForBoard: when no host was chosen
@@ -163,6 +166,7 @@ class MultiHostLauncher:
                 image,
                 runtime_profile,
                 agent_env=agent_env,
+                mode=mode,
             )
         except StopPending:
             # The launch failed and its container could not be removed: record
@@ -179,6 +183,7 @@ class MultiHostLauncher:
                     ended_at=time.time(),
                     host=host,
                     stop_pending=True,
+                    mode=mode,
                 ),
                 retained=False,
             )
