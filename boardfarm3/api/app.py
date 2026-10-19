@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import pexpect
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.concurrency import run_in_threadpool
@@ -431,6 +433,17 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
 
     for exception_type in (BoardfarmException, pexpect.TIMEOUT, pexpect.EOF):
         app.add_exception_handler(exception_type, handle_boardfarm_error)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(
+        _request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        # The default 422 echoes each failing input, so run.env and credentials leak.
+        errors = [{k: v for k, v in e.items() if k != "input"} for e in exc.errors()]
+        return JSONResponse(
+            status_code=int(HTTPStatus.UNPROCESSABLE_ENTITY),
+            content={"detail": jsonable_encoder(errors)},
+        )
 
     versions = plugin_versions()
 
