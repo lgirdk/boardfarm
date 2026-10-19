@@ -105,6 +105,18 @@ class _BrokenSummaryRun(_ScriptRun):
         return super().summary(exit_code, cancelled=cancelled)
 
 
+class _CountingRun(_ScriptRun):
+    """Remembers the exit code of every summary() call; the summary nests a list."""
+
+    def __init__(self, context: ModeContext, script: str) -> None:
+        super().__init__(context, script)
+        self.summary_calls: list[int | None] = []
+
+    def summary(self, exit_code: int | None, *, cancelled: bool) -> dict[str, Any]:
+        self.summary_calls.append(exit_code)
+        return {**super().summary(exit_code, cancelled=cancelled), "files": ["a.xml"]}
+
+
 async def test_output_reaches_the_stream_and_the_log(tmp_path: Path) -> None:
     lines: list[str] = []
     finished: list[bool] = []
@@ -333,6 +345,38 @@ async def test_a_failing_summary_still_finishes_the_run(tmp_path: Path) -> None:
     await asyncio.wait_for(run.wait(), 10)
     assert finished == [True]
     assert not (tmp_path / "run" / "run.json").exists()
+
+
+async def test_the_final_status_is_computed_once_and_served_as_copies(
+    tmp_path: Path,
+) -> None:
+    run = _CountingRun(_context(tmp_path, [], []), "raise SystemExit(3)")
+    await run.start()
+    await asyncio.wait_for(run.wait(), 10)
+    first = run.status()
+    second = run.status()
+    assert first == second
+    assert first["state"] == "finished"
+    assert first["exit_code"] == 3
+    # One summary of the ended run: the one run.json was written from.
+    assert [code for code in run.summary_calls if code is not None] == [3]
+    assert json.loads((tmp_path / "run" / "run.json").read_text()) == first
+    first["state"] = "changed"
+    first["files"].append("b.xml")
+    first["command"].append("-x")
+    assert run.status() == second
+    assert second["files"] == ["a.xml"]
+
+
+async def test_a_running_status_is_not_kept(tmp_path: Path) -> None:
+    run = _CountingRun(_context(tmp_path, [], []), "import time; time.sleep(30)")
+    await run.start()
+    try:
+        assert run.status()["state"] == "running"
+        assert run.status()["state"] == "running"
+        assert run.summary_calls == [None, None]
+    finally:
+        await run.cancel()
 
 
 async def test_a_spawn_failure_leaks_nothing(tmp_path: Path) -> None:
