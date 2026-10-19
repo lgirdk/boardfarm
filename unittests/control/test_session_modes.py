@@ -152,6 +152,8 @@ _HEALTH = re.compile(r"http://localhost:\d+/health")
 _CONFIG = re.compile(r"http://localhost:\d+/session/config")
 _BOOT = re.compile(r"http://localhost:\d+/session/boot")
 _STATUS = re.compile(r"http://localhost:\d+/session$")
+_RUN = re.compile(r"http://localhost:\d+/run$")
+_BUNDLE = re.compile(r"http://localhost:\d+/diagnostics/bundle")
 
 
 @respx.mock
@@ -175,6 +177,29 @@ def test_a_pytest_session_is_configured_with_its_run_and_never_booted() -> None:
     assert data["state"] == "running"
     assert data["mode"] == "pytest"
     assert data["run"] == {"state": "running"}
+
+
+@respx.mock
+def test_a_run_the_agent_refuses_unwinds_to_a_corpse_and_frees_the_board() -> None:
+    refusal = {"error": "ModeRequestError", "message": "unknown run fields: tests"}
+    respx.get(_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_CONFIG).mock(return_value=httpx.Response(400, json=refusal))
+    # No run was started, so the agent has none to report on the way out.
+    respx.get(_RUN).mock(return_value=httpx.Response(404, json={"detail": "no run"}))
+    respx.get(_BUNDLE).mock(return_value=httpx.Response(200, content=b"BUNDLE"))
+    respx.delete(_STATUS).mock(return_value=httpx.Response(200, json={}))
+    app = create_app(FakeLauncher(), _PROFILES, modes={"pytest"})
+    with TestClient(app) as client:
+        response = client.post(
+            "/sessions", json={**_PYTEST, "run": {"tests": ["MVX_TST-1"]}}
+        )
+        detail = response.json()["detail"]
+        corpse = client.get(f"/sessions/{detail['session_id']}").json()
+    assert response.status_code == 400
+    assert detail["error"] == "AgentConfigRejected"
+    assert refusal["message"] in detail["message"]
+    assert app.state.lease.held_by("b1") is None
+    assert (corpse["state"], corpse["mode"], corpse["run"]) == ("dead", "pytest", None)
 
 
 @respx.mock
