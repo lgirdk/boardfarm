@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
+import copy
 import json
 import logging
 import math
@@ -299,6 +300,7 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
         self._ended_at: float | None = None
         self._exit_code: int | None = None
         self._cancelled = False
+        self._final: dict[str, Any] | None = None
 
     @abstractmethod
     def command(self) -> Command:
@@ -440,11 +442,17 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
     def status(self) -> dict[str, Any]:
         """Return the run's state, times, exit code, command and summary.
 
+        Once the run has ended its status no longer changes, so it is computed
+        once (the same one ``run.json`` is written from) and every later call
+        returns a copy of it: a health check must not read the reports again.
+
         :return: the run summary
         :rtype: dict[str, Any]
         """
+        if self._final is not None:
+            return copy.deepcopy(self._final)
         finished = self._done.is_set()
-        return {
+        status: dict[str, Any] = {
             "state": "finished" if finished else "running",
             "started_at": self._started_at,
             "ended_at": self._ended_at,
@@ -454,6 +462,10 @@ class SubprocessRun(SessionMode):  # pylint: disable=too-many-instance-attribute
                 self._exit_code if finished else None, cancelled=self._cancelled
             ),
         }
+        if not finished:
+            return status
+        self._final = status
+        return copy.deepcopy(status)
 
     def running_since(self) -> float | None:
         """Return when the process started, while it is still running.
