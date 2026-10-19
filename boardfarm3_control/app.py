@@ -878,6 +878,12 @@ def create_app(  # noqa: C901, PLR0915
         # its own) is what keeps the reaper's aged-bundle sweep from treating
         # a missing ended_at as "infinitely old" and deleting it on the very
         # next pass.
+        # The mode and the run summary teardown saved must survive this rewrite.
+        # A corpse rebuilt after a restart has no run on its record, so fall back
+        # to the one in the stored meta.json.
+        run_summary = info.run
+        if run_summary is None:
+            run_summary = (store.read_meta(session_id) or {}).get("run")
         store.write_meta(
             session_id,
             {
@@ -888,6 +894,8 @@ def create_app(  # noqa: C901, PLR0915
                 "ended_at": captured_at,
                 "retained": False,
                 "bundle_source": source,
+                "mode": info.mode,
+                "run": run_summary,
             },
         )
         path = store.bundle_path(session_id)

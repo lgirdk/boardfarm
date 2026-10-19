@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import io
 import logging
+import math
 import os
 import tarfile
 import time
@@ -17,6 +18,8 @@ from boardfarm3.api import SESSION_HEADER
 from boardfarm3_control.errors import StopPending
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
     from boardfarm3_control.launcher import Launcher
     from boardfarm3_control.lease import BoardLease
     from boardfarm3_control.models import AgentInfo
@@ -32,6 +35,34 @@ _BUNDLE_TIMEOUT = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
 _RELEASE_TIMEOUT_ENV = "BOARDFARM_AGENT_RELEASE_TIMEOUT"
 _DEFAULT_RELEASE_TIMEOUT = 120.0
 _RUN_POLL_INTERVAL = 1.0
+# A cancelled run is polled until it ends; this many failed polls in a row (an
+# error, or a reply that is not a summary) end the wait early.
+_RUN_POLL_FAILURES = 3
+
+
+def _release_seconds() -> float:
+    """Return how long a release, and a run's cancel, may take.
+
+    :return: ``BOARDFARM_AGENT_RELEASE_TIMEOUT`` in seconds, or the default (120)
+        when it is unset or not a finite number above 0; a bad value is logged
+    :rtype: float
+    """
+    raw = os.environ.get(_RELEASE_TIMEOUT_ENV)
+    if raw is None:
+        return _DEFAULT_RELEASE_TIMEOUT
+    try:
+        seconds = float(raw)
+    except ValueError:
+        seconds = math.nan
+    if math.isfinite(seconds) and seconds > 0:
+        return seconds
+    _log.warning(
+        "ignoring %s=%r, which is not a finite number of seconds above 0; using %s",
+        _RELEASE_TIMEOUT_ENV,
+        raw,
+        _DEFAULT_RELEASE_TIMEOUT,
+    )
+    return _DEFAULT_RELEASE_TIMEOUT
 
 
 def _release_timeout() -> httpx.Timeout:
@@ -40,8 +71,7 @@ def _release_timeout() -> httpx.Timeout:
     :return: read bound from ``BOARDFARM_AGENT_RELEASE_TIMEOUT``, default 120
     :rtype: httpx.Timeout
     """
-    read = float(os.environ.get(_RELEASE_TIMEOUT_ENV, str(_DEFAULT_RELEASE_TIMEOUT)))
-    return httpx.Timeout(connect=10.0, read=read, write=30.0, pool=10.0)
+    return httpx.Timeout(connect=10.0, read=_release_seconds(), write=30.0, pool=10.0)
 
 
 # Matches boardfarm3_control.launcher._common._DEFAULT_ARTIFACT_ROOT and
@@ -72,6 +102,42 @@ def _launcher_bundle(logs: bytes, files: bytes) -> bytes:
     return buffer.getvalue()
 
 
+async def _wait_for_end(
+    poll: Callable[[], Awaitable[dict[str, Any] | None]],
+    run: dict[str, Any],
+    deadline: float,
+) -> dict[str, Any]:
+    """Poll a cancelled run until it ends, and return its last good summary.
+
+    The wait ends when the run is no longer ``running``, when ``deadline``
+    passes, or after ``_RUN_POLL_FAILURES`` failed polls in a row. A failed poll
+    does not end the run: the last summary read stays the answer until a later
+    poll replaces it.
+
+    :param poll: reads the run once; returns None for a failed read, never raises
+    :type poll: Callable[[], Awaitable[dict[str, Any] | None]]
+    :param run: the summary read just before the cancel
+    :type run: dict[str, Any]
+    :param deadline: ``time.monotonic()`` value after which polling stops
+    :type deadline: float
+    :return: the last summary a read returned; still ``running`` if the wait ran out
+    :rtype: dict[str, Any]
+    """
+    failed = 0
+    while (
+        run.get("state") == "running"
+        and failed < _RUN_POLL_FAILURES
+        and time.monotonic() < deadline
+    ):
+        await asyncio.sleep(_RUN_POLL_INTERVAL)
+        polled = await poll()
+        if polled is None:
+            failed += 1
+        else:
+            failed, run = 0, polled
+    return run
+
+
 async def _final_run(http: httpx.AsyncClient, info: AgentInfo) -> dict[str, Any] | None:
     """Cancel a session's run if it is still going, and return its final status.
 
@@ -84,33 +150,48 @@ async def _final_run(http: httpx.AsyncClient, info: AgentInfo) -> dict[str, Any]
     :type http: httpx.AsyncClient
     :param info: registry entry for the session
     :type info: AgentInfo
-    :return: the run summary; None for interact sessions and when the lookup fails
+    :return: the run summary; None for interact sessions and when the first
+        lookup fails. A run that outlasts ``BOARDFARM_AGENT_RELEASE_TIMEOUT``,
+        or whose polls keep failing, comes back as the last summary read, which
+        is stale: its state still says ``running``
     :rtype: dict[str, Any] | None
     """
     if info.mode == "interact":
         return None
     url = f"{info.agent_url}/run"
     headers = {SESSION_HEADER: info.session_id}
-    deadline = time.monotonic() + (_release_timeout().read or _DEFAULT_RELEASE_TIMEOUT)
+    deadline = time.monotonic() + _release_seconds()
 
     async def fetch() -> dict[str, Any] | None:
         response = await http.get(url, headers=headers, timeout=10.0)
-        body = response.json() if response.status_code == HTTPStatus.OK else None
+        if response.status_code != HTTPStatus.OK:
+            _log.info(
+                "run status of %s unavailable: HTTP %s",
+                info.session_id,
+                response.status_code,
+            )
+            return None
+        body = response.json()
         return body if isinstance(body, dict) else None
+
+    async def poll() -> dict[str, Any] | None:
+        try:
+            return await fetch()
+        except Exception as exc:  # noqa: BLE001
+            _log.info("run poll of %s failed: %s", info.session_id, type(exc).__name__)
+            return None
 
     try:
         run = await fetch()
         if run is not None and run.get("state") == "running":
             await http.post(f"{url}/cancel", headers=headers, timeout=10.0)
-            while (
-                run is not None
-                and run.get("state") == "running"
-                and time.monotonic() < deadline
-            ):
-                await asyncio.sleep(_RUN_POLL_INTERVAL)
-                run = await fetch()
-    except Exception:  # noqa: BLE001
-        _log.warning("final run status unavailable for %s", info.session_id)
+            run = await _wait_for_end(poll, run, deadline)
+    except Exception as exc:  # noqa: BLE001
+        _log.warning(
+            "final run status unavailable for %s: %s",
+            info.session_id,
+            type(exc).__name__,
+        )
         return None
     return run
 
@@ -181,15 +262,22 @@ async def teardown_session(  # noqa: PLR0913
     retain: bool,
     ended_at: float | None = None,
 ) -> str:
-    """Archive, release devices, stop the container, and free the board.
+    """Cancel any run, archive, release devices, stop the container, free the board.
 
-    Steps 1, 2, and 3 are best-effort: a diagnostics failure, a graceful-
-    release failure, or even ``launcher.stop()`` itself raising (e.g. a
-    Docker daemon ``APIError``) must never strand a board, so the lease is
-    released unconditionally in a ``finally`` block. When ``stop()`` fails,
-    the container's real state is unknown, so the registry keeps the corpse
-    listed (``mark_dead``) instead of forgetting it, on the theory that a
-    human will need to intervene on it directly.
+    Step 0 cancels a run that is still going (sessions in a non-interact mode)
+    and waits for it to finish, so the bundle holds its final reports. That wait
+    is bounded by ``BOARDFARM_AGENT_RELEASE_TIMEOUT``, 120 s by default, so a
+    DELETE can take that long before the bundle is even pulled. The run's final
+    summary goes into ``meta.json`` and onto the corpse when one is kept; a
+    second pass over the same session keeps the summary already on its record.
+
+    Steps 0, 1, 2, and 3 are best-effort: a failed run lookup, a diagnostics
+    failure, a graceful-release failure, or even ``launcher.stop()`` itself
+    raising (e.g. a Docker daemon ``APIError``) must never strand a board, so
+    the lease is released unconditionally in a ``finally`` block. When
+    ``stop()`` fails, the container's real state is unknown, so the registry
+    keeps the corpse listed (``mark_dead``) instead of forgetting it, on the
+    theory that a human will need to intervene on it directly.
 
     :param session_id: session to tear down
     :type session_id: str

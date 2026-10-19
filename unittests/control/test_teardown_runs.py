@@ -12,6 +12,7 @@ import pytest
 import respx
 
 from boardfarm3_control import teardown
+from boardfarm3_control.errors import StopPending
 from boardfarm3_control.launcher import FakeLauncher
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.registry import SessionRegistry
@@ -19,6 +20,7 @@ from boardfarm3_control.store import DiagnosticsStore
 from boardfarm3_control.teardown import teardown_session
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from boardfarm3_control.models import AgentInfo
@@ -75,6 +77,26 @@ async def _teardown(
 def _meta() -> dict[str, object]:
     path = DiagnosticsStore().session_dir("s-1") / "meta.json"
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _answers(
+    *steps: dict[str, object] | int | Exception,
+) -> Callable[[httpx.Request], httpx.Response]:
+    """Return a respx side effect that plays one step per call.
+
+    A dict is a 200 JSON reply, an int is a bare status, an exception is raised.
+    """
+    queue = iter(steps)
+
+    def _answer(_request: httpx.Request) -> httpx.Response:
+        step = next(queue)
+        if isinstance(step, Exception):
+            raise step
+        if isinstance(step, int):
+            return httpx.Response(step)
+        return httpx.Response(200, json=step)
+
+    return _answer
 
 
 @respx.mock
@@ -174,10 +196,13 @@ async def test_a_run_lookup_that_fails_in_any_way_still_releases_the_board(
     assert status == "released"
     assert lease.held_by("b1") is None
     assert _meta()["run"] is None
-    assert any(
-        record.levelno == logging.WARNING and "s-1" in record.getMessage()
+    warnings = [
+        record.getMessage()
         for record in caplog.records
-    )
+        if record.levelno == logging.WARNING
+    ]
+    assert "final run status unavailable for s-1: RuntimeError" in warnings
+    assert "boom" not in caplog.text
 
 
 @respx.mock
@@ -201,3 +226,173 @@ async def test_a_run_that_outlives_the_release_timeout_does_not_hold_teardown(
     assert polls.call_count > 1
     assert _meta()["run"] == {"state": "running"}
     assert lease.held_by("b1") is None
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"), [("30", 30.0), ("0.5", 0.5), (None, 120.0)]
+)
+def test_the_release_timeout_is_read_from_the_environment(
+    raw: str | None, expected: float, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    if raw is None:
+        monkeypatch.delenv("BOARDFARM_AGENT_RELEASE_TIMEOUT", raising=False)
+    else:
+        monkeypatch.setenv("BOARDFARM_AGENT_RELEASE_TIMEOUT", raw)
+    assert teardown._release_seconds() == expected
+
+
+@pytest.mark.parametrize("raw", ["120s", "", "nan", "inf", "-5", "0"])
+@respx.mock
+async def test_a_malformed_release_timeout_does_not_strand_the_board(
+    raw: str, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("BOARDFARM_AGENT_RELEASE_TIMEOUT", raw)
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    final = {"state": "finished", "outcome": "passed"}
+    respx.get(f"{info.agent_url}/run").mock(
+        return_value=httpx.Response(200, json=final)
+    )
+    with caplog.at_level(logging.WARNING):
+        status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    assert lease.held_by("b1") is None
+    assert _meta()["run"] == final
+    assert "BOARDFARM_AGENT_RELEASE_TIMEOUT" in caplog.text
+
+
+@respx.mock
+async def test_a_pending_stop_keeps_the_corpse_with_its_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    final = {"state": "finished", "outcome": "passed"}
+    respx.get(f"{info.agent_url}/run").mock(
+        return_value=httpx.Response(200, json=final)
+    )
+
+    async def _pending(session_id: str, **_kwargs: object) -> None:
+        raise StopPending(session_id, "lab-1")
+
+    monkeypatch.setattr(launcher, "stop", _pending)
+    status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "stop_pending"
+    corpse = registry.get("s-1")
+    assert corpse is not None
+    assert corpse.state == "dead"
+    assert corpse.stop_pending is True
+    assert corpse.run == final
+    assert _meta()["run"] == final
+    assert lease.held_by("b1") is None
+
+
+@respx.mock
+async def test_a_failed_stop_keeps_the_corpse_with_its_run_and_frees_the_board(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    final = {"state": "finished", "outcome": "passed"}
+    respx.get(f"{info.agent_url}/run").mock(
+        return_value=httpx.Response(200, json=final)
+    )
+
+    async def _boom(_session_id: str, **_kwargs: object) -> None:
+        msg = "docker daemon unreachable"
+        raise RuntimeError(msg)
+
+    monkeypatch.setattr(launcher, "stop", _boom)
+    status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    corpse = registry.get("s-1")
+    assert corpse is not None
+    assert corpse.state == "dead"
+    assert corpse.stop_pending is False
+    assert corpse.run == final
+    assert _meta()["run"] == final
+    assert lease.held_by("b1") is None
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [httpx.ConnectError("down"), 503],
+    ids=["an exception", "a non-200 reply"],
+)
+@respx.mock
+async def test_a_failed_poll_does_not_end_the_wait(
+    failure: Exception | int,
+) -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    final = {"state": "finished", "outcome": "cancelled"}
+    polls = respx.get(f"{info.agent_url}/run").mock(
+        side_effect=_answers({"state": "running"}, failure, final)
+    )
+    respx.post(f"{info.agent_url}/run/cancel").mock(
+        return_value=httpx.Response(202, json={"status": "cancelling"})
+    )
+    status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    assert polls.call_count == 3
+    assert _meta()["run"] == final
+
+
+@respx.mock
+async def test_three_failed_polls_in_a_row_end_the_wait() -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    last_good = {"state": "running", "current_test": "test_a"}
+    polls = respx.get(f"{info.agent_url}/run").mock(
+        side_effect=_answers(
+            last_good,
+            503,
+            httpx.ConnectError("down"),
+            500,
+            {"state": "finished", "outcome": "cancelled"},
+        )
+    )
+    respx.post(f"{info.agent_url}/run/cancel").mock(
+        return_value=httpx.Response(202, json={"status": "cancelling"})
+    )
+    status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    assert polls.call_count == 4  # the first lookup, then the three failed polls
+    assert _meta()["run"] == last_good
+    assert lease.held_by("b1") is None
+
+
+@respx.mock
+async def test_failed_polls_are_counted_in_a_row_not_in_total() -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    running = {"state": "running"}
+    final = {"state": "finished", "outcome": "cancelled"}
+    polls = respx.get(f"{info.agent_url}/run").mock(
+        side_effect=_answers(running, 503, running, 503, 503, final)
+    )
+    respx.post(f"{info.agent_url}/run/cancel").mock(
+        return_value=httpx.Response(202, json={"status": "cancelling"})
+    )
+    await _teardown(launcher, info, registry, lease, retain=False)
+    assert polls.call_count == 6
+    assert _meta()["run"] == final
+
+
+@respx.mock
+async def test_a_run_reply_that_is_not_200_is_logged_with_its_status(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    launcher, info, registry, lease = await _session("pytest")
+    _mock_bundle_and_release(info)
+    respx.get(f"{info.agent_url}/run").mock(return_value=httpx.Response(503))
+    with caplog.at_level(logging.INFO):
+        status = await _teardown(launcher, info, registry, lease, retain=False)
+    assert status == "released"
+    assert _meta()["run"] is None
+    infos = [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno == logging.INFO and record.name == teardown.__name__
+    ]
+    assert any("s-1" in message and "503" in message for message in infos)
