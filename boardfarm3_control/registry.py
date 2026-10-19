@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from boardfarm3_control.launcher import Launcher
@@ -78,7 +78,12 @@ class SessionRegistry:
         return self._last_activity.get(session_id)
 
     def mark_dead(
-        self, session_id: str, ended_at: float, *, stop_pending: bool = False
+        self,
+        session_id: str,
+        ended_at: float,
+        *,
+        stop_pending: bool = False,
+        run: dict[str, Any] | None = None,
     ) -> None:
         """Mark a session dead while keeping it listed.
 
@@ -92,17 +97,20 @@ class SessionRegistry:
         :type ended_at: float
         :param stop_pending: the host could not confirm the stop yet
         :type stop_pending: bool
+        :param run: the session's final run summary, kept so the corpse reports it
+        :type run: dict[str, Any] | None
         """
         info = self._sessions.get(session_id)
         if info is None:
             return
-        self._sessions[session_id] = info.model_copy(
-            update={
-                "state": "dead",
-                "ended_at": ended_at,
-                "stop_pending": stop_pending,
-            },
-        )
+        update: dict[str, Any] = {
+            "state": "dead",
+            "ended_at": ended_at,
+            "stop_pending": stop_pending,
+        }
+        if run is not None:
+            update["run"] = run
+        self._sessions[session_id] = info.model_copy(update=update)
 
     async def rebuild(self, launcher: Launcher) -> None:
         """Repopulate the registry from launcher-listed sessions.

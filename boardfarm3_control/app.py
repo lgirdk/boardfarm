@@ -490,9 +490,13 @@ def create_app(  # noqa: C901, PLR0915
         host_name: str | None,
         request: Request,
     ) -> SessionResponse:
-        # host= is passed only when placement chose one, so Launcher
-        # subclasses whose start() predates the parameter keep working.
-        placement = {"host": host_name} if host_name is not None else {}
+        # host= and mode= are passed only when they say something, so Launcher
+        # subclasses whose start() predates them keep working.
+        start_kwargs: dict[str, Any] = (
+            {"host": host_name} if host_name is not None else {}
+        )
+        if body.mode != INTERACT:
+            start_kwargs["mode"] = body.mode
         try:
             info = await launcher.start(
                 session_id,
@@ -500,7 +504,7 @@ def create_app(  # noqa: C901, PLR0915
                 image,
                 body.runtime_profile,
                 agent_env=_agent_env(body.agent_env),
-                **placement,
+                **start_kwargs,
             )
         except ControlError:
             await lease.release(session_id)
@@ -536,13 +540,23 @@ def create_app(  # noqa: C901, PLR0915
                 await _check_agent_versions(session_id, info, health, request)
             )
             config_options: dict[str, Any] = dict(body.options)
-            if not body.boot:
-                config_options.setdefault("skip_boot", True)
+            config_body: dict[str, Any] = {
+                "payload": body.payload,
+                "options": config_options,
+            }
+            if body.mode == INTERACT:
+                if not body.boot:
+                    config_options.setdefault("skip_boot", True)
+            else:
+                # The mode owns booting (through its own options); the config
+                # call itself starts the run.
+                config_body["mode"] = body.mode
+                config_body["run"] = body.run
             config_timeout = _config_timeout()
             try:
                 cfg = await client.post(
                     f"{agent_url}/session/config",
-                    json={"payload": body.payload, "options": config_options},
+                    json=config_body,
                     headers=_sid(session_id),
                     timeout=httpx.Timeout(
                         connect=10.0, read=config_timeout, write=30.0, pool=10.0
@@ -575,29 +589,34 @@ def create_app(  # noqa: C901, PLR0915
                     "AgentConfigRejected",
                     f"agent rejected config: {cfg.text}",
                 )
-            try:
-                boot = await client.post(
-                    f"{agent_url}/session/boot?mode=async",
-                    headers=_sid(session_id),
-                )
-            except Exception as exc:
-                raise await _unwind(
-                    session_id,
-                    info,
-                    _agent_http_or_pool(info, request),
-                    HTTPStatus.SERVICE_UNAVAILABLE,
-                    "AgentBootUnreachable",
-                    f"agent boot failed: {exc}",
-                ) from exc
-            if boot.status_code != int(HTTPStatus.ACCEPTED):
-                raise await _unwind(
-                    session_id,
-                    info,
-                    _agent_http_or_pool(info, request),
-                    HTTPStatus.BAD_GATEWAY,
-                    "AgentBootRejected",
-                    f"agent boot rejected: {boot.status_code}",
-                )
+            if body.mode == INTERACT:
+                try:
+                    boot = await client.post(
+                        f"{agent_url}/session/boot?mode=async",
+                        headers=_sid(session_id),
+                    )
+                except Exception as exc:
+                    raise await _unwind(
+                        session_id,
+                        info,
+                        _agent_http_or_pool(info, request),
+                        HTTPStatus.SERVICE_UNAVAILABLE,
+                        "AgentBootUnreachable",
+                        f"agent boot failed: {exc}",
+                    ) from exc
+                if boot.status_code != int(HTTPStatus.ACCEPTED):
+                    raise await _unwind(
+                        session_id,
+                        info,
+                        _agent_http_or_pool(info, request),
+                        HTTPStatus.BAD_GATEWAY,
+                        "AgentBootRejected",
+                        f"agent boot rejected: {boot.status_code}",
+                    )
+                reported = _json_object(boot) or {}
+            else:
+                # The config reply is the agent's status, run included.
+                reported = _json_object(cfg) or {}
         except asyncio.CancelledError:
             _unwind_in_background(session_id, info)
             raise
@@ -607,15 +626,15 @@ def create_app(  # noqa: C901, PLR0915
 
         registry.add(info)
         registry.touch(session_id)
-        booting = _json_object(boot) or {}
         return SessionResponse(
             session_id=session_id,
             board_name=info.board_name,
             runtime_profile=info.runtime_profile,
             # Even with boot=false the agent runs a connect job first: report
             # what the agent says, never a "ready" it has not reached.
-            state=booting.get("state") or "booting",
-            boot_job_id=booting.get("boot_job_id"),
+            state=reported.get("state")
+            or ("booting" if body.mode == INTERACT else "running"),
+            boot_job_id=reported.get("boot_job_id"),
             booted=False,
             agent_url=info.agent_url,
             pid=info.pid,
@@ -624,6 +643,8 @@ def create_app(  # noqa: C901, PLR0915
             host=info.host,
             image_id=info.image_id,
             warnings=warnings,
+            mode=body.mode,
+            run=reported.get("run"),
         )
 
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
@@ -687,6 +708,8 @@ def create_app(  # noqa: C901, PLR0915
                 host=info.host,
                 image_id=info.image_id,
                 stop_pending=info.stop_pending,
+                mode=info.mode,
+                run=info.run,
             )
         last_act: float | None
         liveness: dict[str, Any] | None
@@ -703,11 +726,13 @@ def create_app(  # noqa: C901, PLR0915
             booted: bool = bool(data.get("booted", False))
             last_act = data.get("last_activity")
             liveness = data.get("liveness")
+            run = data.get("run")
         except (asyncio.TimeoutError, httpx.TransportError):
             state = "unreachable"
             booted = False
             last_act = registry.last_activity(info.session_id)
             liveness = None
+            run = None
         finally:
             if owns_client:
                 await client.aclose()
@@ -726,6 +751,8 @@ def create_app(  # noqa: C901, PLR0915
             host=info.host,
             image_id=info.image_id,
             stop_pending=info.stop_pending,
+            mode=info.mode,
+            run=run,
         )
 
     @app.get("/healthz")
