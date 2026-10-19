@@ -31,6 +31,7 @@ class FakeLauncher:
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
         host: str | None = None,  # noqa: ARG002
+        mode: str = "interact",
     ) -> AgentInfo:
         """Allocate an in-memory session (no Docker).
 
@@ -47,6 +48,8 @@ class FakeLauncher:
         :type agent_env: dict[str, str] | None
         :param host: lab host to place the agent on; ignored by single-host launchers
         :type host: str | None
+        :param mode: the session's mode, recorded so a restarted control plane knows it
+        :type mode: str
         :return: fake agent info
         :rtype: AgentInfo
         """
@@ -64,6 +67,7 @@ class FakeLauncher:
             pid=None,
             agent_url=f"http://localhost:{port}",
             artifact_dir=_artifact_root(agent_env),
+            mode=mode,
         )
         self._sessions[session_id] = info
         return info

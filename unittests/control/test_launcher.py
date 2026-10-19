@@ -418,3 +418,24 @@ async def test_process_launcher_spares_a_pid_that_is_not_its_agent(
     finally:
         stranger.kill()
         await stranger.wait()
+
+
+@pytest.mark.asyncio
+async def test_fake_launcher_records_the_mode() -> None:
+    info = await FakeLauncher().start("s-1", "board-1", "img", "prplos", mode="pytest")
+    assert info.mode == "pytest"
+
+
+@pytest.mark.asyncio
+async def test_process_launcher_keeps_the_mode_in_its_state_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state_file = tmp_path / "sessions.json"
+    monkeypatch.setenv("BOARDFARM_CONTROL_STATE_FILE", str(state_file))
+    monkeypatch.setenv("BOARDFARM_CONTROL_STORE", str(tmp_path))
+    launcher = ProcessLauncher()
+    info = await launcher.start("s-proc", "board-1", "ignored", "prplos", mode="pytest")
+    assert info.mode == "pytest"
+    assert json.loads(state_file.read_text())["s-proc"]["mode"] == "pytest"
+    await launcher.stop("s-proc")

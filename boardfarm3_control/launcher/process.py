@@ -79,6 +79,7 @@ class ProcessLauncher:
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
         host: str | None = None,  # noqa: ARG002
+        mode: str = "interact",
     ) -> AgentInfo:
         """Start a boardfarm3.api subprocess on a free local port.
 
@@ -94,6 +95,8 @@ class ProcessLauncher:
         :type agent_env: dict[str, str] | None
         :param host: lab host to place the agent on; ignored by single-host launchers
         :type host: str | None
+        :param mode: the session's mode, recorded so a restarted control plane knows it
+        :type mode: str
         :return: agent info with the subprocess pid as container_id
         :rtype: AgentInfo
         """
@@ -160,6 +163,7 @@ class ProcessLauncher:
             pid=proc.pid,
             agent_url=f"http://localhost:{host_port}",
             artifact_dir=_artifact_root(agent_env),
+            mode=mode,
         )
         self._sessions[session_id] = (proc, info, log_file)
         self._save_state()

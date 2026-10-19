@@ -165,3 +165,17 @@ def test_corrupt_index_is_ignored(
     assert launcher.entries() == []
     assert "unreadable" in caplog.text
     launcher.hosts.close()
+
+
+async def test_start_passes_the_mode_to_the_host(
+    tmp_path: Path, fake_daemon: Any
+) -> None:
+    daemons = _two_hosts(fake_daemon)
+    launcher = _multihost(tmp_path, daemons)
+    info = await launcher.start(
+        "s-1", "board-1", "img:1", "prplos", host="lab-1", mode="pytest"
+    )
+    assert info.mode == "pytest"
+    assert daemons["lab-1"].runs[0]["labels"]["boardfarm.mode"] == "pytest"
+    assert launcher.entry("s-1").info.mode == "pytest"
+    launcher.hosts.close()

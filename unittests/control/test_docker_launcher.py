@@ -352,3 +352,45 @@ async def test_agent_has_no_resource_limits_unless_asked(fake_daemon: Any) -> No
     assert "mem_limit" not in run
     assert "pids_limit" not in run
     assert "nano_cpus" not in run
+
+
+async def test_start_labels_the_session_mode(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    info = await _launcher(daemon).start(
+        "s-1", "board-1", "img:1", "prplos", mode="pytest"
+    )
+    assert daemon.runs[0]["labels"]["boardfarm.mode"] == "pytest"
+    assert info.mode == "pytest"
+
+
+async def test_the_mode_survives_a_control_restart(fake_daemon: Any) -> None:
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos", mode="pytest")
+    # A new launcher on the same daemon is what a restarted control plane sees.
+    [info] = await _launcher(daemon).list_sessions()
+    assert info.mode == "pytest"
+
+
+async def test_a_container_without_a_mode_label_is_interact(fake_daemon: Any) -> None:
+    daemon = fake_daemon()
+    daemon.add_agent(session_id="s-1", board_name="b1", control_id=CONTROL)
+    [info] = await _launcher(daemon).list_sessions()
+    assert info.mode == "interact"
+
+
+async def test_agent_shared_memory_comes_from_the_environment(
+    fake_daemon: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("BOARDFARM_AGENT_SHM_SIZE", "4g")
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert daemon.runs[0]["shm_size"] == "4g"
+
+
+async def test_agent_keeps_dockers_shared_memory_unless_asked(
+    fake_daemon: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("BOARDFARM_AGENT_SHM_SIZE", raising=False)
+    daemon = fake_daemon(images={"img:1": "sha256:aaa"})
+    await _launcher(daemon).start("s-1", "board-1", "img:1", "prplos")
+    assert "shm_size" not in daemon.runs[0]

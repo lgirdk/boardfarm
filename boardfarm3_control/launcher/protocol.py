@@ -22,6 +22,7 @@ class Launcher(Protocol):
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
         host: str | None = None,
+        mode: str = "interact",
     ) -> AgentInfo:
         """Start a new agent container and return its info.
 
@@ -37,6 +38,8 @@ class Launcher(Protocol):
         :type agent_env: dict[str, str] | None
         :param host: lab host to place the agent on; ignored by single-host launchers
         :type host: str | None
+        :param mode: the session's mode, recorded so a restarted control plane knows it
+        :type mode: str
         :return: container info
         :rtype: AgentInfo
         """

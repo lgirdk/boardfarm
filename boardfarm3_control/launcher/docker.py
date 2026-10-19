@@ -35,7 +35,7 @@ _CREATED_GRACE_NS = 60 * 1_000_000_000
 
 
 def _container_options() -> dict[str, Any]:
-    """Return log rotation, always, and the resource limits the environment sets.
+    """Return log rotation, always, and the resource limits and shared memory the environment sets.
 
     Docker's default json-file driver never rotates, so a chatty agent would
     fill the lab host's disk. Limits are opt-in because they depend on the lab.
@@ -58,6 +58,9 @@ def _container_options() -> dict[str, Any]:
         options["pids_limit"] = int(pids)
     if cpus := os.environ.get("BOARDFARM_AGENT_CPUS", "").strip():
         options["nano_cpus"] = int(float(cpus) * 1_000_000_000)
+    if shm := os.environ.get("BOARDFARM_AGENT_SHM_SIZE", "").strip():
+        # GUI tests run browsers, which crash in Docker's default 64 MB /dev/shm.
+        options["shm_size"] = shm
     return options
 
 
@@ -133,6 +136,7 @@ class DockerLauncher:
     _LABEL_CREATED = "boardfarm.created_at"
     _LABEL_ARTIFACT_DIR = "boardfarm.artifact_dir"
     _LABEL_CONTROL = "boardfarm.control_id"
+    _LABEL_MODE = "boardfarm.mode"
 
     def __init__(
         self,
@@ -171,6 +175,7 @@ class DockerLauncher:
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
         host: str | None = None,
+        mode: str = "interact",
     ) -> AgentInfo:
         """Start an agent container with a Docker-assigned host port.
 
@@ -186,6 +191,8 @@ class DockerLauncher:
         :type agent_env: dict[str, str] | None
         :param host: ignored; a DockerLauncher is bound to one host
         :type host: str | None
+        :param mode: the session's mode, recorded so a restarted control plane knows it
+        :type mode: str
         :return: the agent's info
         :rtype: AgentInfo
         :raises RuntimeError: when Docker published no port for the agent
@@ -210,6 +217,7 @@ class DockerLauncher:
             # list_sessions() alone: labels survive a container restart.
             self._LABEL_ARTIFACT_DIR: artifact_root,
             self._LABEL_CONTROL: self._control_id,
+            self._LABEL_MODE: mode,
         }
         # Identity last: agent_env may add variables, never re-point the agent.
         environment = {
@@ -260,6 +268,7 @@ class DockerLauncher:
             artifact_dir=artifact_root,
             host=self._host.name,
             image_id=image_id,
+            mode=mode,
         )
 
     async def stop(self, session_id: str, *, remove: bool = True) -> None:
@@ -479,6 +488,7 @@ class DockerLauncher:
             artifact_dir=labels.get(self._LABEL_ARTIFACT_DIR, _DEFAULT_ARTIFACT_ROOT),
             host=self._host.name,
             image_id=container.attrs.get("Image"),
+            mode=labels.get(self._LABEL_MODE, "interact"),
         )
 
     async def _remove_quietly(self, container: Any) -> bool:  # noqa: ANN401
