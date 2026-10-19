@@ -57,6 +57,13 @@ class _SelfCancellingMode(FakeMode):
         return False
 
 
+class _CountingMode(FakeMode):
+    """A run whose summary carries the test counts a pytest run reports."""
+
+    def status(self) -> dict[str, Any]:
+        return {**super().status(), "counts": {"passed": 3, "failed": 1}}
+
+
 @pytest.fixture(autouse=True)
 def _isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BOARDFARM_ARTIFACT_DIR", str(tmp_path / "artifacts"))
@@ -266,6 +273,20 @@ def test_the_bundle_session_json_has_the_mode_and_run_but_never_run_env(
     assert session_json["run"] == {"state": "running", "fake": True}
     for name, text in members.items():
         assert canary not in text, f"{name} carries run.env"
+
+
+def test_the_bundle_session_json_keeps_the_runs_pass_count(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(app_module, "build_session", _build_with(_CountingMode))
+    with TestClient(app_module.create_app("s-test", "board-1")) as client:
+        assert client.post("/session/config", json=_FAKE).status_code == 200
+        response = client.get("/diagnostics/bundle")
+    with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:gz") as archive:
+        member = archive.extractfile("session.json")
+        assert member is not None
+        session_json = json.load(member)
+    assert session_json["run"]["counts"] == {"passed": 3, "failed": 1}
 
 
 async def test_the_console_stream_filters_by_stream(
