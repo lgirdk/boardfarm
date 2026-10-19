@@ -44,6 +44,12 @@ class _Malformed:
         return ["fake"]
 
 
+class _Mixed:
+    @hookimpl_api
+    def boardfarm_add_api_modes(self) -> dict[str, object]:
+        return {"good": FakeMode, "bad": object, "worse": 42}
+
+
 def _manager(*plugins: tuple[str, object]) -> pluggy.PluginManager:
     manager = pluggy.PluginManager("boardfarm_api")
     manager.add_hookspecs(api_hookspecs)
@@ -76,6 +82,24 @@ def test_a_malformed_plugin_costs_only_its_own_modes(
     with caplog.at_level(logging.ERROR, logger="boardfarm3.api.modes"):
         assert collect_modes(manager) == {"fake": FakeMode}
     assert "malformed_api" in caplog.text
+
+
+def test_a_contribution_that_is_not_a_session_mode_is_skipped_and_named(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    manager = _manager(("mixed_api", _Mixed()))
+    with caplog.at_level(logging.ERROR, logger="boardfarm3.api.modes"):
+        assert collect_modes(manager) == {"good": FakeMode}
+    errors = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "boardfarm3.api.modes" and record.levelno == logging.ERROR
+    ]
+    assert len(errors) == 2
+    assert "mixed_api" in errors[0]
+    assert "'bad'" in errors[0]
+    assert "mixed_api" in errors[1]
+    assert "'worse'" in errors[1]
 
 
 def test_interact_cannot_be_taken_by_a_plugin() -> None:
