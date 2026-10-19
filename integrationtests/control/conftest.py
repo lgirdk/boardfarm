@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import pytest
@@ -68,6 +68,7 @@ class _ReadyProcessLauncher(ProcessLauncher):
         image: str,
         runtime_profile: str,
         agent_env: dict[str, str] | None = None,
+        **kwargs: Any,
     ) -> AgentInfo:
         info = await super().start(
             session_id,
@@ -75,6 +76,7 @@ class _ReadyProcessLauncher(ProcessLauncher):
             image,
             runtime_profile,
             agent_env,
+            **kwargs,
         )
         await _wait_for_health(info.host_port)
         return info
