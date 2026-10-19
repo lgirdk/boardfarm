@@ -293,18 +293,23 @@ async def test_options_are_applied_after_validate_and_before_start(
 ) -> None:
     runtime = FakeRuntime()
     steps = runtime.calls
+    seen: dict[str, float] = {}
 
     class _Recording(FakeMode):
         def validate(self) -> None:
             steps.append("validate")
+            seen["validate"] = session.options.quiet_after
 
         async def start(self) -> None:
             steps.append("start")
+            seen["start"] = session.options.quiet_after
             await super().start()
 
     session = make_session(runtime=runtime, modes={"rec": _Recording})
+    default = session.options.quiet_after
     await session.configure({}, {"quiet_after": 9.0}, mode="rec", run={})
     assert steps == ["validate", "start"]
+    assert seen == {"validate": default, "start": 9.0}
     assert session.options.quiet_after == 9.0
 
 
