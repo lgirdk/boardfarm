@@ -176,6 +176,35 @@ async def test_a_process_ignoring_ctrl_c_is_terminated(
     assert time.monotonic() - started < 5
 
 
+async def test_a_process_ignoring_ctrl_c_and_terminate_is_killed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(CANCEL_GRACE_ENV, "0.2")
+    monkeypatch.setattr(modes, "_TERM_GRACE", 0.5)
+    script = (
+        "import signal, time\n"
+        "signal.signal(signal.SIGINT, signal.SIG_IGN)\n"
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN)\n"
+        "print('ready', flush=True)\n"
+        "time.sleep(60)\n"
+    )
+    lines: list[str] = []
+    run = _ScriptRun(_context(tmp_path, lines, []), script)
+    await run.start()
+    try:
+        await _until(lambda: "ready" in lines)
+        started = time.monotonic()
+        await run.cancel()
+        assert run.status()["exit_code"] == -signal.SIGKILL
+        assert run.status()["cancelled"] is True
+        assert time.monotonic() - started < 5
+    finally:
+        if run.running_since() is not None:
+            # The escalation failed; do not leave the child running.
+            os.killpg(run._process.pid, signal.SIGKILL)
+            await asyncio.wait_for(run.wait(), 10)
+
+
 async def test_cancel_reaches_the_whole_process_group(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
