@@ -9,9 +9,10 @@ REDACTED = "***"
 
 # Matched against dict *keys* only, so a value that merely contains the word
 # "key" is preserved. "cred" catches ldap_credentials and loc_res_credentials;
-# "pwd" catches UIM_PWD and ldap_pwd.
+# "pwd" catches UIM_PWD and ldap_pwd. "passed" is not a secret: it is the
+# pass count of a test run, a field name the run summary is fixed to.
 _SECRET_KEY = re.compile(
-    r"pass|passwd|password|secret|token|key|auth|cred|pwd", re.IGNORECASE
+    r"pass(?!ed)|passwd|password|secret|token|key|auth|cred|pwd", re.IGNORECASE
 )
 
 

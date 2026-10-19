@@ -67,3 +67,22 @@ def test_pwd_names_are_secret(name: str) -> None:
 def test_redacts_a_pwd_value() -> None:
     out = redact({"uim_pwd": "hunter2", "uim_user": "admin"})
     assert out == {"uim_pwd": REDACTED, "uim_user": "admin"}
+
+
+@pytest.mark.parametrize(
+    ("name", "secret"),
+    [
+        ("passed", False),
+        ("password", True),
+        ("passwd", True),
+        ("ldap_pass", True),
+        ("UIM_PASS", True),
+    ],
+)
+def test_pass_names_are_secret_but_passed_is_not(name: str, secret: bool) -> None:
+    assert is_secret_key(name) is secret
+
+
+def test_redact_keeps_the_pass_counts_of_a_run() -> None:
+    counts = {"passed": 3, "failed": 1}
+    assert redact({"counts": counts}) == {"counts": counts}
