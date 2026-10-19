@@ -267,7 +267,10 @@ async def test_a_failing_log_does_not_stop_the_stream(
 ) -> None:
     monkeypatch.setenv(CANCEL_GRACE_ENV, "0.2")
     (tmp_path / "run").mkdir()
-    script = "for i in range(2000):\n    print(f'line {i:04d}', 'x' * 64, flush=True)\n"
+    # The output must overflow the pipe, or the old code would not block the child.
+    script = (
+        "for i in range(20000):\n    print(f'line {i:04d}', 'x' * 64, flush=True)\n"
+    )
     lines: list[str] = []
     run = _ScriptRun(_context(tmp_path, lines, []), script)
     monkeypatch.setattr(run, "_open_log", _FullDisk)
@@ -278,8 +281,8 @@ async def test_a_failing_log_does_not_stop_the_stream(
         finally:
             await run.cancel()
     assert run.status()["exit_code"] == 0
-    assert len(lines) == 2000
-    assert lines[-1] == f"line 1999 {'x' * 64}"
+    assert len(lines) == 20000
+    assert lines[-1] == f"line 19999 {'x' * 64}"
     warnings = [
         record
         for record in caplog.records
