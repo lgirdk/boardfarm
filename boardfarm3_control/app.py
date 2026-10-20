@@ -18,6 +18,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from boardfarm3.api import SESSION_HEADER
@@ -327,6 +328,7 @@ def create_app(  # noqa: C901, PLR0915
             allow_methods=["*"],
             allow_headers=["*"],
         )
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
     # Exposed for tests that need to drive the reaper or inspect store/registry
     # state directly against the exact instances this app is wired to.
     app.state.registry = registry
