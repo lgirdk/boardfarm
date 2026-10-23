@@ -137,6 +137,7 @@ class DockerLauncher:
     _LABEL_ARTIFACT_DIR = "boardfarm.artifact_dir"
     _LABEL_CONTROL = "boardfarm.control_id"
     _LABEL_MODE = "boardfarm.mode"
+    _LABEL_CREATED_BY = "boardfarm.created_by"
 
     def __init__(
         self,
@@ -176,6 +177,7 @@ class DockerLauncher:
         agent_env: dict[str, str] | None = None,
         host: str | None = None,
         mode: str = "interact",
+        created_by: str | None = None,
     ) -> AgentInfo:
         """Start an agent container with a Docker-assigned host port.
 
@@ -193,6 +195,8 @@ class DockerLauncher:
         :type host: str | None
         :param mode: the session's mode, recorded so a restarted control plane knows it
         :type mode: str
+        :param created_by: identity of the user who triggered this session
+        :type created_by: str | None
         :return: the agent's info
         :rtype: AgentInfo
         :raises RuntimeError: when Docker published no port for the agent
@@ -218,6 +222,7 @@ class DockerLauncher:
             self._LABEL_ARTIFACT_DIR: artifact_root,
             self._LABEL_CONTROL: self._control_id,
             self._LABEL_MODE: mode,
+            **({self._LABEL_CREATED_BY: created_by} if created_by is not None else {}),
         }
         # Identity last: agent_env may add variables, never re-point the agent.
         environment = {
@@ -269,6 +274,7 @@ class DockerLauncher:
             host=self._host.name,
             image_id=image_id,
             mode=mode,
+            created_by=created_by,
         )
 
     async def stop(self, session_id: str, *, remove: bool = True) -> None:
@@ -489,6 +495,7 @@ class DockerLauncher:
             host=self._host.name,
             image_id=container.attrs.get("Image"),
             mode=labels.get(self._LABEL_MODE, "interact"),
+            created_by=labels.get(self._LABEL_CREATED_BY),
         )
 
     async def _remove_quietly(self, container: Any) -> bool:  # noqa: ANN401

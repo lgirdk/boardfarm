@@ -499,6 +499,8 @@ def create_app(  # noqa: C901, PLR0915
         )
         if body.mode != INTERACT:
             start_kwargs["mode"] = body.mode
+        if body.created_by is not None:
+            start_kwargs["created_by"] = body.created_by
         try:
             info = await launcher.start(
                 session_id,
@@ -647,6 +649,7 @@ def create_app(  # noqa: C901, PLR0915
             warnings=warnings,
             mode=body.mode,
             run=reported.get("run"),
+            created_by=info.created_by,
         )
 
     @app.post("/sessions", status_code=int(HTTPStatus.ACCEPTED))
@@ -712,6 +715,7 @@ def create_app(  # noqa: C901, PLR0915
                 stop_pending=info.stop_pending,
                 mode=info.mode,
                 run=info.run,
+                created_by=info.created_by,
             )
         last_act: float | None
         liveness: dict[str, Any] | None
@@ -755,6 +759,7 @@ def create_app(  # noqa: C901, PLR0915
             stop_pending=info.stop_pending,
             mode=info.mode,
             run=run,
+            created_by=info.created_by,
         )
 
     @app.get("/healthz")
