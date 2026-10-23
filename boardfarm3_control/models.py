@@ -42,6 +42,7 @@ class AgentInfo(BaseModel):
             " selection). Null in interact mode."
         ),
     )
+    created_by: str | None = None
 
 
 class SessionCreate(BaseModel):
@@ -63,6 +64,7 @@ class SessionCreate(BaseModel):
             " mode. Absent in interact mode."
         ),
     )
+    created_by: str | None = None
 
     @field_validator("agent_env")
     @classmethod
@@ -133,6 +135,7 @@ class SessionResponse(BaseModel):
             " selection). Null in interact mode."
         ),
     )
+    created_by: str | None = None
 
 
 class SessionListResponse(BaseModel):
