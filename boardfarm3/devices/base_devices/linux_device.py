@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 import tempfile
 from functools import cached_property
@@ -227,6 +228,35 @@ class LinuxDevice(BoardfarmDevice):
             self._console.execute_command(
                 "stty columns 400; export TERM=xterm",
             )
+
+    def open_extra_console(self, name: str) -> BoardfarmPexpect:
+        """Open an additional, independent ssh console to the device.
+
+        The device's own console is left untouched; the caller owns the
+        returned connection and must close it.
+
+        :param name: pexpect session name of the new console
+        :type name: str
+        :return: a logged-in console
+        :rtype: BoardfarmPexpect
+        """
+        console = connection_factory(
+            self._config.get("connection_type"),
+            name,
+            username=self._username,
+            password=self._password,
+            ip_addr=self._ipaddr,
+            port=self._port,
+            shell_prompt=self._shell_prompt,
+            save_console_logs=self._cmdline_args.save_console_logs,
+            env={"PATH": os.getenv("PATH"), "TERM": "xterm"},
+        )
+        try:
+            console.login_to_server(password=self._password)
+        except BaseException:
+            console.close()
+            raise
+        return console
 
     async def _connect_async(self) -> None:
         """Establish connection to the device via SSH."""

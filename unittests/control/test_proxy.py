@@ -84,6 +84,14 @@ def test_proxy_returns_502_on_connect_error() -> None:
 
 
 @respx.mock
+def test_proxy_returns_502_when_the_agent_drops_the_connection() -> None:
+    # A pooled connection the agent closed while idle fails with ReadError.
+    respx.get("http://fake-agent/console").mock(side_effect=httpx.ReadError("closed"))
+    resp = _client.get("/proxy-test/console")
+    assert resp.status_code == 502
+
+
+@respx.mock
 def test_proxy_strips_hop_by_hop_from_response() -> None:
     respx.get("http://fake-agent/session").mock(
         return_value=httpx.Response(

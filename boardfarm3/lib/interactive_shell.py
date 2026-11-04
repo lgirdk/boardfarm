@@ -9,16 +9,19 @@ import time
 from argparse import Namespace
 from typing import TYPE_CHECKING, Any
 
-import jedi
 import pytest
 from importlib_metadata import entry_points
-from ptpython.ipython import IPythonInput, embed
+from ptpython.ipython import embed
 from rich import print as rich_print
 from rich.box import HORIZONTALS
 from rich.prompt import Prompt
 from rich.table import Table
 
 from boardfarm3.devices.base_devices.boardfarm_device import BoardfarmDevice
+from boardfarm3.lib.repl_config import (
+    configure_repl,
+    disable_jedi_descriptor_getattr,
+)
 from boardfarm3.lib.utils import disable_logs
 
 if TYPE_CHECKING:
@@ -184,17 +187,6 @@ def _get_device_console_options(
     return console_options
 
 
-def _configure_repl(repl: IPythonInput) -> None:
-    """Configure a few useful defaults.
-
-    :param repl: python input
-    """
-    repl.show_signature = True
-    repl.show_docstring = True
-    repl.show_line_numbers = True
-    repl.highlight_matching_parenthesis = True
-
-
 def _interactive_ptpython_shell(
     cmdline_args: Namespace,
     device_manager: DeviceManager,
@@ -205,17 +197,14 @@ def _interactive_ptpython_shell(
     # The following prevents __getattr__ from
     # running the object prperties (which happens
     # on autocompletion)
-    __int = jedi.Interpreter
-
-    # pylint: disable=protected-access
-    __int._allow_descriptor_getattr_default = False  # type: ignore[attr-defined]  # noqa: SLF001  # pylint: disable=line-too-long
+    disable_jedi_descriptor_getattr()
 
     if cmdline_args.legacy:
         devices = Namespace(**device_manager.get_devices_by_type(BoardfarmDevice))
         rich_print(
             f"[green]Use devices.<name> to access one of {list(vars(devices).keys())}",
         )
-    embed(configure=_configure_repl)
+    embed(configure=configure_repl)
 
 
 def _run_boardfarm_tests() -> None:

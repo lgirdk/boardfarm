@@ -25,6 +25,7 @@ class SSHConnection(BoardfarmPexpect):
         port: int = 22,
         password: str | None = None,
         save_console_logs: str = "",
+        env: dict[str, str | None] | None = None,
         **kwargs: dict[str, Any],  # ignore other arguments  # noqa: ARG002
     ) -> None:
         """Initialize SSH connection.
@@ -43,6 +44,8 @@ class SSHConnection(BoardfarmPexpect):
         :type password: str
         :param save_console_logs: save console logs, defaults to ""
         :type save_console_logs: str
+        :param env: environment of the ssh process, defaults to the base default
+        :type env: dict[str, str | None] | None
         :param kwargs: other keyword arguments
         """
         self._shell_prompt = shell_prompt
@@ -58,7 +61,8 @@ class SSHConnection(BoardfarmPexpect):
             "-o IdentitiesOnly=yes",
             "-o HostKeyAlgorithms=+ssh-rsa",
         ]
-        super().__init__(name, "ssh", save_console_logs, args)
+        extra: dict[str, Any] = {} if env is None else {"env": env}
+        super().__init__(name, "ssh", save_console_logs, args, **extra)
 
     async def login_to_server_async(self, password: str | None = None) -> None:
         """Login to SSH session.

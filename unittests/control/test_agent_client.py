@@ -89,6 +89,8 @@ def test_shared_pool_takes_its_size_from_the_env(
         pool = app.state.http._transport._pool
         assert pool._max_connections == 7
         assert pool._max_keepalive_connections == 7
+        # Below the agent's 30 s keep-alive, so a closed connection is not reused.
+        assert pool._keepalive_expiry == 15.0
 
 
 async def test_builtin_launchers_defer_to_the_shared_pool(fake_daemon: Any) -> None:

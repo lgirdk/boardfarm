@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, Any
 from boardfarm3.api.console import ConsoleCapture, EventBuffer
 from boardfarm3.api.errors import console_tail_from, error_envelope
 from boardfarm3.api.execution import ExecutionQueue, Job, JobState
+from boardfarm3.api.holds import Holds
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.modes import (
     INTERACT,
@@ -22,11 +23,13 @@ from boardfarm3.api.modes import (
     boardfarm_argparser,
 )
 from boardfarm3.api.runtime import RuntimeContext
+from boardfarm3.api.terminal import TerminalRegistry
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from boardfarm3.api.modes import SessionMode
+    from boardfarm3.api.pyshell import PyShell
     from boardfarm3.api.runtime import RuntimeOptions
 
 _log = logging.getLogger(__name__)
@@ -73,7 +76,11 @@ class Session:
         self.session_id = session_id
         self.options = options
         self.runtime = runtime if runtime is not None else RuntimeContext(options)
-        self.queue = ExecutionQueue()
+        self.holds = Holds()
+        self.queue = ExecutionQueue(holds=self.holds)
+        self.terminals = TerminalRegistry(self.queue)
+        # The Python shell, created on first open; dropped on release.
+        self.pyshell: PyShell | None = None
         self.buffer = EventBuffer()
         self.capture = ConsoleCapture(self.buffer)
         self.capture.install()
@@ -331,10 +338,23 @@ class Session:
             if self.state is SessionState.READY
             else {"status": "failed", "exception": self.error}
         )
+        # Terminals first: their sockets close with 4410 and their holds go,
+        # so nothing a human typed into can outlive the runtime.
+        await self.terminals.close_all()
+        # The Python shell too: its sockets close with 4410, its REPL ends,
+        # its ALL hold goes and its namespace is dropped.
+        if self.pyshell is not None:
+            shell, self.pyshell = self.pyshell, None
+            await shell.close_all()
         # Release runs right after the job in progress, not after a backlog
         # of work that nobody will collect.
         self.queue.cancel_pending()
-        await self.queue.submit(lambda: self.runtime.release(status), mode="sync")
+        # Bypasses holds: a held device must not keep the runtime from tearing down.
+        await self.queue.submit(
+            lambda: self.runtime.release(status),
+            mode="sync",
+            bypass_holds=True,
+        )
         self.capture.uninstall()
         self.queue.shutdown()
 

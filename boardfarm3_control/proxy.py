@@ -184,7 +184,8 @@ async def proxy_request(  # noqa: PLR0913
     :type session_id: str
     :return: streaming response forwarded from the agent
     :rtype: StreamingResponse
-    :raises HTTPException: 502 when the agent is unreachable or times out
+    :raises HTTPException: 502 when the agent is unreachable, times out or
+        drops the connection
     """
     url = f"{agent_url}/{path.lstrip('/')}"
     if request.url.query:
@@ -211,7 +212,8 @@ async def proxy_request(  # noqa: PLR0913
             _filter_headers(dict(upstream_request.headers))
         )
         response = await client.send(upstream_request, stream=True)
-    except (httpx.ConnectError, httpx.TimeoutException) as exc:
+    # TransportError: refused, timed out, or dropped mid-request (ReadError).
+    except httpx.TransportError as exc:
         if owns_client:
             await client.aclose()
         raise HTTPException(status_code=502, detail="agent unreachable") from exc

@@ -14,12 +14,12 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.middleware.gzip import GZipMiddleware
 
 from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api.entrypoints import plugin_versions
@@ -57,6 +57,13 @@ from boardfarm3_control.reconcile import (
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
 from boardfarm3_control.teardown import archive_bundle, teardown_session
+from boardfarm3_control.wsproxy import (
+    TERMINAL_PATH,
+    agent_ws_url,
+    bound_reason,
+    relay,
+    terminal_query,
+)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterable
@@ -107,6 +114,9 @@ def _proxy_limits() -> httpx.Limits:
     return httpx.Limits(
         max_connections=max_connections,
         max_keepalive_connections=min(max_connections, _PROXY_KEEPALIVE_CAP),
+        # Shorter than the agent's keep-alive (30 s): a connection the agent
+        # has just closed is never reused, which fails with ReadError.
+        keepalive_expiry=15.0,
     )
 
 
@@ -210,13 +220,22 @@ def _new_session_id() -> str:
     return f"s-{secrets.token_hex(4)}"
 
 
-def _agent_env(requested: dict[str, str] | None) -> dict[str, str] | None:
-    """Merge the control plane's plugin deny-list into an agent environment.
+# Terminal settings only the operator may set (the agent's
+# boardfarm3.api.pyshell.PYTHON_SHELL_ENV and terminal.MAX_SSH_TERMINALS_ENV;
+# named here so the control plane need not import the agent's terminal stack).
+OPERATOR_ONLY_ENV = ("BOARDFARM_PYTHON_SHELL", "BOARDFARM_MAX_SSH_TERMINALS")
 
-    An explicit value in the session-create body wins, so a caller can opt a
-    single session out. ``DockerLauncher`` already spreads this mapping into the
-    container environment and ``ProcessLauncher`` inherits ``os.environ``, so
-    seeding here covers both launchers.
+
+def _agent_env(requested: dict[str, str] | None) -> dict[str, str] | None:
+    """Merge the control plane's operator settings into an agent environment.
+
+    For the plugin deny-list, an explicit value in the session-create body
+    wins, so a caller can opt a single session out. The terminal settings in
+    :data:`OPERATOR_ONLY_ENV` are the operator's alone: the control plane's own
+    value always wins, and a value in the body is dropped when the operator set
+    none. ``DockerLauncher`` already spreads this mapping into the container
+    environment and ``ProcessLauncher`` inherits ``os.environ``, so seeding
+    here covers both launchers.
 
     :param requested: agent_env from the session-create body, if any
     :type requested: dict[str, str] | None
@@ -227,6 +246,11 @@ def _agent_env(requested: dict[str, str] | None) -> dict[str, str] | None:
     disabled = os.environ.get(DISABLED_PLUGINS_ENV)
     if disabled and DISABLED_PLUGINS_ENV not in env:
         env[DISABLED_PLUGINS_ENV] = disabled
+    for name in OPERATOR_ONLY_ENV:
+        env.pop(name, None)
+        operator = os.environ.get(name)
+        if operator is not None:
+            env[name] = operator
     return env or None
 
 
@@ -318,6 +342,7 @@ def create_app(  # noqa: C901, PLR0915
         await app.state.http.aclose()
 
     app = FastAPI(title="boardfarm control plane", lifespan=lifespan)
+    app.state.registry = registry
     if cors_origins:
         # Browser GUIs on another origin (e.g. a scheduler page) need the
         # preflight answered and the response headers set, or the browser
@@ -963,6 +988,39 @@ def create_app(  # noqa: C901, PLR0915
         raise HTTPException(
             status_code=int(HTTPStatus.NOT_FOUND),
             detail={"error": "NoDiagnostics", "attempted": attempted},
+        )
+
+    # Terminal WebSocket relay; registered before the HTTP catch-all.
+    @app.websocket("/sessions/{session_id}/{path:path}")
+    async def proxy_ws(websocket: WebSocket, session_id: str, path: str) -> None:
+        # Accept first so the close codes below reach the client.
+        await websocket.accept()
+        info = registry.get(session_id)
+        if info is None or not TERMINAL_PATH.match(path):
+            await websocket.close(code=4404, reason="not found")
+            return
+        # Rebuilt from a validated mode, never forwarded raw.
+        query = terminal_query(path, websocket.url.query)
+        if query is None:
+            await websocket.close(code=4404, reason="invalid mode")
+            return
+        if info.state != "live":
+            await websocket.close(
+                code=4410, reason=bound_reason(f"session is {info.state}")
+            )
+            return
+        await relay(
+            websocket,
+            agent_ws_url(info.agent_url, path, query),
+            {
+                SESSION_HEADER: session_id,
+                **(
+                    {"X-Boardfarm-User": user}
+                    if (user := websocket.headers.get("x-boardfarm-user"))
+                    else {}
+                ),
+            },
+            lambda: registry.touch(session_id),
         )
 
     # Catch-all proxy for everything else under /sessions/{session_id}/

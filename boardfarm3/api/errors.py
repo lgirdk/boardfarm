@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 import pexpect
 
 from boardfarm3.api.execution import JOB_ID_ATTR, QueueFull
+from boardfarm3.api.holds import ConsoleHeld
 from boardfarm3.exceptions import (
     DeviceConnectionError,
     DeviceNotFound,
@@ -34,6 +35,7 @@ _STATUS_BY_EXCEPTION: tuple[tuple[type[BaseException], int], ...] = (
     (DeviceConnectionError, HTTPStatus.BAD_GATEWAY),
     (pexpect.TIMEOUT, HTTPStatus.GATEWAY_TIMEOUT),
     (QueueFull, HTTPStatus.TOO_MANY_REQUESTS),
+    (ConsoleHeld, HTTPStatus.CONFLICT),
 )
 
 

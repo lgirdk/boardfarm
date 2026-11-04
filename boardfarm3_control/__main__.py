@@ -113,6 +113,10 @@ def main() -> None:
         app,
         host="0.0.0.0",  # noqa: S104
         port=int(os.environ.get("BOARDFARM_CONTROL_PORT", "9000")),
+        # Terminal keepalive: matches the agent, so a dead browser tab is
+        # dropped (and its upstream relay closed) within ~60 s.
+        ws_ping_interval=20.0,
+        ws_ping_timeout=40.0,
     )
 
 

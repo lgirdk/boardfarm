@@ -30,11 +30,14 @@ from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.entrypoints import plugin_versions
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
+from boardfarm3.api.holds import ConsoleHeld
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.modes import INTERACT, load_plugin_modes
+from boardfarm3.api.pyshell import pyshell_router
 from boardfarm3.api.routers import _async_response, require_device_manager
 from boardfarm3.api.runtime import RuntimeOptions
 from boardfarm3.api.session import Session, SessionConflict, SessionState
+from boardfarm3.api.terminal import ssh_terminal_eligible, terminal_router
 from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.exceptions import BoardfarmException
 
@@ -149,6 +152,10 @@ def _strip_sphinx_params(text: str) -> str:
     return "\n".join(clean).rstrip()
 
 
+# WebSocket close code for a connection addressed to another session.
+SESSION_MISMATCH_CLOSE = 4409
+
+
 class SessionGuard:
     """Refuse requests the control plane addressed to a different session."""
 
@@ -173,6 +180,19 @@ class SessionGuard:
         :param send: ASGI send channel
         :type send: Send
         """
+        if scope["type"] == "websocket":
+            claimed = Headers(scope=scope).get(SESSION_HEADER)
+            if claimed is not None and claimed != self._session_id:
+                # Refused before the handshake is accepted.
+                await receive()  # websocket.connect
+                await send(
+                    {
+                        "type": "websocket.close",
+                        "code": SESSION_MISMATCH_CLOSE,
+                        "reason": "session mismatch",
+                    }
+                )
+                return
         if scope["type"] == "http":
             claimed = Headers(scope=scope).get(SESSION_HEADER)
             if claimed is not None and claimed != self._session_id:
@@ -394,6 +414,11 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         load_plugin_routers,  # pylint: disable=import-outside-toplevel
     )
 
+    # WebSocket onto a device's shared pexpect console.
+    app.include_router(terminal_router)
+    # WebSocket onto a ptpython REPL on the session's live objects.
+    app.include_router(pyshell_router)
+
     _plugin_routers, _skipped = load_plugin_routers()
     for _router in _plugin_routers:
         app.include_router(_router)
@@ -429,6 +454,15 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     async def handle_boardfarm_error(_: Request, exc: Exception) -> JSONResponse:
         return envelope_response(exc)
 
+    async def handle_console_held(_: Request, exc: Exception) -> JSONResponse:
+        # Same {"detail": ...} body as the other 409s on device calls, for
+        # every route that submits a job, wherever the refusal was raised.
+        return JSONResponse(
+            status_code=int(HTTPStatus.CONFLICT),
+            content={"detail": str(exc)},
+        )
+
+    app.add_exception_handler(ConsoleHeld, handle_console_held)
     app.add_middleware(ErrorEnvelope, respond=envelope_response)
 
     for exception_type in (BoardfarmException, pexpect.TIMEOUT, pexpect.EOF):
@@ -592,6 +626,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                     "name": name,
                     "type": type(device).__name__,
                     "consoles": _console_names(device),
+                    "ssh_terminals": ssh_terminal_eligible(device),
                     "templates": sorted(
                         base.__name__
                         for base in type(device).__mro__
@@ -627,6 +662,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         return await current.queue.submit(
             lambda: console.execute_command(command, **kwargs),
             mode=mode,
+            devices=frozenset({device_name}),
         )
 
     @app.post("/devices/{device_name}/exec")
