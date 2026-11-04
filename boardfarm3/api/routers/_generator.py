@@ -26,6 +26,7 @@ from typing import (
 from fastapi import APIRouter, Request
 from pydantic import Field, create_model
 
+from boardfarm3.api.holds import ALL
 from boardfarm3.api.routers import _resolve
 from boardfarm3.api.routers.adapter import (
     DefaultAdapter,
@@ -455,7 +456,11 @@ def _make_handler(  # noqa: PLR0913
                     data.pop(extra, None)
                 return getattr(target, method_name)(**data)
 
-            job = await session.queue.submit(_run, mode=effective_mode)
+            job = await session.queue.submit(
+                _run,
+                mode=effective_mode,
+                devices=frozenset({getattr(device, "device_name", ALL)}),
+            )
             outcome = Outcome(
                 job=job,
                 value=job.result if effective_mode != "async" else None,

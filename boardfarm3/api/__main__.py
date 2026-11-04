@@ -45,6 +45,14 @@ def main() -> None:
         host="0.0.0.0",  # noqa: S104
         port=int(os.environ.get("BOARDFARM_AGENT_PORT", "8000")),
         loop="asyncio",  # nest_asyncio (used by lgi-shared) cannot patch uvloop
+        # Terminal keepalive: ASGI apps cannot ping, so the server does. A
+        # client that misses its pong (~60 s in all) is dropped, which
+        # releases the console it controlled.
+        ws_ping_interval=20.0,
+        ws_ping_timeout=40.0,
+        # Longer than the control plane's pool keeps an idle connection
+        # (15 s), so the agent never closes one control is about to reuse.
+        timeout_keep_alive=30,
     )
     # Config() has just applied uvicorn's logging dictConfig, which strips
     # every handler from the uvicorn loggers: re-attach the agent log.

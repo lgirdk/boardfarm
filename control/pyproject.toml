@@ -13,6 +13,7 @@ dependencies = [
     "docker",
     "fastapi",
     "uvicorn[standard]",
+    "websockets",
 ]
 
 [project.optional-dependencies]

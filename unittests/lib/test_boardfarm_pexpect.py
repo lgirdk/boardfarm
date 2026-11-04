@@ -57,7 +57,7 @@ def test_boardfarm_pexpect_with_save_console_logs(mocker: MockerFixture) -> None
     logger = logging.getLogger("pexpect.session")
     assert len(logger.handlers) > 0
     assert Path.is_file(_SESSION_CONSOLE_LOG_SAVE_FILE)
-    assert isinstance(bfp.logfile_read, _LogWrapper)
+    assert isinstance(bfp.logfile_read._wrapper, _LogWrapper)
 
 
 def test_boardfarm_pexpect_without_save_console_logs(
@@ -78,7 +78,7 @@ def test_boardfarm_pexpect_without_save_console_logs(
     logger = logging.getLogger("pexpect.session_no_save")
     assert len(logger.handlers) == 0
     assert not Path.is_file(_SESSION_CONSOLE_LOG_NO_SAVE_FILE)
-    assert isinstance(bfp.logfile_read, _LogWrapper)
+    assert isinstance(bfp.logfile_read._wrapper, _LogWrapper)
 
 
 def test_get_last_output(mocker: MockerFixture) -> None:
@@ -129,3 +129,62 @@ def test_write_in_log_wrapper(input_line: str, expected_output: str) -> None:
     stream.seek(0)
     captured_logs = stream.read()
     assert captured_logs == expected_output
+
+
+class _CatPexpect(BoardfarmPexpect):
+    """Minimal pexpect session spawning ``cat``."""
+
+    def __init__(self, session_name: str) -> None:
+        super().__init__(session_name, "cat", save_console_logs="", args=[])
+
+    def execute_command(self, command: str, timeout: int = -1) -> str:
+        self.sendline(command)
+        self.expect_exact(command)
+        self.expect(self.linesep)
+        return self.get_last_output()
+
+
+def test_raw_listener_receives_unmodified_chunks() -> None:
+    """Listeners see raw chunks while the log handler still gets clean lines."""
+    records: list[str] = []
+
+    class _Handler(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            records.append(record.getMessage())
+
+    logger = logging.getLogger("pexpect.raw_tee")
+    logger.setLevel(logging.DEBUG)
+    handler = _Handler()
+    logger.addHandler(handler)
+    session = _CatPexpect("raw_tee")
+    try:
+        chunks: list[str] = []
+        session.add_raw_listener(chunks.append)
+        session.sendline("\x1b[31mred")
+        session.expect("red")
+        session.expect("\n")
+        assert "\x1b[31mred" in "".join(chunks)
+        assert "red" in records
+    finally:
+        session.close()
+        logger.removeHandler(handler)
+
+
+def test_raising_listener_is_removed() -> None:
+    """A listener that raises is dropped and reads keep working."""
+    session = _CatPexpect("raw_tee_raise")
+    calls: list[str] = []
+
+    def bad(chunk: str) -> None:
+        calls.append(chunk)
+        raise RuntimeError("boom")
+
+    try:
+        session.add_raw_listener(bad)
+        session.sendline("one")
+        session.expect("one")
+        session.sendline("two")
+        session.expect("two")
+        assert len(calls) == 1
+    finally:
+        session.close()

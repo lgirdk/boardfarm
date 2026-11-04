@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 import httpx
-import pytest  # noqa: TC002 -- brief-mandated import, matches its verbatim test code
+import pytest
 import respx
 from fastapi.testclient import TestClient
 
@@ -135,3 +135,42 @@ def test_create_session_rejects_reserved_agent_env_keys(key: str) -> None:
     assert resp.status_code == 422
     assert launcher.start_calls == []
     assert app.state.lease.held_by("board-1") is None
+
+
+_OPERATOR_ONLY = ("BOARDFARM_PYTHON_SHELL", "BOARDFARM_MAX_SSH_TERMINALS")
+
+
+def test_operator_terminal_settings_are_seeded(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(DISABLED_PLUGINS_ENV, raising=False)
+    monkeypatch.setenv("BOARDFARM_PYTHON_SHELL", "0")
+    monkeypatch.setenv("BOARDFARM_MAX_SSH_TERMINALS", "2")
+    assert _agent_env(None) == {
+        "BOARDFARM_PYTHON_SHELL": "0",
+        "BOARDFARM_MAX_SSH_TERMINALS": "2",
+    }
+
+
+def test_operator_terminal_settings_beat_the_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv(DISABLED_PLUGINS_ENV, raising=False)
+    monkeypatch.setenv("BOARDFARM_PYTHON_SHELL", "off")
+    monkeypatch.setenv("BOARDFARM_MAX_SSH_TERMINALS", "0")
+    assert _agent_env(
+        {"BOARDFARM_PYTHON_SHELL": "1", "BOARDFARM_MAX_SSH_TERMINALS": "99", "A": "b"}
+    ) == {
+        "BOARDFARM_PYTHON_SHELL": "off",
+        "BOARDFARM_MAX_SSH_TERMINALS": "0",
+        "A": "b",
+    }
+
+
+def test_request_cannot_set_terminal_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(DISABLED_PLUGINS_ENV, raising=False)
+    for name in _OPERATOR_ONLY:
+        monkeypatch.delenv(name, raising=False)
+    assert (
+        _agent_env({"BOARDFARM_PYTHON_SHELL": "1", "BOARDFARM_MAX_SSH_TERMINALS": "99"})
+        is None
+    )
+    assert _agent_env({"BOARDFARM_PYTHON_SHELL": "1", "A": "b"}) == {"A": "b"}

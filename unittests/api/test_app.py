@@ -386,6 +386,7 @@ def test_devices_lists_registered_devices_with_templates(client: TestClient) -> 
                 "name": "router",
                 "type": "_ConcreteRadio",
                 "consoles": [],
+                "ssh_terminals": False,
                 "templates": ["_AbstractRadio"],
             },
         ],

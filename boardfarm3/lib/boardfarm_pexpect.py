@@ -8,11 +8,16 @@ from abc import ABCMeta, abstractmethod
 from logging import Formatter, Logger, getLogger
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pexpect
 
 from boardfarm3.lib.utils import disable_logs
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+_LOGGER = getLogger(__name__)
 
 
 def _apply_backspace(string: str) -> str:
@@ -64,6 +69,37 @@ class _LogWrapper:
         pass
 
 
+class _TeeLog:
+    """Pass every raw chunk to listeners, then to the wrapped log writer."""
+
+    def __init__(
+        self,
+        wrapper: _LogWrapper,
+        listeners: list[Callable[[str], None]],
+    ) -> None:
+        self._wrapper = wrapper
+        self._listeners = listeners
+
+    def write(self, string: str | bytes) -> None:
+        if self._listeners:
+            chunk = (
+                string.decode("utf-8", errors="ignore")
+                if isinstance(string, bytes)
+                else string
+            )
+            for listener in list(self._listeners):
+                try:
+                    listener(chunk)
+                except Exception:  # noqa: BLE001
+                    _LOGGER.exception("raw listener failed, removing it")
+                    if listener in self._listeners:
+                        self._listeners.remove(listener)
+        self._wrapper.write(string)
+
+    def flush(self) -> None:
+        self._wrapper.flush()
+
+
 class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
     """Boardfarm pexpect session."""
 
@@ -112,7 +148,27 @@ class BoardfarmPexpect(pexpect.spawn, metaclass=ABCMeta):
             )
             handler.setFormatter(Formatter("%(asctime)s %(message)s"))
             logger.addHandler(handler)
-        self.logfile_read = _LogWrapper(logger)
+        self._raw_listeners: list[Callable[[str], None]] = []
+        self.logfile_read = _TeeLog(_LogWrapper(logger), self._raw_listeners)
+
+    def add_raw_listener(self, callback: Callable[[str], None]) -> None:
+        """Receive every raw chunk the console reads, before logging.
+
+        A listener that raises is logged and removed.
+
+        :param callback: called with each unmodified chunk
+        :type callback: Callable[[str], None]
+        """
+        self._raw_listeners.append(callback)
+
+    def remove_raw_listener(self, callback: Callable[[str], None]) -> None:
+        """Stop delivering chunks to a listener; unknown listeners are ignored.
+
+        :param callback: listener passed to :meth:`add_raw_listener`
+        :type callback: Callable[[str], None]
+        """
+        if callback in self._raw_listeners:
+            self._raw_listeners.remove(callback)
 
     def get_last_output(self) -> str:
         """Get last output from the buffer.

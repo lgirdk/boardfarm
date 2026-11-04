@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable
 
+from boardfarm3.api.holds import ALL, ConsoleHeld, Holds
+
 current_job_id: ContextVar[str | None] = ContextVar("current_job_id", default=None)
 _log = logging.getLogger(__name__)
 
@@ -51,6 +53,10 @@ class Job:
     created_at: float = field(default_factory=time.time)
     started_at: float | None = None
     finished_at: float | None = None
+    # Devices the job touches, or {ALL}; what holds are checked against.
+    devices: frozenset[str] = frozenset({ALL})
+    # True for the session release, which must run whatever is held.
+    bypass_holds: bool = False
 
 
 class ExecutionQueue:
@@ -61,7 +67,12 @@ class ExecutionQueue:
     concurrency.
     """
 
-    def __init__(self, max_jobs: int = 200, max_pending: int | None = None) -> None:
+    def __init__(
+        self,
+        max_jobs: int = 200,
+        max_pending: int | None = None,
+        holds: Holds | None = None,
+    ) -> None:
         """Initialise the queue.
 
         :param max_jobs: how many jobs to retain; only finished jobs are ever
@@ -70,7 +81,10 @@ class ExecutionQueue:
         :param max_pending: how many jobs may wait to run before submit refuses;
             ``$BOARDFARM_MAX_QUEUED_JOBS`` (default 100) when omitted
         :type max_pending: int | None
+        :param holds: device holds that refuse jobs; a fresh registry when omitted
+        :type holds: Holds | None
         """
+        self.holds = holds if holds is not None else Holds()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="bf")
         self._jobs: OrderedDict[str, Job] = OrderedDict()
         self._max_jobs = max_jobs
@@ -112,6 +126,8 @@ class ExecutionQueue:
         :type job: Job
         :param func: callable to run
         :type func: Callable[[], Any]
+        :raises ConsoleHeld: when a device the job touches was held after it
+            was submitted
         :raises BaseException: whatever the callable raised
         :return: the callable's return value
         :rtype: Any
@@ -119,6 +135,16 @@ class ExecutionQueue:
         with self._lock:
             if job.state is JobState.CANCELLED:
                 return None
+            try:
+                if not job.bypass_holds:
+                    self.holds.check(job.devices)
+            except ConsoleHeld as exc:
+                job.state = JobState.ERROR
+                job.error = exc
+                job.finished_at = time.time()
+                with contextlib.suppress(AttributeError):
+                    setattr(exc, JOB_ID_ATTR, job.id)
+                raise
             job.state = JobState.RUNNING
             job.started_at = time.time()
             self._running = job
@@ -152,6 +178,8 @@ class ExecutionQueue:
         *,
         mode: str = "sync",
         on_done: Callable[[Job], None] | None = None,
+        devices: frozenset[str] = frozenset({ALL}),
+        bypass_holds: bool = False,
     ) -> Job:
         """Submit a callable to the worker thread.
 
@@ -162,16 +190,26 @@ class ExecutionQueue:
         :param on_done: called on the event loop once the job has finished,
             failed or been cancelled -- whether or not anyone still awaits it
         :type on_done: Callable[[Job], None] | None
+        :param devices: device names the job touches; ``{ALL}`` when unknown
+        :type devices: frozenset[str]
+        :param bypass_holds: skip every hold check; only for the session release
+        :type bypass_holds: bool
         :return: the job, completed when mode is ``"sync"``
         :rtype: Job
         :raises QueueFull: when ``max_pending`` jobs are already waiting
         """
+        if not bypass_holds:
+            self.holds.check(devices)
         with self._lock:
             waiting = sum(1 for j in self._jobs.values() if j.state is JobState.QUEUED)
         if waiting >= self._max_pending:
             msg = f"{waiting} jobs are already waiting to run; retry later"
             raise QueueFull(msg)
-        job = Job(id=f"j-{uuid.uuid4().hex[:8]}")
+        job = Job(
+            id=f"j-{uuid.uuid4().hex[:8]}",
+            devices=devices,
+            bypass_holds=bypass_holds,
+        )
         self._record(job)
         loop = asyncio.get_running_loop()
         future = loop.run_in_executor(self._executor, self._run, job, func)
@@ -210,6 +248,26 @@ class ExecutionQueue:
         :rtype: Job | None
         """
         return self._running
+
+    async def wait_idle(self, devices: frozenset[str], poll: float = 0.05) -> None:
+        """Wait until no running job touches any of *devices*.
+
+        :param devices: device names to wait on; ``ALL`` matches every job
+        :type devices: frozenset[str]
+        :param poll: seconds between checks
+        :type poll: float
+        """
+        while True:
+            with self._lock:
+                running = self._running
+                busy = running is not None and (
+                    ALL in devices
+                    or ALL in running.devices
+                    or not devices.isdisjoint(running.devices)
+                )
+            if not busy:
+                return
+            await asyncio.sleep(poll)
 
     def all_jobs(self) -> list[Job]:
         """Return every retained job, oldest first.
