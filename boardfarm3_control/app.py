@@ -7,10 +7,14 @@ import logging
 import os
 import posixpath
 import secrets
+import shutil
+import tarfile
+import tempfile
 import time
 from collections import Counter
 from contextlib import asynccontextmanager, suppress
 from http import HTTPStatus
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -19,6 +23,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.background import BackgroundTask
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.gzip import GZipMiddleware
 
 from boardfarm3.api import SESSION_HEADER
@@ -988,6 +994,55 @@ def create_app(  # noqa: C901, PLR0915
         raise HTTPException(
             status_code=int(HTTPStatus.NOT_FOUND),
             detail={"error": "NoDiagnostics", "attempted": attempted},
+        )
+
+    # Registered before the HTTP catch-all, which refuses dead sessions.
+    @app.get("/sessions/{session_id}/console/download")
+    async def console_download(session_id: str, request: Request) -> object:
+        info = registry.get(session_id)
+        if info is None:
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail=f"unknown session {session_id}",
+            )
+        attempted: list[str] = []
+        # Tier 1 — live agent: its per-job log files, streamed through as-is.
+        if info.state == "live":
+            try:
+                return await proxy_request(
+                    request,
+                    info.agent_url,
+                    "console/download",
+                    client=_agent_http(info),
+                    session_id=session_id,
+                )
+            except HTTPException:
+                attempted.append("agent: unreachable")
+        else:
+            attempted.append("agent: session is dead")
+        # Tier 2 — the copies carried by the bundle archived at teardown.
+        if store.has_bundle(session_id):
+            tmp = Path(tempfile.mkdtemp(prefix="bf-console-download-"))
+            try:
+                served = await run_in_threadpool(
+                    store.write_console_download, session_id, tmp
+                )
+            except (OSError, tarfile.TarError):
+                served = None
+            if served is not None:
+                return FileResponse(
+                    served,
+                    media_type="application/gzip",
+                    filename=served.name,
+                    background=BackgroundTask(shutil.rmtree, tmp, ignore_errors=True),
+                )
+            shutil.rmtree(tmp, ignore_errors=True)
+            attempted.append("archive: bundle has no console log")
+        else:
+            attempted.append("archive: no bundle stored")
+        raise HTTPException(
+            status_code=int(HTTPStatus.NOT_FOUND),
+            detail={"error": "NoConsoleLog", "attempted": attempted},
         )
 
     # Terminal WebSocket relay; registered before the HTTP catch-all.

@@ -82,7 +82,7 @@ class Session:
         # The Python shell, created on first open; dropped on release.
         self.pyshell: PyShell | None = None
         self.buffer = EventBuffer()
-        self.capture = ConsoleCapture(self.buffer)
+        self.capture = ConsoleCapture(self.buffer, log_dir=artifact_dir(session_id))
         self.capture.install()
         self.state = SessionState.CREATED
         self.created_at = time.time()
@@ -208,7 +208,8 @@ class Session:
         stream_name = mode_class.stream_name
 
         def emit(line: str) -> None:
-            self.buffer.append(
+            # Through the capture, so the run's lines also reach its log file.
+            self.capture.record(
                 stream=stream_name, device=None, job_id=self.run_id, line=line
             )
 
