@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import io
+import tarfile
 import time
 from typing import TYPE_CHECKING
 
@@ -242,3 +244,57 @@ def test_snapshot_after_a_restart_keeps_the_run_saved_in_meta(
     assert meta is not None
     assert meta["mode"] == "pytest"
     assert meta["run"] == final
+
+
+def _bundle_with(store: DiagnosticsStore, members: dict[str, bytes]) -> None:
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
+        for name, data in members.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+    store.write_bundle("s-1", [buffer.getvalue()])
+
+
+@respx.mock
+def test_console_download_streams_from_a_live_agent(wired: tuple) -> None:
+    app, _, _, agent_url = wired
+    respx.get(f"{agent_url}/console/download").mock(
+        return_value=httpx.Response(
+            200,
+            content=b"GZIPPED",
+            headers={
+                "content-type": "application/gzip",
+                "content-disposition": 'attachment; filename="s-1-console_full.txt.gz"',
+            },
+        ),
+    )
+    with TestClient(app) as client:
+        response = client.get("/sessions/s-1/console/download")
+    assert response.status_code == HTTP_OK
+    assert response.content == b"GZIPPED"
+    assert "s-1-console_full.txt.gz" in response.headers["content-disposition"]
+
+
+def test_console_download_of_a_dead_session_comes_from_the_bundle(
+    wired: tuple,
+) -> None:
+    app, _, store, _ = wired
+    _bundle_with(store, {"console_full.txt.gz": b"FULL", "agent.log": b"x"})
+    with TestClient(app) as client:
+        app.state.registry.mark_dead("s-1", time.time())
+        response = client.get("/sessions/s-1/console/download")
+    assert response.status_code == HTTP_OK
+    assert response.headers["content-type"] == "application/gzip"
+    assert "s-1-console_full.txt.gz" in response.headers["content-disposition"]
+    assert response.content == b"FULL"
+
+
+def test_console_download_without_logs_is_404(wired: tuple) -> None:
+    app, _, store, _ = wired
+    _bundle_with(store, {"agent.log": b"x"})
+    with TestClient(app) as client:
+        app.state.registry.mark_dead("s-1", time.time())
+        response = client.get("/sessions/s-1/console/download")
+    assert response.status_code == HTTP_NOT_FOUND
+    assert response.json()["detail"]["error"] == "NoConsoleLog"

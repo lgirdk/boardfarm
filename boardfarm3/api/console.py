@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import gzip
 import itertools
 import logging
+import shutil
+import sys
 import threading
 import time
 import traceback
@@ -18,9 +21,24 @@ from boardfarm3.api.execution import current_job_id
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+    from pathlib import Path
 
 CONSOLE_LOGGER = "pexpect"
 FRAMEWORK_LOGGER = "boardfarm3"
+# The session's complete console log, next to its other artifacts. Also its
+# member name inside a diagnostics bundle.
+CONSOLE_FULL_NAME = "console_full.txt.gz"
+
+
+def console_download_name(session_id: str) -> str:
+    """Return the file name a console download is served under.
+
+    :param session_id: session identifier
+    :type session_id: str
+    :return: ``<session_id>-console_full.txt.gz``
+    :rtype: str
+    """
+    return f"{session_id}-{CONSOLE_FULL_NAME}"
 
 
 @dataclass(frozen=True)
@@ -265,17 +283,31 @@ class EventBuffer:
 
 
 class ConsoleCapture(logging.Handler):
-    """Logging handler feeding console and framework records into a buffer."""
+    """Logging handler feeding console and framework records into a buffer.
 
-    def __init__(self, buffer: EventBuffer) -> None:
+    With a ``log_dir`` it also appends every event's line, in arrival order,
+    to ``console_full.txt.gz`` there, so the complete log survives the
+    bounded buffer.
+    """
+
+    def __init__(
+        self,
+        buffer: EventBuffer,
+        *,
+        log_dir: Path | None = None,
+    ) -> None:
         """Initialise the handler.
 
         :param buffer: buffer to append captured events to
         :type buffer: EventBuffer
+        :param log_dir: directory for ``console_full.txt.gz``, None for none
+        :type log_dir: Path | None
         """
         super().__init__(level=logging.DEBUG)
         self._buffer = buffer
         self._previous_propagate: dict[str, bool] = {}
+        self._log_dir = log_dir
+        self._file: gzip.GzipFile | None = None
 
     def emit(self, record: logging.LogRecord) -> None:
         """Append a log record to the buffer.
@@ -299,7 +331,7 @@ class ConsoleCapture(logging.Handler):
                 # traceback was being lost on the way into the buffer.
                 formatted = "".join(traceback.format_exception(*record.exc_info))
                 line = f"{line}\n{formatted}"
-            self._buffer.append(
+            self.record(
                 stream=stream,
                 device=device,
                 job_id=current_job_id.get(),
@@ -308,6 +340,113 @@ class ConsoleCapture(logging.Handler):
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             # A handler must never raise into the code that logged.
             self.handleError(record)
+
+    def record(
+        self,
+        *,
+        stream: str,
+        device: str | None,
+        job_id: str | None,
+        line: str,
+    ) -> ConsoleEvent:
+        """Append an event to the buffer and to the full log file.
+
+        Also the entry point for lines that never pass through ``logging``,
+        such as a run mode's output.
+
+        :param stream: ``"console"``, ``"framework"`` or a mode's stream name
+        :type stream: str
+        :param device: device the line came from, if any
+        :type device: str | None
+        :param job_id: job that was running when the line was produced
+        :type job_id: str | None
+        :param line: the log line
+        :type line: str
+        :return: the stored event
+        :rtype: ConsoleEvent
+        """
+        event = self._buffer.append(
+            stream=stream, device=device, job_id=job_id, line=line
+        )
+        if self._log_dir is not None:
+            with self.lock:
+                self._append_to_file(line)
+        return event
+
+    def _append_to_file(self, line: str) -> None:
+        """Append *line* to the gzipped full log; called with ``self.lock`` held.
+
+        :param line: the log line
+        :type line: str
+        """
+        log_dir = self._log_dir
+        if log_dir is None:
+            return
+        try:
+            if self._file is None:
+                log_dir.mkdir(parents=True, exist_ok=True)
+                # Append mode starts a new gzip member; concatenated members
+                # are one valid stream to zcat and to gzip.open().
+                self._file = gzip.open(log_dir / CONSOLE_FULL_NAME, "ab")  # noqa: SIM115
+            self._file.write(f"{line}\n".encode("utf-8", "replace"))
+            # Z_SYNC_FLUSH: everything written so far can be decompressed,
+            # even while the file is open or after the agent dies.
+            self._file.flush()
+        except OSError as exc:
+            # Never through logging: that would recurse into this handler.
+            sys.stderr.write(f"console log file disabled ({log_dir}): {exc}\n")
+            self._log_dir = None
+            self._close_handle()
+
+    def _close_handle(self) -> None:
+        """Close the log file if open; called with ``self.lock`` held."""
+        if self._file is not None:
+            with contextlib.suppress(OSError):
+                self._file.close()
+            self._file = None
+
+    def close_file(self) -> None:
+        """Finalise the log file so readers see a complete gzip stream.
+
+        A later line reopens it in append mode, as a new gzip member.
+        """
+        with self.lock:
+            self._close_handle()
+
+    def log_file(self) -> Path | None:
+        """Return the full log file, if anything has been written to it.
+
+        :return: ``<log_dir>/console_full.txt.gz``, or None
+        :rtype: Path | None
+        """
+        if self._log_dir is None:
+            return None
+        path = self._log_dir / CONSOLE_FULL_NAME
+        return path if path.is_file() else None
+
+    def copy_log_file(self, dest: Path) -> bool:
+        """Copy the full log, finalised, to *dest*.
+
+        Done under the handler lock so no line can land half-way through the
+        copy: the copy is a complete gzip stream of everything logged so far.
+
+        :param dest: file to write
+        :type dest: Path
+        :return: False when there is no log file to copy
+        :rtype: bool
+        """
+        with self.lock:
+            self._close_handle()
+            path = self.log_file()
+            if path is None:
+                return False
+            shutil.copyfile(path, dest)
+        return True
+
+    def close(self) -> None:
+        """Finalise the log file, then close the handler."""
+        self.close_file()
+        super().close()
 
     def install(self) -> None:
         """Attach to the console and framework loggers.
@@ -335,3 +474,4 @@ class ConsoleCapture(logging.Handler):
             logger.removeHandler(self)
             logger.propagate = propagate
         self._previous_propagate.clear()
+        self.close()

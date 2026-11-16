@@ -59,7 +59,7 @@ def is_streaming_path(path: str) -> bool:
     clean = path.split("?", 1)[0].strip("/")
     return (
         clean.endswith("stream")
-        or clean == "diagnostics"
+        or clean in {"console/download", "diagnostics"}
         or clean.startswith("diagnostics/")
     )
 

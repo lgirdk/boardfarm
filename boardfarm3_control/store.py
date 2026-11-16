@@ -6,8 +6,11 @@ import json
 import logging
 import os
 import shutil
+import tarfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+
+from boardfarm3.api.console import CONSOLE_FULL_NAME, console_download_name
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -120,6 +123,28 @@ class DiagnosticsStore:
                 handle.write(chunk)
                 written += len(chunk)
         return written
+
+    def write_console_download(self, session_id: str, dest_dir: Path) -> Path | None:
+        """Extract a session's ``console_full.txt.gz`` from its archived bundle.
+
+        :param session_id: session identifier
+        :type session_id: str
+        :param dest_dir: existing directory to write the download into
+        :type dest_dir: Path
+        :return: the file to serve, or None when the bundle has no console log
+        :rtype: Path | None
+        """
+        with tarfile.open(self.bundle_path(session_id), "r:gz") as bundle:
+            try:
+                source = bundle.extractfile(CONSOLE_FULL_NAME)
+            except KeyError:
+                return None
+            if source is None:
+                return None
+            dest = dest_dir / console_download_name(session_id)
+            with dest.open("wb") as handle:
+                shutil.copyfileobj(source, handle)
+            return dest
 
     def list_sessions(self) -> list[str]:
         """Return every session id present in the store.

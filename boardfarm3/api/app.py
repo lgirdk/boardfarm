@@ -27,6 +27,7 @@ from starlette.datastructures import Headers
 from boardfarm3.api import SESSION_HEADER
 from boardfarm3.api import bundle as bundle_module
 from boardfarm3.api.bundle import write_bundle
+from boardfarm3.api.console import console_download_name
 from boardfarm3.api.diagnostics import thread_snapshot
 from boardfarm3.api.entrypoints import plugin_versions
 from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
@@ -798,6 +799,35 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 "Content-Disposition": (
                     f'attachment; filename="{session_id}-console-logs.tar.gz"'
                 ),
+            },
+        )
+
+    @app.get("/console/download")
+    async def console_download() -> Response:
+        """Return the session's complete console log, ``console_full.txt.gz``.
+
+        Served as-is (no ``Content-Encoding``), so proxies pass the gzip bytes
+        through untouched.
+
+        :return: the log, streamed from a finalised snapshot
+        :rtype: Response
+        """
+        served = await _build_in_thread(
+            session().capture.copy_log_file,
+            prefix="bf-console-download-",
+            name=console_download_name(session_id),
+        )
+        if not served.is_file():
+            shutil.rmtree(served.parent, ignore_errors=True)
+            raise HTTPException(
+                status_code=int(HTTPStatus.NOT_FOUND),
+                detail={"error": "NoConsoleLog", "session_id": session_id},
+            )
+        return StreamingResponse(
+            _stream_then_remove(served),
+            media_type="application/gzip",
+            headers={
+                "Content-Disposition": f'attachment; filename="{served.name}"',
             },
         )
 

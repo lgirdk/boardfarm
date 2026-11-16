@@ -5,17 +5,21 @@ from __future__ import annotations
 import io
 import json
 import tarfile
+import tempfile
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from boardfarm3 import __version__
+from boardfarm3.api.console import CONSOLE_FULL_NAME
 from boardfarm3.api.diagnostics import format_threads, thread_snapshot
 from boardfarm3.api.errors import error_envelope
 from boardfarm3.api.logs import artifact_dir
 from boardfarm3.api.redact import redact
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from boardfarm3.api.session import Session
 
 _REDACTED_MEMBERS = ["session.json", "config.json"]
@@ -45,10 +49,6 @@ def add_tree(
 ) -> list[dict[str, str]]:
     """Add every file under *root*, skipping and reporting any that cannot be read.
 
-    Each file is read whole before its header is written: console logs grow
-    and rotate while the archive is built, and ``TarFile.add`` would write a
-    header promising bytes the file no longer has.
-
     :param archive: open tar archive
     :type archive: tarfile.TarFile
     :param root: directory to archive
@@ -58,9 +58,36 @@ def add_tree(
     :return: one ``{"path", "error"}`` entry per file that was skipped
     :rtype: list[dict[str, str]]
     """
+    return add_files(
+        archive,
+        ((path, path.relative_to(root).as_posix()) for path in sorted(root.rglob("*"))),
+        arcname,
+    )
+
+
+def add_files(
+    archive: tarfile.TarFile,
+    files: Iterable[tuple[Path, str]],
+    arcname: str,
+) -> list[dict[str, str]]:
+    """Add files under ``<arcname>/<name>``, skipping and reporting unreadable ones.
+
+    Each file is read whole before its header is written: console logs grow
+    and rotate while the archive is built, and ``TarFile.add`` would write a
+    header promising bytes the file no longer has.
+
+    :param archive: open tar archive
+    :type archive: tarfile.TarFile
+    :param files: ``(path, name)`` pairs; entries that are not files are skipped
+    :type files: Iterable[tuple[Path, str]]
+    :param arcname: member prefix inside the archive, empty for the root
+    :type arcname: str
+    :return: one ``{"path", "error"}`` entry per file that was skipped
+    :rtype: list[dict[str, str]]
+    """
     errors: list[dict[str, str]] = []
-    for path in sorted(root.rglob("*")):
-        member = f"{arcname}/{path.relative_to(root).as_posix()}"
+    for path, name in files:
+        member = f"{arcname}/{name}" if arcname else name
         try:
             if not path.is_file():
                 continue
@@ -187,6 +214,17 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
             errors.extend(add_tree(archive, console_dir, "console-logs"))
         if run_dir.is_dir():
             errors.extend(add_tree(archive, run_dir, "run"))
+        # The complete console log: the control plane serves it from the
+        # archived bundle once this agent is gone.
+        with tempfile.TemporaryDirectory(prefix="bf-console-full-") as tmp:
+            copy = Path(tmp) / CONSOLE_FULL_NAME
+            try:
+                copied = session.capture.copy_log_file(copy)
+            except OSError as exc:
+                errors.append({"path": CONSOLE_FULL_NAME, "error": str(exc)})
+                copied = False
+            if copied:
+                errors.extend(add_files(archive, [(copy, CONSOLE_FULL_NAME)], ""))
         # Written last, so it can record what could not be read.
         manifest["errors"] = errors
         _add_text(archive, "manifest.json", json.dumps(manifest, indent=2))
