@@ -423,6 +423,14 @@ def test_not_ready_closes_4423(env: _Env) -> None:
     assert (message["type"], message["code"]) == ("websocket.close", 4423)
 
 
+def test_failed_session_attaches(env: _Env) -> None:
+    """A session whose boot failed still takes a terminal, for debugging."""
+    env.session.state = SessionState.FAILED
+    with env.client.websocket_connect(CONTROL) as ws:
+        status = _status(ws)
+    assert status["role"] == "control"
+
+
 def test_non_interact_session_closes_4423(env: _Env) -> None:
     """A session in a non-interact mode closes with 4423."""
     env.session.mode = "pytest"
