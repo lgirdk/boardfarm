@@ -188,6 +188,15 @@ def test_not_affected_by_device_hold(env: _Env) -> None:
         assert "hello" in _read_until(ws, "hello")
 
 
+def test_failed_session_opens_ssh_terminal(env: _Env) -> None:
+    """A session whose boot failed still opens an ssh terminal, for debugging."""
+    env.session.state = SessionState.FAILED
+    with _connect(env) as ws:
+        _attached(ws)
+        ws.send_bytes(b"hello\n")
+        assert "hello" in _read_until(ws, "hello")
+
+
 def test_limit_closes_4429(env: _Env, monkeypatch: pytest.MonkeyPatch) -> None:
     """The terminal beyond the limit is refused with 4429."""
     monkeypatch.setenv("BOARDFARM_MAX_SSH_TERMINALS", "1")

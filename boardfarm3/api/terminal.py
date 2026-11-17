@@ -46,6 +46,9 @@ CLOSE_NOT_FOUND = 4404
 CLOSE_SESSION_ENDED = 4410
 CLOSE_NOT_READY = 4423
 CLOSE_TOO_MANY = 4429
+# Session states a terminal may attach in: a failed boot is when shell access
+# helps most, and device calls are allowed then too.
+TERMINAL_STATES = frozenset({"ready", "failed"})
 _CLOSE_INTERNAL_ERROR = 1011
 
 _READ_SIZE = 4096
@@ -767,12 +770,13 @@ def _not_ready(  # pylint: disable=too-many-return-statements
 
     :param session: the agent's session
     :type session: Session
-    :return: ``(close code, reason)``, or None when the session is ready
+    :return: ``(close code, reason)``, or None when the session is ready or
+        its boot failed
     :rtype: tuple[int, str] | None
     """
     if session.terminals.closed:
         return CLOSE_SESSION_ENDED, "session ended"
-    if session.state.value != "ready" or session.mode != INTERACT:
+    if session.state.value not in TERMINAL_STATES or session.mode != INTERACT:
         return CLOSE_NOT_READY, f"session is {session.state.value}"
     try:
         require_device_manager(session)

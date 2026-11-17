@@ -506,6 +506,14 @@ def test_not_ready_closes_4423(env: _Env) -> None:
     assert code == 4423
 
 
+def test_failed_session_opens_the_shell(env: _Env) -> None:
+    """A session whose boot failed still opens the Python shell, for debugging."""
+    env.session.state = SessionState.FAILED
+    with env.client.websocket_connect(CONTROL) as ws:
+        _attach(ws)
+        _prompt(ws)
+
+
 def test_release_closes_shell_4410(env: _Env) -> None:
     """Releasing the session closes every shell socket with 4410."""
     with (
