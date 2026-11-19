@@ -172,8 +172,18 @@ class HostSpec(BaseModel):
         :raises ValueError: when the record is not usable
         """
         if self.tls is not None:
-            msg = "NotImplemented: tls is reserved until the security work lands"
-            raise ValueError(msg)
+            _TLS_KEYS = {"ca", "cert", "key"}
+            extra = self.tls.keys() - _TLS_KEYS
+            missing = _TLS_KEYS - self.tls.keys()
+            if extra:
+                msg = f"tls: unknown keys {sorted(extra)}"
+                raise ValueError(msg)
+            if missing:
+                msg = f"tls: missing required keys {sorted(missing)}"
+                raise ValueError(msg)
+            if self.docker_url is None or not self.docker_url.startswith("tcp://"):
+                msg = "tls is only valid for tcp:// docker_url"
+                raise ValueError(msg)
         url = self.docker_url
         if url is not None and not url.startswith(_DOCKER_SCHEMES):
             msg = f"docker_url must start with one of {', '.join(_DOCKER_SCHEMES)}"

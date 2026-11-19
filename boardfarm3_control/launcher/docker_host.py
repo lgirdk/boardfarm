@@ -60,6 +60,13 @@ def _default_client_factory(spec: HostSpec, timeout: float) -> Any:  # noqa: ANN
     kwargs: dict[str, Any] = {"base_url": spec.docker_url, "timeout": int(timeout)}
     if spec.docker_url.startswith("ssh://"):
         kwargs["use_ssh_client"] = True
+    if spec.tls:
+        import docker.tls  # noqa: PLC0415
+        kwargs["tls"] = docker.tls.TLSConfig(
+            client_cert=(spec.tls["cert"], spec.tls["key"]),
+            ca_cert=spec.tls["ca"],
+            verify=True,
+        )
     return docker.DockerClient(**kwargs)
 
 
