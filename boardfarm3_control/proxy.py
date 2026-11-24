@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import urllib.parse
 from typing import TYPE_CHECKING
 
 import httpx
@@ -155,6 +156,10 @@ def _timeout_for(path: str) -> httpx.Timeout:
     return httpx.Timeout(connect=connect, read=read, write=30.0, pool=10.0)
 
 
+# RFC 3986 path characters besides unreserved ones: left as they are.
+_PATH_SAFE = "/:@!$&'()*+,;="
+
+
 async def proxy_request(  # noqa: PLR0913
     request: Request,
     agent_url: str,
@@ -187,7 +192,10 @@ async def proxy_request(  # noqa: PLR0913
     :raises HTTPException: 502 when the agent is unreachable, times out or
         drops the connection
     """
-    url = f"{agent_url}/{path.lstrip('/')}"
+    # The path arrives decoded: encode it again, or a decoded "?" or "#" would
+    # start a query or fragment and reach an agent route the caller's checks
+    # never saw (e.g. "session%3F" becoming DELETE /session).
+    url = f"{agent_url}/{urllib.parse.quote(path.lstrip('/'), safe=_PATH_SAFE)}"
     if request.url.query:
         url = f"{url}?{request.url.query}"
 

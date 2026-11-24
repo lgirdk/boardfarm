@@ -166,6 +166,33 @@ def test_proxy_refuses_agent_lifecycle_calls(method: str, path: str) -> None:
     assert not lifecycle.called
 
 
+@pytest.mark.parametrize(
+    ("method", "path", "forwarded"),
+    [
+        ("DELETE", "session%3F", "/session%3F"),
+        ("DELETE", "session%23", "/session%23"),
+        ("POST", "session/config%3Fx=1", "/session/config%3Fx=1"),
+    ],
+)
+@respx.mock
+def test_encoded_query_cannot_reach_a_lifecycle_route(
+    method: str, path: str, forwarded: str
+) -> None:
+    respx.get(_HEALTH).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_CONFIG).mock(return_value=httpx.Response(200, json={}))
+    respx.post(_BOOT).mock(return_value=httpx.Response(202, json={}))
+    with TestClient(create_app(FakeLauncher(), _PROFILES)) as client:
+        session_id = _create(client)
+        respx.route(url__regex=r"http://localhost:\d+/session.*").mock(
+            return_value=httpx.Response(404, json={})
+        )
+        client.request(method, f"/sessions/{session_id}/{path}", json={})
+    # Still encoded: the agent sees an unknown path, not /session or a query.
+    forwarded_request = respx.calls.last.request
+    assert forwarded_request.url.raw_path == forwarded.encode()
+    assert not forwarded_request.url.query
+
+
 @respx.mock
 def test_proxy_still_serves_agent_status() -> None:
     respx.get(_HEALTH).mock(return_value=httpx.Response(200, json={}))
