@@ -250,6 +250,27 @@ async def archive_bundle(  # noqa: PLR0913
     return "launcher"
 
 
+def _write_meta_quietly(
+    store: DiagnosticsStore, session_id: str, meta: dict[str, Any]
+) -> None:
+    """Write a session's metadata; log a store that cannot write it.
+
+    A full disk must not keep the agent running or the board held: losing
+    the metadata is the lesser harm.
+
+    :param store: diagnostics store
+    :type store: DiagnosticsStore
+    :param session_id: session identifier
+    :type session_id: str
+    :param meta: the metadata to write
+    :type meta: dict[str, Any]
+    """
+    try:
+        store.write_meta(session_id, meta)
+    except OSError:
+        _log.exception("could not write the metadata of %s", session_id)
+
+
 async def teardown_session(  # noqa: PLR0913
     *,
     session_id: str,
@@ -325,7 +346,8 @@ async def teardown_session(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         _log.warning("diagnostics capture failed for %s", session_id)
 
-    store.write_meta(
+    _write_meta_quietly(
+        store,
         session_id,
         {
             "session_id": session_id,

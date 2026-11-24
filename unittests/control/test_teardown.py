@@ -118,6 +118,41 @@ async def test_lease_is_released_even_when_every_step_fails(
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_a_failing_store_still_releases_and_stops(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A full disk loses the metadata, never the board or the container."""
+    launcher, info, registry, lease, store = await _prepare(tmp_path)
+    respx.get(f"{info.agent_url}/diagnostics/bundle").mock(
+        side_effect=httpx.ConnectError("down"),
+    )
+    release = respx.delete(f"{info.agent_url}/session").mock(
+        return_value=httpx.Response(200, json={}),
+    )
+
+    def full_disk(*_args: object, **_kwargs: object) -> None:
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(store, "write_meta", full_disk)
+    async with httpx.AsyncClient() as http:
+        await teardown_session(
+            session_id="s-1",
+            info=info,
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            http=http,
+            retain=False,
+        )
+    assert release.called
+    assert lease.held_by("board") is None
+    assert registry.get("s-1") is None
+    assert "s-1" not in launcher._sessions
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_lease_is_released_even_when_launcher_stop_fails(
     tmp_path: Path,
 ) -> None:

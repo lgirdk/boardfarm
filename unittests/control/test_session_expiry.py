@@ -26,6 +26,7 @@ from boardfarm3_control.launcher import FakeLauncher
 from boardfarm3_control.lease import BoardLease
 from boardfarm3_control.registry import SessionRegistry
 from boardfarm3_control.store import DiagnosticsStore
+from boardfarm3_control.teardown import teardown_session
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -146,6 +147,72 @@ async def test_max_lifetime_applies_even_to_a_busy_session() -> None:
 
 
 @respx.mock
+class _SlowStopLauncher(FakeLauncher):
+    """Takes a while to stop ``s-slow``, leaving a window during an expiry pass."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stops: list[tuple[str, bool]] = []
+
+    async def stop(self, session_id: str, *, remove: bool = True) -> None:
+        self.stops.append((session_id, remove))
+        if session_id == "s-slow":
+            await asyncio.sleep(0.3)
+        await super().stop(session_id, remove=remove)
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_a_session_retained_during_the_pass_is_left_alone() -> None:
+    """Expiry re-reads the registry: a session retained meanwhile keeps its container."""
+    respx.get(re.compile(r".*/session$")).mock(return_value=_status(None))
+    respx.delete(re.compile(r".*/session$")).mock(
+        return_value=httpx.Response(200, json={})
+    )
+    respx.get(re.compile(r".*/diagnostics/bundle")).mock(
+        return_value=httpx.Response(200, content=b"x")
+    )
+    launcher = _SlowStopLauncher()
+    registry, lease, store = SessionRegistry(), BoardLease(), DiagnosticsStore()
+    for session_id, board in (("s-slow", "b-1"), ("s-kept", "b-2")):
+        registry.add(await launcher.start(session_id, board, "img", "prplos"))
+        await lease.acquire(board, session_id)
+        registry._last_activity[session_id] = time.time() - 10 * 3600
+    inflight: set[str] = set()
+    async with httpx.AsyncClient() as http:
+        expiring = asyncio.create_task(
+            expire_once(
+                registry=registry,
+                launcher=launcher,
+                lease=lease,
+                store=store,
+                inflight=inflight,
+                http_for=lambda _info: http,
+                now=time.time(),
+                idle_ttl=3600,
+                max_ttl=0,
+            )
+        )
+        await asyncio.sleep(0.1)  # expiry is busy stopping s-slow
+        # Meanwhile: DELETE /sessions/s-kept?retain=true
+        inflight.add("s-kept")
+        await teardown_session(
+            session_id="s-kept",
+            info=registry.get("s-kept"),
+            launcher=launcher,
+            registry=registry,
+            lease=lease,
+            store=store,
+            http=http,
+            retain=True,
+        )
+        inflight.discard("s-kept")
+        expired = await expiring
+    assert expired == ["s-slow"]
+    assert ("s-kept", True) not in launcher.stops
+    assert registry.get("s-kept") is not None
+
+
 async def test_unknown_activity_after_a_restart_starts_a_fresh_idle_window() -> None:
     launcher, registry, lease, session_id = await _world()  # never touched
 
