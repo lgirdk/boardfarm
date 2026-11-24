@@ -148,6 +148,8 @@ class SessionListResponse(BaseModel):
 
 
 _DOCKER_SCHEMES = ("tcp://", "unix://", "ssh://")
+# Files of a client-certificate TLS block; all three are required.
+_TLS_KEYS = frozenset({"ca", "cert", "key"})
 
 
 class HostSpec(BaseModel):
@@ -165,14 +167,16 @@ class HostSpec(BaseModel):
 
     @model_validator(mode="after")
     def check_fields(self) -> HostSpec:
-        """Reject a TLS block, unknown URL schemes and ssh:// without an address.
+        """Reject a bad TLS block, unknown URL schemes and ssh:// without an address.
+
+        A TLS block needs exactly ``ca``, ``cert`` and ``key`` and a ``tcp://``
+        ``docker_url``.
 
         :return: the validated record
         :rtype: HostSpec
         :raises ValueError: when the record is not usable
         """
         if self.tls is not None:
-            _TLS_KEYS = {"ca", "cert", "key"}
             extra = self.tls.keys() - _TLS_KEYS
             missing = _TLS_KEYS - self.tls.keys()
             if extra:

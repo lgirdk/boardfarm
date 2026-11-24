@@ -71,7 +71,7 @@ def test_unchanged_seed_does_not_warn(
     [
         ({"Lab_1": {}}, "host name"),
         ({"a": {"default": True}, "b": {"default": True}}, "at most one default"),
-        ({"a": {"tls": {"ca": "x"}}}, "NotImplemented"),
+        ({"a": {"tls": {"ca": "x"}}}, "missing required keys"),
         ({"a": {"colour": "red"}}, "colour"),
     ],
 )
@@ -167,6 +167,6 @@ async def test_invalid_name_and_tls_are_rejected_at_runtime(
     hosts = _load(tmp_path / "hosts.json", fake_daemon, {"a": {}})
     with pytest.raises(ValueError, match="host name"):
         await hosts.put("Bad_Name", HostSpec(), in_use=False)
-    with pytest.raises(ValueError, match="NotImplemented"):
+    with pytest.raises(ValueError, match="missing required keys"):
         await hosts.patch("a", {"tls": {"ca": "x"}}, in_use=False)
     hosts.close()

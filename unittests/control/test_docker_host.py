@@ -8,6 +8,7 @@ import time
 from typing import Any
 
 import docker.errors
+import docker.tls
 import pytest
 import requests
 
@@ -59,11 +60,63 @@ def test_ssh_requires_advertise_addr() -> None:
     )
 
 
-def test_tls_is_rejected_until_implemented() -> None:
-    with pytest.raises(ValueError, match="NotImplemented"):
-        HostSpec(
-            docker_url="tcp://lab:2376", tls={"ca": "/ca", "cert": "/c", "key": "/k"}
-        )
+_TLS = {"ca": "/ca", "cert": "/c", "key": "/k"}
+
+
+def test_tls_block_is_accepted_on_tcp() -> None:
+    assert HostSpec(docker_url="tcp://lab:2376", tls=_TLS).tls == _TLS
+
+
+@pytest.mark.parametrize(
+    ("fields", "match"),
+    [
+        (
+            {"docker_url": "tcp://lab:2376", "tls": {**_TLS, "passphrase": "x"}},
+            r"unknown keys \['passphrase'\]",
+        ),
+        (
+            {"docker_url": "tcp://lab:2376", "tls": {"ca": "/ca"}},
+            r"missing required keys \['cert', 'key'\]",
+        ),
+        ({"docker_url": "unix:///var/run/docker.sock", "tls": _TLS}, "tcp://"),
+        (
+            {"docker_url": "ssh://bf@lab3", "advertise_addr": "10.1.1.3", "tls": _TLS},
+            "tcp://",
+        ),
+        ({"tls": _TLS}, "tcp://"),
+    ],
+)
+def test_bad_tls_block_is_rejected(fields: dict[str, Any], match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        HostSpec(**fields)
+
+
+def test_client_factory_passes_the_tls_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    built: dict[str, Any] = {}
+    monkeypatch.setattr(docker.tls, "TLSConfig", lambda **kw: ("tls", kw))
+    monkeypatch.setattr(docker, "DockerClient", lambda **kw: built.update(kw))
+    docker_host._default_client_factory(
+        HostSpec(docker_url="tcp://lab:2376", tls=_TLS), 7.0
+    )
+    assert built == {
+        "base_url": "tcp://lab:2376",
+        "timeout": 7,
+        "tls": (
+            "tls",
+            {"client_cert": ("/c", "/k"), "ca_cert": "/ca", "verify": True},
+        ),
+    }
+
+
+def test_client_factory_without_tls_passes_no_tls_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    built: dict[str, Any] = {}
+    monkeypatch.setattr(docker, "DockerClient", lambda **kw: built.update(kw))
+    docker_host._default_client_factory(HostSpec(docker_url="tcp://lab:2375"), 7.0)
+    assert "tls" not in built
 
 
 def test_unknown_scheme_is_rejected() -> None:
