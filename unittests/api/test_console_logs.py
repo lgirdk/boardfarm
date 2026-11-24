@@ -5,6 +5,7 @@ from __future__ import annotations
 import gzip
 import logging
 import tarfile
+import time
 import zlib
 from typing import TYPE_CHECKING
 
@@ -12,6 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from boardfarm3.api import app as app_module
+from boardfarm3.api import console as console_module
 from boardfarm3.api.bundle import write_bundle
 from boardfarm3.api.console import ConsoleCapture, EventBuffer
 from boardfarm3.api.execution import current_job_id
@@ -81,6 +83,34 @@ def test_lines_are_readable_while_the_file_is_still_open(
     data = (tmp_path / "logs" / "console_full.txt.gz").read_bytes()
     # No trailer yet, but every line written so far decompresses.
     assert zlib.decompressobj(31).decompress(data) == b"live\n"
+
+
+def test_a_burst_reaches_the_file_within_the_flush_interval(
+    capture: ConsoleCapture,  # noqa: ARG001
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(console_module, "_FLUSH_INTERVAL", 0.3)
+    path = tmp_path / "logs" / "console_full.txt.gz"
+    _log("first", "job-1")
+    _log("second", "job-1")
+    # The first line flushes at once; the second waits for the timer.
+    assert zlib.decompressobj(31).decompress(path.read_bytes()) == b"first\n"
+    deadline = time.monotonic() + 3
+    while zlib.decompressobj(31).decompress(path.read_bytes()) != b"first\nsecond\n":
+        assert time.monotonic() < deadline, "second line never flushed"
+        time.sleep(0.05)
+
+
+def test_copy_includes_lines_still_waiting_for_a_flush(
+    capture: ConsoleCapture, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(console_module, "_FLUSH_INTERVAL", 60.0)
+    _log("first", "job-1")
+    _log("second", "job-1")
+    dest = tmp_path / "copy.txt.gz"
+    assert capture.copy_log_file(dest)
+    assert _read(dest) == ["first", "second"]
 
 
 def test_reopening_appends_a_member_readable_as_one_stream(

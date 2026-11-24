@@ -28,6 +28,10 @@ FRAMEWORK_LOGGER = "boardfarm3"
 # The session's complete console log, next to its other artifacts. Also its
 # member name inside a diagnostics bundle.
 CONSOLE_FULL_NAME = "console_full.txt.gz"
+# The longest a line waits in the compressor before it reaches the file.
+# Flushing every line (a sync flush and a write per console chunk, under the
+# handler lock) slows the console path and spoils the compression.
+_FLUSH_INTERVAL = 1.0
 
 
 def console_download_name(session_id: str) -> str:
@@ -308,6 +312,9 @@ class ConsoleCapture(logging.Handler):
         self._previous_propagate: dict[str, bool] = {}
         self._log_dir = log_dir
         self._file: gzip.GzipFile | None = None
+        self._last_flush = 0.0
+        # Flushes what the last lines left in the compressor, once they stop.
+        self._flush_timer: threading.Timer | None = None
 
     def emit(self, record: logging.LogRecord) -> None:
         """Append a log record to the buffer.
@@ -389,17 +396,53 @@ class ConsoleCapture(logging.Handler):
                 # are one valid stream to zcat and to gzip.open().
                 self._file = gzip.open(log_dir / CONSOLE_FULL_NAME, "ab")  # noqa: SIM115
             self._file.write(f"{line}\n".encode("utf-8", "replace"))
+            self._flush_soon()
+        except OSError as exc:
+            self._disable_file(exc)
+
+    def _flush_soon(self) -> None:
+        """Flush now, or within the flush interval; called with ``self.lock`` held."""
+        wait = self._last_flush + _FLUSH_INTERVAL - time.monotonic()
+        if wait <= 0:
+            self._flush_file()
+        elif self._flush_timer is None:
+            self._flush_timer = threading.Timer(wait, self._timed_flush)
+            self._flush_timer.daemon = True
+            self._flush_timer.start()
+
+    def _flush_file(self) -> None:
+        """Flush the open log file; called with ``self.lock`` held."""
+        if self._file is not None:
             # Z_SYNC_FLUSH: everything written so far can be decompressed,
             # even while the file is open or after the agent dies.
             self._file.flush()
-        except OSError as exc:
-            # Never through logging: that would recurse into this handler.
-            sys.stderr.write(f"console log file disabled ({log_dir}): {exc}\n")
-            self._log_dir = None
-            self._close_handle()
+            self._last_flush = time.monotonic()
+
+    def _timed_flush(self) -> None:
+        """Flush the lines written since the last flush (timer thread)."""
+        with self.lock:
+            self._flush_timer = None
+            try:
+                self._flush_file()
+            except OSError as exc:
+                self._disable_file(exc)
+
+    def _disable_file(self, exc: OSError) -> None:
+        """Stop writing the log file after *exc*; called with ``self.lock`` held.
+
+        :param exc: the error writing the file
+        :type exc: OSError
+        """
+        # Never through logging: that would recurse into this handler.
+        sys.stderr.write(f"console log file disabled ({self._log_dir}): {exc}\n")
+        self._log_dir = None
+        self._close_handle()
 
     def _close_handle(self) -> None:
         """Close the log file if open; called with ``self.lock`` held."""
+        if self._flush_timer is not None:
+            self._flush_timer.cancel()
+            self._flush_timer = None
         if self._file is not None:
             with contextlib.suppress(OSError):
                 self._file.close()

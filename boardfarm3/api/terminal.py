@@ -5,6 +5,10 @@ controller holds the device, so API jobs on it are refused (409) until the
 controller leaves. While it is attached, a reader thread drains the console so
 its output reaches every viewer through the console's raw tee, and a writer
 thread types its input.
+
+Resizes are not forwarded to a shared console: on ssh they reach the remote
+shell as a window change and undo the wide terminal (``stty columns 400``) the
+device set up for automation, which would outlive the human's visit.
 """
 
 from __future__ import annotations
@@ -355,19 +359,6 @@ class _ConsoleTerminal:
         if self.controller is conn and self.attachment is not None:
             self.attachment.writer.put(data)
 
-    def resize(self, conn: _Connection, rows: int, cols: int) -> None:
-        """Resize the console's PTY if *conn* is the attached controller.
-
-        :param conn: connection the resize came from
-        :type conn: _Connection
-        :param rows: terminal rows
-        :type rows: int
-        :param cols: terminal columns
-        :type cols: int
-        """
-        if self.controller is conn and self.attachment is not None:
-            self.console.setwinsize(rows, cols)
-
 
 class _SshTerminal:  # pylint: disable=too-many-instance-attributes
     """One private ssh console and the socket that controls it."""
@@ -530,7 +521,8 @@ class TerminalRegistry:
                     ws,
                     conn.out,
                     (lambda data: term.send_input(conn, data)) if controlling else None,
-                    (lambda r, c: term.resize(conn, r, c)) if controlling else None,
+                    # Never resized: see the module docstring.
+                    None,
                 )
                 code = conn.close_code
             except WebSocketDisconnect:

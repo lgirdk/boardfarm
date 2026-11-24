@@ -250,6 +250,19 @@ def test_control_echoes_input(env: _Env) -> None:
         assert "hello" in _read_until(ws, "hello")
 
 
+def test_resize_leaves_the_shared_console_size_alone(env: _Env) -> None:
+    """A controller's resize never reaches the device's own console."""
+    before = env.console.getwinsize()
+    with env.client.websocket_connect(CONTROL) as ws:
+        _attach(ws)
+        ws.send_text(json.dumps({"type": "resize", "rows": 40, "cols": 100}))
+        # Frames are handled in order: once this echoes, the resize was seen.
+        ws.send_bytes(b"after\n")
+        _read_until(ws, "after")
+        assert env.console.getwinsize() == before
+    assert env.console.getwinsize() == before
+
+
 def test_owner_comes_from_user_header(env: _Env) -> None:
     """The status owner and the hold reason name the X-Boardfarm-User."""
     with env.client.websocket_connect(
