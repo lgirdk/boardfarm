@@ -65,8 +65,8 @@ if TYPE_CHECKING:
 
 _log = logging.getLogger(__name__)
 
-# 0/false/no/off disables the endpoint: it is arbitrary code execution inside
-# the agent. See python_shell_enabled().
+# Off unless the operator sets 1/true/yes/on: the endpoint is arbitrary code
+# execution inside the agent. See python_shell_enabled().
 PYTHON_SHELL_ENV = "BOARDFARM_PYTHON_SHELL"
 CLOSE_DISABLED = 4403
 CLOSE_HELD = 4409
@@ -932,21 +932,21 @@ class PyShell:  # pylint: disable=too-many-instance-attributes
         self._release_hold()
 
 
-_DISABLED_VALUES = frozenset({"0", "false", "no", "off"})
+_ENABLED_VALUES = frozenset({"1", "true", "yes", "on"})
 
 
 def python_shell_enabled() -> bool:
-    """Tell whether the operator left the Python shell enabled.
+    """Tell whether the operator enabled the Python shell.
 
-    ``BOARDFARM_PYTHON_SHELL`` set to ``0``, ``false``, ``no`` or ``off`` (any
-    case, surrounding blanks ignored) disables it; unset or anything else
-    leaves it enabled.
+    Opt-in: only ``BOARDFARM_PYTHON_SHELL`` set to ``1``, ``true``, ``yes`` or
+    ``on`` (any case, surrounding blanks ignored) enables it; unset or anything
+    else leaves it disabled.
 
-    :return: False when the shell is disabled
+    :return: True when the shell is enabled
     :rtype: bool
     """
     value = os.environ.get(PYTHON_SHELL_ENV, "")
-    return value.strip().lower() not in _DISABLED_VALUES
+    return value.strip().lower() in _ENABLED_VALUES
 
 
 pyshell_router = APIRouter()

@@ -67,6 +67,7 @@ from boardfarm3_control.wsproxy import (
     TERMINAL_PATH,
     agent_ws_url,
     bound_reason,
+    origin_allowed,
     relay,
     terminal_query,
 )
@@ -1050,6 +1051,13 @@ def create_app(  # noqa: C901, PLR0915
     async def proxy_ws(websocket: WebSocket, session_id: str, path: str) -> None:
         # Accept first so the close codes below reach the client.
         await websocket.accept()
+        if not origin_allowed(
+            websocket.headers.get("origin"),
+            websocket.headers.get("host"),
+            cors_origins or (),
+        ):
+            await websocket.close(code=4403, reason="origin not allowed")
+            return
         info = registry.get(session_id)
         if info is None or not TERMINAL_PATH.match(path):
             await websocket.close(code=4404, reason="not found")

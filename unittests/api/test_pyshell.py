@@ -98,7 +98,7 @@ def _make_env(monkeypatch: pytest.MonkeyPatch, *, legacy: bool) -> Iterator[_Env
         return Session(session_id, options, runtime=_ShellRuntime(options))
 
     monkeypatch.setattr(app_module, "build_session", build)
-    monkeypatch.delenv(pyshell_module.PYTHON_SHELL_ENV, raising=False)
+    monkeypatch.setenv(pyshell_module.PYTHON_SHELL_ENV, "1")
     application = app_module.create_app("s-test", "board-1")
     try:
         with TestClient(application) as client:
@@ -563,21 +563,30 @@ def test_thread_routed_stream_routes_by_thread() -> None:
     assert (original.data, routed.data) == ("main", "in thread")
 
 
-@pytest.mark.parametrize("value", ["0", "false", "FALSE", "No", "off", " Off "])
-def test_disabled_values(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
-    """0, false, no and off disable the shell, in any case."""
-    monkeypatch.setenv(pyshell_module.PYTHON_SHELL_ENV, value)
-    assert not pyshell_module.python_shell_enabled()
-
-
-@pytest.mark.parametrize("value", [None, "", "1", "true", "yes", "on"])
-def test_enabled_values(monkeypatch: pytest.MonkeyPatch, value: str | None) -> None:
-    """Unset or any other value leaves the shell enabled."""
+@pytest.mark.parametrize("value", [None, "", "0", "false", "No", "off", "2", "enabled"])
+def test_disabled_values(monkeypatch: pytest.MonkeyPatch, value: str | None) -> None:
+    """Unset, 0/false/no/off or any other value leaves the shell disabled."""
     if value is None:
         monkeypatch.delenv(pyshell_module.PYTHON_SHELL_ENV, raising=False)
     else:
         monkeypatch.setenv(pyshell_module.PYTHON_SHELL_ENV, value)
+    assert not pyshell_module.python_shell_enabled()
+
+
+@pytest.mark.parametrize("value", ["1", "true", "TRUE", "Yes", "on", " On "])
+def test_enabled_values(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
+    """1, true, yes and on enable the shell, in any case."""
+    monkeypatch.setenv(pyshell_module.PYTHON_SHELL_ENV, value)
     assert pyshell_module.python_shell_enabled()
+
+
+def test_unset_closes_4403(env: _Env, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The shell is opt-in: without the setting the endpoint closes with 4403."""
+    monkeypatch.delenv(pyshell_module.PYTHON_SHELL_ENV, raising=False)
+    with env.client.websocket_connect(CONTROL) as ws:
+        code, _ = _closed_code(ws)
+    assert code == 4403
+    assert env.session.pyshell is None
 
 
 def test_disabled_by_word_closes_4403(

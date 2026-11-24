@@ -13,7 +13,7 @@ import websockets
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     from starlette.websockets import WebSocket
 
@@ -84,6 +84,34 @@ def terminal_query(  # pylint: disable=too-many-return-statements
     if len(modes) != 1 or modes[0] not in _MODES:
         return None
     return urllib.parse.urlencode({"mode": modes[0]})
+
+
+def origin_allowed(
+    origin: str | None, host: str | None, allowed: Iterable[str]
+) -> bool:
+    """Tell whether a WebSocket handshake's ``Origin`` may open a terminal.
+
+    Browsers apply no CORS to WebSockets, so without this check any page a
+    lab user visits could drive a terminal. A client that sends no
+    ``Origin`` is not a browser and is let through; a browser is let through
+    from the control plane's own origin or from an *allowed* one (the CORS
+    origins, ``*`` included).
+
+    :param origin: the handshake's ``Origin`` header, or None
+    :type origin: str | None
+    :param host: the handshake's ``Host`` header, or None
+    :type host: str | None
+    :param allowed: origins allowed cross-origin
+    :type allowed: Iterable[str]
+    :return: True when the connection may proceed
+    :rtype: bool
+    """
+    if origin is None:
+        return True
+    allowed = set(allowed)
+    if "*" in allowed or origin in allowed:
+        return True
+    return host is not None and urllib.parse.urlsplit(origin).netloc == host
 
 
 def agent_ws_url(agent_url: str, path: str, query: str) -> str:
