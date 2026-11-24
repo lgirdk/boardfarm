@@ -111,8 +111,10 @@ def upstream() -> Iterator[_Upstream]:
     server.stop()
 
 
-def _client(agent_url: str, state: str = "live") -> tuple[TestClient, list[str]]:
-    app = create_app(FakeLauncher(), {"prplos": "img"})
+def _client(
+    agent_url: str, state: str = "live", cors_origins: list[str] | None = None
+) -> tuple[TestClient, list[str]]:
+    app = create_app(FakeLauncher(), {"prplos": "img"}, cors_origins=cors_origins)
     app.state.registry.add(
         AgentInfo(
             session_id="s1",
@@ -161,6 +163,53 @@ def test_sets_session_and_user_headers(upstream: _Upstream) -> None:
         ws.receive_json()
     assert upstream.headers["x-boardfarm-session"] == "s1"
     assert upstream.headers["x-boardfarm-user"] == "alice"
+
+
+def test_foreign_origin_4403_before_any_upstream(upstream: _Upstream) -> None:
+    client, _ = _client(f"http://127.0.0.1:{upstream.port}")
+    with (
+        client.websocket_connect(
+            "/sessions/s1/python", headers={"Origin": "https://evil.example"}
+        ) as ws,
+        pytest.raises(WebSocketDisconnect) as exc,
+    ):
+        ws.receive_text()
+    assert exc.value.code == 4403
+    assert upstream.paths == []
+
+
+@pytest.mark.parametrize(
+    ("origin", "cors"),
+    [
+        ("http://testserver", None),  # same origin as the control plane
+        ("https://portal.lab", ["https://portal.lab"]),
+        ("https://anything.example", ["*"]),
+    ],
+)
+def test_allowed_origin_is_relayed(
+    upstream: _Upstream, origin: str, cors: list[str] | None
+) -> None:
+    client, _ = _client(f"http://127.0.0.1:{upstream.port}", cors_origins=cors)
+    with client.websocket_connect(_TERMINAL, headers={"Origin": origin}) as ws:
+        assert ws.receive_json() == {"hello": True}
+
+
+@pytest.mark.parametrize(
+    ("origin", "host", "allowed", "expected"),
+    [
+        (None, "ctl:9000", [], True),
+        ("http://ctl:9000", "ctl:9000", [], True),
+        ("http://ctl:9001", "ctl:9000", [], False),
+        ("https://portal.lab", "ctl:9000", ["https://portal.lab"], True),
+        ("https://portal.lab.evil", "ctl:9000", ["https://portal.lab"], False),
+        ("https://x.example", "ctl:9000", ["*"], True),
+        ("https://x.example", None, [], False),
+    ],
+)
+def test_origin_allowed(
+    origin: str | None, host: str | None, allowed: list[str], expected: bool
+) -> None:
+    assert wsproxy.origin_allowed(origin, host, allowed) is expected
 
 
 def test_unknown_session_4404() -> None:
