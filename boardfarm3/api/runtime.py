@@ -79,25 +79,27 @@ class RuntimeContext:
         :return: command line arguments
         :rtype: Namespace
         """
-        return Namespace(
-            board_name=self.options.board_name,
-            legacy=self.options.legacy,
-            skip_boot=self.options.skip_boot,
-            skip_contingency_checks=self.options.skip_contingency_checks,
-            save_console_logs=self.options.save_console_logs,
-            ignore_devices=self.options.ignore_devices,
-            inventory_config="",
-            env_config="",
+        args: dict[str, Any] = {
+            "board_name": self.options.board_name,
+            "legacy": self.options.legacy,
+            "skip_boot": self.options.skip_boot,
+            "skip_contingency_checks": self.options.skip_contingency_checks,
+            "save_console_logs": self.options.save_console_logs,
+            "ignore_devices": self.options.ignore_devices,
+            "inventory_config": "",
+            "env_config": "",
             # lgi-shared plugin args — defaults match what argparse produces when
             # no flag is passed; can be overridden via options.plugin_args
-            flash_image=None,
-            flash_strategy=None,
-            flash_sku=None,
-            dependent_image=None,
-            dependent_strategy="bootloader",
-            # any plugin-specific args passed in the session options
-            **self.options.plugin_args,
-        )
+            "flash_image": None,
+            "flash_strategy": None,
+            "flash_sku": None,
+            "dependent_image": None,
+            "dependent_strategy": "bootloader",
+        }
+        # Plugin-specific args from the session options, overriding the
+        # defaults above: merged, since passing a name twice would raise.
+        args.update(self.options.plugin_args)
+        return Namespace(**args)
 
     def refresh_cmdline_args(self) -> None:
         """Rebuild the synthesised Namespace after options change.

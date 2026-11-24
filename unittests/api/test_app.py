@@ -1036,3 +1036,23 @@ def test_health_reports_the_code_the_agent_runs(client: TestClient) -> None:
 
     versions = client.get("/health").json()["versions"]
     assert versions["boardfarm3"] == __version__
+
+
+def test_a_failed_release_is_never_reported_as_released(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every DELETE after a failed teardown keeps failing; shutdown just logs."""
+
+    class _FailingRelease(FakeRuntime):
+        def release(self, deployment_status: dict[str, Any]) -> None:  # noqa: ARG002
+            msg = "teardown failed"
+            raise RuntimeError(msg)
+
+    def build(session_id: str, options: RuntimeOptions) -> Session:
+        return Session(session_id, options, runtime=_FailingRelease())
+
+    monkeypatch.setattr(app_module, "build_session", build)
+    application = app_module.create_app("s-test", "board-1")
+    with TestClient(application, raise_server_exceptions=False) as test_client:
+        assert test_client.delete("/session").status_code == 500
+        assert test_client.delete("/session").status_code == 500

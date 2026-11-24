@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from boardfarm3.api.errors import scrub
+
 REDACTED = "***"
 
 # Matched against dict *keys* only, so a value that merely contains the word
@@ -30,8 +32,10 @@ def is_secret_key(name: str) -> bool:
 def redact(value: Any) -> Any:  # noqa: ANN401
     """Return a copy of *value* with credential-bearing values replaced.
 
-    Recurses through dicts and lists. Only dict keys are inspected; scalars
-    are returned unchanged. The input is never mutated.
+    Recurses through dicts and lists. A value under a secret-looking key is
+    replaced whole; any other string is scrubbed of the credentials it embeds
+    (``sshpass -p ...``, ``user:pw@`` URLs, ``password=...``). The input is
+    never mutated.
 
     :param value: arbitrary JSON-compatible structure
     :type value: Any
@@ -45,4 +49,4 @@ def redact(value: Any) -> Any:  # noqa: ANN401
         }
     if isinstance(value, list):
         return [redact(item) for item in value]
-    return value
+    return scrub(value) if isinstance(value, str) else value

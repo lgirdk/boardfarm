@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Callable
+import logging
+from typing import Any, Callable
 
 import pytest
 
@@ -151,6 +152,24 @@ async def test_release_reports_status_and_stops_capture(session: Session) -> Non
     await session.boot()
     await session.release()
     assert "release:success" in session.runtime.calls
+
+
+@pytest.mark.asyncio
+async def test_failed_teardown_still_stops_capture_and_the_worker(
+    session: Session,
+) -> None:
+    """A runtime release that raises still ends capture and the worker."""
+
+    def boom(_status: dict[str, Any]) -> None:
+        msg = "teardown failed"
+        raise RuntimeError(msg)
+
+    session.runtime.release = boom  # type: ignore[method-assign]
+    with pytest.raises(RuntimeError, match="teardown failed"):
+        await session.release()
+    assert session.capture not in logging.getLogger("boardfarm3").handlers
+    with pytest.raises(RuntimeError):
+        await session.queue.submit(lambda: None, mode="sync")
 
 
 @pytest.mark.asyncio
