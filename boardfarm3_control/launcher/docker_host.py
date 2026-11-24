@@ -62,6 +62,7 @@ def _default_client_factory(spec: HostSpec, timeout: float) -> Any:  # noqa: ANN
         kwargs["use_ssh_client"] = True
     if spec.tls:
         import docker.tls  # noqa: PLC0415
+
         kwargs["tls"] = docker.tls.TLSConfig(
             client_cert=(spec.tls["cert"], spec.tls["key"]),
             ca_cert=spec.tls["ca"],

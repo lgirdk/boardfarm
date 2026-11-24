@@ -676,6 +676,8 @@ class TerminalRegistry:
         :type target: Any
         :param number: this terminal's number on the device
         :type number: int
+        :raises asyncio.CancelledError: when the client goes mid-login; the
+            console the login yields is closed once it finishes
         """
         ws = term.ws
         code = CLOSE_SESSION_ENDED

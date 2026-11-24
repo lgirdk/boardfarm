@@ -239,6 +239,8 @@ class LinuxDevice(BoardfarmDevice):
         :type name: str
         :return: a logged-in console
         :rtype: BoardfarmPexpect
+        :raises BaseException: whatever the login raised, once the console is
+            closed
         """
         console = connection_factory(
             self._config.get("connection_type"),

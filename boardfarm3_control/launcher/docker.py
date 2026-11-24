@@ -203,6 +203,8 @@ class DockerLauncher:
         :raises StopPending: when a failed launch could not remove its container
         :raises BoardBusyOnHost: when the board already has a busy agent on this host
         :raises ImagePullFailed: when the image is missing and cannot be pulled
+
+        # noqa: DAR402 BoardBusyOnHost ImagePullFailed
         """
         from boardfarm3_control.models import AgentInfo  # noqa: PLC0415
 

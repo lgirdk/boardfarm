@@ -43,9 +43,9 @@ from boardfarm3.devices.base_devices import BoardfarmDevice
 from boardfarm3.exceptions import BoardfarmException
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Callable
 
-    from starlette.types import ASGIApp, Receive, Scope, Send
+    from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
     from boardfarm3.api.modes import SessionMode
 
@@ -157,7 +157,7 @@ def _strip_sphinx_params(text: str) -> str:
 SESSION_MISMATCH_CLOSE = 4409
 
 
-class SessionGuard:
+class SessionGuard:  # pylint: disable=too-few-public-methods
     """Refuse requests the control plane addressed to a different session."""
 
     def __init__(self, app: ASGIApp, session_id: str) -> None:
@@ -238,7 +238,7 @@ def _write_run_archive(directory: Path, dest: Path) -> None:
 
 
 async def _build_in_thread(
-    build: Any,  # noqa: ANN401
+    build: Callable[..., Any],
     *args: Any,  # noqa: ANN401
     prefix: str,
     name: str,
@@ -246,7 +246,7 @@ async def _build_in_thread(
     """Run *build* off the event loop into a fresh temp dir; remove it on failure.
 
     :param build: blocking callable taking ``(*args, dest)``
-    :type build: Any
+    :type build: Callable[..., Any]
     :param args: leading arguments for *build*
     :type args: Any
     :param prefix: temp directory prefix
@@ -255,6 +255,7 @@ async def _build_in_thread(
     :type name: str
     :return: path of the built artefact
     :rtype: Path
+    :raises BaseException: whatever *build* raised, once the temp dir is gone
     """
     dest = Path(tempfile.mkdtemp(prefix=prefix)) / name
     try:
@@ -281,7 +282,7 @@ async def _stream_then_remove(path: Path) -> AsyncIterator[bytes]:
         shutil.rmtree(path.parent, ignore_errors=True)
 
 
-class ErrorEnvelope:
+class ErrorEnvelope:  # pylint: disable=too-few-public-methods
     """Answer any exception no handler claimed with the API error envelope.
 
     Starlette's ``Exception`` handler runs in ``ServerErrorMiddleware``, which
@@ -319,7 +320,7 @@ class ErrorEnvelope:
             return
         started = False
 
-        async def tracked(message: dict[str, Any]) -> None:
+        async def tracked(message: Message) -> None:
             nonlocal started
             if message["type"] == "http.response.start":
                 started = True
@@ -327,7 +328,7 @@ class ErrorEnvelope:
 
         try:
             await self._app(scope, receive, tracked)
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             if started:
                 raise
             _log.error("unhandled error on %s", scope.get("path"), exc_info=exc)
@@ -411,8 +412,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
     # Discover and mount plugin-contributed routers (template methods, use cases, etc.).
     # load_plugin_routers() uses a short-lived PluginManager for the boardfarm_api
     # entrypoint group — separate from the process-global boardfarm PluginManager.
+    # pylint: disable-next=import-outside-toplevel
     from boardfarm3.api.routers import (  # noqa: PLC0415
-        load_plugin_routers,  # pylint: disable=import-outside-toplevel
+        load_plugin_routers,
     )
 
     # WebSocket onto a device's shared pexpect console.
@@ -521,8 +523,9 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
                 status_code=int(HTTPStatus.CONFLICT), detail=str(exc)
             ) from exc
         except (KeyError, TypeError, ValueError) as exc:
-            # The payload did not have the shape the resolver needs.
-            return envelope_response(exc, int(HTTPStatus.BAD_REQUEST))
+            # The payload did not have the shape the resolver needs. A Response
+            # bypasses the route's response model, so the annotation stays.
+            return envelope_response(exc, int(HTTPStatus.BAD_REQUEST))  # type: ignore[return-value]
         return current.status()
 
     @app.post("/session/boot", status_code=int(HTTPStatus.ACCEPTED))
@@ -811,6 +814,7 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
 
         :return: the log, streamed from a finalised snapshot
         :rtype: Response
+        :raises HTTPException: 404 when nothing has been logged yet
         """
         served = await _build_in_thread(
             session().capture.copy_log_file,

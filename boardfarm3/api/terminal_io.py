@@ -183,6 +183,9 @@ async def pump_ws(  # noqa: C901
     ``__main__``); a client that misses its pongs is disconnected, which ends
     this pump.
 
+    # noqa: DAR401 first
+    # noqa: DAR402 BaseException
+
     :param ws: accepted terminal WebSocket
     :type ws: WebSocket
     :param out: subscriber queue of raw console chunks

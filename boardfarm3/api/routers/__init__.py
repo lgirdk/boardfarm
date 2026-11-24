@@ -225,8 +225,9 @@ def load_plugin_routers() -> tuple[list[APIRouter], list[SkippedMethod]]:
     :rtype: tuple[list[APIRouter], list[SkippedMethod]]
     """
     try:
+        # pylint: disable-next=import-outside-toplevel
         from boardfarm3.api import (  # noqa: PLC0415
-            hookspecs as _api_hookspecs,  # pylint: disable=import-outside-toplevel
+            hookspecs as _api_hookspecs,
         )
 
         _pm = pluggy.PluginManager(_ENTRYPOINT_GROUP)

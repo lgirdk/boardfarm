@@ -81,6 +81,11 @@ class _TeeLog:
         self._listeners = listeners
 
     def write(self, string: str | bytes) -> None:
+        """Hand *string* to every listener, then to the log writer.
+
+        :param string: raw chunk read from the console
+        :type string: str | bytes
+        """
         if self._listeners:
             chunk = (
                 string.decode("utf-8", errors="ignore")
@@ -90,13 +95,14 @@ class _TeeLog:
             for listener in list(self._listeners):
                 try:
                     listener(chunk)
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: PERF203  # pylint: disable=broad-exception-caught
                     _LOGGER.exception("raw listener failed, removing it")
                     if listener in self._listeners:
                         self._listeners.remove(listener)
         self._wrapper.write(string)
 
     def flush(self) -> None:
+        """Flush the wrapped log writer."""
         self._wrapper.flush()
 
 

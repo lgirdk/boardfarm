@@ -14,18 +14,17 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Literal, Union, get_args, get_origin
 
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import Field, create_model
 
 from boardfarm3.api.routers import require_device_manager
 from boardfarm3.api.routers._generator import (
-    _NONE_TYPE,
-    _UNION_TYPE,
     SkippedMethod,
-    _CoercionPlan,
+    _adapter_field,
+    _finish_request_model,
     _is_serialisable,
     _parse_sphinx_params,
     _response_docs,
 )
+from boardfarm3.api.routers._types import _NONE_TYPE, _UNION_TYPE, _CoercionPlan
 from boardfarm3.api.routers.adapter import (
     DefaultAdapter,
     Outcome,
@@ -162,27 +161,16 @@ def _build_request_model(  # pylint: disable=too-many-locals
             fields[name] = (str, ... if default is ... else default)
             continue
         annotation = param.annotation
-        spec = active.field_spec_for(name, annotation, default)
-        if isinstance(spec, Unsupported):
-            return spec
-        field_type, field_default = spec
-        if field_type is not annotation:
+        field = _adapter_field(
+            active, name, annotation, default, param_descriptions.get(name, "")
+        )
+        if isinstance(field, Unsupported):
+            return field
+        fields[name], coerce = field
+        if coerce:
             coercions[name] = annotation
-        desc = param_descriptions.get(name, "")
-        if desc:
-            fields[name] = (field_type, Field(default=field_default, description=desc))
-        else:
-            fields[name] = (field_type, field_default)
-    extra = active.extra_fields()
-    collision = next((name for name in extra if name in fields), None)
-    if collision is not None:
-        return Unsupported(f"extra field collides with parameter {collision!r}")
-    fields.update(extra)
     model_name = "".join(p.capitalize() for p in fn_name.split("_")) + "Request"
-    return (
-        create_model(model_name, **fields),  # type: ignore[call-overload]
-        _CoercionPlan(coercions=coercions),
-    )
+    return _finish_request_model(model_name, fields, coercions, active)
 
 
 def _make_usecase_handler(  # noqa: C901, PLR0913, RUF100

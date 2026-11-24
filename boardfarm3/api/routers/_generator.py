@@ -9,7 +9,6 @@ from __future__ import annotations
 import inspect
 import logging
 import re
-import types
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
@@ -28,6 +27,12 @@ from pydantic import Field, create_model
 
 from boardfarm3.api.holds import ALL
 from boardfarm3.api.routers import _resolve
+from boardfarm3.api.routers._types import (
+    _NONE_TYPE,
+    _UNION_TYPE,
+    _annotation_to_field_type,
+    _CoercionPlan,
+)
 from boardfarm3.api.routers.adapter import (
     DefaultAdapter,
     Outcome,
@@ -37,14 +42,8 @@ from boardfarm3.api.routers.adapter import (
 
 _log = logging.getLogger(__name__)
 
-# Guard for the Python 3.10+ union syntax type (X | Y).
-_UNION_TYPE: type | None = getattr(types, "UnionType", None)  # pylint: disable=invalid-name
-
 # Primitive types that are directly JSON-serialisable.
 _PRIMITIVE_TYPES: frozenset[type] = frozenset({str, int, float, bool, dict, list})
-
-# NoneType singleton — avoids calling type() at check time (pylint C0123).
-_NONE_TYPE: type = type(None)  # pylint: disable=invalid-name
 
 # ---------------------------------------------------------------------------
 # Serialisability check
@@ -97,101 +96,6 @@ def _is_serialisable(  # pylint: disable=too-many-return-statements  # noqa: PLR
     if is_union or origin in (dict, list):
         return all(_is_serialisable(a) for a in get_args(annotation))
     return False
-
-
-def _annotation_to_field_type(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
-    annotation: Any,  # noqa: ANN401
-) -> Any:  # noqa: ANN401
-    """Return an API-friendly substitute for *annotation*.
-
-    Replaces ``Enum`` subclasses with ``Literal[member_names]`` and
-    ``tuple`` origins with ``list`` so FastAPI/Pydantic can generate a
-    JSON schema.  All other annotations are returned unchanged.
-
-    :param annotation: original type annotation
-    :type annotation: Any
-    :return: substituted annotation suitable for a Pydantic model field
-    :rtype: Any
-    """
-    if isinstance(annotation, type) and issubclass(annotation, Enum):
-        return Literal[tuple(m.name for m in annotation)]
-    origin = get_origin(annotation)
-    args = get_args(annotation)
-    if origin is tuple:
-        if not args:
-            return list
-        if args[-1] is Ellipsis:
-            return list[_annotation_to_field_type(args[0])]  # type: ignore[misc]
-        substituted = tuple(_annotation_to_field_type(a) for a in args)
-        inner = Union[substituted] if len(substituted) > 1 else substituted[0]
-        return list[inner]  # type: ignore[misc, valid-type]
-    if origin is list and args:
-        return list[_annotation_to_field_type(args[0])]  # type: ignore[misc]
-    if origin is dict and len(args) == 2:  # noqa: PLR2004
-        return dict[  # type: ignore[misc]
-            _annotation_to_field_type(args[0]),
-            _annotation_to_field_type(args[1]),
-        ]
-    is_union = (
-        _UNION_TYPE is not None and isinstance(annotation, _UNION_TYPE)
-    ) or origin is Union
-    if is_union and args:
-        return Union[tuple(_annotation_to_field_type(a) for a in args)]
-    return annotation
-
-
-@dataclass
-class _CoercionPlan:
-    """Per-call coercion map from API-friendly types back to Python types.
-
-    :param coercions: mapping from parameter name to its original annotation
-    :type coercions: dict[str, Any]
-    """
-
-    coercions: dict[str, Any]
-
-
-def _coerce(  # pylint: disable=too-many-return-statements  # noqa: PLR0911
-    value: Any,  # noqa: ANN401
-    ann: Any,  # noqa: ANN401
-) -> Any:  # noqa: ANN401
-    """Recursively coerce *value* from its JSON form to the Python type *ann*.
-
-    Handles ``Enum`` (name string -> member), ``tuple`` (list -> tuple),
-    ``list[T]`` (element-wise), and ``Union``/optional (tries each non-None
-    member in order).  All other annotations return *value* unchanged.
-
-    :param value: the JSON-decoded value to coerce
-    :type value: Any
-    :param ann: the original Python type annotation
-    :type ann: Any
-    :return: coerced value matching *ann*
-    :rtype: Any
-    """
-    if value is None:
-        return None
-    if isinstance(ann, type) and issubclass(ann, Enum):
-        return ann[value]
-    origin = get_origin(ann)
-    args = get_args(ann)
-    is_union = (
-        _UNION_TYPE is not None and isinstance(ann, _UNION_TYPE)
-    ) or origin is Union
-    if is_union:
-        non_none = [a for a in args if a is not _NONE_TYPE]
-        for candidate in non_none:
-            try:
-                return _coerce(value, candidate)
-            except (KeyError, TypeError, ValueError):  # noqa: PERF203
-                pass
-        return value
-    if origin is tuple:
-        if args and args[-1] is Ellipsis:
-            return tuple(_coerce(v, args[0]) for v in value)
-        return tuple(_coerce(v, a) for v, a in zip(value, args))
-    if origin is list and args:
-        return [_coerce(v, args[0]) for v in value]
-    return value
 
 
 _SPHINX_PARAM_RE: re.Pattern[str] = re.compile(
@@ -329,7 +233,69 @@ def _normalise_mount(item: type | TemplateMount) -> TemplateMount:
 # ---------------------------------------------------------------------------
 
 
-def _make_request_model(  # pylint: disable=too-many-locals
+def _adapter_field(
+    active: ResponseAdapter,
+    name: str,
+    annotation: Any,  # noqa: ANN401
+    default: Any,  # noqa: ANN401
+    description: str,
+) -> tuple[tuple[Any, Any], bool] | Unsupported:
+    """Return one parameter's model field, and whether it needs coercion.
+
+    :param active: the adapter choosing the field type
+    :type active: ResponseAdapter
+    :param name: parameter name
+    :type name: str
+    :param annotation: the parameter's Python type annotation
+    :type annotation: Any
+    :param default: the parameter's default, or ``...`` when required
+    :type default: Any
+    :param description: the parameter's description, empty for none
+    :type description: str
+    :return: ``((type, default), coerce)``, or Unsupported to skip the callable
+    :rtype: tuple[tuple[Any, Any], bool] | Unsupported
+    """
+    spec = active.field_spec_for(name, annotation, default)
+    if isinstance(spec, Unsupported):
+        return spec
+    field_type, field_default = spec
+    if description:
+        field_default = Field(default=field_default, description=description)
+    return (field_type, field_default), field_type is not annotation
+
+
+def _finish_request_model(
+    model_name: str,
+    fields: dict[str, Any],
+    coercions: dict[str, Any],
+    active: ResponseAdapter,
+) -> tuple[type, _CoercionPlan] | Unsupported:
+    """Add the adapter's extra fields to *fields* and create the request model.
+
+    :param model_name: class name of the model
+    :type model_name: str
+    :param fields: the parameters' fields; the extra fields are added to it
+    :type fields: dict[str, Any]
+    :param coercions: parameter name to original annotation, for the plan
+    :type coercions: dict[str, Any]
+    :param active: the adapter contributing extra fields
+    :type active: ResponseAdapter
+    :return: (Pydantic model, coercion plan), or Unsupported when an extra
+        field collides with a parameter
+    :rtype: tuple[type, _CoercionPlan] | Unsupported
+    """
+    extra = active.extra_fields()
+    collision = next((name for name in extra if name in fields), None)
+    if collision is not None:
+        return Unsupported(f"extra field collides with parameter {collision!r}")
+    fields.update(extra)
+    return (
+        create_model(model_name, **fields),  # type: ignore[call-overload]
+        _CoercionPlan(coercions=coercions),
+    )
+
+
+def _make_request_model(
     method_name: str,
     sig: inspect.Signature,
     docstring: str | None = None,
@@ -364,29 +330,18 @@ def _make_request_model(  # pylint: disable=too-many-locals
             continue
         annotation = param.annotation
         default = param.default if param.default is not inspect.Parameter.empty else ...
-        spec = active.field_spec_for(name, annotation, default)
-        if isinstance(spec, Unsupported):
-            return spec
-        field_type, field_default = spec
-        if field_type is not annotation:
+        field = _adapter_field(
+            active, name, annotation, default, param_descriptions.get(name, "")
+        )
+        if isinstance(field, Unsupported):
+            return field
+        fields[name], coerce = field
+        if coerce:
             coercions[name] = annotation
-        desc = param_descriptions.get(name, "")
-        if desc:
-            fields[name] = (field_type, Field(default=field_default, description=desc))
-        else:
-            fields[name] = (field_type, field_default)
-    extra = active.extra_fields()
-    collision = next((name for name in extra if name in fields), None)
-    if collision is not None:
-        return Unsupported(f"extra field collides with parameter {collision!r}")
-    fields.update(extra)
     model_name = (
         "".join(part.capitalize() for part in method_name.split("_")) + "Request"
     )
-    return (
-        create_model(model_name, **fields),  # type: ignore[call-overload]
-        _CoercionPlan(coercions=coercions),
-    )
+    return _finish_request_model(model_name, fields, coercions, active)
 
 
 def _make_handler(  # noqa: PLR0913

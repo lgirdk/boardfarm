@@ -85,6 +85,7 @@ def plugin_versions() -> dict[str, str]:
     :return: distribution name to version
     :rtype: dict[str, str]
     """
+    # pylint: disable-next=import-outside-toplevel
     from boardfarm3 import __version__  # noqa: PLC0415
 
     versions: dict[str, str] = {}

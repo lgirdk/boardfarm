@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 from boardfarm3.api.routers import _async_response
+from boardfarm3.api.routers._types import _annotation_to_field_type, _coerce
 
 if TYPE_CHECKING:
     from boardfarm3.api.execution import Job
@@ -147,12 +148,6 @@ class DefaultAdapter:
         :return: the Pydantic field spec; never Unsupported
         :rtype: tuple[Any, Any] | Unsupported
         """
-        # Imported here rather than at module scope: _generator imports this
-        # module for its default argument, so a top-level import would cycle.
-        from boardfarm3.api.routers._generator import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
-            _annotation_to_field_type,
-        )
-
         return (_annotation_to_field_type(annotation), default)
 
     def coerce(
@@ -169,10 +164,6 @@ class DefaultAdapter:
         :return: the coerced value
         :rtype: Any
         """
-        from boardfarm3.api.routers._generator import (  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
-            _coerce,
-        )
-
         return _coerce(value, annotation)
 
     def extra_fields(self) -> dict[str, tuple[Any, Any]]:
