@@ -84,7 +84,7 @@ def test_put_creates_persists_and_probes(tmp_path: Path, fake_daemon: Any) -> No
         (
             "lab-2",
             {"docker_url": "tcp://10.0.0.2:2376", "tls": {"ca": "x"}},
-            "NotImplemented",
+            "missing required keys",
         ),
         ("lab-2", {"docker_url": "tcp://10.0.0.2:2375", "colour": "red"}, "colour"),
     ],
