@@ -21,6 +21,27 @@ _BUSY = ("running", "paused", "restarting")
 _ANY_IP = "0.0.0.0"  # noqa: S104
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    """Register the marker that keeps the installed plugins' routes."""
+    config.addinivalue_line(
+        "markers",
+        "plugin_routes: build the app with every installed plugin's routes",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _no_installed_plugin_routes(
+    request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Build apps without mirroring every installed plugin's routes.
+
+    Mirroring them costs 2-3 s per ``create_app``, which most tests pay for
+    nothing; a test that needs them is marked ``plugin_routes``.
+    """
+    if request.node.get_closest_marker("plugin_routes") is None:
+        monkeypatch.setattr("boardfarm3_control.app.load_plugin_routers", list)
+
+
 @pytest.fixture
 def fake_launcher() -> FakeLauncher:
     """Return a fresh FakeLauncher with no sessions."""

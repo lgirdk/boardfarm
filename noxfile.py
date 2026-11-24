@@ -66,7 +66,9 @@ def boardfarm_help(session: nox.Session) -> None:
     session.run("boardfarm", "--help")
 
 
-@nox.session(python=_PYTHON_VERSIONS)
+# Not in a plain ``nox`` run (CI's): it starts privileged docker:dind hosts.
+# Run it with ``nox -s integration_multihost``.
+@nox.session(python=_PYTHON_VERSIONS, default=False)
 def integration_multihost(session: nox.Session) -> None:
     """Run the multi-host control-plane tests against two docker:dind lab hosts.
 
