@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from boardfarm3_control.models import AgentInfo
 
 
 class ControlError(Exception):
@@ -127,3 +131,5 @@ class StopPending(Exception):
         super().__init__(msg)
         self.session_id = session_id
         self.host = host
+        # The pending-stop record of a failed launch, once a launcher wrote one.
+        self.info: AgentInfo | None = None

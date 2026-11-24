@@ -138,34 +138,36 @@ class Reconciler:
                 docker_host = self._launcher.hosts.docker_host(name)
             except UnknownHost:
                 return
+            # Before the ping: a pending stop must fence its board even while
+            # its host is down.
+            self._merge_index_pending(name)
             if not await docker_host.ping():
                 return
+            # Taken before the list: a create or teardown that runs while the
+            # list is in flight changes these, and its session is left to the
+            # next pass rather than judged on a stale view.
+            known = self._host_sessions(name)
+            inflight_before = set(self._inflight)
             try:
                 observed = await self._launcher.list_host_sessions(name)
             except HostUnreachable:
                 return
             seen = {info.session_id: info for info in observed}
-            # Pending stops recorded only in the index (a launch that could not
-            # remove its container) join the registry so the table covers them.
-            for entry in self._launcher.entries(name):
-                if (
-                    entry.info.stop_pending
-                    and self._registry.get(entry.info.session_id) is None
-                ):
-                    self._registry.add(entry.info)
-            known = {
-                info.session_id: info
-                for info in self._registry.sessions()
-                if info.host == name
-            }
             for session_id in sorted(seen.keys() | known.keys()):
-                if session_id in self._inflight:
+                current = self._registry.get(session_id)
+                if current is not None and current.host != name:
+                    current = None
+                if (
+                    session_id in inflight_before
+                    or session_id in self._inflight
+                    or current != known.get(session_id)
+                ):
                     continue
                 try:
                     await self._reconcile_one(
                         docker_host,
                         seen.get(session_id),
-                        known.get(session_id),
+                        current,
                         finish_pending=finish_pending,
                     )
                 except Exception:  # noqa: BLE001
@@ -173,6 +175,37 @@ class Reconciler:
                     _log.exception(
                         "reconcile of session %s on host %s failed", session_id, name
                     )
+
+    def _merge_index_pending(self, name: str) -> None:
+        """Add the host's index-only pending stops to the registry.
+
+        A launch that could not remove its container records a pending stop
+        in the index alone; in the registry it fences the board and shows in
+        the table.
+
+        :param name: host name
+        :type name: str
+        """
+        for entry in self._launcher.entries(name):
+            if (
+                entry.info.stop_pending
+                and self._registry.get(entry.info.session_id) is None
+            ):
+                self._registry.add(entry.info)
+
+    def _host_sessions(self, name: str) -> dict[str, AgentInfo]:
+        """Return the registry's sessions on host *name*, by id.
+
+        :param name: host name
+        :type name: str
+        :return: session id to info
+        :rtype: dict[str, AgentInfo]
+        """
+        return {
+            info.session_id: info
+            for info in self._registry.sessions()
+            if info.host == name
+        }
 
     async def _reconcile_one(
         self,

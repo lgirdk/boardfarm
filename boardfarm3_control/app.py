@@ -41,6 +41,7 @@ from boardfarm3_control.errors import (
     HostUnreachable,
     ManagedByControl,
     SessionNotLive,
+    StopPending,
     UnknownMode,
 )
 from boardfarm3_control.expiry import run_expiry
@@ -546,6 +547,10 @@ def create_app(  # noqa: C901, PLR0915
             await lease.release(session_id)
             raise
         except Exception as exc:
+            if isinstance(exc, StopPending) and exc.info is not None:
+                # Its container may still run: the registry entry fences the
+                # board on every host until the reconciler confirms the stop.
+                registry.add(exc.info)
             await lease.release(session_id)
             where = f" on host {host_name}" if host_name else ""
             raise HTTPException(

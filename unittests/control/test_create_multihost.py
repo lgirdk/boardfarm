@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 import pytest
+import requests
 import respx
 from fastapi.testclient import TestClient
 
@@ -172,6 +173,30 @@ def test_pending_stop_blocks_the_board_on_any_host(
         "s-old",
         "lab-1",
     )
+    launcher.hosts.close()
+
+
+@respx.mock
+def test_failed_start_left_running_fences_the_board_at_once(
+    tmp_path: Path, fake_daemon: Any
+) -> None:
+    """A start whose cleanup failed blocks the board on every host straight away.
+
+    The container may still run on lab-1, which is now down; without the
+    registry entry a create on lab-2 would run the board twice.
+    """
+    daemons = _daemons(fake_daemon)
+    daemons["lab-1"].fail["start"] = requests.exceptions.ConnectionError("reset")
+    daemons["lab-1"].fail["remove"] = requests.exceptions.ConnectionError("reset")
+    app, launcher = _app(tmp_path, daemons)
+    _mock_agents()
+    client = TestClient(app)
+    first = client.post("/sessions", json=_body(agent_host="lab-1"))
+    assert first.status_code == 503
+    second = client.post("/sessions", json=_body(agent_host="lab-2"))
+    assert second.status_code == 409
+    assert second.json()["detail"]["error"] == "BoardPendingStop"
+    assert daemons["lab-2"].runs == []
     launcher.hosts.close()
 
 
