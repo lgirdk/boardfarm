@@ -59,6 +59,45 @@ async def _running_a_job(info: AgentInfo, http: httpx.AsyncClient) -> bool:
     return liveness.get("running_for") is not None
 
 
+async def _expiry_reason(
+    info: AgentInfo,
+    registry: SessionRegistry,
+    http: httpx.AsyncClient,
+    now: float,
+    ttls: tuple[float, float],
+) -> str | None:
+    """Tell why a live session should expire now, or None to keep it.
+
+    Touches the session when its activity is unknown or a job is running, so
+    either starts a fresh idle window.
+
+    :param info: the session's agent info
+    :type info: AgentInfo
+    :param registry: session registry
+    :type registry: SessionRegistry
+    :param http: client for the session's agent
+    :type http: httpx.AsyncClient
+    :param now: current time
+    :type now: float
+    :param ttls: ``(idle_ttl, max_ttl)`` in seconds; 0 disables either
+    :type ttls: tuple[float, float]
+    :return: the reason to expire it, or None
+    :rtype: str | None
+    """
+    idle_ttl, max_ttl = ttls
+    if max_ttl > 0 and now - info.created_at > max_ttl:
+        return f"older than the {max_ttl:.0f} s maximum lifetime"
+    if idle_ttl <= 0:
+        return None
+    last = registry.last_activity(info.session_id)
+    if last is None or (now - last > idle_ttl and await _running_a_job(info, http)):
+        registry.touch(info.session_id)
+        return None
+    if now - last <= idle_ttl:
+        return None
+    return f"idle for more than {idle_ttl:.0f} s"
+
+
 async def expire_once(  # noqa: PLR0913
     *,
     registry: SessionRegistry,
@@ -100,25 +139,19 @@ async def expire_once(  # noqa: PLR0913
     :rtype: list[str]
     """
     expired: list[str] = []
-    for info in registry.sessions():
-        session_id = info.session_id
-        if info.state != "live" or session_id in inflight:
+    for snapshot in registry.sessions():
+        session_id = snapshot.session_id
+        if snapshot.state != "live" or session_id in inflight:
             continue
-        reason: str | None = None
-        if max_ttl > 0 and now - info.created_at > max_ttl:
-            reason = f"older than the {max_ttl:.0f} s maximum lifetime"
-        elif idle_ttl > 0:
-            last = registry.last_activity(session_id)
-            if last is None:
-                registry.touch(session_id)
-                continue
-            if now - last <= idle_ttl:
-                continue
-            if await _running_a_job(info, http_for(info)):
-                registry.touch(session_id)
-                continue
-            reason = f"idle for more than {idle_ttl:.0f} s"
+        reason = await _expiry_reason(
+            snapshot, registry, http_for(snapshot), now, (idle_ttl, max_ttl)
+        )
         if reason is None:
+            continue
+        # The snapshot is stale by now: the job probe and earlier teardowns
+        # awaited, and a DELETE (or a retain) may have handled this session.
+        info = registry.get(session_id)
+        if info is None or info.state != "live" or session_id in inflight:
             continue
         _log.warning(
             "expiring session %s (board %s): %s", session_id, info.board_name, reason
