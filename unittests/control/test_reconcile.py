@@ -223,6 +223,60 @@ async def test_absent_pending_is_dropped(world: _World) -> None:
     assert world.launcher.entry("s-1") is None
 
 
+async def test_a_teardown_during_the_list_is_not_resurrected(world: _World) -> None:
+    """A session torn down while the list call runs is not adopted back."""
+    daemon = world.daemons["lab-1"]
+    container = daemon.add_agent(session_id="s-1", board_name="b1", control_id="c-test")
+    info = await world.seen()
+    world.registry.add(info)
+    world.launcher.record(info)
+    await world.lease.acquire("b1", "s-1")
+    listing = world.launcher.list_host_sessions
+
+    async def teardown_meanwhile(name: str) -> list[AgentInfo]:
+        snapshot = await listing(name)
+        daemon.store.pop(container.id)
+        world.registry.remove("s-1")
+        world.launcher.forget("s-1")
+        await world.lease.release("s-1")
+        return snapshot
+
+    world.launcher.list_host_sessions = teardown_meanwhile  # type: ignore[method-assign]
+    await world.reconciler.reconcile_host("lab-1")
+    assert world.registry.get("s-1") is None
+    assert world.lease.held_by("b1") is None
+
+
+async def test_a_create_during_the_list_is_not_marked_dead(world: _World) -> None:
+    """A session created while the list call runs keeps its lease."""
+    daemon = world.daemons["lab-1"]
+    listing = world.launcher.list_host_sessions
+
+    async def create_meanwhile(name: str) -> list[AgentInfo]:
+        snapshot = await listing(name)
+        daemon.add_agent(session_id="s-new", board_name="b1", control_id="c-test")
+        info = (await listing(name))[0]
+        world.registry.add(info)
+        await world.lease.acquire("b1", "s-new")
+        return snapshot
+
+    world.launcher.list_host_sessions = create_meanwhile  # type: ignore[method-assign]
+    await world.reconciler.reconcile_host("lab-1")
+    assert world.registry.get("s-new").state == "live"
+    assert world.lease.held_by("b1") == "s-new"
+
+
+async def test_index_pending_stop_reaches_the_registry_while_host_is_down(
+    world: _World,
+) -> None:
+    """A pending stop fences its board even before its host answers again."""
+    pending = _absent(state="dead", stop_pending=True, ended_at=5.0)
+    world.launcher.record(pending)
+    world.daemons["lab-1"].down = True
+    await world.reconciler.reconcile_host("lab-1")
+    assert world.registry.pending_stop_for("b1") is not None
+
+
 async def test_known_corpse_is_left_to_the_reaper(world: _World) -> None:
     world.daemons["lab-1"].add_agent(
         session_id="s-1", board_name="b1", control_id="c-test", status="exited"

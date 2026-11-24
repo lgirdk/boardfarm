@@ -158,6 +158,8 @@ class MultiHostLauncher:
         :rtype: AgentInfo
         :raises NoHostForBoard: when no host was chosen
         :raises StopPending: when the launch failed and its container may remain
+        :raises OSError: when the session index cannot be saved (the agent is
+            removed first)
         """
         if host is None:
             msg = f"no host chosen for board {board_name}"
@@ -172,29 +174,62 @@ class MultiHostLauncher:
                 mode=mode,
                 created_by=created_by,
             )
-        except StopPending:
+        except StopPending as exc:
             # The launch failed and its container could not be removed: record
             # a pending stop so the reconciler removes it once the host answers.
-            self.record(
-                AgentInfo(
-                    session_id=session_id,
-                    board_name=board_name,
-                    runtime_profile=runtime_profile,
-                    container_id="",
-                    host_port=0,
-                    created_at=time.time(),
-                    state="dead",
-                    ended_at=time.time(),
-                    host=host,
-                    stop_pending=True,
-                    mode=mode,
-                    created_by=created_by,
-                ),
-                retained=False,
+            pending = AgentInfo(
+                session_id=session_id,
+                board_name=board_name,
+                runtime_profile=runtime_profile,
+                container_id="",
+                host_port=0,
+                created_at=time.time(),
+                state="dead",
+                ended_at=time.time(),
+                host=host,
+                stop_pending=True,
+                mode=mode,
+                created_by=created_by,
             )
+            self.record(pending, retained=False)
+            exc.info = pending
             raise
-        self.record(info, retained=False)
+        try:
+            self.record(info, retained=False)
+        except OSError:
+            await self._remove_unrecorded(info, host)
+            raise
         return info
+
+    async def _remove_unrecorded(self, info: AgentInfo, host: str) -> None:
+        """Remove the agent of a start whose index entry could not be saved.
+
+        Left running, the next reconcile pass would adopt it as a session
+        nobody asked for. Called while handling the save error.
+
+        # noqa: DAR401 error
+        # noqa: DAR402 StopPending
+
+        :param info: the started agent's info
+        :type info: AgentInfo
+        :param host: host it runs on
+        :type host: str
+        :raises StopPending: when the agent could not be removed either
+        """
+        _log.exception("could not record %s; removing its agent", info.session_id)
+        try:
+            await self.launcher_for(host).stop(info.session_id, remove=True)
+        except Exception as exc:
+            pending = info.model_copy(
+                update={"state": "dead", "ended_at": time.time(), "stop_pending": True}
+            )
+            # Kept in memory only (the index cannot be written): the
+            # reconciler still finishes the stop.
+            self._index[info.session_id] = IndexEntry(info=pending, retained=False)
+            error = StopPending(info.session_id, host)
+            error.info = pending
+            raise error from exc
+        self._index.pop(info.session_id, None)
 
     async def stop(self, session_id: str, *, remove: bool = True) -> None:
         """Stop a session's agent; record a pending stop when the host cannot confirm it.

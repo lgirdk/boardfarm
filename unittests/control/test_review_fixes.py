@@ -231,6 +231,34 @@ async def test_unconfirmed_cleanup_is_recorded_and_finished_by_the_reconciler(
     assert world.launcher.entry("s-1") is None
 
 
+async def test_an_unrecordable_start_removes_its_agent(
+    world: _World, tmp_path: Path
+) -> None:
+    """A start whose index cannot be saved leaves no running agent behind."""
+    blocked = tmp_path / "blocked"
+    (blocked / "sessions.json").mkdir(parents=True)  # os.replace onto a dir fails
+    world.launcher._index_path = blocked / "sessions.json"
+    with pytest.raises(IsADirectoryError):
+        await world.launcher.start("s-1", "b1", "img:1", "prplos", host="lab-1")
+    assert world.daemon.agents() == []
+    assert world.launcher.entry("s-1") is None
+
+
+async def test_an_unrecordable_start_that_cannot_be_removed_is_pending(
+    world: _World, tmp_path: Path
+) -> None:
+    """If removing it fails too, the stop is pending and carries its record."""
+    blocked = tmp_path / "blocked"
+    (blocked / "sessions.json").mkdir(parents=True)
+    world.launcher._index_path = blocked / "sessions.json"
+    world.daemon.fail["remove"] = requests.exceptions.ConnectionError("reset")
+    with pytest.raises(StopPending) as raised:
+        await world.launcher.start("s-1", "b1", "img:1", "prplos", host="lab-1")
+    assert raised.value.info is not None
+    assert raised.value.info.stop_pending
+    assert world.launcher.entry("s-1").info.stop_pending
+
+
 # Important 5: startup must not finish pending stops (that can take minutes).
 
 
