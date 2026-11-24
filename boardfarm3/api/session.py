@@ -238,8 +238,7 @@ class Session:
             # refused one must leave nothing behind for the retry to inherit.
             # A mode session never builds devices: its mode turns the options
             # into its own flags from ModeContext.options, so the synthesised
-            # Namespace is not rebuilt. Rebuilding it would raise for keys
-            # that are also Namespace fields (flash_image, legacy, ...).
+            # Namespace is not rebuilt.
             self._apply_options(options, refresh=False)
         except Exception:
             # A bad request or a crashing mode: either way nothing may be left
@@ -323,7 +322,13 @@ class Session:
         """Cancel an active run, tear the runtime down and stop console capture.
 
         The run's private directory is removed too. A run that cannot be
-        cancelled is logged, and the release goes on.
+        cancelled is logged, and the release goes on. Capture and the worker
+        stop even when the runtime teardown fails.
+
+        # noqa: DAR401
+        # noqa: DAR402
+
+        :raises Exception: whatever the runtime teardown raised
         """
         if self.run is not None:
             try:
@@ -352,14 +357,19 @@ class Session:
         # Release runs right after the job in progress, not after a backlog
         # of work that nobody will collect.
         self.queue.cancel_pending()
-        # Bypasses holds: a held device must not keep the runtime from tearing down.
-        await self.queue.submit(
-            lambda: self.runtime.release(status),
-            mode="sync",
-            bypass_holds=True,
-        )
-        self.capture.uninstall()
-        self.queue.shutdown()
+        try:
+            # Bypasses holds: a held device must not keep the runtime from
+            # tearing down.
+            await self.queue.submit(
+                lambda: self.runtime.release(status),
+                mode="sync",
+                bypass_holds=True,
+            )
+        finally:
+            # A failed teardown still ends capture and the worker: nothing
+            # retries the release.
+            self.capture.uninstall()
+            self.queue.shutdown()
 
     def liveness(self) -> dict[str, Any]:
         """Report progress evidence for the running job.

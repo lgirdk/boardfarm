@@ -38,6 +38,19 @@ def test_refresh_cmdline_args_picks_up_option_changes() -> None:
     assert context.cmdline_args.save_console_logs == "/var/log/bf"
 
 
+def test_plugin_args_override_namespace_defaults() -> None:
+    """A plugin arg that is also a Namespace field replaces its default."""
+    context = RuntimeContext(
+        RuntimeOptions(
+            board_name="b",
+            plugin_args={"flash_image": "img.bin", "extra_flag": True},
+        )
+    )
+    assert context.cmdline_args.flash_image == "img.bin"
+    assert context.cmdline_args.extra_flag is True
+    assert context.cmdline_args.dependent_strategy == "bootloader"
+
+
 def test_resolve_produces_boardfarm_config(native_payload: dict[str, Any]) -> None:
     """Resolving a native payload yields a BoardfarmConfig.
 

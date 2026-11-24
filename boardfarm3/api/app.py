@@ -370,9 +370,18 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         # shutdown both call this helper, so whichever runs first wins and
         # the other is a no-op.
         if state.get("released"):
+            failure = state.get("release_error")
+            if failure is not None:
+                # Not "released": the devices may not have been let go.
+                msg = f"the session release failed: {failure}"
+                raise RuntimeError(msg)
             return
         state["released"] = True
-        await state["session"].release()
+        try:
+            await state["session"].release()
+        except Exception as exc:
+            state["release_error"] = exc
+            raise
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -392,7 +401,12 @@ def create_app(  # noqa: C901, PLR0915  # pylint: disable=too-many-locals,too-ma
         # an observability/testability seam -- nothing here reads it back.
         app.state.session = session
         yield
-        await release_once()
+        try:
+            await release_once()
+        except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            # Already reported to whoever asked for the release; at shutdown
+            # there is nobody left to tell.
+            _log.exception("session release failed")
 
     app = FastAPI(title=f"boardfarm runtime agent [{board_name}]", lifespan=lifespan)
     app.add_middleware(SessionGuard, session_id=session_id)

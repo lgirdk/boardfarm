@@ -86,3 +86,17 @@ def test_pass_names_are_secret_but_passed_is_not(name: str, secret: bool) -> Non
 def test_redact_keeps_the_pass_counts_of_a_run() -> None:
     counts = {"passed": 3, "failed": 1}
     assert redact({"counts": counts}) == {"counts": counts}
+
+
+def test_credentials_inside_values_are_scrubbed() -> None:
+    """A value under an innocent key still loses the credentials it embeds."""
+    config = {
+        "conn_cmd": ['sshpass -p "vagrant" ssh -p 4001 root@10.0.0.2'],
+        "acs_url": "http://admin:hunter2@acs:7547",
+        "note": "plain text stays",
+    }
+    assert redact(config) == {
+        "conn_cmd": ["sshpass -p *** ssh -p 4001 root@10.0.0.2"],
+        "acs_url": "http://admin:***@acs:7547",
+        "note": "plain text stays",
+    }

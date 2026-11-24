@@ -8,7 +8,14 @@ import time
 
 import pytest
 
-from boardfarm3.api.execution import ExecutionQueue, JobState, current_job_id
+from boardfarm3.api.errors import http_status_for
+from boardfarm3.api.execution import (
+    JOB_ID_ATTR,
+    ExecutionQueue,
+    JobCancelled,
+    JobState,
+    current_job_id,
+)
 
 
 @pytest.fixture(name="queue")
@@ -306,3 +313,18 @@ async def test_shutdown_cancels_jobs_still_queued() -> None:
     small.shutdown()
     gate.set()
     assert pending.state is JobState.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_sync_job_cancelled_while_queued_raises(queue: ExecutionQueue) -> None:
+    """A sync caller whose job a release cancelled learns it never ran."""
+    gate = threading.Event()
+    await queue.submit(gate.wait, mode="async")
+    waiter = asyncio.create_task(queue.submit(lambda: 42, mode="sync"))
+    await asyncio.sleep(0.05)
+    queue.cancel_pending()
+    gate.set()
+    with pytest.raises(JobCancelled) as raised:
+        await waiter
+    assert getattr(raised.value, JOB_ID_ATTR).startswith("j-")
+    assert http_status_for(raised.value) == 409

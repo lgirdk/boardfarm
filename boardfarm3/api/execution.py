@@ -32,6 +32,10 @@ class QueueFull(RuntimeError):
     """The queue already holds as many waiting jobs as it accepts."""
 
 
+class JobCancelled(RuntimeError):
+    """A sync job was cancelled while queued (e.g. by a session release)."""
+
+
 class JobState(str, Enum):
     """Lifecycle states of a queued operation."""
 
@@ -197,11 +201,13 @@ class ExecutionQueue:
         :return: the job, completed when mode is ``"sync"``
         :rtype: Job
         :raises QueueFull: when ``max_pending`` jobs are already waiting
+        :raises JobCancelled: when a sync job was cancelled before it ran
         :raises ConsoleHeld: when a device the job touches is held
         :raises asyncio.CancelledError: when the caller is cancelled while it
             awaits a sync job; a job that has not started yet is cancelled too
 
-        # noqa: DAR402 ConsoleHeld
+        # noqa: DAR401 cancelled
+        # noqa: DAR402 ConsoleHeld JobCancelled
         """
         if not bypass_holds:
             self.holds.check(devices)
@@ -234,6 +240,11 @@ class ExecutionQueue:
             # stay "queued" forever; one already running cannot be stopped.
             self.cancel(job.id)
             raise
+        if job.state is JobState.CANCELLED:
+            # It never ran: an empty result would read as success.
+            cancelled = JobCancelled(f"job {job.id} was cancelled before it ran")
+            setattr(cancelled, JOB_ID_ATTR, job.id)
+            raise cancelled
         return job
 
     def get(self, job_id: str) -> Job | None:

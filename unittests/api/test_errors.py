@@ -4,7 +4,12 @@ import pexpect
 import pytest
 
 from boardfarm3.api.console import EventBuffer
-from boardfarm3.api.errors import console_tail_from, error_envelope, http_status_for
+from boardfarm3.api.errors import (
+    console_tail_from,
+    error_envelope,
+    http_status_for,
+    scrub,
+)
 from boardfarm3.exceptions import (
     ConfigurationFailure,
     DeviceConnectionError,
@@ -139,3 +144,21 @@ def test_a_full_job_backlog_is_429() -> None:
     from boardfarm3.api.execution import QueueFull
 
     assert http_status_for(QueueFull("backlog full")) == 429
+
+
+@pytest.mark.parametrize(
+    ("text", "secret"),
+    [
+        ("KeyError({'password': 'hunter2'})", "hunter2"),
+        ('{"password": "hunter2"}', "hunter2"),
+        ('password="two words"', "two words"),
+        ("token=abc123, next", "abc123"),
+        ('sshpass -p "two words" ssh root@h', "two words"),
+        ("sshpass -p s3cr3t ssh root@h", "s3cr3t"),
+        ("http://admin:pw123@acs", "pw123"),
+    ],
+)
+def test_scrub_masks_quoted_and_bare_credentials(text: str, secret: str) -> None:
+    scrubbed = scrub(text)
+    assert secret not in scrubbed
+    assert "***" in scrubbed

@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import pexpect
 
-from boardfarm3.api.execution import JOB_ID_ATTR, QueueFull
+from boardfarm3.api.execution import JOB_ID_ATTR, JobCancelled, QueueFull
 from boardfarm3.api.holds import ConsoleHeld
 from boardfarm3.exceptions import (
     DeviceConnectionError,
@@ -35,18 +35,22 @@ _STATUS_BY_EXCEPTION: tuple[tuple[type[BaseException], int], ...] = (
     (DeviceConnectionError, HTTPStatus.BAD_GATEWAY),
     (pexpect.TIMEOUT, HTTPStatus.GATEWAY_TIMEOUT),
     (QueueFull, HTTPStatus.TOO_MANY_REQUESTS),
+    (JobCancelled, HTTPStatus.CONFLICT),
     (ConsoleHeld, HTTPStatus.CONFLICT),
 )
 
 
 # Credentials that inventories embed in connection strings, and that
 # exceptions about those connections then quote.
+# A value: quoted (spaces and all) or a bare word.
+_VALUE = r"""(?:"[^"]*"|'[^']*'|[^\s,;'"}]+)"""
 _SCRUBBERS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"(sshpass\s+-p\s*)\S+"), r"\1***"),
+    (re.compile(rf"(sshpass\s+-p\s*){_VALUE}"), r"\1***"),
     (re.compile(r"(://[^/\s:@]+:)[^@\s/]+@"), r"\1***@"),
     (
+        # Also the quoted forms of dict reprs and JSON: 'password': 'x'.
         re.compile(
-            r"((?:password|passwd|pwd|secret|token)\s*[=:]\s*)[^\s,;'\"]+",
+            rf"((?:password|passwd|pwd|secret|token)['\"]?\s*[=:]\s*){_VALUE}",
             re.IGNORECASE,
         ),
         r"\1***",
