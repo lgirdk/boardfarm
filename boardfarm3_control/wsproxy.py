@@ -145,7 +145,15 @@ async def _client_to_upstream(
     upstream: websockets.ClientConnection,
     touch: Callable[[], None],
 ) -> None:
-    """Forward client frames to upstream until the client disconnects."""
+    """Forward client frames to upstream until the client disconnects.
+
+    :param client_ws: accepted client WebSocket
+    :type client_ws: WebSocket
+    :param upstream: open agent connection
+    :type upstream: websockets.ClientConnection
+    :param touch: notes session activity, rate-limited by the caller
+    :type touch: Callable[[], None]
+    """
     while True:
         message = await client_ws.receive()
         if message["type"] == "websocket.disconnect":
@@ -162,7 +170,15 @@ async def _upstream_to_client(
     upstream: websockets.ClientConnection,
     touch: Callable[[], None],
 ) -> None:
-    """Forward upstream frames to the client until upstream closes."""
+    """Forward upstream frames to the client until upstream closes.
+
+    :param client_ws: accepted client WebSocket
+    :type client_ws: WebSocket
+    :param upstream: open agent connection
+    :type upstream: websockets.ClientConnection
+    :param touch: notes session activity, rate-limited by the caller
+    :type touch: Callable[[], None]
+    """
     async for frame in upstream:
         touch()
         if isinstance(frame, bytes):
@@ -208,8 +224,7 @@ async def relay(
     try:
         upstream = await websockets.connect(upstream_url, additional_headers=headers)
     except (
-        OSError,
-        TimeoutError,
+        OSError,  # TimeoutError included
         websockets.InvalidHandshake,
         websockets.InvalidURI,
     ) as exc:

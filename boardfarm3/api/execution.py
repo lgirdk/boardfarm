@@ -43,7 +43,7 @@ class JobState(str, Enum):
 
 
 @dataclass
-class Job:
+class Job:  # pylint: disable=too-many-instance-attributes
     """One unit of work submitted to the execution queue."""
 
     id: str
@@ -197,6 +197,11 @@ class ExecutionQueue:
         :return: the job, completed when mode is ``"sync"``
         :rtype: Job
         :raises QueueFull: when ``max_pending`` jobs are already waiting
+        :raises ConsoleHeld: when a device the job touches is held
+        :raises asyncio.CancelledError: when the caller is cancelled while it
+            awaits a sync job; a job that has not started yet is cancelled too
+
+        # noqa: DAR402 ConsoleHeld
         """
         if not bypass_holds:
             self.holds.check(devices)

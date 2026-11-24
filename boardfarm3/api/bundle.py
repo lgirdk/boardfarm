@@ -133,6 +133,29 @@ def _jobs_payload(session: Session) -> list[dict[str, Any]]:
     ]
 
 
+def _add_console_full(
+    archive: tarfile.TarFile, session: Session
+) -> list[dict[str, str]]:
+    """Add a finalised copy of the session's complete console log.
+
+    :param archive: open tar archive
+    :type archive: tarfile.TarFile
+    :param session: session whose capture holds the log
+    :type session: Session
+    :return: one ``{"path", "error"}`` entry when the log could not be copied
+    :rtype: list[dict[str, str]]
+    """
+    with tempfile.TemporaryDirectory(prefix="bf-console-full-") as tmp:
+        copy = Path(tmp) / CONSOLE_FULL_NAME
+        try:
+            copied = session.capture.copy_log_file(copy)
+        except OSError as exc:
+            return [{"path": CONSOLE_FULL_NAME, "error": str(exc)}]
+        if not copied:
+            return []
+        return add_files(archive, [(copy, CONSOLE_FULL_NAME)], "")
+
+
 def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
     """Write the diagnostics bundle for *session* to *dest*.
 
@@ -216,15 +239,7 @@ def write_bundle(session: Session, dest: Path) -> dict[str, Any]:
             errors.extend(add_tree(archive, run_dir, "run"))
         # The complete console log: the control plane serves it from the
         # archived bundle once this agent is gone.
-        with tempfile.TemporaryDirectory(prefix="bf-console-full-") as tmp:
-            copy = Path(tmp) / CONSOLE_FULL_NAME
-            try:
-                copied = session.capture.copy_log_file(copy)
-            except OSError as exc:
-                errors.append({"path": CONSOLE_FULL_NAME, "error": str(exc)})
-                copied = False
-            if copied:
-                errors.extend(add_files(archive, [(copy, CONSOLE_FULL_NAME)], ""))
+        errors.extend(_add_console_full(archive, session))
         # Written last, so it can record what could not be read.
         manifest["errors"] = errors
         _add_text(archive, "manifest.json", json.dumps(manifest, indent=2))

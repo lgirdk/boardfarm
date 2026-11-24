@@ -677,7 +677,7 @@ def test_detach_after_big_paste_into_stuck_console(
 
 
 def test_mismatched_session_websocket_closes_4409(env: _Env) -> None:
-    """SessionGuard refuses a WebSocket addressed to another session."""
+    """The session guard refuses a WebSocket addressed to another session."""
     with (
         pytest.raises(WebSocketDisconnect) as exc,
         env.client.websocket_connect(

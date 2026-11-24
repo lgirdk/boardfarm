@@ -71,7 +71,8 @@ def parse_hosts(raw: Any) -> dict[str, HostSpec]:  # noqa: ANN401
 
 
 def _hard_fields_differ(old: HostSpec, new: HostSpec) -> bool:
-    return old.model_dump(exclude=_SOFT_FIELDS) != new.model_dump(exclude=_SOFT_FIELDS)
+    soft = set(_SOFT_FIELDS)
+    return old.model_dump(exclude=soft) != new.model_dump(exclude=soft)
 
 
 class HostRegistry:

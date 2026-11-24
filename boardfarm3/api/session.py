@@ -128,6 +128,8 @@ class Session:
         :param run: the mode's request; required outside interact
         :type run: dict[str, Any] | None
         :raises SessionConflict: when the session was already configured
+        :raises Exception: whatever building the devices or starting the run
+            raised, once it is recorded as the session's error
         """
         # Once only: a second configure would build a new DeviceManager while
         # the first one's connections stay open.

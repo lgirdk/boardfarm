@@ -9,13 +9,15 @@ from typing import Any, Literal, TypedDict, get_args, get_origin
 from fastapi import APIRouter
 
 from boardfarm3.api.routers._generator import (
-    _annotation_to_field_type,
-    _coerce,
-    _CoercionPlan,
     _is_serialisable,
     _make_request_model,
     _parse_sphinx_params,
     generate_template_routers,
+)
+from boardfarm3.api.routers._types import (
+    _annotation_to_field_type,
+    _coerce,
+    _CoercionPlan,
 )
 
 # ---------------------------------------------------------------------------

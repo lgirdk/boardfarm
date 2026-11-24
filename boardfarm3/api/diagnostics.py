@@ -23,7 +23,7 @@ def thread_snapshot() -> dict[str, Any]:
     :return: snapshot with a capture timestamp and one entry per thread
     :rtype: dict[str, Any]
     """
-    frames = sys._current_frames()  # noqa: SLF001
+    frames = sys._current_frames()  # noqa: SLF001  # pylint: disable=protected-access
     threads: list[dict[str, Any]] = [
         {
             "name": thread.name,

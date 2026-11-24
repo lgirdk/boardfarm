@@ -134,6 +134,7 @@ async def _dispatch_proxy_request(
     :return: the downstream response, or the shaper's response on failure
     :rtype: Any
     :raises HTTPException: when ``session_id`` is missing or unknown
+    :raises SessionNotLive: when the session has ended (and *shaper* is None)
     """
     try:
         body: Any = kwargs["body"]

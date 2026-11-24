@@ -137,7 +137,7 @@ class _CatPexpect(BoardfarmPexpect):
     def __init__(self, session_name: str) -> None:
         super().__init__(session_name, "cat", save_console_logs="", args=[])
 
-    def execute_command(self, command: str, timeout: int = -1) -> str:
+    def execute_command(self, command: str, timeout: int = -1) -> str:  # noqa: ARG002
         self.sendline(command)
         self.expect_exact(command)
         self.expect(self.linesep)
@@ -177,7 +177,8 @@ def test_raising_listener_is_removed() -> None:
 
     def bad(chunk: str) -> None:
         calls.append(chunk)
-        raise RuntimeError("boom")
+        msg = "boom"
+        raise RuntimeError(msg)
 
     try:
         session.add_raw_listener(bad)

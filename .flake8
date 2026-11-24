@@ -23,7 +23,9 @@ max-line-length = 88
 extend-ignore = DAR, E203, E501, W503
 rst-roles =
     class,
+    data,
     func,
+    meth,
     ref,
 rst-directives =
     envvar,
@@ -34,5 +36,15 @@ docstring_style=sphinx
 
 per-file-ignores =
     unittests/*:D103, E501
+    integrationtests/*:D103, E501
     boardfarm3/api/execution.py:A003
     unittests/control/test_launcher.py:A003, D103, E501
+    # A fake Docker client: its methods mirror docker-py's, list() included.
+    unittests/control/conftest.py:A003
+    # Structured fields go in as keyword arguments by design; never pickled.
+    boardfarm3_control/errors.py:B042
+    # mccabe counts these above 10; ruff's C901, at the same limit, does not.
+    boardfarm3/api/pyshell.py:C901
+    boardfarm3_control/expiry.py:C901
+    boardfarm3_control/reconcile.py:C901
+    boardfarm3_control/wsproxy.py:C901
