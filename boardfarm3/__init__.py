@@ -1,6 +1,6 @@
 """Automated testing of network devices."""
 
-__version__ = "2026.11.25a112"
+__version__ = "2026.11.25a113"
 
 from pluggy import HookimplMarker, HookspecMarker
 
